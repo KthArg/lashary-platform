@@ -1,0 +1,17 @@
+# dependencias y builds
+node_modules/
+.next/
+out/
+coverage/
+
+# entorno — SEC-004: los secretos jamás se versionan
+.env
+.env.*
+!.env.example
+
+# temporales de los checks
+*.tmp
+
+# sistema
+.DS_Store
+Thumbs.db

@@ -1,0 +1,431 @@
+﻿"Work item ID","Work type","Summary","Description","Parent","Original ID","Module","Role","Priority","Story Points","Status","Assignee","Original Assignee","Labels"
+"1","Epic","Home","Landing page publica: presentacion del negocio, tecnicas ofrecidas y llamado a la accion para agendar.","","","","","","","","","",""
+"2","Epic","About","Seccion de la landing dedicada a presentar a la administradora del negocio.","","","","","","","","","",""
+"3","Epic","Gallery","Galeria publica de resultados (antes/despues) gestionada desde el CMS.","","","","","","","","","",""
+"4","Epic","Loyalty","Programa de fidelidad: seccion informativa y motor de conteo/niveles/beneficios.","","","","","","","","","",""
+"5","Epic","Blog","Creacion, listado y lectura de publicaciones de blog.","","","","","","","","","",""
+"6","Epic","Reservations - Admin","Administracion del catalogo de tecnicas, disponibilidad, anticipos, agenda diaria y cierre de citas.","","","","","","","","","",""
+"7","Epic","Reservations - Client","Flujo de agendamiento, reagendado y cancelacion de citas por parte del cliente.","","","","","","","","","",""
+"8","Epic","Notifications","Notificaciones y recordatorios automaticos hacia clientes y administradora (reservas, cancelaciones, pagos, re-aplicacion, inactividad).","","","","","","","","","",""
+"9","Epic","Clients","Gestion de clientes: ficha, historial de citas, anotaciones y expediente/estudio inicial.","","","","","","","","","",""
+"10","Epic","Products","Catalogo de productos de mantenimiento y paquetes de servicios combinados.","","","","","","","","","",""
+"11","Epic","Promotions","Promociones sobre servicios o paquetes.","","","","","","","","","",""
+"12","Epic","Shopping Cart","Carrito de compras y checkout de productos.","","","","","","","","","",""
+"13","Epic","Delinquencies","Deteccion, bloqueo, regularizacion y control historico de morosidad de clientes.","","","","","","","","","",""
+"14","Epic","Auth","Autenticacion de administradora (usuario/contrasena) y clientes (Google).","","","","","","","","","",""
+"15","Story","Pagina de inicio atractiva del negocio","User Story:
+Como visitante del sitio, quiero ver una pagina de inicio atractiva que presente el negocio, para conocer rapidamente los servicios que ofrece.
+
+Acceptance Criteria:
+• La seccion incluye imagen principal, texto de bienvenida y llamado a la accion para agendar.
+• El diseno es responsivo en movil y escritorio.
+• El contenido es editable desde el CMS.","1","US-LAND-01","Landing","Cliente Anónimo","High","3","To Do","","...","Landing"
+"16","Story","Visualizar tecnicas disponibles con precio y duracion","User Story:
+Como visitante del sitio, quiero ver las tecnicas disponibles junto con su explicacion y resultados, para decidir que servicio se ajusta a lo que busco.
+
+Acceptance Criteria:
+• Cada tecnica muestra imagen, descripcion y ejemplos de resultados.
+• Cada tecnica muestra su precio y su duracion estimada, tomados del catalogo administrado por la administradora.
+• Cuando una tecnica tiene precio distinto para primera vez y para retoque, se muestran ambos.
+• El listado se obtiene del catalogo administrado por la administradora.
+• Incluye enlace directo para agendar la tecnica seleccionada.","1","US-LAND-02","Landing","Cliente Anónimo","High","5","To Do","","...","Landing"
+"17","Story","Informacion de contacto, ubicacion y horario de atencion","User Story:
+Como visitante del sitio, quiero encontrar como contactar al negocio, donde esta y en que horario atiende, para resolver dudas o llegar a mi cita sin buscar la informacion en otro lado.
+
+Acceptance Criteria:
+• La seccion muestra el horario de atencion, la ubicacion o zona de atencion y los medios de contacto.
+• Existe un boton de contacto directo por WhatsApp con mensaje inicial predefinido.
+• Se incluyen enlaces a las redes sociales del negocio, con Instagram como canal principal.
+• Todo el contenido de la seccion es editable desde el CMS.
+• La seccion es accesible desde la navegacion principal y desde el pie de pagina.","1","US-LAND-07","Landing","Cliente Anónimo","High","3","To Do","","...","Landing"
+"18","Story","Conocer a la administradora del negocio","User Story:
+Como visitante del sitio, quiero conocer a la administradora del negocio, para generar confianza antes de agendar un servicio.
+
+Acceptance Criteria:
+• La seccion incluye foto, texto descriptivo y experiencia.
+• La seccion incluye la trayectoria profesional de la administradora: formacion, certificaciones y años de experiencia en el area.
+• El contenido es editable desde el CMS.
+• La seccion es visible desde la navegacion principal.","2","US-LAND-04","Landing","Cliente Anónimo","Medium","3","To Do","","...","Landing"
+"19","Story","Galeria de resultados antes y despues","User Story:
+Como visitante del sitio, quiero ver ejemplos de antes y despues, para evaluar la calidad del trabajo antes de agendar.
+
+Acceptance Criteria:
+• La galeria muestra pares de imagenes cargadas por la administradora.
+• Las imagenes se gestionan desde el CMS.
+• La galeria es navegable en carrusel o cuadricula responsiva.
+• Existe un mecanismo de consentimiento registrado de la clienta antes de publicar su imagen.","3","US-LAND-03","Landing","Cliente Anónimo","Medium","5","To Do","","...","Landing"
+"20","Story","Mecanica del programa de fidelidad (informativa)","User Story:
+Como cliente frecuente, quiero conocer la mecanica del programa de fidelidad, para saber las ventajas de ser cliente recurrente.
+
+Acceptance Criteria:
+• Se muestra una seccion con la mecanica del programa.
+• El contenido es administrable desde el CMS.
+- NOTA: esta historia cubre unicamente la seccion informativa. El calculo y seguimiento del progreso de fidelidad es un motor aparte, no incluido aqui.","4","US-LAND-05","Landing","Cliente Registrado","Low","2","To Do","","...","Landing"
+"21","Story","Motor de conteo y niveles del programa de fidelidad","User Story:
+Como administradora del negocio, quiero que el sistema lleve el conteo de visitas de cada clienta y su progreso hacia el beneficio, para aplicar el programa de fidelidad sin llevar la cuenta a mano.
+
+Acceptance Criteria:
+• El programa admite varios niveles configurables, cada uno con su numero de visita y su beneficio propio: por ejemplo 5a visita un porcentaje de descuento, 8a visita otro porcentaje y 10a visita servicio gratis.
+• La administradora puede agregar, editar o eliminar niveles sin intervencion del equipo de desarrollo.
+• El beneficio de cada nivel puede ser un porcentaje de descuento, un monto fijo o un servicio gratuito.
+• El progreso se calcula sobre citas completadas y se refleja en el expediente del cliente y en su vista de cuenta.
+• El sistema indica en la cita cuando corresponde aplicar un beneficio y la administradora lo confirma antes de aplicarlo.
+• El beneficio aplicado queda registrado para no aplicarse dos veces, y el conteo continua hacia el siguiente nivel.
+• Las reglas vigentes al momento de aplicar el beneficio quedan congeladas en la cita.
+• La configuracion inicial de niveles replica la tarjeta fisica vigente entregada en US-CMS-05.","4","US-LAND-06","Landing","Administrador","Low","8","To Do","","...","Landing"
+"22","Story","Crear y editar publicaciones de blog","User Story:
+Como administradora del negocio, quiero crear y editar publicaciones de blog, para compartir contenido relacionado con mis servicios.
+
+Acceptance Criteria:
+• Puedo crear una publicacion con titulo, cuerpo enriquecido e imagen destacada.
+• Puedo editar o eliminar publicaciones desde el CMS.
+• Las publicaciones en borrador no son visibles publicamente.","5","US-BLOG-01","Blog","Administrador","Medium","5","To Do","","","Blog"
+"23","Story","Listado de publicaciones del blog","User Story:
+Como cliente del sitio, quiero ver un listado de las publicaciones, para leer contenido de interes sobre los servicios.
+
+Acceptance Criteria:
+• El listado ordena por fecha de publicacion descendente.
+• Cada tarjeta muestra imagen, titulo y extracto.
+• Implementa paginacion sobre un limite configurado.","5","US-BLOG-02","Blog","Cliente Registrado","Medium","3","To Do","","","Blog"
+"24","Story","Ver el detalle de una publicacion del blog","User Story:
+Como cliente del sitio, quiero abrir una publicacion para leerla completa, para conocer en detalle el contenido compartido.
+
+Acceptance Criteria:
+• Muestra titulo, imagenes y texto completo.
+• Incluye metadatos basicos de SEO.
+• Existe navegacion de regreso al listado.","5","US-BLOG-03","Blog","Cliente Registrado","Medium","3","To Do","","","Blog"
+"25","Story","Administrar catalogo de tecnicas con tiempos y precios","User Story:
+Como administradora del negocio, quiero administrar el catalogo de tecnicas con sus tiempos, para que el calendario calcule correctamente la duracion de cada cita.
+
+Acceptance Criteria:
+• Puedo crear, editar y desactivar tecnicas desde el panel administrativo.
+• El catalogo contempla las familias de servicio del negocio: sets de pestanas por tecnica y volumen (clasico, voluminoso, extra voluminoso), diseno de cejas, laminado de cejas, aplicacion de henna, depilacion y lipstick o labios.
+• Cada tecnica define un tiempo estimado para primera vez y otro para re-aplicacion o retoque.
+• Cada tecnica define ademas un tiempo de preparacion y limpieza que se suma al espacio ocupado en el calendario aunque no se le cobre al cliente.
+• Cada tecnica define el intervalo sugerido de re-aplicacion en dias, usado luego por los recordatorios.
+• Cada tecnica define su anticipo requerido y su texto de cuidados posteriores.
+• Una tecnica desactivada deja de mostrarse para nuevas reservas sin afectar citas ya agendadas.
+• El precio de una tecnica queda congelado en las citas ya agendadas: cambiar el precio del catalogo no altera una cita existente.","6","US-AGE-08","Administración","Administrador","High","5","To Do","","","Administracion"
+"26","Story","Definir anticipo requerido y politica de perdida","User Story:
+Como administradora del negocio, quiero definir el anticipo que se cobra para confirmar una cita y su politica de perdida, para asegurar el espacio reservado sin depender de un acuerdo verbal con cada clienta.
+
+Acceptance Criteria:
+• Puedo definir el anticipo por tecnica y por paquete.
+• El monto del anticipo se muestra al cliente antes de confirmar la cita, junto con la advertencia de que se pierde si cancela fuera de la ventana permitida o si no asiste.
+• El anticipo requerido y el efectivamente registrado quedan almacenados en la cita, no recalculados a partir del catalogo actual.
+• El anticipo se descuenta del saldo pendiente al cerrar la cita, de modo que el pago final sea la diferencia.
+• La administradora puede exonerar el anticipo a un cliente especifico, y la exoneracion queda en la bitacora de auditoria.","6","US-AGE-13","Administración","Administrador","High","5","To Do","","","Administracion"
+"27","Story","Configurar espacios y horarios disponibles para citas","User Story:
+Como administradora del negocio, quiero configurar los espacios y horarios disponibles para citas, para controlar cuando los clientes pueden agendar.
+
+Acceptance Criteria:
+• Puedo definir bloques de disponibilidad por dia desde el panel administrativo.
+• Puedo definir dias no laborables y feriados.
+• Puedo bloquear manualmente un espacio especifico.
+• Los cambios se reflejan inmediatamente en el calendario publico.
+• Reducir la disponibilidad no elimina citas ya agendadas: el sistema advierte y pide confirmacion si el cambio afecta citas existentes.","6","US-AGE-01","Administración","Administrador","High","8","To Do","","","Administracion"
+"28","Story","Visualizar calendario con espacios disponibles por dia","User Story:
+Como cliente, quiero visualizar cada dia del calendario con los espacios disponibles, para elegir el horario que mejor se ajuste a mi disponibilidad.
+
+Acceptance Criteria:
+• El calendario muestra una vista por dia con espacios libres y ocupados claramente diferenciados.
+• Los espacios ocupados no revelan de quien es la cita ni que servicio es.
+• Los espacios ya reservados no pueden seleccionarse.
+• La navegacion entre dias no requiere recargar la pagina.
+• La disponibilidad mostrada considera la duracion del servicio seleccionado mas su tiempo de limpieza.","7","US-AGE-02","Cliente Registrado","Cliente Registrado","High","8","To Do","","","Cliente-Registrado"
+"29","Story","Seleccionar la tecnica a agendar","User Story:
+Como cliente, quiero seleccionar la tecnica que deseo agendar, para que el sistema calcule el tiempo requerido segun si es primera vez o re-aplicacion.
+
+Acceptance Criteria:
+• El listado de tecnicas se obtiene del catalogo administrado por la administradora.
+• El sistema determina si es primera vez o re-aplicacion segun el historial del cliente, permitiendo corregirlo manualmente.
+• La duracion del espacio a reservar se ajusta automaticamente e incluye el tiempo de limpieza.
+• Solo se puede seleccionar una tecnica por cita, conforme a la regla de negocio definida.","7","US-AGE-03","Cliente Registrado","Cliente Registrado","High","5","To Do","","","Cliente-Registrado"
+"30","Story","Evitar choques de horario en reservas simultaneas","User Story:
+Como administradora de la página quiero poder aceptar o rechazar manualmente mediante un historial de citas, para evitar choques de horario, o en caso de tener una emergencia, poder rechazarla y que no se agende automáticamente.
+
+Acceptance Criteria:
+• La no superposicion se garantiza mediante una restriccion de exclusion en PostgreSQL sobre el rango de tiempo ocupado, no mediante una consulta previa en el codigo de la aplicacion.
+• El rango ocupado incluye el tiempo de preparacion y limpieza de la tecnica.
+• La restriccion aplica unicamente a citas en estados activos, de modo que una cita cancelada libera el espacio.
+• PRUEBA OBLIGATORIA: una prueba automatizada dispara N reservas simultaneas sobre el mismo espacio y verifica que exactamente una tiene exito y el resto recibe un error de espacio no disponible. Sin esta prueba la historia no se considera terminada.
+• Si la restriccion se activa en produccion se genera una alerta, porque significa que la validacion previa de la aplicacion tiene un error.","6","US-AGE-09","Administración","Desarrollador","High","8","To Do","","","Administracion"
+"31","Story","Reservar una cita (fecha, hora y tecnica)","User Story:
+Como cliente, quiero reservar una cita seleccionando fecha, hora y tecnica, para asegurar mi espacio en la agenda.
+
+Acceptance Criteria:
+• El flujo valida que el cliente este registrado antes de confirmar.
+• El flujo valida que el cliente no tenga morosidad activa antes de permitir confirmar.
+• Al confirmar, el espacio queda ocupado de forma automatica.
+• Si el espacio fue tomado entre la seleccion y la confirmacion, el cliente recibe un mensaje claro y vuelve a la seleccion de horario sin perder el resto de sus datos.
+• El cliente recibe una confirmacion visual con el detalle de la cita.
+• El precio de la tecnica queda congelado en la cita al momento de confirmarla.","7","US-AGE-05","Cliente Registrado","Cliente Registrado","High","8","To Do","","","Cliente-Registrado"
+"32","Story","Reagendar una cita existente","User Story:
+Como cliente, quiero mover mi cita a otra fecha u hora, para no tener que cancelarla y perder el anticipo cuando solo necesito cambiarla.
+
+Acceptance Criteria:
+• El cliente puede mover una cita futura a otro espacio disponible dentro de la ventana permitida por la politica del negocio.
+• Reagendar dentro de la ventana permitida conserva el anticipo pagado.
+• El espacio original se libera y el nuevo se ocupa en una sola operacion atomica: no puede quedar el cliente sin ninguno de los dos.
+• La administradora recibe notificacion del reagendado con el horario anterior y el nuevo.
+• El numero de reagendados permitidos por cita es configurable.","7","US-AGE-10","Cliente Registrado","Cliente Registrado","High","5","To Do","","","Cliente-Registrado"
+"33","Story","Cancelar una cita agendada","User Story:
+Como cliente, quiero cancelar una cita agendada, para liberar el espacio en caso de no poder asistir.
+
+Acceptance Criteria:
+• Existe una ventana de cancelacion configurable por la administradora (por ejemplo 48 horas antes).
+• Cancelar dentro de la ventana permitida no genera penalizacion sobre el anticipo.
+• Cancelar fuera de la ventana informa claramente antes de confirmar que se pierde el anticipo, segun la politica vigente.
+• El espacio cancelado vuelve a estar disponible inmediatamente.
+• Se dispara la notificacion de cancelacion hacia la administradora.
+• La cancelacion y su consecuencia economica quedan en la bitacora de auditoria.","7","US-AGE-06","Cliente Registrado","Cliente Registrado","High","5","To Do","","","Cliente-Registrado"
+"34","Story","Enviar indicaciones de cuidado post-tratamiento","User Story:
+Como cliente, quiero recibir las indicaciones de cuidado correspondientes a la tecnica que me aplicaron, para conservar el resultado y cuidar la salud de mis pestanas naturales.
+
+Acceptance Criteria:
+• La administradora administra un texto de cuidados asociado a cada tecnica del catalogo.
+• Al cerrar la cita, el cliente recibe por el canal configurado las indicaciones de la tecnica efectivamente aplicada.
+• La administradora puede agregar indicaciones especificas para esa clienta ademas de las de la tecnica.
+• Las indicaciones enviadas quedan visibles en el expediente y en la vista de citas del cliente.","8","US-CLI-06","Cliente Registrado","","Medium","3","To Do","","","Cliente-Registrado"
+"35","Story","Agendar un paquete con varios servicios","User Story:
+Como cliente, quiero agendar un paquete que incluya varios servicios, para reservar en una sola cita todos los tratamientos que necesito.
+
+Acceptance Criteria:
+• El cliente puede elegir un paquete predefinido en lugar de una tecnica individual.
+• El sistema calcula el tiempo total sumando la duracion de los servicios incluidos mas sus tiempos de limpieza.
+• El precio mostrado corresponde al precio del paquete.","7","US-AGE-04","Cliente Registrado","Cliente Registrado","Medium","5","To Do","","","Cliente-Registrado"
+"36","Story","Vista de agenda diaria de la administradora","User Story:
+Como administradora del negocio, quiero ver mi agenda del dia con toda la informacion que necesito de un vistazo, para atender la jornada sin ir consultando pantalla por pantalla.
+
+Acceptance Criteria:
+• La vista muestra las citas del dia en orden cronologico con hora, cliente, tecnica, duracion y estado de pago.
+• Cada cita indica visiblemente si el cliente tiene morosidad activa o si es su primera vez.
+• Desde esta vista la administradora puede abrir el expediente del cliente y cerrar la cita sin navegar a otra seccion.
+• La vista permite moverse al dia anterior y siguiente.","6","US-AGE-11","Administración","Administrador","High","5","To Do","","","Administracion"
+"37","Story","Cerrar cita: marcar completada o ausencia","User Story:
+Como administradora del negocio, quiero marcar que paso con cada cita despues de su hora, para que el sistema sepa que servicios se prestaron y que pagos quedaron pendientes.
+
+Acceptance Criteria:
+• Una cita pasada puede marcarse como completada o como ausencia sin aviso.
+• Una cita completada registra el servicio efectivamente prestado, que puede diferir del reservado.
+• Una cita completada genera el cargo correspondiente al cliente.
+• Una ausencia sin aviso aplica la politica definida por el negocio respecto del anticipo.
+• Las citas pasadas sin cerrar aparecen destacadas en el panel hasta que la administradora las resuelva.
+• Ningun estado se revierte silenciosamente: todo cambio queda en la bitacora de auditoria.","6","US-AGE-12","Administración","Administrador","High","5","To Do","","","Administracion"
+"38","Story","Bloquear manualmente espacios del calendario","User Story:
+Como administradora del negocio, quiero bloquear manualmente espacios del calendario, para reservar tiempo personal sin que los clientes puedan agendar.
+
+Acceptance Criteria:
+• Puedo seleccionar uno o varios espacios y marcarlos como bloqueados.
+• Los espacios bloqueados no aparecen como disponibles para los clientes.
+• Puedo desbloquear un espacio previamente bloqueado.
+• Bloquear un espacio que ya tiene una cita agendada no es posible sin resolver primero esa cita.","6","US-AGE-07","Administración","Administrador","Medium","3","To Do","","","Administracion"
+"39","Story","Crear y editar datos de un cliente manualmente","User Story:
+Como administradora del negocio, quiero crear y editar manualmente los datos de un cliente, para mantener actualizada la informacion incluso si la clienta agenda por otro medio.
+
+Acceptance Criteria:
+• Puedo registrar nombre, telefono, correo y notas generales.
+• Puedo editar los datos de un cliente existente.
+• El sistema impide duplicar clientes con el mismo numero de telefono y ofrece unificarlos si ya existe.
+• Un cliente creado manualmente por la administradora queda con su telefono marcado como verificado por ella.","9","US-CLI-05","Administración","Administrador","High","3","To Do","","","Administracion"
+"40","Story","Listado de clientes con filtros y paginacion","User Story:
+Como administradora del negocio, quiero visualizar todos mis clientes en una tabla con filtros y paginacion, para encontrar rapidamente la informacion que necesito.
+
+Acceptance Criteria:
+• La tabla muestra nombre, contacto, estado de morosidad y ultima cita.
+• Puedo filtrar por nombre, estado de morosidad y rango de fechas de ultima cita.
+• La tabla implementa paginacion en el servidor con un numero configurable de resultados por pagina.
+• La tabla muestra estados definidos para lista vacia, carga y error.","9","US-CLI-01","Administración","Administrador","High","5","To Do","","","Administracion"
+"41","Story","Ver historial de citas de un cliente","User Story:
+Como administradora del negocio, quiero ver el historial completo de citas de un cliente, para conocer los servicios recibidos y su comportamiento de pago.
+
+Acceptance Criteria:
+• El historial muestra por cada cita el servicio, la fecha, el estado de la cita, el estado de pago y las anotaciones.
+• Las citas se ordenan de mas reciente a mas antigua.
+• Se accede desde el listado general y desde la vista diaria.","9","US-CLI-02","Administración","Administrador","High","5","To Do","","","Administracion"
+"42","Story","Agregar anotaciones a cada cita del cliente","User Story:
+Como administradora del negocio, quiero agregar anotaciones a cada cita, para llevar un registro tipo expediente de observaciones relevantes.
+
+Acceptance Criteria:
+• Puedo agregar, editar y eliminar anotaciones asociadas a una cita.
+• Las anotaciones quedan visibles dentro del historial del cliente.
+• Cada anotacion registra fecha de creacion y de modificacion.","9","US-CLI-03","Administración","Administrador","High","3","To Do","","","Administracion"
+"43","Story","Registrar estudio inicial y expediente de la clienta","User Story:
+Como administradora del negocio, quiero registrar el estudio inicial de las caracteristicas de la clienta y la tecnica recomendada, para documentar la base de su expediente y guiar futuras decisiones de tratamiento.
+
+Acceptance Criteria:
+• Puedo crear un registro de estudio inicial asociado a un cliente, con texto descriptivo e imagenes.
+• El expediente puede incluir alergias, sensibilidades y condiciones relevantes.
+• Estos datos se clasifican como sensibles: solo la administradora accede a ellos, y cada acceso queda registrado en la bitacora.
+• Puedo actualizar el expediente con cada cita posterior manteniendo el historial de cambios.
+• Las imagenes del expediente no son accesibles por URL publica.","9","US-CLI-04","Administración","Administrador","High","5","To Do","","","Administracion"
+"44","Story","Crear y administrar paquetes de servicios","User Story:
+Como administradora del negocio, quiero crear y administrar paquetes que combinen varios servicios, para ofrecer opciones combinadas a mis clientas.
+
+Acceptance Criteria:
+• Puedo crear un paquete seleccionando dos o mas tecnicas existentes.
+• El sistema calcula el tiempo total sumando duraciones y tiempos de limpieza, permitiendo ajuste manual del precio final.
+• Puedo activar o desactivar un paquete sin afectar citas ya agendadas.","10","US-PROD-01","Tienda","Administrador","Medium","5","To Do","","","Tienda"
+"45","Story","Crear promociones sobre servicios o paquetes","User Story:
+Como administradora del negocio, quiero crear promociones sobre servicios o paquetes, para incentivar el agendamiento en periodos especificos.
+
+Acceptance Criteria:
+• Puedo definir servicio aplicable, descuento y vigencia.
+• Las promociones vigentes se muestran en la landing y en el flujo de agendamiento.
+• Una promocion vencida deja de aplicarse automaticamente.
+• El precio con promocion queda congelado en la cita al momento de agendar.","11","US-PROM-01","Tienda","Administrador","Medium","5","To Do","","","Tienda"
+"46","Story","Ver paquetes y promociones antes de agendar","User Story:
+Como cliente, quiero ver los paquetes y promociones disponibles antes de agendar, para aprovechar las mejores opciones.
+
+Acceptance Criteria:
+• Existe una seccion que lista los paquetes activos con precio y servicios incluidos.
+• Las promociones activas se destacan visualmente.
+• Al seleccionar un paquete el cliente es dirigido al flujo de agendamiento.","11","US-PROM-02","Tienda","Cliente Registrado","Medium","3","To Do","","","Tienda"
+"47","Story","Ver productos de mantenimiento en cuadricula","User Story:
+Como visitante del sitio, quiero ver los productos de mantenimiento en una cuadricula, para conocer las opciones disponibles.
+
+Acceptance Criteria:
+• Los productos se muestran en un grid con imagen, nombre y precio.
+• El grid es responsivo.
+• Los productos son administrables desde el panel o CMS.","10","US-PROD-02","Tienda","Cliente Anónimo","Low","5","To Do","","","Tienda"
+"48","Story","Ver el detalle de un producto","User Story:
+Como visitante del sitio, quiero ver el detalle de un producto, para conocer su descripcion completa antes de agregarlo al carrito.
+
+Acceptance Criteria:
+• Muestra imagen, nombre, descripcion y precio.
+• Existe un boton para agregar al carrito.
+• Si no hay existencias se indica y se deshabilita la compra.","10","US-PROD-03","Tienda","Cliente Anónimo","Low","3","To Do","","","Tienda"
+"49","Story","Agregar productos al carrito de compras","User Story:
+Como cliente, quiero agregar productos a un carrito, para gestionar los articulos que deseo adquirir.
+
+Acceptance Criteria:
+• Puedo agregar, quitar y modificar cantidades.
+• El subtotal se actualiza en tiempo real.
+• El contenido persiste durante la sesion.","12","US-SHOP-01","Tienda","Cliente Registrado","Low","5","To Do","","","Tienda"
+"50","Story","Finalizar la compra del carrito","User Story:
+Como cliente, quiero finalizar la compra de los productos del carrito, para completar mi pedido.
+
+Acceptance Criteria:
+• El checkout solicita datos de contacto y entrega.
+• El cliente selecciona metodo de pago y sube comprobante si aplica.
+• Se genera un pedido visible para la administradora.
+• El control de existencias impide vender mas unidades de las disponibles.","12","US-SHOP-02","Tienda","Cliente Registrado","Low","8","To Do","","","Tienda"
+"51","Story","Deteccion automatica de pagos pendientes","User Story:
+Como administradora del negocio, quiero que el sistema identifique automaticamente los pagos pendientes, para llevar un control confiable sin que un olvido mio perjudique a una clienta que si pago.
+
+Acceptance Criteria:
+• El sistema identifica citas cerradas cuyo pago quedo sin registrar y genera una morosidad asociada al cliente.
+• Existe un periodo de gracia configurable entre el cierre de la cita y la generacion de la morosidad.
+• Antes de que una morosidad pase a estado activo, la administradora recibe un aviso indicando que clientes estan por quedar bloqueados, con opcion de confirmar o descartar.
+• El saldo del cliente se calcula sumando cargos y pagos registrados; no se almacena como un valor que se actualiza a mano.
+• El estado de morosidad se refleja en el expediente del cliente y la administradora puede ver el listado de morosidades activas.","13","US-MOR-01","Administración","Administrador","High","5","To Do","","","Administracion"
+"52","Story","Bloquear agenda a clientes con morosidad activa","User Story:
+Como administradora del negocio, quiero que los clientes con morosidad activa no puedan agendar nuevas citas, para reducir el riesgo financiero del negocio.
+
+Acceptance Criteria:
+• Al intentar agendar, el sistema valida si el cliente tiene morosidad activa.
+• Si la tiene, se muestra un mensaje claro con el motivo, el monto y la opcion de regularizar.
+• Una vez saldada la morosidad, el cliente recupera automaticamente la posibilidad de agendar.
+• La restriccion se aplica tambien cuando la administradora agenda en nombre del cliente, pero ella puede autorizar la excepcion en el momento.
+• Todo bloqueo aplicado queda registrado, para poder revisar si el sistema esta bloqueando clientes por error.","13","US-MOR-02","Administración","Administrador","High","5","To Do","","","Administracion"
+"53","Story","Levantar o perdonar una morosidad manualmente","User Story:
+Como administradora del negocio, quiero poder levantar o perdonar una morosidad manualmente, para resolver de inmediato los casos en que el sistema bloqueo a una clienta por un error de registro o por una decision comercial mia.
+
+Acceptance Criteria:
+• Puedo levantar el bloqueo de un cliente sin necesidad de registrar un pago.
+• Puedo condonar total o parcialmente una morosidad indicando el motivo.
+• Toda excepcion queda registrada en la bitacora de auditoria con fecha, monto y motivo.
+• Una excepcion no borra el historial: la morosidad original permanece visible con su estado de condonada.","13","US-MOR-05","Administración","Administrador","High","3","To Do","","","Administracion"
+"54","Story","Regularizar deuda desde la plataforma","User Story:
+Como cliente con morosidad, quiero regularizar mi deuda desde la plataforma, para volver a agendar citas.
+
+Acceptance Criteria:
+• El cliente puede iniciar el flujo desde el recordatorio o desde su estado de cuenta.
+• Al completar el flujo simulado o subir el comprobante, la morosidad pasa a estado pendiente de aprobacion.
+• Una vez aprobado por la administradora, la morosidad se marca como saldada y se libera la restriccion.
+• El cliente ve en todo momento en que estado esta su regularizacion.","13","US-MOR-03","Cliente Registrado","Administrador","High","5","To Do","","","Cliente-Registrado"
+"55","Story","Listado historico de morosidades","User Story:
+Como administradora del negocio, quiero visualizar todas las morosidades activas y saldadas, para llevar un control historico de la situacion de pagos.
+
+Acceptance Criteria:
+• El listado permite filtrar por estado: por confirmar, activa, pendiente de aprobacion, saldada y condonada.
+• Cada registro muestra cliente, monto, cita asociada y fecha de origen.
+• Puedo abrir el detalle completo de una morosidad y su bitacora de cambios.","13","US-MOR-04","Administración","Administrador","Medium","3","To Do","","","Administracion"
+"56","Story","Notificar a la administradora una nueva reserva","User Story:
+Como administradora del negocio, quiero recibir una notificacion cuando un cliente agende, para estar al tanto de mi agenda sin revisar constantemente el sistema.
+
+Acceptance Criteria:
+• Al confirmarse una reserva se genera una notificacion en el panel administrativo.
+• La notificacion incluye nombre del cliente, servicio, fecha y hora.
+• Se puede marcar como leida o no leida y persiste hasta que la administradora la revise.","8","US-NOT-01","Administración","Administrador","High","3","To Do","","","Administracion"
+"57","Story","Notificar cancelacion o reagendado de cita","User Story:
+Como administradora del negocio, quiero recibir una notificacion cuando un cliente cancele o mueva una cita, para reorganizar mi agenda oportunamente.
+
+Acceptance Criteria:
+• Al cancelarse o reagendarse una cita se genera una notificacion con los datos correspondientes.
+• En una cancelacion la notificacion indica si el cliente perdio el anticipo segun la politica.
+• En un reagendado la notificacion muestra el horario anterior y el nuevo.
+• El espacio liberado se refleja automaticamente en el calendario.","8","US-NOT-02","Administración","Administrador","High","3","To Do","","","Administracion"
+"58","Story","Recordatorio de cita por correo electronico","User Story:
+Como cliente, quiero recibir el recordatorio de mi cita por correo electronico ademas de WhatsApp, para no olvidar mi cita aunque el envio por WhatsApp no este disponible.
+
+Acceptance Criteria:
+• El sistema envia el recordatorio de cita por WhatsApp como canal por defecto.
+• Los envios y sus fallos quedan registrados.
+• El sistema envia un recordatorio de cita por un medio alternativo (por definir) en caso de que el canal por defecto falle.","8","US-NOT-07","Landing","Cliente Registrado","High","3","To Do","","","Landing"
+"59","Story","Confirmacion automatica de asistencia a la cita","User Story:
+Como administradora del negocio, quiero que el sistema confirme automáticamente la asistencia de una clienta y que esa confirmacion quede registrada, para saber con que citas cuento.
+
+Acceptance Criteria:
+• Al reservarse la cita el sistema envia al cliente un mensaje de confirmacion con el detalle de la cita y un medio para confirmar o cancelar.
+• La respuesta del cliente cambia el estado de la cita a confirmada o cancelada y queda registrada con fecha y hora.
+• Una vez confirmada, el sistema advierte al cliente que el anticipo ya no es reembolsable segun la politica de US-AGE-13.
+• Las citas sin confirmar dentro del plazo configurado aparecen destacadas en la vista diaria de la administradora.
+• La confirmacion se puede registrar manualmente por la administradora cuando la clienta responde por otro medio.
+• El envio usa el canal configurado en US-NOT-07, de modo que activar WhatsApp no requiera reescribir esta historia.","8","US-NOT-08","Notificaciones","Administrador","High","5","To Do","","","Notificaciones"
+"60","Story","Recordatorio de cita por WhatsApp 24h antes","User Story:
+Como cliente, quiero recibir un recordatorio por WhatsApp 24 horas antes de mi cita, para no olvidar mi compromiso agendado.
+
+Acceptance Criteria:
+• El sistema envia automaticamente un mensaje 24 horas antes de la hora agendada.
+• El mensaje incluye fecha, hora y tecnica reservada.
+• Si la cita se cancela o se mueve, el recordatorio se cancela o se reprograma.
+• Los envios fallidos se reintentan y quedan registrados.","8","US-NOT-03","Notificaciones","Cliente Registrado","High","8","To Do","","","Notificaciones"
+"61","Story","Recordatorio de pago pendiente","User Story:
+Como cliente con morosidad, quiero recibir un recordatorio de mi pago pendiente, para poder regularizar mi situacion y volver a agendar.
+
+Acceptance Criteria:
+• El sistema envia un recordatorio automatico a los clientes con morosidad activa con la frecuencia que configure la administradora.
+• El recordatorio incluye el monto adeudado y un enlace para regularizar.
+• El recordatorio deja de enviarse automaticamente una vez saldada la morosidad.
+• Un cliente cuya morosidad esta bajo excepcion manual no recibe recordatorios.","8","US-NOT-04","Cliente Registrado","Cliente Registrado","Medium","5","To Do","","","Cliente-Registrado"
+"62","Story","Recordatorio de re-aplicacion de tratamiento","User Story:
+Como cliente, quiero recibir una notificacion recordandome que es momento de re-aplicar mi tratamiento, para mantener mis servicios al dia.
+
+Acceptance Criteria:
+• El sistema calcula la fecha estimada de re-aplicacion usando el intervalo definido en el catalogo de tecnicas y la fecha de la ultima cita completada.
+• Se envia una notificacion cuando se acerca la fecha estimada.
+• La administradora configura con cuantos dias de anticipacion se envia.
+• No se envia a clientes con morosidad activa ni a quienes ya tienen una cita futura agendada.","8","US-NOT-05","Cliente Registrado","Cliente Registrado","Medium","5","To Do","","","Cliente-Registrado"
+"63","Story","Recordatorios a clientes inactivos","User Story:
+Como administradora del negocio, quiero enviar recordatorios a clientes inactivos, para incentivar que vuelvan a agendar.
+
+Acceptance Criteria:
+• Puedo identificar clientes sin citas en un rango de tiempo configurable.
+• Puedo enviar un correo masivo o individual desde el panel administrativo.
+• El sistema registra que clientes recibieron el correo y en que fecha.
+• El recordatorio incluye una opcion de baja y se respeta en envios posteriores.","8","US-NOT-06","Administración","Administrador","Low","5","To Do","","","Administracion"
+"64","Story","Inicio y cierre de sesion con usuario y contrasena","User Story:
+Como administradora del negocio quiero poder iniciar sesión (y cerrar sesión) usando usuario y contraseña para mayor seguridad.
+
+Acceptance Criteria:
+• Puedo ingresar al panel administrativo proporcionando mi usuario/correo y contraseña correctos.
+• Puedo cerrar sesión desde cualquier vista del panel, invalidando la sesión activa y redirigiéndome a la pantalla de inicio de sesión.
+• El sistema muestra un mensaje de error genérico ante credenciales incorrectas, sin revelar si el error está en el usuario o en la contraseña.
+• El sistema bloquea el acceso a cualquier ruta o recurso administrativo si intento ingresar sin una sesión autenticada.
+• El sistema finaliza la sesión de forma automática tras un periodo determinado de inactividad.","14","US-AUTH-01","Authentication","Administrador","Low","","To Do","","","Authentication"
+"65","Story","Inicio de sesion con cuenta de Google","User Story:
+Como cliente del negocio quiero poder poder iniciar sesión (y cerrar sesión) usando mi cuenta de google para mayor facilidad.
+
+Acceptance Criteria:
+(No definidos en el backlog original - pendiente de definicion)","14","US-AUTH-02","Authentication","Cliente Registrado","Low","","To Do","","","Authentication"

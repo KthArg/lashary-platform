@@ -1,0 +1,45 @@
+# CI — Capa 1: la única compuerta real (docs/spec/INTEGRATION.md).
+# Corre exactamente los mismos scripts que scripts/verify.sh local: una implementación, cero deriva.
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  rules:
+    name: reglas (rules.yaml)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # historia completa: INT-001 (edad de rama) y diffs contra base
+
+      - name: verify (contra la rama base)
+        run: |
+          if [ -n "${{ github.base_ref }}" ]; then
+            git fetch origin "${{ github.base_ref }}"
+            bash scripts/verify.sh --base "origin/${{ github.base_ref }}"
+          else
+            # push a main: solo checks estáticos (sin rango de PR)
+            bash scripts/verify.sh --base "HEAD~1" || exit 1
+          fi
+
+  # Las pruebas de la aplicación (unitarias, aislamiento RLS SEC-002, concurrencia DOM-010)
+  # se agregan a este workflow cuando exista src/ (F1). Este job falla adrede si alguien
+  # crea src/ sin agregar el job de tests: recordatorio estructural.
+  tests-placeholder-guard:
+    name: guardia de pruebas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: código en src/ exige job de tests
+        run: |
+          # SPECs stub y la plantilla _template no son código; el primer .ts/.tsx real sí
+          CODE=$(find src -path 'src/features/_template' -prune -o \( -name '*.ts' -o -name '*.tsx' \) -print 2>/dev/null | head -n 1)
+          if [ -n "$CODE" ] && ! grep -q "job-tests-reales" .github/workflows/ci.yml; then
+            echo "✖ Hay código en src/ ($CODE) pero este workflow no tiene job de tests (marcador: job-tests-reales)."
+            echo "  Agregar el job de tests es parte de la primera historia que cree código (US-TEC-03)."
+            exit 1
+          fi
+          echo "OK"

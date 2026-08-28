@@ -1,0 +1,48 @@
+# Auditor semanal de dependencias y supply chain (SEC-008) — corre desatendido.
+# Read-only: reporta en un issue; jamás actualiza dependencias ni abre PRs.
+# Autenticación: secreto CLAUDE_CODE_OAUTH_TOKEN (token OAuth de suscripción Claude Pro/Max —
+# ver nota de setup en pr-compliance.yml). Pinnear la action por SHA al configurar (SEC-008).
+name: deps-audit
+on:
+  schedule:
+    - cron: "0 12 * * 1" # lunes 12:00 UTC — inicio de semana laboral en CR
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: guardia
+        id: guard
+        run: |
+          if [ ! -f package.json ]; then
+            echo "Sin package.json todavía (pre-F1) — nada que auditar."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: npm audit (paso determinista)
+        if: steps.guard.outputs.skip == 'false'
+        run: |
+          npm ci --ignore-scripts
+          npm audit --json > audit.json || true # exit != 0 cuando hay vulns; el reporte es el punto
+
+      - name: analizar y reportar
+        if: steps.guard.outputs.skip == 'false'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Lee .agents/deps-auditor.md y síguelo al pie de la letra.
+            La salida de npm audit está en audit.json. Publica el issue
+            `deps-audit` de esta semana con el formato que ese documento define.
+          claude_args: "--max-turns 25"

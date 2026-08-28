@@ -1,0 +1,36 @@
+# Agente revisor de cumplimiento — corre en cada PR, sin que nadie lo invoque (§11.8).
+# Read-only: comenta hallazgos con rule IDs; jamás aprueba, mergea ni modifica la rama.
+# Advisorio (Capa 4): la compuerta bloqueante es el workflow ci.yml + branch protection.
+#
+# Autenticación: token OAuth de la suscripción Claude Pro/Max (sin API de pago por uso).
+# Setup más fácil: correr `claude /install-github-app` en la terminal de Claude Code — configura
+# la app y el secreto CLAUDE_CODE_OAUTH_TOKEN solo; alternativa manual: `claude setup-token` y
+# pegar el resultado como secreto del repo. Al configurar, pinnear la action por SHA (SEC-008).
+name: pr-compliance
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write # solo para publicar el comentario de revisión
+  issues: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    # sin secretos de Supabase en este job: el agente no los necesita y no debe tenerlos (SEC-003)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: revisar PR
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Lee .agents/pr-compliance-reviewer.md y síguelo al pie de la letra.
+            Revisa el diff de este PR contra la rama base y publica UN comentario
+            con los hallazgos en el formato que ese documento define.
+          claude_args: "--max-turns 25"

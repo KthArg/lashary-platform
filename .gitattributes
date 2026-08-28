@@ -1,0 +1,8 @@
+# Normalización de fin de línea: los scripts y archivos generados se comparan byte a byte
+# en CI (EST-002); CRLF de Windows los rompería.
+* text=auto
+*.sh text eol=lf
+.githooks/* text eol=lf
+docs/STATUS.md text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf

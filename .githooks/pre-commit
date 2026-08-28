@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# pre-commit — Capa 2: los mismos checks de CI, en segundos y antes del push.
+# Instalación: scripts/install-hooks.sh (una vez por clon).
+# Saltarlo (git commit --no-verify) no salta CI: solo pospone el fallo.
+exec bash "$(git rev-parse --show-toplevel)/scripts/verify.sh" --staged

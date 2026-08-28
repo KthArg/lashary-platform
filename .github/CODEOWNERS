@@ -1,0 +1,13 @@
+# CODEOWNERS — LÉEME PRIMERO:
+# Este archivo marca a quién se NOTIFICA cuando algo cambia — NO quién puede editarlo.
+# El código es de propiedad colectiva: cualquiera puede y debe tocar cualquier feature
+# (docs/spec/INTEGRATION.md, "Dueños y propiedad colectiva"). El DRI de cada feature es
+# responsable de que su SPEC.md sea verdad y de que la feature avance — no un portero.
+#
+# Los DRIs por feature se asignan cuando el PO entregue la lista del equipo
+# (pregunta 14 del bootstrap, respondida "pendiente" el 2026-08-27). Hasta entonces
+# no hay entradas: agregar una línea por feature con este formato al recibir los nombres:
+#
+#   /src/features/scheduling/   @usuario-github
+#   /docs/spec/                 @usuario-del-po
+#   /supabase/migrations/       @dri-de-platform
