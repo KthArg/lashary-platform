@@ -2,10 +2,9 @@
 feature: audit
 dri: pendiente
 estado: no_iniciada
-actualizado: 2026-08-28
+actualizado: 2026-08-29
 historias:
-  - id: US-TEC-01
-    estado: no_iniciada
+  []
 flags: []
 deuda: []
 defectos: []
@@ -13,7 +12,7 @@ defectos: []
 
 # audit
 
-Bitacora de auditoria append-only; 7 historias de otras features la citan.
+Bitacora de auditoria append-only. Sin historia propia (ADR-0007): se construye con US-AGE-13 — primera historia que la exige — y la reusan US-AGE-06/12, US-CLI-04, US-MOR-02/04/05 y el rechazo de reservas de US-AGE-09.
 
 ## Qué hace hoy
 

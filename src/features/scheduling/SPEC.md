@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: no_iniciada
-actualizado: 2026-08-28
+actualizado: 2026-08-29
 historias:
   - id: US-AGE-01
     estado: no_iniciada
@@ -26,10 +26,6 @@ historias:
     estado: no_iniciada
   - id: US-AGE-12
     estado: no_iniciada
-  - id: US-AGE-14
-    estado: no_iniciada
-  - id: US-AGE-15
-    estado: no_iniciada
 flags: []
 deuda: []
 defectos: []
@@ -37,7 +33,7 @@ defectos: []
 
 # scheduling
 
-Agenda completa: disponibilidad, reserva con aprobacion manual (ADR-0003), constraint de no-solape (ADR-0002), recurso explicito (ADR-0005), cierre.
+Agenda completa. US-AGE-09 cubre el flujo de aprobacion manual (su texto original, ADR-0003) Y el constraint de no-solape (sus criterios, ADR-0002); recurso explicito (ADR-0005). Agendar en nombre de una clienta: clausula de US-MOR-02 (ADR-0007).
 
 ## Qué hace hoy
 

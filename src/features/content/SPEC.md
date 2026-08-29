@@ -2,10 +2,8 @@
 feature: content
 dri: pendiente
 estado: no_iniciada
-actualizado: 2026-08-28
+actualizado: 2026-08-29
 historias:
-  - id: US-CMS-01
-    estado: no_iniciada
   - id: US-BLOG-01
     estado: no_iniciada
   - id: US-BLOG-02
@@ -19,7 +17,7 @@ defectos: []
 
 # content
 
-Gateway del CMS externo (ADR-0001) y paginas publicas de blog. US-BLOG-01: cubierta por el CMS existente, pendiente verificar criterios (borradores).
+Gateway del CMS externo (ADR-0001) y paginas publicas de blog. El gateway se construye con US-LAND-01 y US-BLOG-02 (ADR-0007). US-BLOG-01: cubierta por el CMS existente, pendiente verificar criterios (borradores).
 
 ## Qué hace hoy
 

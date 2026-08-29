@@ -29,9 +29,11 @@ if [ "$LINES" -gt "$MAX_LINES" ]; then
   fail_rule INT-002 "el diff tiene $LINES líneas (máximo ~$MAX_LINES). Partir la tarea; lo que funciona se mergea tras un flag (INT-004)"
 fi
 
-N_FEATURES=$(changed_files | awk -F/ '$1=="src" && $2=="features" {print $3}' | sort -u | wc -l | tr -d ' ')
+# El tope de features cuenta cambios de CÓDIGO: una sincronización de solo-SPECs tras un
+# cambio de alcance toca legítimamente muchas features (INTEGRATION.md#int-002).
+N_FEATURES=$(changed_files | awk -F/ '$1=="src" && $2=="features" && $NF!="SPEC.md" {print $3}' | sort -u | wc -l | tr -d ' ')
 if [ "$N_FEATURES" -gt "$MAX_FEATURES" ]; then
-  fail_rule INT-002 "el diff toca $N_FEATURES features (máximo $MAX_FEATURES): $(changed_files | awk -F/ '$1=="src" && $2=="features" {print $3}' | sort -u | tr '\n' ' ')"
+  fail_rule INT-002 "el diff toca código de $N_FEATURES features (máximo $MAX_FEATURES): $(changed_files | awk -F/ '$1=="src" && $2=="features" && $NF!="SPEC.md" {print $3}' | sort -u | tr '\n' ' ')"
 fi
 
 # INT-001 — edad de la rama (solo en modo rango, donde hay base contra la cual medir)

@@ -2,10 +2,9 @@
 feature: account
 dri: pendiente
 estado: no_iniciada
-actualizado: 2026-08-28
+actualizado: 2026-08-29
 historias:
-  - id: US-CTA-01
-    estado: no_iniciada
+  []
 flags: []
 deuda: []
 defectos: []
@@ -13,7 +12,7 @@ defectos: []
 
 # account
 
-Vista de cuenta de la clienta: mis citas, saldo, indicaciones. Destraba criterios diferidos de CLI-06 y MOR-03.
+Vista de cuenta de la clienta (mis citas, saldo, indicaciones). Sin historia propia (ADR-0007): se materializa con US-MOR-03 (estado de cuenta) y US-CLI-06 (indicaciones visibles); esta feature es duena del codigo de la vista.
 
 ## Qué hace hoy
 

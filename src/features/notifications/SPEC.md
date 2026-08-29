@@ -2,7 +2,7 @@
 feature: notifications
 dri: pendiente
 estado: no_iniciada
-actualizado: 2026-08-28
+actualizado: 2026-08-29
 historias:
   - id: US-NOT-01
     estado: no_iniciada
@@ -20,8 +20,6 @@ historias:
     estado: no_iniciada
   - id: US-NOT-08
     estado: no_iniciada
-  - id: US-NOT-09
-    estado: no_iniciada
   - id: US-CLI-06
     estado: no_iniciada
 flags: []
@@ -31,7 +29,7 @@ defectos: []
 
 # notifications
 
-Canal unico (ADR-0006: Twilio WhatsApp + email fallback), panel, recordatorios, confirmaciones, cuidados post.
+Notificaciones. El canal unico (ADR-0006: Twilio WhatsApp + email fallback, registro de envios) se construye con US-NOT-03 (ADR-0007); el resto lo reusa via el puerto que US-NOT-08 exige.
 
 ## Qué hace hoy
 

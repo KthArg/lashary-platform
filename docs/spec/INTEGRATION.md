@@ -13,7 +13,7 @@ Seis personas integrando **a diario** contra `main`. Todo lo demás — tamaños
 **Cumplimiento.** L1 check de antigüedad de rama en CI (F4) + L5.
 
 ### INT-002 — Un PR pequeño por tarea
-**Regla.** Una tarea = un PR = máximo 3 días. Aproximadamente 400 líneas de diff y máximo 2 features tocadas. Rebasar antes de merge; squash merge.
+**Regla.** Una tarea = un PR = máximo 3 días. Aproximadamente 400 líneas de diff y máximo 2 features con cambios de **código**. Ediciones de solo-`SPEC.md` no cuentan para el tope de features (una sincronización de specs tras un cambio de alcance toca muchas legítimamente) — sí cuentan para el de líneas. Rebasar antes de merge; squash merge.
 **Racional.** Un PR gigante no se revisa: se aprueba por cansancio. Dos features máximo mantiene el radio de impacto legible.
 **Cumplimiento.** L1 tamaño de diff y conteo de features (F4).
 

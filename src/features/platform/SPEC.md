@@ -2,16 +2,9 @@
 feature: platform
 dri: pendiente
 estado: no_iniciada
-actualizado: 2026-08-28
+actualizado: 2026-08-29
 historias:
-  - id: US-TEC-02
-    estado: no_iniciada
-  - id: US-TEC-03
-    estado: no_iniciada
-  - id: US-TEC-04
-    estado: no_iniciada
-  - id: US-TEC-05
-    estado: no_iniciada
+  []
 flags: []
 deuda: []
 defectos: []
@@ -19,7 +12,7 @@ defectos: []
 
 # platform
 
-Fundacion: modelo de datos, CI, harness RLS, backups.
+Fundacion tecnica sin historias propias (ADR-0007): modelo de datos, seeds, CI y job de tests, harness RLS y backups se entregan dentro de las primeras historias de F1 que los exigen (US-AGE-08, US-AUTH-01/02). Los backups son tarea operativa documentada aqui.
 
 ## Qué hace hoy
 

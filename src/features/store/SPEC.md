@@ -2,7 +2,7 @@
 feature: store
 dri: pendiente
 estado: no_iniciada
-actualizado: 2026-08-28
+actualizado: 2026-08-29
 historias:
   - id: US-PROD-02
     estado: no_iniciada
@@ -12,8 +12,6 @@ historias:
     estado: no_iniciada
   - id: US-SHOP-02
     estado: no_iniciada
-  - id: US-SHOP-03
-    estado: no_iniciada
 flags: []
 deuda: []
 defectos: []
@@ -21,7 +19,7 @@ defectos: []
 
 # store
 
-Tienda (F4): productos, existencias, carrito, checkout con comprobante, pedidos.
+Tienda (F4): productos, carrito, checkout con comprobante. Stock y pedidos admin: criterios existentes de US-SHOP-02 y US-PROD-02/03 (ADR-0007).
 
 ## Qué hace hoy
 
