@@ -11,6 +11,8 @@ on:
 permissions:
   contents: read
   issues: write
+  id-token: write # OIDC: la action lo canjea por su token de app de GitHub
+  actions: read
 
 jobs:
   audit:
