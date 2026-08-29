@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual lashary-platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+</head>
+<body>
+  :root{
+    --bg:#FBF8F9; --surface:#F3EDF0; --surface2:#ECE3E8;
+    --ink:#292130; --ink-soft:#5C5262; --ink-faint:#8A7E90;
+    --accent:#8E4A64; --accent-ink:#FBF8F9; --accent-soft:#F0DFE6;
+    --line:#DFD4DA; --code-bg:#2A2230; --code-ink:#EFE7EC;
+    --ok:#3E7D5A; --warn:#A9702B; --crit:#B04640;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1D1820; --surface:#262029; --surface2:#2E2732;
+      --ink:#EAE3E8; --ink-soft:#B4A8BA; --ink-faint:#857A8C;
+      --accent:#CE93AB; --accent-ink:#241C28; --accent-soft:#3A2B34;
+      --line:#3A3140; --code-bg:#141017; --code-ink:#E5DCE2;
+      --ok:#7DBB99; --warn:#D0A05F; --crit:#D3837C;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1D1820; --surface:#262029; --surface2:#2E2732;
+    --ink:#EAE3E8; --ink-soft:#B4A8BA; --ink-faint:#857A8C;
+    --accent:#CE93AB; --accent-ink:#241C28; --accent-soft:#3A2B34;
+    --line:#3A3140; --code-bg:#141017; --code-ink:#E5DCE2;
+    --ok:#7DBB99; --warn:#D0A05F; --crit:#D3837C;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Instrument Sans",system-ui,sans-serif;
+    font-size:16.5px; line-height:1.62;
+  }
+  .wrap{display:grid; grid-template-columns:230px minmax(0,1fr); gap:48px; max-width:1080px; margin:0 auto; padding:0 28px}
+  @media (max-width:900px){ .wrap{display:block} nav.toc{display:none} }
+
+  nav.toc{position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto; padding:44px 0 32px; border-right:1px solid var(--line)}
+  nav.toc .brand{font-family:Fraunces,Georgia,serif; font-weight:600; font-size:1.05rem; margin-bottom:4px}
+  nav.toc .brand small{display:block; font-family:"JetBrains Mono",monospace; font-size:.68rem; color:var(--ink-faint); font-weight:400; margin-top:2px}
+  nav.toc ol{list-style:none; margin:22px 0 0; padding:0; font-size:.86rem}
+  nav.toc li{margin:0}
+  nav.toc a{display:block; padding:5px 14px 5px 0; color:var(--ink-soft); text-decoration:none; border-radius:6px}
+  nav.toc a:hover{color:var(--accent)}
+  nav.toc a:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  nav.toc .n{font-family:"JetBrains Mono",monospace; font-size:.7rem; color:var(--ink-faint); margin-right:7px}
+
+  main{padding:44px 0 90px; max-width:72ch}
+  header.hero{margin-bottom:46px; padding-bottom:30px; border-bottom:2px solid var(--accent)}
+  .eyebrow{font-family:"JetBrains Mono",monospace; font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin:0 0 10px}
+  h1{font-family:Fraunces,Georgia,serif; font-weight:600; font-size:2.5rem; line-height:1.12; margin:0 0 14px; text-wrap:balance}
+  .lede{font-size:1.06rem; color:var(--ink-soft); margin:0; max-width:58ch}
+
+  h2{font-family:Fraunces,Georgia,serif; font-weight:600; font-size:1.55rem; margin:60px 0 6px; text-wrap:balance; scroll-margin-top:24px}
+  h2 .n{font-family:"JetBrains Mono",monospace; font-size:.8rem; color:var(--accent); vertical-align:.35em; margin-right:8px}
+  h3{font-size:1.02rem; font-weight:600; margin:30px 0 8px}
+  p{margin:12px 0}
+  .sub{color:var(--ink-soft); font-size:.94rem; margin-top:0}
+  a{color:var(--accent)}
+  a:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  strong{font-weight:600}
+
+  code, kbd{font-family:"JetBrains Mono",monospace; font-size:.86em; background:var(--surface2); padding:.13em .4em; border-radius:5px}
+  pre{background:var(--code-bg); color:var(--code-ink); border-radius:10px; padding:16px 18px; overflow-x:auto; font-size:.84rem; line-height:1.6; margin:14px 0}
+  pre code{background:none; padding:0; color:inherit; font-size:inherit}
+  pre .c{color:#9A8CA3}
+
+  .chip{display:inline-block; font-family:"JetBrains Mono",monospace; font-size:.71rem; font-weight:600; background:var(--accent-soft); color:var(--accent); border-radius:99px; padding:2px 9px; white-space:nowrap}
+  .chip.ok{background:transparent; color:var(--ok); border:1px solid var(--ok)}
+  .chip.warn{background:transparent; color:var(--warn); border:1px solid var(--warn)}
+  .chip.crit{background:transparent; color:var(--crit); border:1px solid var(--crit)}
+
+  table{border-collapse:collapse; width:100%; font-size:.88rem; margin:14px 0}
+  .tblwrap{overflow-x:auto}
+  th{text-align:left; font-size:.72rem; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-faint); font-weight:600; padding:8px 12px 8px 0; border-bottom:1px solid var(--line)}
+  td{padding:9px 12px 9px 0; border-bottom:1px solid var(--line); vertical-align:top}
+  td code{white-space:nowrap}
+
+  ol.steps{counter-reset:s; list-style:none; margin:18px 0; padding:0}
+  ol.steps>li{counter-increment:s; position:relative; padding:0 0 22px 52px}
+  ol.steps>li::before{
+    content:counter(s); position:absolute; left:0; top:0;
+    width:32px; height:32px; border-radius:50%;
+    background:var(--accent); color:var(--accent-ink);
+    font-family:"JetBrains Mono",monospace; font-weight:600; font-size:.85rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+  ol.steps>li::after{content:""; position:absolute; left:15.5px; top:36px; bottom:2px; width:1px; background:var(--line)}
+  ol.steps>li:last-child::after{display:none}
+  ol.steps h3{margin:2px 0 6px}
+  ol.steps p{margin:6px 0}
+
+  .callout{border-left:3px solid var(--accent); background:var(--surface); border-radius:0 10px 10px 0; padding:13px 18px; margin:18px 0; font-size:.93rem}
+  .callout.warn{border-left-color:var(--warn)}
+  .callout.crit{border-left-color:var(--crit)}
+  .callout p{margin:4px 0}
+  .callout .t{font-weight:600; font-size:.8rem; letter-spacing:.07em; text-transform:uppercase}
+  .callout.warn .t{color:var(--warn)} .callout.crit .t{color:var(--crit)} .callout:not(.warn):not(.crit) .t{color:var(--accent)}
+
+  ul{padding-left:22px} li{margin:5px 0}
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:10px 28px; margin:14px 0}
+  @media (max-width:640px){ .cols{grid-template-columns:1fr} }
+  .kv{background:var(--surface); border-radius:10px; padding:13px 16px; font-size:.9rem}
+  .kv b{display:block; font-size:.74rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:4px}
+
+  footer{margin-top:70px; padding-top:20px; border-top:1px solid var(--line); font-size:.83rem; color:var(--ink-faint)}
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Contenido">
+  <div style="padding-top:2px">
+    <div class="brand">Manual de operación<small>lashary-platform</small></div>
+  </div>
+  <ol>
+    <li><a href="#que-es"><span class="n">01</span>Qué es esto</a></li>
+    <li><a href="#instalacion"><span class="n">02</span>Instalación</a></li>
+    <li><a href="#como-funciona"><span class="n">03</span>Cómo funciona el repo</a></li>
+    <li><a href="#empezar"><span class="n">04</span>Empezar una tarea</a></li>
+    <li><a href="#cerrar"><span class="n">05</span>Cerrar una tarea</a></li>
+    <li><a href="#comandos"><span class="n">06</span>Todos los comandos</a></li>
+    <li><a href="#reglas"><span class="n">07</span>Reglas que más muerden</a></li>
+    <li><a href="#agentes"><span class="n">08</span>CI y agentes</a></li>
+    <li><a href="#faq"><span class="n">09</span>Problemas frecuentes</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="hero">
+  <p class="eyebrow">LASHARY Beauty Studio · equipo de 6 · sprints de 2 semanas</p>
+  <h1>Manual de operación del repositorio</h1>
+  <p class="lede">Todo lo que necesitás para trabajar en <code>lashary-platform</code>: cómo instalarlo, cómo empezar y cerrar una tarea, qué comandos existen y por qué el repositorio se defiende solo.</p>
+</header>
+
+<h2 id="que-es"><span class="n">01</span>Qué es esto</h2>
+<p>Una plataforma de gestión de clientas y agendamiento para <strong>LASHARY Beauty Studio</strong> — un único estudio de belleza (no SaaS, no multi-sede). La administradora gestiona catálogo, agenda, clientas, pagos y morosidad; la clienta reserva, reagenda y ve su cuenta; el público ve la landing y el blog.</p>
+<div class="cols">
+  <div class="kv"><b>Stack</b>Next.js (App Router) · Supabase (PostgreSQL, Auth, RLS, Storage) · Tailwind + DaisyUI</div>
+  <div class="kv"><b>Contenido</b>CMS propio externo, repo aparte, consumido por API (ADR-0001)</div>
+  <div class="kv"><b>Deploy</b>Vercel · CI en GitHub Actions</div>
+  <div class="kv"><b>Alcance</b>51 historias del backlog de Jira — fijas; no se crean historias nuevas (ADR-0007)</div>
+</div>
+
+<h3>Mapa del repositorio</h3>
+<pre><code>lashary-platform/
+├── README.md                ← punto de entrada; enruta a todo
+├── docs/
+│   ├── STATUS.md            ← estado del proyecto. GENERADO — jamás editarlo a mano
+│   ├── ROADMAP.md           ← fases F0–F4
+│   ├── backlog/…csv         ← el export de Jira: los criterios de aceptación viven aquí
+│   ├── spec/rules.yaml      ← las 50 reglas con ID (ARCH-*, DOM-*, INT-*, EST-*, SEC-*, PERF-*, UI-*)
+│   ├── spec/*.md            ← el texto y racional de cada familia de reglas
+│   ├── process/WORK_LOOP.md ← el bucle de trabajo (sección 04 y 05 de este manual)
+│   ├── process/DEPENDENCIES.md ← qué historia depende de cuál
+│   └── adr/                 ← decisiones de arquitectura (ADR-0001…0007)
+├── src/features/&lt;nombre&gt;/   ← una carpeta por feature, vertical y completa
+│   └── SPEC.md              ← la verdad de esa feature: estado, historias, deuda, defectos
+├── scripts/verify.sh        ← EL comando de verificación (idéntico a CI)
+└── .claude/                 ← skills y comandos para trabajar con Claude Code</code></pre>
+
+<h2 id="instalacion"><span class="n">02</span>Instalación</h2>
+<p class="sub">Una vez por máquina. En Windows, usá <strong>Git Bash</strong> para los scripts (viene con Git).</p>
+<ol class="steps">
+  <li>
+    <h3>Requisitos</h3>
+    <p><a href="https://git-scm.com">Git</a> (con Git Bash en Windows) y <a href="https://nodejs.org">Node.js LTS</a>. Opcionales pero recomendados: <a href="https://cli.github.com">GitHub CLI</a> (<code>gh</code>) y <a href="https://claude.com/claude-code">Claude Code</a> — los comandos <code>/algo</code> de este manual corren dentro de Claude Code.</p>
+  </li>
+  <li>
+    <h3>Clonar</h3>
+    <pre><code>git clone https://github.com/KthArg/lashary-platform
+cd lashary-platform</code></pre>
+  </li>
+  <li>
+    <h3>Instalar los hooks <span class="chip">obligatorio</span></h3>
+    <pre><code>bash scripts/install-hooks.sh</code></pre>
+    <p>Activa el pre-commit que corre las mismas verificaciones que CI, en segundos y antes del push. Sin esto, tus errores los descubre CI diez minutos más tarde.</p>
+  </li>
+  <li>
+    <h3>Comprobar que todo funciona</h3>
+    <pre><code>bash scripts/verify.sh</code></pre>
+    <p>Debe terminar en <code>✔ verify: 10 checks, todos en verde</code>. Si algo falla en un clon limpio, avisá al equipo — es un problema del repo, no tuyo.</p>
+  </li>
+  <li>
+    <h3>Orientarte</h3>
+    <p>Leé <code>README.md</code> y después <code>docs/STATUS.md</code>. Ese orden. STATUS.md es siempre lo primero que se lee al retomar trabajo.</p>
+  </li>
+</ol>
+
+<h2 id="como-funciona"><span class="n">03</span>Cómo funciona el repo</h2>
+
+<h3>Las reglas tienen ID, y el repo las hace cumplir</h3>
+<p>Cada regla del proyecto vive en <code>docs/spec/rules.yaml</code> con un ID permanente — <span class="chip">ARCH-003</span> <span class="chip">DOM-001</span> <span class="chip">EST-002</span> — su enunciado, su <em>porqué</em>, y su capa de cumplimiento. Cuando CI o el pre-commit te bloquean, el mensaje cita la regla exacta, su racional y el documento donde vive. No es burocracia: es que "rompiste una regla" sea un hecho verificable y no una opinión en un review.</p>
+<div class="tblwrap"><table>
+  <tr><th>Capa</th><th>Qué es</th><th>¿Te puede bloquear?</th></tr>
+  <tr><td><strong>L1 — CI</strong></td><td>Scripts deterministas (<code>scripts/rules/</code>). La única compuerta real</td><td>Sí — build rojo</td></tr>
+  <tr><td><strong>L2 — local</strong></td><td>Los mismos scripts en tu pre-commit</td><td>Sí — commit bloqueado</td></tr>
+  <tr><td><strong>L3 — estructura</strong></td><td>Lo imposible de romper: exclusion constraint, RLS, tipo Money, ESLint</td><td>No compila / la base lo rechaza</td></tr>
+  <tr><td><strong>L4 — IA</strong></td><td>Skills y agente revisor. Detección temprana, <em>no</em> un control</td><td>No — solo avisa</td></tr>
+  <tr><td><strong>L5 — humanos</strong></td><td>2 aprobaciones por PR, checklist del template</td><td>Sí — sin aprobar no hay merge</td></tr>
+</table></div>
+
+<h3>El estado vive en el repo, y es generado</h3>
+<p>Cada feature tiene un <code>SPEC.md</code> cuyo encabezado (front-matter) dice, con vocabulario cerrado, en qué está cada historia: <code>no_iniciada</code>, <code>en_progreso</code>, <code>bloqueada</code>, <code>en_revision</code> o <code>terminada</code>. Nada más — ni porcentajes ni "casi listo". De ahí, <code>scripts/status-gen.sh</code> genera <code>docs/STATUS.md</code>. <strong>CI compara el STATUS commiteado contra el regenerado: si difieren, build rojo</strong> (<span class="chip">EST-002</span>). Mismo principio que un lockfile — un archivo de estado escrito a mano miente; uno derivado no puede.</p>
+<ul>
+  <li><code>terminada</code> exige la evidencia: el PR que la cerró (<span class="chip">EST-005</span>).</li>
+  <li><code>bloqueada</code> exige el ID que la bloquea (<span class="chip">EST-004</span>).</li>
+  <li><code>en_progreso</code> exige el faltante en una frase concreta: <em>"la prueba de concurrencia no existe"</em>, no <em>"falta pulir"</em>.</li>
+</ul>
+
+<h3>Features verticales, fronteras duras</h3>
+<p>Cada feature (<code>scheduling</code>, <code>payments</code>, <code>clients</code>…) contiene todo lo suyo: dominio, casos de uso, UI y sus tablas (con su prefijo: <code>scheduling_appointments</code>). Entre features solo se importa el <code>index.ts</code> público (<span class="chip">ARCH-003</span>); la capa <code>domain/</code> no importa de ninguna otra feature (<span class="chip">ARCH-004</span>). Así dos personas trabajan features distintas sin pisarse.</p>
+
+<h3>El backlog manda, y algunas historias pesan doble</h3>
+<p>Las 51 historias de Jira son el alcance. Por decisión del PO (ADR-0007) no se crean historias nuevas: la infraestructura (bitácora, ledger de pagos, canal de WhatsApp/email, gateway del CMS…) se construye <em>dentro</em> de la primera historia que la exige. La tabla de "historias portadoras" está en <code>docs/process/DEPENDENCIES.md</code> — <strong>consultala al estimar</strong>: US-AGE-13, US-AGE-12, US-NOT-03, US-MOR-03 y US-AGE-09 cargan más trabajo del que sugieren sus puntos.</p>
+
+<h2 id="empezar"><span class="n">04</span>Empezar una tarea</h2>
+<p class="sub">Con Claude Code (recomendado) o a mano — el bucle es el mismo y corre <em>siempre</em>, lo pidas o no.</p>
+<ol class="steps">
+  <li>
+    <h3>Abrí un chat nuevo en la carpeta del repo</h3>
+    <pre><code>cd lashary-platform
+claude</code></pre>
+    <p>Las skills del proyecto se cargan solas. Al iniciar, Claude lee STATUS.md, el SPEC de la feature y las reglas — está obligado a declararte qué historia, qué reglas aplican y qué dice el estado antes de tocar nada.</p>
+  </li>
+  <li>
+    <h3>Elegí qué trabajar</h3>
+    <pre><code>/empezables</code></pre>
+    <p>Lista qué historias pueden arrancar <em>ya</em> (todas sus dependencias <code>terminada</code>) y cuáles están bloqueadas y por quién. Una historia con dependencias incompletas <strong>no se empieza</strong> (<span class="chip">INT-007</span>) — se dice y se elige otra.</p>
+  </li>
+  <li>
+    <h3>Abrí el bucle</h3>
+    <pre><code>/trabajar US-AGE-08</code></pre>
+    <p>Orienta, verifica dependencias, te muestra los criterios de aceptación del backlog y las reglas aplicables. Si un criterio no es verificable objetivamente, se señala <em>antes</em> de implementar.</p>
+  </li>
+  <li>
+    <h3>Ramificá y trabajá en incrementos chicos</h3>
+    <pre><code>git checkout -b feat/age-08-catalog</code></pre>
+    <p>Desde <code>main</code>, siempre. La rama vive <strong>máximo 3 días</strong> (<span class="chip">INT-001</span>). Si la tarea es más grande, se parte: lo que funciona se mergea apagado tras un feature flag con dueño y fecha de retiro (<span class="chip">INT-004</span>).</p>
+  </li>
+</ol>
+<div class="callout">
+  <p class="t">Trabajás sin Claude</p>
+  <p>El bucle manual es el mismo: leé <code>docs/STATUS.md</code> → el <code>SPEC.md</code> de tu feature → los criterios en <code>docs/backlog/</code> → verificá dependencias en <code>DEPENDENCIES.md</code> → implementá. Está escrito completo en <code>docs/process/WORK_LOOP.md</code>.</p>
+</div>
+
+<h2 id="cerrar"><span class="n">05</span>Cerrar una tarea</h2>
+<ol class="steps">
+  <li>
+    <h3>Verificá — de verdad</h3>
+    <pre><code>/verificar   <span class="c"># o: bash scripts/verify.sh + las pruebas</span></code></pre>
+    <p>Corre los checks y las pruebas, y mapea <strong>cada criterio de aceptación a la prueba que lo demuestra</strong>. Criterio sin prueba = no cumplido, sin discusión. La regla de oro del proyecto: <em>nunca se dice "esto debería funcionar" — o se verificó, o está <code>en_progreso</code> con el faltante nombrado.</em></p>
+  </li>
+  <li>
+    <h3>Actualizá el estado</h3>
+    <pre><code>/regenerar-estado   <span class="c"># edita el SPEC.md y corre scripts/status-gen.sh</span></code></pre>
+    <p>El front-matter de tu feature refleja lo real: historia a <code>en_revision</code>, deuda tomada con su costo, exactamente dónde se detiene lo incompleto. Después se regenera STATUS.md — <strong>jamás editándolo a mano</strong>.</p>
+  </li>
+  <li>
+    <h3>Pasá la compuerta</h3>
+    <pre><code>/listo-pr</code></pre>
+    <p>Devuelve <strong>PASS</strong> o la lista exacta de bloqueos: diff ≤ ~400 líneas y ≤ 2 features con código (<span class="chip">INT-002</span>), máximo 1 migración (<span class="chip">INT-008</span>), SPEC actualizado, STATUS fresco, fronteras limpias.</p>
+  </li>
+  <li>
+    <h3>Abrí el PR</h3>
+    <pre><code>git push -u origin feat/age-08-catalog
+gh pr create</code></pre>
+    <p>El template del PR pide: la salida de <code>verify.sh</code> <em>pegada</em> (no descrita), la tabla criterio → prueba, y el checklist con IDs de regla. Commits y nombres de rama en inglés; el PR se mergea con <strong>squash</strong>.</p>
+  </li>
+  <li>
+    <h3>Checks + revisión</h3>
+    <p>CI corre las reglas; el agente <strong>pr-compliance</strong> comenta hallazgos con sus IDs (es consejo, no compuerta). Necesitás <strong>2 aprobaciones, al menos 1 de alguien que no trabaja en esa feature</strong> (<span class="chip">INT-005</span>). Rebase sobre main antes del merge. El estilo no se discute en review jamás: si el linter debió atraparlo, el fix es un PR a la config del linter (<span class="chip">INT-006</span>).</p>
+  </li>
+  <li>
+    <h3>Merge y cierre</h3>
+    <p>Squash merge (la rama se borra sola). La historia pasa a <code>terminada</code> <strong>con el número de PR como evidencia</strong> en el SPEC — y STATUS.md regenerado en ese mismo PR o el siguiente.</p>
+  </li>
+</ol>
+
+<h2 id="comandos"><span class="n">06</span>Todos los comandos</h2>
+<p class="sub">Los <code>/comandos</code> corren dentro de Claude Code en la carpeta del repo. Los scripts corren en Git Bash.</p>
+
+<h3>Consultar (solo lectura — no tocan nada)</h3>
+<div class="tblwrap"><table>
+  <tr><th>Comando</th><th>Qué hace</th></tr>
+  <tr><td><code>/estado</code></td><td>Estado global: qué está hecho, en progreso, bloqueado y por qué, deuda y flags vivos</td></tr>
+  <tr><td><code>/feature &lt;nombre&gt;</code></td><td>Todo lo necesario para trabajar una feature: spec, contrato, dependencias, historias con criterios</td></tr>
+  <tr><td><code>/historia &lt;ID&gt;</code></td><td>Una historia: criterios, dependencias, estado, feature dueña</td></tr>
+  <tr><td><code>/regla &lt;ID&gt;</code></td><td>Una regla: enunciado, racional, quién la hace cumplir</td></tr>
+  <tr><td><code>/empezables</code></td><td>Qué se puede empezar ya, y qué está bloqueado por quién</td></tr>
+</table></div>
+
+<h3>Trabajar</h3>
+<div class="tblwrap"><table>
+  <tr><th>Comando</th><th>Qué hace</th></tr>
+  <tr><td><code>/trabajar &lt;ID&gt;</code></td><td>Abre el bucle: orienta, nombra reglas aplicables, verifica dependencias — y se detiene si no están</td></tr>
+  <tr><td><code>/verificar</code></td><td>Corre verify.sh + pruebas y mapea cada criterio a su prueba</td></tr>
+  <tr><td><code>/listo-pr</code></td><td>La compuerta pre-PR: PASS o la lista exacta de lo que falta</td></tr>
+</table></div>
+
+<h3>Specs y estado</h3>
+<div class="tblwrap"><table>
+  <tr><th>Comando</th><th>Qué hace</th></tr>
+  <tr><td><code>/nueva-feature &lt;nombre&gt;</code></td><td>Crea una feature desde la plantilla, bien cableada</td></tr>
+  <tr><td><code>/nuevo-adr</code></td><td>Redacta una decisión de arquitectura desde la plantilla</td></tr>
+  <tr><td><code>/regenerar-estado</code></td><td>Regenera STATUS.md y muestra qué cambió</td></tr>
+  <tr><td><code>/deriva [feature]</code></td><td>Detecta dónde el spec miente respecto del código real</td></tr>
+</table></div>
+
+<h3>Seguridad</h3>
+<div class="tblwrap"><table>
+  <tr><th>Comando</th><th>Qué hace</th></tr>
+  <tr><td><code>/revisar-seguridad [ruta]</code></td><td>Checklist de seguridad sobre el diff o una ruta, con severidades</td></tr>
+  <tr><td><code>/revisar-rls &lt;tabla&gt;</code></td><td>Revisa políticas RLS y exige el test de aislamiento entre clientas</td></tr>
+  <tr><td><code>/auditar-herramienta &lt;n&gt;</code></td><td>Audita una herramienta externa antes de adoptarla (allowlist + hash)</td></tr>
+  <tr><td><code>/modelo-amenazas &lt;feat&gt;</code></td><td>Amenazas de negocio de una feature y qué regla o test cubre cada una</td></tr>
+</table></div>
+
+<h3>Rendimiento e interfaz</h3>
+<div class="tblwrap"><table>
+  <tr><th>Comando</th><th>Qué hace</th></tr>
+  <tr><td><code>/revisar-consultas &lt;feat&gt;</code></td><td>Caza N+1, queries en loops, índices faltantes, listados sin paginar</td></tr>
+  <tr><td><code>/presupuesto</code></td><td>El sitio público contra su presupuesto de peso y velocidad</td></tr>
+  <tr><td><code>/medir</code></td><td>Cómo medir ANTES de optimizar — sin medición no se optimiza</td></tr>
+  <tr><td><code>/revisar-ui &lt;ruta&gt;</code></td><td>Componente contra el design system: tokens, DaisyUI, responsive, texto externalizado</td></tr>
+  <tr><td><code>/revisar-accesibilidad &lt;ruta&gt;</code></td><td>Contraste, foco, teclado, labels, alt</td></tr>
+  <tr><td><code>/estados &lt;comp&gt;</code></td><td>Confirma que existen los estados vacío / carga / error</td></tr>
+  <tr><td><code>/revisar-tema</code></td><td>El tema como sistema: paleta, contraste AA, escalas. El único lugar donde se discute estética</td></tr>
+</table></div>
+
+<h3>Scripts (Git Bash)</h3>
+<div class="tblwrap"><table>
+  <tr><th>Script</th><th>Qué hace</th></tr>
+  <tr><td><code>bash scripts/verify.sh</code></td><td>Los 10 checks de reglas — idéntico a CI. Acepta <code>--base origin/main</code> o <code>--staged</code></td></tr>
+  <tr><td><code>bash scripts/status-gen.sh</code></td><td>Regenera docs/STATUS.md desde los SPECs + el backlog</td></tr>
+  <tr><td><code>bash scripts/install-hooks.sh</code></td><td>Instala el pre-commit (una vez por clon)</td></tr>
+</table></div>
+
+<h2 id="reglas"><span class="n">07</span>Las reglas que más muerden</h2>
+<p class="sub">Las 50 completas están en <code>rules.yaml</code>. Estas son las que te van a frenar la primera semana:</p>
+<div class="tblwrap"><table>
+  <tr><th>Regla</th><th>En una frase</th><th>Por qué existe</th></tr>
+  <tr><td><span class="chip">EST-002</span></td><td>STATUS.md jamás se edita a mano — se regenera</td><td>Un archivo de estado a mano miente con confianza</td></tr>
+  <tr><td><span class="chip">EST-003</span></td><td>Tocás código de una feature → tocás su SPEC.md</td><td>Un spec que no siguió al código es documentación que miente</td></tr>
+  <tr><td><span class="chip">INT-002</span></td><td>PR ≤ ~400 líneas, ≤ 2 features con código</td><td>Un PR gigante no se revisa: se aprueba por cansancio</td></tr>
+  <tr><td><span class="chip">DOM-001</span></td><td>Dinero = entero de colones en <code>Money</code>. Floats prohibidos</td><td>Los floats pierden centavos en silencio</td></tr>
+  <tr><td><span class="chip">DOM-004</span></td><td><code>new Date()</code> prohibido en dominio — el reloj se inyecta</td><td>Sin reloj inyectable, la agenda es intesteable</td></tr>
+  <tr><td><span class="chip">DOM-010</span></td><td>El no-choque de citas lo garantiza la base, no tu código</td><td>La carrera es de milisegundos y solo aparece en hora pico</td></tr>
+  <tr><td><span class="chip">ARCH-003</span></td><td>Entre features solo se importa el <code>index.ts</code> público</td><td>Sin frontera, todo acoplamiento es legal</td></tr>
+  <tr><td><span class="chip">SEC-002</span></td><td>Tabla con RLS sin test de aislamiento = no se mergea</td><td>Una política sin test es una esperanza, no una frontera</td></tr>
+  <tr><td><span class="chip">SEC-004</span></td><td>Ningún secreto en el código ni en el diff, nunca</td><td>Un secreto commiteado está comprometido aunque se borre</td></tr>
+  <tr><td><span class="chip">INT-008</span></td><td>1 migración por PR, solo hacia adelante</td><td>Una migración destructiva rompe el deploy a mitad</td></tr>
+</table></div>
+<div class="callout warn">
+  <p class="t">¿Necesitás romper una regla?</p>
+  <p>Hay camino legítimo, y es más barato que el silencioso: una excepción <strong>de arquitectura</strong> se documenta en un ADR (<code>/nuevo-adr</code>); una <strong>de proceso</strong>, en un PR etiquetado <code>excepcion-proceso</code> con justificación escrita. Detalle en <code>docs/spec/INTEGRATION.md</code>.</p>
+</div>
+
+<h2 id="agentes"><span class="n">08</span>Lo que corre solo: CI y agentes</h2>
+<div class="tblwrap"><table>
+  <tr><th>Qué</th><th>Cuándo</th><th>Qué hace</th><th>Poder</th></tr>
+  <tr><td><strong>ci</strong> (checks <code>reglas</code> + <code>guardia</code>)</td><td>Cada push y PR</td><td>Los mismos 10 checks de <code>verify.sh</code></td><td><span class="chip crit">Bloquea el merge</span></td></tr>
+  <tr><td><strong>pr-compliance</strong></td><td>Cada PR, solo</td><td>Un agente Claude revisa el diff y comenta hallazgos citando reglas por ID</td><td><span class="chip warn">Solo aconseja</span></td></tr>
+  <tr><td><strong>deps-audit</strong></td><td>Lunes, semanal</td><td>Audita dependencias: vulnerabilidades, cambios de maintainer, señales de supply chain → abre un issue</td><td><span class="chip warn">Solo reporta</span></td></tr>
+  <tr><td><strong>@claude</strong> (claude.yml)</td><td>Cuando lo mencionás en un PR o issue</td><td>Asistente interactivo dentro de GitHub</td><td><span class="chip ok">A pedido</span></td></tr>
+</table></div>
+<p>Límites fijos de todos los agentes: <strong>jamás</strong> aprueban, mergean, pushean a <code>main</code>, corren migraciones fuera de local ni tocan credenciales de producción. Su palabra es consejo; la compuerta son CI y los 2 revisores humanos. Y el código generado por IA se revisa completo, sin descuento de confianza — el autor del PR es dueño de cada línea, la haya tecleado quien sea.</p>
+
+<h2 id="faq"><span class="n">09</span>Problemas frecuentes</h2>
+<h3>El pre-commit me bloqueó el commit</h3>
+<p>Leé el mensaje: cita la regla, el porqué y el archivo exacto. Arreglá eso y volvé a commitear. Está diseñado para frenarte <em>a vos</em> antes de que CI se lo cuente a todo el equipo — le pasó hasta a la IA que construyó el repo.</p>
+<h3>CI dice que STATUS.md está desactualizado</h3>
+<p><code>bash scripts/status-gen.sh</code>, commiteá el resultado. Pasa cuando editaste un SPEC y olvidaste regenerar.</p>
+<h3>Mi historia depende de otra que no está terminada</h3>
+<p>No se construye sobre cimientos ausentes. Decilo en el canal del equipo, elegí otra con <code>/empezables</code>. Si solo <em>un criterio</em> depende de algo futuro, mirá "criterios diferidos" en <code>DEPENDENCIES.md</code>: se implementa tras un flag y la historia queda <code>en_progreso</code> con el faltante nombrado.</p>
+<h3>El PR se me pasó de 400 líneas</h3>
+<p>Partí la tarea. Lo que ya funciona se mergea apagado tras un feature flag (con dueño y fecha de retiro en el SPEC). Un flag que venció y sigue vivo lo caza CI.</p>
+<h3>¿Dónde están los criterios de aceptación de mi historia?</h3>
+<p>En el CSV de <code>docs/backlog/</code> — o directo con <code>/historia US-XXX-NN</code>. El backlog de Jira es la fuente; el repo guarda una copia versionada.</p>
+<h3>Quiero agregar una librería o herramienta</h3>
+<p>Dependencias normales: PR normal (Dependabot vigila vulnerabilidades). Herramientas con acceso al repo o al entorno (actions, MCP, CLIs): primero <code>/auditar-herramienta</code>, allowlist con hash, versión pinneada. Empezá por <code>docs/tooling-candidates.md</code> — ya hay una lista evaluada con veredictos.</p>
+
+<footer>
+  <p>lashary-platform · manual del equipo · generado del estado real del repo al 2026-08-29. Si este documento contradice a <code>docs/</code>, gana <code>docs/</code> — y avisá para actualizar esto.</p>
+</footer>
+</main>
+</div>
+</body>
+</html>
