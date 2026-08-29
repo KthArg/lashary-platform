@@ -31,8 +31,10 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          use_sticky_comment: true # la action publica/actualiza UN comentario con el resultado
           prompt: |
             Lee .agents/pr-compliance-reviewer.md y síguelo al pie de la letra.
-            Revisa el diff de este PR contra la rama base y publica UN comentario
-            con los hallazgos en el formato que ese documento define.
+            Revisa el diff de este PR contra la rama base. Tu respuesta final ES el
+            comentario de revisión: escríbela completa en el formato que ese
+            documento define.
           claude_args: "--max-turns 25"
