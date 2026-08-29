@@ -39,7 +39,7 @@ jobs:
           CODE=$(find src -path 'src/features/_template' -prune -o \( -name '*.ts' -o -name '*.tsx' \) -print 2>/dev/null | head -n 1)
           if [ -n "$CODE" ] && ! grep -q "job-tests-reales" .github/workflows/ci.yml; then
             echo "✖ Hay código en src/ ($CODE) pero este workflow no tiene job de tests (marcador: job-tests-reales)."
-            echo "  Agregar el job de tests es parte de la primera historia que cree código (US-TEC-03)."
+            echo "  Agregar el job de tests es parte de la primera historia que cree código (ver ADR-0007: la porta la primera historia con código)."
             exit 1
           fi
           echo "OK"

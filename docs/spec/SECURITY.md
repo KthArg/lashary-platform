@@ -15,7 +15,7 @@ La defensa real vive donde no se puede olvidar: **RLS en la base** para autoriza
 ### SEC-002 — Tests de aislamiento obligatorios
 **Regla.** Toda tabla con RLS tiene un test automatizado en CI que, con un **token válido de otra clienta**, intenta leer y escribir datos ajenos y verifica que **cada** intento falla. Una política sin su test no se mergea.
 **Racional.** Una política RLS sin test es una esperanza. El test es lo único que detecta la política que un refactor dejó abierta.
-**Cumplimiento.** L1 harness de aislamiento (F4, historia US-TEC-04).
+**Cumplimiento.** L1 harness de aislamiento — se construye con la primera tabla con RLS (ADR-0007) y aplica a toda tabla desde entonces.
 
 ### SEC-003 — Service-role key inalcanzable
 **Regla.** La service-role key de Supabase: jamás en código cliente, jamás en el repo, jamás en logs, jamás al alcance de un agente de IA. Solo en configuración server-only del entorno de deploy.
@@ -33,7 +33,7 @@ La defensa real vive donde no se puede olvidar: **RLS en la base** para autoriza
 **Cumplimiento.** L4 `/revisar-seguridad` + L5 review.
 
 ### SEC-006 — El expediente es dato sensible
-**Regla.** El expediente de la clienta (alergias, sensibilidades, tratamientos previos, estudio inicial — US-CLI-04) es el dato más sensible del sistema: acceso solo para la administradora, **cada acceso queda en la bitácora** (US-TEC-01), y sus imágenes viven en Storage privado con URLs firmadas de corta vida — nunca públicas.
+**Regla.** El expediente de la clienta (alergias, sensibilidades, tratamientos previos, estudio inicial — US-CLI-04) es el dato más sensible del sistema: acceso solo para la administradora, **cada acceso queda en la bitácora** (portada por US-AGE-13, ADR-0007), y sus imágenes viven en Storage privado con URLs firmadas de corta vida — nunca públicas.
 **Racional.** Su fuga daña a una persona real. El cumplimiento legal formal está fuera de alcance por decisión del cliente, pero estos mínimos técnicos son ingeniería correcta independientemente.
 **Cumplimiento.** L3 RLS + Storage policies + L5 review; acceso auditado verificado en review de la feature.
 

@@ -32,4 +32,4 @@ Descripciones/imágenes de técnicas en la landing (US-LAND-02) **componen** con
 
 URL base y auth del API (token de solo lectura server-side; jamás en cliente — pariente de SEC-004) · dónde persiste datos el CMS · soporte actual de: borradores, campo de consentimiento en galería, SEO, extracto · webhook vs TTL · formato exacto de respuesta por tipo.
 
-Al confirmarse, este documento pasa a **vigente** con el esquema real, y US-CMS-01 implementa el gateway en `src/features/content/` contra él.
+Al confirmarse, este documento pasa a **vigente** con el esquema real, y el gateway se implementa en `src/features/content/` contra él, dentro de US-LAND-01/US-BLOG-02 (ADR-0007).

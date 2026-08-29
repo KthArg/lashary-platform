@@ -25,7 +25,7 @@ alter table scheduling_appointments
 
 - `occupied_range` es `tstzrange` (UTC, DOM-003) e incluye preparación y limpieza.
 - El `where` limita a estados activos: una cita `cancelled`, `rejected`, `completed` o `no_show` libera el espacio sin borrarse.
-- Los nombres exactos de estados los fija US-TEC-02 (modelo de datos); este ADR fija el principio: **pendiente de aprobación ocupa**.
+- Los nombres exactos de estados los fija la historia portadora del modelo de datos (ADR-0007); este ADR fija el principio: **pendiente de aprobación ocupa**.
 - El check de disponibilidad en la aplicación se mantiene — como mensaje amable (SEC-001, mismo patrón). Si el constraint dispara en producción, se emite **alerta**: los datos se protegieron, pero la validación previa tiene un bug.
 - Reagendar es una sola transacción que actualiza el rango: el constraint valida el nuevo espacio y la atomicidad garantiza DOM-011 (nunca cero citas).
 - **US-AGE-09 no está terminada** sin la prueba automatizada de N reservas concurrentes al mismo espacio donde exactamente una gana.

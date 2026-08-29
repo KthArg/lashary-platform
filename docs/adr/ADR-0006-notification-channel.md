@@ -1,6 +1,6 @@
 # ADR-0006 — Canal de notificaciones: WhatsApp vía Twilio, email como respaldo
 
-> **Estado:** aceptado (proveedor de email pendiente). **Fecha:** 2026-08-27. **Decisores:** PO + bootstrap. **Historias:** US-NOT-09 (⊕), US-NOT-03, US-NOT-07, US-NOT-08, US-CLI-06, US-NOT-04, US-NOT-05.
+> **Estado:** aceptado (proveedor de email pendiente). **Fecha:** 2026-08-27. **Decisores:** PO + bootstrap. **Historias:** US-NOT-03 (portadora del canal, ADR-0007), US-NOT-07, US-NOT-08, US-CLI-06, US-NOT-04, US-NOT-05.
 
 ## Contexto
 
@@ -8,7 +8,7 @@ El backlog fija WhatsApp como canal por defecto de recordatorios y confirmacione
 
 ## Decisión
 
-Una **abstracción única de canal** en `notifications` (US-NOT-09): puerto `NotificationChannel` con implementaciones intercambiables. Ninguna historia de notificaciones habla con un proveedor directamente — US-NOT-08 ya lo exige ("el envío usa el canal configurado en US-NOT-07").
+Una **abstracción única de canal** en `notifications`, construida con US-NOT-03 (ADR-0007): puerto `NotificationChannel` con implementaciones intercambiables. Ninguna historia de notificaciones habla con un proveedor directamente — US-NOT-08 ya lo exige ("el envío usa el canal configurado en US-NOT-07").
 
 - **WhatsApp:** Twilio (WhatsApp Business Platform como transporte). Requiere: cuenta Twilio, número de WhatsApp verificado del negocio, plantillas aprobadas por Meta para mensajes iniciados por el negocio (recordatorios). Costo por conversación — se presupuesta con el PO antes de activar en producción.
 - **Respaldo:** email. Proveedor **pendiente de decisión del PO** (candidatos: Resend, SendGrid, SMTP de Supabase Auth para transaccionales); la abstracción hace la elección barata. Hasta activar Twilio, email es el canal por defecto en desarrollo y los primeros despliegues.
@@ -26,4 +26,4 @@ Una **abstracción única de canal** en `notifications` (US-NOT-09): puerto `Not
 - Costo recurrente nuevo (Twilio por conversación) y una dependencia de aprobación externa: **las plantillas de Meta tardan** — se tramitan al inicio de F2, no al final.
 - El sandbox de Twilio permite desarrollar y probar US-NOT-03/08 sin número verificado.
 - Cambiar de proveedor después = una implementación nueva del puerto; ninguna historia se reescribe.
-- Pendiente que bloquea el cierre de US-NOT-09, no este ADR: elección del proveedor de email por el PO.
+- Pendiente que bloquea el cierre del canal en US-NOT-03, no este ADR: elección del proveedor de email por el PO.
