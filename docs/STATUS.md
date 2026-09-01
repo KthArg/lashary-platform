@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-08-29.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-01.
 
 ## Features
 
@@ -18,7 +18,7 @@
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
 | payments | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
-| platform | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
+| platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | scheduling | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 11 |
 | store | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 4 |
 
@@ -82,7 +82,7 @@
 ### payments (actualizado: 2026-08-29)
 - US-AGE-13 — no_iniciada
 
-### platform (actualizado: 2026-08-29)
+### platform (actualizado: 2026-09-01)
 
 ### scheduling (actualizado: 2026-08-29)
 - US-AGE-01 — no_iniciada
