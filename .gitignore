@@ -15,3 +15,6 @@ coverage/
 # sistema
 .DS_Store
 Thumbs.db
+.agents/rules/
+.agents/skills
+.agents/skills/
