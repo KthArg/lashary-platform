@@ -1,6 +1,6 @@
 # Grafo de dependencias entre historias
 
-> **Autoridad:** qué historia depende de cuál, y qué infraestructura sin historia propia carga cada una (ADR-0007). Se consulta en cada planificación de sprint (INT-007); lo lee `/empezables`. **Lectores:** PO y equipo al planificar; skills. **Estado:** vigente. **Actualizado:** 2026-08-29.
+> **Autoridad:** qué historia depende de cuál, y qué infraestructura sin historia propia carga cada una (ADR-0007). Se consulta en cada planificación de sprint (INT-007); lo lee `/empezables`. **Lectores:** PO y equipo al planificar; skills. **Estado:** vigente. **Actualizado:** 2026-09-01.
 > Derivado del backlog en [../backlog/](../backlog/) (que no trae columna de dependencias). Si el backlog cambia, este archivo se revisa en el mismo PR.
 
 ## Infraestructura sin historia propia (ADR-0007)
@@ -73,7 +73,7 @@ El backlog se mantiene en sus 51 historias; estas capacidades se construyen **de
 | US-NOT-04 recordatorio pago | US-NOT-03, US-MOR-02 | |
 | US-NOT-05 re-aplicación | US-NOT-03, US-AGE-08, US-AGE-12 | |
 | US-NOT-06 inactivos | US-CLI-01, US-NOT-03 | incluye opción de baja |
-| US-PROD-02 grid productos | — | incluye su parte de administración de productos (ADR-0007) |
+| US-PROD-02 grid productos | criterio 3 sin resolver — ver § Criterios ambiguos | grid público (criterios 1-2) sin dependencias; incluye su parte de administración de productos (ADR-0007) |
 | US-PROD-03 detalle producto | US-PROD-02 | stock indicado según control de US-SHOP-02 |
 | US-SHOP-01 carrito | US-PROD-03, US-AUTH-02 | |
 | US-SHOP-02 checkout | US-SHOP-01, US-MOR-03 (patrón de comprobante) | **porta control de existencias y pedidos admin** |
@@ -85,3 +85,13 @@ Historias tempranas con **un criterio** que depende de una historia de fase post
 1. **US-AGE-05** — "valida que el cliente no tenga morosidad activa" → requiere US-MOR-02 (F3).
 2. **US-AGE-11** — "indica si el cliente tiene morosidad activa" → requiere US-MOR-01 (F3).
 3. **US-CLI-06** — "visible en la vista del cliente" → la vista la porta US-MOR-03 (F3); si CLI-06 se implementa antes, ese criterio queda diferido con el faltante nombrado.
+
+## Criterios ambiguos (dependencia indeterminada)
+
+Criterios cuyo texto admite dos implementaciones con **dependencias distintas**. No se planifican hasta que el PO elija una (INT-007); la fila de la historia lo dice. Al resolverse, la fila pasa a nombrar el ID real y esta entrada se borra.
+
+1. **US-PROD-02** — "los productos son administrables desde el panel o CMS":
+   - **panel** → depende de **US-AUTH-01** (auth de administradora) y tabla propia `store_products` (ARCH-006);
+   - **CMS** → depende de **US-LAND-01** (porta el gateway, [ADR-0001](../adr/ADR-0001-external-cms.md)) y exige extender [../contracts/cms-api.md](../contracts/cms-api.md) por INT-003 — ese contrato no lista "producto" entre sus tipos de contenido y su estado es `borrador`.
+
+   En ambos casos la historia **no es arrancable** hoy. Detectado 2026-09-01; pendiente de decisión del PO.
