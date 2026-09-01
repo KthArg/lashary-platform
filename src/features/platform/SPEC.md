@@ -2,7 +2,7 @@
 feature: platform
 dri: pendiente
 estado: terminada
-actualizado: 2026-09-01
+actualizado: "2026-09-01"
 historias:
   []
 flags: []
