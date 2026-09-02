@@ -12,3 +12,11 @@ export class TechniqueValidationError extends CatalogError {
     super(`técnica inválida: ${problems.join('; ')}`)
   }
 }
+
+export class TechniqueNotFound extends CatalogError {
+  readonly code = 'CATALOG_TECHNIQUE_NOT_FOUND'
+
+  constructor(public readonly techniqueId: string) {
+    super(`no existe la técnica ${techniqueId}`)
+  }
+}

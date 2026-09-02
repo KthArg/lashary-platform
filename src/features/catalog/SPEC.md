@@ -35,9 +35,11 @@ Construido y verificado contra Supabase local (`supabase db reset`):
 - Migración `supabase/migrations/20260902000000_catalog_techniques.sql`: enum `catalog_service_family` (8 familias), tabla `catalog_techniques` con los checks de DOM-001 (dinero entero) y D10 (retoque coherente), índice parcial `idx_catalog_techniques_family_active` (PERF-003), trigger `catalog_set_updated_at`.
 - RLS (SEC-001): política `catalog_techniques_select_all` de lectura para `anon` y `authenticated`; sin política de escritura → INSERT/UPDATE/DELETE denegados por la base (B1, fail-closed). Verificado: anón `SELECT` → 8 filas, anón `INSERT` → 401, anón `UPDATE` → 0 filas afectadas.
 - Seed `supabase/seed.sql`: una técnica por familia. Prueba `src/features/catalog/__tests__/seed.integration.test.ts` (criterio 2).
-- Capa `domain/`: entidad `Technique` con constructor validado (`Technique.create` → `Result`), invariantes DOM-007 y D10; `deactivate()`, `toView()` y `snapshot()`. Errores `CatalogError` / `TechniqueValidationError` (DOM-006). Prueba `domain/__tests__/technique.test.ts` (18 casos).
+- Capa `domain/`: entidad `Technique` con constructor validado (`Technique.create` → `Result`), invariantes DOM-007 y D10; `deactivate()`, `toView()` y `snapshot()`. Errores `CatalogError` / `TechniqueValidationError` / `TechniqueNotFound` (DOM-006). Prueba `domain/__tests__/technique.test.ts`.
+- Capa `application/`: puerto `TechniqueRepository`; use-cases `listTechniques` / `getTechnique` (`queries.ts`, paginado PERF-002, tope 100) y `createTechnique` / `updateTechnique` / `deactivateTechnique` (`commands.ts`, id inyectado). Pruebas con repositorio en memoria (`__tests__/queries.test.ts`, `commands.test.ts`).
+- Capa `db/`: `SupabaseTechniqueRepository` (mapea fila ↔ dominio, `Money` en los bordes). Prueba de integración `db/__tests__/technique-repository.integration.test.ts` verifica lectura + paginación contra el seed y que `save()` con token anónimo es rechazado por RLS.
 
-Dónde se detiene: no hay capa `application/` ni `db/` ni `index.ts` ni UI todavía (incrementos 4-6). La escritura desde la app queda **denegada por RLS**; los datos entran por seed o SQL directo en local. El flag `catalog_admin_write` cubre esa brecha hasta que `auth` exponga `public.auth_is_staff()`.
+Dónde se detiene: falta `index.ts` (incremento 5) y la UI de administración (incremento 6). La escritura desde la app queda **denegada por RLS** — el mapeo de escritura de `db/` no se verifica contra la base real hasta que `auth` exponga `public.auth_is_staff()`; hoy solo se ejercita con el repositorio en memoria. El flag `catalog_admin_write` cubre esa brecha.
 
 ## Qué no hace todavía
 
