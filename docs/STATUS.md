@@ -9,7 +9,7 @@
 |---|---|---|---|
 | account | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | audit | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
-| auth | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 2 |
+| auth | pendiente | en_progreso | 0 / 1 / 0 / 0 / 1 |
 | catalog | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 4 |
 | clients | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | content | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 3 |
@@ -28,9 +28,9 @@
 
 ### audit (actualizado: 2026-08-29)
 
-### auth (actualizado: 2026-08-28)
+### auth (actualizado: 2026-09-01)
 - US-AUTH-01 — no_iniciada
-- US-AUTH-02 — no_iniciada
+- US-AUTH-02 — en_progreso — falta: Aprobación y merge del PR #3
 
 ### catalog (actualizado: 2026-08-28)
 - US-AGE-08 — no_iniciada
@@ -112,8 +112,7 @@ Ninguno.
 Ninguno registrado.
 
 ## Deuda aceptada
-
-Ninguna registrada.
+- auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
 
 ## Flags vivos
 
