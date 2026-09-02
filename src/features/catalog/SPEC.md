@@ -30,13 +30,13 @@ Lo que se vende: técnicas con tiempos y precios, paquetes, promociones. Precio 
 
 US-AGE-08 en progreso sobre la rama `feat/us-age-08-catalog` (base: `feat/f0-platform-scaffold`).
 
-- Tabla `catalog_techniques` con enum `catalog_service_family` (8 familias), RLS activo (SEC-001).
-- Lectura pública de técnicas (anón + autenticado): `listTechniques` (paginado, PERF-002) y `getTechnique`.
-- Alta / edición / desactivación de técnicas como use-cases con invariantes de dominio (DOM-007), expuestos en `src/app/admin/catalog/` vía server actions con validación Zod en el borde.
-- Seed con una técnica por familia (`supabase/seed.sql`).
-- Test de aislamiento RLS (SEC-002): anón y autenticado no-staff no pueden escribir `catalog_techniques`.
+Construido y verificado contra Supabase local (`supabase db reset`):
 
-Dónde se detiene: la escritura desde la app está **denegada por RLS** (no hay política de INSERT/UPDATE/DELETE — B1, fail-closed). Los datos entran por seed o SQL directo en local. El flag `catalog_admin_write` cubre esta brecha hasta que `auth` exponga `public.auth_is_staff()`.
+- Migración `supabase/migrations/20260902000000_catalog_techniques.sql`: enum `catalog_service_family` (8 familias), tabla `catalog_techniques` con los checks de DOM-001 (dinero entero) y D10 (retoque coherente), índice parcial `idx_catalog_techniques_family_active` (PERF-003), trigger `catalog_set_updated_at`.
+- RLS (SEC-001): política `catalog_techniques_select_all` de lectura para `anon` y `authenticated`; sin política de escritura → INSERT/UPDATE/DELETE denegados por la base (B1, fail-closed). Verificado: anón `SELECT` → 8 filas, anón `INSERT` → 401, anón `UPDATE` → 0 filas afectadas.
+- Seed `supabase/seed.sql`: una técnica por familia. Prueba `src/features/catalog/__tests__/seed.integration.test.ts` (criterio 2).
+
+Dónde se detiene: no hay capa `domain/` ni `application/` ni `index.ts` ni UI todavía (incrementos 3-6). La escritura desde la app queda **denegada por RLS**; los datos entran por seed o SQL directo en local. El flag `catalog_admin_write` cubre esa brecha hasta que `auth` exponga `public.auth_is_staff()`.
 
 ## Qué no hace todavía
 
