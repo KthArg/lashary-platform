@@ -38,8 +38,9 @@ Construido y verificado contra Supabase local (`supabase db reset`):
 - Capa `domain/`: entidad `Technique` con constructor validado (`Technique.create` → `Result`), invariantes DOM-007 y D10; `deactivate()`, `toView()` y `snapshot()`. Errores `CatalogError` / `TechniqueValidationError` / `TechniqueNotFound` (DOM-006). Prueba `domain/__tests__/technique.test.ts`.
 - Capa `application/`: puerto `TechniqueRepository`; use-cases `listTechniques` / `getTechnique` (`queries.ts`, paginado PERF-002, tope 100) y `createTechnique` / `updateTechnique` / `deactivateTechnique` (`commands.ts`, id inyectado). Pruebas con repositorio en memoria (`__tests__/queries.test.ts`, `commands.test.ts`).
 - Capa `db/`: `SupabaseTechniqueRepository` (mapea fila ↔ dominio, `Money` en los bordes). Prueba de integración `db/__tests__/technique-repository.integration.test.ts` verifica lectura + paginación contra el seed y que `save()` con token anónimo es rechazado por RLS.
+- `index.ts` (ARCH-003): `listTechniques(query?)` y `getTechnique(id)` — cablean el repositorio de servidor y devuelven `TechniqueView` / `Result<…, TechniqueNotFound>`. Exporta `ServiceFamily`, `TechniqueView`, `TechniqueSnapshot`, `SERVICE_FAMILIES`, `TechniqueNotFound`. `create` / `update` / `deactivate` **no** se exportan. Prueba `__tests__/public-api.integration.test.ts` (read path completo contra Supabase local).
 
-Dónde se detiene: falta `index.ts` (incremento 5) y la UI de administración (incremento 6). La escritura desde la app queda **denegada por RLS** — el mapeo de escritura de `db/` no se verifica contra la base real hasta que `auth` exponga `public.auth_is_staff()`; hoy solo se ejercita con el repositorio en memoria. El flag `catalog_admin_write` cubre esa brecha.
+Dónde se detiene: falta la UI de administración (incremento 6) y el test de aislamiento RLS formal (incremento 7). La escritura desde la app queda **denegada por RLS** — el mapeo de escritura de `db/` no se verifica contra la base real hasta que `auth` exponga `public.auth_is_staff()`; hoy solo se ejercita con el repositorio en memoria. El flag `catalog_admin_write` cubre esa brecha.
 
 ## Qué no hace todavía
 
