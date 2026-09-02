@@ -10,7 +10,7 @@
 | account | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | audit | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 2 |
-| catalog | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 4 |
+| catalog | pendiente | en_progreso | 0 / 1 / 0 / 0 / 3 |
 | clients | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | content | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 3 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
@@ -32,8 +32,8 @@
 - US-AUTH-01 — no_iniciada
 - US-AUTH-02 — no_iniciada
 
-### catalog (actualizado: 2026-08-28)
-- US-AGE-08 — no_iniciada
+### catalog (actualizado: 2026-09-01)
+- US-AGE-08 — en_progreso — falta: criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran en US-AGE-05 con el test obligatorio de DOM-002; el camino de escritura admin va apagado tras el flag catalog_admin_write hasta que auth exponga public.auth_is_staff()
 - US-PROD-01 — no_iniciada
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
@@ -116,8 +116,7 @@ Ninguno registrado.
 Ninguna registrada.
 
 ## Flags vivos
-
-Ninguno.
+- catalog: catalog_admin_write — apagado — dueño: Bayron Alpizar — retiro: 2026-12-01
 
 ## Historias del backlog sin feature que las reclame
 
