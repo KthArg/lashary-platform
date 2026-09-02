@@ -10,7 +10,7 @@ Tabla dueña: `catalog_techniques` (feature `catalog`, ARCH-006). Ninguna otra f
 
 ## Superficie expuesta (`src/features/catalog/index.ts`)
 
-### `listTechniques(params) => Promise<Page<Technique>>`
+### `listTechniques(params) => Promise<Page<TechniqueView>>`
 
 ```ts
 type ListTechniquesParams = {
@@ -24,11 +24,13 @@ type Page<T> = { items: T[]; page: number; pageSize: number; total: number }
 - Consumidores: **US-LAND-02** (sitio público: imagen/descripción vienen del CMS, precio y duración vienen de aquí — el precio nunca vive en el CMS), **US-AGE-03** (selección de técnica al agendar).
 - Ordena por `family`, luego `name`.
 
-### `getTechnique(id) => Promise<Technique | TechniqueNotFound>`
+### `getTechnique(id) => Promise<TechniqueView | TechniqueNotFound>`
 
 - Consumidor: **US-AGE-05**. Al confirmar una cita, `scheduling` **copia** un `TechniqueSnapshot` dentro de la cita. A partir de ese momento la cita no depende del catálogo (DOM-002).
 
 ### Tipos
+
+`Technique` es la entidad de dominio (usa el value object `Money` internamente) y **no** cruza la frontera de la feature. Lo que se exporta es `TechniqueView` — la misma forma con montos en colones enteros.
 
 ```ts
 type ServiceFamily =
@@ -36,7 +38,7 @@ type ServiceFamily =
   | 'brow_design' | 'brow_lamination'
   | 'henna' | 'waxing' | 'lips'
 
-type Technique = {
+type TechniqueView = {
   id: string
   name: string
   family: ServiceFamily
@@ -51,7 +53,7 @@ type Technique = {
   isActive: boolean
 }
 
-// Lo que la cita copia al confirmarse (DOM-002). Subconjunto estable de Technique.
+// Lo que la cita copia al confirmarse (DOM-002). Subconjunto estable de TechniqueView.
 type TechniqueSnapshot = {
   techniqueId: string
   name: string

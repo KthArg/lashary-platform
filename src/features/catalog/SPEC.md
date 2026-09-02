@@ -35,8 +35,9 @@ Construido y verificado contra Supabase local (`supabase db reset`):
 - Migración `supabase/migrations/20260902000000_catalog_techniques.sql`: enum `catalog_service_family` (8 familias), tabla `catalog_techniques` con los checks de DOM-001 (dinero entero) y D10 (retoque coherente), índice parcial `idx_catalog_techniques_family_active` (PERF-003), trigger `catalog_set_updated_at`.
 - RLS (SEC-001): política `catalog_techniques_select_all` de lectura para `anon` y `authenticated`; sin política de escritura → INSERT/UPDATE/DELETE denegados por la base (B1, fail-closed). Verificado: anón `SELECT` → 8 filas, anón `INSERT` → 401, anón `UPDATE` → 0 filas afectadas.
 - Seed `supabase/seed.sql`: una técnica por familia. Prueba `src/features/catalog/__tests__/seed.integration.test.ts` (criterio 2).
+- Capa `domain/`: entidad `Technique` con constructor validado (`Technique.create` → `Result`), invariantes DOM-007 y D10; `deactivate()`, `toView()` y `snapshot()`. Errores `CatalogError` / `TechniqueValidationError` (DOM-006). Prueba `domain/__tests__/technique.test.ts` (18 casos).
 
-Dónde se detiene: no hay capa `domain/` ni `application/` ni `index.ts` ni UI todavía (incrementos 3-6). La escritura desde la app queda **denegada por RLS**; los datos entran por seed o SQL directo en local. El flag `catalog_admin_write` cubre esa brecha hasta que `auth` exponga `public.auth_is_staff()`.
+Dónde se detiene: no hay capa `application/` ni `db/` ni `index.ts` ni UI todavía (incrementos 4-6). La escritura desde la app queda **denegada por RLS**; los datos entran por seed o SQL directo en local. El flag `catalog_admin_write` cubre esa brecha hasta que `auth` exponga `public.auth_is_staff()`.
 
 ## Qué no hace todavía
 
@@ -76,9 +77,9 @@ Dónde se detiene: no hay capa `domain/` ni `application/` ni `index.ts` ni UI t
 
 Detalle y garantías: [docs/contracts/catalog-api.md](../../../docs/contracts/catalog-api.md).
 
-- `listTechniques({ activeOnly?, page?, pageSize? })` → página de `Technique`. Paginado server-side (PERF-002). Lo consumen US-LAND-02 y US-AGE-03.
-- `getTechnique(id)` → `Technique | TechniqueNotFound`. US-AGE-05 toma el `TechniqueSnapshot` de aquí al confirmar la cita (DOM-002).
-- Tipos: `Technique`, `ServiceFamily`, `TechniqueSnapshot`.
+- `listTechniques({ activeOnly?, page?, pageSize? })` → página de `TechniqueView`. Paginado server-side (PERF-002). Lo consumen US-LAND-02 y US-AGE-03.
+- `getTechnique(id)` → `TechniqueView | TechniqueNotFound`. US-AGE-05 toma el `TechniqueSnapshot` de aquí al confirmar la cita (DOM-002).
+- Tipos: `TechniqueView`, `ServiceFamily`, `TechniqueSnapshot`. La entidad de dominio `Technique` (usa `Money`) no cruza la frontera.
 - `create` / `update` / `deactivate` **no se exportan**: son admin, se usan por server action dentro de `catalog/ui/`.
 
 ## Decisiones
