@@ -28,3 +28,7 @@ export type {
 } from './domain/technique'
 export { TechniqueNotFound } from './domain/errors'
 export type { ListTechniquesQuery, Page } from './application/ports'
+
+// UI de administración (US-AGE-08). La compone la ruta src/app/admin/catalog/.
+export { AdminCatalogPage } from './ui/AdminCatalogPage'
+export { catalogMessages } from './ui/messages'
