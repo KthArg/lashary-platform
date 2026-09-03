@@ -25,9 +25,31 @@ jobs:
             bash scripts/verify.sh --base "HEAD~1" || exit 1
           fi
 
-  # Las pruebas de la aplicación (unitarias, aislamiento RLS SEC-002, concurrencia DOM-010)
-  # se agregan a este workflow cuando exista src/ (F1). Este job falla adrede si alguien
-  # crea src/ sin agregar el job de tests: recordatorio estructural.
+  # job-tests-reales — pruebas de la aplicación. Lo porta US-AGE-08 como primera historia con
+  # código (ADR-0007). Unitarias (vitest) + integración y aislamiento RLS (SEC-002) contra un
+  # Supabase local. La concurrencia (DOM-010) se suma cuando llegue esa historia.
+  job-tests-reales:
+    name: pruebas (vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Supabase local (harness de aislamiento RLS — SEC-002)
+        run: |
+          npx supabase start
+          npx supabase db reset --local
+          S=$(npx supabase status -o json)
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$(echo "$S" | jq -r .API_URL)"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$(echo "$S" | jq -r .ANON_KEY)"
+          } >> .env.local
+      - run: npm test
+
+  # Guardia estructural: si hay código en src/ y el job de arriba desapareciera, esto falla.
   tests-placeholder-guard:
     name: guardia de pruebas
     runs-on: ubuntu-latest
