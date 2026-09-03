@@ -6,18 +6,14 @@ actualizado: 2026-09-01
 historias:
   - id: US-AGE-08
     estado: en_progreso
-    falta: "criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran en US-AGE-05 con el test obligatorio de DOM-002; el camino de escritura admin va apagado tras el flag catalog_admin_write hasta que auth exponga public.auth_is_staff()"
+    falta: "criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran en US-AGE-05 con el test obligatorio de DOM-002"
   - id: US-PROD-01
     estado: no_iniciada
   - id: US-PROM-01
     estado: no_iniciada
   - id: US-PROM-02
     estado: no_iniciada
-flags:
-  - nombre: catalog_admin_write
-    estado: apagado
-    dueno: Bayron Alpizar
-    retiro: 2026-12-01
+flags: []
 deuda: []
 defectos: []
 ---
@@ -28,22 +24,23 @@ Lo que se vende: técnicas con tiempos y precios, paquetes, promociones. Precio 
 
 ## Qué hace hoy
 
-US-AGE-08 en progreso sobre la rama `feat/us-age-08-catalog` (base: `feat/f0-platform-scaffold`).
+US-AGE-08 sobre la rama `feat/us-age-08-catalog` (base: `feat/f0-platform-scaffold`).
 
-Construido y verificado contra Supabase local (`supabase db reset`):
+**Depende de `auth` (US-AUTH-01):** usa `getAuthSession` / `requireAdminSession` del entry point de auth y las políticas de escritura leen `public.auth_user_roles`. En aislamiento esta rama no compila (`@/features/auth`) ni `supabase db reset` corre (`auth_user_roles` no existe); rebasa sobre `auth` mergeada antes del PR (INT-005).
 
 - Migración `supabase/migrations/20260902000000_catalog_techniques.sql`: enum `catalog_service_family` (8 familias), tabla `catalog_techniques` con los checks de DOM-001 (dinero entero) y D10 (retoque coherente), índice parcial `idx_catalog_techniques_family_active` (PERF-003), trigger `catalog_set_updated_at`.
-- RLS (SEC-001): política `catalog_techniques_select_all` de lectura para `anon` y `authenticated`; sin política de escritura → INSERT/UPDATE/DELETE denegados por la base (B1, fail-closed). Verificado: anón `SELECT` → 8 filas, anón `INSERT` → 401, anón `UPDATE` → 0 filas afectadas.
+- Migración `supabase/migrations/20260902000001_catalog_write_policies.sql`: `public.auth_is_staff()` (`SECURITY DEFINER`, `search_path=''`, provisional acá hasta que la exponga `auth`) + políticas `catalog_techniques_{insert,update,delete}_staff`.
+- RLS (SEC-001): lectura pública para `anon` y `authenticated`; `INSERT/UPDATE/DELETE` solo cuando `public.auth_is_staff()` confirma rol `admin`/`superadmin`. `rls-isolation.test.ts` verifica que anón y clienta autenticada no pueden escribir; el control positivo (staff sí puede) se cubre en la integración de auth / US-AGE-05.
 - Seed `supabase/seed.sql`: una técnica por familia. Prueba `src/features/catalog/__tests__/seed.integration.test.ts` (criterio 2).
 - Capa `domain/`: entidad `Technique` con constructor validado (`Technique.create` → `Result`), invariantes DOM-007 y D10; `deactivate()`, `toView()` y `snapshot()`. Errores `CatalogError` / `TechniqueValidationError` / `TechniqueNotFound` (DOM-006). Prueba `domain/__tests__/technique.test.ts`.
 - Capa `application/`: puerto `TechniqueRepository`; use-cases `listTechniques` / `getTechnique` (`queries.ts`, paginado PERF-002, tope 100) y `createTechnique` / `updateTechnique` / `deactivateTechnique` (`commands.ts`, id inyectado). Pruebas con repositorio en memoria (`__tests__/queries.test.ts`, `commands.test.ts`).
 - Capa `db/`: `SupabaseTechniqueRepository` (mapea fila ↔ dominio, `Money` en los bordes). Prueba de integración `db/__tests__/technique-repository.integration.test.ts` verifica lectura + paginación contra el seed y que `save()` con token anónimo es rechazado por RLS.
 - `index.ts` (ARCH-003): `listTechniques(query?)` y `getTechnique(id)` — cablean el repositorio de servidor y devuelven `TechniqueView` / `Result<…, TechniqueNotFound>`. Exporta `ServiceFamily`, `TechniqueView`, `TechniqueSnapshot`, `SERVICE_FAMILIES`, `TechniqueNotFound`, `AdminCatalogPage`, `catalogMessages`. `create` / `update` / `deactivate` **no** se exportan. Prueba `__tests__/public-api.integration.test.ts` (read path completo contra Supabase local).
 - `client.ts` (ARCH-003): segundo entry point, solo `catalogMessages`, sin nada que dependa de `next/headers`. Lo usan los boundaries de ruta que corren en el cliente (`loading.tsx`, `error.tsx`) para no arrastrar código de servidor al bundle.
-- Capa `ui/` + ruta `src/app/admin/catalog/`: `AdminCatalogPage` (server) lista las técnicas (`TechniqueTable`, DaisyUI, UI-001/002) con estado vacío + `loading.tsx` + `error.tsx` (UI-003, a11y UI-004), ambos importando texto de `client.ts`, no de `ui/messages` directo; `TechniqueForm` (client, `useActionState`) crea/edita/desactiva. Server actions `actions.ts` con validación **Zod** en el borde (`schema.ts`, DOM-007). Texto externalizado en `messages.ts` (DOM-009). Flag `catalog_admin_write` en `flags.ts`: apagado → los actions devuelven el mensaje de "escritura deshabilitada" en vez de chocar con RLS. Pruebas `ui/__tests__/schema.test.ts`, `ui/__tests__/actions.test.ts`.
+- Capa `ui/` + ruta `src/app/admin/catalog/`: `AdminCatalogPage` (server) lista las técnicas (`TechniqueTable`, DaisyUI, UI-001/002) con estado vacío + `loading.tsx` + `error.tsx` (UI-003, a11y UI-004), ambos importando texto de `client.ts`, no de `ui/messages` directo; `TechniqueForm` (client, `useActionState`) crea/edita/desactiva. El `layout.tsx` de la ruta exige staff con `requireAdminSession()` (redirige a `/admin`); los server actions chequean `isStaff()` (`require-staff.ts` → `getAuthSession`) para el mensaje amable — RLS conserva la autorización real (SEC-001). Validación **Zod** en el borde (`schema.ts`, DOM-007), texto externalizado en `messages.ts` (DOM-009). Pruebas `ui/__tests__/schema.test.ts`, `ui/__tests__/actions.test.ts`, `src/app/admin/catalog/layout.test.tsx`.
 - Test de aislamiento RLS `__tests__/rls-isolation.test.ts` (SEC-002): con token anónimo y con el token de una clienta autenticada real (sign-up, sin service-role key) verifica que `SELECT` funciona (lectura pública intencional) y que cada `INSERT` / `UPDATE` / `DELETE` falla y no altera los datos ni el conteo. El `beforeAll` falla ruidosamente si el seed no está cargado (sin falsos verdes). CI (`job-tests-reales`) levanta Supabase local + `db reset` antes de `npm test`; `supabase` CLI pinneada en `devDependencies`.
 
-Dónde se detiene: la escritura desde la app queda **deshabilitada por el flag** y **denegada por RLS** — el mapeo de escritura de `db/` no se verifica contra la base real hasta que `auth` exponga `public.auth_is_staff()`; hoy solo se ejercita con el repositorio en memoria. El flag `catalog_admin_write` cubre esa brecha. Los criterios 7b y 8 (la cita no se altera / precio congelado) se cierran en US-AGE-05.
+Dónde se detiene: los criterios 7b y 8 (la cita no se altera / precio congelado) se cierran en US-AGE-05. El camino admin ya funciona para staff (RLS + `requireAdminSession`); falta rebasar sobre `auth` para que compile en aislamiento.
 
 ## Qué no hace todavía
 
@@ -77,7 +74,7 @@ Dónde se detiene: la escritura desde la app queda **deshabilitada por el flag**
 ### RLS (SEC-001)
 
 - `catalog_techniques_select_all` — `SELECT` para `anon` y `authenticated`, `USING (true)`. El catálogo es público (lo consume US-LAND-02).
-- Escritura: **sin política** → RLS la deniega para todo rol que no sea el dueño de la tabla / `service_role`. Es la postura B1 (fail-closed) mientras `auth` no exista en esta rama. Cuando `auth` mergee `public.auth_is_staff()`, una migración forward agrega `INSERT/UPDATE/DELETE` con `WITH CHECK (public.auth_is_staff())` y se retira el flag `catalog_admin_write`.
+- Escritura: políticas `catalog_techniques_*_staff` para `INSERT/UPDATE/DELETE`, condicionadas por `public.auth_is_staff()`. Anónimos y usuarios `cliente` permanecen fail-closed.
 
 ## Contrato público (`index.ts`, ARCH-003)
 
@@ -94,8 +91,9 @@ Detalle y garantías: [docs/contracts/catalog-api.md](../../../docs/contracts/ca
 - **D2 / D3 — Retoque e intervalo de re-aplicación son opcionales.** No toda técnica tiene retoque (henna, depilación, lipstick) ni intervalo sugerido.
 - **D5 — `aftercare_text` obligatorio y no vacío.** El criterio 6 dice "cada técnica define su texto de cuidados".
 - **D10 — `price_retouch` y `duration_retouch_min` van juntas o ninguna.** Un retoque necesita precio y duración; lo valida el constructor de `Technique`.
+- **Auth es canónica en su propia rama** (US-AUTH-01/02). Esta rama consume su contrato (`getAuthSession`, `requireAdminSession`, `auth_user_roles`) y aporta `public.auth_is_staff()` de forma provisional en su migración forward, hasta que `auth` la exponga.
 - Sin ADR: el congelamiento de precio ya lo fija DOM-002; el resto son decisiones locales de la feature.
 
 ## Flags
 
-- `catalog_admin_write` — apagado. Dueño: Bayron Alpizar. Retiro: 2026-12-01 (o antes, al mergear `auth` con `public.auth_is_staff()`). Cubre: la escritura de `catalog_techniques` desde la app, hoy denegada por RLS por falta de la función de rol.
+Ninguno. `catalog_admin_write` se retiró al integrar `public.auth_is_staff()` y las políticas RLS de escritura.
