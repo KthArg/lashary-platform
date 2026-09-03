@@ -76,7 +76,17 @@ describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de catalog_techniques',
       .from(TABLE)
       .select('*', { count: 'exact', head: true })
     initialCount = count ?? 0
+
+    // Falla ruidosamente si el setup no encontró datos: sin esto, un `.eq('id', '')` haría
+    // pasar los asserts de "no puede escribir" sin haber ejercido RLS de verdad.
+    if (!sampleId || initialCount === 0) {
+      throw new Error('setup: el seed de catalog_techniques no está cargado')
+    }
   })
+
+  // El control positivo (una sesión con rol admin SÍ puede escribir) requiere sembrar un rol
+  // en auth_user_roles, lo que RLS no permite desde el cliente: se cubre en la integración de
+  // auth, no acá. Esta suite verifica solo el aislamiento (nadie sin staff escribe).
 
   it('lectura pública intencional: anón y clienta autenticada pueden SELECT', async () => {
     const asAnon = await anon.from(TABLE).select('id')

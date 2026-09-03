@@ -25,3 +25,6 @@ Thumbs.db
 # artefactos de captura / e2e ad-hoc
 .playwright-mcp/
 /*.png
+
+# scratch de Supabase Studio
+supabase/snippets/
