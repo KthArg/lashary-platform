@@ -57,7 +57,7 @@ function Feedback({
       </div>
     )
   }
-  if (status === 'disabled') {
+  if (status === 'forbidden') {
     return (
       <div role="alert" className="alert alert-warning">
         <span>{message}</span>

@@ -54,12 +54,16 @@ export const catalogMessages = {
     submitCreate: 'Crear técnica',
     submitEdit: 'Guardar cambios',
     cancel: 'Cancelar',
-    writeDisabled:
-      'La edición del catálogo está deshabilitada hasta que el inicio de sesión de administración esté disponible (flag catalog_admin_write).',
+    accessDenied:
+      'Tu sesión no tiene permisos para modificar el catálogo. Iniciá sesión como administradora.',
     validationTitle: 'Revisá estos campos:',
     savedCreate: 'Técnica creada.',
     savedEdit: 'Cambios guardados.',
     deactivated: 'Técnica desactivada.',
+  },
+  shell: {
+    brand: 'LASHARY',
+    signOut: 'Cerrar sesión',
   },
 } as const
 

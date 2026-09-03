@@ -67,7 +67,7 @@ type TechniqueSnapshot = {
 }
 ```
 
-`create` / `update` / `deactivate` **no** son parte del contrato público: son operaciones de administración, viven dentro de `catalog/ui/` y hoy están cubiertas por el flag `catalog_admin_write` (ver [SPEC](../../src/features/catalog/SPEC.md)).
+`create` / `update` / `deactivate` **no** son parte del contrato público: son operaciones de administración, viven dentro de `catalog/ui/`, exigen una sesión staff y están protegidas por RLS (ver [SPEC](../../src/features/catalog/SPEC.md)).
 
 ## Garantías
 
@@ -84,5 +84,5 @@ Ninguno todavía. Desactivar una técnica **no** notifica a `scheduling`: las ci
 
 ## Pendientes
 
-- La función `public.auth_is_staff()` la aporta `auth` (US-AUTH-01/02). Hasta entonces la escritura de `catalog_techniques` está denegada por RLS (fail-closed) y el flag `catalog_admin_write` lo registra.
+- `public.auth_is_staff()` la define hoy la migración de catálogo `20260902000001_catalog_write_policies.sql` de forma provisional (lee `public.auth_user_roles`, de `auth`). Cuando `auth` la exponga en su propia migración, se retira de acá en una migración forward. Las políticas `catalog_techniques_*_staff` restringen la escritura a `admin`/`superadmin`.
 - Al implementarse US-AGE-05, confirmar que `TechniqueSnapshot` cubre todo lo que la cita necesita congelar; si falta un campo, se agrega aquí primero.

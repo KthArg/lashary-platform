@@ -2,7 +2,7 @@
 // 'use server' y solo puede exportar funciones async.
 
 export type TechniqueActionState = {
-  status: 'idle' | 'ok' | 'invalid' | 'disabled'
+  status: 'idle' | 'ok' | 'invalid' | 'forbidden'
   message?: string
   problems?: string[]
 }

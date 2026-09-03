@@ -33,7 +33,7 @@
 - US-AUTH-02 — terminada — PR #3, tests: auth-client.test.tsx, rls-isolation.test.ts
 
 ### catalog (actualizado: 2026-09-01)
-- US-AGE-08 — en_progreso — falta: criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran en US-AGE-05 con el test obligatorio de DOM-002; el camino de escritura admin va apagado tras el flag catalog_admin_write hasta que auth exponga public.auth_is_staff()
+- US-AGE-08 — en_progreso — falta: criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran en US-AGE-05 con el test obligatorio de DOM-002
 - US-PROD-01 — no_iniciada
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
@@ -115,7 +115,8 @@ Ninguno registrado.
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
 
 ## Flags vivos
-- catalog: catalog_admin_write — apagado — dueño: Bayron Alpizar — retiro: 2026-12-01
+
+Ninguno.
 
 ## Historias del backlog sin feature que las reclame
 

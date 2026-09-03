@@ -3,7 +3,7 @@
 import { randomUUID } from 'node:crypto'
 import { revalidatePath } from 'next/cache'
 import { isErr } from '@/shared/result'
-import { CATALOG_ADMIN_WRITE } from '../flags'
+import { isStaff } from './require-staff'
 import {
   createTechnique,
   updateTechnique,
@@ -21,14 +21,16 @@ async function deps(): Promise<CommandDeps> {
   return { repo: await techniqueRepository(), newId: () => randomUUID() }
 }
 
-function disabled(): TechniqueActionState {
-  return { status: 'disabled', message: catalogMessages.form.writeDisabled }
+function forbidden(): TechniqueActionState {
+  return { status: 'forbidden', message: catalogMessages.form.accessDenied }
 }
 
 export async function createTechniqueAction(
   _prev: TechniqueActionState,
   formData: FormData,
 ): Promise<TechniqueActionState> {
+  if (!(await isStaff())) return forbidden()
+
   const parsed = techniqueFormSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     return {
@@ -36,8 +38,6 @@ export async function createTechniqueAction(
       problems: parsed.error.issues.map((issue) => issue.message),
     }
   }
-  if (!CATALOG_ADMIN_WRITE) return disabled()
-
   const result = await createTechnique(await deps())(parsed.data)
   if (isErr(result)) {
     return { status: 'invalid', problems: result.error.problems }
@@ -50,6 +50,8 @@ export async function updateTechniqueAction(
   _prev: TechniqueActionState,
   formData: FormData,
 ): Promise<TechniqueActionState> {
+  if (!(await isStaff())) return forbidden()
+
   const id = String(formData.get('id') ?? '')
   const parsed = techniqueFormSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -58,8 +60,6 @@ export async function updateTechniqueAction(
       problems: parsed.error.issues.map((issue) => issue.message),
     }
   }
-  if (!CATALOG_ADMIN_WRITE) return disabled()
-
   const result = await updateTechnique(await deps())(id, parsed.data)
   if (isErr(result)) {
     return {
@@ -75,8 +75,9 @@ export async function deactivateTechniqueAction(
   _prev: TechniqueActionState,
   formData: FormData,
 ): Promise<TechniqueActionState> {
+  if (!(await isStaff())) return forbidden()
+
   const id = String(formData.get('id') ?? '')
-  if (!CATALOG_ADMIN_WRITE) return disabled()
 
   const result = await deactivateTechnique(await deps())(id)
   if (isErr(result)) {

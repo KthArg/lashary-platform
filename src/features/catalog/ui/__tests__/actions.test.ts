@@ -1,9 +1,21 @@
-import { describe, it, expect, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('next/headers', () => ({
-  cookies: async () => ({ getAll: () => [], set: () => {} }),
+const mocks = vi.hoisted(() => ({
+  isStaff: vi.fn(),
+  save: vi.fn(),
+  findById: vi.fn(),
 }))
-vi.mock('next/cache', () => ({ revalidatePath: () => {} }))
+
+vi.mock('@/features/catalog/ui/require-staff', () => ({
+  isStaff: mocks.isStaff,
+}))
+vi.mock('@/features/catalog/db/technique-repository', () => ({
+  techniqueRepository: vi.fn(async () => ({
+    save: mocks.save,
+    findById: mocks.findById,
+  })),
+}))
+vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 
 import {
   createTechniqueAction,
@@ -12,9 +24,9 @@ import {
 import { initialActionState } from '@/features/catalog/ui/action-state'
 
 function form(fields: Record<string, string>): FormData {
-  const fd = new FormData()
-  for (const [k, v] of Object.entries(fields)) fd.set(k, v)
-  return fd
+  const formData = new FormData()
+  for (const [key, value] of Object.entries(fields)) formData.set(key, value)
+  return formData
 }
 
 const validFields = {
@@ -30,29 +42,56 @@ const validFields = {
   aftercareText: 'Cuidados.',
 }
 
-describe('createTechniqueAction', () => {
-  it('devuelve status "invalid" con los problemas de Zod ante datos malos', async () => {
+describe('acciones administrativas del catálogo', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mocks.isStaff.mockResolvedValue(true)
+    mocks.save.mockResolvedValue(undefined)
+  })
+
+  it('rechaza una llamada directa sin sesión staff antes de tocar el repositorio', async () => {
+    mocks.isStaff.mockResolvedValueOnce(false)
+
+    const state = await createTechniqueAction(
+      initialActionState,
+      form(validFields),
+    )
+
+    expect(state.status).toBe('forbidden')
+    expect(state.message).toContain('permisos')
+    expect(mocks.save).not.toHaveBeenCalled()
+  })
+
+  it('valida los datos de una administradora antes de guardar', async () => {
     const state = await createTechniqueAction(
       initialActionState,
       form({ ...validFields, name: '', priceFirstTime: '-1' }),
     )
+
     expect(state.status).toBe('invalid')
     expect(state.problems?.length).toBeGreaterThanOrEqual(2)
+    expect(mocks.save).not.toHaveBeenCalled()
   })
 
-  it('con datos válidos devuelve status "disabled" (flag catalog_admin_write apagado, B1)', async () => {
-    const state = await createTechniqueAction(initialActionState, form(validFields))
-    expect(state.status).toBe('disabled')
-    expect(state.message).toContain('catalog_admin_write')
-  })
-})
+  it('permite crear una técnica a una administradora', async () => {
+    const state = await createTechniqueAction(
+      initialActionState,
+      form(validFields),
+    )
 
-describe('deactivateTechniqueAction', () => {
-  it('devuelve status "disabled" mientras el flag está apagado', async () => {
+    expect(state).toMatchObject({ status: 'ok', message: 'Técnica creada.' })
+    expect(mocks.save).toHaveBeenCalledTimes(1)
+  })
+
+  it('rechaza desactivar mediante una llamada directa sin sesión staff', async () => {
+    mocks.isStaff.mockResolvedValueOnce(false)
+
     const state = await deactivateTechniqueAction(
       initialActionState,
       form({ id: 'algo' }),
     )
-    expect(state.status).toBe('disabled')
+
+    expect(state.status).toBe('forbidden')
+    expect(mocks.findById).not.toHaveBeenCalled()
   })
 })
