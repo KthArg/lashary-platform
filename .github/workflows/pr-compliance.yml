@@ -28,6 +28,10 @@ jobs:
           fetch-depth: 0
 
       - name: revisar PR
+        # Advisorio de verdad: un job en rojo se lee como compuerta y ensucia los checks
+        # del PR. La señal de este agente es su comentario, no el estado del job. Si el
+        # comentario no aparece, ahí se mira el log.
+        continue-on-error: true
         uses: anthropics/claude-code-action@a874e9ecd7bb36efdad65429c6b35815f5a08f10 # v1, pinneada por SHA (SEC-008)
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -37,4 +41,11 @@ jobs:
             Revisa el diff de este PR contra la rama base. Tu respuesta final ES el
             comentario de revisión: escríbela completa en el formato que ese
             documento define.
-          claude_args: "--max-turns 25"
+          # Leer el diff ES el trabajo de este agente. Sin estas herramientas cada intento
+          # se deniega y quema un turno (se vieron 3-12 denials por run). Todas son de
+          # lectura: el límite read-only del agente lo sostiene esta lista, no el techo de turnos.
+          # 60 turnos: los runs reales terminaron en 33, 35 y 49 — con 25 fallaban aun al
+          # completar la revisión con éxito.
+          claude_args: >-
+            --max-turns 60
+            --allowedTools "Bash(git diff:*),Bash(git log:*),Bash(gh pr view:*),Bash(gh pr diff:*)"
