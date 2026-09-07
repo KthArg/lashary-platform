@@ -1,8 +1,8 @@
 ---
 feature: platform
 dri: pendiente
-estado: no_iniciada
-actualizado: 2026-08-29
+estado: terminada
+actualizado: "2026-09-01"
 historias:
   []
 flags: []
@@ -12,12 +12,17 @@ defectos: []
 
 # platform
 
-Fundacion tecnica sin historias propias (ADR-0007): modelo de datos, seeds, CI y job de tests, harness RLS y backups se entregan dentro de las primeras historias de F1 que los exigen (US-AGE-08, US-AUTH-01/02). Los backups son tarea operativa documentada aqui.
+Fundación técnica de la plataforma LASHARY Beauty Studio (ADR-0007).
 
 ## Qué hace hoy
 
-Hoy: no existe. Se detiene antes de todo.
+Completada la infraestructura base:
+- Entorno Next.js 16 (App Router), TypeScript y configuración de alias `@/*`.
+- Configuración de estilos Tailwind CSS v3 y DaisyUI v4 con paleta y tokens del estudio LASHARY.
+- Helpers compartidos de Supabase (`@/shared/lib/supabase`) para Server Components, Client Components y Middleware de refresco de sesión.
+- Suite de pruebas automatizadas con Vitest y Happy-DOM.
+- Configuración de Supabase local (`supabase/config.toml`).
 
-## Contrato público
+## Contrato público (`src/features/platform/index.ts`)
 
-Sin contrato todavía. Al crearse, entra por `index.ts` (ARCH-003).
+Sin contrato de dominio; expone infraestructura compartida a través de `src/shared/`.
