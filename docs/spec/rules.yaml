@@ -224,7 +224,7 @@ rules:
     anchor: "#int-004"
   - id: INT-005
     title: Condiciones de merge
-    statement: Antes de merge, rebase, CI verde y dos aprobaciones — al menos una de alguien que no trabaja en esa feature. Squash merge.
+    statement: Antes de merge, rebase, CI verde y una aprobación de alguien que no trabaja en esa feature. Squash merge.
     rationale: El revisor externo es el único que nota lo que la feature normalizó por costumbre.
     severity: alta
     layers: [ci]

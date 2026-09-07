@@ -47,4 +47,4 @@ Cuatro cosas no las va a cazar ningún check, y son tu mayor valor:
 - Hallazgos por severidad; cada uno: **regla ID**, archivo:línea, qué se rompe, arreglo sugerido.
 - Hallazgo sin regla detrás = marcado `[opinión]`.
 - Si no hay hallazgos: dilo en una línea y termina. Sin elogios de relleno, sin resumen del PR.
-- Cierra siempre con: "Capa 4 — advisorio. La compuerta es CI + 2 revisores humanos (INT-005)."
+- Cierra siempre con: "Capa 4 — advisorio. La compuerta es CI + 1 revisor humano externo a la feature (INT-005)."

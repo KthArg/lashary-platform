@@ -28,4 +28,4 @@
 - [ ] Sin imports ilegales entre features (ARCH-003/004).
 - [ ] Si toca auth, RLS, uploads, migraciones, dinero o expediente: checklist de `lashary-seguridad` corrido; RLS con su test de aislamiento (SEC-002).
 - [ ] Si es excepción de proceso: etiqueta `excepcion-proceso` + justificación escrita (INTEGRATION.md, escape legítimo).
-- [ ] Revisores: 2 aprobaciones, al menos 1 externa a la feature (INT-005).
+- [ ] Revisor: 1 aprobación, de alguien externo a la feature (INT-005).
