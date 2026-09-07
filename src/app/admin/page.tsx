@@ -1,4 +1,4 @@
-import { getAuthSession, AdminLoginForm, signOutAction, AUTH_ROLES, AUTH_BUTTON_TEXTS, AUTH_LABELS } from '@/features/auth'
+import { getAuthSession, AdminLoginForm, signOutAction, InactivityTimeout, AUTH_ROLES, AUTH_BUTTON_TEXTS, AUTH_LABELS } from '@/features/auth'
 import { adminStyles as s } from './admin.styles'
 import type { AdminLoginPageProps } from './admin.types'
 
@@ -21,6 +21,7 @@ export default async function AdminLoginPage(_props: AdminLoginPageProps) {
 
         {isAdmin ? (
           <div className={s.content}>
+            <InactivityTimeout />
             <h2 className={s.title}>{AUTH_LABELS.adminActiveSession}</h2>
             <div className={s.sessionBox}>
               <p className={s.accountLabel}>{AUTH_LABELS.account}</p>
