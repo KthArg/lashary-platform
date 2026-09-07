@@ -1,13 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
-import { AdminLoginForm } from '@/features/auth/components/AdminLoginForm'
+import { render, screen, renderHook, act } from '@testing-library/react'
+import { AdminLoginForm, InactivityTimeout, useInactivityTimeout } from '@/features/auth'
 import { signInAdminAction, signOutAction, getAuthSession, requireAdminSession } from '@/features/auth/actions/auth-actions'
+import { middleware } from '@/middleware'
+import { NextRequest, NextResponse } from 'next/server'
 
 const mockSignInWithPassword = vi.fn()
 const mockSignOut = vi.fn()
 const mockGetUser = vi.fn()
 const mockSingleRole = vi.fn()
 const mockRedirect = vi.fn()
+const mockUpdateSession = vi.fn()
+
+vi.mock('@/shared/lib/supabase/middleware', () => ({
+  updateSession: (...args: unknown[]) => mockUpdateSession(...args),
+}))
 
 vi.mock('@/shared/lib/supabase/server', () => ({
   createClient: vi.fn(() => ({
@@ -95,9 +102,69 @@ describe('US-AUTH-01: Autenticación de Administradores (/admin)', () => {
     await expect(requireAdminSession()).rejects.toThrow('NEXT_REDIRECT:/admin')
   })
 
+  it('CA-4: Bloquea el acceso a subrutas /admin/* en middleware si no hay sesión autenticada', async () => {
+    // Subruta administrativa sin usuario -> Redirige a /admin
+    mockUpdateSession.mockResolvedValueOnce({
+      supabaseResponse: NextResponse.next(),
+      user: null,
+    })
+    const protectedReq = new NextRequest('http://localhost:3000/admin/dashboard')
+    const response = await middleware(protectedReq)
+
+    expect(response.status).toBe(307)
+    expect(response.headers.get('location')).toBe('http://localhost:3000/admin')
+
+    // Subruta administrativa con usuario -> Permite continuar
+    mockUpdateSession.mockResolvedValueOnce({
+      supabaseResponse: NextResponse.next(),
+      user: { id: 'admin-1', email: 'admin@lashary.com' },
+    })
+    const allowedReq = new NextRequest('http://localhost:3000/admin/dashboard')
+    const allowedRes = await middleware(allowedReq)
+    expect(allowedRes.status).toBe(200)
+  })
+
   it('CA-5: Invalida y devuelve nula la sesión cuando el token o sesión expira', async () => {
     mockGetUser.mockResolvedValueOnce({ data: { user: null } })
     const session = await getAuthSession()
     expect(session).toBeNull()
+  })
+
+  it('CA-5: Finaliza la sesión de forma automática tras un periodo de inactividad', () => {
+    vi.useFakeTimers()
+    const onTimeoutMock = vi.fn()
+    const { unmount } = renderHook(() =>
+      useInactivityTimeout({
+        timeoutMs: 1000,
+        checkIntervalMs: 200,
+        onTimeout: onTimeoutMock,
+      })
+    )
+
+    act(() => {
+      vi.advanceTimersByTime(500)
+    })
+    expect(onTimeoutMock).not.toHaveBeenCalled()
+
+    // Registrar actividad resetea el temporizador
+    act(() => {
+      window.dispatchEvent(new Event('mousemove'))
+      vi.advanceTimersByTime(600)
+    })
+    expect(onTimeoutMock).not.toHaveBeenCalled()
+
+    // Superar el tiempo de inactividad ejecuta el callback
+    act(() => {
+      vi.advanceTimersByTime(1100)
+    })
+    expect(onTimeoutMock).toHaveBeenCalledTimes(1)
+
+    unmount()
+    vi.useRealTimers()
+  })
+
+  it('CA-5: Renderiza InactivityTimeout como componente nulo sin romper UI', () => {
+    const { container } = render(<InactivityTimeout enabled={false} />)
+    expect(container.firstChild).toBeNull()
   })
 })
