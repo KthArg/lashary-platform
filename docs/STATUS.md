@@ -9,7 +9,7 @@
 |---|---|---|---|
 | account | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | audit | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
-| auth | pendiente | en_progreso | 0 / 1 / 0 / 0 / 1 |
+| auth | pendiente | en_progreso | 0 / 2 / 0 / 0 / 0 |
 | catalog | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 4 |
 | clients | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | content | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 3 |
@@ -29,7 +29,7 @@
 ### audit (actualizado: 2026-08-29)
 
 ### auth (actualizado: 2026-09-06)
-- US-AUTH-01 — no_iniciada
+- US-AUTH-01 — en_progreso — falta: Implementar invocación de guardia en middleware para protección de rutas (CA-4) y timeout de inactividad de sesión (CA-5)
 - US-AUTH-02 — en_progreso — falta: Aprobación y merge del PR #3
 
 ### catalog (actualizado: 2026-08-28)

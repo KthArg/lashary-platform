@@ -1,0 +1,18 @@
+export const adminStyles = {
+  main: 'min-h-screen bg-brand-cream flex items-center justify-center p-4 selection:bg-brand-gold selection:text-white',
+  card: 'w-full max-w-sm bg-white p-8 sm:p-10 shadow-sm border border-brand-border/40 text-center',
+  header: 'mb-8',
+  brand: 'font-serif text-2xl tracking-widest-plus uppercase text-brand-gold font-medium',
+  tagline: 'text-2xs tracking-super-wide text-brand-gold-light uppercase mt-1',
+  content: 'space-y-6',
+  title: 'font-serif text-xl text-brand-dark font-normal',
+  subtitle: 'text-xs text-brand-muted',
+  sessionBox: 'bg-brand-cream/50 p-4 border border-brand-border/60 text-left space-y-1',
+  accountLabel: 'text-xs text-brand-muted uppercase tracking-wider',
+  accountEmail: 'text-sm font-medium text-brand-dark truncate',
+  badgeContainer: 'pt-1',
+  badge: 'inline-block bg-brand-dark text-white text-3xs uppercase tracking-wider px-2 py-0.5 font-medium',
+  signOutBtn: 'w-full bg-brand-dark hover:bg-black text-white text-xs tracking-widest uppercase py-3.5 px-4 transition-colors font-medium rounded-none',
+  footer: 'pt-4 border-t border-brand-border/60 text-center',
+  noticeText: 'text-3xs text-brand-muted tracking-wide',
+}
