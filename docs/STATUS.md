@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-06.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-07.
 
 ## Features
 
@@ -11,7 +11,7 @@
 | audit | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 4 |
-| clients | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
+| clients | pendiente | en_progreso | 0 / 1 / 0 / 0 / 4 |
 | content | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 3 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | landing | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 6 |
@@ -38,12 +38,12 @@
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
-### clients (actualizado: 2026-08-28)
+### clients (actualizado: 2026-09-07)
 - US-CLI-01 — no_iniciada
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
-- US-CLI-05 — no_iniciada
+- US-CLI-05 — en_progreso — falta: Todo: no existe código de la feature. PR draft abierto en rama feat/US-CLI-05-create-or-edit-clients; faltan migración (notas, unicidad de teléfono, política RLS de admin), casos de uso, UI y pruebas.
 
 ### content (actualizado: 2026-08-29)
 - US-BLOG-01 — no_iniciada
