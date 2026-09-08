@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-07.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-08.
 
 ## Features
 
@@ -38,7 +38,7 @@
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
-### clients (actualizado: 2026-09-07)
+### clients (actualizado: 2026-09-08)
 - US-CLI-01 — no_iniciada
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
@@ -113,6 +113,7 @@ Ninguno registrado.
 
 ## Deuda aceptada
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
+- clients: El ConfirmDialog compartido es el unico elemento con esquinas redondeadas: el resto del sistema es rounded-none. Falta decidir si el radio se adopta como token global o se revierte (UI-001) — aceptada en pendiente de PR — costo: 1h
 
 ## Flags vivos
 
