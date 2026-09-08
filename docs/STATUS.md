@@ -43,7 +43,7 @@
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
-- US-CLI-05 — en_progreso — falta: Todo: no existe código de la feature. PR draft abierto en rama feat/US-CLI-05-create-or-edit-clients; faltan migración (notas, unicidad de teléfono, política RLS de admin), casos de uso, UI y pruebas.
+- US-CLI-05 — en_progreso — falta: Existe la ruta /admin/clients con su guardia de rol y el andamio de carpetas. Faltan: el formulario de alta, la migracion (columna notes, unicidad de telefono, politica RLS de admin), el server action, los criterios 2, 3 y 4, y todas las pruebas incluida la de aislamiento RLS (SEC-002).
 
 ### content (actualizado: 2026-08-29)
 - US-BLOG-01 — no_iniciada
