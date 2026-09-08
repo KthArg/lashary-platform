@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-09-07"
+actualizado: "2026-09-08"
 historias:
   - id: US-CLI-01
     estado: no_iniciada
@@ -14,7 +14,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-05
     estado: en_progreso
-    falta: "El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), el server action, los criterios 2, 3 y 4, y el bloqueo de navegacion al salir de la pagina con el formulario abierto, y todas las pruebas incluida la de aislamiento RLS (SEC-002)."
+    falta: "El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir, y se monta en la pagina porque el modal salio a su propio PR. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), el server action, el modal y su confirmacion al descartar, los criterios 2, 3 y 4, el bloqueo de navegacion, y todas las pruebas incluida la de aislamiento RLS (SEC-002)."
 flags: []
 deuda: []
 defectos: []
@@ -26,11 +26,14 @@ Gestion de clientas: ficha, historial, anotaciones, expediente sensible (SEC-006
 
 ## Qué hace hoy
 
-Existe la ruta `/admin/clients` con el encabezado de la sección y un botón **Agregar** que abre el
-modal de alta. El formulario captura nombre, teléfono, correo y notas, valida al enviar y marca en
-rojo los campos que faltan con su mensaje; con el formulario válido **imprime el alta en consola y
-no persiste nada**. El modal no cierra al clic fuera: la única salida es Cancelar o Escape, y con
-datos escritos ambas piden confirmación antes de descartar.
+Existe la ruta `/admin/clients` con el encabezado de la sección y, debajo, el formulario de alta
+montado directamente en la página. Captura nombre, teléfono, correo y notas, valida al enviar y
+marca en rojo los campos que faltan con su mensaje; con el formulario válido **imprime el alta en
+consola y no persiste nada**.
+
+**No hay modal todavía.** El botón *Agregar*, el modal y la confirmación al descartar existen y
+funcionan, pero viven en la rama `feat/US-CLI-05-confirm-dialog` y entran por su propio PR: juntarlos
+con el formulario llevaba el diff por encima del tope de INT-002.
 
 Lo único que ya funciona es el control de acceso de la capa de aplicación: la página llama a
 `requireAdminSession()` de `auth`, de modo que una visitante anónima o una clienta con sesión de
@@ -40,7 +43,6 @@ exacto), pero solo comprueba que haya sesión, no el rol — el rol lo comprueba
 La estructura de carpetas sigue la distribución de `auth`: `actions/`, `components/`, `hooks/`,
 `constants/`, `validation/`, `types/`, `__tests__/`; un subdirectorio por componente con su
 `.styles.ts` y `.types.ts`.
-
 ## Qué no hace todavía
 
 **Se detiene antes de la base de datos.** Nada se guarda, nada se lee, nada se edita.
@@ -61,10 +63,10 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
 ## Contrato público (`src/features/clients/index.ts`)
 
-Único punto de entrada (ARCH-003). Exporta `AddClientDialog` — lo que consume la ruta —,
-`AddClientButton`, `AddClientModal`, `AddClientForm`, `ClientFormField`, el hook
-`useAddClientForm`, `validateClientForm` y las constantes de textos, claves de campo y límites:
-ningún texto visible vive en el JSX (DOM-009).
+Único punto de entrada (ARCH-003). Exporta `AddClientForm` — lo que consume la ruta —,
+`ClientFormField`, el hook `useAddClientForm`, `validateClientForm` y las constantes de textos,
+claves de campo y límites: ningún texto visible vive en el JSX (DOM-009). `AddClientButton`,
+`AddClientModal` y `AddClientDialog` volverán al contrato con el PR del modal.
 
 ## Invariantes
 
@@ -97,3 +99,8 @@ ningún texto visible vive en el JSX (DOM-009).
   escriba en la base y tenga su prueba.
 - **2026-09-07 — `email` se pide obligatorio** porque `clients_profiles.email` es `NOT NULL`. Si el
   PO acepta clientas sin correo, cambia la columna y `REQUIRED_CLIENT_FIELDS`.
+- **2026-09-08 — El modal sale de este PR y el formulario se monta en la página.** El diff de la
+  rama llegaba a 482 líneas contra un tope de 400 (INT-002). Se revirtió el `ConfirmDialog`
+  compartido y se sacaron `AddClientButton`, `AddClientModal` y `AddClientDialog`, que vuelven en el
+  PR de la rama `feat/US-CLI-05-confirm-dialog`. **Consecuencia asumida:** mientras tanto no hay
+  confirmación al descartar el formulario en curso, así que salir de la página pierde lo escrito.

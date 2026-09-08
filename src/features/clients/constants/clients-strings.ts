@@ -12,7 +12,7 @@ export const CLIENTS_PLACEHOLDERS = {
   notes: 'Preferencias, sensibilidades, cómo llegó al estudio…',
 } as const
 
-export const CLIENTS_BUTTON_TEXTS = { addClient: 'Agregar', save: 'Guardar', cancel: 'Cancelar' } as const
+export const CLIENTS_BUTTON_TEXTS = { save: 'Guardar' } as const
 
 export const CLIENTS_ERROR_MESSAGES = {
   fullNameRequired: 'El nombre completo es obligatorio', fullNameTooShort: 'El nombre debe tener al menos 3 caracteres',
@@ -21,10 +21,6 @@ export const CLIENTS_ERROR_MESSAGES = {
   emailRequired: 'El correo electrónico es obligatorio', emailInvalidFormat: 'El formato del correo no es válido',
   notesTooLong: 'Las notas no pueden superar los 500 caracteres',
   formHasErrors: 'Revisa los campos marcados en rojo.',
-} as const
-
-export const CLIENTS_CONFIRM_MESSAGES = {
-  discardForm: 'Hay un formulario de clienta en progreso. Si sales ahora se perderán los datos ingresados.',
 } as const
 
 // Criterio 1 de US-CLI-05: por ahora el alta solo se reporta en consola, sin persistencia.
