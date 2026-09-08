@@ -24,7 +24,6 @@ export const CLIENTS_ERROR_MESSAGES = {
 } as const
 
 export const CLIENTS_CONFIRM_MESSAGES = {
-  discardFormTitle: '¿Descartar el formulario?',
   discardForm: 'Hay un formulario de clienta en progreso. Si sales ahora se perderán los datos ingresados.',
 } as const
 

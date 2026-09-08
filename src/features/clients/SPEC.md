@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-09-08"
+actualizado: "2026-09-07"
 historias:
   - id: US-CLI-01
     estado: no_iniciada
@@ -16,10 +16,7 @@ historias:
     estado: en_progreso
     falta: "El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), el server action, los criterios 2, 3 y 4, y el bloqueo de navegacion al salir de la pagina con el formulario abierto, y todas las pruebas incluida la de aislamiento RLS (SEC-002)."
 flags: []
-deuda:
-  - que: "El ConfirmDialog compartido es el unico elemento con esquinas redondeadas: el resto del sistema es rounded-none. Falta decidir si el radio se adopta como token global o se revierte (UI-001)"
-    aceptada_en: "pendiente de PR"
-    costo: "1h"
+deuda: []
 defectos: []
 ---
 
@@ -33,8 +30,7 @@ Existe la ruta `/admin/clients` con el encabezado de la sección y un botón **A
 modal de alta. El formulario captura nombre, teléfono, correo y notas, valida al enviar y marca en
 rojo los campos que faltan con su mensaje; con el formulario válido **imprime el alta en consola y
 no persiste nada**. El modal no cierra al clic fuera: la única salida es Cancelar o Escape, y con
-datos escritos ambas abren un diálogo de confirmación propio del proyecto — `ConfirmDialog` de
-`src/shared/components` —, con la salida segura como acción por defecto y el foco puesto en ella.
+datos escritos ambas piden confirmación antes de descartar.
 
 Lo único que ya funciona es el control de acceso de la capa de aplicación: la página llama a
 `requireAdminSession()` de `auth`, de modo que una visitante anónima o una clienta con sesión de
@@ -70,9 +66,6 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 `useAddClientForm`, `validateClientForm` y las constantes de textos, claves de campo y límites:
 ningún texto visible vive en el JSX (DOM-009).
 
-Hacia fuera, la feature consume `ConfirmDialog` desde `@/shared/components`. `shared/` no es una
-feature: no la alcanza ARCH-003 y su entry point es esa carpeta, no un `index.ts` de feature.
-
 ## Invariantes
 
 - **La sección es exclusiva de la administradora.** `/admin/clients` exige rol `admin` o
@@ -104,13 +97,3 @@ feature: no la alcanza ARCH-003 y su entry point es esa carpeta, no un `index.ts
   escriba en la base y tenga su prueba.
 - **2026-09-07 — `email` se pide obligatorio** porque `clients_profiles.email` es `NOT NULL`. Si el
   PO acepta clientas sin correo, cambia la columna y `REQUIRED_CLIENT_FIELDS`.
-- **2026-09-08 — La confirmación de descarte deja de ser `window.confirm`.** Un iframe sandbox sin
-  `allow-modals` —el navegador integrado de VS Code, entre otros— **ignora la llamada y devuelve
-  `false`**, con lo que la guarda `if (isDirty && !window.confirm(...)) return` nunca dejaba cerrar
-  el modal. La reemplaza `ConfirmDialog`, en `src/shared/components/` porque no tiene ninguna regla
-  del estudio: recibe título, mensaje y etiquetas por props (ARCH-007, DOM-009). Es el primer
-  componente del catálogo compartido. Prueba: `discard-confirmation.test.tsx`.
-- **2026-09-08 — `ConfirmDialog` lleva esquinas redondeadas (`rounded-md`) por pedido explícito,
-  contra el `rounded-none` del resto del sistema.** Queda anotado como deuda: o el radio se adopta
-  como token global del tema y se propaga, o este componente vuelve a esquinas rectas. Mantener un
-  único elemento redondeado es exactamente la inconsistencia que UI-001 existe para evitar.
