@@ -43,7 +43,7 @@
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
-- US-CLI-05 — en_progreso — falta: Existe la ruta /admin/clients con su guardia de rol y el andamio de carpetas. Faltan: el formulario de alta, la migracion (columna notes, unicidad de telefono, politica RLS de admin), el server action, los criterios 2, 3 y 4, y todas las pruebas incluida la de aislamiento RLS (SEC-002).
+- US-CLI-05 — en_progreso — falta: El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), el server action, los criterios 2, 3 y 4, y el bloqueo de navegacion al salir de la pagina con el formulario abierto, y todas las pruebas incluida la de aislamiento RLS (SEC-002).
 
 ### content (actualizado: 2026-08-29)
 - US-BLOG-01 — no_iniciada

@@ -14,7 +14,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-05
     estado: en_progreso
-    falta: "Existe la ruta /admin/clients con su guardia de rol y el andamio de carpetas. Faltan: el formulario de alta, la migracion (columna notes, unicidad de telefono, politica RLS de admin), el server action, los criterios 2, 3 y 4, y todas las pruebas incluida la de aislamiento RLS (SEC-002)."
+    falta: "El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), el server action, los criterios 2, 3 y 4, y el bloqueo de navegacion al salir de la pagina con el formulario abierto, y todas las pruebas incluida la de aislamiento RLS (SEC-002)."
 flags: []
 deuda: []
 defectos: []
@@ -26,8 +26,11 @@ Gestion de clientas: ficha, historial, anotaciones, expediente sensible (SEC-006
 
 ## Qué hace hoy
 
-Existe la ruta `/admin/clients`, dentro del panel de administración. Renderiza el encabezado de la
-sección y nada más: no lee ni escribe una sola clienta.
+Existe la ruta `/admin/clients` con el encabezado de la sección y un botón **Agregar** que abre el
+modal de alta. El formulario captura nombre, teléfono, correo y notas, valida al enviar y marca en
+rojo los campos que faltan con su mensaje; con el formulario válido **imprime el alta en consola y
+no persiste nada**. El modal no cierra al clic fuera: la única salida es Cancelar o Escape, y con
+datos escritos ambas piden confirmación antes de descartar.
 
 Lo único que ya funciona es el control de acceso de la capa de aplicación: la página llama a
 `requireAdminSession()` de `auth`, de modo que una visitante anónima o una clienta con sesión de
@@ -35,11 +38,12 @@ Google son redirigidas a `/admin`. El middleware de Edge ya cubría `/admin/*` (
 exacto), pero solo comprueba que haya sesión, no el rol — el rol lo comprueba esta página.
 
 La estructura de carpetas sigue la distribución de `auth`: `actions/`, `components/`, `hooks/`,
-`constants/`, `__tests__/`. Solo `constants/` tiene contenido.
+`constants/`, `validation/`, `types/`, `__tests__/`; un subdirectorio por componente con su
+`.styles.ts` y `.types.ts`.
 
 ## Qué no hace todavía
 
-**Se detiene antes de la interfaz de alta.** No hay formulario, no hay persistencia.
+**Se detiene antes de la base de datos.** Nada se guarda, nada se lee, nada se edita.
 
 La tabla `public.clients_profiles` existe desde la migración
 `20260901000000_auth_roles_and_clients.sql`, pero hoy solo la escribe `auth` cuando una clienta se
@@ -57,8 +61,10 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
 ## Contrato público (`src/features/clients/index.ts`)
 
-Único punto de entrada de la feature (ARCH-003). Hoy exporta solo `CLIENTS_LABELS`, los textos
-visibles de la sección (DOM-009).
+Único punto de entrada (ARCH-003). Exporta `AddClientDialog` — lo que consume la ruta —,
+`AddClientButton`, `AddClientModal`, `AddClientForm`, `ClientFormField`, el hook
+`useAddClientForm`, `validateClientForm` y las constantes de textos, claves de campo y límites:
+ningún texto visible vive en el JSX (DOM-009).
 
 ## Invariantes
 
@@ -86,3 +92,8 @@ visibles de la sección (DOM-009).
 - **2026-09-07 — Pendiente de acuerdo contrato-primero (INT-003): cómo comprueba esta feature que la
   sesión es de una administradora.** El dato vive en `auth_user_roles`, tabla de `auth`, y ARCH-005
   prohíbe consultarla directamente. Propuesta: función `SECURITY DEFINER` publicada por `auth`.
+- **2026-09-07 — El criterio 1 se entrega primero solo como interfaz**: el alta reporta en consola
+  porque la persistencia depende de la migración que aún no existe. **No está cumplido** hasta que
+  escriba en la base y tenga su prueba.
+- **2026-09-07 — `email` se pide obligatorio** porque `clients_profiles.email` es `NOT NULL`. Si el
+  PO acepta clientas sin correo, cambia la columna y `REQUIRED_CLIENT_FIELDS`.
