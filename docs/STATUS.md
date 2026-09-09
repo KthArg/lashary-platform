@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-01.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-06.
 
 ## Features
 
@@ -9,7 +9,7 @@
 |---|---|---|---|
 | account | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | audit | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
-| auth | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 2 |
+| auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | en_progreso | 0 / 1 / 0 / 0 / 3 |
 | clients | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | content | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 3 |
@@ -28,9 +28,9 @@
 
 ### audit (actualizado: 2026-08-29)
 
-### auth (actualizado: 2026-08-28)
-- US-AUTH-01 — no_iniciada
-- US-AUTH-02 — no_iniciada
+### auth (actualizado: 2026-09-06)
+- US-AUTH-01 — terminada — PR #5, tests: admin-auth.test.tsx
+- US-AUTH-02 — terminada — PR #3, tests: auth-client.test.tsx, rls-isolation.test.ts
 
 ### catalog (actualizado: 2026-09-01)
 - US-AGE-08 — en_progreso — falta: criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran en US-AGE-05 con el test obligatorio de DOM-002; el camino de escritura admin va apagado tras el flag catalog_admin_write hasta que auth exponga public.auth_is_staff()
@@ -112,8 +112,7 @@ Ninguno.
 Ninguno registrado.
 
 ## Deuda aceptada
-
-Ninguna registrada.
+- auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
 
 ## Flags vivos
 - catalog: catalog_admin_write — apagado — dueño: Bayron Alpizar — retiro: 2026-12-01

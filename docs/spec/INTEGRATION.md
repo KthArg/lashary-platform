@@ -28,9 +28,9 @@ Seis personas integrando **a diario** contra `main`. Todo lo demás — tamaños
 **Cumplimiento.** L1 flags del spec contra fecha de retiro (F4).
 
 ### INT-005 — Condiciones de merge
-**Regla.** Antes de merge: rebase sobre `main`, CI verde, dos aprobaciones — al menos una de alguien que **no** trabaja en esa feature. Squash merge.
+**Regla.** Antes de merge: rebase sobre `main`, CI verde, una aprobación de alguien que **no** trabaja en esa feature. Squash merge.
 **Racional.** El revisor externo a la feature es el único que nota lo que el equipo de la feature ya normalizó por costumbre.
-**Cumplimiento.** L1 branch protection en GitHub (F4).
+**Cumplimiento.** L1 branch protection en GitHub cuenta la aprobación; la externalidad no es verificable por GitHub (no existe el concepto de "externo a la feature" en branch protection) — la sostiene el checkbox del PR template y el revisor de cumplimiento.
 
 ### INT-006 — El linter es la autoridad de estilo
 **Regla.** El estilo no se discute en review, nunca. Si el linter debió atrapar algo, el fix es un PR a la config del linter, no un comentario a una persona.
