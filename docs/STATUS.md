@@ -38,7 +38,7 @@
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
-### clients (actualizado: 2026-09-08)
+### clients (actualizado: 2026-09-09)
 - US-CLI-01 — no_iniciada
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada

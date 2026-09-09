@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { AddClientForm, CLIENTS_ERROR_MESSAGES, CLIENTS_LABELS, CLIENTS_BUTTON_TEXTS } from '@/features/clients'
+import { ClientForm, EMPTY_CLIENT_FORM_VALUES, CLIENTS_ERROR_MESSAGES, CLIENTS_LABELS, CLIENTS_BUTTON_TEXTS } from '@/features/clients'
 
 /**
  * US-CLI-05 criterio 1 — el resumen de errores debe desaparecer cuando ya no hay errores.
@@ -14,9 +14,9 @@ const submit = () =>
   fireEvent.click(screen.getByRole('button', { name: CLIENTS_BUTTON_TEXTS.save }))
 
 const renderForm = () =>
-  render(<AddClientForm onCreated={vi.fn()} onCancel={vi.fn()} onDirtyChange={vi.fn()} />)
+  render(<ClientForm initialValues={EMPTY_CLIENT_FORM_VALUES} onSubmit={vi.fn()} onCancel={vi.fn()} onDirtyChange={vi.fn()} />)
 
-describe('AddClientForm — resumen de errores', () => {
+describe('ClientForm — resumen de errores', () => {
   it('muestra el resumen al enviar con campos obligatorios vacios', () => {
     renderForm()
     submit()
