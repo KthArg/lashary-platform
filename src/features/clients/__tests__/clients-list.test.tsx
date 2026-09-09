@@ -23,6 +23,13 @@ describe('ClientsList', () => {
     }
   })
 
+  it('oculta el icono al lector de pantalla, que solo debe oir el nombre del boton', () => {
+    render(<ClientsList clients={SAMPLE_CLIENTS} />)
+    const [button] = screen.getAllByRole('button')
+    expect(button.textContent).toBe('')
+    expect(button.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true')
+  })
+
   it('muestra el estado vacio cuando no hay clientas', () => {
     render(<ClientsList clients={[]} />)
     expect(screen.getByText(CLIENTS_LABELS.clientsListEmpty)).toBeTruthy()
