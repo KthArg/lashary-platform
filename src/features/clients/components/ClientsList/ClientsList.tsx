@@ -20,8 +20,21 @@ export function ClientsList({ clients }: ClientsListProps) {
           {clients.map((client) => (
             <li key={client.id} className={s.row}>
               <span className={s.name}>{client.fullName}</span>
-              <button type="button" className={s.editButton} aria-label={CLIENTS_ARIA_LABELS.editClient(client.fullName)}>
-                {CLIENTS_BUTTON_TEXTS.edit}
+              {/*
+                Boton de solo icono: sin texto visible, el aria-label es el UNICO nombre del boton
+                y por eso nombra a la clienta (UI-004). El title es la ayuda para quien usa raton.
+                SVG inline como en GoogleSignInButton: el proyecto no tiene libreria de iconos y no
+                se trae una por un lapiz.
+              */}
+              <button
+                type="button"
+                className={s.editButton}
+                title={CLIENTS_BUTTON_TEXTS.edit}
+                aria-label={CLIENTS_ARIA_LABELS.editClient(client.fullName)}
+              >
+                <svg className={s.editIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                </svg>
               </button>
             </li>
           ))}

@@ -50,11 +50,13 @@ Lo único que ya funciona es el control de acceso de la capa de aplicación: la 
 Google son redirigidas a `/admin`. El middleware de Edge ya cubría `/admin/*` (salvo `/admin`
 exacto), pero solo comprueba que haya sesión, no el rol — el rol lo comprueba esta página.
 
-Debajo del encabezado, `ClientsList` muestra una fila por clienta con su nombre y un botón
-**Editar** — nada más: filtros, búsqueda y paginación son US-CLI-01. Cada botón lleva su propio
-nombre accesible (`Editar a <nombre>`), porque cuatro botones idénticos son indistinguibles en un
-lector de pantalla (UI-004). **Las cuatro clientas están quemadas** en `constants/sample-clients.ts`
-y el botón todavía no abre nada.
+Debajo del encabezado, `ClientsList` muestra una fila por clienta con su nombre y un botón de **solo
+icono** —un lápiz en SVG inline, porque el proyecto no tiene librería de iconos y no se trae una por
+esto—. Nada más: filtros, búsqueda y paginación son US-CLI-01. Sin texto visible, el `aria-label` es
+el **único** nombre del botón, y por eso nombra a la clienta (`Editar a <nombre>`): cuatro lápices
+idénticos son indistinguibles en un lector de pantalla (UI-004). El área táctil es de 40×40 aunque
+el icono mida 16. **Las cuatro clientas están quemadas** en `constants/sample-clients.ts` y el botón
+todavía no abre nada.
 
 La estructura de carpetas sigue la distribución de `auth`: `actions/`, `components/`, `hooks/`,
 `constants/`, `validation/`, `types/`, `__tests__/`; un subdirectorio por componente con su
