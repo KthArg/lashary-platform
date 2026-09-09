@@ -22,6 +22,7 @@ import {
   deactivateTechniqueAction,
 } from '@/features/catalog/ui/actions'
 import { initialActionState } from '@/features/catalog/ui/action-state'
+import { TechniqueNameConflict } from '@/features/catalog/domain/errors'
 
 function form(fields: Record<string, string>): FormData {
   const formData = new FormData()
@@ -81,6 +82,18 @@ describe('acciones administrativas del catálogo', () => {
 
     expect(state).toMatchObject({ status: 'ok', message: 'Técnica creada.' })
     expect(mocks.save).toHaveBeenCalledTimes(1)
+  })
+
+  it('DOM-006: un nombre duplicado vuelve como estado "invalid" con mensaje, no como excepción', async () => {
+    mocks.save.mockRejectedValueOnce(new TechniqueNameConflict('Set volumen'))
+
+    const state = await createTechniqueAction(
+      initialActionState,
+      form(validFields),
+    )
+
+    expect(state.status).toBe('invalid')
+    expect(state.problems).toEqual(['ya existe una técnica llamada "Set volumen"'])
   })
 
   it('rechaza desactivar mediante una llamada directa sin sesión staff', async () => {
