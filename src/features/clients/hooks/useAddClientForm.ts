@@ -13,7 +13,13 @@ export function useAddClientForm(onCreated?: () => void) {
 
   const setFieldValue = useCallback((field: ClientFieldKey, value: string) => {
     setValues((current) => ({ ...current, [field]: value }))
-    setErrors((current) => (current[field] ? { ...current, [field]: undefined } : current))
+    // La clave se BORRA, no se pone en undefined: Object.keys seguiria contandola
+    // y el banner de resumen no se limpiaria nunca.
+    setErrors((current) => {
+      if (!current[field]) return current
+      const { [field]: _corregido, ...rest } = current
+      return rest
+    })
   }, [])
 
   const reset = useCallback(() => {

@@ -9,7 +9,7 @@ export const CLIENTS_LABELS = {
 
 export const CLIENTS_PLACEHOLDERS = {
   fullName: 'María Fernández Rojas', phone: '+506 8888 8888', email: 'maria@correo.com',
-  notes: 'Preferencias, sensibilidades, cómo llegó al estudio…',
+  notes: 'Preferencias, cómo llegó al estudio…',
 } as const
 
 export const CLIENTS_BUTTON_TEXTS = { save: 'Guardar' } as const

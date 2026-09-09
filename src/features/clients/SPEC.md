@@ -29,7 +29,7 @@ Gestion de clientas: ficha, historial, anotaciones, expediente sensible (SEC-006
 Existe la ruta `/admin/clients` con el encabezado de la sección y, debajo, el formulario de alta
 montado directamente en la página. Captura nombre, teléfono, correo y notas, valida al enviar y
 marca en rojo los campos que faltan con su mensaje; con el formulario válido **imprime el alta en
-consola y no persiste nada**.
+consola y no persiste nada**. El resumen de errores se retira en cuanto la admin corrige los campos.
 
 **No hay modal todavía.** El botón *Agregar*, el modal y la confirmación al descartar existen y
 funcionan, pero viven en la rama `feat/US-CLI-05-confirm-dialog` y entran por su propio PR: juntarlos
@@ -104,3 +104,7 @@ claves de campo y límites: ningún texto visible vive en el JSX (DOM-009). `Add
   compartido y se sacaron `AddClientButton`, `AddClientModal` y `AddClientDialog`, que vuelven en el
   PR de la rama `feat/US-CLI-05-confirm-dialog`. **Consecuencia asumida:** mientras tanto no hay
   confirmación al descartar el formulario en curso, así que salir de la página pierde lo escrito.
+- **2026-09-08 — El estado de errores borra la clave, no la vacía.** La revisión del PR encontró que
+  `setFieldValue` hacía `{ ...current, [field]: undefined }`: la clave sobrevivía, `Object.keys`
+  seguía contándola y el resumen rojo del formulario no desaparecía aunque la admin corrigiera todo.
+  Cubierto por `form-error-summary.test.tsx`, que se verificó fallando contra el código anterior.
