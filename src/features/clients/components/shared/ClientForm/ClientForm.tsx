@@ -1,15 +1,16 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useAddClientForm } from '../../hooks/useAddClientForm'
-import { CLIENT_FIELD_KEYS, CLIENT_FORM_LIMITS } from '../../constants/client-form'
-import { CLIENTS_BUTTON_TEXTS, CLIENTS_ERROR_MESSAGES, CLIENTS_LABELS, CLIENTS_PLACEHOLDERS } from '../../constants/clients-strings'
-import { ClientFormField } from '../ClientFormField'
-import { addClientFormStyles as s } from './AddClientForm.styles'
-import type { AddClientFormProps } from './AddClientForm.types'
+import { useClientForm } from '../../../hooks/useClientForm'
+import { CLIENT_FIELD_KEYS, CLIENT_FORM_LIMITS } from '../../../constants/client-form'
+import { CLIENTS_BUTTON_TEXTS, CLIENTS_ERROR_MESSAGES, CLIENTS_LABELS, CLIENTS_PLACEHOLDERS } from '../../../constants/clients-strings'
+import { ClientFormField } from '../../ClientFormField'
+import { clientFormStyles as s } from './ClientForm.styles'
+import type { ClientFormProps } from './ClientForm.types'
 
-export function AddClientForm({ onCreated, onCancel, onDirtyChange }: AddClientFormProps) {
-  const { values, errors, wasSubmitted, isDirty, setFieldValue, handleSubmit } = useAddClientForm(onCreated)
+/** Los mismos cuatro campos sirven para crear y para editar; lo unico que cambia es con que nacen. */
+export function ClientForm({ initialValues, onSubmit, onCancel, onDirtyChange }: ClientFormProps) {
+  const { values, errors, wasSubmitted, isDirty, setFieldValue, handleSubmit } = useClientForm(initialValues, onSubmit)
   const showSummary = wasSubmitted && Object.keys(errors).length > 0
 
   useEffect(() => { onDirtyChange(isDirty) }, [isDirty, onDirtyChange])

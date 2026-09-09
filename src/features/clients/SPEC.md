@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-09-08"
+actualizado: "2026-09-09"
 historias:
   - id: US-CLI-01
     estado: no_iniciada
@@ -60,7 +60,10 @@ todavía no abre nada.
 
 La estructura de carpetas sigue la distribución de `auth`: `actions/`, `components/`, `hooks/`,
 `constants/`, `validation/`, `types/`, `__tests__/`; un subdirectorio por componente con su
-`.styles.ts` y `.types.ts`.
+`.styles.ts` y `.types.ts`. Dentro de `components/` hay una carpeta **`shared/`** con las piezas
+reutilizables entre flujos de la feature —`ClientModal`, `ClientForm` y `ConfirmDialog`—. Esa
+`shared/` es **de la feature**, no `src/shared/` del proyecto: nada de esto es reutilizable fuera de
+`clients` todavía, y ARCH-007 reserva `src/shared/` para código sin reglas de negocio.
 
 ## Qué no hace todavía
 
@@ -82,11 +85,12 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
 ## Contrato público (`src/features/clients/index.ts`)
 
-Único punto de entrada (ARCH-003). Exporta `AddClientDialog` — lo que consume la ruta —,
-`AddClientButton`, `AddClientModal`, `AddClientForm`, `ClientFormField`, `ConfirmDialog`, los hooks
-`useAddClientForm` y `useFocusTrap`, `validateClientForm`, `ClientsList` con el tipo `ClientRecord` y
-los datos temporales `SAMPLE_CLIENTS`, y las constantes de textos, etiquetas ARIA, claves de
-campo y límites: ningún texto visible vive en el JSX (DOM-009).
+Único punto de entrada (ARCH-003). Exporta `AddClientDialog` —lo que consume la ruta—,
+`AddClientButton`, `ClientsList`, y las piezas reutilizables `ClientModal`, `ClientForm`,
+`ClientFormField` y `ConfirmDialog`. Los hooks `useClientForm`, `useClientFormDialog` y
+`useFocusTrap`; `validateClientForm`; el tipo `ClientRecord` y los datos temporales `SAMPLE_CLIENTS`;
+y las constantes de textos, etiquetas ARIA, claves de campo y límites: ningún texto visible vive en
+el JSX (DOM-009).
 
 ## Invariantes
 
@@ -142,3 +146,11 @@ campo y límites: ningún texto visible vive en el JSX (DOM-009).
 - **2026-09-08 — `ClientsList` implementa el estado vacío pero no los de carga y error** (UI-003).
   Su fuente es un arreglo en memoria: no tarda ni falla, y fabricar un spinner que nunca gira es
   teatro. Ambos entran con la lectura real. Cubierto por `clients-list.test.tsx`.
+- **2026-09-09 — El modal y el formulario se generalizaron dentro de la feature.** `AddClientModal` y
+  `AddClientForm` pasaron a `ClientModal` y `ClientForm` —título y valores iniciales por props— y las
+  ~25 líneas de coordinación de `AddClientDialog` salieron a `useClientFormDialog`. Viven en
+  `components/shared/`; **`src/shared/` del proyecto sigue intacto**. Es un refactor **sin cambio de
+  comportamiento**: las 43 pruebas existentes pasan sin tocarlas.
+- **2026-09-09 — `ClientModal` numera su título con `useId`** y no con una constante de módulo. Con
+  dos modales en el mismo árbol, un `id` fijo se duplicaría y `aria-labelledby` apuntaría al título
+  equivocado (UI-004).
