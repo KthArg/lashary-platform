@@ -14,7 +14,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-05
     estado: en_progreso
-    falta: "El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. El criterio 2 tiene la lista de nombres con su accion Editar, pero sobre datos quemados en constants/sample-clients.ts y el boton todavia no abre nada. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), los server actions de alta y edicion, los criterios 3 y 4, el bloqueo de navegacion al salir de la pagina con el formulario abierto, y la prueba de aislamiento RLS (SEC-002)."
+    falta: "El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. El criterio 2 funciona de punta a punta en la interfaz —lista, modal con datos cargados, descarte confirmado y guardado— pero sobre los datos quemados de constants/sample-clients.ts y sin escribir en la base. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), los server actions de alta y edicion, los criterios 3 y 4, el bloqueo de navegacion al salir de la pagina con el formulario abierto, y la prueba de aislamiento RLS (SEC-002)."
 flags: []
 deuda:
   - que: "Cuatro clientas quemadas en src/features/clients/constants/sample-clients.ts para poder ejercitar la edicion sin base de datos; la pantalla no prueba lectura real"
@@ -55,8 +55,13 @@ icono** —un lápiz en SVG inline, porque el proyecto no tiene librería de ico
 esto—. Nada más: filtros, búsqueda y paginación son US-CLI-01. Sin texto visible, el `aria-label` es
 el **único** nombre del botón, y por eso nombra a la clienta (`Editar a <nombre>`): cuatro lápices
 idénticos son indistinguibles en un lector de pantalla (UI-004). El área táctil es de 40×40 aunque
-el icono mida 16. **Las cuatro clientas están quemadas** en `constants/sample-clients.ts` y el botón
-todavía no abre nada.
+el icono mida 16. **Las cuatro clientas están quemadas** en `constants/sample-clients.ts`.
+
+El lápiz abre `EditClientDialog`: el **mismo** modal, formulario y confirmación del alta, con los
+datos de la clienta ya cargados. Salir con cambios pendientes pregunta antes de descartarlos; salir
+sin haber tocado nada cierra directo. Hay un solo diálogo para toda la lista, y el formulario lleva
+`key` por clienta: sin eso, pasar de una a otra reusaría el estado anterior. El foco vuelve al lápiz
+de esa fila, no al principio (UI-004). Al guardar **imprime en consola y no persiste nada**.
 
 La estructura de carpetas sigue la distribución de `auth`: `actions/`, `components/`, `hooks/`,
 `constants/`, `validation/`, `types/`, `__tests__/`; un subdirectorio por componente con su
@@ -86,7 +91,8 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 ## Contrato público (`src/features/clients/index.ts`)
 
 Único punto de entrada (ARCH-003). Exporta `AddClientDialog` —lo que consume la ruta—,
-`AddClientButton`, `ClientsList`, y las piezas reutilizables `ClientModal`, `ClientForm`,
+`AddClientButton`, `EditClientDialog`, `ClientsList`, y las piezas reutilizables `ClientModal`,
+`ClientForm`,
 `ClientFormField` y `ConfirmDialog`. Los hooks `useClientForm`, `useClientFormDialog` y
 `useFocusTrap`; `validateClientForm`; el tipo `ClientRecord` y los datos temporales `SAMPLE_CLIENTS`;
 y las constantes de textos, etiquetas ARIA, claves de campo y límites: ningún texto visible vive en
@@ -154,3 +160,7 @@ el JSX (DOM-009).
 - **2026-09-09 — `ClientModal` numera su título con `useId`** y no con una constante de módulo. Con
   dos modales en el mismo árbol, un `id` fijo se duplicaría y `aria-labelledby` apuntaría al título
   equivocado (UI-004).
+- **2026-09-09 — `isDirty` compara contra los valores iniciales, no contra el vacío.** La definición
+  anterior ("hay algo escrito") servía para el alta, que nace vacía, pero el formulario de edición
+  nace lleno: abrirlo y cancelar sin tocar nada disparaba la confirmación de descarte, que mentía.
+  Cubierto por `edit-client.test.tsx`, verificado fallando (2 pruebas) contra la definición anterior.
