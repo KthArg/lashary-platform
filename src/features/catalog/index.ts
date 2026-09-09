@@ -1,6 +1,7 @@
-// Entry point público de la feature catalog (ARCH-003): lo único importable desde afuera.
+// Entry point público de la feature catalog (ARCH-003). Superficie de solo lectura y de
+// servidor — el repositorio usa el cliente Supabase de servidor. Para Client Components
+// (loading.tsx, error.tsx) que no pueden arrastrar next/headers al bundle, ver ./client.ts.
 // Contrato y garantías: docs/contracts/catalog-api.md.
-// Superficie de solo lectura y de servidor — el repositorio usa el cliente Supabase de servidor.
 
 import {
   listTechniques as listTechniquesUseCase,

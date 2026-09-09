@@ -1,7 +1,7 @@
 'use client'
 
-// Ver nota en loading.tsx: el texto viene del módulo de mensajes, no del index.ts.
-import { catalogMessages } from '@/features/catalog/ui/messages'
+// Ver nota en loading.tsx: el texto viene del entry point cliente-seguro, no del index.ts.
+import { catalogMessages } from '@/features/catalog/client'
 
 const m = catalogMessages.admin.error
 
