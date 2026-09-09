@@ -6,6 +6,7 @@ export const CLIENTS_LABELS = {
   fullNameInput: 'Nombre completo', phoneInput: 'Teléfono', emailInput: 'Correo electrónico', notesInput: 'Notas generales',
   requiredMark: 'obligatorio', optionalMark: 'opcional',
   clientsListTitle: 'Clientas registradas', clientsListEmpty: 'Todavía no hay clientas registradas.',
+  editClientTitle: 'Editar clienta', editClientDescription: 'Cambia solo lo que necesites; los campos marcados siguen siendo obligatorios.',
 } as const
 
 export const CLIENTS_PLACEHOLDERS = {
@@ -25,13 +26,19 @@ export const CLIENTS_ERROR_MESSAGES = {
 } as const
 
 // Criterio 1 de US-CLI-05: por ahora el alta solo se reporta en consola, sin persistencia.
-export const CLIENTS_CONSOLE_MESSAGES = { clientCreated: '[clients] Clienta creada correctamente (solo UI, sin persistencia):' } as const
+export const CLIENTS_CONSOLE_MESSAGES = {
+  clientCreated: '[clients] Clienta creada correctamente (solo UI, sin persistencia):',
+  clientUpdated: '[clients] Clienta editada correctamente (solo UI, sin persistencia):',
+} as const
 
 export const CLIENTS_CONFIRM_MESSAGES = {
   discardFormTitle: '¿Descartar la clienta?',
   discardForm: 'Hay un formulario de clienta en progreso. Si sales ahora se perderán los datos ingresados.',
   discardConfirm: 'Descartar cambios',
   discardCancel: 'Seguir editando',
+  // La edicion pierde CAMBIOS sobre datos que ya existian, no un formulario entero: no es lo mismo.
+  discardEditsTitle: '¿Descartar los cambios?',
+  discardEdits: 'Los cambios que hiciste en esta clienta se perderán. La clienta seguirá registrada como estaba.',
 } as const
 
 // Cuatro botones que dicen solo "Editar" son indistinguibles en un lector de pantalla (UI-004).

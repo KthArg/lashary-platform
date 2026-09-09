@@ -8,10 +8,11 @@ import type { ClientFormErrors, ClientFormValues } from '../types/client-form.ty
 const FIELD_KEYS = Object.values(CLIENT_FIELD_KEYS)
 
 /**
- * Estado del formulario de clienta.
+ * Estado del formulario de clienta, para alta y para edicion.
  *
- * Este commit es un refactor sin cambio de comportamiento: `isDirty` conserva la definicion
- * anterior ("hay algo escrito"), que sirve para el alta porque el formulario nace vacio.
+ * `isDirty` compara contra los valores INICIALES, no contra el vacio. En el alta da lo mismo
+ * —nace vacio, cualquier letra ensucia—, pero en la edicion nace lleno: medir "hay algo escrito"
+ * haria que abrir y cancelar sin tocar nada dispare la confirmacion de descarte, que mentiria.
  */
 export function useClientForm(initialValues: ClientFormValues, onSubmitted?: (values: ClientFormValues) => void) {
   const [values, setValues] = useState<ClientFormValues>({ ...initialValues })
@@ -19,8 +20,8 @@ export function useClientForm(initialValues: ClientFormValues, onSubmitted?: (va
   const [wasSubmitted, setWasSubmitted] = useState(false)
 
   const isDirty = useMemo(
-    () => FIELD_KEYS.some((field) => values[field].trim().length > 0),
-    [values],
+    () => FIELD_KEYS.some((field) => values[field].trim() !== initialValues[field].trim()),
+    [values, initialValues],
   )
 
   const setFieldValue = useCallback((field: ClientFieldKey, value: string) => {

@@ -1,5 +1,6 @@
 export { AddClientDialog } from './components/AddClientDialog'
 export { AddClientButton } from './components/AddClientButton'
+export { EditClientDialog } from './components/EditClientDialog'
 export { ClientModal } from './components/shared/ClientModal'
 export { ClientForm } from './components/shared/ClientForm'
 export { ClientFormField } from './components/ClientFormField'

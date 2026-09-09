@@ -43,7 +43,7 @@
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
-- US-CLI-05 — en_progreso — falta: El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. El criterio 2 tiene la lista de nombres con su accion Editar, pero sobre datos quemados en constants/sample-clients.ts y el boton todavia no abre nada. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), los server actions de alta y edicion, los criterios 3 y 4, el bloqueo de navegacion al salir de la pagina con el formulario abierto, y la prueba de aislamiento RLS (SEC-002).
+- US-CLI-05 — en_progreso — falta: El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. El criterio 2 funciona de punta a punta en la interfaz —lista, modal con datos cargados, descarte confirmado y guardado— pero sobre los datos quemados de constants/sample-clients.ts y sin escribir en la base. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), los server actions de alta y edicion, los criterios 3 y 4, el bloqueo de navegacion al salir de la pagina con el formulario abierto, y la prueba de aislamiento RLS (SEC-002).
 
 ### content (actualizado: 2026-08-29)
 - US-BLOG-01 — no_iniciada
