@@ -3,6 +3,7 @@ node_modules/
 .next/
 out/
 coverage/
+*.tsbuildinfo
 
 # entorno — SEC-004: los secretos jamás se versionan
 .env

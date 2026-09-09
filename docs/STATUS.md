@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-06.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-08.
 
 ## Features
 
@@ -12,9 +12,9 @@
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 4 |
 | clients | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
-| content | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 3 |
+| content | pendiente | en_progreso | 0 / 0 / 0 / 0 / 3 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
-| landing | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 6 |
+| landing | pendiente | en_progreso | 0 / 1 / 0 / 0 / 5 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
 | payments | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
@@ -45,7 +45,7 @@
 - US-CLI-04 — no_iniciada
 - US-CLI-05 — no_iniciada
 
-### content (actualizado: 2026-08-29)
+### content (actualizado: 2026-09-08)
 - US-BLOG-01 — no_iniciada
 - US-BLOG-02 — no_iniciada
 - US-BLOG-03 — no_iniciada
@@ -57,8 +57,8 @@
 - US-MOR-04 — no_iniciada
 - US-MOR-05 — no_iniciada
 
-### landing (actualizado: 2026-08-28)
-- US-LAND-01 — no_iniciada
+### landing (actualizado: 2026-09-08)
+- US-LAND-01 — en_progreso — falta: solo existe el gateway del CMS (feature content, apagado tras el flag landing_cms_content). Falta la UI: cascaron publico (header/footer), seccion hero y el cableado de src/app/page.tsx con fallback estatico + ISR. El criterio 3 (contenido editable desde el CMS) no se demuestra hasta confirmar instancia + esquema + token con el mantenedor (INT-003) y probar contra el CMS real.
 - US-LAND-02 — no_iniciada
 - US-LAND-03 — no_iniciada
 - US-LAND-04 — no_iniciada
@@ -115,8 +115,7 @@ Ninguno registrado.
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
 
 ## Flags vivos
-
-Ninguno.
+- content: landing_cms_content — apagado — dueño: Bayron Alpizar — retiro: 2026-12-01
 
 ## Historias del backlog sin feature que las reclame
 

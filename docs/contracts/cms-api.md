@@ -1,6 +1,6 @@
 # Contrato — API del CMS externo
 
-> **Autoridad:** qué contenido necesita esta plataforma del CMS y bajo qué garantías. Es un contrato **de demanda**: nace de los criterios del backlog. La forma final (rutas, esquema JSON) se fija con el mantenedor del CMS y se versiona aquí (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** borrador — pendiente de confirmación del mantenedor. **Actualizado:** 2026-08-27.
+> **Autoridad:** qué contenido necesita esta plataforma del CMS y bajo qué garantías. Es un contrato **de demanda**: nace de los criterios del backlog. La forma final (rutas, esquema JSON) se fija con el mantenedor del CMS y se versiona aquí (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** borrador — pendiente de confirmación del mantenedor. **Actualizado:** 2026-09-08.
 
 ## Hechos conocidos del CMS
 
@@ -27,6 +27,30 @@ Descripciones/imágenes de técnicas en la landing (US-LAND-02) **componen** con
 4. URLs de imagen servibles con caché y tamaños razonables (PERF-004 mide la landing resultante).
 5. Cambios de esquema son **versionados y anunciados**: un campo no desaparece sin aviso; el contrato se actualiza aquí antes del cambio (INT-003 aplica también a esta frontera).
 6. Mecanismo de invalidación acordado (webhook de republicación o TTL corto) para que "los cambios se reflejan" de los criterios sea verdad.
+
+## Esquema asumido — Sección inicio (US-LAND-01)
+
+**Estado: ASUMIDO, no confirmado.** No hay instancia del CMS con URL ni token todavía. US-LAND-01
+codifica el gateway (`src/features/content/`) contra esta forma, **apagado tras el flag
+`landing_cms_content`** (INT-004): con el flag en `false` no se llama al CMS y la landing sirve
+contenido de respaldo (ADR-0001). El criterio 3 de US-LAND-01 queda `en_progreso` hasta que el
+mantenedor confirme y se pruebe contra el CMS real.
+
+- **Endpoint asumido:** `GET {CMS_API_URL}/api/public/home` · `Authorization: Bearer {CMS_API_TOKEN}`
+- **Respuesta asumida (200):**
+
+```json
+{
+  "heroImage": { "url": "https://…/hero.jpg", "alt": "Texto alternativo de la imagen" },
+  "welcomeText": "Una o dos frases de bienvenida.",
+  "ctaLabel": "Agendar cita"
+}
+```
+
+- El parser es defensivo (`parseHomeContent`): cualquier campo faltante, vacío o de tipo
+  inesperado ⇒ se descarta la respuesta entera y se degrada al respaldo. `alt` puede ser `""`
+  (imagen decorativa); el resto no.
+- El precio y la duración de técnicas **no** están aquí (van del catálogo, US-AGE-08).
 
 ## Pendientes de confirmación con el mantenedor
 
