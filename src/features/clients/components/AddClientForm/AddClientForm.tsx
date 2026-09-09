@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useAddClientForm } from '../../hooks/useAddClientForm'
 import { CLIENT_FIELD_KEYS, CLIENT_FORM_LIMITS } from '../../constants/client-form'
 import { CLIENTS_BUTTON_TEXTS, CLIENTS_ERROR_MESSAGES, CLIENTS_LABELS, CLIENTS_PLACEHOLDERS } from '../../constants/clients-strings'
@@ -7,9 +8,11 @@ import { ClientFormField } from '../ClientFormField'
 import { addClientFormStyles as s } from './AddClientForm.styles'
 import type { AddClientFormProps } from './AddClientForm.types'
 
-export function AddClientForm({ onCreated }: AddClientFormProps) {
-  const { values, errors, wasSubmitted, setFieldValue, handleSubmit } = useAddClientForm(onCreated)
+export function AddClientForm({ onCreated, onCancel, onDirtyChange }: AddClientFormProps) {
+  const { values, errors, wasSubmitted, isDirty, setFieldValue, handleSubmit } = useAddClientForm(onCreated)
   const showSummary = wasSubmitted && Object.keys(errors).length > 0
+
+  useEffect(() => { onDirtyChange(isDirty) }, [isDirty, onDirtyChange])
 
   return (
     <form onSubmit={handleSubmit} className={s.form} noValidate>
@@ -32,6 +35,7 @@ export function AddClientForm({ onCreated }: AddClientFormProps) {
         placeholder={CLIENTS_PLACEHOLDERS.notes} maxLength={CLIENT_FORM_LIMITS.notesMaxLength} />
 
       <div className={s.actions}>
+        <button type="button" onClick={onCancel} className={s.cancelBtn}>{CLIENTS_BUTTON_TEXTS.cancel}</button>
         <button type="submit" className={s.submitBtn}>{CLIENTS_BUTTON_TEXTS.save}</button>
       </div>
     </form>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { EMPTY_CLIENT_FORM_VALUES, type ClientFieldKey } from '../constants/client-form'
 import { CLIENTS_CONSOLE_MESSAGES } from '../constants/clients-strings'
 import { hasClientFormErrors, validateClientForm } from '../validation/validate-client-form'
@@ -10,6 +10,11 @@ export function useAddClientForm(onCreated?: () => void) {
   const [values, setValues] = useState<ClientFormValues>({ ...EMPTY_CLIENT_FORM_VALUES })
   const [errors, setErrors] = useState<ClientFormErrors>({})
   const [wasSubmitted, setWasSubmitted] = useState(false)
+
+  const isDirty = useMemo(
+    () => Object.values(values).some((value) => value.trim().length > 0),
+    [values],
+  )
 
   const setFieldValue = useCallback((field: ClientFieldKey, value: string) => {
     setValues((current) => ({ ...current, [field]: value }))
@@ -43,5 +48,5 @@ export function useAddClientForm(onCreated?: () => void) {
     [values, reset, onCreated],
   )
 
-  return { values, errors, wasSubmitted, setFieldValue, handleSubmit, reset }
+  return { values, errors, wasSubmitted, isDirty, setFieldValue, handleSubmit, reset }
 }

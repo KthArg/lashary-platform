@@ -14,7 +14,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-05
     estado: en_progreso
-    falta: "El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir, y se monta en la pagina porque el modal salio a su propio PR. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), el server action, el modal y su confirmacion al descartar, los criterios 2, 3 y 4, el bloqueo de navegacion, y todas las pruebas incluida la de aislamiento RLS (SEC-002)."
+    falta: "El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), el server action, los criterios 2, 3 y 4, el bloqueo de navegacion al salir de la pagina con el formulario abierto, y la prueba de aislamiento RLS (SEC-002)."
 flags: []
 deuda: []
 defectos: []
@@ -26,14 +26,18 @@ Gestion de clientas: ficha, historial, anotaciones, expediente sensible (SEC-006
 
 ## Qué hace hoy
 
-Existe la ruta `/admin/clients` con el encabezado de la sección y, debajo, el formulario de alta
-montado directamente en la página. Captura nombre, teléfono, correo y notas, valida al enviar y
-marca en rojo los campos que faltan con su mensaje; con el formulario válido **imprime el alta en
-consola y no persiste nada**. El resumen de errores se retira en cuanto la admin corrige los campos.
+Existe la ruta `/admin/clients` con el encabezado de la sección y un botón **Agregar** que abre el
+modal de alta. El formulario captura nombre, teléfono, correo y notas, valida al enviar y marca en
+rojo los campos que faltan con su mensaje; el resumen de errores se retira en cuanto la admin
+corrige los campos. Con el formulario válido **imprime el alta en consola y no persiste nada**.
 
-**No hay modal todavía.** El botón *Agregar*, el modal y la confirmación al descartar existen y
-funcionan, pero viven en la rama `feat/US-CLI-05-confirm-dialog` y entran por su propio PR: juntarlos
-con el formulario llevaba el diff por encima del tope de INT-002.
+El modal no cierra al clic fuera: la única salida es Cancelar o Escape, y con datos escritos ambas
+abren el `ConfirmDialog` del proyecto —no `window.confirm`, que un iframe sandbox ignora—.
+
+**El foco queda confinado al diálogo** (UI-004): entra en el primer control al abrir, `Tab` y
+`Shift+Tab` ciclan dentro de la tarjeta, y al cerrar vuelve al botón *Agregar*. Lo resuelve
+`useFocusTrap`, que también usa el `ConfirmDialog`; mientras la confirmación está encima, el modal
+cede la trampa con `isPaused`.
 
 Lo único que ya funciona es el control de acceso de la capa de aplicación: la página llama a
 `requireAdminSession()` de `auth`, de modo que una visitante anónima o una clienta con sesión de
@@ -43,6 +47,7 @@ exacto), pero solo comprueba que haya sesión, no el rol — el rol lo comprueba
 La estructura de carpetas sigue la distribución de `auth`: `actions/`, `components/`, `hooks/`,
 `constants/`, `validation/`, `types/`, `__tests__/`; un subdirectorio por componente con su
 `.styles.ts` y `.types.ts`.
+
 ## Qué no hace todavía
 
 **Se detiene antes de la base de datos.** Nada se guarda, nada se lee, nada se edita.
@@ -63,10 +68,10 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
 ## Contrato público (`src/features/clients/index.ts`)
 
-Único punto de entrada (ARCH-003). Exporta `AddClientForm` — lo que consume la ruta —,
-`ClientFormField`, el hook `useAddClientForm`, `validateClientForm` y las constantes de textos,
-claves de campo y límites: ningún texto visible vive en el JSX (DOM-009). `AddClientButton`,
-`AddClientModal` y `AddClientDialog` volverán al contrato con el PR del modal.
+Único punto de entrada (ARCH-003). Exporta `AddClientDialog` — lo que consume la ruta —,
+`AddClientButton`, `AddClientModal`, `AddClientForm`, `ClientFormField`, `ConfirmDialog`, los hooks
+`useAddClientForm` y `useFocusTrap`, `validateClientForm` y las constantes de textos, claves de
+campo y límites: ningún texto visible vive en el JSX (DOM-009).
 
 ## Invariantes
 
@@ -99,12 +104,18 @@ claves de campo y límites: ningún texto visible vive en el JSX (DOM-009). `Add
   escriba en la base y tenga su prueba.
 - **2026-09-07 — `email` se pide obligatorio** porque `clients_profiles.email` es `NOT NULL`. Si el
   PO acepta clientas sin correo, cambia la columna y `REQUIRED_CLIENT_FIELDS`.
-- **2026-09-08 — El modal sale de este PR y el formulario se monta en la página.** El diff de la
-  rama llegaba a 482 líneas contra un tope de 400 (INT-002). Se revirtió el `ConfirmDialog`
-  compartido y se sacaron `AddClientButton`, `AddClientModal` y `AddClientDialog`, que vuelven en el
-  PR de la rama `feat/US-CLI-05-confirm-dialog`. **Consecuencia asumida:** mientras tanto no hay
-  confirmación al descartar el formulario en curso, así que salir de la página pierde lo escrito.
 - **2026-09-08 — El estado de errores borra la clave, no la vacía.** La revisión del PR encontró que
   `setFieldValue` hacía `{ ...current, [field]: undefined }`: la clave sobrevivía, `Object.keys`
   seguía contándola y el resumen rojo del formulario no desaparecía aunque la admin corrigiera todo.
   Cubierto por `form-error-summary.test.tsx`, que se verificó fallando contra el código anterior.
+- **2026-09-08 — El `ConfirmDialog` vive en `clients`, no en `shared/`.** Su único consumidor hoy es
+  el descarte del formulario de alta. Subirlo a `shared/` con un solo consumidor inventa una API
+  compartida antes de saber qué necesita el segundo. Sube cuando aparezca, no antes.
+- **2026-09-08 — `useFocusTrap` cierra el hallazgo UI-004 de la revisión.** El modal declaraba
+  `role="dialog"` y `aria-modal` pero el `Tab` se escapaba de la tarjeta a la página, que quedaba
+  operable. Ahora el foco entra al abrir, cicla dentro y vuelve al botón *Agregar* al cerrar.
+  Cubierto por `modal-focus-trap.test.tsx`, verificado fallando sin la trampa.
+- **2026-09-08 — Este PR entra con excepción de proceso a INT-002.** El diff excede las ~400 líneas
+  porque el modal, su confirmación, la trampa de foco y sus pruebas son una unidad funcional:
+  partirlos deja mergeado un modal inaccesible. Etiqueta `excepcion-proceso` con justificación
+  escrita, según `docs/spec/INTEGRATION.md#el-escape-legítimo`.

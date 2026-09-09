@@ -12,7 +12,7 @@ export const CLIENTS_PLACEHOLDERS = {
   notes: 'Preferencias, cómo llegó al estudio…',
 } as const
 
-export const CLIENTS_BUTTON_TEXTS = { save: 'Guardar' } as const
+export const CLIENTS_BUTTON_TEXTS = { addClient: 'Agregar', save: 'Guardar', cancel: 'Cancelar' } as const
 
 export const CLIENTS_ERROR_MESSAGES = {
   fullNameRequired: 'El nombre completo es obligatorio', fullNameTooShort: 'El nombre debe tener al menos 3 caracteres',
@@ -25,3 +25,10 @@ export const CLIENTS_ERROR_MESSAGES = {
 
 // Criterio 1 de US-CLI-05: por ahora el alta solo se reporta en consola, sin persistencia.
 export const CLIENTS_CONSOLE_MESSAGES = { clientCreated: '[clients] Clienta creada correctamente (solo UI, sin persistencia):' } as const
+
+export const CLIENTS_CONFIRM_MESSAGES = {
+  discardFormTitle: '¿Descartar la clienta?',
+  discardForm: 'Hay un formulario de clienta en progreso. Si sales ahora se perderán los datos ingresados.',
+  discardConfirm: 'Descartar cambios',
+  discardCancel: 'Seguir editando',
+} as const

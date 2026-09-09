@@ -1,4 +1,5 @@
 export interface AddClientFormProps {
-  /** Opcional: la pagina la monta sin callback; la usara el modal cuando vuelva. */
-  onCreated?: () => void
+  onCreated: () => void
+  onCancel: () => void
+  onDirtyChange: (isDirty: boolean) => void
 }

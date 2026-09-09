@@ -43,7 +43,7 @@
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
-- US-CLI-05 — en_progreso — falta: El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir, y se monta en la pagina porque el modal salio a su propio PR. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), el server action, el modal y su confirmacion al descartar, los criterios 2, 3 y 4, el bloqueo de navegacion, y todas las pruebas incluida la de aislamiento RLS (SEC-002).
+- US-CLI-05 — en_progreso — falta: El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), el server action, los criterios 2, 3 y 4, el bloqueo de navegacion al salir de la pagina con el formulario abierto, y la prueba de aislamiento RLS (SEC-002).
 
 ### content (actualizado: 2026-08-29)
 - US-BLOG-01 — no_iniciada

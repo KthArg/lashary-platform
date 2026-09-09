@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { AddClientForm, CLIENTS_ERROR_MESSAGES, CLIENTS_LABELS, CLIENTS_BUTTON_TEXTS } from '@/features/clients'
 
@@ -13,15 +13,18 @@ const fill = (label: string, value: string) =>
 const submit = () =>
   fireEvent.click(screen.getByRole('button', { name: CLIENTS_BUTTON_TEXTS.save }))
 
+const renderForm = () =>
+  render(<AddClientForm onCreated={vi.fn()} onCancel={vi.fn()} onDirtyChange={vi.fn()} />)
+
 describe('AddClientForm — resumen de errores', () => {
   it('muestra el resumen al enviar con campos obligatorios vacios', () => {
-    render(<AddClientForm />)
+    renderForm()
     submit()
     expect(screen.getByText(CLIENTS_ERROR_MESSAGES.formHasErrors)).toBeTruthy()
   })
 
   it('retira el resumen cuando la admin corrige todos los campos', () => {
-    render(<AddClientForm />)
+    renderForm()
     submit()
     expect(screen.getByText(CLIENTS_ERROR_MESSAGES.formHasErrors)).toBeTruthy()
 
@@ -33,7 +36,7 @@ describe('AddClientForm — resumen de errores', () => {
   })
 
   it('mantiene el resumen mientras quede al menos un campo invalido', () => {
-    render(<AddClientForm />)
+    renderForm()
     submit()
 
     fill(CLIENTS_LABELS.fullNameInput, 'Maria Fernandez Rojas')

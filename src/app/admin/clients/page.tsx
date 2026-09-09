@@ -1,5 +1,5 @@
 import { requireAdminSession } from '@/features/auth'
-import { AddClientForm, CLIENTS_LABELS } from '@/features/clients'
+import { AddClientDialog, CLIENTS_LABELS } from '@/features/clients'
 import { adminClientsStyles as s } from './clients.styles'
 import type { AdminClientsPageProps } from './clients.types'
 
@@ -19,13 +19,8 @@ export default async function AdminClientsPage(_props: AdminClientsPageProps) {
             <h1 className={s.title}>{CLIENTS_LABELS.sectionTitle}</h1>
             <p className={s.subtitle}>{CLIENTS_LABELS.sectionSubtitle}</p>
           </div>
+          <AddClientDialog />
         </header>
-
-        <section className={s.formSection} aria-labelledby="new-client-title">
-          <h2 id="new-client-title" className={s.formTitle}>{CLIENTS_LABELS.newClientTitle}</h2>
-          <p className={s.formDescription}>{CLIENTS_LABELS.newClientDescription}</p>
-          <AddClientForm />
-        </section>
       </div>
     </main>
   )
