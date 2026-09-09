@@ -2,7 +2,7 @@
 feature: store
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-09-02
+actualizado: 2026-09-09
 historias:
   - id: US-PROD-02
     estado: en_progreso
@@ -31,6 +31,9 @@ Tienda (F4): productos, carrito, checkout con comprobante. Stock y pedidos admin
 - Componente React (`ui/grid-productos-publicos.tsx`): grid responsivo con estados de UI
 - Strings externalizados (`ui/grid-productos-publicos.cadenas.es.ts`): i18n base
 - Integración en ruta pública `/productos` con cliente CMS simulado
+- Endurecimiento anti-XSS en renderer HTML: escape de contenido y sanitización de URLs provenientes de CMS
+- Etiquetas ARIA y mensaje de carga externalizados en cadenas de UI
+- Acción de reintento configurable por URL (`urlReintento`) en el renderer
 
 Se detiene antes de tests automatizados y panel admin.
 

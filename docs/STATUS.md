@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-06.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-09.
 
 ## Features
 
@@ -97,7 +97,7 @@
 - US-AGE-11 — no_iniciada
 - US-AGE-12 — no_iniciada
 
-### store (actualizado: 2026-09-02)
+### store (actualizado: 2026-09-09)
 - US-PROD-02 — en_progreso — falta: Tests automatizados de UI/integración; panel admin para gestionar productos desde CMS.
 - US-PROD-03 — no_iniciada
 - US-SHOP-01 — no_iniciada
