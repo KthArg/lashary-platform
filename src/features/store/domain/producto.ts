@@ -29,6 +29,10 @@ export type CadenaProductos = {
   tituloError: string;
   descripcionError: string;
   etiquetaReintentar: string;
+  mensajeCargando: string;
+  ariaCatalogoProductos: string;
+  prefijoAltProducto: string;
+  ariaBotonReintentar: string;
 };
 
 // Formatea monto de colones con símbolo de moneda (CRC)

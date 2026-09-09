@@ -97,7 +97,7 @@
 - US-AGE-11 — no_iniciada
 - US-AGE-12 — no_iniciada
 
-### store (actualizado: 2026-09-02)
+### store (actualizado: 2026-09-09)
 - US-PROD-02 — en_progreso — falta: Tests automatizados de UI/integración; panel admin para gestionar productos desde CMS.
 - US-PROD-03 — no_iniciada
 - US-SHOP-01 — no_iniciada
