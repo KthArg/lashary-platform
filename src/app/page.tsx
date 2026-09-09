@@ -1,10 +1,13 @@
-export default function HomePage() {
-  return (
-    <main className="min-h-screen bg-brand-cream flex items-center justify-center p-4">
-      <div className="w-full max-w-sm bg-white p-8 border border-brand-border/40 text-center">
-        <h1 className="font-serif text-2xl uppercase text-brand-gold font-medium">LASHARY</h1>
-        <p className="text-2xs uppercase tracking-super-wide text-brand-gold-light mt-1">BEAUTY STUDIO</p>
-      </div>
-    </main>
-  )
+import { getHomeContent } from '@/features/content'
+import { HomePage, FALLBACK_HOME_CONTENT } from '@/features/landing'
+
+// SSG + ISR: la página se regenera como máximo cada hora. Cuando se acuerde la invalidación
+// del CMS (webhook o TTL — garantía 6 de docs/contracts/cms-api.md) se ajusta acá.
+export const revalidate = 3600
+
+export default async function Page() {
+  // Si el CMS no entrega contenido (flag apagado, caído o respuesta inválida) se sirve el
+  // respaldo estático — la landing degrada con gracia, nunca se cae (ADR-0001).
+  const content = (await getHomeContent()) ?? FALLBACK_HOME_CONTENT
+  return <HomePage content={content} />
 }

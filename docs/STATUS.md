@@ -58,7 +58,7 @@
 - US-MOR-05 — no_iniciada
 
 ### landing (actualizado: 2026-09-08)
-- US-LAND-01 — en_progreso — falta: solo existe el gateway del CMS (feature content, apagado tras el flag landing_cms_content). Falta la UI: cascaron publico (header/footer), seccion hero y el cableado de src/app/page.tsx con fallback estatico + ISR. El criterio 3 (contenido editable desde el CMS) no se demuestra hasta confirmar instancia + esquema + token con el mantenedor (INT-003) y probar contra el CMS real.
+- US-LAND-01 — en_progreso — falta: criterio 3 (contenido editable desde el CMS): el gateway existe y la pagina lo consume, pero esta apagado tras el flag landing_cms_content (content/SPEC.md) — no se demuestra extremo-a-extremo hasta confirmar instancia + esquema + token con el mantenedor (INT-003) y probar contra el CMS real. La imagen y el copy actuales son el respaldo provisional.
 - US-LAND-02 — no_iniciada
 - US-LAND-03 — no_iniciada
 - US-LAND-04 — no_iniciada
