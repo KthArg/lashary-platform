@@ -25,9 +25,23 @@ jobs:
             bash scripts/verify.sh --base "HEAD~1" || exit 1
           fi
 
-  # Las pruebas de la aplicación (unitarias, aislamiento RLS SEC-002, concurrencia DOM-010)
-  # se agregan a este workflow cuando exista src/ (F1). Este job falla adrede si alguien
-  # crea src/ sin agregar el job de tests: recordatorio estructural.
+  # job-tests-reales — pruebas de la aplicación. Lo porta US-LAND-01 como primera historia de
+  # F1 que aterriza en main (ADR-0007). Hoy: unitarias (vitest). El harness de Supabase local
+  # para aislamiento RLS (SEC-002) y concurrencia (DOM-010) se suma con la primera tabla nueva
+  # que llegue a main (US-AGE-08, PR #7).
+  job-tests-reales:
+    name: pruebas (vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  # Guardia estructural: si hay código en src/ y el job de arriba desapareciera, esto falla.
   tests-placeholder-guard:
     name: guardia de pruebas
     runs-on: ubuntu-latest
@@ -37,7 +51,8 @@ jobs:
         run: |
           # SPECs stub y la plantilla _template no son código; el primer .ts/.tsx real sí
           CODE=$(find src -path 'src/features/_template' -prune -o \( -name '*.ts' -o -name '*.tsx' \) -print 2>/dev/null | head -n 1)
-          if [ -n "$CODE" ] && ! grep -q "job-tests-reales" .github/workflows/ci.yml; then
+          # ancla a 2 espacios: solo matchea la clave del job, no este propio grep ni los echos
+          if [ -n "$CODE" ] && ! grep -qE '^  job-tests-reales:' .github/workflows/ci.yml; then
             echo "✖ Hay código en src/ ($CODE) pero este workflow no tiene job de tests (marcador: job-tests-reales)."
             echo "  Agregar el job de tests es parte de la primera historia que cree código (ver ADR-0007: la porta la primera historia con código)."
             exit 1
