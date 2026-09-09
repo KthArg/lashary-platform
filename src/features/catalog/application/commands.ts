@@ -2,10 +2,28 @@ import { Money } from '@/shared/money'
 import { ok, err, isErr, type Result } from '@/shared/result'
 import { Technique, type TechniqueView } from '../domain/technique'
 import {
+  TechniqueNameConflict,
   TechniqueNotFound,
   TechniqueValidationError,
 } from '../domain/errors'
 import type { TechniqueRepository, TechniqueWriteModel } from './ports'
+
+// DOM-006: repo.save() lanza TechniqueNameConflict ante catalog_techniques_name_unique — el
+// único error de infra que es en realidad un caso de negocio. Se atrapa acá, en el borde de
+// application/, y se convierte a Result; cualquier otro throw es una falla de infra real y se
+// deja propagar.
+async function saveOrConflict(
+  repo: TechniqueRepository,
+  technique: Technique,
+): Promise<Result<void, TechniqueNameConflict>> {
+  try {
+    await repo.save(technique)
+    return ok(undefined)
+  } catch (error) {
+    if (error instanceof TechniqueNameConflict) return err(error)
+    throw error
+  }
+}
 
 export type CommandDeps = {
   repo: TechniqueRepository
@@ -72,10 +90,13 @@ export const createTechnique =
   (deps: CommandDeps) =>
   async (
     model: TechniqueWriteModel,
-  ): Promise<Result<TechniqueView, TechniqueValidationError>> => {
+  ): Promise<
+    Result<TechniqueView, TechniqueValidationError | TechniqueNameConflict>
+  > => {
     const built = buildTechnique(deps.newId(), model, true)
     if (isErr(built)) return built
-    await deps.repo.save(built.value)
+    const saved = await saveOrConflict(deps.repo, built.value)
+    if (isErr(saved)) return saved
     return ok(built.value.toView())
   }
 
@@ -85,14 +106,18 @@ export const updateTechnique =
     id: string,
     model: TechniqueWriteModel,
   ): Promise<
-    Result<TechniqueView, TechniqueNotFound | TechniqueValidationError>
+    Result<
+      TechniqueView,
+      TechniqueNotFound | TechniqueValidationError | TechniqueNameConflict
+    >
   > => {
     const existing = await deps.repo.findById(id)
     if (existing === null) return err(new TechniqueNotFound(id))
 
     const built = buildTechnique(id, model, existing.isActive)
     if (isErr(built)) return built
-    await deps.repo.save(built.value)
+    const saved = await saveOrConflict(deps.repo, built.value)
+    if (isErr(saved)) return saved
     return ok(built.value.toView())
   }
 

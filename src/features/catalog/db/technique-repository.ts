@@ -3,6 +3,7 @@ import { Money } from '@/shared/money'
 import { isOk } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import { Technique, type ServiceFamily } from '../domain/technique'
+import { TechniqueNameConflict } from '../domain/errors'
 import type { TechniqueRepository } from '../application/ports'
 
 const TABLE = 'catalog_techniques'
@@ -102,7 +103,14 @@ export class SupabaseTechniqueRepository implements TechniqueRepository {
     const { error } = await this.db
       .from(TABLE)
       .upsert(domainToRow(technique), { onConflict: 'id' })
-    if (error) throw new Error(`${TABLE}.save: ${error.message}`)
+    if (error) {
+      // 23505 = unique_violation (Postgres). La única constraint de unicidad de esta tabla es
+      // catalog_techniques_name_unique — un caso de negocio esperable, no una falla de infra.
+      if (error.code === '23505') {
+        throw new TechniqueNameConflict(technique.toView().name)
+      }
+      throw new Error(`${TABLE}.save: ${error.message}`)
+    }
   }
 }
 

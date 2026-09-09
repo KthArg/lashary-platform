@@ -40,7 +40,10 @@ export async function createTechniqueAction(
   }
   const result = await createTechnique(await deps())(parsed.data)
   if (isErr(result)) {
-    return { status: 'invalid', problems: result.error.problems }
+    return {
+      status: 'invalid',
+      problems: 'problems' in result.error ? result.error.problems : [result.error.message],
+    }
   }
   revalidatePath(ADMIN_CATALOG_PATH)
   return { status: 'ok', message: catalogMessages.form.savedCreate }

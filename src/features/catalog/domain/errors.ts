@@ -20,3 +20,14 @@ export class TechniqueNotFound extends CatalogError {
     super(`no existe la técnica ${techniqueId}`)
   }
 }
+
+// DOM-006: la violación de catalog_techniques_name_unique es un caso de negocio esperable
+// (dos técnicas no pueden compartir nombre), no una falla de infraestructura — se mapea a un
+// subtipo en vez de relanzarse como Error genérico (db/technique-repository.ts).
+export class TechniqueNameConflict extends CatalogError {
+  readonly code = 'CATALOG_TECHNIQUE_NAME_CONFLICT'
+
+  constructor(public readonly name: string) {
+    super(`ya existe una técnica llamada "${name}"`)
+  }
+}
