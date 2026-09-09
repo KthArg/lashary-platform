@@ -5,6 +5,7 @@ export const CLIENTS_LABELS = {
   newClientTitle: 'Nueva clienta', newClientDescription: 'Los campos marcados son obligatorios.',
   fullNameInput: 'Nombre completo', phoneInput: 'Teléfono', emailInput: 'Correo electrónico', notesInput: 'Notas generales',
   requiredMark: 'obligatorio', optionalMark: 'opcional',
+  clientsListTitle: 'Clientas registradas', clientsListEmpty: 'Todavía no hay clientas registradas.',
 } as const
 
 export const CLIENTS_PLACEHOLDERS = {
@@ -12,7 +13,7 @@ export const CLIENTS_PLACEHOLDERS = {
   notes: 'Preferencias, cómo llegó al estudio…',
 } as const
 
-export const CLIENTS_BUTTON_TEXTS = { addClient: 'Agregar', save: 'Guardar', cancel: 'Cancelar' } as const
+export const CLIENTS_BUTTON_TEXTS = { addClient: 'Agregar', save: 'Guardar', cancel: 'Cancelar', edit: 'Editar' } as const
 
 export const CLIENTS_ERROR_MESSAGES = {
   fullNameRequired: 'El nombre completo es obligatorio', fullNameTooShort: 'El nombre debe tener al menos 3 caracteres',
@@ -32,3 +33,6 @@ export const CLIENTS_CONFIRM_MESSAGES = {
   discardConfirm: 'Descartar cambios',
   discardCancel: 'Seguir editando',
 } as const
+
+// Cuatro botones que dicen solo "Editar" son indistinguibles en un lector de pantalla (UI-004).
+export const CLIENTS_ARIA_LABELS = { editClient: (fullName: string) => `Editar a ${fullName}` } as const

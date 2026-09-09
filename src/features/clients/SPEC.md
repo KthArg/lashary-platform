@@ -14,9 +14,15 @@ historias:
     estado: no_iniciada
   - id: US-CLI-05
     estado: en_progreso
-    falta: "El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), el server action, los criterios 2, 3 y 4, el bloqueo de navegacion al salir de la pagina con el formulario abierto, y la prueba de aislamiento RLS (SEC-002)."
+    falta: "El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. El criterio 2 tiene la lista de nombres con su accion Editar, pero sobre datos quemados en constants/sample-clients.ts y el boton todavia no abre nada. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), los server actions de alta y edicion, los criterios 3 y 4, el bloqueo de navegacion al salir de la pagina con el formulario abierto, y la prueba de aislamiento RLS (SEC-002)."
 flags: []
-deuda: []
+deuda:
+  - que: "Cuatro clientas quemadas en src/features/clients/constants/sample-clients.ts para poder ejercitar la edicion sin base de datos; la pantalla no prueba lectura real"
+    aceptada_en: "PR pendiente — rama feat/US-CLI-05-edit-client"
+    costo: "1h: borrar el archivo y sustituirlo por el server action cuando exista la migracion"
+  - que: "ClientsList no tiene estados de carga ni de error (UI-003) porque su fuente es un arreglo en memoria"
+    aceptada_en: "PR pendiente — rama feat/US-CLI-05-edit-client"
+    costo: "1h al conectar la lectura real"
 defectos: []
 ---
 
@@ -44,6 +50,12 @@ Lo único que ya funciona es el control de acceso de la capa de aplicación: la 
 Google son redirigidas a `/admin`. El middleware de Edge ya cubría `/admin/*` (salvo `/admin`
 exacto), pero solo comprueba que haya sesión, no el rol — el rol lo comprueba esta página.
 
+Debajo del encabezado, `ClientsList` muestra una fila por clienta con su nombre y un botón
+**Editar** — nada más: filtros, búsqueda y paginación son US-CLI-01. Cada botón lleva su propio
+nombre accesible (`Editar a <nombre>`), porque cuatro botones idénticos son indistinguibles en un
+lector de pantalla (UI-004). **Las cuatro clientas están quemadas** en `constants/sample-clients.ts`
+y el botón todavía no abre nada.
+
 La estructura de carpetas sigue la distribución de `auth`: `actions/`, `components/`, `hooks/`,
 `constants/`, `validation/`, `types/`, `__tests__/`; un subdirectorio por componente con su
 `.styles.ts` y `.types.ts`.
@@ -70,7 +82,8 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
 Único punto de entrada (ARCH-003). Exporta `AddClientDialog` — lo que consume la ruta —,
 `AddClientButton`, `AddClientModal`, `AddClientForm`, `ClientFormField`, `ConfirmDialog`, los hooks
-`useAddClientForm` y `useFocusTrap`, `validateClientForm` y las constantes de textos, claves de
+`useAddClientForm` y `useFocusTrap`, `validateClientForm`, `ClientsList` con el tipo `ClientRecord` y
+los datos temporales `SAMPLE_CLIENTS`, y las constantes de textos, etiquetas ARIA, claves de
 campo y límites: ningún texto visible vive en el JSX (DOM-009).
 
 ## Invariantes
@@ -119,3 +132,11 @@ campo y límites: ningún texto visible vive en el JSX (DOM-009).
   porque el modal, su confirmación, la trampa de foco y sus pruebas son una unidad funcional:
   partirlos deja mergeado un modal inaccesible. Etiqueta `excepcion-proceso` con justificación
   escrita, según `docs/spec/INTEGRATION.md#el-escape-legítimo`.
+- **2026-09-08 — El criterio 2 se apoya en datos quemados, no en la base.** Editar exige clientas
+  existentes y la migración con la política RLS de administradora no existe todavía (SEC-001), así
+  que `constants/sample-clients.ts` trae cuatro filas en memoria. La pantalla demuestra la edición,
+  **no** demuestra que la administradora pueda leer clientas reales. Registrado como deuda con su
+  costo; el archivo se borra entero cuando exista el server action.
+- **2026-09-08 — `ClientsList` implementa el estado vacío pero no los de carga y error** (UI-003).
+  Su fuente es un arreglo en memoria: no tarda ni falla, y fabricar un spinner que nunca gira es
+  teatro. Ambos entran con la lectura real. Cubierto por `clients-list.test.tsx`.
