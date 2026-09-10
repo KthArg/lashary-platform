@@ -1,4 +1,4 @@
-import { getAuthSession, ClientSidebar, InactivityTimeout } from '@/features/auth'
+import { getAuthSession, ClientSidebar, InactivityTimeout, AUTH_ROLES } from '@/features/auth'
 import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 
@@ -11,6 +11,10 @@ export default async function PortalLayout({ children }: PortalLayoutProps) {
 
   if (!session?.user) {
     redirect('/login')
+  }
+
+  if (session.role === AUTH_ROLES.ADMIN || session.role === AUTH_ROLES.SUPERADMIN) {
+    redirect('/admin/dashboard')
   }
 
   return (
