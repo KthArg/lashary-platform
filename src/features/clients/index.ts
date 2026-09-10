@@ -1,3 +1,4 @@
+export { listClients } from './actions/list-clients'
 export { AddClientDialog } from './components/AddClientDialog'
 export { AddClientButton } from './components/AddClientButton'
 export { EditClientDialog } from './components/EditClientDialog'
@@ -14,4 +15,6 @@ export { CLIENTS_LABELS, CLIENTS_BUTTON_TEXTS, CLIENTS_ERROR_MESSAGES, CLIENTS_P
 export { CLIENT_FIELD_KEYS, CLIENT_FORM_LIMITS, REQUIRED_CLIENT_FIELDS, EMPTY_CLIENT_FORM_VALUES, type ClientFieldKey } from './constants/client-form'
 export type { ClientFormValues, ClientFormErrors } from './types/client-form.types'
 export type { ClientRecord } from './types/client.types'
+export type { ClientProfileRow, ClientsListResult } from './types/client-row.types'
+export { CLIENTS_LIST_LIMIT, CLIENTS_LIST_COLUMNS } from './constants/clients-query'
 export { SAMPLE_CLIENTS } from './constants/sample-clients'

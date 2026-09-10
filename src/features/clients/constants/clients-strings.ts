@@ -23,6 +23,9 @@ export const CLIENTS_ERROR_MESSAGES = {
   emailRequired: 'El correo electrónico es obligatorio', emailInvalidFormat: 'El formato del correo no es válido',
   notesTooLong: 'Las notas no pueden superar los 500 caracteres',
   formHasErrors: 'Revisa los campos marcados en rojo.',
+  // La admin no puede hacer nada con el detalle tecnico del fallo; lo que necesita es saber que la
+  // lista no se cargo y que reintentar es gratis (UI-003).
+  clientsListLoadFailed: 'No se pudo cargar el registro de clientas. Vuelve a intentarlo.',
 } as const
 
 // Criterio 1 de US-CLI-05: por ahora el alta solo se reporta en consola, sin persistencia.

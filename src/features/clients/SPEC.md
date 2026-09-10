@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-09-09"
+actualizado: "2026-09-10"
 historias:
   - id: US-CLI-01
     estado: no_iniciada
@@ -14,7 +14,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-05
     estado: en_progreso
-    falta: "El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. El criterio 2 funciona de punta a punta en la interfaz —lista, modal con datos cargados, descarte confirmado y guardado— pero sobre los datos quemados de constants/sample-clients.ts y sin escribir en la base. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), los server actions de alta y edicion, los criterios 3 y 4, el bloqueo de navegacion al salir de la pagina con el formulario abierto, y la prueba de aislamiento RLS (SEC-002)."
+    falta: "El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. El criterio 2 funciona de punta a punta en la interfaz pero todavia sobre los datos quemados de constants/sample-clients.ts: la migracion 20260910000000 ya agrega la funcion auth_is_admin() y la politica clients_profiles_select_admin, y listClients() ya lee public.clients_profiles, pero la pantalla aun no los consume. Faltan: cablear la lista a listClients(), la unicidad de telefono, los server actions de alta y edicion, los criterios 3 y 4, el bloqueo de navegacion al salir de la pagina con el formulario abierto, y la prueba de aislamiento RLS contra Postgres (SEC-002)."
 flags: []
 deuda:
   - que: "Cuatro clientas quemadas en src/features/clients/constants/sample-clients.ts para poder ejercitar la edicion sin base de datos; la pantalla no prueba lectura real"
@@ -23,6 +23,9 @@ deuda:
   - que: "ClientsList no tiene estados de carga ni de error (UI-003) porque su fuente es un arreglo en memoria"
     aceptada_en: "PR pendiente — rama feat/US-CLI-05-edit-client"
     costo: "1h al conectar la lectura real"
+  - que: "La prueba de la politica clients_profiles_select_admin modela la politica en TypeScript (src/features/clients/__tests__/rls-admin-read.test.ts); no ejecuta Postgres, asi que no demuestra la politica real (SEC-002)"
+    aceptada_en: "PR pendiente — rama feat/US-CLI-05-connect-db"
+    costo: "3h: levantar supabase local en CI y correr la prueba con dos tokens reales"
 defectos: []
 ---
 
@@ -74,16 +77,14 @@ reutilizables entre flujos de la feature —`ClientModal`, `ClientForm` y `Confi
 
 **Se detiene antes de la base de datos.** Nada se guarda, nada se lee, nada se edita.
 
-La tabla `public.clients_profiles` existe desde la migración
-`20260901000000_auth_roles_and_clients.sql`, pero hoy solo la escribe `auth` cuando una clienta se
-registra con Google. Le falta lo que US-CLI-05 necesita:
+La migración `20260910000000_clients_admin_read.sql` agrega la función `public.auth_is_admin()` y la
+política `clients_profiles_select_admin` (criterio 2), y `listClients()` ya lee la tabla — **pero la
+pantalla todavía renderiza `SAMPLE_CLIENTS`**. Sigue faltando lo demás:
 
-- columna para las notas generales de la administradora (criterio 1);
 - restricción **única** sobre el teléfono: `idx_clients_profiles_phone` es un índice normal y no
   impide el duplicado que exige el criterio 3;
-- **política RLS que permita a una administradora leer y escribir filas ajenas.** Las políticas
-  vigentes son `auth.uid() = user_id`, así que hoy la administradora no puede ver ninguna clienta.
-  Mientras esa política no exista, la pantalla no tiene datos que mostrar (SEC-001).
+- **políticas de INSERT y UPDATE para la administradora.** La migración entrega solo el `SELECT`:
+  sin ellas el alta y la edición no pueden escribir filas ajenas (SEC-001).
 
 El listado con filtros y paginación **no pertenece a esta historia**: es US-CLI-01, que depende de
 esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
@@ -94,7 +95,8 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 `AddClientButton`, `EditClientDialog`, `ClientsList`, y las piezas reutilizables `ClientModal`,
 `ClientForm`,
 `ClientFormField` y `ConfirmDialog`. Los hooks `useClientForm`, `useClientFormDialog` y
-`useFocusTrap`; `validateClientForm`; el tipo `ClientRecord` y los datos temporales `SAMPLE_CLIENTS`;
+`useFocusTrap`; `validateClientForm`; la lectura `listClients()` y los tipos `ClientProfileRow` y
+`ClientsListResult`; el tipo `ClientRecord` y los datos temporales `SAMPLE_CLIENTS`;
 y las constantes de textos, etiquetas ARIA, claves de campo y límites: ningún texto visible vive en
 el JSX (DOM-009).
 
@@ -102,7 +104,8 @@ el JSX (DOM-009).
 
 - **La sección es exclusiva de la administradora.** `/admin/clients` exige rol `admin` o
   `superadmin` vía `requireAdminSession()`. Esa comprobación es el mensaje de error amable; la
-  defensa real es la política RLS de la tabla (SEC-001), y esa política todavía no existe.
+  defensa real es `clients_profiles_select_admin`, que ya existe (SEC-001): con una sesión que no
+  es de administradora, esa misma consulta devuelve cero filas en vez de un error.
 - **Toda tabla de esta feature lleva el prefijo `clients_`** (ARCH-006) y RLS activo con su prueba
   de aislamiento cross-cliente en CI (SEC-002).
 - **El teléfono identifica a una clienta.** No pueden coexistir dos con el mismo número (criterio 3).
@@ -164,3 +167,24 @@ el JSX (DOM-009).
   anterior ("hay algo escrito") servía para el alta, que nace vacía, pero el formulario de edición
   nace lleno: abrirlo y cancelar sin tocar nada disparaba la confirmación de descarte, que mentía.
   Cubierto por `edit-client.test.tsx`, verificado fallando (2 pruebas) contra la definición anterior.
+- **2026-09-10 — `public.auth_is_admin()` es el contrato que `auth` publica** para que `clients` no
+  consulte `auth_user_roles` directo (ARCH-005). `SECURITY DEFINER` porque esa tabla tiene RLS de
+  "solo mi propia fila" y sin definer la función se bloquearía a sí misma al evaluarse dentro de una
+  política; `STABLE` para que se evalúe una vez por consulta y no una por fila. **Excepción a
+  INT-003 asumida:** el contrato debía mergearse en su propio PR antes que esta implementación; entra
+  con ella para no partir la historia en dos ramas más.
+- **2026-09-10 — La política de admin entra en un PR apilado sobre `feat/US-CLI-05-edit-client`.**
+  INT-008 permite máximo una migración nueva por PR y esa rama ya trae la de `notes`. CI toma la base
+  del PR (`ci.yml`: `--base origin/${{ github.base_ref }}`), así que con base en la rama padre el
+  rango contiene una única migración nueva y el hook local coincide con CI. Reinicia también el
+  conteo de INT-002 y la edad de INT-001.
+- **2026-09-10 — La política de admin es PERMISIVA y solo de `SELECT`.** Las políticas de Postgres se
+  combinan con OR: `clients_profiles_select_admin` no toca lo que ve una clienta, que sigue siendo su
+  propia fila. Cubierto por `rls-admin-read.test.ts` — con el límite declarado en la deuda: modela
+  las políticas en TypeScript, no ejecuta Postgres (SEC-002).
+- **2026-09-10 — `listClients()` no lleva `'use server'`.** Su única consumidora será la página, que
+  es Server Component y la llama directo; marcarla como server action la publicaría como endpoint
+  invocable desde el navegador sin que nadie lo necesite. Cubierto por `list-clients.test.ts`
+  (traducción de fila, `notes` nula, lista vacía, fallo de la base y tope de PERF-002), con Supabase
+  mockeado. **La pantalla la consume en el commit siguiente**, que es donde se paga la deuda de
+  `sample-clients.ts`.
