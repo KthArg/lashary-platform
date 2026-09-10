@@ -10,6 +10,7 @@ import PortalLayout from '@/app/portal/layout'
 const mockRedirect = vi.fn()
 const mockGetUser = vi.fn()
 const mockSingleRole = vi.fn()
+const mockSingleProfile = vi.fn()
 const mockSignInWithOAuth = vi.fn()
 
 vi.mock('@/shared/lib/supabase/server', () => ({
@@ -22,7 +23,11 @@ vi.mock('@/shared/lib/supabase/server', () => ({
       upsert: vi.fn().mockResolvedValue({ error: null }),
       select: vi.fn(() => ({
         eq: vi.fn(() => ({
-          single: table === 'auth_user_roles' ? mockSingleRole : vi.fn().mockResolvedValue({ data: null, error: null }),
+          single: table === 'auth_user_roles'
+            ? mockSingleRole
+            : table === 'clients_profiles'
+              ? mockSingleProfile
+              : vi.fn().mockResolvedValue({ data: null, error: null }),
         })),
       })),
     })),
@@ -42,6 +47,7 @@ describe('US-AUTH-02: Autenticación de Clientas con Google y Teléfono', () => 
     vi.clearAllMocks()
     mockGetUser.mockResolvedValue({ data: { user: { id: 'u1', email: 'c@lashary.com', user_metadata: { full_name: 'Client' } } } })
     mockSingleRole.mockResolvedValue({ data: { role: 'cliente' }, error: null })
+    mockSingleProfile.mockResolvedValue({ data: { phone: '88887777', full_name: 'Client' }, error: null })
   })
 
   it('Criterio 1: Renderiza el botón accesible para iniciar sesión con Google', () => {
@@ -114,10 +120,15 @@ describe('US-AUTH-02: Autenticación de Clientas con Google y Teléfono', () => 
     await expect(PortalLayout({ children: <div>Contenido</div> })).rejects.toThrow('NEXT_REDIRECT:/admin/dashboard')
   })
 
-  it('Criterio 9: PortalLayout renderiza ClientSidebar para clientes autenticados', async () => {
+  it('Criterio 9: PortalLayout renderiza ClientSidebar para clientes autenticados con teléfono', async () => {
     const layout = await PortalLayout({ children: <div data-testid="portal-child">Contenido Portal</div> })
     render(layout)
     expect(screen.getByTestId('portal-child')).toBeDefined()
     expect(screen.getByText('Mis Citas')).toBeDefined()
+  })
+
+  it('Criterio 10: PortalLayout redirige a /login si la clienta no tiene teléfono registrado', async () => {
+    mockSingleProfile.mockResolvedValueOnce({ data: { phone: null, full_name: 'Client' }, error: null })
+    await expect(PortalLayout({ children: <div>Contenido</div> })).rejects.toThrow('NEXT_REDIRECT:/login')
   })
 })

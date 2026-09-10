@@ -49,11 +49,9 @@ export function ClientSidebar({ session }: ClientSidebarProps) {
             title={isExpanded ? AUTH_LABELS.collapseSidebar : AUTH_LABELS.expandSidebar}
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {isExpanded ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-              )}
+              {isExpanded
+                ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />}
             </svg>
           </button>
         </div>
@@ -79,15 +77,9 @@ export function ClientSidebar({ session }: ClientSidebarProps) {
       <div className={s.footer}>
         {isExpanded && (
           <div className={s.userInfo}>
-            <p className={s.userName} title={displayName}>
-              {displayName}
-            </p>
-            <p className={s.userEmail} title={session.user.email}>
-              {session.user.email}
-            </p>
-            {displayPhone && (
-              <p className={s.userPhone}>{AUTH_LABELS.phonePrefix}{displayPhone}</p>
-            )}
+            <p className={s.userName} title={displayName}>{displayName}</p>
+            <p className={s.userEmail} title={session.user.email}>{session.user.email}</p>
+            {displayPhone && <p className={s.userPhone}>{AUTH_LABELS.phonePrefix}{displayPhone}</p>}
           </div>
         )}
         <form action={signOutAction} className="w-full">

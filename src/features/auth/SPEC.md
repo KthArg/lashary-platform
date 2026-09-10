@@ -32,7 +32,7 @@ Completadas las historias `US-AUTH-01` y `US-AUTH-02`.
 - Cierre automático de sesión tras 15 minutos de inactividad de usuario (`useInactivityTimeout`, `InactivityTimeout`, CA-5).
 - Navegación persistente administrativa mediante `AdminSidebar` y `layout.tsx` para cierre de sesión desde cualquier vista (`US-AUTH-01`, CA-2).
 - Navegación persistente de clientas mediante `ClientSidebar` (colapsable, responsive) y `src/app/portal/layout.tsx` con accesos a citas, carrito, cuenta y cierre de sesión (`US-AUTH-02`).
-- Inicio de sesión de clientas exclusivo vía Google OAuth con redirección a `/portal/citas` y captura modal obligatoria de teléfono post-login (`US-AUTH-02`).
+- Inicio de sesión de clientas exclusivo vía Google OAuth con redirección a `/portal/citas` y captura modal obligatoria de teléfono post-login (`US-AUTH-02`), protegida en `src/app/portal/layout.tsx`.
 - Aislamiento de datos mediante Row Level Security (RLS) en Supabase (`SEC-001`).
 - Pruebas unitarias de integración automatizadas (`auth-client.test.tsx`, `admin-auth.test.tsx`).
 - Pruebas de aislamiento RLS cross-cliente (`rls-isolation.test.ts`) según `SEC-002`.
