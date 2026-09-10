@@ -17,6 +17,10 @@ export default async function PortalLayout({ children }: PortalLayoutProps) {
     redirect('/admin/dashboard')
   }
 
+  if (session.role === AUTH_ROLES.CLIENTE && !session.profile?.phone) {
+    redirect('/login')
+  }
+
   return (
     <div className="flex h-screen overflow-hidden bg-brand-cream">
       <InactivityTimeout />
