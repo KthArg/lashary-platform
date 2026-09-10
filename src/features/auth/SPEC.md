@@ -36,7 +36,7 @@ Completadas las historias `US-AUTH-01` y `US-AUTH-02`.
 - Aislamiento de datos mediante Row Level Security (RLS) en Supabase (`SEC-001`).
 - Pruebas unitarias de integración automatizadas (`auth-client.test.tsx`, `admin-auth.test.tsx`).
 - Pruebas de aislamiento RLS cross-cliente (`rls-isolation.test.ts`) según `SEC-002`.
-- Textos y etiquetas de interfaz externalizados en constantes (`auth-strings.ts`, DOM-009).
+- Textos y etiquetas de interfaz completamente externalizados en constantes (`auth-strings.ts`, DOM-009).
 - Separación atómica de componentes UI, hooks dedicados (`useGoogleSignIn`, `usePhoneRegistration`, `useAdminLoginForm`, `useInactivityTimeout`), estilos e interfaces.
 
 ## Contrato público (`src/features/auth/index.ts`)

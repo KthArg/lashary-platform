@@ -30,13 +30,13 @@ export function ClientSidebar({ session }: ClientSidebarProps) {
     },
   ]
 
-  const displayName = session.profile?.full_name || session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Clienta'
+  const displayName = session.profile?.full_name || session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || AUTH_LABELS.clientFallbackName
   const displayPhone = session.profile?.phone
 
   return (
     <aside
       className={`${s.aside} ${isExpanded ? s.expandedWidth : s.collapsedWidth}`}
-      aria-label="Panel de clienta"
+      aria-label={AUTH_LABELS.clientNavAriaLabel}
     >
       <div>
         <div className={s.header}>

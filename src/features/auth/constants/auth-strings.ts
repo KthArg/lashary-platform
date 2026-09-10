@@ -26,6 +26,7 @@ export const AUTH_LABELS = {
   clientCartPlaceholder: 'Espacio reservado para el carrito de compras persistente durante la sesión.',
   clientAccountTitle: 'Mi Cuenta',
   clientAccountSubtitle: 'Ficha de clienta, estado de cuenta e información personal (US-CLI-06 / US-MOR-03).',
+  clientNavAriaLabel: 'Panel de clienta', clientFallbackName: 'Clienta',
   emailLabel: 'Correo:',
   phoneLabel: 'Teléfono:',
 } as const
