@@ -9,4 +9,6 @@ export const clientsListStyles = {
     'inline-flex h-10 w-10 items-center justify-center text-brand-muted cursor-pointer transition-colors hover:text-brand-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark',
   editIcon: 'h-4 w-4',
   empty: 'mt-4 py-8 text-sm text-brand-muted',
+  // Mismo lenguaje de error que el formulario (ClientForm.styles.alert): una sola forma de decir que algo fallo.
+  error: 'mt-4 p-3 bg-red-50 border border-red-200 text-error text-xs rounded-none',
 }

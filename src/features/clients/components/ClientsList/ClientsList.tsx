@@ -10,13 +10,13 @@ import type { ClientsListProps } from './ClientsList.types'
 /**
  * US-CLI-05 criterio 2 — lista minima de clientas: nombre y su accion de editar, nada mas.
  * El listado con filtros, busqueda y paginacion es US-CLI-01 y no pertenece a esta historia.
- * Sin estado de carga ni de error (UI-003) porque la fuente es un arreglo en memoria: no tarda
- * ni falla. Ambos entran con el server action que lea de la base.
+ * Los tres estados de UI-003: vacio y error viven aqui; el de carga es loading.tsx de la ruta,
+ * porque quien espera por la base es el Server Component que renderiza esta lista, no la lista.
  *
  * Hay UN solo dialogo para toda la lista, no uno por fila: montar cuatro modales ocultos
  * multiplica los focus traps y los listeners de Escape sin que ninguno haga falta.
  */
-export function ClientsList({ clients }: ClientsListProps) {
+export function ClientsList({ clients, error = null }: ClientsListProps) {
   const [editing, setEditing] = useState<ClientRecord | null>(null)
   // Con cuatro lapices, "el disparador" no es uno fijo: hay que recordar cual se pulso (UI-004).
   const triggerRef = useRef<HTMLButtonElement | null>(null)
@@ -35,7 +35,10 @@ export function ClientsList({ clients }: ClientsListProps) {
     <section className={s.section}>
       <h2 className={s.title}>{CLIENTS_LABELS.clientsListTitle}</h2>
 
-      {clients.length === 0 ? (
+      {error ? (
+        /* role=alert: el fallo llega despues del render y hay que anunciarlo, no dejarlo mudo (UI-004). */
+        <p className={s.error} role="alert">{error}</p>
+      ) : clients.length === 0 ? (
         <p className={s.empty}>{CLIENTS_LABELS.clientsListEmpty}</p>
       ) : (
         <ul className={s.list}>

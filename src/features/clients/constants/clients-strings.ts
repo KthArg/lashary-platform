@@ -6,6 +6,7 @@ export const CLIENTS_LABELS = {
   fullNameInput: 'Nombre completo', phoneInput: 'Teléfono', emailInput: 'Correo electrónico', notesInput: 'Notas generales',
   requiredMark: 'obligatorio', optionalMark: 'opcional',
   clientsListTitle: 'Clientas registradas', clientsListEmpty: 'Todavía no hay clientas registradas.',
+  clientsListLoading: 'Cargando clientas…',
   editClientTitle: 'Editar clienta', editClientDescription: 'Cambia solo lo que necesites; los campos marcados siguen siendo obligatorios.',
 } as const
 

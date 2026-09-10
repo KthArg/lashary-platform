@@ -14,15 +14,9 @@ historias:
     estado: no_iniciada
   - id: US-CLI-05
     estado: en_progreso
-    falta: "El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. El criterio 2 funciona de punta a punta en la interfaz pero todavia sobre los datos quemados de constants/sample-clients.ts: la migracion 20260910000000 ya agrega la funcion auth_is_admin() y la politica clients_profiles_select_admin, y listClients() ya lee public.clients_profiles, pero la pantalla aun no los consume. Faltan: cablear la lista a listClients(), la unicidad de telefono, los server actions de alta y edicion, los criterios 3 y 4, el bloqueo de navegacion al salir de la pagina con el formulario abierto, y la prueba de aislamiento RLS contra Postgres (SEC-002)."
+    falta: "El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. El criterio 2 ya lee de la base: la lista sale de public.clients_profiles via listClients(), con la funcion auth_is_admin() y la politica clients_profiles_select_admin de la migracion 20260910000000; la edicion sigue reportando en consola sin escribir. Faltan: la unicidad de telefono, los server actions de alta y edicion, los criterios 3 y 4, el bloqueo de navegacion al salir de la pagina con el formulario abierto, y la prueba de aislamiento RLS contra Postgres (SEC-002)."
 flags: []
 deuda:
-  - que: "Cuatro clientas quemadas en src/features/clients/constants/sample-clients.ts para poder ejercitar la edicion sin base de datos; la pantalla no prueba lectura real"
-    aceptada_en: "PR pendiente — rama feat/US-CLI-05-edit-client"
-    costo: "1h: borrar el archivo y sustituirlo por el server action cuando exista la migracion"
-  - que: "ClientsList no tiene estados de carga ni de error (UI-003) porque su fuente es un arreglo en memoria"
-    aceptada_en: "PR pendiente — rama feat/US-CLI-05-edit-client"
-    costo: "1h al conectar la lectura real"
   - que: "La prueba de la politica clients_profiles_select_admin modela la politica en TypeScript (src/features/clients/__tests__/rls-admin-read.test.ts); no ejecuta Postgres, asi que no demuestra la politica real (SEC-002)"
     aceptada_en: "PR pendiente — rama feat/US-CLI-05-connect-db"
     costo: "3h: levantar supabase local en CI y correr la prueba con dos tokens reales"
@@ -48,6 +42,11 @@ abren el `ConfirmDialog` del proyecto —no `window.confirm`, que un iframe sand
 `useFocusTrap`, que también usa el `ConfirmDialog`; mientras la confirmación está encima, el modal
 cede la trampa con `isPaused`.
 
+La lista tiene sus **tres estados** (UI-003): vacío y error en `ClientsList`, carga en
+`src/app/admin/clients/loading.tsx`. El de carga vive en la ruta porque quien espera por la base es
+el Server Component: cuando `ClientsList` se renderiza, los datos ya llegaron. El error se anuncia
+con `role="alert"` y **reemplaza** al estado vacío: un fallo de lectura no es "no hay clientas".
+
 Lo único que ya funciona es el control de acceso de la capa de aplicación: la página llama a
 `requireAdminSession()` de `auth`, de modo que una visitante anónima o una clienta con sesión de
 Google son redirigidas a `/admin`. El middleware de Edge ya cubría `/admin/*` (salvo `/admin`
@@ -58,7 +57,9 @@ icono** —un lápiz en SVG inline, porque el proyecto no tiene librería de ico
 esto—. Nada más: filtros, búsqueda y paginación son US-CLI-01. Sin texto visible, el `aria-label` es
 el **único** nombre del botón, y por eso nombra a la clienta (`Editar a <nombre>`): cuatro lápices
 idénticos son indistinguibles en un lector de pantalla (UI-004). El área táctil es de 40×40 aunque
-el icono mida 16. **Las cuatro clientas están quemadas** en `constants/sample-clients.ts`.
+el icono mida 16. **Las clientas salen de la base**: `listClients()` lee `public.clients_profiles`
+ordenado por nombre y con tope de `CLIENTS_LIST_LIMIT` (PERF-002; la paginación real es US-CLI-01).
+`constants/sample-clients.ts` fue borrado.
 
 El lápiz abre `EditClientDialog`: el **mismo** modal, formulario y confirmación del alta, con los
 datos de la clienta ya cargados. Salir con cambios pendientes pregunta antes de descartarlos; salir
@@ -75,11 +76,12 @@ reutilizables entre flujos de la feature —`ClientModal`, `ClientForm` y `Confi
 
 ## Qué no hace todavía
 
-**Se detiene antes de la base de datos.** Nada se guarda, nada se lee, nada se edita.
+**Lee, pero no escribe.** La lista sale de la base; el alta y la edición siguen imprimiendo en
+consola.
 
-La migración `20260910000000_clients_admin_read.sql` agrega la función `public.auth_is_admin()` y la
-política `clients_profiles_select_admin` (criterio 2), y `listClients()` ya lee la tabla — **pero la
-pantalla todavía renderiza `SAMPLE_CLIENTS`**. Sigue faltando lo demás:
+`20260909000000_clients_profiles_add_notes.sql` agrega la columna `notes` (criterio 1) y
+`20260910000000_clients_admin_read.sql` la función `public.auth_is_admin()` y la política
+`clients_profiles_select_admin` (criterio 2). Sigue faltando lo demás:
 
 - restricción **única** sobre el teléfono: `idx_clients_profiles_phone` es un índice normal y no
   impide el duplicado que exige el criterio 3;
@@ -95,10 +97,9 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 `AddClientButton`, `EditClientDialog`, `ClientsList`, y las piezas reutilizables `ClientModal`,
 `ClientForm`,
 `ClientFormField` y `ConfirmDialog`. Los hooks `useClientForm`, `useClientFormDialog` y
-`useFocusTrap`; `validateClientForm`; la lectura `listClients()` y los tipos `ClientProfileRow` y
-`ClientsListResult`; el tipo `ClientRecord` y los datos temporales `SAMPLE_CLIENTS`;
-y las constantes de textos, etiquetas ARIA, claves de campo y límites: ningún texto visible vive en
-el JSX (DOM-009).
+`useFocusTrap`; `validateClientForm`; la lectura `listClients()`; los tipos `ClientRecord`,
+`ClientProfileRow` y `ClientsListResult`; y las constantes de textos, etiquetas ARIA, claves de campo
+y límites: ningún texto visible vive en el JSX (DOM-009).
 
 ## Invariantes
 
@@ -186,5 +187,10 @@ el JSX (DOM-009).
   es Server Component y la llama directo; marcarla como server action la publicaría como endpoint
   invocable desde el navegador sin que nadie lo necesite. Cubierto por `list-clients.test.ts`
   (traducción de fila, `notes` nula, lista vacía, fallo de la base y tope de PERF-002), con Supabase
-  mockeado. **La pantalla la consume en el commit siguiente**, que es donde se paga la deuda de
-  `sample-clients.ts`.
+  mockeado.
+- **2026-09-10 — La lista consume `listClients()` y `sample-clients.ts` se borró.** Paga las dos
+  deudas registradas el 2026-09-08: los datos quemados y los estados de carga y error que no tenían
+  sentido sobre un arreglo en memoria. Los datos de prueba se mudaron a
+  `__tests__/fixtures/clients.ts` — `TEST_CLIENTS` no lo importa nadie fuera de las pruebas, y
+  `supabase/seed.sql` cubre el desarrollo local, que es lo que el dato quemado hacía de facto.
+  Cubierto por `clients-list.test.tsx` (el estado de error reemplaza al vacío).

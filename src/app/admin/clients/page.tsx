@@ -1,5 +1,5 @@
 import { requireAdminSession } from '@/features/auth'
-import { AddClientDialog, ClientsList, CLIENTS_LABELS, SAMPLE_CLIENTS } from '@/features/clients'
+import { AddClientDialog, ClientsList, CLIENTS_LABELS, listClients } from '@/features/clients'
 import { adminClientsStyles as s } from './clients.styles'
 import type { AdminClientsPageProps } from './clients.types'
 
@@ -10,6 +10,10 @@ export const metadata = {
 
 export default async function AdminClientsPage(_props: AdminClientsPageProps) {
   await requireAdminSession()
+
+  // La lectura va despues del guard de rol a proposito: el guard es el mensaje amable y la politica
+  // clients_profiles_select_admin es la frontera real (SEC-001).
+  const result = await listClients()
 
   return (
     <main className={s.main}>
@@ -22,8 +26,10 @@ export default async function AdminClientsPage(_props: AdminClientsPageProps) {
           <AddClientDialog />
         </header>
 
-        {/* Datos quemados hasta que exista la migracion y el server action (ver sample-clients.ts). */}
-        <ClientsList clients={SAMPLE_CLIENTS} />
+        <ClientsList
+          clients={result.ok ? result.clients : []}
+          error={result.ok ? null : result.error}
+        />
       </div>
     </main>
   )

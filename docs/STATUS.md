@@ -43,7 +43,7 @@
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
-- US-CLI-05 — en_progreso — falta: El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. El criterio 2 funciona de punta a punta en la interfaz pero todavia sobre los datos quemados de constants/sample-clients.ts: la migracion 20260910000000 ya agrega la funcion auth_is_admin() y la politica clients_profiles_select_admin, y listClients() ya lee public.clients_profiles, pero la pantalla aun no los consume. Faltan: cablear la lista a listClients(), la unicidad de telefono, los server actions de alta y edicion, los criterios 3 y 4, el bloqueo de navegacion al salir de la pagina con el formulario abierto, y la prueba de aislamiento RLS contra Postgres (SEC-002).
+- US-CLI-05 — en_progreso — falta: El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. El criterio 2 ya lee de la base: la lista sale de public.clients_profiles via listClients(), con la funcion auth_is_admin() y la politica clients_profiles_select_admin de la migracion 20260910000000; la edicion sigue reportando en consola sin escribir. Faltan: la unicidad de telefono, los server actions de alta y edicion, los criterios 3 y 4, el bloqueo de navegacion al salir de la pagina con el formulario abierto, y la prueba de aislamiento RLS contra Postgres (SEC-002).
 
 ### content (actualizado: 2026-08-29)
 - US-BLOG-01 — no_iniciada
@@ -113,8 +113,6 @@ Ninguno registrado.
 
 ## Deuda aceptada
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
-- clients: Cuatro clientas quemadas en src/features/clients/constants/sample-clients.ts para poder ejercitar la edicion sin base de datos; la pantalla no prueba lectura real — aceptada en PR pendiente — rama feat/US-CLI-05-edit-client — costo: 1h: borrar el archivo y sustituirlo por el server action cuando exista la migracion
-- clients: ClientsList no tiene estados de carga ni de error (UI-003) porque su fuente es un arreglo en memoria — aceptada en PR pendiente — rama feat/US-CLI-05-edit-client — costo: 1h al conectar la lectura real
 - clients: La prueba de la politica clients_profiles_select_admin modela la politica en TypeScript (src/features/clients/__tests__/rls-admin-read.test.ts); no ejecuta Postgres, asi que no demuestra la politica real (SEC-002) — aceptada en PR pendiente — rama feat/US-CLI-05-connect-db — costo: 3h: levantar supabase local en CI y correr la prueba con dos tokens reales
 
 ## Flags vivos

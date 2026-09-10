@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { ClientsList, CLIENTS_ARIA_LABELS, CLIENTS_LABELS, SAMPLE_CLIENTS } from '@/features/clients'
+import { ClientsList, CLIENTS_ARIA_LABELS, CLIENTS_ERROR_MESSAGES, CLIENTS_LABELS } from '@/features/clients'
+import { TEST_CLIENTS } from './fixtures/clients'
 
 /**
  * US-CLI-05 criterio 2 — la lista es el punto de entrada a la edicion: sin ella no hay
@@ -9,22 +10,22 @@ import { ClientsList, CLIENTS_ARIA_LABELS, CLIENTS_LABELS, SAMPLE_CLIENTS } from
  */
 describe('ClientsList', () => {
   it('muestra una fila por clienta con su nombre', () => {
-    render(<ClientsList clients={SAMPLE_CLIENTS} />)
-    expect(screen.getAllByRole('listitem')).toHaveLength(SAMPLE_CLIENTS.length)
-    for (const client of SAMPLE_CLIENTS) {
+    render(<ClientsList clients={TEST_CLIENTS} />)
+    expect(screen.getAllByRole('listitem')).toHaveLength(TEST_CLIENTS.length)
+    for (const client of TEST_CLIENTS) {
       expect(screen.getByText(client.fullName)).toBeTruthy()
     }
   })
 
   it('da a cada boton de editar un nombre accesible propio', () => {
-    render(<ClientsList clients={SAMPLE_CLIENTS} />)
-    for (const client of SAMPLE_CLIENTS) {
+    render(<ClientsList clients={TEST_CLIENTS} />)
+    for (const client of TEST_CLIENTS) {
       expect(screen.getByRole('button', { name: CLIENTS_ARIA_LABELS.editClient(client.fullName) })).toBeTruthy()
     }
   })
 
   it('oculta el icono al lector de pantalla, que solo debe oir el nombre del boton', () => {
-    render(<ClientsList clients={SAMPLE_CLIENTS} />)
+    render(<ClientsList clients={TEST_CLIENTS} />)
     const [button] = screen.getAllByRole('button')
     expect(button.textContent).toBe('')
     expect(button.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true')
@@ -34,5 +35,11 @@ describe('ClientsList', () => {
     render(<ClientsList clients={[]} />)
     expect(screen.getByText(CLIENTS_LABELS.clientsListEmpty)).toBeTruthy()
     expect(screen.queryByRole('listitem')).toBeNull()
+  })
+  it('muestra el estado de error y no el vacio cuando la lectura falla (UI-003)', () => {
+    render(<ClientsList clients={[]} error={CLIENTS_ERROR_MESSAGES.clientsListLoadFailed} />)
+    expect(screen.getByRole('alert').textContent).toBe(CLIENTS_ERROR_MESSAGES.clientsListLoadFailed)
+    // Sin esto, un fallo de la base se leeria como 'el estudio no tiene clientas', que es mentira.
+    expect(screen.queryByText(CLIENTS_LABELS.clientsListEmpty)).toBeNull()
   })
 })

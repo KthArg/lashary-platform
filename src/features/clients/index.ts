@@ -17,4 +17,3 @@ export type { ClientFormValues, ClientFormErrors } from './types/client-form.typ
 export type { ClientRecord } from './types/client.types'
 export type { ClientProfileRow, ClientsListResult } from './types/client-row.types'
 export { CLIENTS_LIST_LIMIT, CLIENTS_LIST_COLUMNS } from './constants/clients-query'
-export { SAMPLE_CLIENTS } from './constants/sample-clients'
