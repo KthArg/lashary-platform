@@ -6,10 +6,10 @@ actualizado: "2026-09-10"
 historias:
   - id: US-AUTH-01
     estado: terminada
-    evidencia: "PR #5, PR #9, tests: admin-auth.test.tsx"
+    evidencia: "PR #5, PR #9, PR #17, tests: admin-auth.test.tsx"
   - id: US-AUTH-02
     estado: terminada
-    evidencia: "PR #3, tests: auth-client.test.tsx, rls-isolation.test.ts"
+    evidencia: "PR #3, PR #18, tests: auth-client.test.tsx, rls-isolation.test.ts"
 flags: []
 deuda:
   - que: "Test de aislamiento RLS contra instancia local de Supabase en CI"

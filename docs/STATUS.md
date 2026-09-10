@@ -29,8 +29,8 @@
 ### audit (actualizado: 2026-08-29)
 
 ### auth (actualizado: 2026-09-10)
-- US-AUTH-01 — terminada — PR #5, PR #9, tests: admin-auth.test.tsx
-- US-AUTH-02 — terminada — PR #3, tests: auth-client.test.tsx, rls-isolation.test.ts
+- US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
+- US-AUTH-02 — terminada — PR #3, PR #18, tests: auth-client.test.tsx, rls-isolation.test.ts
 
 ### catalog (actualizado: 2026-08-28)
 - US-AGE-08 — no_iniciada
