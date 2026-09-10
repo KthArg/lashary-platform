@@ -2,9 +2,8 @@ import { CLIENTS_LABELS } from '@/features/clients'
 import { adminClientsStyles as s } from './clients.styles'
 
 /**
- * Estado de carga de la seccion (UI-003). Vive en la ruta y no en ClientsList porque quien espera
- * por la base es este Server Component: cuando la lista se renderiza, los datos ya llegaron.
- * aria-busy + role=status para que el lector de pantalla anuncie la espera (UI-004).
+ * Estado de carga de la seccion (UI-003). Vive en la ruta y no en ClientsList: quien espera por la
+ * base es este Server Component. aria-busy + role=status para que el lector lo anuncie (UI-004).
  */
 export default function AdminClientsLoading() {
   return (

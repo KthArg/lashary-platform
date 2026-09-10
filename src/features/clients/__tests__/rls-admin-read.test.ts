@@ -1,16 +1,12 @@
 import { describe, it, expect } from 'vitest'
 
 /**
- * SEC-002 — aislamiento de public.clients_profiles con la politica nueva
- * `clients_profiles_select_admin` (migracion 20260909000000).
+ * SEC-002 — aislamiento de public.clients_profiles con `clients_profiles_select_admin`
+ * (migracion 20260910000000). Replica la semantica PERMISIVA de Postgres: las politicas de SELECT
+ * se combinan con OR, asi que la de admin no puede ampliar lo que ve una clienta.
  *
- * LIMITE DECLARADO, registrado como deuda en SPEC.md: esta prueba MODELA las politicas en
- * TypeScript, no ejecuta Postgres. Demuestra que el modelo de acceso que escribimos es el que
- * queriamos; no demuestra que la politica desplegada se comporte asi. Lo unico que cierra esa
- * brecha es levantar supabase local en CI y consultar con dos tokens reales.
- *
- * El modelo replica la semantica PERMISIVA de Postgres: las politicas de SELECT se combinan con
- * OR, no se reemplazan. Por eso la de admin no puede ampliar lo que ve una clienta.
+ * LIMITE DECLARADO, registrado como deuda en SPEC.md: MODELA las politicas en TypeScript, no
+ * ejecuta Postgres. Cerrar la brecha exige supabase local en CI con dos tokens reales.
  */
 
 // USING (auth.uid() = user_id)
@@ -47,8 +43,7 @@ describe('SEC-002: clients_profiles_select_admin no afloja el aislamiento entre 
   })
 
   it('la politica de admin solo agrega SELECT: escribir sigue exigiendo ser la duena de la fila', () => {
-    // La migracion no crea politicas de INSERT/UPDATE para la administradora a proposito: la
-    // escritura entra con su server action y sus propias politicas.
+    // Sin politicas de INSERT/UPDATE de admin a proposito: la escritura entra con su server action.
     const canUpdate = (uid: string, rowUserId: string | null) => uid === rowUserId
     expect(canUpdate(admin.id, clienteA.id)).toBe(false)
     expect(canUpdate(admin.id, null)).toBe(false)

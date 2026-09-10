@@ -7,12 +7,9 @@ import type { ClientProfileRow, ClientsListResult } from '../types/client-row.ty
 /**
  * US-CLI-05 criterio 2 — lectura real de public.clients_profiles.
  *
- * NO lleva 'use server': la unica consumidora es la pagina /admin/clients, que es Server Component
- * y la llama directo. Marcarla como server action la publicaria como endpoint invocable desde el
- * navegador sin que nadie lo necesite.
- *
- * Quien filtra de verdad es la politica `clients_profiles_select_admin` (SEC-001): con una sesion
- * que no es de administradora esta misma consulta devuelve cero filas, no un error.
+ * NO lleva 'use server': su unica consumidora es la pagina, que es Server Component y la llama
+ * directo; marcarla la publicaria como endpoint sin que nadie lo necesite. Quien filtra de verdad
+ * es `clients_profiles_select_admin` (SEC-001): sin sesion de admin devuelve cero filas, no error.
  */
 export async function listClients(): Promise<ClientsListResult> {
   const supabase = await createClient()
@@ -31,9 +28,9 @@ export async function listClients(): Promise<ClientsListResult> {
 }
 
 /**
- * La base habla snake_case y admite `notes` nula; el formulario habla camelCase y su campo de notas
- * es un string. La traduccion vive aqui y no en el JSX: un `?? ''` regado por la pantalla es la
- * forma en que `null` termina renderizandose como la palabra "null".
+ * La base habla snake_case y admite `notes` nula; el formulario habla camelCase y espera string.
+ * La traduccion vive aqui y no en el JSX: un `?? ''` regado por la pantalla es la forma en que
+ * `null` termina renderizandose como la palabra "null".
  */
 function toClientRecord(row: ClientProfileRow): ClientRecord {
   return {

@@ -9,10 +9,8 @@ export interface ClientProfileRow {
   notes: string | null
 }
 
-/**
- * Resultado de leer la lista. Es una union y no `clients + error` sueltos: "hubo error Y ademas
- * hay clientas" no es un estado posible, y la pantalla tiene que elegir un estado (UI-003).
- */
+/** Union y no `clients + error` sueltos: "hubo error Y ademas hay clientas" no es un estado
+ *  posible, y la pantalla tiene que elegir uno (UI-003). */
 export type ClientsListResult =
   | { ok: true; clients: ClientRecord[] }
   | { ok: false; error: string }

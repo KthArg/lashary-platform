@@ -43,9 +43,8 @@ abren el `ConfirmDialog` del proyecto —no `window.confirm`, que un iframe sand
 cede la trampa con `isPaused`.
 
 La lista tiene sus **tres estados** (UI-003): vacío y error en `ClientsList`, carga en
-`src/app/admin/clients/loading.tsx`. El de carga vive en la ruta porque quien espera por la base es
-el Server Component: cuando `ClientsList` se renderiza, los datos ya llegaron. El error se anuncia
-con `role="alert"` y **reemplaza** al estado vacío: un fallo de lectura no es "no hay clientas".
+`src/app/admin/clients/loading.tsx` —quien espera por la base es el Server Component, no la lista—.
+El error usa `role="alert"` y **reemplaza** al vacío: un fallo de lectura no es "no hay clientas".
 
 Lo único que ya funciona es el control de acceso de la capa de aplicación: la página llama a
 `requireAdminSession()` de `auth`, de modo que una visitante anónima o una clienta con sesión de
@@ -170,27 +169,14 @@ y límites: ningún texto visible vive en el JSX (DOM-009).
   Cubierto por `edit-client.test.tsx`, verificado fallando (2 pruebas) contra la definición anterior.
 - **2026-09-10 — `public.auth_is_admin()` es el contrato que `auth` publica** para que `clients` no
   consulte `auth_user_roles` directo (ARCH-005). `SECURITY DEFINER` porque esa tabla tiene RLS de
-  "solo mi propia fila" y sin definer la función se bloquearía a sí misma al evaluarse dentro de una
-  política; `STABLE` para que se evalúe una vez por consulta y no una por fila. **Excepción a
-  INT-003 asumida:** el contrato debía mergearse en su propio PR antes que esta implementación; entra
-  con ella para no partir la historia en dos ramas más.
-- **2026-09-10 — La política de admin entra en un PR apilado sobre `feat/US-CLI-05-edit-client`.**
-  INT-008 permite máximo una migración nueva por PR y esa rama ya trae la de `notes`. CI toma la base
-  del PR (`ci.yml`: `--base origin/${{ github.base_ref }}`), así que con base en la rama padre el
-  rango contiene una única migración nueva y el hook local coincide con CI. Reinicia también el
-  conteo de INT-002 y la edad de INT-001.
-- **2026-09-10 — La política de admin es PERMISIVA y solo de `SELECT`.** Las políticas de Postgres se
-  combinan con OR: `clients_profiles_select_admin` no toca lo que ve una clienta, que sigue siendo su
-  propia fila. Cubierto por `rls-admin-read.test.ts` — con el límite declarado en la deuda: modela
-  las políticas en TypeScript, no ejecuta Postgres (SEC-002).
-- **2026-09-10 — `listClients()` no lleva `'use server'`.** Su única consumidora será la página, que
-  es Server Component y la llama directo; marcarla como server action la publicaría como endpoint
-  invocable desde el navegador sin que nadie lo necesite. Cubierto por `list-clients.test.ts`
-  (traducción de fila, `notes` nula, lista vacía, fallo de la base y tope de PERF-002), con Supabase
-  mockeado.
+  "solo mi propia fila" y sin definer se bloquearía a sí misma dentro de una política; `STABLE` para
+  evaluarse una vez por consulta. **Excepción a INT-003:** el contrato entra con su implementación.
+- **2026-09-10 — `clients_profiles_select_admin` es PERMISIVA y solo de `SELECT`.** Las políticas se
+  combinan con OR: una clienta sigue viendo únicamente su propia fila. Cubierto por
+  `rls-admin-read.test.ts`, con el límite de la deuda: modela las políticas en TypeScript (SEC-002).
+- **2026-09-10 — `listClients()` no lleva `'use server'`.** Su única consumidora es la página, que es
+  Server Component; marcarla la publicaría como endpoint sin que nadie lo necesite. Cubierto por
+  `list-clients.test.ts` (traducción, `notes` nula, lista vacía, fallo y tope de PERF-002).
 - **2026-09-10 — La lista consume `listClients()` y `sample-clients.ts` se borró.** Paga las dos
-  deudas registradas el 2026-09-08: los datos quemados y los estados de carga y error que no tenían
-  sentido sobre un arreglo en memoria. Los datos de prueba se mudaron a
-  `__tests__/fixtures/clients.ts` — `TEST_CLIENTS` no lo importa nadie fuera de las pruebas, y
-  `supabase/seed.sql` cubre el desarrollo local, que es lo que el dato quemado hacía de facto.
-  Cubierto por `clients-list.test.tsx` (el estado de error reemplaza al vacío).
+  deudas del 2026-09-08. Los datos de prueba viven en `__tests__/fixtures/clients.ts` y
+  `supabase/seed.sql` cubre el desarrollo local. Cubierto por `clients-list.test.tsx`.
