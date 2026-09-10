@@ -16,6 +16,8 @@ export const AUTH_LABELS = {
   adminActiveSession: 'Sesión Administrativa Activa', adminRoleBadge: 'Rol:',
   dashboardNav: 'Dashboard', citasNav: 'Citas',
   collapseSidebar: 'Colapsar barra', expandSidebar: 'Expandir barra',
+  clientCitasNav: 'Mis Citas', clientCartNav: 'Carrito',
+  clientAccountNav: 'Mi Cuenta', clientPortalTitle: 'Portal Clienta',
 } as const
 
 export const AUTH_ERROR_MESSAGES = {

@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { GoogleSignInButton } from '@/features/auth/components/GoogleSignInButton'
 import { PhoneRegistrationModal } from '@/features/auth/components/PhoneRegistrationModal'
+import { ClientSidebar } from '@/features/auth/components/ClientSidebar'
 import { updateClientPhoneAction } from '@/features/auth/actions/phone-actions'
 
 vi.mock('@/shared/lib/supabase/server', () => ({
@@ -11,6 +12,10 @@ vi.mock('@/shared/lib/supabase/server', () => ({
   })),
 }))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
+vi.mock('next/navigation', () => ({
+  redirect: vi.fn(),
+  usePathname: () => '/portal/citas',
+}))
 
 describe('US-AUTH-02: Autenticación de Clientas con Google y Teléfono', () => {
   it('Criterio 1: Renderiza el botón accesible para iniciar sesión con Google', () => {
@@ -30,5 +35,33 @@ describe('US-AUTH-02: Autenticación de Clientas con Google y Teléfono', () => 
   it('Criterio 4: Guarda exitosamente el teléfono en clients_profiles', async () => {
     const fd = new FormData(); fd.append('phone', '88887777')
     expect((await updateClientPhoneAction(fd))?.success).toBe(true)
+  })
+
+  it('Criterio 5: Renderiza ClientSidebar con navegación (Citas, Carrito, Cuenta), usuario y cerrar sesión', () => {
+    const mockSession = {
+      user: { id: 'c1', email: 'cliente@lashary.com' } as any,
+      role: 'cliente',
+      profile: { full_name: 'Ana García', phone: '88887777' },
+    }
+
+    render(<ClientSidebar session={mockSession} />)
+
+    expect(screen.getByText('LASHARY')).toBeDefined()
+    expect(screen.getByText('Mis Citas')).toBeDefined()
+    expect(screen.getByText('Carrito')).toBeDefined()
+    expect(screen.getByText('Mi Cuenta')).toBeDefined()
+    expect(screen.getByText('Ana García')).toBeDefined()
+    expect(screen.getByText('cliente@lashary.com')).toBeDefined()
+    expect(screen.getByText('Tel: 88887777')).toBeDefined()
+    expect(screen.getByRole('button', { name: /cerrar sesión/i })).toBeDefined()
+
+    // Colapsar y expandir
+    const toggleBtn = screen.getByRole('button', { name: /colapsar barra/i })
+    fireEvent.click(toggleBtn)
+    expect(screen.queryByText('LASHARY')).toBeNull()
+
+    const expandBtn = screen.getByRole('button', { name: /expandir barra/i })
+    fireEvent.click(expandBtn)
+    expect(screen.getByText('LASHARY')).toBeDefined()
   })
 })
