@@ -18,6 +18,16 @@ export const AUTH_LABELS = {
   collapseSidebar: 'Colapsar barra', expandSidebar: 'Expandir barra',
   clientCitasNav: 'Mis Citas', clientCartNav: 'Carrito',
   clientAccountNav: 'Mi Cuenta', clientPortalTitle: 'Portal Clienta',
+  clientCitasTitle: 'Mis Citas',
+  clientCitasSubtitle: 'Historial y próximas citas agendadas (US-AGE-05).',
+  clientCitasPlaceholder: 'Espacio reservado para la visualización y gestión de citas de la clienta.',
+  clientCartTitle: 'Carrito de Compras',
+  clientCartSubtitle: 'Módulo de compras y productos seleccionados (US-SHOP-01).',
+  clientCartPlaceholder: 'Espacio reservado para el carrito de compras persistente durante la sesión.',
+  clientAccountTitle: 'Mi Cuenta',
+  clientAccountSubtitle: 'Ficha de clienta, estado de cuenta e información personal (US-CLI-06 / US-MOR-03).',
+  emailLabel: 'Correo:',
+  phoneLabel: 'Teléfono:',
 } as const
 
 export const AUTH_ERROR_MESSAGES = {

@@ -1,27 +1,23 @@
-import { getAuthSession } from '@/features/auth'
-import { redirect } from 'next/navigation'
+import { AUTH_LABELS } from '@/features/auth'
 
 export const metadata = {
-  title: 'Carrito de Compras | Portal Clienta LASHARY',
+  title: `${AUTH_LABELS.clientCartTitle} | ${AUTH_LABELS.clientPortalTitle} LASHARY`,
 }
 
-export default async function ClientCarritoPage() {
-  const session = await getAuthSession()
-  if (!session?.user) redirect('/login')
-
+export default function ClientCarritoPage() {
   return (
     <div className="space-y-4">
       <div className="border-b border-brand-border pb-4">
         <h1 className="font-serif text-2xl md:text-3xl font-bold text-brand-dark">
-          Carrito de Compras
+          {AUTH_LABELS.clientCartTitle}
         </h1>
         <p className="text-sm text-brand-muted mt-1">
-          Módulo de compras y productos seleccionados (US-SHOP-01).
+          {AUTH_LABELS.clientCartSubtitle}
         </p>
       </div>
       <div className="rounded-xl border border-brand-border bg-brand-surface p-6 shadow-sm">
         <p className="text-sm text-brand-muted">
-          Espacio reservado para el carrito de compras persistente durante la sesión.
+          {AUTH_LABELS.clientCartPlaceholder}
         </p>
       </div>
     </div>

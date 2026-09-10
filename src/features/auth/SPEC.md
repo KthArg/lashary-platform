@@ -2,7 +2,7 @@
 feature: auth
 dri: pendiente
 estado: terminada
-actualizado: "2026-09-09"
+actualizado: "2026-09-10"
 historias:
   - id: US-AUTH-01
     estado: terminada
