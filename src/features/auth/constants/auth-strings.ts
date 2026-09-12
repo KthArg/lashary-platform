@@ -14,6 +14,8 @@ export const AUTH_LABELS = {
   adminAccessTitle: 'Acceso de Gestión', adminAccessSubtitle: 'Ingresa tus credenciales autorizadas',
   adminRestrictedNotice: 'Acceso restringido a personal autorizado.',
   adminActiveSession: 'Sesión Administrativa Activa', adminRoleBadge: 'Rol:',
+  dashboardNav: 'Dashboard', citasNav: 'Citas',
+  collapseSidebar: 'Colapsar barra', expandSidebar: 'Expandir barra',
 } as const
 
 export const AUTH_ERROR_MESSAGES = {

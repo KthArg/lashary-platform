@@ -21,3 +21,7 @@ Thumbs.db
 
 # notas locales de Claude — personales, no versionadas
 CLAUDE.local.md
+
+# Planes de implementación generados (locales)
+PLAN.md
+PULL_REQUEST.md

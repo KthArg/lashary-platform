@@ -1,0 +1,17 @@
+export const sidebarStyles = {
+  aside: 'h-screen flex flex-col justify-between bg-brand-surface border-r border-brand-border transition-all duration-300 select-none shrink-0',
+  expandedWidth: 'w-64',
+  collapsedWidth: 'w-20',
+  header: 'p-4 border-b border-brand-border flex items-center justify-between',
+  brandTitle: 'font-serif font-bold text-lg tracking-widest-plus text-brand-dark',
+  toggleBtn: 'p-1.5 rounded-md hover:bg-brand-cream text-brand-muted hover:text-brand-dark transition-colors',
+  nav: 'flex-1 py-4 px-3 space-y-1',
+  navLink: 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+  navLinkActive: 'bg-brand-cream text-brand-gold font-semibold',
+  navLinkInactive: 'text-brand-dark hover:bg-brand-cream hover:text-brand-gold',
+  footer: 'p-4 border-t border-brand-border space-y-3',
+  userInfo: 'overflow-hidden',
+  userEmail: 'text-xs font-medium text-brand-dark truncate',
+  userRole: 'text-2xs uppercase tracking-wider text-brand-gold font-bold',
+  signOutBtn: 'w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-red-600 rounded-md hover:bg-red-50 transition-colors',
+}

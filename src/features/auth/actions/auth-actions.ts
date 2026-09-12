@@ -65,7 +65,7 @@ export async function signInAdminAction(
   }
 
   revalidatePath('/', 'layout')
-  redirect('/')
+  redirect('/admin/dashboard')
 }
 
 export async function signOutAction() {

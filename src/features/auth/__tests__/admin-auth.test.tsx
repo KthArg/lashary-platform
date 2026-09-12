@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, renderHook, act } from '@testing-library/react'
-import { AdminLoginForm, InactivityTimeout, useInactivityTimeout } from '@/features/auth'
+import { render, screen, renderHook, act, fireEvent } from '@testing-library/react'
+import { AdminLoginForm, AdminSidebar, InactivityTimeout, useInactivityTimeout } from '@/features/auth'
 import { signInAdminAction, signOutAction, getAuthSession, requireAdminSession } from '@/features/auth/actions/auth-actions'
 import { middleware } from '@/middleware'
 import { NextRequest, NextResponse } from 'next/server'
@@ -38,6 +38,7 @@ vi.mock('next/navigation', () => ({
     mockRedirect(url)
     throw new Error(`NEXT_REDIRECT:${url}`)
   },
+  usePathname: () => '/admin/dashboard',
 }))
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
@@ -63,8 +64,8 @@ describe('US-AUTH-01: Autenticación de Administradores (/admin)', () => {
     formData.append('email', 'admin@lashary.com')
     formData.append('password', 'validAdminPassword')
 
-    await expect(signInAdminAction(null, formData)).rejects.toThrow('NEXT_REDIRECT:/')
-    expect(mockRedirect).toHaveBeenCalledWith('/')
+    await expect(signInAdminAction(null, formData)).rejects.toThrow('NEXT_REDIRECT:/admin/dashboard')
+    expect(mockRedirect).toHaveBeenCalledWith('/admin/dashboard')
   })
 
   it('CA-2: Invalida la sesión activa y redirige al inicio al cerrar sesión', async () => {
@@ -166,5 +167,30 @@ describe('US-AUTH-01: Autenticación de Administradores (/admin)', () => {
   it('CA-5: Renderiza InactivityTimeout como componente nulo sin romper UI', () => {
     const { container } = render(<InactivityTimeout enabled={false} />)
     expect(container.firstChild).toBeNull()
+  })
+
+  it('CA-2: Renderiza AdminSidebar con navegación persistente, usuario y botón de cerrar sesión', () => {
+    const mockSession = {
+      user: { id: 'admin-1', email: 'admin@lashary.com' } as any,
+      role: 'admin',
+    }
+
+    render(<AdminSidebar session={mockSession} />)
+
+    expect(screen.getByText('LASHARY')).toBeDefined()
+    expect(screen.getByText('Dashboard')).toBeDefined()
+    expect(screen.getByText('Citas')).toBeDefined()
+    expect(screen.getByText('admin@lashary.com')).toBeDefined()
+    expect(screen.getByText('admin')).toBeDefined()
+    expect(screen.getByRole('button', { name: /cerrar sesión/i })).toBeDefined()
+
+    // Permite colapsar y expandir la barra lateral
+    const toggleBtn = screen.getByRole('button', { name: /colapsar barra/i })
+    fireEvent.click(toggleBtn)
+    expect(screen.queryByText('LASHARY')).toBeNull()
+
+    const expandBtn = screen.getByRole('button', { name: /expandir barra/i })
+    fireEvent.click(expandBtn)
+    expect(screen.getByText('LASHARY')).toBeDefined()
   })
 })
