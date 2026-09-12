@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, renderHook, act, fireEvent } from '@testing-library/react'
 import { AdminLoginForm, AdminSidebar, InactivityTimeout, useInactivityTimeout } from '@/features/auth'
 import { signInAdminAction, signOutAction, getAuthSession, requireAdminSession } from '@/features/auth/actions/auth-actions'
+import AdminLayout from '@/app/admin/layout'
 import { middleware } from '@/middleware'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -192,5 +193,25 @@ describe('US-AUTH-01: Autenticación de Administradores (/admin)', () => {
     const expandBtn = screen.getByRole('button', { name: /expandir barra/i })
     fireEvent.click(expandBtn)
     expect(screen.getByText('LASHARY')).toBeDefined()
+  })
+
+  it('CA-2: AdminLayout envuelve con AdminSidebar a administradores y renderiza children plano para no-admins', async () => {
+    // Caso 1: Admin autenticado -> monta sidebar y contenido
+    mockGetUser.mockResolvedValueOnce({ data: { user: { id: 'admin-1', email: 'admin@lashary.com' } } })
+    mockSingleRole.mockResolvedValueOnce({ data: { role: 'admin' }, error: null })
+
+    const adminJsx = await AdminLayout({ children: <div>Contenido Admin</div> })
+    const { unmount } = render(adminJsx)
+    expect(screen.getByText('Contenido Admin')).toBeDefined()
+    expect(screen.getByText('LASHARY')).toBeDefined()
+    expect(screen.getByText('Dashboard')).toBeDefined()
+    unmount()
+
+    // Caso 2: Sin sesión -> renderiza solo children sin sidebar
+    mockGetUser.mockResolvedValueOnce({ data: { user: null } })
+    const unauthJsx = await AdminLayout({ children: <div>Contenido Bare</div> })
+    render(unauthJsx)
+    expect(screen.getByText('Contenido Bare')).toBeDefined()
+    expect(screen.queryByText('Dashboard')).toBeNull()
   })
 })
