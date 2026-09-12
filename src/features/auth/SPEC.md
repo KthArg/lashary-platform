@@ -45,7 +45,7 @@ Punto de entrada exportado (ARCH-003):
 - Acciones y helpers: `getAuthSession()`, `requireAdminSession()`, `signInWithGoogleAction()`, `signInAdminAction()`, `signOutAction()`, `updateClientPhoneAction()`.
 - Componentes UI: `GoogleSignInButton`, `PhoneRegistrationModal`, `AdminLoginForm`, `InactivityTimeout`, `AdminSidebar`, `ClientSidebar`.
 - Hooks: `useGoogleSignIn`, `usePhoneRegistration`, `useAdminLoginForm`, `useInactivityTimeout`.
-- Constantes: `AUTH_ROLES`, `AUTH_BUTTON_TEXTS`, `AUTH_LABELS`, `AUTH_ERROR_MESSAGES`.
+- Constantes: `AUTH_ROLES`, `AUTH_BUTTON_TEXTS`, `AUTH_LABELS`, `AUTH_ERROR_MESSAGES`, `CLIENT_PORTAL_ROUTES`, `ADMIN_PORTAL_ROUTES`.
 
 ## Invariantes de seguridad
 
