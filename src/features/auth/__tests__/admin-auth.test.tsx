@@ -181,6 +181,7 @@ describe('US-AUTH-01: Autenticación de Administradores (/admin)', () => {
     expect(screen.getByText('LASHARY')).toBeDefined()
     expect(screen.getByText('Dashboard')).toBeDefined()
     expect(screen.getByText('Citas')).toBeDefined()
+    expect(screen.getByText('Clientas')).toBeDefined()
     expect(screen.getByText('admin@lashary.com')).toBeDefined()
     expect(screen.getByText('admin')).toBeDefined()
     expect(screen.getByRole('button', { name: /cerrar sesión/i })).toBeDefined()
