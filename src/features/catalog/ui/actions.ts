@@ -13,9 +13,8 @@ import {
 import { techniqueRepository } from '../db/technique-repository'
 import { techniqueFormSchema } from './schema'
 import { catalogMessages } from './messages'
+import { catalogRoutes } from './routes'
 import type { TechniqueActionState } from './action-state'
-
-const ADMIN_CATALOG_PATH = '/admin/catalog'
 
 async function deps(): Promise<CommandDeps> {
   return { repo: await techniqueRepository(), newId: () => randomUUID() }
@@ -42,7 +41,7 @@ export async function createTechniqueAction(
   if (isErr(result)) {
     return { status: 'invalid', problems: result.error.problems }
   }
-  revalidatePath(ADMIN_CATALOG_PATH)
+  revalidatePath(catalogRoutes.admin)
   return { status: 'ok', message: catalogMessages.form.savedCreate }
 }
 
@@ -67,7 +66,7 @@ export async function updateTechniqueAction(
       problems: 'problems' in result.error ? result.error.problems : [result.error.message],
     }
   }
-  revalidatePath(ADMIN_CATALOG_PATH)
+  revalidatePath(catalogRoutes.admin)
   return { status: 'ok', message: catalogMessages.form.savedEdit }
 }
 
@@ -82,6 +81,6 @@ export async function deactivateTechniqueAction(
   if (isErr(result)) {
     return { status: 'invalid', problems: [result.error.message] }
   }
-  revalidatePath(ADMIN_CATALOG_PATH)
+  revalidatePath(catalogRoutes.admin)
   return { status: 'ok', message: catalogMessages.form.deactivated }
 }

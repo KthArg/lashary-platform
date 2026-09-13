@@ -2,17 +2,18 @@
 
 // Ver nota en loading.tsx: el texto viene del entry point cliente-seguro, no del index.ts.
 import { catalogMessages } from '@/features/catalog/client'
+import { catalogStyles } from './catalog.styles'
 
 const m = catalogMessages.admin.error
 
 export default function Error({ reset }: { error: Error; reset: () => void }) {
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-6 p-6">
-      <h1 className="font-serif text-2xl">{catalogMessages.admin.title}</h1>
-      <div role="alert" className="rounded-box border border-error/40 p-10 text-center">
-        <h2 className="font-serif text-lg">{m.title}</h2>
-        <p className="mt-2 text-sm text-base-content/70">{m.body}</p>
-        <button type="button" onClick={reset} className="btn btn-outline btn-sm mt-4">
+    <main className={catalogStyles.main}>
+      <h1 className={catalogStyles.title}>{catalogMessages.admin.title}</h1>
+      <div role="alert" className={catalogStyles.errorBox}>
+        <h2 className={catalogStyles.errorTitle}>{m.title}</h2>
+        <p className={catalogStyles.errorBody}>{m.body}</p>
+        <button type="button" onClick={reset} className={catalogStyles.retryButton}>
           {m.retry}
         </button>
       </div>

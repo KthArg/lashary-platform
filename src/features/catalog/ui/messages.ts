@@ -60,6 +60,15 @@ export const catalogMessages = {
     savedCreate: 'Técnica creada.',
     savedEdit: 'Cambios guardados.',
     deactivated: 'Técnica desactivada.',
+    validation: {
+      name: 'El nombre es obligatorio',
+      family: 'Elegí una familia de servicio válida',
+      priceFirstTime: 'El precio de primera vez debe ser mayor que cero',
+      durationFirstTimeMin: 'La duración de primera vez debe ser mayor que cero',
+      bufferMin: 'El tiempo de preparación y limpieza no puede ser negativo',
+      deposit: 'El anticipo no puede ser negativo',
+      aftercareText: 'El texto de cuidados posteriores es obligatorio',
+    },
   },
 } as const
 

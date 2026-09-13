@@ -6,6 +6,8 @@ import {
 } from '../application/queries'
 import { techniqueRepository } from '../db/technique-repository'
 import { catalogMessages } from './messages'
+import { catalogRoutes } from './routes'
+import { adminCatalogPageStyles as s } from './AdminCatalogPage.styles'
 import { TechniqueTable } from './TechniqueTable'
 import { TechniqueForm } from './technique-form'
 
@@ -33,33 +35,33 @@ export async function AdminCatalogPage({
   const showForm = params.new !== undefined || editing !== undefined
 
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-6 p-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
+    <main className={s.main}>
+      <header className={s.header}>
         <div>
-          <h1 className="font-serif text-2xl">{m.title}</h1>
-          <p className="text-sm text-base-content/70">{m.subtitle}</p>
+          <h1 className={s.title}>{m.title}</h1>
+          <p className={s.subtitle}>{m.subtitle}</p>
         </div>
         {!showForm && (
-          <Link href="/admin/catalog?new" className="btn btn-primary btn-sm">
+          <Link href={catalogRoutes.newTechnique} className={s.newTechniqueLink}>
             {m.newTechnique}
           </Link>
         )}
       </header>
 
       {showForm && (
-        <div className="rounded-box border border-base-300 p-6">
+        <div className={s.formWrapper}>
           <TechniqueForm technique={editing} />
-          <Link href="/admin/catalog" className="btn btn-ghost btn-sm mt-4">
+          <Link href={catalogRoutes.admin} className={s.cancelLink}>
             {catalogMessages.form.cancel}
           </Link>
         </div>
       )}
 
       {page.items.length === 0 ? (
-        <div className="rounded-box border border-base-300 p-10 text-center">
-          <h2 className="font-serif text-lg">{m.empty.title}</h2>
-          <p className="mt-2 text-sm text-base-content/70">{m.empty.body}</p>
-          <Link href="/admin/catalog?new" className="btn btn-primary btn-sm mt-4">
+        <div className={s.emptyBox}>
+          <h2 className={s.emptyTitle}>{m.empty.title}</h2>
+          <p className={s.emptyBody}>{m.empty.body}</p>
+          <Link href={catalogRoutes.newTechnique} className={s.emptyCta}>
             {m.empty.cta}
           </Link>
         </div>

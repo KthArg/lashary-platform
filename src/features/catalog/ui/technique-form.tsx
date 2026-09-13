@@ -10,6 +10,7 @@ import {
   deactivateTechniqueAction,
 } from './actions'
 import { initialActionState } from './action-state'
+import { techniqueFormStyles as s } from './technique-form.styles'
 
 const f = catalogMessages.form
 
@@ -24,8 +25,8 @@ type FieldProps = {
 
 function Field({ name, label, defaultValue, type = 'text', required, min }: FieldProps) {
   return (
-    <label className="form-control w-full" htmlFor={name}>
-      <span className="label-text">{label}</span>
+    <label className={s.fieldLabel} htmlFor={name}>
+      <span className={s.labelText}>{label}</span>
       <input
         id={name}
         name={name}
@@ -34,7 +35,7 @@ function Field({ name, label, defaultValue, type = 'text', required, min }: Fiel
         min={min}
         step={type === 'number' ? 1 : undefined}
         defaultValue={defaultValue ?? undefined}
-        className="input input-bordered w-full"
+        className={s.fieldInput}
       />
     </label>
   )
@@ -52,23 +53,23 @@ function Feedback({
   if (status === 'idle') return null
   if (status === 'ok') {
     return (
-      <div role="status" className="alert alert-success">
+      <div role="status" className={s.alertSuccess}>
         <span>{message}</span>
       </div>
     )
   }
   if (status === 'disabled') {
     return (
-      <div role="alert" className="alert alert-warning">
+      <div role="alert" className={s.alertWarning}>
         <span>{message}</span>
       </div>
     )
   }
   return (
-    <div role="alert" className="alert alert-error">
+    <div role="alert" className={s.alertError}>
       <div>
-        <p className="font-medium">{f.validationTitle}</p>
-        <ul className="list-disc pl-5">
+        <p className={s.feedbackTitle}>{f.validationTitle}</p>
+        <ul className={s.feedbackList}>
           {(problems ?? []).map((problem) => (
             <li key={problem}>{problem}</li>
           ))}
@@ -90,25 +91,25 @@ export function TechniqueForm({ technique }: { technique?: TechniqueView }) {
   )
 
   return (
-    <section className="flex flex-col gap-4">
-      <h2 className="font-serif text-xl">
+    <section className={s.section}>
+      <h2 className={s.heading}>
         {editing ? f.legendEdit : f.legendCreate}
       </h2>
 
       <Feedback {...state} />
 
-      <form action={formAction} className="grid gap-4 sm:grid-cols-2">
+      <form action={formAction} className={s.form}>
         {editing && <input type="hidden" name="id" value={technique.id} />}
 
         <Field name="name" label={f.fields.name} defaultValue={technique?.name} required />
 
-        <label className="form-control w-full" htmlFor="family">
-          <span className="label-text">{f.fields.family}</span>
+        <label className={s.fieldLabel} htmlFor="family">
+          <span className={s.labelText}>{f.fields.family}</span>
           <select
             id="family"
             name="family"
             defaultValue={technique?.family ?? SERVICE_FAMILIES[0]}
-            className="select select-bordered w-full"
+            className={s.select}
           >
             {SERVICE_FAMILIES.map((family) => (
               <option key={family} value={family}>
@@ -126,30 +127,30 @@ export function TechniqueForm({ technique }: { technique?: TechniqueView }) {
         <Field name="reapplicationIntervalDays" label={f.fields.reapplicationIntervalDays} type="number" min={1} defaultValue={technique?.reapplicationIntervalDays ?? ''} />
         <Field name="deposit" label={f.fields.deposit} type="number" min={0} required defaultValue={technique?.deposit ?? 0} />
 
-        <label className="form-control w-full sm:col-span-2" htmlFor="aftercareText">
-          <span className="label-text">{f.fields.aftercareText}</span>
+        <label className={s.aftercareLabel} htmlFor="aftercareText">
+          <span className={s.labelText}>{f.fields.aftercareText}</span>
           <textarea
             id="aftercareText"
             name="aftercareText"
             required
             rows={3}
             defaultValue={technique?.aftercareText}
-            className="textarea textarea-bordered w-full"
+            className={s.textarea}
           />
         </label>
 
-        <div className="sm:col-span-2">
-          <button type="submit" className="btn btn-primary" disabled={pending}>
+        <div className={s.submitWrapper}>
+          <button type="submit" className={s.submitButton} disabled={pending}>
             {editing ? f.submitEdit : f.submitCreate}
           </button>
         </div>
       </form>
 
       {editing && (
-        <form action={deactivateAction} className="flex flex-col gap-2 border-t border-base-300 pt-4">
+        <form action={deactivateAction} className={s.deactivateForm}>
           <input type="hidden" name="id" value={technique.id} />
           <Feedback {...deactivateState} />
-          <button type="submit" className="btn btn-outline btn-error w-fit" disabled={deactivating}>
+          <button type="submit" className={s.deactivateButton} disabled={deactivating}>
             {catalogMessages.admin.rowActions.deactivate}
           </button>
         </form>

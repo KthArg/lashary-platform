@@ -6,6 +6,7 @@ import {
   TechniqueValidationError,
 } from '../domain/errors'
 import type { TechniqueRepository, TechniqueWriteModel } from './ports'
+import { commandMessages } from './messages'
 
 export type CommandDeps = {
   repo: TechniqueRepository
@@ -36,17 +37,17 @@ function buildTechnique(
 
   const moneyProblems: string[] = []
   if (priceFirstTime === null) {
-    moneyProblems.push('el precio de primera vez debe ser un entero de colones')
+    moneyProblems.push(commandMessages.invalidPriceFirstTime)
   }
   if (
     model.priceRetouch !== undefined &&
     model.priceRetouch !== null &&
     priceRetouch === null
   ) {
-    moneyProblems.push('el precio de retoque debe ser un entero de colones')
+    moneyProblems.push(commandMessages.invalidPriceRetouch)
   }
   if (deposit === null) {
-    moneyProblems.push('el anticipo debe ser un entero de colones')
+    moneyProblems.push(commandMessages.invalidDeposit)
   }
   if (priceFirstTime === null || deposit === null || moneyProblems.length > 0) {
     return err(new TechniqueValidationError(moneyProblems))

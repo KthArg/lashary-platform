@@ -2,6 +2,8 @@ import Link from 'next/link'
 import type { TechniqueView } from '../domain/technique'
 import { catalogMessages, familyLabel } from './messages'
 import { formatColones } from './format'
+import { catalogRoutes } from './routes'
+import { techniqueTableStyles as s } from './TechniqueTable.styles'
 
 const m = catalogMessages.admin
 
@@ -15,8 +17,8 @@ function durationCell(technique: TechniqueView): string {
 
 export function TechniqueTable({ items }: { items: TechniqueView[] }) {
   return (
-    <div className="overflow-x-auto rounded-box border border-base-300">
-      <table className="table table-zebra">
+    <div className={s.wrapper}>
+      <table className={s.table}>
         <thead>
           <tr>
             <th>{m.columns.name}</th>
@@ -29,14 +31,14 @@ export function TechniqueTable({ items }: { items: TechniqueView[] }) {
             <th>{m.columns.deposit}</th>
             <th>{m.columns.status}</th>
             <th>
-              <span className="sr-only">{m.columns.actions}</span>
+              <span className={s.srOnly}>{m.columns.actions}</span>
             </th>
           </tr>
         </thead>
         <tbody>
           {items.map((technique) => (
             <tr key={technique.id}>
-              <td className="font-medium">{technique.name}</td>
+              <td className={s.nameCell}>{technique.name}</td>
               <td>{familyLabel(technique.family)}</td>
               <td>{formatColones(technique.priceFirstTime)}</td>
               <td>
@@ -55,21 +57,12 @@ export function TechniqueTable({ items }: { items: TechniqueView[] }) {
               </td>
               <td>{formatColones(technique.deposit)}</td>
               <td>
-                <span
-                  className={
-                    technique.isActive
-                      ? 'badge badge-success badge-sm'
-                      : 'badge badge-ghost badge-sm'
-                  }
-                >
+                <span className={technique.isActive ? s.badgeActive : s.badgeInactive}>
                   {technique.isActive ? m.status.active : m.status.inactive}
                 </span>
               </td>
-              <td className="text-right">
-                <Link
-                  href={`/admin/catalog?edit=${technique.id}`}
-                  className="btn btn-ghost btn-xs"
-                >
+              <td className={s.actionsCell}>
+                <Link href={catalogRoutes.editTechnique(technique.id)} className={s.editLink}>
                   {m.rowActions.edit}
                 </Link>
               </td>
