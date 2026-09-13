@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-06.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-10.
 
 ## Features
 
@@ -11,7 +11,7 @@
 | audit | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | en_progreso | 0 / 1 / 0 / 0 / 3 |
-| clients | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
+| clients | pendiente | en_progreso | 0 / 1 / 0 / 0 / 4 |
 | content | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 3 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | landing | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 6 |
@@ -28,9 +28,9 @@
 
 ### audit (actualizado: 2026-08-29)
 
-### auth (actualizado: 2026-09-06)
-- US-AUTH-01 — terminada — PR #5, tests: admin-auth.test.tsx
-- US-AUTH-02 — terminada — PR #3, tests: auth-client.test.tsx, rls-isolation.test.ts
+### auth (actualizado: 2026-09-10)
+- US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
+- US-AUTH-02 — terminada — PR #3, PR #18, tests: auth-client.test.tsx, rls-isolation.test.ts
 
 ### catalog (actualizado: 2026-09-01)
 - US-AGE-08 — en_progreso — falta: criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran en US-AGE-05 con el test obligatorio de DOM-002; el camino de escritura admin va apagado tras el flag catalog_admin_write hasta que auth exponga public.auth_is_staff()
@@ -38,12 +38,12 @@
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
-### clients (actualizado: 2026-08-28)
+### clients (actualizado: 2026-09-07)
 - US-CLI-01 — no_iniciada
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
-- US-CLI-05 — no_iniciada
+- US-CLI-05 — en_progreso — falta: Existe la ruta /admin/clients con su guardia de rol y el andamio de carpetas. Faltan: el formulario de alta, la migracion (columna notes, unicidad de telefono, politica RLS de admin), el server action, los criterios 2, 3 y 4, y todas las pruebas incluida la de aislamiento RLS (SEC-002).
 
 ### content (actualizado: 2026-08-29)
 - US-BLOG-01 — no_iniciada
