@@ -1,10 +1,15 @@
 import { getAuthSession, GoogleSignInButton, PhoneRegistrationModal, signOutAction, AUTH_BUTTON_TEXTS, AUTH_LABELS } from '@/features/auth'
+import { redirect } from 'next/navigation'
 import { loginStyles as s } from './login.styles'
 import type { LoginPageProps } from './login.types'
 
 export default async function LoginPage(_props: LoginPageProps) {
   const session = await getAuthSession()
   const needsPhone = Boolean(session?.user && !session.profile?.phone)
+
+  if (session?.user && !needsPhone) {
+    redirect('/portal/citas')
+  }
 
   return (
     <main className={s.main}>
