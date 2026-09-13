@@ -14,9 +14,15 @@ historias:
     estado: no_iniciada
   - id: US-CLI-05
     estado: en_progreso
-    falta: "El criterio 1 existe solo como interfaz: el alta valida y reporta en consola, sin persistir. Faltan: la migracion (notes, unicidad de telefono), el server action, los criterios 2, 3 y 4, el bloqueo de navegacion al salir con el formulario abierto, y la prueba de aislamiento RLS (SEC-002)."
+    falta: "El criterio 1 existe solo como interfaz: el formulario de alta valida y reporta en consola, sin persistir. El criterio 2 funciona de punta a punta en la interfaz —lista, modal con datos cargados, descarte confirmado y guardado— pero sobre los datos quemados de constants/sample-clients.ts y sin escribir en la base. Faltan: la migracion (notes, unicidad de telefono, RLS de admin), los server actions de alta y edicion, los criterios 3 y 4, el bloqueo de navegacion al salir de la pagina con el formulario abierto, y la prueba de aislamiento RLS (SEC-002)."
 flags: []
-deuda: []
+deuda:
+  - que: "Cuatro clientas quemadas en src/features/clients/constants/sample-clients.ts para poder ejercitar la edicion sin base de datos; la pantalla no prueba lectura real"
+    aceptada_en: "PR pendiente — rama feat/US-CLI-05-edit-client"
+    costo: "1h: borrar el archivo y sustituirlo por el server action cuando exista la migracion"
+  - que: "ClientsList no tiene estados de carga ni de error (UI-003) porque su fuente es un arreglo en memoria"
+    aceptada_en: "PR pendiente — rama feat/US-CLI-05-edit-client"
+    costo: "1h al conectar la lectura real"
 defectos: []
 ---
 
@@ -26,18 +32,43 @@ Gestion de clientas: ficha, historial, anotaciones, expediente sensible (SEC-006
 
 ## Qué hace hoy
 
-Existe la ruta `/admin/clients`, dentro del panel de administración. Renderiza el encabezado de la
-sección y el botón **Agregar**, que abre el modal de alta; no lee ni escribe una sola clienta. El
-modal solo cierra con Cancelar o Escape, y con datos escritos pide confirmar con el `ConfirmDialog`
-del proyecto. El foco queda confinado al diálogo y vuelve a *Agregar* al cerrar (UI-004).
+Existe la ruta `/admin/clients` con el encabezado de la sección y un botón **Agregar** que abre el
+modal de alta. El formulario captura nombre, teléfono, correo y notas, valida al enviar y marca en
+rojo los campos que faltan con su mensaje; el resumen de errores se retira en cuanto la admin
+corrige los campos. Con el formulario válido **imprime el alta en consola y no persiste nada**.
+
+El modal no cierra al clic fuera: la única salida es Cancelar o Escape, y con datos escritos ambas
+abren el `ConfirmDialog` del proyecto —no `window.confirm`, que un iframe sandbox ignora—.
+
+**El foco queda confinado al diálogo** (UI-004): entra en el primer control al abrir, `Tab` y
+`Shift+Tab` ciclan dentro de la tarjeta, y al cerrar vuelve al botón *Agregar*. Lo resuelve
+`useFocusTrap`, que también usa el `ConfirmDialog`; mientras la confirmación está encima, el modal
+cede la trampa con `isPaused`.
 
 Lo único que ya funciona es el control de acceso de la capa de aplicación: la página llama a
 `requireAdminSession()` de `auth`, de modo que una visitante anónima o una clienta con sesión de
 Google son redirigidas a `/admin`. El middleware de Edge ya cubría `/admin/*` (salvo `/admin`
 exacto), pero solo comprueba que haya sesión, no el rol — el rol lo comprueba esta página.
 
+Debajo del encabezado, `ClientsList` muestra una fila por clienta con su nombre y un botón de **solo
+icono** —un lápiz en SVG inline, porque el proyecto no tiene librería de iconos y no se trae una por
+esto—. Nada más: filtros, búsqueda y paginación son US-CLI-01. Sin texto visible, el `aria-label` es
+el **único** nombre del botón, y por eso nombra a la clienta (`Editar a <nombre>`): cuatro lápices
+idénticos son indistinguibles en un lector de pantalla (UI-004). El área táctil es de 40×40 aunque
+el icono mida 16. **Las cuatro clientas están quemadas** en `constants/sample-clients.ts`.
+
+El lápiz abre `EditClientDialog`: el **mismo** modal, formulario y confirmación del alta, con los
+datos de la clienta ya cargados. Salir con cambios pendientes pregunta antes de descartarlos; salir
+sin haber tocado nada cierra directo. Hay un solo diálogo para toda la lista, y el formulario lleva
+`key` por clienta: sin eso, pasar de una a otra reusaría el estado anterior. El foco vuelve al lápiz
+de esa fila, no al principio (UI-004). Al guardar **imprime en consola y no persiste nada**.
+
 La estructura de carpetas sigue la distribución de `auth`: `actions/`, `components/`, `hooks/`,
-`constants/`, `validation/`, `types/`, `__tests__/`; un subdirectorio por componente.
+`constants/`, `validation/`, `types/`, `__tests__/`; un subdirectorio por componente con su
+`.styles.ts` y `.types.ts`. Dentro de `components/` hay una carpeta **`shared/`** con las piezas
+reutilizables entre flujos de la feature —`ClientModal`, `ClientForm` y `ConfirmDialog`—. Esa
+`shared/` es **de la feature**, no `src/shared/` del proyecto: nada de esto es reutilizable fuera de
+`clients` todavía, y ARCH-007 reserva `src/shared/` para código sin reglas de negocio.
 
 ## Qué no hace todavía
 
@@ -59,9 +90,13 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
 ## Contrato público (`src/features/clients/index.ts`)
 
-Único punto de entrada (ARCH-003). Exporta `AddClientDialog` —lo que monta la ruta—, el modal, el
-`ConfirmDialog`, el formulario, `AddClientButton`, los hooks
-`useAddClientForm` y `useFocusTrap`, `validateClientForm` y las constantes de textos y límites (DOM-009).
+Único punto de entrada (ARCH-003). Exporta `AddClientDialog` —lo que consume la ruta—,
+`AddClientButton`, `EditClientDialog`, `ClientsList`, y las piezas reutilizables `ClientModal`,
+`ClientForm`,
+`ClientFormField` y `ConfirmDialog`. Los hooks `useClientForm`, `useClientFormDialog` y
+`useFocusTrap`; `validateClientForm`; el tipo `ClientRecord` y los datos temporales `SAMPLE_CLIENTS`;
+y las constantes de textos, etiquetas ARIA, claves de campo y límites: ningún texto visible vive en
+el JSX (DOM-009).
 
 ## Invariantes
 
@@ -89,11 +124,41 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 - **2026-09-07 — Pendiente de acuerdo contrato-primero (INT-003): cómo comprueba esta feature que la
   sesión es de una administradora.** El dato vive en `auth_user_roles`, tabla de `auth`, y ARCH-005
   prohíbe consultarla directamente. Propuesta: función `SECURITY DEFINER` publicada por `auth`.
-- **2026-09-07 — El criterio 1 se entrega primero solo como interfaz** y **no está cumplido** hasta
-  que escriba en la base con su prueba. `email` es obligatorio: `clients_profiles.email` es `NOT NULL`.
-- **2026-09-08 — El estado de errores borra la clave, no la vacía**; si sobrevive, el resumen rojo no
-  se retira. Cubierto por `form-error-summary.test.tsx`.
-- **2026-09-12 — El alta se parte en dos PRs apilados (INT-002):** este, sin montar, y el modal con
-  su confirmación de descarte. `useFocusTrap` entra aquí; su prueba llega con el modal que lo usa.
-- **2026-09-12 — `ConfirmDialog` vive en `clients`, no en `shared/`**: un solo consumidor no justifica
-  una API compartida. Trampa de foco cubierta por `modal-focus-trap.test.tsx`.
+- **2026-09-07 — El criterio 1 se entrega primero solo como interfaz**: el alta reporta en consola
+  porque la persistencia depende de la migración que aún no existe. **No está cumplido** hasta que
+  escriba en la base y tenga su prueba.
+- **2026-09-07 — `email` se pide obligatorio** porque `clients_profiles.email` es `NOT NULL`. Si el
+  PO acepta clientas sin correo, cambia la columna y `REQUIRED_CLIENT_FIELDS`.
+- **2026-09-08 — El estado de errores borra la clave, no la vacía.** La revisión del PR encontró que
+  `setFieldValue` hacía `{ ...current, [field]: undefined }`: la clave sobrevivía, `Object.keys`
+  seguía contándola y el resumen rojo del formulario no desaparecía aunque la admin corrigiera todo.
+  Cubierto por `form-error-summary.test.tsx`, que se verificó fallando contra el código anterior.
+- **2026-09-08 — El `ConfirmDialog` vive en `clients`, no en `shared/`.** Su único consumidor hoy es
+  el descarte del formulario de alta. Subirlo a `shared/` con un solo consumidor inventa una API
+  compartida antes de saber qué necesita el segundo. Sube cuando aparezca, no antes.
+- **2026-09-08 — `useFocusTrap` cierra el hallazgo UI-004 de la revisión.** El modal declaraba
+  `role="dialog"` y `aria-modal` pero el `Tab` se escapaba de la tarjeta a la página, que quedaba
+  operable. Ahora el foco entra al abrir, cicla dentro y vuelve al botón *Agregar* al cerrar.
+  Cubierto por `modal-focus-trap.test.tsx`, verificado fallando sin la trampa.
+- **2026-09-12 — El alta se partió en dos PRs apilados (INT-002)**, sin excepción de proceso: el
+  formulario sin montar y el modal montado con su confirmación de descarte.
+- **2026-09-08 — El criterio 2 se apoya en datos quemados, no en la base.** Editar exige clientas
+  existentes y la migración con la política RLS de administradora no existe todavía (SEC-001), así
+  que `constants/sample-clients.ts` trae cuatro filas en memoria. La pantalla demuestra la edición,
+  **no** demuestra que la administradora pueda leer clientas reales. Registrado como deuda con su
+  costo; el archivo se borra entero cuando exista el server action.
+- **2026-09-08 — `ClientsList` implementa el estado vacío pero no los de carga y error** (UI-003).
+  Su fuente es un arreglo en memoria: no tarda ni falla, y fabricar un spinner que nunca gira es
+  teatro. Ambos entran con la lectura real. Cubierto por `clients-list.test.tsx`.
+- **2026-09-09 — El modal y el formulario se generalizaron dentro de la feature.** `AddClientModal` y
+  `AddClientForm` pasaron a `ClientModal` y `ClientForm` —título y valores iniciales por props— y las
+  ~25 líneas de coordinación de `AddClientDialog` salieron a `useClientFormDialog`. Viven en
+  `components/shared/`; **`src/shared/` del proyecto sigue intacto**. Es un refactor **sin cambio de
+  comportamiento**: las 43 pruebas existentes pasan sin tocarlas.
+- **2026-09-09 — `ClientModal` numera su título con `useId`** y no con una constante de módulo. Con
+  dos modales en el mismo árbol, un `id` fijo se duplicaría y `aria-labelledby` apuntaría al título
+  equivocado (UI-004).
+- **2026-09-09 — `isDirty` compara contra los valores iniciales, no contra el vacío.** La definición
+  anterior ("hay algo escrito") servía para el alta, que nace vacía, pero el formulario de edición
+  nace lleno: abrirlo y cancelar sin tocar nada disparaba la confirmación de descarte, que mentía.
+  Cubierto por `edit-client.test.tsx`, verificado fallando (2 pruebas) contra la definición anterior.

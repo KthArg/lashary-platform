@@ -1,4 +1,4 @@
-export const addClientModalStyles = {
+export const clientModalStyles = {
   backdrop: 'fixed inset-0 z-modal flex items-center justify-center bg-black/60 backdrop-blur-sm p-4',
   card: 'w-full max-w-md bg-white p-8 sm:p-10 shadow-2xl border border-brand-border/40 max-h-full overflow-y-auto',
   header: 'mb-6 text-center',
