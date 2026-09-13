@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-09-09"
+actualizado: "2026-09-12"
 historias:
   - id: US-CLI-01
     estado: no_iniciada
@@ -140,10 +140,8 @@ el JSX (DOM-009).
   `role="dialog"` y `aria-modal` pero el `Tab` se escapaba de la tarjeta a la página, que quedaba
   operable. Ahora el foco entra al abrir, cicla dentro y vuelve al botón *Agregar* al cerrar.
   Cubierto por `modal-focus-trap.test.tsx`, verificado fallando sin la trampa.
-- **2026-09-08 — Este PR entra con excepción de proceso a INT-002.** El diff excede las ~400 líneas
-  porque el modal, su confirmación, la trampa de foco y sus pruebas son una unidad funcional:
-  partirlos deja mergeado un modal inaccesible. Etiqueta `excepcion-proceso` con justificación
-  escrita, según `docs/spec/INTEGRATION.md#el-escape-legítimo`.
+- **2026-09-12 — El alta se partió en dos PRs apilados (INT-002)**, sin excepción de proceso: el
+  formulario sin montar y el modal montado con su confirmación de descarte.
 - **2026-09-08 — El criterio 2 se apoya en datos quemados, no en la base.** Editar exige clientas
   existentes y la migración con la política RLS de administradora no existe todavía (SEC-001), así
   que `constants/sample-clients.ts` trae cuatro filas en memoria. La pantalla demuestra la edición,
