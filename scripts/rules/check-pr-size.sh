@@ -8,8 +8,40 @@ MAX_LINES=400
 MAX_FEATURES=2
 MAX_BRANCH_AGE_DAYS=3
 
+has_process_exception() {
+  if [ -z "${GITHUB_EVENT_PATH:-}" ] || [ ! -f "${GITHUB_EVENT_PATH:-}" ]; then
+    echo "0"
+    return
+  fi
+
+  python3 - "$GITHUB_EVENT_PATH" <<'PY'
+import json
+import sys
+
+try:
+    with open(sys.argv[1], encoding="utf-8") as fh:
+        event = json.load(fh)
+except Exception:
+    print("0")
+    raise SystemExit(0)
+
+labels = event.get("pull_request", {}).get("labels", [])
+label_names = {
+    label.get("name", "")
+    for label in labels
+    if isinstance(label, dict)
+}
+print("1" if "excepcion-proceso" in label_names else "0")
+PY
+}
+
 if [ -z "$DIFF_RANGE" ] && [ -z "$(git -C "$REPO_ROOT" diff --cached --name-only)" ]; then
   echo "Diff vacío — nada que verificar."
+  finish "check-pr-size"
+fi
+
+if [ "$(has_process_exception)" = "1" ]; then
+  echo "Etiqueta 'excepcion-proceso' detectada en el PR: se omiten INT-001 e INT-002 (docs/spec/INTEGRATION.md#el-escape-legítimo)."
   finish "check-pr-size"
 fi
 
