@@ -43,7 +43,7 @@
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
-- US-CLI-05 — en_progreso — falta: El formulario de alta valida y reporta en consola, pero ninguna ruta lo monta. Faltan: el modal que lo abre desde /admin/clients, la migracion (notes, unicidad de telefono), el server action, los criterios 2, 3 y 4, y la prueba de aislamiento RLS (SEC-002).
+- US-CLI-05 — en_progreso — falta: El criterio 1 existe solo como interfaz: el alta valida y reporta en consola, sin persistir. Faltan: la migracion (notes, unicidad de telefono), el server action, los criterios 2, 3 y 4, el bloqueo de navegacion al salir con el formulario abierto, y la prueba de aislamiento RLS (SEC-002).
 
 ### content (actualizado: 2026-08-29)
 - US-BLOG-01 — no_iniciada
