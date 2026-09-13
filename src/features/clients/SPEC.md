@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-09-07"
+actualizado: "2026-09-12"
 historias:
   - id: US-CLI-01
     estado: no_iniciada
@@ -14,7 +14,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-05
     estado: en_progreso
-    falta: "Existe la ruta /admin/clients con su guardia de rol y el andamio de carpetas. Faltan: el formulario de alta, la migracion (columna notes, unicidad de telefono, politica RLS de admin), el server action, los criterios 2, 3 y 4, y todas las pruebas incluida la de aislamiento RLS (SEC-002)."
+    falta: "El criterio 1 existe solo como interfaz: el alta valida y reporta en consola, sin persistir. Faltan: la migracion (notes, unicidad de telefono), el server action, los criterios 2, 3 y 4, el bloqueo de navegacion al salir con el formulario abierto, y la prueba de aislamiento RLS (SEC-002)."
 flags: []
 deuda: []
 defectos: []
@@ -27,7 +27,9 @@ Gestion de clientas: ficha, historial, anotaciones, expediente sensible (SEC-006
 ## Qué hace hoy
 
 Existe la ruta `/admin/clients`, dentro del panel de administración. Renderiza el encabezado de la
-sección y nada más: no lee ni escribe una sola clienta.
+sección y el botón **Agregar**, que abre el modal de alta; no lee ni escribe una sola clienta. El
+modal solo cierra con Cancelar o Escape, y con datos escritos pide confirmar con el `ConfirmDialog`
+del proyecto. El foco queda confinado al diálogo y vuelve a *Agregar* al cerrar (UI-004).
 
 Lo único que ya funciona es el control de acceso de la capa de aplicación: la página llama a
 `requireAdminSession()` de `auth`, de modo que una visitante anónima o una clienta con sesión de
@@ -35,11 +37,11 @@ Google son redirigidas a `/admin`. El middleware de Edge ya cubría `/admin/*` (
 exacto), pero solo comprueba que haya sesión, no el rol — el rol lo comprueba esta página.
 
 La estructura de carpetas sigue la distribución de `auth`: `actions/`, `components/`, `hooks/`,
-`constants/`, `__tests__/`. Solo `constants/` tiene contenido.
+`constants/`, `validation/`, `types/`, `__tests__/`; un subdirectorio por componente.
 
 ## Qué no hace todavía
 
-**Se detiene antes de la interfaz de alta.** No hay formulario, no hay persistencia.
+**Se detiene antes de la base de datos.** Nada se guarda, nada se lee, nada se edita.
 
 La tabla `public.clients_profiles` existe desde la migración
 `20260901000000_auth_roles_and_clients.sql`, pero hoy solo la escribe `auth` cuando una clienta se
@@ -57,8 +59,9 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
 ## Contrato público (`src/features/clients/index.ts`)
 
-Único punto de entrada de la feature (ARCH-003). Hoy exporta solo `CLIENTS_LABELS`, los textos
-visibles de la sección (DOM-009).
+Único punto de entrada (ARCH-003). Exporta `AddClientDialog` —lo que monta la ruta—, el modal, el
+`ConfirmDialog`, el formulario, `AddClientButton`, los hooks
+`useAddClientForm` y `useFocusTrap`, `validateClientForm` y las constantes de textos y límites (DOM-009).
 
 ## Invariantes
 
@@ -86,3 +89,11 @@ visibles de la sección (DOM-009).
 - **2026-09-07 — Pendiente de acuerdo contrato-primero (INT-003): cómo comprueba esta feature que la
   sesión es de una administradora.** El dato vive en `auth_user_roles`, tabla de `auth`, y ARCH-005
   prohíbe consultarla directamente. Propuesta: función `SECURITY DEFINER` publicada por `auth`.
+- **2026-09-07 — El criterio 1 se entrega primero solo como interfaz** y **no está cumplido** hasta
+  que escriba en la base con su prueba. `email` es obligatorio: `clients_profiles.email` es `NOT NULL`.
+- **2026-09-08 — El estado de errores borra la clave, no la vacía**; si sobrevive, el resumen rojo no
+  se retira. Cubierto por `form-error-summary.test.tsx`.
+- **2026-09-12 — El alta se parte en dos PRs apilados (INT-002):** este, sin montar, y el modal con
+  su confirmación de descarte. `useFocusTrap` entra aquí; su prueba llega con el modal que lo usa.
+- **2026-09-12 — `ConfirmDialog` vive en `clients`, no en `shared/`**: un solo consumidor no justifica
+  una API compartida. Trampa de foco cubierta por `modal-focus-trap.test.tsx`.
