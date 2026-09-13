@@ -14,7 +14,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-05
     estado: en_progreso
-    falta: "El formulario de alta valida y reporta en consola, pero ninguna ruta lo monta. Faltan: el modal que lo abre desde /admin/clients, la migracion (notes, unicidad de telefono), el server action, los criterios 2, 3 y 4, y la prueba de aislamiento RLS (SEC-002)."
+    falta: "El criterio 1 existe solo como interfaz: el alta valida y reporta en consola, sin persistir. Faltan: la migracion (notes, unicidad de telefono), el server action, los criterios 2, 3 y 4, el bloqueo de navegacion al salir con el formulario abierto, y la prueba de aislamiento RLS (SEC-002)."
 flags: []
 deuda: []
 defectos: []
@@ -27,8 +27,9 @@ Gestion de clientas: ficha, historial, anotaciones, expediente sensible (SEC-006
 ## Qué hace hoy
 
 Existe la ruta `/admin/clients`, dentro del panel de administración. Renderiza el encabezado de la
-sección y nada más: no lee ni escribe una sola clienta. El formulario de alta (`AddClientForm`) y su
-validación ya existen, pero **ninguna ruta los monta**: el modal que los abre llega en el PR siguiente.
+sección y el botón **Agregar**, que abre el modal de alta; no lee ni escribe una sola clienta. El
+modal solo cierra con Cancelar o Escape, y con datos escritos pide confirmar con el `ConfirmDialog`
+del proyecto. El foco queda confinado al diálogo y vuelve a *Agregar* al cerrar (UI-004).
 
 Lo único que ya funciona es el control de acceso de la capa de aplicación: la página llama a
 `requireAdminSession()` de `auth`, de modo que una visitante anónima o una clienta con sesión de
@@ -40,7 +41,7 @@ La estructura de carpetas sigue la distribución de `auth`: `actions/`, `compone
 
 ## Qué no hace todavía
 
-**Se detiene antes de montar el alta y de la base de datos.** Nada se muestra, nada se guarda.
+**Se detiene antes de la base de datos.** Nada se guarda, nada se lee, nada se edita.
 
 La tabla `public.clients_profiles` existe desde la migración
 `20260901000000_auth_roles_and_clients.sql`, pero hoy solo la escribe `auth` cuando una clienta se
@@ -58,7 +59,8 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
 ## Contrato público (`src/features/clients/index.ts`)
 
-Único punto de entrada (ARCH-003). Exporta el formulario, `AddClientButton`, los hooks
+Único punto de entrada (ARCH-003). Exporta `AddClientDialog` —lo que monta la ruta—, el modal, el
+`ConfirmDialog`, el formulario, `AddClientButton`, los hooks
 `useAddClientForm` y `useFocusTrap`, `validateClientForm` y las constantes de textos y límites (DOM-009).
 
 ## Invariantes
@@ -93,3 +95,5 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
   se retira. Cubierto por `form-error-summary.test.tsx`.
 - **2026-09-12 — El alta se parte en dos PRs apilados (INT-002):** este, sin montar, y el modal con
   su confirmación de descarte. `useFocusTrap` entra aquí; su prueba llega con el modal que lo usa.
+- **2026-09-12 — `ConfirmDialog` vive en `clients`, no en `shared/`**: un solo consumidor no justifica
+  una API compartida. Trampa de foco cubierta por `modal-focus-trap.test.tsx`.
