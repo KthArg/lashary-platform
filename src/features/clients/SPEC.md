@@ -14,9 +14,12 @@ historias:
     estado: no_iniciada
   - id: US-CLI-05
     estado: en_progreso
-    falta: "El alta (criterios 1, 3 y 4) y la lectura de la lista usan clients_profiles, probados con Supabase simulado en clients-actions.test.ts, list-clients.test.ts, save-client.test.tsx y clients-list.test.tsx. Faltan: persistir la edicion (criterio 2, que debe repetir la revision de telefono excluyendo a la propia clienta) y la prueba de aislamiento RLS (SEC-002)."
+    falta: "Los cuatro criterios usan clients_profiles y estan probados con Supabase simulado: alta (clients-actions.test.ts, save-client.test.tsx), lectura (list-clients.test.ts, clients-list.test.tsx) y edicion (update-client.test.ts, edit-client.test.tsx). Pasa a terminada cuando se mergee la pila feat/US-CLI-05-edit-client, -persist-clients, -read-edit-clients y -save-edit-client y se registre su evidencia (EST-005)."
 flags: []
-deuda: []
+deuda:
+  - que: "Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras"
+    aceptada_en: "PR pendiente — rama feat/US-CLI-05-save-edit-client, etiqueta excepcion-proceso"
+    costo: "3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)"
 defectos: []
 ---
 
@@ -48,7 +51,11 @@ vacío que sugiere *Agregar*. Tras un alta, `revalidatePath` vuelve a leer y la 
 
 Cada clienta tiene un lápiz de solo icono cuyo `aria-label` la nombra (UI-004). El lápiz abre
 `EditClientDialog`, el mismo modal y formulario con los datos cargados: salir con cambios pide
-confirmar, el foco vuelve a ese lápiz y guardar **reporta en consola sin persistir**.
+confirmar y el foco vuelve a ese lápiz. *Guardar* llama a `updateClientAction(id)`, que valida igual
+que el alta, repite la revisión de teléfono único excluyendo a la propia clienta y no toca
+`phone_verified`; si RLS no deja ver la fila, responde `clientNotFound` en vez de fingir éxito
+(SEC-005). Alta y edición comparten `useClientDialog`: *Guardando…*, bloqueo de cierre y error
+dentro del modal.
 
 Control de acceso de la capa de aplicación: la página y cada action llaman a
 `requireAdminSession()` de `auth`, de modo que una visitante anónima o una clienta con sesión de
@@ -60,16 +67,13 @@ La estructura de carpetas sigue la distribución de `auth`: `actions/`, `compone
 
 ## Qué no hace todavía
 
-**La edición no se guarda.** El alta y la lectura ya usan la base; *Guardar* en `EditClientDialog`
-todavía reporta en consola. Las pruebas de las actions simulan Supabase: demuestran qué se envía y
-se lee, no qué permite RLS.
+**No hay prueba de aislamiento RLS (SEC-002)**; está registrada como deuda. Las pruebas de las
+actions simulan Supabase: demuestran qué se envía y se lee, no qué permite RLS.
 
 La tabla `public.clients_profiles` existe desde la migración
 `20260901000000_auth_roles_and_clients.sql`, pero hoy solo la escribe `auth` cuando una clienta se
 registra con Google, además del alta de esta feature. Le falta lo que US-CLI-05 necesita:
 
-- la edición guardada (criterio 2) debe repetir la revisión de teléfono, excluyendo a la propia
-  clienta;
 - la prueba de aislamiento (SEC-002) de la política RLS de administradora de
   `20260911000000_clients_profiles_admin_access.sql`.
 
@@ -80,7 +84,7 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
 Único punto de entrada (ARCH-003). Exporta `AddClientDialog` —lo que monta la ruta—, el modal, el
 `ConfirmDialog`, el formulario, `AddClientButton`, `ClientsList`, `ClientRecord`, los hooks
-`useClientForm` y `useFocusTrap`, `createClientAction` y `listClientsAction` con sus tipos
+`useClientForm`, `useClientDialog` y `useFocusTrap`, `createClientAction`, `listClientsAction` y `updateClientAction` con sus tipos
 `SaveClientResult` y `ListClientsResult`, `validateClientForm`, `normalizePhone` y las constantes de
 textos y límites, entre ellas `CLIENTS_LIST_LIMITS` (DOM-009).
 
@@ -142,3 +146,10 @@ textos y límites, entre ellas `CLIENTS_LIST_LIMITS` (DOM-009).
 - **2026-09-15 — Datos de desarrollo en `supabase/seed.sql`, no en una migración:** 5 clientas sin
   cuenta, teléfono normalizado y verificado, idempotente por teléfono. Solo lo aplica
   `supabase db reset` en local; una migración llegaría a producción y contaría para INT-008.
+- **2026-09-15 — La edición guardada entra en `feat/US-CLI-05-save-edit-client`.** El guardado de alta
+  y edición se extrae a `hooks/useClientDialog.ts` (resuelve la duplicación del 2026-09-14). Editar no
+  toca `phone_verified`. `updated_at` lo pone `updateClientAction` con `new Date()`: la tabla no tiene
+  trigger y DOM-004 rige `domain/`, que esta feature no tiene (decisión del 2026-09-07).
+- **2026-09-15 — SEC-002 queda como deuda aceptada por decisión de José Loría**, por el escape de
+  proceso (`docs/spec/INTEGRATION.md#el-escape-legítimo`): el PR lleva la etiqueta `excepcion-proceso`
+  y su justificación. Mismo camino que la deuda de `auth` del PR #3.
