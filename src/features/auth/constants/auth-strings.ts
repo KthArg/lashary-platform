@@ -27,8 +27,15 @@ export const AUTH_LABELS = {
   clientAccountTitle: 'Mi Cuenta',
   clientAccountSubtitle: 'Ficha de clienta, estado de cuenta e información personal (US-CLI-06 / US-MOR-03).',
   clientNavAriaLabel: 'Panel de clienta', clientFallbackName: 'Clienta',
+  brandName: 'LASHARY',
   emailLabel: 'Correo:',
   phoneLabel: 'Teléfono:',
+} as const
+
+export const CLIENT_PORTAL_ROUTES = {
+  citas: '/portal/citas',
+  carrito: '/portal/carrito',
+  cuenta: '/portal/cuenta',
 } as const
 
 export const AUTH_ERROR_MESSAGES = {

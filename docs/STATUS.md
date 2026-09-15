@@ -28,7 +28,7 @@
 
 ### audit (actualizado: 2026-08-29)
 
-### auth (actualizado: 2026-09-10)
+### auth (actualizado: 2026-09-12)
 - US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
 - US-AUTH-02 — terminada — PR #3, PR #18, tests: auth-client.test.tsx, rls-isolation.test.ts
 
