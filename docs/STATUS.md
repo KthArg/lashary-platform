@@ -43,7 +43,7 @@
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
-- US-CLI-05 — en_progreso — falta: El alta guarda en clients_profiles con createClientAction (telefono normalizado a +506, phone_verified=true), probado con Supabase simulado en clients-actions.test.ts y save-client.test.tsx. La lista sigue saliendo de constants/sample-clients.ts, asi que la clienta creada no aparece en pantalla. Faltan: leer la lista de la base, persistir la edicion (criterio 2), la unicidad de telefono (criterio 3) y la prueba de aislamiento RLS (SEC-002).
+- US-CLI-05 — en_progreso — falta: El alta guarda en clients_profiles con createClientAction (telefono normalizado a +506, phone_verified=true) y rechaza un telefono ya registrado, probado con Supabase simulado en clients-actions.test.ts y save-client.test.tsx. La lista sigue saliendo de constants/sample-clients.ts, asi que la clienta creada no aparece en pantalla. Faltan: leer la lista de la base, persistir la edicion (criterio 2, que debe repetir la revision de telefono excluyendo a la propia clienta) y la prueba de aislamiento RLS (SEC-002).
 
 ### content (actualizado: 2026-08-29)
 - US-BLOG-01 — no_iniciada
