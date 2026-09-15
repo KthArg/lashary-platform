@@ -28,40 +28,68 @@ const readValues = (input: ClientFormValues): ClientFormValues => Object.fromEnt
 ) as unknown as ClientFormValues
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
+type PreparedRow =
+  | { ok: true; row: Pick<ClientRow, 'full_name' | 'phone' | 'email' | 'notes'> }
+  | { ok: false; error: string }
 
 /**
  * US-CLI-05 criterio 3: el telefono identifica a la clienta. Se busca por los digitos en orden y se
  * confirma normalizando, porque `auth` guarda telefonos sin normalizar (`+506 8888 7777`).
- * Devuelve null si la consulta falla: sin saberlo, no se inserta.
+ * `excludeId` deja fuera a la clienta que se edita: guardar sin cambiar su numero no es un duplicado.
+ * Devuelve null si la consulta falla: sin saberlo, no se escribe.
  */
-async function isPhoneTaken(supabase: SupabaseServerClient, phone: string): Promise<boolean | null> {
+async function isPhoneTaken(supabase: SupabaseServerClient, phone: string, excludeId?: string): Promise<boolean | null> {
   const digits = phone.replace(/\D/g, '').slice(-CLIENT_PHONE_FORMAT.localDigits)
-  const { data, error } = await supabase.from(CLIENTS_TABLE).select('phone').like('phone', `%${digits.split('').join('%')}%`)
+  const { data, error } = await supabase.from(CLIENTS_TABLE).select('id, phone').like('phone', `%${digits.split('').join('%')}%`)
   if (error || !data) return null
-  return (data as Pick<ClientRow, 'phone'>[]).some((row) => normalizePhone(row.phone) === phone)
+  return (data as Pick<ClientRow, 'id' | 'phone'>[])
+    .some((row) => (excludeId === undefined || row.id !== excludeId) && normalizePhone(row.phone) === phone)
+}
+
+/** El borde de la feature (DOM-007): la validacion del navegador es ayuda, esta es la que cuenta. */
+async function prepareRow(supabase: SupabaseServerClient, input: ClientFormValues, excludeId?: string): Promise<PreparedRow> {
+  const values = readValues(input)
+  if (hasClientFormErrors(validateClientForm(values))) return { ok: false, error: CLIENTS_ERROR_MESSAGES.formHasErrors }
+  const phone = normalizePhone(values.phone)
+  const taken = await isPhoneTaken(supabase, phone, excludeId)
+  if (taken === null) return { ok: false, error: CLIENTS_ERROR_MESSAGES.saveFailed }
+  if (taken) return { ok: false, error: CLIENTS_ERROR_MESSAGES.phoneTaken }
+  return { ok: true, row: { full_name: values.fullName.trim(), phone, email: values.email.trim(), notes: values.notes.trim() || null } }
+}
+
+/** US-CLI-05 criterios 1, 3 y 4. `requireAdminSession` es el mensaje amable; la frontera real es RLS (SEC-001). */
+export async function createClientAction(input: ClientFormValues): Promise<SaveClientResult> {
+  await requireAdminSession()
+  const supabase = await createClient()
+  const prepared = await prepareRow(supabase, input)
+  if (!prepared.ok) return prepared
+
+  // Criterio 4: la administradora la registra en persona, asi que el telefono nace verificado.
+  const { data, error } = await supabase.from(CLIENTS_TABLE).insert({ ...prepared.row, phone_verified: true })
+    .select(CLIENT_COLUMNS).single()
+  if (error || !data) return { ok: false, error: CLIENTS_ERROR_MESSAGES.saveFailed }
+
+  revalidatePath(CLIENTS_PATH)
+  return { ok: true, client: toRecord(data as ClientRow) }
 }
 
 /**
- * US-CLI-05 criterios 1, 3 y 4. El borde de la feature (DOM-007): la validacion del navegador es ayuda,
- * esta es la que cuenta. `requireAdminSession` es el mensaje amable; la frontera real es RLS (SEC-001).
+ * US-CLI-05 criterios 2 y 3. No toca `phone_verified`: verificar es del alta o de la clienta, no de una edicion.
+ * SEC-005: el id llega del navegador. Si RLS no deja ver esa fila, el UPDATE no afecta ninguna y
+ * `maybeSingle` devuelve null en lugar de reportar un exito que no ocurrio.
  */
-export async function createClientAction(input: ClientFormValues): Promise<SaveClientResult> {
+export async function updateClientAction(id: string, input: ClientFormValues): Promise<SaveClientResult> {
   await requireAdminSession()
-  const values = readValues(input)
-  if (hasClientFormErrors(validateClientForm(values))) return { ok: false, error: CLIENTS_ERROR_MESSAGES.formHasErrors }
-
+  if (typeof id !== 'string' || !id) return { ok: false, error: CLIENTS_ERROR_MESSAGES.clientNotFound }
   const supabase = await createClient()
-  const phone = normalizePhone(values.phone)
-  const taken = await isPhoneTaken(supabase, phone)
-  if (taken === null) return { ok: false, error: CLIENTS_ERROR_MESSAGES.saveFailed }
-  if (taken) return { ok: false, error: CLIENTS_ERROR_MESSAGES.phoneTaken }
+  const prepared = await prepareRow(supabase, input, id)
+  if (!prepared.ok) return prepared
 
-  // Criterio 4: la administradora la registra en persona, asi que el telefono nace verificado.
-  const { data, error } = await supabase.from(CLIENTS_TABLE).insert({
-    full_name: values.fullName.trim(), phone,
-    email: values.email.trim(), notes: values.notes.trim() || null, phone_verified: true,
-  }).select(CLIENT_COLUMNS).single()
-  if (error || !data) return { ok: false, error: CLIENTS_ERROR_MESSAGES.saveFailed }
+  const { data, error } = await supabase.from(CLIENTS_TABLE)
+    .update({ ...prepared.row, updated_at: new Date().toISOString() })
+    .eq('id', id).select(CLIENT_COLUMNS).maybeSingle()
+  if (error) return { ok: false, error: CLIENTS_ERROR_MESSAGES.saveFailed }
+  if (!data) return { ok: false, error: CLIENTS_ERROR_MESSAGES.clientNotFound }
 
   revalidatePath(CLIENTS_PATH)
   return { ok: true, client: toRecord(data as ClientRow) }
