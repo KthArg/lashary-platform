@@ -10,11 +10,11 @@ export const CLIENTS_LABELS = {
 } as const
 
 export const CLIENTS_PLACEHOLDERS = {
-  fullName: 'María Fernández Rojas', phone: '+506 8888 8888', email: 'maria@correo.com',
+  fullName: 'María Fernández Rojas', phone: '8888 8888', email: 'maria@correo.com',
   notes: 'Preferencias, cómo llegó al estudio…',
 } as const
 
-export const CLIENTS_BUTTON_TEXTS = { addClient: 'Agregar', save: 'Guardar', cancel: 'Cancelar', edit: 'Editar' } as const
+export const CLIENTS_BUTTON_TEXTS = { addClient: 'Agregar', save: 'Guardar', cancel: 'Cancelar', edit: 'Editar', saving: 'Guardando…' } as const
 
 export const CLIENTS_ERROR_MESSAGES = {
   fullNameRequired: 'El nombre completo es obligatorio', fullNameTooShort: 'El nombre debe tener al menos 3 caracteres',
@@ -23,10 +23,12 @@ export const CLIENTS_ERROR_MESSAGES = {
   emailRequired: 'El correo electrónico es obligatorio', emailInvalidFormat: 'El formato del correo no es válido',
   notesTooLong: 'Las notas no pueden superar los 500 caracteres',
   formHasErrors: 'Revisa los campos marcados en rojo.',
+  // Sin el detalle de la base: a la administradora no le sirve y a un atacante sí.
+  saveFailed: 'No se pudo guardar la clienta. Intenta de nuevo.',
 } as const
 
-// Criterio 1 de US-CLI-05: por ahora el alta solo se reporta en consola, sin persistencia.
-export const CLIENTS_CONSOLE_MESSAGES = { clientCreated: '[clients] Clienta creada correctamente (solo UI, sin persistencia):', clientUpdated: '[clients] Clienta editada correctamente (solo UI, sin persistencia):' } as const
+// Criterio 2 de US-CLI-05: por ahora la edicion solo se reporta en consola, sin persistencia.
+export const CLIENTS_CONSOLE_MESSAGES = { clientUpdated: '[clients] Clienta editada correctamente (solo UI, sin persistencia):' } as const
 
 export const CLIENTS_CONFIRM_MESSAGES = {
   discardFormTitle: '¿Descartar la clienta?',
