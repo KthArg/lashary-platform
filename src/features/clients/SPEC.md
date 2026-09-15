@@ -13,12 +13,12 @@ historias:
   - id: US-CLI-04
     estado: no_iniciada
   - id: US-CLI-05
-    estado: en_progreso
-    falta: "Los cuatro criterios usan clients_profiles y estan probados con Supabase simulado: alta (clients-actions.test.ts, save-client.test.tsx), lectura (list-clients.test.ts, clients-list.test.tsx) y edicion (update-client.test.ts, edit-client.test.tsx). Pasa a terminada cuando se mergee la pila feat/US-CLI-05-edit-client, -persist-clients, -read-edit-clients y -save-edit-client y se registre su evidencia (EST-005)."
+    estado: terminada
+    evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
 flags: []
 deuda:
   - que: "Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras"
-    aceptada_en: "PR pendiente — rama feat/US-CLI-05-save-edit-client, etiqueta excepcion-proceso"
+    aceptada_en: "PR #32, etiqueta excepcion-proceso"
     costo: "3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)"
 defectos: []
 ---
@@ -153,3 +153,6 @@ textos y límites, entre ellas `CLIENTS_LIST_LIMITS` (DOM-009).
 - **2026-09-15 — SEC-002 queda como deuda aceptada por decisión de José Loría**, por el escape de
   proceso (`docs/spec/INTEGRATION.md#el-escape-legítimo`): el PR lleva la etiqueta `excepcion-proceso`
   y su justificación. Mismo camino que la deuda de `auth` del PR #3.
+- **2026-09-15 — US-CLI-05 se marca `terminada` dentro del PR #32**, el último de la pila
+  (#16 → #28 → #31 → #32), con esos PRs como evidencia (EST-005). La pila se mergea en orden: #32 no
+  entra a `main` antes que los otros tres. La deuda de SEC-002 sigue abierta.
