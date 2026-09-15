@@ -25,6 +25,7 @@ export const CLIENTS_ERROR_MESSAGES = {
   formHasErrors: 'Revisa los campos marcados en rojo.',
   // Sin el detalle de la base: a la administradora no le sirve y a un atacante sí.
   saveFailed: 'No se pudo guardar la clienta. Intenta de nuevo.',
+  phoneTaken: 'Ya hay una clienta registrada con este teléfono.',
 } as const
 
 // Criterio 2 de US-CLI-05: por ahora la edicion solo se reporta en consola, sin persistencia.

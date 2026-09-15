@@ -4,8 +4,16 @@ import { CLIENTS_ERROR_MESSAGES, normalizePhone } from '@/features/clients'
 
 /** US-CLI-05 criterios 1 y 4 en el borde: lo que createClientAction manda a clients_profiles. */
 let dbResult: { data: unknown; error: unknown }
+let phoneLookup: { data: unknown; error: unknown }
 const mockInsert = vi.fn()
+const mockLike = vi.fn()
 const mockFrom = vi.fn(() => ({
+  select: () => ({
+    like: async (column: string, pattern: string) => {
+      mockLike(column, pattern)
+      return phoneLookup
+    },
+  }),
   insert: (row: unknown) => {
     mockInsert(row)
     return { select: () => ({ single: async () => dbResult }) }
@@ -24,6 +32,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   mockRequireAdmin.mockResolvedValue({ role: 'admin' })
   dbResult = { data: row, error: null }
+  phoneLookup = { data: [], error: null }
 })
 
 describe('normalizePhone', () => {
@@ -43,6 +52,25 @@ describe('createClientAction', () => {
       full_name: 'Ana Solís', phone: '+50688887777', email: 'ana@correo.com', notes: null, phone_verified: true,
     })
     expect(result).toEqual({ ok: true, client: { id: 'c-1', fullName: 'Ana Solís', phone: '+50688887777', email: 'ana@correo.com', notes: '' } })
+  })
+
+  it('criterio 3: no inserta si el telefono ya existe, aunque este guardado con otro formato', async () => {
+    phoneLookup = { data: [{ phone: '+506 8888 7777' }], error: null }
+    expect(await createClientAction(input)).toEqual({ ok: false, error: CLIENTS_ERROR_MESSAGES.phoneTaken })
+    expect(mockLike).toHaveBeenCalledWith('phone', '%8%8%8%8%7%7%7%7%')
+    expect(mockInsert).not.toHaveBeenCalled()
+  })
+
+  it('criterio 3: un numero distinto que contiene esos digitos no cuenta como duplicado', async () => {
+    phoneLookup = { data: [{ phone: '+1 508 8887 777' }], error: null }
+    expect((await createClientAction(input)).ok).toBe(true)
+    expect(mockInsert).toHaveBeenCalled()
+  })
+
+  it('criterio 3: si no se puede revisar el telefono, no inserta', async () => {
+    phoneLookup = { data: null, error: { message: 'boom' } }
+    expect(await createClientAction(input)).toEqual({ ok: false, error: CLIENTS_ERROR_MESSAGES.saveFailed })
+    expect(mockInsert).not.toHaveBeenCalled()
   })
 
   it('rechaza datos invalidos o incompletos sin tocar la base', async () => {

@@ -14,7 +14,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-05
     estado: en_progreso
-    falta: "El alta guarda en clients_profiles con createClientAction (telefono normalizado a +506, phone_verified=true), probado con Supabase simulado en clients-actions.test.ts y save-client.test.tsx. La lista sigue saliendo de constants/sample-clients.ts, asi que la clienta creada no aparece en pantalla. Faltan: leer la lista de la base, persistir la edicion (criterio 2), la unicidad de telefono (criterio 3) y la prueba de aislamiento RLS (SEC-002)."
+    falta: "El alta guarda en clients_profiles con createClientAction (telefono normalizado a +506, phone_verified=true) y rechaza un telefono ya registrado, probado con Supabase simulado en clients-actions.test.ts y save-client.test.tsx. La lista sigue saliendo de constants/sample-clients.ts, asi que la clienta creada no aparece en pantalla. Faltan: leer la lista de la base, persistir la edicion (criterio 2, que debe repetir la revision de telefono excluyendo a la propia clienta) y la prueba de aislamiento RLS (SEC-002)."
 flags: []
 deuda:
   - que: "Clientas quemadas en src/features/clients/constants/sample-clients.ts: la pantalla no prueba lectura real"
@@ -39,7 +39,8 @@ diálogo y vuelve a *Agregar* al cerrar (UI-004).
 
 *Guardar* llama a `createClientAction()`, que vuelve a validar con `validateClientForm` (DOM-007),
 normaliza el teléfono con `normalizePhone`, guarda `phone_verified = true` y deja `user_id` en `NULL`
-(clienta sin cuenta). Mientras guarda, el botón dice *Guardando…*, se deshabilita y el modal no se
+(clienta sin cuenta). Antes de insertar revisa en la base que el teléfono no esté registrado
+(criterio 3); si lo está, no guarda y el modal muestra `phoneTaken`. Mientras guarda, el botón dice *Guardando…*, se deshabilita y el modal no se
 cierra; si el servidor rechaza, el mensaje aparece dentro del modal y lo escrito se conserva. El error
 de la base nunca llega a la pantalla: la action devuelve `{ ok: false, error }` con un texto de
 `CLIENTS_ERROR_MESSAGES`. La action también llama a `requireAdminSession()`.
@@ -66,10 +67,8 @@ La tabla `public.clients_profiles` existe desde la migración
 `20260901000000_auth_roles_and_clients.sql`, pero hoy solo la escribe `auth` cuando una clienta se
 registra con Google, además del alta de esta feature. Le falta lo que US-CLI-05 necesita:
 
-- restricción **única** sobre el teléfono: `idx_clients_profiles_phone` es un índice normal y no
-  impide el duplicado que exige el criterio 3. Ojo: `updateClientPhoneAction` de `auth` guarda el
-  teléfono sin normalizar (`+506 8888 7777`) y esta feature lo guarda como `+50688887777`; la
-  unicidad solo sirve si ambos caminos escriben la misma forma;
+- la edición guardada (criterio 2) debe repetir la revisión de teléfono, excluyendo a la propia
+  clienta;
 - la prueba de aislamiento (SEC-002) de la política RLS de administradora de
   `20260911000000_clients_profiles_admin_access.sql`.
 
@@ -128,3 +127,9 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 - **2026-09-15 — Una sola forma guardada por teléfono, por decisión de José Loría:** sin `+`, ocho
   dígitos son de Costa Rica y se guarda `+506` + dígitos; con `+`, se respetan los dígitos que trae
   (`validation/normalize-phone.ts`, `CLIENT_PHONE_FORMAT`). Es la base del criterio 3.
+- **2026-09-15 — El teléfono único se revisa en código, no con restricción de base, por decisión de
+  José Loría:** `isPhoneTaken` en `actions/clients-actions.ts` busca los últimos 8 dígitos en orden
+  (`like '%8%8%8%8%7%7%7%7%'`) y confirma con `normalizePhone`, así atrapa también los teléfonos que
+  `updateClientPhoneAction` de `auth` guarda sin normalizar. Sin migración. **Consecuencia asumida:**
+  dos altas simultáneas con el mismo número pueden pasar ambas, porque la base no lo impide; y
+  `idx_clients_profiles_phone` no sirve a un `like` con comodín inicial (lectura completa de la tabla).
