@@ -8,7 +8,7 @@ import { ClientFormField } from '../ClientFormField'
 import { clientFormStyles as s } from './ClientForm.styles'
 import type { ClientFormProps } from './ClientForm.types'
 
-export function ClientForm({ initialValues, onSubmit, onCancel, onDirtyChange }: ClientFormProps) {
+export function ClientForm({ initialValues, onSubmit, onCancel, onDirtyChange, isSaving = false, saveError = null }: ClientFormProps) {
   const { values, errors, wasSubmitted, isDirty, setFieldValue, handleSubmit } = useClientForm(initialValues, onSubmit)
   const showSummary = wasSubmitted && Object.keys(errors).length > 0
 
@@ -17,6 +17,7 @@ export function ClientForm({ initialValues, onSubmit, onCancel, onDirtyChange }:
   return (
     <form onSubmit={handleSubmit} className={s.form} noValidate>
       {showSummary && <div role="alert" className={s.alert}>{CLIENTS_ERROR_MESSAGES.formHasErrors}</div>}
+      {saveError && <div role="alert" className={s.alert}>{saveError}</div>}
 
       <ClientFormField name={CLIENT_FIELD_KEYS.fullName} label={CLIENTS_LABELS.fullNameInput} value={values.fullName}
         onChange={setFieldValue} error={errors.fullName} required
@@ -36,7 +37,9 @@ export function ClientForm({ initialValues, onSubmit, onCancel, onDirtyChange }:
 
       <div className={s.actions}>
         <button type="button" onClick={onCancel} className={s.cancelBtn}>{CLIENTS_BUTTON_TEXTS.cancel}</button>
-        <button type="submit" className={s.submitBtn}>{CLIENTS_BUTTON_TEXTS.save}</button>
+        <button type="submit" className={s.submitBtn} disabled={isSaving} aria-busy={isSaving}>
+          {isSaving ? CLIENTS_BUTTON_TEXTS.saving : CLIENTS_BUTTON_TEXTS.save}
+        </button>
       </div>
     </form>
   )

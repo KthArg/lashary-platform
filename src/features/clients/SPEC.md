@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-09-14"
+actualizado: "2026-09-15"
 historias:
   - id: US-CLI-01
     estado: no_iniciada
@@ -14,7 +14,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-05
     estado: en_progreso
-    falta: "Los criterios 1 y 2 existen solo como interfaz: el alta y la edicion validan y reportan en consola, sin persistir, y la lista sale de constants/sample-clients.ts. Faltan: la unicidad de telefono (criterio 3), los server actions de alta y edicion, el criterio 4 y la prueba de aislamiento RLS (SEC-002)."
+    falta: "El alta guarda en clients_profiles con createClientAction (telefono normalizado a +506, phone_verified=true) y rechaza un telefono ya registrado, probado con Supabase simulado en clients-actions.test.ts y save-client.test.tsx. La lista sigue saliendo de constants/sample-clients.ts, asi que la clienta creada no aparece en pantalla. Faltan: leer la lista de la base, persistir la edicion (criterio 2, que debe repetir la revision de telefono excluyendo a la propia clienta) y la prueba de aislamiento RLS (SEC-002)."
 flags: []
 deuda:
   - que: "Clientas quemadas en src/features/clients/constants/sample-clients.ts: la pantalla no prueba lectura real"
@@ -33,9 +33,18 @@ Gestion de clientas: ficha, historial, anotaciones, expediente sensible (SEC-006
 ## Qué hace hoy
 
 Existe la ruta `/admin/clients`, dentro del panel de administración. Renderiza el encabezado de la
-sección y el botón **Agregar**, que abre el modal de alta; no lee ni escribe una sola clienta. El
-modal solo cierra con Cancelar o Escape, y con datos escritos pide confirmar con el `ConfirmDialog`
-del proyecto. El foco queda confinado al diálogo y vuelve a *Agregar* al cerrar (UI-004).
+sección y el botón **Agregar**, que abre el modal de alta. El modal solo cierra con Cancelar o Escape,
+y con datos escritos pide confirmar con el `ConfirmDialog` del proyecto. El foco queda confinado al
+diálogo y vuelve a *Agregar* al cerrar (UI-004).
+
+*Guardar* llama a `createClientAction()`, que vuelve a validar con `validateClientForm` (DOM-007),
+incluidos los largos máximos de nombre, teléfono y correo, que en el navegador solo impone el `maxLength` del HTML;
+normaliza el teléfono con `normalizePhone`, guarda `phone_verified = true` y deja `user_id` en `NULL`
+(clienta sin cuenta). Antes de insertar revisa en la base que el teléfono no esté registrado
+(criterio 3); si lo está, no guarda y el modal muestra `phoneTaken`. Mientras guarda, el botón dice *Guardando…*, se deshabilita y el modal no se
+cierra; si el servidor rechaza, el mensaje aparece dentro del modal y lo escrito se conserva. El error
+de la base nunca llega a la pantalla: la action devuelve `{ ok: false, error }` con un texto de
+`CLIENTS_ERROR_MESSAGES`. La action también llama a `requireAdminSession()`.
 
 Debajo, `ClientsList` muestra cada clienta con un lápiz de solo icono cuyo `aria-label` la nombra
 (UI-004). El lápiz abre `EditClientDialog`, el mismo modal y formulario con los datos cargados: salir
@@ -51,14 +60,16 @@ La estructura de carpetas sigue la distribución de `auth`: `actions/`, `compone
 
 ## Qué no hace todavía
 
-**Se detiene antes de la base de datos.** Nada se guarda, nada se lee, nada se edita.
+**Solo el alta llega a la base.** La lista no se lee (sale de `constants/sample-clients.ts`, así que
+la clienta recién creada no aparece) y la edición no se guarda. Las pruebas de la action simulan
+Supabase: demuestran qué se envía, no qué permite RLS.
 
 La tabla `public.clients_profiles` existe desde la migración
 `20260901000000_auth_roles_and_clients.sql`, pero hoy solo la escribe `auth` cuando una clienta se
-registra con Google. Le falta lo que US-CLI-05 necesita:
+registra con Google, además del alta de esta feature. Le falta lo que US-CLI-05 necesita:
 
-- restricción **única** sobre el teléfono: `idx_clients_profiles_phone` es un índice normal y no
-  impide el duplicado que exige el criterio 3;
+- la edición guardada (criterio 2) debe repetir la revisión de teléfono, excluyendo a la propia
+  clienta;
 - la prueba de aislamiento (SEC-002) de la política RLS de administradora de
   `20260911000000_clients_profiles_admin_access.sql`.
 
@@ -69,7 +80,8 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
 Único punto de entrada (ARCH-003). Exporta `AddClientDialog` —lo que monta la ruta—, el modal, el
 `ConfirmDialog`, el formulario, `AddClientButton`, `ClientsList`, `ClientRecord`, `SAMPLE_CLIENTS`, los hooks
-`useClientForm` y `useFocusTrap`, `validateClientForm` y las constantes de textos y límites (DOM-009).
+`useClientForm` y `useFocusTrap`, `createClientAction` con su tipo `SaveClientResult`, `validateClientForm`,
+`normalizePhone` y las constantes de textos y límites (DOM-009).
 
 ## Invariantes
 
@@ -109,3 +121,16 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
   compara contra los valores iniciales: cancelar la edición sin tocar nada no pregunta (`edit-client.test.tsx`).
 - **2026-09-14 — El descarte confirmado está duplicado** en `AddClientDialog` y `EditClientDialog`
   (~12 líneas) para caber en INT-002; se extrae a un hook cuando llegue la persistencia.
+- **2026-09-15 — La persistencia entra por tareas (INT-002): primero solo el alta**, en
+  `feat/US-CLI-05-persist-clients` apilada sobre `feat/US-CLI-05-edit-client`. La lectura de la lista y
+  la edición guardada van en PRs siguientes. El guardado del alta vive en `AddClientDialog`; se extrae
+  a un hook compartido cuando la edición también guarde.
+- **2026-09-15 — Una sola forma guardada por teléfono, por decisión de José Loría:** sin `+`, ocho
+  dígitos son de Costa Rica y se guarda `+506` + dígitos; con `+`, se respetan los dígitos que trae
+  (`validation/normalize-phone.ts`, `CLIENT_PHONE_FORMAT`). Es la base del criterio 3.
+- **2026-09-15 — El teléfono único se revisa en código, no con restricción de base, por decisión de
+  José Loría:** `isPhoneTaken` en `actions/clients-actions.ts` busca los últimos 8 dígitos en orden
+  (`like '%8%8%8%8%7%7%7%7%'`) y confirma con `normalizePhone`, así atrapa también los teléfonos que
+  `updateClientPhoneAction` de `auth` guarda sin normalizar. Sin migración. **Consecuencia asumida:**
+  dos altas simultáneas con el mismo número pueden pasar ambas, porque la base no lo impide; y
+  `idx_clients_profiles_phone` no sirve a un `like` con comodín inicial (lectura completa de la tabla).

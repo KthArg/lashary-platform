@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-14.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-15.
 
 ## Features
 
@@ -38,12 +38,12 @@
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
-### clients (actualizado: 2026-09-14)
+### clients (actualizado: 2026-09-15)
 - US-CLI-01 — no_iniciada
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
-- US-CLI-05 — en_progreso — falta: Los criterios 1 y 2 existen solo como interfaz: el alta y la edicion validan y reportan en consola, sin persistir, y la lista sale de constants/sample-clients.ts. Faltan: la unicidad de telefono (criterio 3), los server actions de alta y edicion, el criterio 4 y la prueba de aislamiento RLS (SEC-002).
+- US-CLI-05 — en_progreso — falta: El alta guarda en clients_profiles con createClientAction (telefono normalizado a +506, phone_verified=true) y rechaza un telefono ya registrado, probado con Supabase simulado en clients-actions.test.ts y save-client.test.tsx. La lista sigue saliendo de constants/sample-clients.ts, asi que la clienta creada no aparece en pantalla. Faltan: leer la lista de la base, persistir la edicion (criterio 2, que debe repetir la revision de telefono excluyendo a la propia clienta) y la prueba de aislamiento RLS (SEC-002).
 
 ### content (actualizado: 2026-08-29)
 - US-BLOG-01 — no_iniciada
