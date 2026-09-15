@@ -1,4 +1,4 @@
-export const addClientFormStyles = {
+export const clientFormStyles = {
   form: 'space-y-4 text-left',
   alert: 'p-3 bg-red-50 border border-red-200 text-error text-xs rounded-none',
   actions: 'flex items-center gap-3 pt-2',

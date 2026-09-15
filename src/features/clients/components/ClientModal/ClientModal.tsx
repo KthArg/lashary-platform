@@ -1,19 +1,18 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useId } from 'react'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
-import { CLIENTS_LABELS } from '../../constants/clients-strings'
-import { addClientModalStyles as s } from './AddClientModal.styles'
-import type { AddClientModalProps } from './AddClientModal.types'
-
-const TITLE_ID = 'add-client-modal-title'
+import { clientModalStyles as s } from './ClientModal.styles'
+import type { ClientModalProps } from './ClientModal.types'
 
 /**
- * Contenedor del modal de alta. Deliberadamente NO se cierra al hacer clic fuera:
+ * Contenedor del modal de alta y de edicion. Deliberadamente NO se cierra al hacer clic fuera:
  * la unica salida es un gesto explicito (boton Cancelar o Escape), que el contenedor confirma.
  * `isPaused` cede el foco al dialogo de confirmacion cuando este se monta encima (UI-004).
+ * El id del titulo sale de useId: con dos modales en el arbol, un id fijo se duplicaria.
  */
-export function AddClientModal({ isOpen, isPaused = false, onRequestClose, children }: AddClientModalProps) {
+export function ClientModal({ isOpen, title, description, isPaused = false, onRequestClose, children }: ClientModalProps) {
+  const titleId = useId()
   const cardRef = useFocusTrap<HTMLDivElement>(isOpen && !isPaused)
 
   useEffect(() => {
@@ -31,12 +30,12 @@ export function AddClientModal({ isOpen, isPaused = false, onRequestClose, child
   if (!isOpen) return null
 
   return (
-    <div className={s.backdrop} role="dialog" aria-modal="true" aria-labelledby={TITLE_ID}>
+    <div className={s.backdrop} role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <div ref={cardRef} className={s.card} tabIndex={-1}>
         <div className={s.header}>
           <p className={s.brand}>LASHARY</p>
-          <h2 id={TITLE_ID} className={s.title}>{CLIENTS_LABELS.newClientTitle}</h2>
-          <p className={s.description}>{CLIENTS_LABELS.newClientDescription}</p>
+          <h2 id={titleId} className={s.title}>{title}</h2>
+          <p className={s.description}>{description}</p>
         </div>
         {children}
       </div>

@@ -1,19 +1,22 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
-import { EMPTY_CLIENT_FORM_VALUES, type ClientFieldKey } from '../constants/client-form'
-import { CLIENTS_CONSOLE_MESSAGES } from '../constants/clients-strings'
+import { CLIENT_FIELD_KEYS, type ClientFieldKey } from '../constants/client-form'
 import { hasClientFormErrors, validateClientForm } from '../validation/validate-client-form'
 import type { ClientFormErrors, ClientFormValues } from '../types/client-form.types'
 
-export function useAddClientForm(onCreated?: () => void) {
-  const [values, setValues] = useState<ClientFormValues>({ ...EMPTY_CLIENT_FORM_VALUES })
+const FIELD_KEYS = Object.values(CLIENT_FIELD_KEYS)
+
+// `isDirty` compara contra los valores INICIALES, no contra el vacio: el formulario de edicion nace
+// lleno, y abrir y cancelar sin tocar nada no debe pedir confirmacion de descarte.
+export function useClientForm(initialValues: ClientFormValues, onSubmitted?: (values: ClientFormValues) => void) {
+  const [values, setValues] = useState<ClientFormValues>({ ...initialValues })
   const [errors, setErrors] = useState<ClientFormErrors>({})
   const [wasSubmitted, setWasSubmitted] = useState(false)
 
   const isDirty = useMemo(
-    () => Object.values(values).some((value) => value.trim().length > 0),
-    [values],
+    () => FIELD_KEYS.some((field) => values[field].trim() !== initialValues[field].trim()),
+    [values, initialValues],
   )
 
   const setFieldValue = useCallback((field: ClientFieldKey, value: string) => {
@@ -27,12 +30,6 @@ export function useAddClientForm(onCreated?: () => void) {
     })
   }, [])
 
-  const reset = useCallback(() => {
-    setValues({ ...EMPTY_CLIENT_FORM_VALUES })
-    setErrors({})
-    setWasSubmitted(false)
-  }, [])
-
   const handleSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault()
@@ -40,13 +37,10 @@ export function useAddClientForm(onCreated?: () => void) {
       const nextErrors = validateClientForm(values)
       setErrors(nextErrors)
       if (hasClientFormErrors(nextErrors)) return
-      // US-CLI-05 criterio 1: por ahora solo se reporta; la persistencia llega con la migracion.
-      console.log(CLIENTS_CONSOLE_MESSAGES.clientCreated, values)
-      reset()
-      onCreated?.()
+      onSubmitted?.(values)
     },
-    [values, reset, onCreated],
+    [values, onSubmitted],
   )
 
-  return { values, errors, wasSubmitted, isDirty, setFieldValue, handleSubmit, reset }
+  return { values, errors, wasSubmitted, isDirty, setFieldValue, handleSubmit }
 }
