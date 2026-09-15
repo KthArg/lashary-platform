@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-12.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-14.
 
 ## Features
 
@@ -38,12 +38,12 @@
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
-### clients (actualizado: 2026-09-12)
+### clients (actualizado: 2026-09-14)
 - US-CLI-01 — no_iniciada
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
-- US-CLI-05 — en_progreso — falta: El criterio 1 existe solo como interfaz: el alta valida y reporta en consola, sin persistir. Faltan: la migracion (notes, unicidad de telefono), el server action, los criterios 2, 3 y 4, el bloqueo de navegacion al salir con el formulario abierto, y la prueba de aislamiento RLS (SEC-002).
+- US-CLI-05 — en_progreso — falta: Los criterios 1 y 2 existen solo como interfaz: el alta y la edicion validan y reportan en consola, sin persistir, y la lista sale de constants/sample-clients.ts. Faltan: la unicidad de telefono (criterio 3), los server actions de alta y edicion, el criterio 4 y la prueba de aislamiento RLS (SEC-002).
 
 ### content (actualizado: 2026-08-29)
 - US-BLOG-01 — no_iniciada
@@ -113,6 +113,8 @@ Ninguno registrado.
 
 ## Deuda aceptada
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
+- clients: Clientas quemadas en src/features/clients/constants/sample-clients.ts: la pantalla no prueba lectura real — aceptada en PR pendiente — rama feat/US-CLI-05-edit-client — costo: 1h: sustituirlo por el server action de lectura
+- clients: ClientsList sin estados de carga ni de error (UI-003): su fuente es un arreglo en memoria — aceptada en PR pendiente — rama feat/US-CLI-05-edit-client — costo: 1h al conectar la lectura real
 
 ## Flags vivos
 

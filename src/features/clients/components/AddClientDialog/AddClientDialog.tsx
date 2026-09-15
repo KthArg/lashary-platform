@@ -1,11 +1,13 @@
 'use client'
 
 import { useCallback, useRef, useState } from 'react'
-import { CLIENTS_CONFIRM_MESSAGES } from '../../constants/clients-strings'
+import { EMPTY_CLIENT_FORM_VALUES } from '../../constants/client-form'
+import { CLIENTS_CONFIRM_MESSAGES, CLIENTS_CONSOLE_MESSAGES, CLIENTS_LABELS } from '../../constants/clients-strings'
 import { AddClientButton } from '../AddClientButton'
-import { AddClientModal } from '../AddClientModal'
-import { AddClientForm } from '../AddClientForm'
+import { ClientModal } from '../ClientModal'
+import { ClientForm } from '../ClientForm'
 import { ConfirmDialog } from '../ConfirmDialog'
+import type { ClientFormValues } from '../../types/client-form.types'
 
 /** Coordina el boton, el modal y el descarte confirmado del formulario en curso. */
 export function AddClientDialog() {
@@ -34,12 +36,19 @@ export function AddClientDialog() {
 
   const keepEditing = useCallback(() => setIsConfirmOpen(false), [])
 
+  const handleCreated = useCallback((values: ClientFormValues) => {
+    // US-CLI-05 criterio 1: por ahora solo se reporta; la persistencia llega con el server action.
+    console.log(CLIENTS_CONSOLE_MESSAGES.clientCreated, values)
+    close()
+  }, [close])
+
   return (
     <>
       <AddClientButton ref={triggerRef} onClick={() => setIsOpen(true)} />
-      <AddClientModal isOpen={isOpen} isPaused={isConfirmOpen} onRequestClose={requestClose}>
-        <AddClientForm onCreated={close} onCancel={requestClose} onDirtyChange={setIsDirty} />
-      </AddClientModal>
+      <ClientModal isOpen={isOpen} title={CLIENTS_LABELS.newClientTitle} description={CLIENTS_LABELS.newClientDescription}
+        isPaused={isConfirmOpen} onRequestClose={requestClose}>
+        <ClientForm initialValues={EMPTY_CLIENT_FORM_VALUES} onSubmit={handleCreated} onCancel={requestClose} onDirtyChange={setIsDirty} />
+      </ClientModal>
       <ConfirmDialog
         isOpen={isOpen && isConfirmOpen}
         title={CLIENTS_CONFIRM_MESSAGES.discardFormTitle}
