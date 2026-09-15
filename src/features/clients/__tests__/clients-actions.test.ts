@@ -74,7 +74,10 @@ describe('createClientAction', () => {
   })
 
   it('rechaza datos invalidos o incompletos sin tocar la base', async () => {
-    for (const bad of [{ ...input, email: 'no-es-correo' }, {} as typeof input]) {
+    const tooLong = [
+      { ...input, fullName: 'a'.repeat(121) }, { ...input, phone: '8'.repeat(21) }, { ...input, email: `${'a'.repeat(150)}@correo.com` },
+    ]
+    for (const bad of [{ ...input, email: 'no-es-correo' }, {} as typeof input, ...tooLong]) {
       expect(await createClientAction(bad)).toEqual({ ok: false, error: CLIENTS_ERROR_MESSAGES.formHasErrors })
     }
     expect(mockFrom).not.toHaveBeenCalled()
