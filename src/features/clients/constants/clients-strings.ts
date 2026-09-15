@@ -22,6 +22,8 @@ export const CLIENTS_ERROR_MESSAGES = {
   phoneInvalidFormat: 'El teléfono solo debe contener números, espacios, guiones o el símbolo +',
   emailRequired: 'El correo electrónico es obligatorio', emailInvalidFormat: 'El formato del correo no es válido',
   notesTooLong: 'Las notas no pueden superar los 500 caracteres',
+  fullNameTooLong: 'El nombre no puede superar los 120 caracteres', phoneTooLong: 'El teléfono no puede superar los 20 caracteres',
+  emailTooLong: 'El correo no puede superar los 150 caracteres',
   formHasErrors: 'Revisa los campos marcados en rojo.',
   // Sin el detalle de la base: a la administradora no le sirve y a un atacante sí.
   saveFailed: 'No se pudo guardar la clienta. Intenta de nuevo.',

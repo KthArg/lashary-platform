@@ -38,6 +38,7 @@ y con datos escritos pide confirmar con el `ConfirmDialog` del proyecto. El foco
 diálogo y vuelve a *Agregar* al cerrar (UI-004).
 
 *Guardar* llama a `createClientAction()`, que vuelve a validar con `validateClientForm` (DOM-007),
+incluidos los largos máximos de nombre, teléfono y correo, que en el navegador solo impone el `maxLength` del HTML;
 normaliza el teléfono con `normalizePhone`, guarda `phone_verified = true` y deja `user_id` en `NULL`
 (clienta sin cuenta). Antes de insertar revisa en la base que el teléfono no esté registrado
 (criterio 3); si lo está, no guarda y el modal muestra `phoneTaken`. Mientras guarda, el botón dice *Guardando…*, se deshabilita y el modal no se

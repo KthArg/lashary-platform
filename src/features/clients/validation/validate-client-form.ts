@@ -13,12 +13,16 @@ export function validateClientForm(values: ClientFormValues): ClientFormErrors {
 
   if (!fullName) errors[CLIENT_FIELD_KEYS.fullName] = CLIENTS_ERROR_MESSAGES.fullNameRequired
   else if (fullName.length < CLIENT_FORM_LIMITS.fullNameMinLength) errors[CLIENT_FIELD_KEYS.fullName] = CLIENTS_ERROR_MESSAGES.fullNameTooShort
+  // Los maximos tambien van aqui: el `maxLength` del HTML no protege una llamada directa al server action.
+  else if (fullName.length > CLIENT_FORM_LIMITS.fullNameMaxLength) errors[CLIENT_FIELD_KEYS.fullName] = CLIENTS_ERROR_MESSAGES.fullNameTooLong
 
   if (!phone) errors[CLIENT_FIELD_KEYS.phone] = CLIENTS_ERROR_MESSAGES.phoneRequired
+  else if (phone.length > CLIENT_FORM_LIMITS.phoneMaxLength) errors[CLIENT_FIELD_KEYS.phone] = CLIENTS_ERROR_MESSAGES.phoneTooLong
   else if (!CLIENT_FORM_PATTERNS.phone.test(phone)) errors[CLIENT_FIELD_KEYS.phone] = CLIENTS_ERROR_MESSAGES.phoneInvalidFormat
   else if (countDigits(phone) < CLIENT_FORM_LIMITS.phoneMinDigits) errors[CLIENT_FIELD_KEYS.phone] = CLIENTS_ERROR_MESSAGES.phoneTooShort
 
   if (!email) errors[CLIENT_FIELD_KEYS.email] = CLIENTS_ERROR_MESSAGES.emailRequired
+  else if (email.length > CLIENT_FORM_LIMITS.emailMaxLength) errors[CLIENT_FIELD_KEYS.email] = CLIENTS_ERROR_MESSAGES.emailTooLong
   else if (!CLIENT_FORM_PATTERNS.email.test(email)) errors[CLIENT_FIELD_KEYS.email] = CLIENTS_ERROR_MESSAGES.emailInvalidFormat
 
   if (values.notes.length > CLIENT_FORM_LIMITS.notesMaxLength) errors[CLIENT_FIELD_KEYS.notes] = CLIENTS_ERROR_MESSAGES.notesTooLong
