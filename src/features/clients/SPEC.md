@@ -14,15 +14,9 @@ historias:
     estado: no_iniciada
   - id: US-CLI-05
     estado: en_progreso
-    falta: "El alta guarda en clients_profiles con createClientAction (telefono normalizado a +506, phone_verified=true) y rechaza un telefono ya registrado, probado con Supabase simulado en clients-actions.test.ts y save-client.test.tsx. La lista sigue saliendo de constants/sample-clients.ts, asi que la clienta creada no aparece en pantalla. Faltan: leer la lista de la base, persistir la edicion (criterio 2, que debe repetir la revision de telefono excluyendo a la propia clienta) y la prueba de aislamiento RLS (SEC-002)."
+    falta: "El alta (criterios 1, 3 y 4) y la lectura de la lista usan clients_profiles, probados con Supabase simulado en clients-actions.test.ts, list-clients.test.ts, save-client.test.tsx y clients-list.test.tsx. Faltan: persistir la edicion (criterio 2, que debe repetir la revision de telefono excluyendo a la propia clienta) y la prueba de aislamiento RLS (SEC-002)."
 flags: []
-deuda:
-  - que: "Clientas quemadas en src/features/clients/constants/sample-clients.ts: la pantalla no prueba lectura real"
-    aceptada_en: "PR pendiente — rama feat/US-CLI-05-edit-client"
-    costo: "1h: sustituirlo por el server action de lectura"
-  - que: "ClientsList sin estados de carga ni de error (UI-003): su fuente es un arreglo en memoria"
-    aceptada_en: "PR pendiente — rama feat/US-CLI-05-edit-client"
-    costo: "1h al conectar la lectura real"
+deuda: []
 defectos: []
 ---
 
@@ -46,11 +40,17 @@ cierra; si el servidor rechaza, el mensaje aparece dentro del modal y lo escrito
 de la base nunca llega a la pantalla: la action devuelve `{ ok: false, error }` con un texto de
 `CLIENTS_ERROR_MESSAGES`. La action también llama a `requireAdminSession()`.
 
-Debajo, `ClientsList` muestra cada clienta con un lápiz de solo icono cuyo `aria-label` la nombra
-(UI-004). El lápiz abre `EditClientDialog`, el mismo modal y formulario con los datos cargados: salir
-con cambios pide confirmar, el foco vuelve a ese lápiz y guardar **reporta en consola sin persistir**.
+Debajo, `ClientsList` muestra las clientas que la página lee en el servidor con `listClientsAction()`:
+la primera página de 50 (`CLIENTS_LIST_LIMITS`), las más recientes primero y solo las columnas que
+muestra (PERF-002, PERF-005). Tiene sus tres estados (UI-003): carga en
+`src/app/admin/clients/loading.tsx` (`role="status"`), error con *Reintentar* (`router.refresh()`) y
+vacío que sugiere *Agregar*. Tras un alta, `revalidatePath` vuelve a leer y la clienta nueva aparece.
 
-Lo único que ya funciona es el control de acceso de la capa de aplicación: la página llama a
+Cada clienta tiene un lápiz de solo icono cuyo `aria-label` la nombra (UI-004). El lápiz abre
+`EditClientDialog`, el mismo modal y formulario con los datos cargados: salir con cambios pide
+confirmar, el foco vuelve a ese lápiz y guardar **reporta en consola sin persistir**.
+
+Control de acceso de la capa de aplicación: la página y cada action llaman a
 `requireAdminSession()` de `auth`, de modo que una visitante anónima o una clienta con sesión de
 Google son redirigidas a `/admin`. El middleware de Edge ya cubría `/admin/*` (salvo `/admin`
 exacto), pero solo comprueba que haya sesión, no el rol — el rol lo comprueba esta página.
@@ -60,9 +60,9 @@ La estructura de carpetas sigue la distribución de `auth`: `actions/`, `compone
 
 ## Qué no hace todavía
 
-**Solo el alta llega a la base.** La lista no se lee (sale de `constants/sample-clients.ts`, así que
-la clienta recién creada no aparece) y la edición no se guarda. Las pruebas de la action simulan
-Supabase: demuestran qué se envía, no qué permite RLS.
+**La edición no se guarda.** El alta y la lectura ya usan la base; *Guardar* en `EditClientDialog`
+todavía reporta en consola. Las pruebas de las actions simulan Supabase: demuestran qué se envía y
+se lee, no qué permite RLS.
 
 La tabla `public.clients_profiles` existe desde la migración
 `20260901000000_auth_roles_and_clients.sql`, pero hoy solo la escribe `auth` cuando una clienta se
@@ -79,9 +79,10 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 ## Contrato público (`src/features/clients/index.ts`)
 
 Único punto de entrada (ARCH-003). Exporta `AddClientDialog` —lo que monta la ruta—, el modal, el
-`ConfirmDialog`, el formulario, `AddClientButton`, `ClientsList`, `ClientRecord`, `SAMPLE_CLIENTS`, los hooks
-`useClientForm` y `useFocusTrap`, `createClientAction` con su tipo `SaveClientResult`, `validateClientForm`,
-`normalizePhone` y las constantes de textos y límites (DOM-009).
+`ConfirmDialog`, el formulario, `AddClientButton`, `ClientsList`, `ClientRecord`, los hooks
+`useClientForm` y `useFocusTrap`, `createClientAction` y `listClientsAction` con sus tipos
+`SaveClientResult` y `ListClientsResult`, `validateClientForm`, `normalizePhone` y las constantes de
+textos y límites, entre ellas `CLIENTS_LIST_LIMITS` (DOM-009).
 
 ## Invariantes
 
@@ -134,3 +135,10 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
   `updateClientPhoneAction` de `auth` guarda sin normalizar. Sin migración. **Consecuencia asumida:**
   dos altas simultáneas con el mismo número pueden pasar ambas, porque la base no lo impide; y
   `idx_clients_profiles_phone` no sirve a un `like` con comodín inicial (lectura completa de la tabla).
+- **2026-09-15 — La lectura de la lista entra en `feat/US-CLI-05-read-edit-clients`**, apilada sobre
+  `feat/US-CLI-05-persist-clients`, y borra `constants/sample-clients.ts` (paga las dos deudas de
+  `feat/US-CLI-05-edit-client`). Solo se lee la página 0: navegar páginas y filtrar es US-CLI-01. Las
+  pruebas de componentes usan `__tests__/client-fixtures.ts`.
+- **2026-09-15 — Datos de desarrollo en `supabase/seed.sql`, no en una migración:** 5 clientas sin
+  cuenta, teléfono normalizado y verificado, idempotente por teléfono. Solo lo aplica
+  `supabase db reset` en local; una migración llegaría a producción y contaría para INT-008.

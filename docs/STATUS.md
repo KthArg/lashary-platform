@@ -43,7 +43,7 @@
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
-- US-CLI-05 — en_progreso — falta: El alta guarda en clients_profiles con createClientAction (telefono normalizado a +506, phone_verified=true) y rechaza un telefono ya registrado, probado con Supabase simulado en clients-actions.test.ts y save-client.test.tsx. La lista sigue saliendo de constants/sample-clients.ts, asi que la clienta creada no aparece en pantalla. Faltan: leer la lista de la base, persistir la edicion (criterio 2, que debe repetir la revision de telefono excluyendo a la propia clienta) y la prueba de aislamiento RLS (SEC-002).
+- US-CLI-05 — en_progreso — falta: El alta (criterios 1, 3 y 4) y la lectura de la lista usan clients_profiles, probados con Supabase simulado en clients-actions.test.ts, list-clients.test.ts, save-client.test.tsx y clients-list.test.tsx. Faltan: persistir la edicion (criterio 2, que debe repetir la revision de telefono excluyendo a la propia clienta) y la prueba de aislamiento RLS (SEC-002).
 
 ### content (actualizado: 2026-08-29)
 - US-BLOG-01 — no_iniciada
@@ -113,8 +113,6 @@ Ninguno registrado.
 
 ## Deuda aceptada
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
-- clients: Clientas quemadas en src/features/clients/constants/sample-clients.ts: la pantalla no prueba lectura real — aceptada en PR pendiente — rama feat/US-CLI-05-edit-client — costo: 1h: sustituirlo por el server action de lectura
-- clients: ClientsList sin estados de carga ni de error (UI-003): su fuente es un arreglo en memoria — aceptada en PR pendiente — rama feat/US-CLI-05-edit-client — costo: 1h al conectar la lectura real
 
 ## Flags vivos
 
