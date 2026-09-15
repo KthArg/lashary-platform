@@ -11,7 +11,7 @@
 | audit | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 4 |
-| clients | pendiente | en_progreso | 0 / 1 / 0 / 0 / 4 |
+| clients | pendiente | en_progreso | 1 / 0 / 0 / 0 / 4 |
 | content | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 3 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | landing | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 6 |
@@ -43,7 +43,7 @@
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
-- US-CLI-05 — en_progreso — falta: Los cuatro criterios usan clients_profiles y estan probados con Supabase simulado: alta (clients-actions.test.ts, save-client.test.tsx), lectura (list-clients.test.ts, clients-list.test.tsx) y edicion (update-client.test.ts, edit-client.test.tsx). Pasa a terminada cuando se mergee la pila feat/US-CLI-05-edit-client, -persist-clients, -read-edit-clients y -save-edit-client y se registre su evidencia (EST-005).
+- US-CLI-05 — terminada — PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx
 
 ### content (actualizado: 2026-08-29)
 - US-BLOG-01 — no_iniciada
@@ -113,7 +113,7 @@ Ninguno registrado.
 
 ## Deuda aceptada
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
-- clients: Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras — aceptada en PR pendiente — rama feat/US-CLI-05-save-edit-client, etiqueta excepcion-proceso — costo: 3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)
+- clients: Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras — aceptada en PR #32, etiqueta excepcion-proceso — costo: 3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)
 
 ## Flags vivos
 
