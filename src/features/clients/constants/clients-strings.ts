@@ -30,10 +30,8 @@ export const CLIENTS_ERROR_MESSAGES = {
   saveFailed: 'No se pudo guardar la clienta. Intenta de nuevo.',
   phoneTaken: 'Ya hay una clienta registrada con este teléfono.',
   loadFailed: 'No se pudieron cargar las clientas.',
+  clientNotFound: 'Esta clienta ya no existe o no tienes acceso a ella.',
 } as const
-
-// Criterio 2 de US-CLI-05: por ahora la edicion solo se reporta en consola, sin persistencia.
-export const CLIENTS_CONSOLE_MESSAGES = { clientUpdated: '[clients] Clienta editada correctamente (solo UI, sin persistencia):' } as const
 
 export const CLIENTS_CONFIRM_MESSAGES = {
   discardFormTitle: '¿Descartar la clienta?',

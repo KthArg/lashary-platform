@@ -43,7 +43,7 @@
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
-- US-CLI-05 — en_progreso — falta: El alta (criterios 1, 3 y 4) y la lectura de la lista usan clients_profiles, probados con Supabase simulado en clients-actions.test.ts, list-clients.test.ts, save-client.test.tsx y clients-list.test.tsx. Faltan: persistir la edicion (criterio 2, que debe repetir la revision de telefono excluyendo a la propia clienta) y la prueba de aislamiento RLS (SEC-002).
+- US-CLI-05 — en_progreso — falta: Los cuatro criterios usan clients_profiles y estan probados con Supabase simulado: alta (clients-actions.test.ts, save-client.test.tsx), lectura (list-clients.test.ts, clients-list.test.tsx) y edicion (update-client.test.ts, edit-client.test.tsx). Pasa a terminada cuando se mergee la pila feat/US-CLI-05-edit-client, -persist-clients, -read-edit-clients y -save-edit-client y se registre su evidencia (EST-005).
 
 ### content (actualizado: 2026-08-29)
 - US-BLOG-01 — no_iniciada
@@ -113,6 +113,7 @@ Ninguno registrado.
 
 ## Deuda aceptada
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
+- clients: Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras — aceptada en PR pendiente — rama feat/US-CLI-05-save-edit-client, etiqueta excepcion-proceso — costo: 3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)
 
 ## Flags vivos
 
