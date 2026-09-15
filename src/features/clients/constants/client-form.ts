@@ -20,3 +20,5 @@ export const EMPTY_CLIENT_FORM_VALUES = { fullName: '', phone: '', email: '', no
 
 // Un numero sin codigo de pais es de Costa Rica: `88887777` se guarda como `+50688887777`.
 export const CLIENT_PHONE_FORMAT = { countryPrefix: '+506', localDigits: 8 } as const
+
+export const CLIENTS_LIST_LIMITS = { pageSize: 50 } as const

@@ -1,17 +1,20 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import {
-  ClientsList, SAMPLE_CLIENTS, CLIENTS_ARIA_LABELS, CLIENTS_BUTTON_TEXTS, CLIENTS_CONFIRM_MESSAGES, CLIENTS_LABELS,
+  ClientsList, CLIENTS_ARIA_LABELS, CLIENTS_BUTTON_TEXTS, CLIENTS_CONFIRM_MESSAGES, CLIENTS_LABELS,
 } from '@/features/clients'
+import { CLIENT_FIXTURES } from './client-fixtures'
+
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }))
 
 /** US-CLI-05 criterio 2 — editar una clienta existente desde el lapiz de la lista. */
-const [first, second] = SAMPLE_CLIENTS
+const [first, second] = CLIENT_FIXTURES
 const pencilFor = (fullName: string) => screen.getByRole('button', { name: CLIENTS_ARIA_LABELS.editClient(fullName) })
 const inputValue = (label: string) => (screen.getByLabelText(label) as HTMLInputElement).value
 const openEditorFor = (fullName: string) => fireEvent.click(pencilFor(fullName))
 const cancel = () => fireEvent.click(screen.getByRole('button', { name: CLIENTS_BUTTON_TEXTS.cancel }))
 const renderAndOpen = (fullName: string) => {
-  render(<ClientsList clients={SAMPLE_CLIENTS} />)
+  render(<ClientsList clients={CLIENT_FIXTURES} />)
   openEditorFor(fullName)
 }
 
