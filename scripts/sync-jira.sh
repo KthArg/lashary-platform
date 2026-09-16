@@ -1,105 +1,121 @@
 #!/usr/bin/env bash
-# sync-jira.sh — Sincroniza el estado de las historias en SPEC.md con Jira.
-# Depende de secretos inyectados por GitHub Actions.
+# sync-jira.sh — Refleja en Jira el estado de cada historia (HIST) de los SPEC.md.
+# Busca el issue por su ID (US-XXX-NN) en el summary y lo transiciona al estado mapeado.
+#
+# Local:   export JIRA_BASE_URL JIRA_USER_EMAIL JIRA_API_TOKEN; bash scripts/sync-jira.sh
+#   JIRA_DRY_RUN=1      busca y compara, no transiciona nada.
+#   JIRA_PROJECT_KEY    opcional; acota el JQL a ese proyecto.
+# Salida: 0 ok · 1 configuración/credenciales · 2 una o más historias fallaron.
+# Nunca imprime el token ni el email (SEC-004); la URL base sí, no es secreto.
 
-set -eu
+set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$SCRIPT_DIR/rules/lib.sh"
 
-if [ -z "${JIRA_BASE_URL:-}" ] || [ -z "${JIRA_USER_EMAIL:-}" ] || [ -z "${JIRA_API_TOKEN:-}" ]; then
-  echo "Error: Faltan credenciales de Jira (JIRA_BASE_URL, JIRA_USER_EMAIL, JIRA_API_TOKEN)."
+for v in JIRA_BASE_URL JIRA_USER_EMAIL JIRA_API_TOKEN; do
+  if [ -z "${!v:-}" ]; then
+    echo "✖ Falta $v (secreto/variable de entorno requerida)."; exit 1
+  fi
+done
+
+# Un '\n' o espacio al final del secreto rompe curl con exit 3 (URL malformed): se sanean.
+JIRA_BASE_URL="$(printf '%s' "$JIRA_BASE_URL" | tr -d '[:space:]')"
+JIRA_USER_EMAIL="$(printf '%s' "$JIRA_USER_EMAIL" | tr -d '[:space:]')"
+JIRA_API_TOKEN="$(printf '%s' "$JIRA_API_TOKEN" | tr -d '[:space:]')"
+JIRA_BASE_URL="${JIRA_BASE_URL%/}"
+case "$JIRA_BASE_URL" in
+  https://*) ;;
+  *) echo "✖ JIRA_BASE_URL debe empezar con https:// (recibido: '$JIRA_BASE_URL')."; exit 1 ;;
+esac
+DRY_RUN="${JIRA_DRY_RUN:-0}"
+
+CURL=(curl -sS --globoff --fail-with-body --max-time 30 --retry 2 --retry-delay 2
+      -u "${JIRA_USER_EMAIL}:${JIRA_API_TOKEN}" -H "Accept: application/json")
+# stderr de curl va a $ERR para que nunca se mezcle con el JSON de stdout.
+ERR="$(mktemp)"; trap 'rm -f "$ERR"' EXIT
+jira_get()  { "${CURL[@]}" "$@" 2>"$ERR"; }
+jira_post() { "${CURL[@]}" -X POST -H "Content-Type: application/json" "$@" 2>"$ERR"; }
+err_detail() { printf '%s %s' "$(tail -n 1 "$ERR")" "$1" | head -c 300; }
+
+# Preflight: valida URL y credenciales antes de tocar ninguna historia.
+if ! me=$(jira_get "$JIRA_BASE_URL/rest/api/3/myself"); then
+  echo "✖ No se pudo autenticar en $JIRA_BASE_URL — revisa JIRA_BASE_URL, JIRA_USER_EMAIL y JIRA_API_TOKEN."
+  echo "  Detalle: $(err_detail "$me")"
   exit 1
 fi
+echo "✔ Autenticado como $(printf '%s' "$me" | jq -r '.displayName // "?"')"
+[ "$DRY_RUN" = "1" ] && echo "  (modo simulación: no se transiciona nada)"
 
-# Eliminar slash final de la URL si existe
-JIRA_BASE_URL="${JIRA_BASE_URL%/}"
-
+# Estados del SPEC → columnas de Jira. Sin mapeo (p. ej. bloqueada) → se omite, nunca se regresa a To Do.
 map_status() {
   case "$1" in
-    "no_iniciada") echo "To Do" ;;
-    "en_progreso") echo "In Progress" ;;
-    "en_revision") echo "Waiting QA" ;;
-    "terminada")   echo "Done" ;;
-    "bloqueada")   echo "To Do" ;; # Fallback provisional
-    *)             echo "To Do" ;;
+    no_iniciada) echo "To Do" ;;
+    en_progreso) echo "In Progress" ;;
+    en_revision) echo "Waiting QA" ;;
+    terminada)   echo "Done" ;;
+    *)           echo "" ;;
   esac
 }
 
+# sync_issue <id-historia> <estado-jira> — 0 ok/omitido, 1 fallo.
+# Cada curl va en `if ! res=$(...)`: la función se invoca con `|| ...`, lo que desactiva errexit dentro.
 sync_issue() {
-  local hist_id="$1"
-  local target_status="$2"
+  local id="$1" target="$2" jql res key current trans_id
+  echo "Sincronizando $id hacia '$target'..."
 
-  echo "Sincronizando $hist_id hacia '$target_status'..."
-
-  # Buscar el issue key en Jira usando JQL (summary ~ "US-XXX-YY")
-  local jql_encoded="summary%20~%20%22${hist_id}%22"
-  local search_res
-  search_res=$(curl -s -u "${JIRA_USER_EMAIL}:${JIRA_API_TOKEN}" \
-    -X GET -H "Content-Type: application/json" \
-    "${JIRA_BASE_URL}/rest/api/3/search?jql=${jql_encoded}&maxResults=1&fields=status")
-  
-  local issue_key
-  issue_key=$(echo "$search_res" | jq -r '.issues[0].key // empty')
-  
-  if [ -z "$issue_key" ]; then
-    echo "  → No se encontró el issue en Jira."
-    return
+  jql="summary ~ \"\\\"$id\\\"\""   # frase exacta; el filtro fino se hace en jq
+  [ -n "${JIRA_PROJECT_KEY:-}" ] && jql="project = $JIRA_PROJECT_KEY AND $jql"
+  if ! res=$(jira_get -G --data-urlencode "jql=$jql" --data-urlencode "fields=summary,status" \
+               --data-urlencode "maxResults=10" "$JIRA_BASE_URL/rest/api/3/search/jql"); then
+    echo "  ✖ Falló la búsqueda: $(err_detail "$res")"; return 1
   fi
-  
-  local current_status
-  current_status=$(echo "$search_res" | jq -r '.issues[0].fields.status.name // empty')
-  
-  if [ "$current_status" = "$target_status" ]; then
-    echo "  → $issue_key ya está en '$target_status'."
-    return
+  # ID como palabra completa: US-AUTH-01 no debe matchear US-AUTH-010.
+  key=$(printf '%s' "$res" | jq -r --arg id "$id" \
+    '[.issues[]? | select(.fields.summary | test("(^|[^A-Za-z0-9])" + $id + "($|[^0-9])"))][0].key // empty')
+  if [ -z "$key" ]; then
+    echo "  → No hay issue en Jira con '$id' en el summary; se omite."; return 0
+  fi
+  current=$(printf '%s' "$res" | jq -r --arg k "$key" '.issues[] | select(.key == $k) | .fields.status.name')
+  if [ "$current" = "$target" ]; then
+    echo "  → $key ya está en '$target'."; return 0
   fi
 
-  # Obtener transiciones disponibles para este issue
-  local trans_res
-  trans_res=$(curl -s -u "${JIRA_USER_EMAIL}:${JIRA_API_TOKEN}" \
-    -X GET -H "Content-Type: application/json" \
-    "${JIRA_BASE_URL}/rest/api/3/issue/${issue_key}/transitions")
-
-  local trans_id
-  trans_id=$(echo "$trans_res" | jq -r ".transitions[] | select(.to.name == \"$target_status\") | .id" | head -n 1)
-
+  if ! res=$(jira_get "$JIRA_BASE_URL/rest/api/3/issue/$key/transitions"); then
+    echo "  ✖ $key: no se pudieron leer las transiciones: $(err_detail "$res")"; return 1
+  fi
+  trans_id=$(printf '%s' "$res" | jq -r --arg t "$target" '[.transitions[] | select(.to.name == $t) | .id][0] // empty')
   if [ -z "$trans_id" ]; then
-    echo "  → Advertencia: No se encontró una transición válida hacia '$target_status'. Estado actual: '$current_status'."
-    return
+    echo "  ✖ $key: sin transición de '$current' a '$target'. Disponibles: $(printf '%s' "$res" | jq -r '[.transitions[].to.name] | join(", ")')"
+    return 1
   fi
-
-  echo "  → Transicionando $issue_key de '$current_status' a '$target_status' (Transition ID: $trans_id)..."
-  local update_res
-  update_res=$(curl -s -o /dev/null -w "%{http_code}" -u "${JIRA_USER_EMAIL}:${JIRA_API_TOKEN}" \
-    -X POST -H "Content-Type: application/json" \
-    -d "{\"transition\": {\"id\": \"$trans_id\"}}" \
-    "${JIRA_BASE_URL}/rest/api/3/issue/${issue_key}/transitions")
-
-  if [ "$update_res" = "204" ]; then
-    echo "  → Éxito."
-  else
-    echo "  → Falló la transición. Código HTTP: $update_res"
+  if [ "$DRY_RUN" = "1" ]; then
+    echo "  [simulación] $key: '$current' → '$target' (transición $trans_id)"; return 0
   fi
+  if ! res=$(jira_post -o /dev/null -d "{\"transition\":{\"id\":\"$trans_id\"}}" \
+               "$JIRA_BASE_URL/rest/api/3/issue/$key/transitions"); then
+    echo "  ✖ $key: falló la transición a '$target': $(err_detail "$res")"; return 1
+  fi
+  echo "  ✔ $key: '$current' → '$target'."
 }
 
-echo "=== Sincronizando repositorio con Jira ==="
-
-SPECS=$(ls "$REPO_ROOT"/src/features/*/SPEC.md 2>/dev/null | grep -v '/_template/' || true)
-if [ -z "$SPECS" ]; then
-  echo "No se encontraron SPEC.md."
-  exit 0
-fi
-
-for s in $SPECS; do
-  spec_records "$s" | grep '^HIST|' | while IFS= read -r r; do
-    hist_id=$(field_of "$r" id)
-    hist_est=$(field_of "$r" estado)
-    
-    if [ -n "$hist_id" ] && [ -n "$hist_est" ]; then
-      target=$(map_status "$hist_est")
-      sync_issue "$hist_id" "$target"
+TOTAL=0; FALLOS=0
+# Sin subshell (ni pipe a while): los contadores deben sobrevivir al bucle.
+for s in "$REPO_ROOT"/src/features/*/SPEC.md; do
+  case "$s" in */_template/*) continue ;; esac
+  while IFS= read -r r; do
+    hist_id=$(field_of "$r" id); hist_est=$(field_of "$r" estado)
+    [ -n "$hist_id" ] && [ -n "$hist_est" ] || continue
+    target=$(map_status "$hist_est")
+    if [ -z "$target" ]; then
+      echo "→ $hist_id está '$hist_est' en el SPEC: sin columna equivalente en Jira, se omite."; continue
     fi
-  done
+    TOTAL=$((TOTAL + 1))
+    sync_issue "$hist_id" "$target" || FALLOS=$((FALLOS + 1))
+  done < <(spec_records "$s" | grep '^HIST|' || true)
 done
 
-echo "Sincronización completada."
+echo ""
+if [ "$FALLOS" -gt 0 ]; then
+  echo "✖ Sincronización: $FALLOS de $TOTAL historias fallaron."; exit 2
+fi
+echo "✔ Sincronización completada: $TOTAL historias revisadas."
