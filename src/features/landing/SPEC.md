@@ -32,6 +32,8 @@ Sitio publico: inicio, tecnicas, contacto, conoceme, galeria, fidelidad informat
 - `ui/SiteMenu.tsx`: menú a pantalla completa como diálogo modal. Foco en "Cerrar" al abrir, Tab atrapado, Escape cierra y devuelve el foco al botón, scroll de la página bloqueado mientras está abierto.
 - `ui/sections.ts`: `landingSections` está vacía; cada historia agrega su sección al montarla. Sin secciones no se muestra navegación ni menú.
 
+- `ui/opening-frame.ts` + `ui/use-opening-animation.ts`: la apertura de la foto del hero al bajar (asoma como píldora, se abre, termina a sangre, el título se desvanece). Con `prefers-reduced-motion: reduce` el hook no registra el scroll. Todavía no los usa ningún componente.
+
 Se detiene antes del hero: `src/app/(site)/page.tsx` sigue siendo la página provisional.
 
 ## Decisiones de US-LAND-01 (PO, 2026-09-16)
