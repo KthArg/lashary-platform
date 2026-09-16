@@ -18,6 +18,12 @@ function toMinutesSinceMidnight(time: string): number {
   return Number(hours) * 60 + Number(minutes)
 }
 
+export class InvalidDateError extends SchedulingDomainError {
+  constructor(value: string) {
+    super(`Fecha inválida: ${value}. Formato esperado YYYY-MM-DD.`)
+  }
+}
+
 export interface WeeklyAvailabilityBlockProps {
   id?: string
   resourceId: string
@@ -46,5 +52,27 @@ export class WeeklyAvailabilityBlock {
     this.dayOfWeek = props.dayOfWeek
     this.startTime = props.startTime
     this.endTime = props.endTime
+  }
+}
+
+export interface ClosedDateProps {
+  id?: string
+  resourceId: string
+  closedDate: string // "YYYY-MM-DD"
+  reason?: string
+}
+
+export class ClosedDate {
+  readonly id?: string
+  readonly resourceId: string
+  readonly closedDate: string
+  readonly reason?: string
+
+  constructor(props: ClosedDateProps) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(props.closedDate)) throw new InvalidDateError(props.closedDate)
+    this.id = props.id
+    this.resourceId = props.resourceId
+    this.closedDate = props.closedDate
+    this.reason = props.reason
   }
 }
