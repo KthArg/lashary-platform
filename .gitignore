@@ -22,7 +22,10 @@ Thumbs.db
 # build de TypeScript
 *.tsbuildinfo
 
-# artefactos de captura / e2e ad-hoc
+# artefactos de captura / e2e
+test-results/
+playwright-report/
+blob-report/
 .playwright-mcp/
 /*.png
 

@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-15.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-16.
 
 ## Features
 
@@ -12,9 +12,9 @@
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | en_progreso | 0 / 1 / 0 / 0 / 3 |
 | clients | pendiente | en_progreso | 1 / 0 / 0 / 0 / 4 |
-| content | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 3 |
+| content | pendiente | en_progreso | 0 / 0 / 0 / 0 / 3 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
-| landing | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 6 |
+| landing | pendiente | en_progreso | 0 / 0 / 0 / 1 / 5 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
 | payments | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
@@ -45,7 +45,7 @@
 - US-CLI-04 — no_iniciada
 - US-CLI-05 — terminada — PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx
 
-### content (actualizado: 2026-08-29)
+### content (actualizado: 2026-09-16)
 - US-BLOG-01 — no_iniciada
 - US-BLOG-02 — no_iniciada
 - US-BLOG-03 — no_iniciada
@@ -57,8 +57,8 @@
 - US-MOR-04 — no_iniciada
 - US-MOR-05 — no_iniciada
 
-### landing (actualizado: 2026-08-28)
-- US-LAND-01 — no_iniciada
+### landing (actualizado: 2026-09-16)
+- US-LAND-01 — en_revision — falta: aprobacion visual del PO de la parte atractivo del criterio 2, con las capturas del artefacto capturas-landing de CI; merge de los PRs en orden; el modelo de contenido hero, intro y closingCta no esta desplegado en lashary-cms
 - US-LAND-02 — no_iniciada
 - US-LAND-03 — no_iniciada
 - US-LAND-04 — no_iniciada
@@ -82,7 +82,7 @@
 ### payments (actualizado: 2026-08-29)
 - US-AGE-13 — no_iniciada
 
-### platform (actualizado: 2026-09-01)
+### platform (actualizado: 2026-09-16)
 
 ### scheduling (actualizado: 2026-08-29)
 - US-AGE-01 — no_iniciada

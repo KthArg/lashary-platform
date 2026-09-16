@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import fs from 'node:fs'
@@ -31,6 +31,8 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     globals: true,
+    // e2e/ es de Playwright: corre contra el build con `npm run test:e2e`, no dentro de Vitest.
+    exclude: [...configDefaults.exclude, 'e2e/**'],
     env: {
       NEXT_PUBLIC_SUPABASE_URL: pick('NEXT_PUBLIC_SUPABASE_URL'),
       NEXT_PUBLIC_SUPABASE_ANON_KEY: pick('NEXT_PUBLIC_SUPABASE_ANON_KEY'),

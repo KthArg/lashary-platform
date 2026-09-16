@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  /* Foco del sitio público: `site.focus` cumple 3:1 sobre paper, ink y night (UI-004). */
+  [data-theme='lashary-site'] :focus-visible {
+    outline: 2px solid theme('colors.site.focus');
+    outline-offset: 4px;
+  }
+}
