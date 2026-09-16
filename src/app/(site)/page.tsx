@@ -1,10 +1,11 @@
-export default function HomePage() {
-  return (
-    <main className="min-h-screen bg-brand-cream flex items-center justify-center p-4">
-      <div className="w-full max-w-sm bg-white p-8 border border-brand-border/40 text-center">
-        <h1 className="font-serif text-2xl uppercase text-brand-gold font-medium">LASHARY</h1>
-        <p className="text-2xs uppercase tracking-super-wide text-brand-gold-light mt-1">BEAUTY STUDIO</p>
-      </div>
-    </main>
-  )
+import { getLandingContent } from '@/features/content'
+import { LandingHome } from '@/features/landing'
+
+// Estática con revalidación: el TTL de respaldo del contrato del CMS (10 min). El aviso al
+// publicar la renueva antes (POST /api/cms/webhook).
+export const revalidate = 600
+
+export default async function HomePage() {
+  const content = await getLandingContent()
+  return <LandingHome content={content} />
 }

@@ -58,7 +58,7 @@
 - US-MOR-05 — no_iniciada
 
 ### landing (actualizado: 2026-09-16)
-- US-LAND-01 — en_progreso — falta: existen el contrato del CMS (PR #35), Playwright (PR #36), los tokens del tema del sitio (PR #37), la lectura del CMS (PRs #39, #40), el aviso de publicacion (PR #41) y la cabecera con menu; no existe la UI del hero, la bienvenida ni la llamada final, y ningun criterio tiene una prueba que renderice la pagina
+- US-LAND-01 — en_progreso — falta: existen el contrato del CMS (PR #35), Playwright (PR #36), los tokens del tema del sitio (PR #37), la lectura del CMS (PRs #39, #40), el aviso de publicacion (PR #41) y la cabecera con menu (PR #42), la animacion de apertura (PR #43) y el hero conectado al CMS con su e2e de "visible"; no existen la bienvenida ni la llamada final, y la parte "atractivo" del criterio 2 no tiene la aprobacion visual del PO, y ningun criterio tiene una prueba que renderice la pagina
 - US-LAND-02 — no_iniciada
 - US-LAND-03 — no_iniciada
 - US-LAND-04 — no_iniciada

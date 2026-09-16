@@ -42,6 +42,8 @@ module.exports = {
       screens: {
         // Ancho desde el que la cabecera del sitio muestra la navegación completa.
         'site-nav': '860px',
+        // Pantallas bajas (móvil en horizontal): el hero no cabe centrado bajo la cabecera.
+        'site-short': { raw: '(max-height: 500px)' },
       },
       fontSize: {
         '2xs': '0.625rem',
@@ -72,11 +74,34 @@ module.exports = {
       spacing: {
         'site-gutter': 'clamp(1.125rem, 3vw, 2.75rem)',
         'site-section': 'clamp(4rem, 12vh, 8.75rem)',
+        // Hero: aire arriba (bajo la cabecera) y abajo (donde asoma la foto).
+        'site-hero-top': 'clamp(6rem, 15vh, 10.625rem)',
+        'site-hero-bottom': 'clamp(8.75rem, 22vh, 15rem)',
+        'site-hero-gap': 'clamp(1.375rem, 4vh, 2.75rem)',
+        'site-hero-cta-gap': 'clamp(1.125rem, 3vh, 1.875rem)',
+        'site-emphasis-gap': 'clamp(0.125rem, 0.8vw, 0.875rem)',
+      },
+      height: {
+        // Recorrido de scroll de la apertura de la foto, y la pantalla que queda fija mientras tanto.
+        'site-opening': '300vh',
+        'site-screen': '100svh',
+        'site-pill': '8svh',
+      },
+      width: {
+        'site-pill': '68vw',
+      },
+      translate: {
+        // Posición inicial de la foto: fuera de cuadro, debajo del título.
+        'site-pill-start': 'calc(-50% + 56vh)',
+      },
+      borderRadius: {
+        'site-pill': '50% / 100%',
       },
       maxWidth: {
         site: '105rem',
         'site-statement': '26ch',
         'site-text': '46ch',
+        'site-subtitle': '34ch',
       },
       transitionTimingFunction: {
         'site-out': 'cubic-bezier(0.16, 1, 0.3, 1)',
@@ -89,6 +114,7 @@ module.exports = {
       },
       animation: {
         'site-in': 'site-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        'site-in-late': 'site-in 900ms cubic-bezier(0.16, 1, 0.3, 1) 260ms both',
       },
     },
   },

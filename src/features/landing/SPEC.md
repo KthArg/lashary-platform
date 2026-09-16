@@ -6,7 +6,7 @@ actualizado: 2026-09-16
 historias:
   - id: US-LAND-01
     estado: en_progreso
-    falta: "existen el contrato del CMS (PR #35), Playwright (PR #36), los tokens del tema del sitio (PR #37), la lectura del CMS (PRs #39, #40), el aviso de publicacion (PR #41) y la cabecera con menu; no existe la UI del hero, la bienvenida ni la llamada final, y ningun criterio tiene una prueba que renderice la pagina"
+    falta: "existen el contrato del CMS (PR #35), Playwright (PR #36), los tokens del tema del sitio (PR #37), la lectura del CMS (PRs #39, #40), el aviso de publicacion (PR #41) y la cabecera con menu (PR #42), la animacion de apertura (PR #43) y el hero conectado al CMS con su e2e de "visible"; no existen la bienvenida ni la llamada final, y la parte "atractivo" del criterio 2 no tiene la aprobacion visual del PO, y ningun criterio tiene una prueba que renderice la pagina"
   - id: US-LAND-02
     estado: no_iniciada
   - id: US-LAND-03
@@ -32,9 +32,12 @@ Sitio publico: inicio, tecnicas, contacto, conoceme, galeria, fidelidad informat
 - `ui/SiteMenu.tsx`: menú a pantalla completa como diálogo modal. Foco en "Cerrar" al abrir, Tab atrapado, Escape cierra y devuelve el foco al botón, scroll de la página bloqueado mientras está abierto.
 - `ui/sections.ts`: `landingSections` está vacía; cada historia agrega su sección al montarla. Sin secciones no se muestra navegación ni menú.
 
-- `ui/opening-frame.ts` + `ui/use-opening-animation.ts`: la apertura de la foto del hero al bajar (asoma como píldora, se abre, termina a sangre, el título se desvanece). Con `prefers-reduced-motion: reduce` el hook no registra el scroll. Todavía no los usa ningún componente.
+- `ui/LandingHome.tsx` + `src/app/(site)/page.tsx`: `/` es estática con revalidación de 600 s; lee `getLandingContent()` de `content` y hoy renderiza solo el hero dentro de `<main id="inicio">`.
+- `ui/LandingHero.tsx`: título en dos líneas, subtítulo, "Reservar cita" (texto del CMS, destino `RESERVE_ROUTE`), enlace secundario solo con texto y destino, y la foto del CMS con `next/image`. Sin imagen, la píldora queda como relleno decorativo (`aria-hidden`).
+- `ui/opening-frame.ts` + `ui/use-opening-animation.ts`: la apertura de la foto al bajar, en una pista de 300vh. Con `prefers-reduced-motion: reduce` no se registra el scroll y el CSS muestra título y foto quietos, uno debajo del otro. En pantallas de hasta 500 px de alto (token `site-short`) el bloque del título se alinea arriba para no quedar bajo la cabecera.
+- `next.config.js`: imágenes remotas de Vercel Blob y, en desarrollo, del origen de `CMS_URL`. Next bloquea por SSRF imágenes de IPs privadas; solo con `next dev` y `CMS_URL` en loopback se permite (`dangerouslyAllowLocalIP`), nunca en producción.
 
-Se detiene antes del hero: `src/app/(site)/page.tsx` sigue siendo la página provisional.
+Se detiene antes de la bienvenida (`intro`) y la llamada final (`closingCta`): `content` ya los entrega, pero `LandingHome` no los renderiza.
 
 ## Decisiones de US-LAND-01 (PO, 2026-09-16)
 
@@ -53,5 +56,5 @@ Se detiene antes del hero: `src/app/(site)/page.tsx` sigue siendo la página pro
 
 ## Contrato público (`index.ts`)
 
-- `SiteHeader`, `landingSections` y el tipo `SiteSection`.
+- `SiteHeader`, `LandingHome`, `LandingHero`, `landingSections` y el tipo `SiteSection`.
 - `RESERVE_ROUTE` y `landingMessages`.
