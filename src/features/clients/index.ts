@@ -15,4 +15,4 @@ export { CLIENTS_LABELS, CLIENTS_BUTTON_TEXTS, CLIENTS_ERROR_MESSAGES, CLIENTS_P
 export { CLIENT_FIELD_KEYS, CLIENT_FORM_LIMITS, REQUIRED_CLIENT_FIELDS, EMPTY_CLIENT_FORM_VALUES, CLIENT_PHONE_FORMAT, CLIENTS_LIST_LIMITS, type ClientFieldKey } from './constants/client-form'
 export type { ClientFormValues, ClientFormErrors } from './types/client-form.types'
 export type { ClientRecord } from './types/client.types'
-export type { SaveClientResult, ListClientsResult } from './types/client-actions.types'
+export type { SaveClientResult, ListClientsQuery, ListClientsResult } from './types/client-actions.types'

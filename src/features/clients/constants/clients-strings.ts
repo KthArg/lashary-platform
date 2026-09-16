@@ -1,7 +1,7 @@
 // Textos visibles de la seccion de clientas, externalizados desde el primer commit (DOM-009).
 
 export const CLIENTS_LABELS = {
-  sectionTitle: 'Clientas', sectionSubtitle: 'Alta y edición manual del registro de clientas',
+  sectionTitle: 'Gestión de Clientas', sectionSubtitle: 'Alta y edición manual del registro de clientas',
   newClientTitle: 'Nueva clienta', newClientDescription: 'Los campos marcados son obligatorios.',
   fullNameInput: 'Nombre completo', phoneInput: 'Teléfono', emailInput: 'Correo electrónico', notesInput: 'Notas generales',
   requiredMark: 'obligatorio', optionalMark: 'opcional',

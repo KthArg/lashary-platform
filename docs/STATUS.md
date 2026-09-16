@@ -11,7 +11,7 @@
 | audit | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | en_progreso | 1 / 0 / 0 / 0 / 3 |
-| clients | pendiente | en_progreso | 1 / 0 / 0 / 0 / 4 |
+| clients | pendiente | en_progreso | 1 / 1 / 0 / 0 / 3 |
 | content | pendiente | en_progreso | 0 / 0 / 0 / 0 / 3 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | landing | pendiente | en_progreso | 1 / 1 / 0 / 0 / 4 |
@@ -33,13 +33,13 @@
 - US-AUTH-02 — terminada — PR #3, PR #18, tests: auth-client.test.tsx, rls-isolation.test.ts
 
 ### catalog (actualizado: 2026-09-16)
-- US-AGE-08 — terminada — PR #7 (feat(catalog): US-AGE-08 catalogo de tecnicas con tiempos y precios), mergeado a main. Aprobada y cerrada por el PO el 2026-09-16. Pruebas: domain/__tests__/technique.test.ts, application/__tests__/queries.test.ts, db/__tests__/technique-repository.test.ts, ui/__tests__/schema.test.ts, ui/__tests__/actions.test.ts. La lectura publica que consume el sitio (US-LAND-02) queda demostrada ademas por ui/__tests__/landing-techniques.test.tsx de landing. Los criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran cuando exista la cita, en US-AGE-05 con el test obligatorio de DOM-002; el flag catalog_admin_write sigue cubriendo la escritura admin hasta que auth exponga public.auth_is_staff()
+- US-AGE-08 — terminada — PR #7 (catalogo de tecnicas con tiempos y precios) y PR #50 (escritura admin con auth_is_staff y politicas RLS), mergeados a main. Cerrada por el PO el 2026-09-16. Pruebas: domain/__tests__/technique.test.ts, application/__tests__/queries.test.ts, db/__tests__/technique-repository.test.ts, ui/__tests__/schema.test.ts, ui/__tests__/actions.test.ts, rls-isolation.test.ts. La lectura publica que consume el sitio queda demostrada ademas por landing/ui/__tests__/landing-techniques.test.tsx (US-LAND-02). Los criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran cuando exista la cita, en US-AGE-05 con el test obligatorio de DOM-002
 - US-PROD-01 — no_iniciada
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
-### clients (actualizado: 2026-09-15)
-- US-CLI-01 — no_iniciada
+### clients (actualizado: 2026-09-16)
+- US-CLI-01 — en_progreso — falta: todo el listado: tabla con nombre y contacto, paginacion en el servidor con tamano de pagina configurable, filtro por nombre y estados de vacio por filtro; la columna y el filtro de estado de morosidad esperan a US-MOR-01 y la columna y el filtro por rango de ultima cita esperan a US-AGE-05 (criterios diferidos)
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
@@ -116,7 +116,8 @@ Ninguno registrado.
 - clients: Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras — aceptada en PR #32, etiqueta excepcion-proceso — costo: 3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)
 
 ## Flags vivos
-- catalog: catalog_admin_write — apagado — dueño: Bayron Alpizar — retiro: 2026-12-01
+
+Ninguno.
 
 ## Historias del backlog sin feature que las reclame
 

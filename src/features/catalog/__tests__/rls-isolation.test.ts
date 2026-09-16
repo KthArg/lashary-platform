@@ -84,9 +84,9 @@ describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de catalog_techniques',
     }
   })
 
-  // El control positivo (una sesión con rol admin SÍ puede escribir) requiere sembrar un rol
-  // en auth_user_roles, lo que RLS no permite desde el cliente: se cubre en la integración de
-  // auth, no acá. Esta suite verifica solo el aislamiento (nadie sin staff escribe).
+  // Nota: el control positivo (una sesión con rol admin SÍ puede escribir) requiere sembrar
+  // un rol en auth_user_roles, lo que RLS no permite desde el cliente. Se cubre en la
+  // integración de auth / US-AGE-05, no acá.
 
   it('lectura pública intencional: anón y clienta autenticada pueden SELECT', async () => {
     const asAnon = await anon.from(TABLE).select('id')
@@ -113,6 +113,10 @@ describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de catalog_techniques',
   })
 
   it('clienta autenticada sin rol de staff NO puede INSERT / UPDATE / DELETE', async () => {
+    const staffCheck = await clienta.rpc('auth_is_staff')
+    expect(staffCheck.error).toBeNull()
+    expect(staffCheck.data).toBe(false)
+
     const insert = await clienta.from(TABLE).insert(writeAttempt).select()
     expect(insert.error).not.toBeNull()
 
