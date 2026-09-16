@@ -1,7 +1,7 @@
 // Implementación Supabase del puerto SchedulingRepository. Mapeo fila↔dominio vive solo acá;
 // fuera de domain/application, así que instanciar Date acá para parsear es legítimo (DOM-004).
 import { createClient } from '@/shared/lib/supabase/server'
-import { WeeklyAvailabilityBlock } from '../domain/availability'
+import { ClosedDate, WeeklyAvailabilityBlock } from '../domain/availability'
 import type { SchedulingRepository } from '../application/ports'
 
 export const supabaseSchedulingRepository: SchedulingRepository = {
@@ -43,6 +43,44 @@ export const supabaseSchedulingRepository: SchedulingRepository = {
       dayOfWeek: data.day_of_week,
       startTime: data.start_time,
       endTime: data.end_time,
+    })
+  },
+
+  async listClosedDates(resourceId) {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('scheduling_closed_dates')
+      .select('id, resource_id, closed_date, reason')
+      .eq('resource_id', resourceId)
+    if (error) throw error
+    return (data ?? []).map(
+      (row) =>
+        new ClosedDate({
+          id: row.id,
+          resourceId: row.resource_id,
+          closedDate: row.closed_date,
+          reason: row.reason ?? undefined,
+        })
+    )
+  },
+
+  async saveClosedDate(closedDate) {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('scheduling_closed_dates')
+      .insert({
+        resource_id: closedDate.resourceId,
+        closed_date: closedDate.closedDate,
+        reason: closedDate.reason ?? null,
+      })
+      .select('id, resource_id, closed_date, reason')
+      .single()
+    if (error) throw error
+    return new ClosedDate({
+      id: data.id,
+      resourceId: data.resource_id,
+      closedDate: data.closed_date,
+      reason: data.reason ?? undefined,
     })
   },
 }
