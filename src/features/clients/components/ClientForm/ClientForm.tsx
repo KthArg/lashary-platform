@@ -5,7 +5,7 @@ import { useClientForm } from '../../hooks/useClientForm'
 import { CLIENT_FIELD_KEYS, CLIENT_FORM_LIMITS } from '../../constants/client-form'
 import { CLIENTS_BUTTON_TEXTS, CLIENTS_ERROR_MESSAGES, CLIENTS_LABELS, CLIENTS_PLACEHOLDERS } from '../../constants/clients-strings'
 import { ClientFormField } from '../ClientFormField'
-import { clientFormStyles as s } from './ClientForm.styles'
+import { clientFormStyles as STYLES } from './ClientForm.styles'
 import type { ClientFormProps } from './ClientForm.types'
 
 export function ClientForm({ initialValues, onSubmit, onCancel, onDirtyChange, isSaving = false, saveError = null }: ClientFormProps) {
@@ -15,9 +15,9 @@ export function ClientForm({ initialValues, onSubmit, onCancel, onDirtyChange, i
   useEffect(() => { onDirtyChange(isDirty) }, [isDirty, onDirtyChange])
 
   return (
-    <form onSubmit={handleSubmit} className={s.form} noValidate>
-      {showSummary && <div role="alert" className={s.alert}>{CLIENTS_ERROR_MESSAGES.formHasErrors}</div>}
-      {saveError && <div role="alert" className={s.alert}>{saveError}</div>}
+    <form onSubmit={handleSubmit} className={STYLES.form} noValidate>
+      {showSummary && <div role="alert" className={STYLES.alert}>{CLIENTS_ERROR_MESSAGES.formHasErrors}</div>}
+      {saveError && <div role="alert" className={STYLES.alert}>{saveError}</div>}
 
       <ClientFormField name={CLIENT_FIELD_KEYS.fullName} label={CLIENTS_LABELS.fullNameInput} value={values.fullName}
         onChange={setFieldValue} error={errors.fullName} required
@@ -35,9 +35,9 @@ export function ClientForm({ initialValues, onSubmit, onCancel, onDirtyChange, i
         onChange={setFieldValue} error={errors.notes} multiline rows={CLIENT_FORM_LIMITS.notesRows}
         placeholder={CLIENTS_PLACEHOLDERS.notes} maxLength={CLIENT_FORM_LIMITS.notesMaxLength} />
 
-      <div className={s.actions}>
-        <button type="button" onClick={onCancel} className={s.cancelBtn}>{CLIENTS_BUTTON_TEXTS.cancel}</button>
-        <button type="submit" className={s.submitBtn} disabled={isSaving} aria-busy={isSaving}>
+      <div className={STYLES.actions}>
+        <button type="button" onClick={onCancel} className={STYLES.cancelBtn}>{CLIENTS_BUTTON_TEXTS.cancel}</button>
+        <button type="submit" className={STYLES.submitBtn} disabled={isSaving} aria-busy={isSaving}>
           {isSaving ? CLIENTS_BUTTON_TEXTS.saving : CLIENTS_BUTTON_TEXTS.save}
         </button>
       </div>

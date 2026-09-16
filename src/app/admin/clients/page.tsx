@@ -1,6 +1,6 @@
 import { requireAdminSession } from '@/features/auth'
 import { AddClientDialog, ClientsList, CLIENTS_LABELS, listClientsAction } from '@/features/clients'
-import { adminClientsStyles as s } from './clients.styles'
+import { adminClientsStyles as STYLES } from './clients.styles'
 import type { AdminClientsPageProps } from './clients.types'
 
 export const metadata = {
@@ -13,12 +13,12 @@ export default async function AdminClientsPage(_props: AdminClientsPageProps) {
   const result = await listClientsAction()
 
   return (
-    <main className={s.main}>
-      <div className={s.container}>
-        <header className={s.header}>
+    <main className={STYLES.main}>
+      <div className={STYLES.container}>
+        <header className={STYLES.header}>
           <div>
-            <h1 className={s.title}>{CLIENTS_LABELS.sectionTitle}</h1>
-            <p className={s.subtitle}>{CLIENTS_LABELS.sectionSubtitle}</p>
+            <h1 className={STYLES.title}>{CLIENTS_LABELS.sectionTitle}</h1>
+            <p className={STYLES.subtitle}>{CLIENTS_LABELS.sectionSubtitle}</p>
           </div>
           <AddClientDialog />
         </header>
