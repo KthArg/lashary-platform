@@ -2,11 +2,11 @@
 feature: catalog
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-09-01
+actualizado: 2026-09-16
 historias:
   - id: US-AGE-08
-    estado: en_progreso
-    falta: "criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran en US-AGE-05 con el test obligatorio de DOM-002; el camino de escritura admin va apagado tras el flag catalog_admin_write hasta que auth exponga public.auth_is_staff()"
+    estado: terminada
+    evidencia: "PR #7 (feat(catalog): US-AGE-08 catalogo de tecnicas con tiempos y precios), mergeado a main. Aprobada y cerrada por el PO el 2026-09-16. Pruebas: domain/__tests__/technique.test.ts, application/__tests__/queries.test.ts, db/__tests__/technique-repository.test.ts, ui/__tests__/schema.test.ts, ui/__tests__/actions.test.ts. La lectura publica que consume el sitio (US-LAND-02) queda demostrada ademas por ui/__tests__/landing-techniques.test.tsx de landing. Los criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran cuando exista la cita, en US-AGE-05 con el test obligatorio de DOM-002; el flag catalog_admin_write sigue cubriendo la escritura admin hasta que auth exponga public.auth_is_staff()"
   - id: US-PROD-01
     estado: no_iniciada
   - id: US-PROM-01
@@ -28,7 +28,7 @@ Lo que se vende: técnicas con tiempos y precios, paquetes, promociones. Precio 
 
 ## Qué hace hoy
 
-US-AGE-08 en progreso sobre la rama `feat/us-age-08-catalog` (base: `feat/f0-platform-scaffold`).
+US-AGE-08 terminada: entregada en el PR #7 y cerrada por el PO el 2026-09-16. Dos cosas siguen abiertas y **no** pertenecen a esta historia: los criterios 7b y 8 se demuestran en US-AGE-05, que es donde nace la cita, y la escritura admin sigue tras el flag `catalog_admin_write` hasta que `auth` exponga `public.auth_is_staff()`.
 
 Construido y verificado contra Supabase local (`supabase db reset`):
 

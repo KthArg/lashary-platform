@@ -5,9 +5,8 @@ estado: en_progreso
 actualizado: 2026-09-16
 historias:
   - id: US-LAND-01
-    estado: en_revision
-    evidencia: "PR #49 (us/US-LAND-01 a main); piezas PRs #35 a #45"
-    falta: "aprobacion visual del PO de la parte atractivo del criterio 2, con las capturas del artefacto capturas-landing de CI; el modelo de contenido hero, intro y closingCta no esta en lashary-cms"
+    estado: terminada
+    evidencia: "PR #49 (us/US-LAND-01 a main); piezas PRs #35 a #45; PR #58 corrige la clave closing-cta del CMS; aprobacion visual del PO el 2026-09-16 sobre las capturas del artefacto capturas-landing; el modelo hero, intro y closing-cta esta en cms.config.ts de lashary-cms y las tres claves responden 200. Pruebas: landing-hero.test.tsx, landing-home.test.tsx, site-header.test.tsx, opening-frame.test.ts, cms-reader.test.ts, landing-source.test.ts, webhook.test.ts, get-landing-content.test.ts; e2e home-hero.spec.ts, home-responsive.spec.ts, home-screenshots.spec.ts"
   - id: US-LAND-02
     estado: no_iniciada
   - id: US-LAND-03
@@ -44,7 +43,9 @@ Sitio publico: inicio, tecnicas, contacto, conoceme, galeria, fidelidad informat
 
 Medición PERF-004 (2026-09-16, `next build` + `next start`, Playwright con emulación de Chrome: 375 px, 4G lento a 1.6 Mbps y 150 ms, CPU x4; no es Lighthouse): LCP 1384–1408 ms en 3 corridas, elemento LCP el título del hero; JS inicial 141.7 KB comprimido (7 scripts). Dentro del presupuesto (2.5 s y 200 KB), así que no se optimizó nada (PERF-001).
 
-Se detiene en la revisión: la parte "atractivo" del criterio 2 no está aprobada por el PO, y ninguna sección de otras historias está montada (`landingSections` vacía).
+US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09-16 sobre las capturas del artefacto `capturas-landing`.
+
+Cimientos de US-LAND-02 ya en su sitio, todavía sin montar en la página: tokens de la fila de técnica en `tailwind.config.js` (UI-002), `ui/technique-view.ts` (adapta `TechniqueView` de `catalog` y formatea colones en `es-CR`), `reserveRouteFor()` en `ui/routes.ts` y los textos de la sección en `ui/messages.ts`.
 
 ## Decisiones de US-LAND-01 (PO, 2026-09-16)
 

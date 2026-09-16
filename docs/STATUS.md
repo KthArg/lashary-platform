@@ -10,11 +10,11 @@
 | account | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | audit | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
-| catalog | pendiente | en_progreso | 0 / 1 / 0 / 0 / 3 |
+| catalog | pendiente | en_progreso | 1 / 0 / 0 / 0 / 3 |
 | clients | pendiente | en_progreso | 1 / 0 / 0 / 0 / 4 |
 | content | pendiente | en_progreso | 0 / 0 / 0 / 0 / 3 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
-| landing | pendiente | en_progreso | 0 / 0 / 0 / 1 / 5 |
+| landing | pendiente | en_progreso | 1 / 0 / 0 / 0 / 5 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
 | payments | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
@@ -32,8 +32,8 @@
 - US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
 - US-AUTH-02 — terminada — PR #3, PR #18, tests: auth-client.test.tsx, rls-isolation.test.ts
 
-### catalog (actualizado: 2026-09-01)
-- US-AGE-08 — en_progreso — falta: criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran en US-AGE-05 con el test obligatorio de DOM-002; el camino de escritura admin va apagado tras el flag catalog_admin_write hasta que auth exponga public.auth_is_staff()
+### catalog (actualizado: 2026-09-16)
+- US-AGE-08 — terminada — PR #7 (feat(catalog): US-AGE-08 catalogo de tecnicas con tiempos y precios), mergeado a main. Aprobada y cerrada por el PO el 2026-09-16. Pruebas: domain/__tests__/technique.test.ts, application/__tests__/queries.test.ts, db/__tests__/technique-repository.test.ts, ui/__tests__/schema.test.ts, ui/__tests__/actions.test.ts. La lectura publica que consume el sitio (US-LAND-02) queda demostrada ademas por ui/__tests__/landing-techniques.test.tsx de landing. Los criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran cuando exista la cita, en US-AGE-05 con el test obligatorio de DOM-002; el flag catalog_admin_write sigue cubriendo la escritura admin hasta que auth exponga public.auth_is_staff()
 - US-PROD-01 — no_iniciada
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
@@ -58,7 +58,7 @@
 - US-MOR-05 — no_iniciada
 
 ### landing (actualizado: 2026-09-16)
-- US-LAND-01 — en_revision — falta: aprobacion visual del PO de la parte atractivo del criterio 2, con las capturas del artefacto capturas-landing de CI; el modelo de contenido hero, intro y closingCta no esta en lashary-cms
+- US-LAND-01 — terminada — PR #49 (us/US-LAND-01 a main); piezas PRs #35 a #45; PR #58 corrige la clave closing-cta del CMS; aprobacion visual del PO el 2026-09-16 sobre las capturas del artefacto capturas-landing; el modelo hero, intro y closing-cta esta en cms.config.ts de lashary-cms y las tres claves responden 200. Pruebas: landing-hero.test.tsx, landing-home.test.tsx, site-header.test.tsx, opening-frame.test.ts, cms-reader.test.ts, landing-source.test.ts, webhook.test.ts, get-landing-content.test.ts; e2e home-hero.spec.ts, home-responsive.spec.ts, home-screenshots.spec.ts
 - US-LAND-02 — no_iniciada
 - US-LAND-03 — no_iniciada
 - US-LAND-04 — no_iniciada
