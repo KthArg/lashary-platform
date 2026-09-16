@@ -1,5 +1,7 @@
 import type { LandingContent } from '@/features/content'
+import { LandingClosingCta } from './LandingClosingCta'
 import { LandingHero } from './LandingHero'
+import { LandingIntro } from './LandingIntro'
 
 type LandingHomeProps = {
   content: LandingContent
@@ -11,6 +13,8 @@ export function LandingHome({ content }: LandingHomeProps) {
   return (
     <main id="inicio">
       <LandingHero hero={content.hero} />
+      <LandingIntro intro={content.intro} />
+      <LandingClosingCta closingCta={content.closingCta} />
     </main>
   )
 }

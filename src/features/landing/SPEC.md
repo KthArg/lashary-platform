@@ -5,8 +5,9 @@ estado: en_progreso
 actualizado: 2026-09-16
 historias:
   - id: US-LAND-01
-    estado: en_progreso
-    falta: "existen el contrato del CMS (PR #35), Playwright (PR #36), los tokens del tema del sitio (PR #37), la lectura del CMS (PRs #39, #40), el aviso de publicacion (PR #41) y la cabecera con menu (PR #42), la animacion de apertura (PR #43) y el hero conectado al CMS con su e2e de "visible"; no existen la bienvenida ni la llamada final, y la parte "atractivo" del criterio 2 no tiene la aprobacion visual del PO, y ningun criterio tiene una prueba que renderice la pagina"
+    estado: en_revision
+    evidencia: "PRs #35, #36, #37, #39, #40, #41, #42, #43, #44 y #45 (apilados, se mergean en ese orden)"
+    falta: "aprobacion visual del PO de la parte atractivo del criterio 2, con las capturas del artefacto capturas-landing de CI; merge de los PRs en orden; el modelo de contenido hero, intro y closingCta no esta desplegado en lashary-cms"
   - id: US-LAND-02
     estado: no_iniciada
   - id: US-LAND-03
@@ -37,7 +38,13 @@ Sitio publico: inicio, tecnicas, contacto, conoceme, galeria, fidelidad informat
 - `ui/opening-frame.ts` + `ui/use-opening-animation.ts`: la apertura de la foto al bajar, en una pista de 300vh. Con `prefers-reduced-motion: reduce` no se registra el scroll y el CSS muestra título y foto quietos, uno debajo del otro. En pantallas de hasta 500 px de alto (token `site-short`) el bloque del título se alinea arriba para no quedar bajo la cabecera.
 - `next.config.js`: imágenes remotas de Vercel Blob y, en desarrollo, del origen de `CMS_URL`. Next bloquea por SSRF imágenes de IPs privadas; solo con `next dev` y `CMS_URL` en loopback se permite (`dangerouslyAllowLocalIP`), nunca en producción.
 
-Se detiene antes de la bienvenida (`intro`) y la llamada final (`closingCta`): `content` ya los entrega, pero `LandingHome` no los renderiza.
+- `ui/LandingIntro.tsx` y `ui/LandingClosingCta.tsx`: la bienvenida (frase y párrafo) y la llamada final (título con cierre en cursiva, texto y "Reservar cita" hacia `RESERVE_ROUTE`), con el contenido de `intro` y `closingCta`.
+- `src/app/(site)/page.tsx`: título, descripción y Open Graph de la página desde `landingMessages.metadata`.
+- `e2e/home-screenshots.spec.ts`: capturas de `/` en los 8 anchos (primera pantalla y página completa sin animación) para la aprobación visual del PO; CI las sube siempre como artefacto `capturas-landing`.
+
+Medición PERF-004 (2026-09-16, `next build` + `next start`, Playwright con emulación de Chrome: 375 px, 4G lento a 1.6 Mbps y 150 ms, CPU x4; no es Lighthouse): LCP 1384–1408 ms en 3 corridas, elemento LCP el título del hero; JS inicial 141.7 KB comprimido (7 scripts). Dentro del presupuesto (2.5 s y 200 KB), así que no se optimizó nada (PERF-001).
+
+Se detiene en la revisión: la parte "atractivo" del criterio 2 no está aprobada por el PO, y ninguna sección de otras historias está montada (`landingSections` vacía).
 
 ## Decisiones de US-LAND-01 (PO, 2026-09-16)
 
@@ -56,5 +63,5 @@ Se detiene antes de la bienvenida (`intro`) y la llamada final (`closingCta`): `
 
 ## Contrato público (`index.ts`)
 
-- `SiteHeader`, `LandingHome`, `LandingHero`, `landingSections` y el tipo `SiteSection`.
+- `SiteHeader`, `LandingHome`, `LandingHero`, `LandingIntro`, `LandingClosingCta`, `landingSections` y el tipo `SiteSection`.
 - `RESERVE_ROUTE` y `landingMessages`.

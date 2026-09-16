@@ -19,14 +19,14 @@ const overlap = (a: Box, b: Box) =>
   a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height
 
 async function heroParts(page: Page) {
-  const main = page.locator('main#inicio')
+  const hero = page.locator('section[aria-labelledby="hero-title"]')
   const header = page.locator('header')
   return {
     brand: header.locator('a[href="#inicio"]'),
     headerCta: header.getByRole('link', { name: 'Reservar cita' }),
-    title: main.getByRole('heading', { level: 1 }),
-    subtitle: main.locator('#hero-title + div > p'),
-    heroCta: main.getByRole('link', { name: 'Reservar cita' }),
+    title: hero.getByRole('heading', { level: 1 }),
+    subtitle: hero.locator('#hero-title + div > p'),
+    heroCta: hero.getByRole('link', { name: 'Reservar cita' }),
   }
 }
 

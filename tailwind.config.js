@@ -80,6 +80,21 @@ module.exports = {
         'site-hero-gap': 'clamp(1.375rem, 4vh, 2.75rem)',
         'site-hero-cta-gap': 'clamp(1.125rem, 3vh, 1.875rem)',
         'site-emphasis-gap': 'clamp(0.125rem, 0.8vw, 0.875rem)',
+        // Bienvenida y llamada final.
+        'site-intro-top': 'clamp(3.5rem, 10vh, 7.5rem)',
+        'site-columns': 'clamp(1.75rem, 5vw, 5.625rem)',
+        'site-closing-top': 'clamp(2rem, 6vh, 4.375rem)',
+      },
+      flexBasis: {
+        'site-statement': '25rem',
+        'site-text': '20rem',
+        'site-aside': '23.75rem',
+      },
+      minHeight: {
+        'site-cta-lg': '3.75rem',
+      },
+      lineHeight: {
+        'site-loose': '1.75',
       },
       height: {
         // Recorrido de scroll de la apertura de la foto, y la pantalla que queda fija mientras tanto.
@@ -102,6 +117,7 @@ module.exports = {
         'site-statement': '26ch',
         'site-text': '46ch',
         'site-subtitle': '34ch',
+        'site-closing': '18ch',
       },
       transitionTimingFunction: {
         'site-out': 'cubic-bezier(0.16, 1, 0.3, 1)',
