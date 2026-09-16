@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # check-pr-size.sh — INT-002: diff ≤ 400 líneas y ≤ 2 features · INT-001: rama ≤ 3 días.
+# Solo para piezas: el PR us/<ID> → main está exento.
 # Exentos del conteo de líneas: STATUS.md (generado), backlog (export), lockfiles.
 
 . "$(dirname "$0")/lib.sh"
@@ -10,6 +11,16 @@ MAX_BRANCH_AGE_DAYS=3
 
 if [ -z "$DIFF_RANGE" ] && [ -z "$(git -C "$REPO_ROOT" diff --cached --name-only)" ]; then
   echo "Diff vacío — nada que verificar."
+  finish "check-pr-size"
+fi
+
+# El PR de una rama de historia (us/<ID>) hacia main junta piezas ya revisadas y aprobadas: queda
+# exento del tope de líneas, de features y de antigüedad (INT-001, INT-002). En CI la rama y la base
+# llegan por PR_HEAD_REF y PR_BASE_REF; en local se toman de la rama actual y del rango.
+HEAD_REF="${PR_HEAD_REF:-$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null)}"
+BASE_REF="${PR_BASE_REF:-${DIFF_RANGE%%...*}}"
+if [ -n "$DIFF_RANGE" ] && echo "$HEAD_REF" | grep -qE '^us/' && echo "$BASE_REF" | grep -qE '^(origin/)?main$'; then
+  echo "PR de historia ($HEAD_REF → main): exento del tope de tamaño y antigüedad (INT-001, INT-002)."
   finish "check-pr-size"
 fi
 
@@ -26,7 +37,7 @@ LINES=$(diff_stat | awk '
   END { print total + 0 }')
 
 if [ "$LINES" -gt "$MAX_LINES" ]; then
-  fail_rule INT-002 "el diff tiene $LINES líneas (máximo ~$MAX_LINES). Partir la tarea; lo que funciona se mergea tras un flag (INT-004)"
+  fail_rule INT-002 "el diff tiene $LINES líneas (máximo ~$MAX_LINES). Partir la pieza en PRs apilados contra la rama de la historia (INT-001)"
 fi
 
 # El tope de features cuenta cambios de CÓDIGO: una sincronización de solo-SPECs tras un
@@ -42,7 +53,7 @@ if [ -n "$DIFF_RANGE" ]; then
   if [ -n "$FIRST_COMMIT_TS" ]; then
     AGE_DAYS=$(( ( $(date +%s) - FIRST_COMMIT_TS ) / 86400 ))
     if [ "$AGE_DAYS" -gt "$MAX_BRANCH_AGE_DAYS" ]; then
-      fail_rule INT-001 "el primer commit de esta rama tiene $AGE_DAYS días (máximo $MAX_BRANCH_AGE_DAYS). La tarea estaba mal dimensionada: partirla"
+      fail_rule INT-001 "el primer commit de esta rama tiene $AGE_DAYS días (máximo $MAX_BRANCH_AGE_DAYS). La pieza estaba mal dimensionada: partirla"
     fi
   fi
 fi

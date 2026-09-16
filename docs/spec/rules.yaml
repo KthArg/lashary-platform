@@ -187,9 +187,9 @@ rules:
 
   # ── Integración ───────────────────────────────────────────────
   - id: INT-001
-    title: Trunk-based, ramas de 3 días
-    statement: Se ramifica desde main y se vuelve a main; ninguna rama vive más de 3 días.
-    rationale: Una rama vieja es un merge conflict incubándose; si dura más, la tarea estaba mal partida.
+    title: Rama por historia, piezas de 3 días
+    statement: Cada historia vive en us/<ID>, creada desde main y actualizada con main al menos a diario; cada pieza sale de us/<ID> y vuelve a ella en 3 días como máximo.
+    rationale: Una rama vieja es un merge conflict incubándose; las piezas cortas lo evitan dentro de la historia y la actualización diaria lo evita contra el equipo.
     severity: alta
     layers: [ci, human]
     ci_status: implementado
@@ -197,7 +197,7 @@ rules:
     anchor: "#int-001"
   - id: INT-002
     title: Un PR pequeño por tarea
-    statement: Una tarea = un PR; ~400 líneas de diff y máximo 2 features tocadas.
+    statement: Una pieza = un PR contra us/<ID>; ~400 líneas de diff y máximo 2 features tocadas. El PR us/<ID> hacia main, que junta piezas ya aprobadas, está exento.
     rationale: Un PR gigante no se revisa, se aprueba por cansancio.
     severity: alta
     layers: [ci]
@@ -224,7 +224,7 @@ rules:
     anchor: "#int-004"
   - id: INT-005
     title: Condiciones de merge
-    statement: Antes de merge, rebase, CI verde y una aprobación de alguien que no trabaja en esa feature. Squash merge.
+    statement: Antes de merge, CI verde y una aprobación de alguien que no trabaja en esa feature. Merge commit hacia us/<ID>; squash hacia main, una vez, con la historia completa.
     rationale: El revisor externo es el único que nota lo que la feature normalizó por costumbre.
     severity: alta
     layers: [ci]

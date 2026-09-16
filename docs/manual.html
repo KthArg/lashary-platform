@@ -239,8 +239,9 @@ claude</code></pre>
   </li>
   <li>
     <h3>Ramificá y trabajá en incrementos chicos</h3>
-    <pre><code>git checkout -b feat/age-08-catalog</code></pre>
-    <p>Desde <code>main</code>, siempre. La rama vive <strong>máximo 3 días</strong> (<span class="chip">INT-001</span>). Si la tarea es más grande, se parte: lo que funciona se mergea apagado tras un feature flag con dueño y fecha de retiro (<span class="chip">INT-004</span>).</p>
+    <pre><code>git checkout -b us/US-AGE-08 origin/main   <span class="c"># una vez por historia</span>
+git checkout -b feat/age-08-catalog us/US-AGE-08</code></pre>
+    <p>La historia vive en <code>us/&lt;ID&gt;</code>, creada desde <code>main</code> y actualizada con <code>main</code> al menos a diario. Cada pieza sale de ahí (o de la pieza anterior) y vive <strong>máximo 3 días</strong> (<span class="chip">INT-001</span>). Si una pieza es más grande, se parte.</p>
   </li>
 </ol>
 <div class="callout">
@@ -269,15 +270,15 @@ claude</code></pre>
     <h3>Abrí el PR</h3>
     <pre><code>git push -u origin feat/age-08-catalog
 gh pr create</code></pre>
-    <p>El template del PR pide: la salida de <code>verify.sh</code> <em>pegada</em> (no descrita), la tabla criterio → prueba, y el checklist con IDs de regla. Commits y nombres de rama en inglés; el PR se mergea con <strong>squash</strong>.</p>
+    <p>El template del PR pide: la salida de <code>verify.sh</code> <em>pegada</em> (no descrita), la tabla criterio → prueba, y el checklist con IDs de regla. Commits y nombres de rama en inglés; el PR de pieza apunta a <code>us/&lt;ID&gt;</code> y se mergea con <strong>merge commit</strong>.</p>
   </li>
   <li>
     <h3>Checks + revisión</h3>
-    <p>CI corre las reglas; el agente <strong>pr-compliance</strong> comenta hallazgos con sus IDs (es consejo, no compuerta). Necesitás <strong>2 aprobaciones, al menos 1 de alguien que no trabaja en esa feature</strong> (<span class="chip">INT-005</span>). Rebase sobre main antes del merge. El estilo no se discute en review jamás: si el linter debió atraparlo, el fix es un PR a la config del linter (<span class="chip">INT-006</span>).</p>
+    <p>CI corre las reglas; el agente <strong>pr-compliance</strong> comenta hallazgos con sus IDs (es consejo, no compuerta). Necesitás <strong>1 aprobación de alguien que no trabaja en esa feature</strong> (<span class="chip">INT-005</span>). El estilo no se discute en review jamás: si el linter debió atraparlo, el fix es un PR a la config del linter (<span class="chip">INT-006</span>).</p>
   </li>
   <li>
     <h3>Merge y cierre</h3>
-    <p>Squash merge (la rama se borra sola). La historia pasa a <code>terminada</code> <strong>con el número de PR como evidencia</strong> en el SPEC — y STATUS.md regenerado en ese mismo PR o el siguiente.</p>
+    <p>La pieza entra a <code>us/&lt;ID&gt;</code> con merge commit (la rama se borra sola). Con la historia completa, un PR de <code>us/&lt;ID&gt;</code> a <code>main</code> con <strong>squash</strong>, exento de los topes de tamaño y antigüedad. La historia pasa a <code>terminada</code> <strong>con el número de ese PR como evidencia</strong> en el SPEC — y STATUS.md regenerado en ese mismo PR.</p>
   </li>
 </ol>
 

@@ -16,6 +16,10 @@ jobs:
           fetch-depth: 0 # historia completa: INT-001 (edad de rama) y diffs contra base
 
       - name: verify (contra la rama base)
+        env:
+          # check-pr-size.sh exime el PR us/<ID> → main (INT-001, INT-002).
+          PR_HEAD_REF: ${{ github.head_ref }}
+          PR_BASE_REF: ${{ github.base_ref }}
         run: |
           if [ -n "${{ github.base_ref }}" ]; then
             git fetch origin "${{ github.base_ref }}"

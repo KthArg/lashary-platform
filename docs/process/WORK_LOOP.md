@@ -35,6 +35,6 @@ Para cambios que **no tocan código fuente** (documentación, comentarios, confi
 
 1. Bucle corrido, salida del paso 4 en el PR.
 2. `SPEC.md` de las features tocadas actualizado; `STATUS.md` regenerado (EST-002/003).
-3. Diff ≤ ~400 líneas, ≤ 2 features (INT-002); rama ≤ 3 días (INT-001).
+3. Pieza contra `us/<ID>`: diff ≤ ~400 líneas, ≤ 2 features (INT-002); rama ≤ 3 días (INT-001). El PR `us/<ID>` → `main` está exento de ambos topes.
 4. Migración: máximo una, forward-only (INT-008).
 5. Reglas citadas por ID donde el PR las toca.
