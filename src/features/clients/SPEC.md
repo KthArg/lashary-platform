@@ -2,10 +2,11 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-09-15"
+actualizado: "2026-09-16"
 historias:
   - id: US-CLI-01
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "todo el listado: tabla con nombre y contacto, paginacion en el servidor con tamano de pagina configurable, filtro por nombre y estados de vacio por filtro; la columna y el filtro de estado de morosidad esperan a US-MOR-01 y la columna y el filtro por rango de ultima cita esperan a US-AGE-05 (criterios diferidos)"
   - id: US-CLI-02
     estado: no_iniciada
   - id: US-CLI-03
@@ -44,8 +45,13 @@ de la base nunca llega a la pantalla: la action devuelve `{ ok: false, error }` 
 `CLIENTS_ERROR_MESSAGES`. La action también llama a `requireAdminSession()`.
 
 Debajo, `ClientsList` muestra las clientas que la página lee en el servidor con `listClientsAction()`:
-la primera página de 50 (`CLIENTS_LIST_LIMITS`), las más recientes primero y solo las columnas que
-muestra (PERF-002, PERF-005). Tiene sus tres estados (UI-003): carga en
+la primera página de 25, las más recientes primero y solo las columnas que muestra (PERF-002, PERF-005).
+La action ya recibe `{ page, pageSize, name }` y devuelve `{ clients, total, page, pageSize }`
+(US-CLI-01, sin pantalla todavía): el tamaño solo puede ser uno de `CLIENTS_LIST_LIMITS.pageSizes`
+(10, 25 o 50) y cualquier otro valor usa 25; una página inválida es la 0; `name` filtra `full_name` con
+`ilike`, recortado a 120 caracteres, con `%`, `_` y `\` escapados y `*` quitado (PostgREST lo lee como
+`%`), así que lo escrito se busca como texto. `total` sale de `count: 'exact'` y cuenta todo lo que
+cumple el filtro. La página todavía no pasa ningún parámetro. Tiene sus tres estados (UI-003): carga en
 `src/app/admin/clients/loading.tsx` (`role="status"`), error con *Reintentar* (`router.refresh()`) y
 vacío que sugiere *Agregar*. Tras un alta, `revalidatePath` vuelve a leer y la clienta nueva aparece.
 
@@ -85,7 +91,7 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 Único punto de entrada (ARCH-003). Exporta `AddClientDialog` —lo que monta la ruta—, el modal, el
 `ConfirmDialog`, el formulario, `AddClientButton`, `ClientsList`, `ClientRecord`, los hooks
 `useClientForm`, `useClientDialog` y `useFocusTrap`, `createClientAction`, `listClientsAction` y `updateClientAction` con sus tipos
-`SaveClientResult` y `ListClientsResult`, `validateClientForm`, `normalizePhone` y las constantes de
+`SaveClientResult`, `ListClientsQuery` y `ListClientsResult`, `validateClientForm`, `normalizePhone` y las constantes de
 textos y límites, entre ellas `CLIENTS_LIST_LIMITS` (DOM-009).
 
 ## Invariantes
@@ -163,3 +169,15 @@ textos y límites, entre ellas `CLIENTS_LIST_LIMITS` (DOM-009).
 - **2026-09-15 — Las rutas de iconos SVG viven en `constants/clients-icons.ts`**, no dentro del JSX
   (mismo comentario de revisión). Hoy solo está el lápiz de `ClientsList`; no hay imágenes ni otros
   assets en la feature.
+- **2026-09-16 — US-CLI-01 empieza en `us/US-CLI-01`, con piezas apiladas (INT-001, INT-002):**
+  `feat/US-CLI-01-read-client-list` (lectura con parámetros y encabezado de la página), luego la tabla, la paginación y el filtro por nombre.
+  El encabezado de `/admin/clients` se alinea con el de `/admin/dashboard`: dentro del `<main>` del layout de `admin`, sin un
+  `<main>` propio anidado.
+- **2026-09-16 — Morosidad y última cita son criterios diferidos:**
+  el dato lo producen `delinquency` (US-MOR-01) y `scheduling` (US-AGE-05), sin tablas ni contrato hoy, y ARCH-005 prohíbe leer
+  sus tablas. No se simulan con datos falsos (EST-005). Cuando existan, entran con su contrato (INT-003) y US-CLI-01 sigue
+  `en_progreso` hasta entonces.
+- **2026-09-16 — El filtro por nombre no lleva índice todavía (PERF-001 sobre PERF-003):** `ilike '%texto%'`
+  no lo sirve un índice B-tree; el que sirve es GIN con `pg_trgm`, que es una migración. Con las clientas
+  de hoy la lectura completa no se nota; se crea cuando una medición lo pida. Tampoco ignora tildes
+  ("Maria" no encuentra "María"): eso pide `unaccent`, otra migración.
