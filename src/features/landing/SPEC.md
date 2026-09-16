@@ -6,7 +6,7 @@ actualizado: 2026-09-16
 historias:
   - id: US-LAND-01
     estado: en_progreso
-    falta: "existen el contrato del CMS (PR #35), Playwright (PR #36), los tokens del tema del sitio (PR #37), la lectura del CMS (PRs #39, #40) y el aviso de publicacion en content; no existen la cabecera ni la UI del hero, y ningun criterio tiene una prueba que renderice la pagina"
+    falta: "existen el contrato del CMS (PR #35), Playwright (PR #36), los tokens del tema del sitio (PR #37), la lectura del CMS (PRs #39, #40), el aviso de publicacion (PR #41) y la cabecera con menu; no existe la UI del hero, la bienvenida ni la llamada final, y ningun criterio tiene una prueba que renderice la pagina"
   - id: US-LAND-02
     estado: no_iniciada
   - id: US-LAND-03
@@ -28,7 +28,11 @@ Sitio publico: inicio, tecnicas, contacto, conoceme, galeria, fidelidad informat
 
 ## Qué hace hoy
 
-Hoy: no existe. Se detiene antes de todo.
+- `ui/SiteHeader.tsx`: cabecera fija de todas las páginas públicas (la monta `src/app/(site)/layout.tsx`). Marca con ancla a `#inicio`, "Reservar cita" hacia `RESERVE_ROUTE` (`/portal`) y, si hay secciones, la barra de enlaces (desde 860 px, token `site-nav`) y el botón de menú.
+- `ui/SiteMenu.tsx`: menú a pantalla completa como diálogo modal. Foco en "Cerrar" al abrir, Tab atrapado, Escape cierra y devuelve el foco al botón, scroll de la página bloqueado mientras está abierto.
+- `ui/sections.ts`: `landingSections` está vacía; cada historia agrega su sección al montarla. Sin secciones no se muestra navegación ni menú.
+
+Se detiene antes del hero: `src/app/(site)/page.tsx` sigue siendo la página provisional.
 
 ## Decisiones de US-LAND-01 (PO, 2026-09-16)
 
@@ -45,6 +49,7 @@ Hoy: no existe. Se detiene antes de todo.
    - *Atractivo* (aprobacion humana, no automatizable): el PO compara capturas en esos anchos contra el diseño de referencia. Las capturas y la aprobacion quedan en el PR que cierra la historia.
 3. **Contenido editable desde el CMS.** Prueba del gateway con respuestas simuladas de uno-cms: el hero muestra lo publicado en `hero`, `intro` y `closingCta`; con el CMS caido, vacio o con una respuesta que no encaja con [cms-api.md](../../../docs/contracts/cms-api.md), muestra el contenido de respaldo y la pagina no falla.
 
-## Contrato público
+## Contrato público (`index.ts`)
 
-Sin contrato todavía. Al crearse, entra por `index.ts` (ARCH-003).
+- `SiteHeader`, `landingSections` y el tipo `SiteSection`.
+- `RESERVE_ROUTE` y `landingMessages`.

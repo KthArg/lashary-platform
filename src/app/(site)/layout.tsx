@@ -1,3 +1,4 @@
+import { SiteHeader, landingSections } from '@/features/landing'
 import { siteDisplay, siteSans } from './fonts'
 
 // Todo lo que cuelga de (site) usa el tema `lashary-site` (tailwind.config.js). El resto de la
@@ -8,6 +9,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       data-theme="lashary-site"
       className={`${siteDisplay.variable} ${siteSans.variable} min-h-screen bg-site-paper font-site-sans text-site-ink antialiased`}
     >
+      <SiteHeader sections={landingSections} />
       {children}
     </div>
   )

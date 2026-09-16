@@ -36,6 +36,12 @@ module.exports = {
       zIndex: {
         modal: '50',
         'modal-top': '60',
+        'site-header': '120',
+        'site-menu': '150',
+      },
+      screens: {
+        // Ancho desde el que la cabecera del sitio muestra la navegación completa.
+        'site-nav': '860px',
       },
       fontSize: {
         '2xs': '0.625rem',
