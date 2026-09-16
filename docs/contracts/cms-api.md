@@ -1,6 +1,6 @@
 # Contrato — API del CMS externo
 
-> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closingCta` (US-LAND-01). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-16.
+> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closing-cta` (US-LAND-01). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-16.
 
 ## El CMS
 
@@ -68,7 +68,9 @@ Consumidor único: US-LAND-01. Diseño de referencia: "LASHARY Beauty Studio" (2
 | `statement` | text multilínea | sí | 160 | frase destacada |
 | `body` | text multilínea | no | 400 | párrafo que la acompaña |
 
-### `closingCta` — singleton
+### `closing-cta` — singleton
+
+La clave lleva guion: uno-cms solo admite minúsculas, dígitos y guiones en las claves (`closingCta` lo rechaza al cargar la configuración). Dentro de la plataforma el tipo puede llamarse `closingCta`; hacia el CMS, en la ruta y en los tags, es `closing-cta`.
 
 | Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
 |---|---|---|---|---|
