@@ -24,3 +24,11 @@ Usar el CMS existente como producto externo: repo y deploy separados, consumido 
 - **Riesgo señalado: bus factor 1.** El CMS lo mantiene una sola persona (Kenneth). Mitigación mínima exigida: el repo del CMS es accesible a todo el equipo y sus cambios de API pasan por el contrato. Si el mantenimiento se vuelve cuello de botella, se reevalúa este ADR.
 - **Pendientes** (bloquean el paso del contrato a "vigente", no este ADR): dónde persiste datos el CMS; soporte real de borradores, consentimiento en galería y SEO; auth del API; mecanismo de invalidación.
 - El precio de técnicas **nunca** vive en el CMS: viene del catálogo (US-AGE-08). Un hecho, un lugar.
+
+## Seguimiento — 2026-09-16
+
+La decisión no cambia. Hechos que la precisan:
+
+- El CMS es **uno-cms** ([KthArg/uno-cms](https://github.com/KthArg/uno-cms)), con una instancia propia de Lashary en repo aparte (`lashary-cms`), consumida en modo web remota.
+- El contexto de arriba dice que el CMS "hoy cubre textos de landing, galería y blog". No es exacto: uno-cms trae un modelo de ejemplo (portada, sobre nosotros, SEO, testimonios, preguntas). La galería y el blog se modelan en `cms.config.ts` de `lashary-cms`, con las limitaciones anotadas en [cms-api.md](../contracts/cms-api.md#tipos-en-borrador).
+- Los pendientes de las consecuencias quedan resueltos en [cms-api.md](../contracts/cms-api.md): persistencia en Postgres (Neon) y Vercel Blob; borradores separados de lo publicado; lectura pública sin token y solo de lo publicado; invalidación por aviso firmado más TTL de respaldo. El consentimiento de la galería **no** puede vivir en el CMS, porque todo campo es público por la API: vive en la plataforma.

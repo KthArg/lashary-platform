@@ -1,35 +1,138 @@
 # Contrato — API del CMS externo
 
-> **Autoridad:** qué contenido necesita esta plataforma del CMS y bajo qué garantías. Es un contrato **de demanda**: nace de los criterios del backlog. La forma final (rutas, esquema JSON) se fija con el mantenedor del CMS y se versiona aquí (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** borrador — pendiente de confirmación del mantenedor. **Actualizado:** 2026-08-27.
+> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closingCta` (US-LAND-01). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-16.
 
-## Hechos conocidos del CMS
+## El CMS
 
-Herramienta propia del equipo, hecha en Next.js, repo y deploy separados ([ADR-0001](../adr/ADR-0001-external-cms.md)). Expone API. Hoy cubre: textos de landing, galería y blog.
+- **Producto:** uno-cms ([KthArg/uno-cms](https://github.com/KthArg/uno-cms)), mantenido por Kenneth ([ADR-0001](../adr/ADR-0001-external-cms.md)).
+- **Instancia de Lashary:** una copia propia, en repo y despliegue aparte (`lashary-cms`). uno-cms es **una instancia por sitio**: esta instancia solo alimenta a esta plataforma.
+- **Modo:** web remota (ADR-701 de uno-cms). La web de uno-cms no se usa; la landing vive en esta plataforma.
+- **Persistencia:** Postgres (Neon) para contenido, Vercel Blob para imágenes.
+- **Modelo de contenido:** `cms.config.ts` de `lashary-cms`. Ese archivo y este documento son las dos mitades del contrato: un cambio en uno sin el otro es deriva.
 
-## Tipos de contenido requeridos (derivados del backlog)
+## Transporte
 
-| Contenido | Campos mínimos | Lo exige |
+| Ruta | Respuesta 200 | Uso |
 |---|---|---|
-| Sección inicio | imagen principal, texto de bienvenida, CTA | US-LAND-01 |
-| Sección contacto | horario, ubicación/zona, medios de contacto, link WhatsApp con mensaje predefinido, redes (Instagram principal) | US-LAND-07 |
-| Sección "conóceme" | foto, texto, trayectoria (formación, certificaciones, años) | US-LAND-04 |
-| Galería | pares antes/después, **registro de consentimiento por par** (clienta, fecha, medio) | US-LAND-03 |
-| Mecánica de fidelidad (informativa) | texto administrable | US-LAND-05 |
-| Publicación de blog | título, cuerpo enriquecido, imagen destacada, extracto, fecha de publicación, **estado borrador/publicado**, metadatos SEO | US-BLOG-01/02/03 |
+| `GET {CMS_URL}/api/content/:key` (singleton) | `{ "key": string, "data": { …campos } }` | secciones fijas |
+| `GET {CMS_URL}/api/content/:key` (colección) | `{ "key": string, "items": [ { …campos } ] }` en el orden del editor | listas |
+| `GET {CMS_URL}/api/settings` | `{ "site": { "siteName" }, "seo": { "defaultTitle"?, "defaultDescription"?, "ogImageUrl"? } }` | metadatos por defecto |
 
-Descripciones/imágenes de técnicas en la landing (US-LAND-02) **componen** contenido del CMS con precio y duración que vienen del catálogo de la plataforma (US-AGE-08). El precio nunca vive en el CMS: un solo lugar por hecho.
+- Clave no declarada en `cms.config.ts`: `404 { "error": "not_found" }`, sin cabecera de caché.
+- **Sin autenticación.** Las rutas solo entregan contenido **publicado**; los borradores no salen por ninguna ruta pública.
+- **Sin CORS, a propósito del CMS.** Toda lectura ocurre en el servidor de la plataforma, dentro de `src/features/content/`. Ningún componente de cliente llama al CMS.
+- **Caché del CMS:** `Cache-Control: public, s-maxage=60, stale-while-revalidate=300`. Publicar no purga esa copia. Por eso **toda lectura de la plataforma añade `?v=<instante de la petición>`** (la ruta ignora el parámetro): la copia de la CDN del CMS nunca se usa, y la frecuencia de lectura la controla la caché de la plataforma (§ Invalidación).
+- Los elementos de colección **no traen id ni fechas**: solo los campos de su esquema. No existe ruta para un elemento suelto (`/api/content/<coleccion>.<id>` responde 404).
 
-## Garantías que la plataforma necesita
+### Configuración en la plataforma
 
-1. JSON sobre HTTPS; IDs estables entre ediciones.
-2. El endpoint público entrega **solo contenido publicado**; los borradores jamás salen (US-BLOG-01).
-3. Listado de blog con paginación y orden por fecha descendente (US-BLOG-02).
-4. URLs de imagen servibles con caché y tamaños razonables (PERF-004 mide la landing resultante).
-5. Cambios de esquema son **versionados y anunciados**: un campo no desaparece sin aviso; el contrato se actualiza aquí antes del cambio (INT-003 aplica también a esta frontera).
-6. Mecanismo de invalidación acordado (webhook de republicación o TTL corto) para que "los cambios se reflejan" de los criterios sea verdad.
+| Variable | Alcance | Qué es |
+|---|---|---|
+| `CMS_URL` | solo servidor | origen de la instancia, con protocolo y sin barra final |
+| `CMS_WEBHOOK_SECRET` | solo servidor | secreto HMAC del aviso; el mismo valor que `WEBHOOK_SECRET` en `lashary-cms` |
 
-## Pendientes de confirmación con el mantenedor
+Ninguna lleva prefijo `NEXT_PUBLIC_`. Ningún valor real entra al repositorio (SEC-004).
 
-URL base y auth del API (token de solo lectura server-side; jamás en cliente — pariente de SEC-004) · dónde persiste datos el CMS · soporte actual de: borradores, campo de consentimiento en galería, SEO, extracto · webhook vs TTL · formato exacto de respuesta por tipo.
+## Formas de valor
 
-Al confirmarse, este documento pasa a **vigente** con el esquema real, y el gateway se implementa en `src/features/content/` contra él, dentro de US-LAND-01/US-BLOG-02 (ADR-0007).
+| Tipo en `cms.config.ts` | Forma JSON | Notas para el consumidor |
+|---|---|---|
+| `s.text` | `string` | |
+| `s.richtext` | `{ "type": "doc", "content": [nodos] }` (ProseMirror) | nodos permitidos: `paragraph`, `text`, `hardBreak`, `heading` (niveles 2–4), `bulletList`, `orderedList`, `listItem`, `blockquote`; marcas: `bold`, `italic`, `link` (`href`). Sin imágenes dentro. Se renderiza como elementos React, nunca como HTML crudo |
+| `s.image` | `{ "mediaId": string, "url": string, "alt": string, "width"?: number, "height"?: number }` | `url === ""` significa **sin imagen**. En desarrollo la URL puede ser relativa (`/api/media/local/…`): se resuelve contra `CMS_URL`. En despliegue es absoluta (Vercel Blob). Formatos: jpeg, png, webp, avif |
+| `s.link` | `string` | ruta interna (`/…`), ancla (`#…`), query (`?…`), `http(s):`, `mailto:` o `tel:` |
+| `s.number` / `s.boolean` / `s.select` | `number` / `boolean` / `string` de las opciones | |
+
+**Presencia (ADR-202 y ADR-404 de uno-cms):** un campo `required` o con `default` **siempre** viene (uno-cms prohíbe declarar los dos a la vez); si nunca se publicó, llega vacío (`""`, `0`, `false`, doc vacío o imagen con `url: ""`). Un opcional sin valor no viene. La lectura del CMS no falla por contenido ausente, así que **la plataforma renderiza con valores vacíos**: ver § Degradación.
+
+## Tipos de contenido vigentes (v1)
+
+Consumidor único: US-LAND-01. Diseño de referencia: "LASHARY Beauty Studio" (2026-09-16).
+
+### `hero` — singleton
+
+| Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
+|---|---|---|---|---|
+| `titleLead` | text | sí | 60 | primera línea del título ("extensiones de pestañas") |
+| `titleEmphasis` | text | sí | 40 | segunda línea, en cursiva ("una por una.") |
+| `subtitle` | text multilínea | no | 200 | texto de bienvenida bajo el título |
+| `ctaLabel` | text | no; default `"Reservar cita"`, así que siempre viene | 30 | texto del botón de reserva |
+| `secondaryLabel` | text | no | 40 | texto del enlace secundario ("Ver trabajos en Instagram") |
+| `secondaryHref` | link | no | — | destino del enlace secundario |
+| `image` | image | sí | — | foto principal; `alt` obligatorio al publicar |
+
+### `intro` — singleton
+
+| Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
+|---|---|---|---|---|
+| `statement` | text multilínea | sí | 160 | frase destacada |
+| `body` | text multilínea | no | 400 | párrafo que la acompaña |
+
+### `closingCta` — singleton
+
+| Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
+|---|---|---|---|---|
+| `heading` | text | sí | 80 | título ("La agenda es de una clienta") |
+| `headingEmphasis` | text | no | 30 | cierre del título, en cursiva ("a la vez") |
+| `body` | text multilínea | no | 240 | texto de apoyo |
+| `ctaLabel` | text | no; default `"Reservar cita"`, así que siempre viene | 30 | texto del botón de reserva |
+
+## Lo que no vive en el CMS
+
+| Dato | Dónde vive | Por qué |
+|---|---|---|
+| Destino de "Reservar cita" | código de la plataforma, ruta interna fija | es una ruta del sistema; editarla desde el panel puede romper el flujo (decisión del PO, 2026-09-16) |
+| Nombre, precio y duración de técnicas | catálogo, [catalog-api.md](catalog-api.md) | un hecho, un lugar (ADR-0001) |
+| Registro de consentimiento de imágenes | plataforma | todo campo del CMS es público por la API |
+| Niveles y beneficios de fidelidad | plataforma (US-LAND-06) | son reglas de negocio |
+| Navegación, logo y anclas de sección | código de la plataforma | estructura de la página, no contenido |
+
+## Invalidación
+
+Mecanismo: **aviso al publicar** de uno-cms (spec 16 de uno-cms), más un TTL de respaldo.
+
+**En `lashary-cms`:** `WEBHOOK_URL={origen de la plataforma}/api/cms/webhook` y `WEBHOOK_SECRET` (≥ 32 caracteres, distinto de `APP_SECRET`).
+
+**La plataforma recibe** `POST /api/cms/webhook`:
+
+- Cabeceras: `X-UnoCMS-Ts` (ms desde la época) y `X-UnoCMS-Firma` (`sha256=<hex>`). `X-UnoCMS-Evento` y `X-UnoCMS-Id` **no** están firmadas y no se usan para decidir.
+- Cuerpo: `{ "id", "evento", "ts", "claves": [...], "tags": ["content:<clave>" | "settings"] }`.
+- Obligaciones de la plataforma:
+  1. Verificar `HMAC-SHA256(CMS_WEBHOOK_SECRET, "<ts>.<cuerpo crudo>")` **sobre el cuerpo crudo**, en tiempo constante.
+  2. Rechazar con 401 un `ts` fuera de una ventana de 5 minutos.
+  3. Tolerar duplicados: invalidar un tag dos veces no tiene efecto adicional, así que no se exige guardar los `id` procesados.
+  4. Por cada entrada de `tags` que corresponda a un tipo vigente de este contrato, expirar de inmediato la caché de la plataforma con ese tag. Los tags desconocidos se ignoran.
+  5. Ignorar `media.uploaded` y `media.deleted` (llegan sin `tags`).
+- Lo que el CMS **no** garantiza: entrega (dos intentos, sin cola), orden, ni unicidad.
+
+**Caché de la plataforma:** una entrada con los tipos vigentes, etiquetada `content:<clave>` por cada uno (los mismos tags del aviso). **TTL de respaldo:** expira a los **10 minutos** aunque no llegue aviso; cota el peor caso de un aviso perdido. Una lectura fallida no se guarda en caché.
+
+## Degradación
+
+ADR-0001 exige que la landing no caiga si el CMS falla.
+
+- Timeout de lectura: **3 s** por petición.
+- CMS caído, timeout, respuesta no-200 o JSON que no encaja con este contrato: se sirve la última copia en caché. Sin copia, se sirve el **contenido de respaldo en código** de `content` (textos del diseño de referencia, sin imagen).
+- Un campo requerido vacío se trata igual que ausente: se usa el respaldo de ese campo. Una imagen con `url: ""` no se renderiza.
+- El fallo se registra en el servidor; el visitante no ve un error.
+
+## Garantías
+
+1. Solo contenido publicado sale del CMS (verificado en uno-cms: columnas `draft` y `published` separadas; la ruta pública lee `published`).
+2. Un campo no cambia de tipo ni desaparece sin actualizar antes este documento; un campo nuevo opcional puede agregarse en `lashary-cms` y se documenta aquí en el mismo movimiento.
+3. Toda respuesta se valida en `content` contra estas formas antes de llegar a `landing`; lo que no encaja se degrada (§ Degradación), no se propaga.
+4. Imágenes: URLs de Vercel Blob servibles con caché; tamaños y formatos responsivos los resuelve la plataforma (PERF-004).
+5. Vista previa en vivo desde el panel: **fuera de v1** (`PREVIEW_ORIGINS` sin definir en `lashary-cms`).
+
+## Tipos en borrador
+
+Contrato de demanda; se fijan con la primera historia que los consume.
+
+| Tipo propuesto | Historia | Pendiente de decidir |
+|---|---|---|
+| `contact` (singleton) | US-LAND-07 | forma del horario (uno-cms no admite listas dentro de un singleton) |
+| `about` (singleton) + `credentials` (colección) | US-LAND-04 | — |
+| `techniques` (colección) | US-LAND-02 | clave de enlace con el catálogo: `family` sirve solo con una técnica por familia |
+| `gallery` (colección) | US-LAND-03 | el consentimiento vive en la plataforma; cómo se referencia desde el par sin exponer datos |
+| `loyaltyInfo` (singleton) | US-LAND-05 | cómo evitar que el texto contradiga los niveles de US-LAND-06 |
+| `posts` (colección) | US-BLOG-01/02/03 | sin id, sin ruta por elemento y sin tipo fecha en uno-cms: el detalle busca por un campo `slug` que el CMS no hace único, la paginación y el orden por fecha ocurren en `content`, las imágenes del cuerpo no caben en el richtext |
