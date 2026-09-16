@@ -58,7 +58,7 @@
 - US-MOR-05 — no_iniciada
 
 ### landing (actualizado: 2026-09-16)
-- US-LAND-01 — en_revision — falta: aprobacion visual del PO de la parte atractivo del criterio 2, con las capturas del artefacto capturas-landing de CI; merge de los PRs en orden; el modelo de contenido hero, intro y closingCta no esta desplegado en lashary-cms
+- US-LAND-01 — en_revision — falta: aprobacion visual del PO de la parte atractivo del criterio 2, con las capturas del artefacto capturas-landing de CI; el modelo de contenido hero, intro y closingCta no esta en lashary-cms
 - US-LAND-02 — no_iniciada
 - US-LAND-03 — no_iniciada
 - US-LAND-04 — no_iniciada

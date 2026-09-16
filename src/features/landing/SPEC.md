@@ -6,8 +6,8 @@ actualizado: 2026-09-16
 historias:
   - id: US-LAND-01
     estado: en_revision
-    evidencia: "PRs #35, #36, #37, #39, #40, #41, #42, #43, #44 y #45 (apilados, se mergean en ese orden)"
-    falta: "aprobacion visual del PO de la parte atractivo del criterio 2, con las capturas del artefacto capturas-landing de CI; merge de los PRs en orden; el modelo de contenido hero, intro y closingCta no esta desplegado en lashary-cms"
+    evidencia: "PR #49 (us/US-LAND-01 a main); piezas PRs #35 a #45"
+    falta: "aprobacion visual del PO de la parte atractivo del criterio 2, con las capturas del artefacto capturas-landing de CI; el modelo de contenido hero, intro y closingCta no esta en lashary-cms"
   - id: US-LAND-02
     estado: no_iniciada
   - id: US-LAND-03
