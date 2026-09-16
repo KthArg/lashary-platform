@@ -1,5 +1,6 @@
 import { err, ok } from '@/shared/result'
 import { CmsUnavailable } from '../domain/errors'
+import { CMS_CONTENT_KEYS } from '../domain/landing-content'
 import type { CmsReader } from '../application/ports'
 
 type CmsReaderOptions = {
@@ -24,7 +25,7 @@ export function createCmsReader({
     async readSingleton(key) {
       let response: Response
       try {
-        response = await fetchImpl(`${origin}/api/content/${key}?v=${now()}`, {
+        response = await fetchImpl(`${origin}/api/content/${CMS_CONTENT_KEYS[key]}?v=${now()}`, {
           cache: 'no-store',
           headers: { accept: 'application/json' },
           signal: AbortSignal.timeout(timeoutMs),
