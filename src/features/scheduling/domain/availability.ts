@@ -23,6 +23,12 @@ export class InvalidDateError extends SchedulingDomainError {
   }
 }
 
+export class InvalidBlockRangeError extends SchedulingDomainError {
+  constructor() {
+    super('El bloqueo debe terminar después de empezar.')
+  }
+}
+
 export interface WeeklyAvailabilityBlockProps {
   id?: string
   resourceId: string
@@ -67,6 +73,34 @@ export class ClosedDate {
     this.id = props.id
     this.resourceId = props.resourceId
     this.closedDate = props.closedDate
+    this.reason = props.reason
+  }
+}
+
+// Capacidad base del bloqueo manual puntual (US-AGE-01); la UX completa (seleccionar varios,
+// desbloquear, impedir bloquear sobre una cita existente) es alcance de US-AGE-07.
+// startsAt/endsAt son Date ya construidos por quien llama — el dominio no instancia el reloj (DOM-004).
+export interface ManualBlockProps {
+  id?: string
+  resourceId: string
+  startsAt: Date
+  endsAt: Date
+  reason?: string
+}
+
+export class ManualBlock {
+  readonly id?: string
+  readonly resourceId: string
+  readonly startsAt: Date
+  readonly endsAt: Date
+  readonly reason?: string
+
+  constructor(props: ManualBlockProps) {
+    if (props.endsAt.getTime() <= props.startsAt.getTime()) throw new InvalidBlockRangeError()
+    this.id = props.id
+    this.resourceId = props.resourceId
+    this.startsAt = props.startsAt
+    this.endsAt = props.endsAt
     this.reason = props.reason
   }
 }
