@@ -2,7 +2,7 @@
 
 import { useEffect, useId } from 'react'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
-import { clientModalStyles as s } from './ClientModal.styles'
+import { clientModalStyles as STYLES } from './ClientModal.styles'
 import type { ClientModalProps } from './ClientModal.types'
 
 /**
@@ -30,12 +30,12 @@ export function ClientModal({ isOpen, title, description, isPaused = false, onRe
   if (!isOpen) return null
 
   return (
-    <div className={s.backdrop} role="dialog" aria-modal="true" aria-labelledby={titleId}>
-      <div ref={cardRef} className={s.card} tabIndex={-1}>
-        <div className={s.header}>
-          <p className={s.brand}>LASHARY</p>
-          <h2 id={titleId} className={s.title}>{title}</h2>
-          <p className={s.description}>{description}</p>
+    <div className={STYLES.backdrop} role="dialog" aria-modal="true" aria-labelledby={titleId}>
+      <div ref={cardRef} className={STYLES.card} tabIndex={-1}>
+        <div className={STYLES.header}>
+          <p className={STYLES.brand}>LASHARY</p>
+          <h2 id={titleId} className={STYLES.title}>{title}</h2>
+          <p className={STYLES.description}>{description}</p>
         </div>
         {children}
       </div>
