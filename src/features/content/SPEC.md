@@ -1,7 +1,7 @@
 ---
 feature: content
 dri: pendiente
-estado: no_iniciada
+estado: en_progreso
 actualizado: 2026-09-16
 historias:
   - id: US-BLOG-01
@@ -21,7 +21,13 @@ Gateway del CMS externo (ADR-0001) y paginas publicas de blog. El gateway se con
 
 ## Qué hace hoy
 
-Hoy: no existe. Se detiene antes de todo.
+Validación y respaldo del contenido de US-LAND-01 (tipos `hero`, `intro`, `closingCta`), sin lectura HTTP todavía:
+
+- `application/get-landing-content.ts`: `readRawLandingContent` lee los tres tipos en paralelo a través del puerto `CmsReader` (si uno falla, falla la lectura entera). `toLandingContent` valida campo a campo contra el contrato. Requerido vacío, inválido o más largo que su máximo: respaldo de ese campo. Tipo con todos sus requeridos vacíos: respaldo del tipo. Opcional vacío: `null`. Enlaces fuera de ruta interna, ancla, `http(s)`, `mailto` y `tel`: `null`. Imagen sin `url` o sin `alt`, o con `http:` absoluto: `null`; ruta relativa se resuelve contra la base del CMS.
+- `application/fallback-messages.ts`: contenido de respaldo (textos del diseño de referencia, sin imagen).
+- `domain/`: formas de `LandingContent` y el error `CmsUnavailable`.
+
+Se detiene antes del adaptador HTTP del CMS, la caché y el entry point `index.ts`: ninguna página lo usa todavía.
 
 ## Contrato con el CMS
 
@@ -35,4 +41,4 @@ US-BLOG-01: los borradores separados de lo publicado estan verificados en uno-cm
 
 ## Contrato público
 
-Sin contrato todavía. Al crearse, entra por `index.ts` (ARCH-003).
+Sin entry point todavía. Al crearse, entra por `index.ts` (ARCH-003).
