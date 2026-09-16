@@ -13,17 +13,15 @@ export default async function AdminClientsPage(_props: AdminClientsPageProps) {
   const result = await listClientsAction()
 
   return (
-    <main className={STYLES.main}>
-      <div className={STYLES.container}>
-        <header className={STYLES.header}>
-          <div>
-            <h1 className={STYLES.title}>{CLIENTS_LABELS.sectionTitle}</h1>
-            <p className={STYLES.subtitle}>{CLIENTS_LABELS.sectionSubtitle}</p>
-          </div>
-          <AddClientDialog />
-        </header>
-        <ClientsList clients={result.ok ? result.clients : []} loadError={result.ok ? null : result.error} />
-      </div>
-    </main>
+    <div className={STYLES.page}>
+      <header className={STYLES.header}>
+        <div>
+          <h1 className={STYLES.title}>{CLIENTS_LABELS.sectionTitle}</h1>
+          <p className={STYLES.subtitle}>{CLIENTS_LABELS.sectionSubtitle}</p>
+        </div>
+        <AddClientDialog />
+      </header>
+      <ClientsList clients={result.ok ? result.clients : []} loadError={result.ok ? null : result.error} />
+    </div>
   )
 }

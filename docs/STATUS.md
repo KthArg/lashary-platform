@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-15.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-16.
 
 ## Features
 
@@ -11,7 +11,7 @@
 | audit | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | en_progreso | 0 / 1 / 0 / 0 / 3 |
-| clients | pendiente | en_progreso | 1 / 0 / 0 / 0 / 4 |
+| clients | pendiente | en_progreso | 1 / 1 / 0 / 0 / 3 |
 | content | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 3 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | landing | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 6 |
@@ -38,8 +38,8 @@
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
-### clients (actualizado: 2026-09-15)
-- US-CLI-01 — no_iniciada
+### clients (actualizado: 2026-09-16)
+- US-CLI-01 — en_progreso — falta: todo el listado: tabla con nombre y contacto, paginacion en el servidor con tamano de pagina configurable, filtro por nombre y estados de vacio por filtro; la columna y el filtro de estado de morosidad esperan a US-MOR-01 y la columna y el filtro por rango de ultima cita esperan a US-AGE-05 (criterios diferidos)
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada

@@ -2,10 +2,11 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-09-15"
+actualizado: "2026-09-16"
 historias:
   - id: US-CLI-01
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "todo el listado: tabla con nombre y contacto, paginacion en el servidor con tamano de pagina configurable, filtro por nombre y estados de vacio por filtro; la columna y el filtro de estado de morosidad esperan a US-MOR-01 y la columna y el filtro por rango de ultima cita esperan a US-AGE-05 (criterios diferidos)"
   - id: US-CLI-02
     estado: no_iniciada
   - id: US-CLI-03
@@ -163,3 +164,11 @@ textos y límites, entre ellas `CLIENTS_LIST_LIMITS` (DOM-009).
 - **2026-09-15 — Las rutas de iconos SVG viven en `constants/clients-icons.ts`**, no dentro del JSX
   (mismo comentario de revisión). Hoy solo está el lápiz de `ClientsList`; no hay imágenes ni otros
   assets en la feature.
+- **2026-09-16 — US-CLI-01 empieza en `us/US-CLI-01`, con piezas apiladas (INT-001, INT-002):**
+  `feat/US-CLI-01-read-client-list` (lectura con parámetros y encabezado de la página), luego la tabla, la paginación y el filtro por nombre.
+  El encabezado de `/admin/clients` se alinea con el de `/admin/dashboard`: dentro del `<main>` del layout de `admin`, sin un
+  `<main>` propio anidado.
+- **2026-09-16 — Morosidad y última cita son criterios diferidos:**
+  el dato lo producen `delinquency` (US-MOR-01) y `scheduling` (US-AGE-05), sin tablas ni contrato hoy, y ARCH-005 prohíbe leer
+  sus tablas. No se simulan con datos falsos (EST-005). Cuando existan, entran con su contrato (INT-003) y US-CLI-01 sigue
+  `en_progreso` hasta entonces.
