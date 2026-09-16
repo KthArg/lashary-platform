@@ -7,7 +7,7 @@
 # layers: ci (L1 determinista) | structural (L3 imposible de romper) | ai (L4 advisoria) | human (L5 revisión)
 # ci_status: implementado (script en scripts/rules/) | planificado_f6 (exige la app: tests, ESLint, presupuesto) | no_aplica (capa humana/estructural)
 version: 1
-updated: 2026-08-27
+updated: 2026-09-16
 
 rules:
   # ── Arquitectura ──────────────────────────────────────────────
@@ -206,8 +206,8 @@ rules:
     anchor: "#int-002"
   - id: INT-003
     title: Contrato primero
-    statement: Cuando una feature necesita algo de otra (API pública, evento, esquema compartido), primero se mergea un PR con solo el contrato y los specs afectados; luego ambos lados implementan en paralelo.
-    rationale: Mata la clase más cara de conflicto: dos personas construyendo dos semanas contra supuestos privados.
+    statement: Cuando una feature necesita algo de otra (API pública, evento, esquema compartido), primero se abre un PR con solo el contrato y los specs afectados. La implementación puede empezar con ese PR abierto, sin esperar su aprobación; si la revisión cambia el contrato, la implementación se ajusta antes de su merge. Ninguna implementación se mergea antes que su contrato.
+    rationale: Mata la clase más cara de conflicto, dos personas construyendo contra supuestos privados, exigiendo que el supuesto esté escrito y visible antes del código. Esperar la aprobación no agrega protección cuando ajustar la implementación es barato, como con código asistido por IA.
     severity: alta
     layers: [human]
     ci_status: no_aplica
