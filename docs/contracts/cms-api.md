@@ -21,7 +21,7 @@
 - Clave no declarada en `cms.config.ts`: `404 { "error": "not_found" }`, sin cabecera de caché.
 - **Sin autenticación.** Las rutas solo entregan contenido **publicado**; los borradores no salen por ninguna ruta pública.
 - **Sin CORS, a propósito del CMS.** Toda lectura ocurre en el servidor de la plataforma, dentro de `src/features/content/`. Ningún componente de cliente llama al CMS.
-- **Caché del CMS:** `Cache-Control: public, s-maxage=60, stale-while-revalidate=300`. Publicar no purga esa copia; ver § Invalidación.
+- **Caché del CMS:** `Cache-Control: public, s-maxage=60, stale-while-revalidate=300`. Publicar no purga esa copia. Por eso **toda lectura de la plataforma añade `?v=<instante de la petición>`** (la ruta ignora el parámetro): la copia de la CDN del CMS nunca se usa, y la frecuencia de lectura la controla la caché de la plataforma (§ Invalidación).
 - Los elementos de colección **no traen id ni fechas**: solo los campos de su esquema. No existe ruta para un elemento suelto (`/api/content/<coleccion>.<id>` responde 404).
 
 ### Configuración en la plataforma
@@ -101,11 +101,11 @@ Mecanismo: **aviso al publicar** de uno-cms (spec 16 de uno-cms), más un TTL de
   1. Verificar `HMAC-SHA256(CMS_WEBHOOK_SECRET, "<ts>.<cuerpo crudo>")` **sobre el cuerpo crudo**, en tiempo constante.
   2. Rechazar con 401 un `ts` fuera de una ventana de 5 minutos.
   3. Tolerar duplicados: invalidar un tag dos veces no tiene efecto adicional, así que no se exige guardar los `id` procesados.
-  4. Por cada entrada de `tags`, invalidar la caché de ese tag. Al volver a pedir, añadir `?v=<ts>` para saltar la copia de 60 s del CMS.
+  4. Por cada entrada de `tags` que corresponda a un tipo vigente de este contrato, expirar de inmediato la caché de la plataforma con ese tag. Los tags desconocidos se ignoran.
   5. Ignorar `media.uploaded` y `media.deleted` (llegan sin `tags`).
 - Lo que el CMS **no** garantiza: entrega (dos intentos, sin cola), orden, ni unicidad.
 
-**TTL de respaldo:** la caché de lectura de `content` expira a los **10 minutos** aunque no llegue aviso. Cota el peor caso de un aviso perdido.
+**Caché de la plataforma:** una entrada con los tipos vigentes, etiquetada `content:<clave>` por cada uno (los mismos tags del aviso). **TTL de respaldo:** expira a los **10 minutos** aunque no llegue aviso; cota el peor caso de un aviso perdido. Una lectura fallida no se guarda en caché.
 
 ## Degradación
 
