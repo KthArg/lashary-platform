@@ -77,8 +77,8 @@ Todo esto se hace **desde tu máquina, con tu usuario**, nunca desde un agente d
 2. **Vincular y comparar historial** (escribe solo en `supabase/.temp/`, que está ignorado por git):
    ```sh
    export SUPABASE_DB_PASSWORD=<password>
-   supabase link --project-ref <ref>
-   supabase migration list --linked
+   supabase link --project-ref <ref>     # dos comandos separados, uno por línea
+   supabase migration list               # sin flags: compara contra el proyecto vinculado
    ```
    La tabla muestra cada versión en *Local* (las 5 de `supabase/migrations/`) y en *Remote*. Tres escenarios:
    - **Remote vacío y el proyecto sin tablas** → nada más que hacer; el primer `db push` aplica todo en orden.
@@ -99,7 +99,8 @@ Todo esto se hace **desde tu máquina, con tu usuario**, nunca desde un agente d
 Cosas que hacen fallar el run aunque los secretos estén bien:
 
 - `SUPABASE_PROJECT_ID` con el nombre del proyecto en vez del ref → `link` falla con *Not Found*.
-- Token de una cuenta sin acceso a la organización → *Authorization failed*.
+- Token de una cuenta sin acceso a la organización → `link` falla con *Your account does not have the necessary privileges to access this endpoint*. Se vio en local con un token viejo del CLI; se resolvió con `supabase login` desde la cuenta correcta. El secreto `SUPABASE_ACCESS_TOKEN` tiene que venir de esa misma cuenta (o de otra con rol *Owner*/*Admin* de la organización). Comprobalo antes de cargarlo: `SUPABASE_ACCESS_TOKEN=<token> supabase projects list` debe mostrar el proyecto.
+- `Connecting to remote database... connection reset by peer` hacia `aws-0-<region>.pooler.supabase.com:5432` → `link` ya pasó (la API responde); lo que no llega es la conexión Postgres. Tres causas, en este orden: (1) sin `-p`/`SUPABASE_DB_PASSWORD` el CLI intenta un rol de login temporal por el pooler — repetí el comando con la contraseña exportada; (2) la red donde estás bloquea el puerto 5432 (`nc -vz aws-0-us-east-1.pooler.supabase.com 5432` debe decir *succeeded*; probá desde otra red — los runners de GitHub no tienen ese bloqueo); (3) proyecto pausado. Los WARN `SUPABASE_AUTH_EXTERNAL_GOOGLE_*` que aparecen junto a estos comandos vienen de `supabase/config.toml` y no rompen nada.
 - `20260901000001_seed_superadmin.sql` crea un índice único parcial: si la base remota ya tiene dos superadmins, esa migración falla; revisá `clients_profiles`/roles antes.
 - El proyecto remoto **pausado** (plan free tras inactividad): restauralo desde el dashboard antes.
 
