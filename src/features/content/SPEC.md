@@ -40,7 +40,7 @@ Se detiene antes de la UI: ninguna página de `landing` llama todavía a `getLan
 - Valida cada respuesta contra las formas del contrato; lo que no encaja se degrada a la ultima copia en cache o al contenido de respaldo en codigo.
 - Recibe el aviso firmado en `POST /api/cms/webhook` e invalida por tag; TTL de respaldo de 10 minutos.
 
-US-BLOG-01: los borradores separados de lo publicado estan verificados en uno-cms (columnas `draft` y `published`; la ruta publica lee `published`). El tipo `posts` sigue en borrador en el contrato.
+US-BLOG-01: los borradores separados de lo publicado estan verificados en uno-cms (columnas `draft` y `published`; la ruta publica lee `published`). El tipo `posts` es vigente en el contrato desde 2026-09-16; el gateway de lectura se construye en US-BLOG-02.
 
 ## Contrato público (`index.ts`)
 

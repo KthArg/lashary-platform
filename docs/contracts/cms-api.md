@@ -1,6 +1,6 @@
 # Contrato — API del CMS externo
 
-> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closing-cta` (US-LAND-01). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-16.
+> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro`, `closing-cta` (US-LAND-01) y `posts` (US-BLOG-01/02). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-16.
 
 ## El CMS
 
@@ -47,7 +47,7 @@ Ninguna lleva prefijo `NEXT_PUBLIC_`. Ningún valor real entra al repositorio (S
 
 ## Tipos de contenido vigentes (v1)
 
-Consumidor único: US-LAND-01. Diseño de referencia: "LASHARY Beauty Studio" (2026-09-16).
+Consumidores: US-LAND-01 (`hero`, `intro`, `closing-cta`; diseño de referencia "LASHARY Beauty Studio", 2026-09-16) y US-BLOG-01/02 (`posts`).
 
 ### `hero` — singleton
 
@@ -78,6 +78,27 @@ La clave lleva guion: uno-cms solo admite minúsculas, dígitos y guiones en las
 | `headingEmphasis` | text | no | 30 | cierre del título, en cursiva ("a la vez") |
 | `body` | text multilínea | no | 240 | texto de apoyo |
 | `ctaLabel` | text | no; default `"Reservar cita"`, así que siempre viene | 30 | texto del botón de reserva |
+
+### `posts` — colección
+
+| Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
+|---|---|---|---|---|
+| `slug` | text | sí | 80 | identificador legible para la URL de la publicación |
+| `title` | text | sí | 100 | título de la publicación |
+| `excerpt` | text multilínea | sí | 200 | resumen para la tarjeta del listado |
+| `featuredImage` | image | sí | — | imagen destacada; `alt` obligatorio al publicar |
+| `publishedAt` | text | sí | — | fecha de publicación en ISO 8601 (`AAAA-MM-DD`); uno-cms no tiene tipo fecha |
+| `body` | richtext | sí | — | cuerpo de la publicación (§ Formas de valor); sin imágenes dentro |
+| `seoTitle` | text | no | 60 | título para metadatos SEO; sin valor, `content` usa `title` |
+| `seoDescription` | text multilínea | no | 160 | descripción para metadatos SEO; sin valor, `content` usa `excerpt` |
+
+Respuestas a lo que quedaba pendiente de decidir (§ Tipos en borrador, hasta este documento):
+
+- **Sin id ni ruta por elemento en uno-cms** (§ Transporte): `content` lee la colección completa (`GET {CMS_URL}/api/content/posts`) y arma su propia identidad de ruta a partir de `slug`. No existe ruta de uno-cms para una publicación suelta.
+- **`slug` no único:** el CMS no lo garantiza. Si dos publicaciones comparten `slug`, `content` conserva la primera en el orden del editor y registra una advertencia; no falla la lectura completa (mismo criterio que § Degradación).
+- **Sin tipo fecha en uno-cms:** `publishedAt` es texto en ISO 8601; `content` lo parsea para ordenar y no falla si el formato no encaja — trata ese campo como ausente (§ Degradación).
+- **Orden y paginación:** ocurren en `content`, no en el CMS — orden descendente por `publishedAt`, paginado sobre un límite configurado (9 por página, US-BLOG-02).
+- **Imágenes dentro de `body`:** fuera de alcance de v1; el richtext no las admite (§ Formas de valor). Queda pendiente de una extensión futura de uno-cms si se necesita.
 
 ## Lo que no vive en el CMS
 
@@ -137,4 +158,3 @@ Contrato de demanda; se fijan con la primera historia que los consume.
 | `techniques` (colección) | US-LAND-02 | clave de enlace con el catálogo: `family` sirve solo con una técnica por familia |
 | `gallery` (colección) | US-LAND-03 | el consentimiento vive en la plataforma; cómo se referencia desde el par sin exponer datos |
 | `loyaltyInfo` (singleton) | US-LAND-05 | cómo evitar que el texto contradiga los niveles de US-LAND-06 |
-| `posts` (colección) | US-BLOG-01/02/03 | sin id, sin ruta por elemento y sin tipo fecha en uno-cms: el detalle busca por un campo `slug` que el CMS no hace único, la paginación y el orden por fecha ocurren en `content`, las imágenes del cuerpo no caben en el richtext |
