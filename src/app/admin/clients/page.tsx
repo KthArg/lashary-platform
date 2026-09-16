@@ -1,5 +1,5 @@
 import { requireAdminSession } from '@/features/auth'
-import { AddClientDialog, CLIENTS_LABELS } from '@/features/clients'
+import { AddClientDialog, ClientsList, CLIENTS_LABELS, SAMPLE_CLIENTS } from '@/features/clients'
 import { adminClientsStyles as s } from './clients.styles'
 import type { AdminClientsPageProps } from './clients.types'
 
@@ -21,6 +21,7 @@ export default async function AdminClientsPage(_props: AdminClientsPageProps) {
           </div>
           <AddClientDialog />
         </header>
+        <ClientsList clients={SAMPLE_CLIENTS} />
       </div>
     </main>
   )
