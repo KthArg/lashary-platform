@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { InvalidDateError, InvalidDayOfWeekError, InvalidTimeRangeError } from '../domain/errors'
-import { ClosedDate, WeeklyAvailabilityBlock } from '../domain/availability'
+import {
+  ClosedDate,
+  InvalidBlockRangeError,
+  InvalidDateError,
+  InvalidDayOfWeekError,
+  InvalidTimeRangeError,
+  ManualBlock,
+  WeeklyAvailabilityBlock,
+} from '../domain/availability'
 
 describe('WeeklyAvailabilityBlock', () => {
   it('acepta un bloque válido', () => {
@@ -58,5 +65,27 @@ describe('ClosedDate', () => {
 
   it('rechaza un formato de fecha inválido', () => {
     expect(() => new ClosedDate({ resourceId: 'r1', closedDate: '25/12/2026' })).toThrow(InvalidDateError)
+  })
+})
+
+describe('ManualBlock', () => {
+  it('acepta un bloqueo válido', () => {
+    const block = new ManualBlock({
+      resourceId: 'r1',
+      startsAt: new Date('2026-10-01T14:00:00Z'),
+      endsAt: new Date('2026-10-01T15:00:00Z'),
+    })
+    expect(block.endsAt.getTime()).toBeGreaterThan(block.startsAt.getTime())
+  })
+
+  it('rechaza ends_at <= starts_at', () => {
+    expect(
+      () =>
+        new ManualBlock({
+          resourceId: 'r1',
+          startsAt: new Date('2026-10-01T15:00:00Z'),
+          endsAt: new Date('2026-10-01T14:00:00Z'),
+        })
+    ).toThrow(InvalidBlockRangeError)
   })
 })
