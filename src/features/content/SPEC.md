@@ -28,7 +28,9 @@ Lectura del CMS para US-LAND-01 (tipos `hero`, `intro`, `closingCta`):
 - `cms/landing-source.ts`: una entrada de `unstable_cache` con TTL de 600 s y tags `content:hero`, `content:intro`, `content:closingCta`. Una lectura fallida lanza dentro de la función cacheada y no se guarda; afuera se sirve el respaldo. Sin `CMS_URL` se sirve el respaldo sin llamar al CMS.
 - `application/fallback-messages.ts`: contenido de respaldo (textos del diseño de referencia, sin imagen).
 
-Se detiene antes del aviso de publicación: `POST /api/cms/webhook` no existe, así que hoy el contenido nuevo tarda hasta 10 minutos en verse.
+- `cms/webhook.ts` + `src/app/api/cms/webhook/route.ts`: `POST /api/cms/webhook`. Verifica `X-UnoCMS-Firma` = `HMAC-SHA256(CMS_WEBHOOK_SECRET, "<X-UnoCMS-Ts>.<cuerpo crudo>")` en tiempo constante y una ventana de 5 minutos. Del cuerpo solo usa los `tags` de tipos vigentes y expira cada uno con `revalidateTag(tag, { expire: 0 })`. Respuestas: 200 con los tags invalidados; 401 firma ausente, inválida o fuera de ventana; 400 JSON inválido; 503 sin `CMS_WEBHOOK_SECRET` (o con menos de 32 caracteres), en cuyo caso el contenido se renueva solo por TTL.
+
+Se detiene antes de la UI: ninguna página de `landing` llama todavía a `getLandingContent`.
 
 ## Contrato con el CMS
 
@@ -44,4 +46,5 @@ US-BLOG-01: los borradores separados de lo publicado estan verificados en uno-cm
 
 - `getLandingContent(): Promise<LandingContent>` — solo servidor; nunca lanza.
 - `landingCacheTags` — tags de la caché de la landing.
+- `receiveCmsWebhook(request): Promise<Response>` — borde de `POST /api/cms/webhook`.
 - Tipos: `LandingContent`, `HeroContent`, `IntroContent`, `ClosingCtaContent`, `CmsImage`.

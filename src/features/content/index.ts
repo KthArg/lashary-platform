@@ -2,6 +2,8 @@
 // (uno-cms) según docs/contracts/cms-api.md.
 
 export { loadLandingContent as getLandingContent, landingCacheTags } from './cms/landing-source'
+// Borde de POST /api/cms/webhook (aviso al publicar). Lo monta src/app/api/cms/webhook/route.ts.
+export { receiveCmsWebhook } from './cms/webhook'
 export type {
   CmsImage,
   ClosingCtaContent,
