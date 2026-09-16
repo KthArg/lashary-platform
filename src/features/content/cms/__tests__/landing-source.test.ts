@@ -63,7 +63,7 @@ describe('loadLandingContent — degradación (docs/contracts/cms-api.md)', () =
     expect(content.closingCta.heading).toBe('Cierre publicado')
     expect(cache).toHaveBeenCalledWith(expect.any(Function), ['content', 'landing', 'https://cms.test'], {
       revalidate: LANDING_CACHE_SECONDS,
-      tags: ['content:hero', 'content:intro', 'content:closingCta'],
+      tags: ['content:hero', 'content:intro', 'content:closing-cta'],
     })
   })
 })

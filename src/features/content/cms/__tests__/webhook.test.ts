@@ -26,6 +26,12 @@ describe('evaluateCmsWebhook — aviso al publicar (docs/contracts/cms-api.md §
     expect(evaluateCmsWebhook(aviso())).toEqual({ status: 200, tags: ['content:hero', 'content:intro'] })
   })
 
+  it('acepta el tag de la llamada final con su clave del CMS, y no la del código', () => {
+    const rawBody = JSON.stringify({ tags: ['content:closing-cta', 'content:closingCta'] })
+    const input = aviso({ rawBody, signature: sign(SECRET, String(NOW), rawBody) })
+    expect(evaluateCmsWebhook(input)).toEqual({ status: 200, tags: ['content:closing-cta'] })
+  })
+
   it('ignora tags desconocidos, repetidos o que no son texto', () => {
     const rawBody = JSON.stringify({ tags: ['content:hero', 'content:hero', 'settings', 'content:posts', 7] })
     const input = aviso({ rawBody, signature: sign(SECRET, String(NOW), rawBody) })
