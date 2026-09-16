@@ -1,5 +1,5 @@
 import { requireAdminSession } from '@/features/auth'
-import { AddClientDialog, ClientsList, CLIENTS_LABELS, SAMPLE_CLIENTS } from '@/features/clients'
+import { AddClientDialog, ClientsList, CLIENTS_LABELS, listClientsAction } from '@/features/clients'
 import { adminClientsStyles as s } from './clients.styles'
 import type { AdminClientsPageProps } from './clients.types'
 
@@ -10,6 +10,7 @@ export const metadata = {
 
 export default async function AdminClientsPage(_props: AdminClientsPageProps) {
   await requireAdminSession()
+  const result = await listClientsAction()
 
   return (
     <main className={s.main}>
@@ -21,7 +22,7 @@ export default async function AdminClientsPage(_props: AdminClientsPageProps) {
           </div>
           <AddClientDialog />
         </header>
-        <ClientsList clients={SAMPLE_CLIENTS} />
+        <ClientsList clients={result.ok ? result.clients : []} loadError={result.ok ? null : result.error} />
       </div>
     </main>
   )

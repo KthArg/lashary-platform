@@ -5,7 +5,8 @@ export const CLIENTS_LABELS = {
   newClientTitle: 'Nueva clienta', newClientDescription: 'Los campos marcados son obligatorios.',
   fullNameInput: 'Nombre completo', phoneInput: 'Teléfono', emailInput: 'Correo electrónico', notesInput: 'Notas generales',
   requiredMark: 'obligatorio', optionalMark: 'opcional',
-  clientsListTitle: 'Clientas registradas', clientsListEmpty: 'Todavía no hay clientas registradas.',
+  clientsListTitle: 'Clientas registradas', clientsListEmpty: 'Todavía no hay clientas registradas. Usa Agregar para registrar la primera.',
+  clientsListLoading: 'Cargando clientas…',
   editClientTitle: 'Editar clienta', editClientDescription: 'Cambia solo lo que necesites; los campos marcados siguen siendo obligatorios.',
 } as const
 
@@ -14,7 +15,7 @@ export const CLIENTS_PLACEHOLDERS = {
   notes: 'Preferencias, cómo llegó al estudio…',
 } as const
 
-export const CLIENTS_BUTTON_TEXTS = { addClient: 'Agregar', save: 'Guardar', cancel: 'Cancelar', edit: 'Editar', saving: 'Guardando…' } as const
+export const CLIENTS_BUTTON_TEXTS = { addClient: 'Agregar', save: 'Guardar', cancel: 'Cancelar', edit: 'Editar', saving: 'Guardando…', retry: 'Reintentar' } as const
 
 export const CLIENTS_ERROR_MESSAGES = {
   fullNameRequired: 'El nombre completo es obligatorio', fullNameTooShort: 'El nombre debe tener al menos 3 caracteres',
@@ -28,6 +29,7 @@ export const CLIENTS_ERROR_MESSAGES = {
   // Sin el detalle de la base: a la administradora no le sirve y a un atacante sí.
   saveFailed: 'No se pudo guardar la clienta. Intenta de nuevo.',
   phoneTaken: 'Ya hay una clienta registrada con este teléfono.',
+  loadFailed: 'No se pudieron cargar las clientas.',
 } as const
 
 // Criterio 2 de US-CLI-05: por ahora la edicion solo se reporta en consola, sin persistencia.

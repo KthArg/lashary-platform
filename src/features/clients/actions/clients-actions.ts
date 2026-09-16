@@ -3,12 +3,13 @@
 import { revalidatePath } from 'next/cache'
 import { requireAdminSession } from '@/features/auth'
 import { createClient } from '@/shared/lib/supabase/server'
-import { CLIENT_FIELD_KEYS, CLIENT_PHONE_FORMAT } from '../constants/client-form'
+import { CLIENT_FIELD_KEYS, CLIENT_PHONE_FORMAT, CLIENTS_LIST_LIMITS } from '../constants/client-form'
 import { CLIENTS_ERROR_MESSAGES } from '../constants/clients-strings'
 import { hasClientFormErrors, validateClientForm } from '../validation/validate-client-form'
 import { normalizePhone } from '../validation/normalize-phone'
 import type { ClientFormValues } from '../types/client-form.types'
-import type { SaveClientResult } from '../types/client-actions.types'
+import type { ClientRecord } from '../types/client.types'
+import type { ListClientsResult, SaveClientResult } from '../types/client-actions.types'
 
 const CLIENTS_TABLE = 'clients_profiles'
 const CLIENTS_PATH = '/admin/clients'
@@ -16,6 +17,10 @@ const CLIENTS_PATH = '/admin/clients'
 const CLIENT_COLUMNS = 'id, full_name, phone, email, notes'
 
 interface ClientRow { id: string; full_name: string; phone: string; email: string; notes: string | null }
+
+const toRecord = (row: ClientRow): ClientRecord => ({
+  id: row.id, fullName: row.full_name, phone: row.phone, email: row.email, notes: row.notes ?? '',
+})
 
 // Lo que llega del navegador no es confiable ni en su forma: un campo ausente no debe tumbar la validacion.
 const readValues = (input: ClientFormValues): ClientFormValues => Object.fromEntries(
@@ -59,6 +64,19 @@ export async function createClientAction(input: ClientFormValues): Promise<SaveC
   if (error || !data) return { ok: false, error: CLIENTS_ERROR_MESSAGES.saveFailed }
 
   revalidatePath(CLIENTS_PATH)
-  const row = data as ClientRow
-  return { ok: true, client: { id: row.id, fullName: row.full_name, phone: row.phone, email: row.email, notes: row.notes ?? '' } }
+  return { ok: true, client: toRecord(data as ClientRow) }
+}
+
+/**
+ * Lee una pagina de clientas, las mas recientes primero (PERF-002). La pagina 0 es la que muestra
+ * /admin/clients; navegar paginas y filtrar es US-CLI-01. Un `page` invalido se trata como 0.
+ */
+export async function listClientsAction(page = 0): Promise<ListClientsResult> {
+  await requireAdminSession()
+  const from = (Number.isInteger(page) && page > 0 ? page : 0) * CLIENTS_LIST_LIMITS.pageSize
+  const supabase = await createClient()
+  const { data, error } = await supabase.from(CLIENTS_TABLE).select(CLIENT_COLUMNS)
+    .order('created_at', { ascending: false }).range(from, from + CLIENTS_LIST_LIMITS.pageSize - 1)
+  if (error || !data) return { ok: false, error: CLIENTS_ERROR_MESSAGES.loadFailed }
+  return { ok: true, clients: (data as ClientRow[]).map(toRecord) }
 }
