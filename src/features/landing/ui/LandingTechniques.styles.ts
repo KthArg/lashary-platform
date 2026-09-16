@@ -21,7 +21,9 @@ export const landingTechniquesStyles = {
   sign: 'ml-auto flex-none text-site-sign text-site-ink-muted transition-transform duration-300 ease-site-out motion-reduce:transition-none',
   signOpen: 'rotate-site-sign text-site-rose',
 
-  body: 'animate-site-in-quick pb-site-row-body motion-reduce:animate-none',
+  // La apertura se anima al abrir, no al cargar la página: el panel está siempre en el DOM.
+  body: 'pb-site-row-body',
+  bodyOpen: 'animate-site-in-quick motion-reduce:animate-none',
   description:
     'm-0 max-w-site-technique-desc text-site-body leading-site-loose text-site-ink-soft',
   detail: 'mt-4 flex flex-wrap items-baseline gap-x-site-row-gap gap-y-2',

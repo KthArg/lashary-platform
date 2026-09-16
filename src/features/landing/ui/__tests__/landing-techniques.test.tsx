@@ -111,6 +111,25 @@ describe('LandingTechniques — US-LAND-02', () => {
     expect(volumen.getAttribute('aria-expanded')).toBe('false')
   })
 
+  it('UI-004: aria-controls apunta a un nodo real, con la fila abierta y con la fila cerrada', () => {
+    seccion([catalogo()])
+
+    const fila = screen.getByRole('button', { name: /Set clásico/ })
+    const panelId = fila.getAttribute('aria-controls') ?? ''
+    expect(panelId).not.toBe('')
+
+    // Cerrada: el panel sigue en el documento —si no, la referencia queda colgando— pero oculto.
+    const cerrado = document.getElementById(panelId)
+    expect(cerrado).toBeTruthy()
+    expect(cerrado?.hasAttribute('hidden')).toBe(true)
+
+    fireEvent.click(fila)
+
+    const abierto = document.getElementById(panelId)
+    expect(abierto).toBeTruthy()
+    expect(abierto?.hasAttribute('hidden')).toBe(false)
+  })
+
   it('UI-003: sin técnicas la sección sigue existiendo y explica qué pasa', () => {
     const { container } = seccion([])
 

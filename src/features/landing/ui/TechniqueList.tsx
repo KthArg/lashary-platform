@@ -48,8 +48,13 @@ export function TechniqueList({ techniques }: TechniqueListProps) {
               </span>
             </button>
 
-            {isOpen && (
-              <div id={bodyId} className={styles.body}>
+            {/* El panel no se desmonta al cerrar: `aria-controls` del botón debe resolver
+                siempre a un nodo real, aunque la fila esté cerrada (UI-004). */}
+            <div
+              id={bodyId}
+              hidden={!isOpen}
+              className={`${styles.body} ${isOpen ? styles.bodyOpen : ''}`}
+            >
                 {technique.description && (
                   <p className={styles.description}>{technique.description}</p>
                 )}
@@ -74,8 +79,7 @@ export function TechniqueList({ techniques }: TechniqueListProps) {
                     {copy.reserve}
                   </Link>
                 </div>
-              </div>
-            )}
+            </div>
           </li>
         )
       })}
