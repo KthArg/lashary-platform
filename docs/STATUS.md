@@ -82,7 +82,7 @@
 ### payments (actualizado: 2026-08-29)
 - US-AGE-13 — no_iniciada
 
-### platform (actualizado: 2026-09-01)
+### platform (actualizado: 2026-09-16)
 
 ### scheduling (actualizado: 2026-08-29)
 - US-AGE-01 — no_iniciada
