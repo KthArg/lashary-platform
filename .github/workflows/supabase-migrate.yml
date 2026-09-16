@@ -46,7 +46,7 @@ jobs:
         run: supabase link --project-ref "$SUPABASE_PROJECT_ID" --yes
 
       - name: Historial de migraciones (local vs remoto)
-        run: supabase migration list --linked
+        run: supabase migration list
 
       - name: Aplicar migraciones
         if: ${{ !inputs.dry_run }}
