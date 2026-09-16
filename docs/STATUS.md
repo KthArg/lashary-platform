@@ -19,7 +19,7 @@
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
 | payments | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
-| scheduling | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 11 |
+| scheduling | pendiente | en_progreso | 0 / 1 / 0 / 0 / 10 |
 | store | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 4 |
 
 ## Detalle por feature
@@ -84,8 +84,8 @@
 
 ### platform (actualizado: 2026-09-01)
 
-### scheduling (actualizado: 2026-08-29)
-- US-AGE-01 — no_iniciada
+### scheduling (actualizado: 2026-09-10)
+- US-AGE-01 — en_progreso — falta: Días no laborables/feriados (scheduling_closed_dates) y bloqueo manual puntual (scheduling_manual_blocks) — próximos incrementos de la misma historia, sin bloqueo entre sí; panel administrativo (UI) y su wiring en src/app; el criterio 'reducir disponibilidad no elimina citas ya agendadas' queda diferido — depende de scheduling_appointments, que no existe hasta US-AGE-05
 - US-AGE-02 — no_iniciada
 - US-AGE-03 — no_iniciada
 - US-AGE-04 — no_iniciada
@@ -114,6 +114,7 @@ Ninguno registrado.
 ## Deuda aceptada
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
 - clients: Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras — aceptada en PR #32, etiqueta excepcion-proceso — costo: 3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)
+- scheduling: Test de aislamiento RLS (scheduling_weekly_availability) contra instancia local de Supabase en CI — mismo patrón aceptado en auth (PR #3) — aceptada en PR US-AGE-01 (disponibilidad semanal) — costo: 2h
 
 ## Flags vivos
 - catalog: catalog_admin_write — apagado — dueño: Bayron Alpizar — retiro: 2026-12-01
