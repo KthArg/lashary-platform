@@ -18,6 +18,16 @@ describe('createCmsReader — GET {CMS_URL}/api/content/:key', () => {
     expect(init.signal).toBeInstanceOf(AbortSignal)
   })
 
+  it('la llamada final se pide con su clave del CMS, closing-cta', async () => {
+    const fetchImpl = vi.fn(async () => jsonResponse({ key: 'closing-cta', data: { heading: 'x' } }))
+    const reader = createCmsReader({ baseUrl: 'https://cms.test', fetchImpl, now: () => 7 })
+
+    await reader.readSingleton('closingCta')
+
+    const [url] = fetchImpl.mock.calls[0] as unknown as [string]
+    expect(url).toBe('https://cms.test/api/content/closing-cta?v=7')
+  })
+
   it.each([404, 500])('HTTP %i es CMS no disponible', async (status) => {
     const reader = createCmsReader({ baseUrl: 'https://cms.test', fetchImpl: async () => jsonResponse({ error: 'x' }, status) })
     const result = await reader.readSingleton('intro')

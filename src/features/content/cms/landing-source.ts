@@ -1,5 +1,5 @@
 import { unstable_cache } from 'next/cache'
-import { LANDING_CONTENT_KEYS, type LandingContent } from '../domain/landing-content'
+import { CMS_CONTENT_KEYS, LANDING_CONTENT_KEYS, type LandingContent } from '../domain/landing-content'
 import { readRawLandingContent, toLandingContent } from '../application/get-landing-content'
 import { createCmsReader } from './cms-reader'
 
@@ -8,7 +8,7 @@ export const LANDING_CACHE_SECONDS = 600
 
 // Los mismos tags que manda el aviso de uno-cms: `content:<clave>`.
 export const landingCacheTags: readonly string[] = LANDING_CONTENT_KEYS.map(
-  (key) => `content:${key}`,
+  (key) => `content:${CMS_CONTENT_KEYS[key]}`,
 )
 
 type LandingSourceDeps = {
