@@ -1,7 +1,7 @@
 ---
 feature: content
 dri: pendiente
-estado: no_iniciada
+estado: en_progreso
 actualizado: 2026-09-16
 historias:
   - id: US-BLOG-01
@@ -21,7 +21,16 @@ Gateway del CMS externo (ADR-0001) y paginas publicas de blog. El gateway se con
 
 ## Qué hace hoy
 
-Hoy: no existe. Se detiene antes de todo.
+Lectura del CMS para US-LAND-01 (tipos `hero`, `intro`, `closingCta`):
+
+- `cms/cms-reader.ts`: `GET {CMS_URL}/api/content/:key?v=<instante>`, sin caché de fetch, timeout de 3 s. Estado no-200, cuerpo sin `data`, JSON inválido, red caída o timeout: `CmsUnavailable` como resultado, no como excepción.
+- `application/get-landing-content.ts`: lee los tres tipos en paralelo (si uno falla, falla la lectura entera) y valida campo a campo contra el contrato. Requerido vacío, inválido o más largo que su máximo: respaldo de ese campo. Tipo con todos sus requeridos vacíos: respaldo del tipo. Opcional vacío: `null`. Enlaces fuera de ruta interna, ancla, `http(s)`, `mailto` y `tel`: `null`. Imagen sin `url` o sin `alt`, o con `http:` absoluto: `null`; ruta relativa se resuelve contra `CMS_URL`.
+- `cms/landing-source.ts`: una entrada de `unstable_cache` con TTL de 600 s y tags `content:hero`, `content:intro`, `content:closingCta`. Una lectura fallida lanza dentro de la función cacheada y no se guarda; afuera se sirve el respaldo. Sin `CMS_URL` se sirve el respaldo sin llamar al CMS.
+- `application/fallback-messages.ts`: contenido de respaldo (textos del diseño de referencia, sin imagen).
+
+- `cms/webhook.ts` + `src/app/api/cms/webhook/route.ts`: `POST /api/cms/webhook`. Verifica `X-UnoCMS-Firma` = `HMAC-SHA256(CMS_WEBHOOK_SECRET, "<X-UnoCMS-Ts>.<cuerpo crudo>")` en tiempo constante y una ventana de 5 minutos. Del cuerpo solo usa los `tags` de tipos vigentes y expira cada uno con `revalidateTag(tag, { expire: 0 })`. Respuestas: 200 con los tags invalidados; 401 firma ausente, inválida o fuera de ventana; 400 JSON inválido; 503 sin `CMS_WEBHOOK_SECRET` (o con menos de 32 caracteres), en cuyo caso el contenido se renueva solo por TTL.
+
+Se detiene antes de la UI: ninguna página de `landing` llama todavía a `getLandingContent`.
 
 ## Contrato con el CMS
 
@@ -33,6 +42,9 @@ Hoy: no existe. Se detiene antes de todo.
 
 US-BLOG-01: los borradores separados de lo publicado estan verificados en uno-cms (columnas `draft` y `published`; la ruta publica lee `published`). El tipo `posts` sigue en borrador en el contrato.
 
-## Contrato público
+## Contrato público (`index.ts`)
 
-Sin contrato todavía. Al crearse, entra por `index.ts` (ARCH-003).
+- `getLandingContent(): Promise<LandingContent>` — solo servidor; nunca lanza.
+- `landingCacheTags` — tags de la caché de la landing.
+- `receiveCmsWebhook(request): Promise<Response>` — borde de `POST /api/cms/webhook`.
+- Tipos: `LandingContent`, `HeroContent`, `IntroContent`, `ClosingCtaContent`, `CmsImage`.

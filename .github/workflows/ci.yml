@@ -49,6 +49,31 @@ jobs:
           } >> .env.local
       - run: npm test
 
+  # e2e — Playwright contra el build de producción (playwright.config.ts levanta el servidor).
+  # Lo porta US-LAND-01: criterio 2, "visible" en los anchos de e2e/support/viewports.ts.
+  # Sin Supabase: las páginas públicas no lo necesitan y el config pone valores de relleno.
+  job-e2e:
+    name: pruebas e2e (playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      # Siempre: el reporte trae las capturas de la landing que el PO aprueba (US-LAND-01,
+      # criterio 2 "atractivo"), y si algo falla, el detalle del fallo.
+      - name: reporte e2e y capturas de la landing
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas-landing
+          path: playwright-report/
+          retention-days: 14
+
   # Guardia estructural: si hay código en src/ y el job de arriba desapareciera, esto falla.
   tests-placeholder-guard:
     name: guardia de pruebas
