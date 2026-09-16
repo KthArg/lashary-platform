@@ -21,13 +21,14 @@ Gateway del CMS externo (ADR-0001) y paginas publicas de blog. El gateway se con
 
 ## Qué hace hoy
 
-Validación y respaldo del contenido de US-LAND-01 (tipos `hero`, `intro`, `closingCta`), sin lectura HTTP todavía:
+Lectura del CMS para US-LAND-01 (tipos `hero`, `intro`, `closingCta`):
 
-- `application/get-landing-content.ts`: `readRawLandingContent` lee los tres tipos en paralelo a través del puerto `CmsReader` (si uno falla, falla la lectura entera). `toLandingContent` valida campo a campo contra el contrato. Requerido vacío, inválido o más largo que su máximo: respaldo de ese campo. Tipo con todos sus requeridos vacíos: respaldo del tipo. Opcional vacío: `null`. Enlaces fuera de ruta interna, ancla, `http(s)`, `mailto` y `tel`: `null`. Imagen sin `url` o sin `alt`, o con `http:` absoluto: `null`; ruta relativa se resuelve contra la base del CMS.
+- `cms/cms-reader.ts`: `GET {CMS_URL}/api/content/:key?v=<instante>`, sin caché de fetch, timeout de 3 s. Estado no-200, cuerpo sin `data`, JSON inválido, red caída o timeout: `CmsUnavailable` como resultado, no como excepción.
+- `application/get-landing-content.ts`: lee los tres tipos en paralelo (si uno falla, falla la lectura entera) y valida campo a campo contra el contrato. Requerido vacío, inválido o más largo que su máximo: respaldo de ese campo. Tipo con todos sus requeridos vacíos: respaldo del tipo. Opcional vacío: `null`. Enlaces fuera de ruta interna, ancla, `http(s)`, `mailto` y `tel`: `null`. Imagen sin `url` o sin `alt`, o con `http:` absoluto: `null`; ruta relativa se resuelve contra `CMS_URL`.
+- `cms/landing-source.ts`: una entrada de `unstable_cache` con TTL de 600 s y tags `content:hero`, `content:intro`, `content:closingCta`. Una lectura fallida lanza dentro de la función cacheada y no se guarda; afuera se sirve el respaldo. Sin `CMS_URL` se sirve el respaldo sin llamar al CMS.
 - `application/fallback-messages.ts`: contenido de respaldo (textos del diseño de referencia, sin imagen).
-- `domain/`: formas de `LandingContent` y el error `CmsUnavailable`.
 
-Se detiene antes del adaptador HTTP del CMS, la caché y el entry point `index.ts`: ninguna página lo usa todavía.
+Se detiene antes del aviso de publicación: `POST /api/cms/webhook` no existe, así que hoy el contenido nuevo tarda hasta 10 minutos en verse.
 
 ## Contrato con el CMS
 
@@ -39,6 +40,8 @@ Se detiene antes del adaptador HTTP del CMS, la caché y el entry point `index.t
 
 US-BLOG-01: los borradores separados de lo publicado estan verificados en uno-cms (columnas `draft` y `published`; la ruta publica lee `published`). El tipo `posts` sigue en borrador en el contrato.
 
-## Contrato público
+## Contrato público (`index.ts`)
 
-Sin entry point todavía. Al crearse, entra por `index.ts` (ARCH-003).
+- `getLandingContent(): Promise<LandingContent>` — solo servidor; nunca lanza.
+- `landingCacheTags` — tags de la caché de la landing.
+- Tipos: `LandingContent`, `HeroContent`, `IntroContent`, `ClosingCtaContent`, `CmsImage`.

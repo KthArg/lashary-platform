@@ -6,7 +6,7 @@ actualizado: 2026-09-16
 historias:
   - id: US-LAND-01
     estado: en_progreso
-    falta: "solo existe el contrato del CMS (docs/contracts/cms-api.md); no existen el gateway en content, los tokens del tema del sitio ni la UI del hero, y ningun criterio tiene prueba"
+    falta: "existen el contrato del CMS (PR #35), Playwright (PR #36), los tokens del tema del sitio (PR #37) y la lectura del CMS en content; no existen el aviso de publicacion, la cabecera ni la UI del hero, y ningun criterio tiene una prueba que renderice la pagina"
   - id: US-LAND-02
     estado: no_iniciada
   - id: US-LAND-03
