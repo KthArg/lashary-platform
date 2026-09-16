@@ -17,6 +17,13 @@ fi
 # El PR de una rama de historia (us/<ID>) hacia main junta piezas ya revisadas y aprobadas: queda
 # exento del tope de líneas, de features y de antigüedad (INT-001, INT-002). En CI la rama y la base
 # llegan por PR_HEAD_REF y PR_BASE_REF; en local se toman de la rama actual y del rango.
+# Un push a main ya pasó este check en su PR. El squash de una historia (us/<ID> → main) siempre
+# supera el tope, y medirlo de nuevo contra HEAD~1 dejaría main en rojo tras cada historia.
+if [ "${PUSH_TO_MAIN:-}" = "1" ]; then
+  echo "Push a main: el tamaño y la antigüedad se verificaron en el PR (INT-001, INT-002)."
+  finish "check-pr-size"
+fi
+
 HEAD_REF="${PR_HEAD_REF:-$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null)}"
 BASE_REF="${PR_BASE_REF:-${DIFF_RANGE%%...*}}"
 if [ -n "$DIFF_RANGE" ] && echo "$HEAD_REF" | grep -qE '^us/' && echo "$BASE_REF" | grep -qE '^(origin/)?main$'; then

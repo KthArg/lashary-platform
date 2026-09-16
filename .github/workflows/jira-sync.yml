@@ -1,0 +1,27 @@
+name: Jira Sync
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/features/**/SPEC.md'
+      - 'docs/backlog/**'
+      - 'scripts/sync-jira.sh'
+
+jobs:
+  sync-to-jira:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up jq
+        run: sudo apt-get install -y jq
+
+      - name: Sincronizar estados con Jira
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+        run: ./scripts/sync-jira.sh
