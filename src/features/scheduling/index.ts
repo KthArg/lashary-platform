@@ -1,21 +1,24 @@
 // Entry point público de scheduling (ARCH-003): lo único importable desde afuera.
 // domain/ no importa de ninguna otra feature (ARCH-004).
-export type { ClosedDateProps, DayOfWeek, WeeklyAvailabilityBlockProps } from './domain/availability'
-export { ClosedDate, DAYS_OF_WEEK, WeeklyAvailabilityBlock } from './domain/availability'
-export type { Resource } from './domain/resource'
+export type { ClosedDateProps, DayOfWeek, ManualBlockProps, WeeklyAvailabilityBlockProps } from './domain/availability'
 export {
-  ClosedDateAlreadyExistsError,
+  ClosedDate,
+  InvalidBlockRangeError,
   InvalidDateError,
   InvalidDayOfWeekError,
   InvalidTimeRangeError,
-  SchedulingError,
-} from './domain/errors'
+  ManualBlock,
+  SchedulingDomainError,
+  WeeklyAvailabilityBlock,
+} from './domain/availability'
 
 export type { SchedulingRepository } from './application/ports'
 export {
   defineClosedDate,
+  defineManualBlock,
   defineWeeklyAvailability,
   listClosedDates,
+  listManualBlocks,
   listWeeklyAvailability,
 } from './application/manage-availability'
 export { listResources } from './application/resources'

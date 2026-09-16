@@ -3,6 +3,8 @@
 import {
   ClosedDate,
   type ClosedDateProps,
+  ManualBlock,
+  type ManualBlockProps,
   WeeklyAvailabilityBlock,
   type WeeklyAvailabilityBlockProps,
 } from '../domain/availability'
@@ -34,4 +36,15 @@ export function listClosedDates(
   resourceId: string
 ): Promise<ClosedDate[]> {
   return repository.listClosedDates(resourceId)
+}
+
+export async function defineManualBlock(
+  repository: SchedulingRepository,
+  props: ManualBlockProps
+): Promise<ManualBlock> {
+  return repository.saveManualBlock(new ManualBlock(props))
+}
+
+export function listManualBlocks(repository: SchedulingRepository, resourceId: string) {
+  return repository.listManualBlocks(resourceId)
 }

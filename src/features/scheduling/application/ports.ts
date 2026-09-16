@@ -1,6 +1,5 @@
 // Puerto que implementa db/ (Supabase). application/ y domain/ no conocen Supabase.
-import type { ClosedDate, WeeklyAvailabilityBlock } from '../domain/availability'
-import type { Resource } from '../domain/resource'
+import type { ClosedDate, ManualBlock, WeeklyAvailabilityBlock } from '../domain/availability'
 
 export interface SchedulingRepository {
   listResources(): Promise<Resource[]>
@@ -10,4 +9,7 @@ export interface SchedulingRepository {
 
   listClosedDates(resourceId: string): Promise<ClosedDate[]>
   saveClosedDate(closedDate: ClosedDate): Promise<ClosedDate>
+
+  listManualBlocks(resourceId: string): Promise<ManualBlock[]>
+  saveManualBlock(block: ManualBlock): Promise<ManualBlock>
 }
