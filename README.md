@@ -24,7 +24,7 @@ Plataforma de gestión de clientas y agendamiento para **LASHARY Beauty Studio**
 1. Especificamos antes de codificar; el trabajo se organiza en rebanadas verticales de funcionalidad y sprints de dos semanas.
 2. Toda regla tiene un ID permanente (`ARCH-003`, `SEC-001`…) y un racional. CI las hace cumplir donde es posible; ver [docs/spec/rules.yaml](docs/spec/rules.yaml).
 3. El estado del proyecto vive en el repositorio, generado desde los `SPEC.md`; un `STATUS.md` desactualizado rompe el build.
-4. Trunk-based: ramas de máximo 3 días, un PR por tarea, contrato primero cuando dos features se tocan.
+4. Una rama `us/<ID>` por historia; piezas de máximo 3 días y ~400 líneas que entran con merge commit; squash a `main` con la historia completa; contrato primero cuando dos features se tocan.
 5. La frontera real de autorización es RLS en Supabase; la de no-solape de citas, un exclusion constraint en PostgreSQL. Lo que la aplicación valida es cortesía.
 
 ## Stack

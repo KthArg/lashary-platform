@@ -5,15 +5,15 @@
 
 ## El punto
 
-Seis personas integrando **a diario** contra `main`. Todo lo demás — tamaños de PR, flags, contratos — existe para que eso sea posible sin pisarse.
+Seis personas integrando **a diario**: cada historia en su rama `us/<ID>`, hecha de piezas chicas y actualizada con `main` todos los días; a `main` entra la historia completa. Todo lo demás — tamaños de PR, flags, contratos — existe para que eso sea posible sin pisarse.
 
-### INT-001 — Trunk-based, ramas de 3 días
-**Regla.** Se ramifica desde `main` y se vuelve a `main`. Ninguna rama vive más de 3 días. Si va a durar más, la tarea estaba mal dimensionada: se parte, y lo que funciona se mergea detrás de un flag (INT-004).
-**Racional.** Una rama vieja es un merge conflict incubándose y trabajo invisible para el resto del equipo.
-**Cumplimiento.** L1 check de antigüedad de rama en CI (F4) + L5.
+### INT-001 — Rama por historia, piezas de 3 días
+**Regla.** Cada historia tiene su rama `us/<ID>` (por ejemplo `us/US-LAND-01`), creada desde `main`; vive lo que dure la historia y se actualiza con `main` **al menos una vez al día**. Cada pieza de trabajo es una rama que sale de `us/<ID>` (o de la pieza anterior, si se apilan) y vuelve a ella en **3 días como máximo**. Si una pieza va a durar más, estaba mal dimensionada: se parte.
+**Racional.** Una rama vieja es un merge conflict incubándose y trabajo invisible para el resto del equipo. Las piezas cortas lo evitan dentro de la historia; actualizar `us/<ID>` a diario lo evita contra el resto del equipo.
+**Cumplimiento.** L1 check de antigüedad de rama en CI para los PRs de pieza; el PR `us/<ID>` → `main` está exento (F4) + L5.
 
 ### INT-002 — Un PR pequeño por tarea
-**Regla.** Una tarea = un PR = máximo 3 días. Aproximadamente 400 líneas de diff y máximo 2 features con cambios de **código**. Ediciones de solo-`SPEC.md` no cuentan para el tope de features (una sincronización de specs tras un cambio de alcance toca muchas legítimamente) — sí cuentan para el de líneas. Rebasar antes de merge; squash merge.
+**Regla.** Una pieza = un PR contra `us/<ID>` (o contra la pieza anterior) = máximo 3 días. Aproximadamente 400 líneas de diff y máximo 2 features con cambios de **código**. Ediciones de solo-`SPEC.md` no cuentan para el tope de features (una sincronización de specs tras un cambio de alcance toca muchas legítimamente) — sí cuentan para el de líneas. El PR `us/<ID>` → `main` junta piezas ya revisadas y aprobadas: queda exento de este tope.
 **Racional.** Un PR gigante no se revisa: se aprueba por cansancio. Dos features máximo mantiene el radio de impacto legible.
 **Cumplimiento.** L1 tamaño de diff y conteo de features (F4).
 
@@ -28,9 +28,9 @@ Seis personas integrando **a diario** contra `main`. Todo lo demás — tamaños
 **Cumplimiento.** L1 flags del spec contra fecha de retiro (F4).
 
 ### INT-005 — Condiciones de merge
-**Regla.** Antes de merge: rebase sobre `main`, CI verde, una aprobación de alguien que **no** trabaja en esa feature. Squash merge.
-**Racional.** El revisor externo a la feature es el único que nota lo que el equipo de la feature ya normalizó por costumbre.
-**Cumplimiento.** L1 branch protection en GitHub cuenta la aprobación; la externalidad no es verificable por GitHub (no existe el concepto de "externo a la feature" en branch protection) — la sostiene el checkbox del PR template y el revisor de cumplimiento.
+**Regla.** Antes de merge: CI verde y una aprobación de alguien que **no** trabaja en esa feature. Hacia `us/<ID>` (o hacia otra pieza): **merge commit**. Hacia `main`: **squash**, una vez por historia, con la historia completa (todos sus criterios con su prueba) y `us/<ID>` al día con `main`.
+**Racional.** El revisor externo a la feature es el único que nota lo que el equipo de la feature ya normalizó por costumbre. El squash dentro de una cadena de piezas apiladas reescribe commits y obliga a resolver conflictos en cada merge; el merge commit conserva los commits y la pieza siguiente no choca. A `main` llega un commit por historia (decisión del PO, 2026-09-16).
+**Cumplimiento.** L1 branch protection y rulesets de GitHub cuentan la aprobación y fijan el método (`main` solo squash, `us/**` solo merge commit); la externalidad no es verificable por GitHub (no existe el concepto de "externo a la feature" en branch protection) — la sostiene el checkbox del PR template y el revisor de cumplimiento.
 
 ### INT-006 — El linter es la autoridad de estilo
 **Regla.** El estilo no se discute en review, nunca. Si el linter debió atrapar algo, el fix es un PR a la config del linter, no un comentario a una persona.

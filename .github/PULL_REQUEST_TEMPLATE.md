@@ -23,7 +23,7 @@
 
 ## Revisión
 
-- [ ] Rebasado sobre main; rama ≤ 3 días (INT-001/005).
+- [ ] Pieza: base `us/<ID>` (o la pieza anterior), rama ≤ 3 días, merge commit. PR a `main`: `us/<ID>` al día con `main`, historia completa, squash (INT-001/005).
 - [ ] Máximo una migración, forward-only (INT-008).
 - [ ] Sin imports ilegales entre features (ARCH-003/004).
 - [ ] Si toca auth, RLS, uploads, migraciones, dinero o expediente: checklist de `lashary-seguridad` corrido; RLS con su test de aislamiento (SEC-002).
