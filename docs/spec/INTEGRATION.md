@@ -1,6 +1,6 @@
 # Integración — reglas INT
 
-> **Autoridad:** cómo el código de seis personas está junto y funcionando cada día: ramas, PRs, contratos, flags, migraciones. **Lectores:** todo el equipo, cada día. **Estado:** vigente. **Actualizado:** 2026-08-27.
+> **Autoridad:** cómo el código de seis personas está junto y funcionando cada día: ramas, PRs, contratos, flags, migraciones. **Lectores:** todo el equipo, cada día. **Estado:** vigente. **Actualizado:** 2026-09-16.
 > Índice máquina: [rules.yaml](rules.yaml). El bucle de trabajo: [../process/WORK_LOOP.md](../process/WORK_LOOP.md).
 
 ## El punto
@@ -18,9 +18,9 @@ Seis personas integrando **a diario** contra `main`. Todo lo demás — tamaños
 **Cumplimiento.** L1 tamaño de diff y conteo de features (F4).
 
 ### INT-003 — Contrato primero
-**Regla.** Cuando una feature necesita algo de otra — API pública, evento de dominio, esquema compartido — primero se mergea un PR que cambia **solo** el contrato y los specs afectados. Ambos lados implementan después, en paralelo.
-**Racional.** Mata la clase más cara de conflicto: dos personas construyendo dos semanas contra supuestos privados que no coinciden.
-**Cumplimiento.** L5 review + PR template.
+**Regla.** Cuando una feature necesita algo de otra — API pública, evento de dominio, esquema compartido — primero se abre un PR que cambia **solo** el contrato y los specs afectados. Con ese PR abierto, ambos lados pueden implementar en paralelo **sin esperar su aprobación**. Si la revisión cambia el contrato, la implementación se ajusta antes de su propio merge. **Ninguna implementación se mergea antes que su contrato.**
+**Racional.** Mata la clase más cara de conflicto: dos personas construyendo contra supuestos privados que no coinciden. Lo que lo evita es que el supuesto esté escrito y visible antes del código. Esperar la aprobación del contrato no agrega protección cuando ajustar la implementación es barato, y con código asistido por IA lo es (decisión del PO, 2026-09-16).
+**Cumplimiento.** L5 review + PR template: el PR de implementación enlaza el PR de su contrato; mientras el contrato no esté mergeado, el PR de implementación apunta a la rama del contrato o declara la dependencia, y no se mergea antes.
 
 ### INT-004 — Flags con dueño y fecha de retiro
 **Regla.** Todo lo incompleto se mergea **apagado** detrás de un feature flag, con dueño y fecha de retiro registrados en el `SPEC.md` de la feature. Los flags se borran al cumplirse; un flag vencido es un hallazgo de `/deriva`.
