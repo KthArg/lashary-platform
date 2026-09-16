@@ -156,3 +156,10 @@ textos y límites, entre ellas `CLIENTS_LIST_LIMITS` (DOM-009).
 - **2026-09-15 — US-CLI-05 se marca `terminada` dentro del PR #32**, el último de la pila
   (#16 → #28 → #31 → #32), con esos PRs como evidencia (EST-005). La pila se mergea en orden: #32 no
   entra a `main` antes que los otros tres. La deuda de SEC-002 sigue abierta.
+- **2026-09-15 — Los estilos se importan como `STYLES`, no como `s`** (decisión de revisión de código):
+  `import { clientsListStyles as STYLES } from './ClientsList.styles'`. Aplicado a los 8 archivos de
+  `clients` y de su ruta; `auth` y el resto de rutas se alinean cuando se toquen. Solo cambia el alias:
+  ni los nombres de los objetos de estilos ni sus claves.
+- **2026-09-15 — Las rutas de iconos SVG viven en `constants/clients-icons.ts`**, no dentro del JSX
+  (mismo comentario de revisión). Hoy solo está el lápiz de `ClientsList`; no hay imágenes ni otros
+  assets en la feature.

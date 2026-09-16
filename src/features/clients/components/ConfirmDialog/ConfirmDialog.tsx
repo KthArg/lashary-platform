@@ -3,7 +3,7 @@
 import { useEffect, useId } from 'react'
 import { useFocusTrap } from '../../hooks/useFocusTrap'
 import { CLIENTS_CONFIRM_MESSAGES } from '../../constants/clients-strings'
-import { confirmDialogStyles as s } from './ConfirmDialog.styles'
+import { confirmDialogStyles as STYLES } from './ConfirmDialog.styles'
 import type { ConfirmDialogProps } from './ConfirmDialog.types'
 
 /**
@@ -38,18 +38,18 @@ export function ConfirmDialog({
 
   return (
     <div
-      className={s.backdrop}
+      className={STYLES.backdrop}
       role="alertdialog"
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={messageId}
     >
-      <div ref={cardRef} className={s.card} tabIndex={-1}>
-        <h2 id={titleId} className={s.title}>{title}</h2>
-        <p id={messageId} className={s.message}>{message}</p>
-        <div className={s.actions}>
-          <button type="button" onClick={onCancel} className={s.cancelBtn}>{cancelLabel}</button>
-          <button type="button" onClick={onConfirm} className={s.confirmBtn}>{confirmLabel}</button>
+      <div ref={cardRef} className={STYLES.card} tabIndex={-1}>
+        <h2 id={titleId} className={STYLES.title}>{title}</h2>
+        <p id={messageId} className={STYLES.message}>{message}</p>
+        <div className={STYLES.actions}>
+          <button type="button" onClick={onCancel} className={STYLES.cancelBtn}>{cancelLabel}</button>
+          <button type="button" onClick={onConfirm} className={STYLES.confirmBtn}>{confirmLabel}</button>
         </div>
       </div>
     </div>
