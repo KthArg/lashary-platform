@@ -8,7 +8,8 @@ historias:
     estado: terminada
     evidencia: "PR #49 (us/US-LAND-01 a main); piezas PRs #35 a #45; PR #58 corrige la clave closing-cta del CMS; aprobacion visual del PO el 2026-09-16 sobre las capturas del artefacto capturas-landing; el modelo hero, intro y closing-cta esta en cms.config.ts de lashary-cms y las tres claves responden 200. Pruebas: landing-hero.test.tsx, landing-home.test.tsx, site-header.test.tsx, opening-frame.test.ts, cms-reader.test.ts, landing-source.test.ts, webhook.test.ts, get-landing-content.test.ts; e2e home-hero.spec.ts, home-responsive.spec.ts, home-screenshots.spec.ts"
   - id: US-LAND-02
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "criterio 1 a medias: la fila muestra descripcion, pero no imagen ni ejemplos de resultados. Ni el catalogo (catalog_techniques) ni el contrato del CMS (docs/contracts/cms-api.md) tienen hoy de donde sacar esas imagenes; elegir la fuente es decision del PO y cambia un contrato, asi que no se invento un campo. El resto de criterios (2, 3, 4 y 5) queda demostrado en ui/__tests__/landing-techniques.test.tsx"
   - id: US-LAND-03
     estado: no_iniciada
   - id: US-LAND-04
@@ -30,9 +31,9 @@ Sitio publico: inicio, tecnicas, contacto, conoceme, galeria, fidelidad informat
 
 - `ui/SiteHeader.tsx`: cabecera fija de todas las páginas públicas (la monta `src/app/(site)/layout.tsx`). Marca con ancla a `#inicio`, "Reservar cita" hacia `RESERVE_ROUTE` (`/portal`) y, si hay secciones, la barra de enlaces (desde 860 px, token `site-nav`) y el botón de menú.
 - `ui/SiteMenu.tsx`: menú a pantalla completa como diálogo modal. Foco en "Cerrar" al abrir, Tab atrapado, Escape cierra y devuelve el foco al botón, scroll de la página bloqueado mientras está abierto.
-- `ui/sections.ts`: `landingSections` está vacía; cada historia agrega su sección al montarla. Sin secciones no se muestra navegación ni menú.
+- `ui/sections.ts`: `landingSections` lista hoy solo Servicios (`TECHNIQUES_SECTION`, ancla `#servicios`); cada historia agrega la suya al montarla. La sección se renderiza siempre, incluso sin técnicas, para que el ancla de la navegación nunca apunte al vacío.
 
-- `ui/LandingHome.tsx` + `src/app/(site)/page.tsx`: `/` es estática con revalidación de 600 s; lee `getLandingContent()` de `content` y hoy renderiza solo el hero dentro de `<main id="inicio">`.
+- `ui/LandingHome.tsx` + `src/app/(site)/page.tsx`: `/` es estática con revalidación de 600 s; lee `getLandingContent()` de `content` y `listTechniques({ activeOnly: true })` del entry point de `catalog` (ARCH-003), y compone hero, bienvenida, servicios y llamada final dentro de `<main id="inicio">`.
 - `ui/LandingHero.tsx`: título en dos líneas, subtítulo, "Reservar cita" (texto del CMS, destino `RESERVE_ROUTE`), enlace secundario solo con texto y destino, y la foto del CMS con `next/image`. Sin imagen, la píldora queda como relleno decorativo (`aria-hidden`).
 - `ui/opening-frame.ts` + `ui/use-opening-animation.ts`: la apertura de la foto al bajar, en una pista de 300vh. Con `prefers-reduced-motion: reduce` no se registra el scroll y el CSS muestra título y foto quietos, uno debajo del otro. En pantallas de hasta 500 px de alto (token `site-short`) el bloque del título se alinea arriba para no quedar bajo la cabecera.
 - `next.config.js`: imágenes remotas de Vercel Blob y, en desarrollo, del origen de `CMS_URL`. Next bloquea por SSRF imágenes de IPs privadas; solo con `next dev` y `CMS_URL` en loopback se permite (`dangerouslyAllowLocalIP`), nunca en producción.
@@ -43,9 +44,17 @@ Sitio publico: inicio, tecnicas, contacto, conoceme, galeria, fidelidad informat
 
 Medición PERF-004 (2026-09-16, `next build` + `next start`, Playwright con emulación de Chrome: 375 px, 4G lento a 1.6 Mbps y 150 ms, CPU x4; no es Lighthouse): LCP 1384–1408 ms en 3 corridas, elemento LCP el título del hero; JS inicial 141.7 KB comprimido (7 scripts). Dentro del presupuesto (2.5 s y 200 KB), así que no se optimizó nada (PERF-001).
 
-US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09-16 sobre las capturas del artefacto `capturas-landing`.
+### Servicios (US-LAND-02)
 
-Cimientos de US-LAND-02 ya en su sitio, todavía sin montar en la página: tokens de la fila de técnica en `tailwind.config.js` (UI-002), `ui/technique-view.ts` (adapta `TechniqueView` de `catalog` y formatea colones en `es-CR`), `reserveRouteFor()` en `ui/routes.ts` y los textos de la sección en `ui/messages.ts`.
+- `ui/LandingTechniques.tsx` (servidor): encabezado de sección con filete y numeral, y la lista de técnicas. Sin técnicas muestra su estado vacío en vez de desaparecer (UI-003).
+- `ui/TechniqueList.tsx` (cliente, el único de la sección): acordeón como el diseño — una fila abierta a la vez, y volver a pulsar la abierta la cierra. `aria-expanded` + `aria-controls`, área pulsable de 44 px (UI-004) y el signo `+` gira a `×` con `motion-reduce` respetado.
+- La fila cerrada muestra nombre, duración de primera vez y precio de primera vez; abierta agrega la descripción, el detalle de primera vez y —solo si la técnica se retoca— el precio y la duración de retoque (criterio 3), y el enlace "Reservar esta técnica".
+- `ui/technique-view.ts`: adapta `TechniqueView` de `catalog` a lo que se pinta y formatea los colones enteros (ADR-0004) con `Intl` en `es-CR`. Se arma en el servidor para que el componente de cliente no arrastre `catalog` —ni su cliente de Supabase— al bundle.
+- `ui/routes.ts`: `reserveRouteFor(id)` lleva a `RESERVE_ROUTE` con la técnica en la query (`?tecnica=`). El portal hoy ignora el parámetro; lo recogerá US-AGE-05.
+- La descripción de cada técnica es texto del sitio, por familia de servicio (`techniqueDescriptions` en `ui/messages.ts`): el catálogo guarda precios y tiempos, no prosa. Una familia sin texto no rompe la fila.
+- `src/app/(site)/page.tsx` envuelve la lectura del catálogo en `try/catch`: si el catálogo se cae, la sección queda en su estado vacío y la landing sigue sirviéndose, igual que el contenido del CMS cae al respaldo.
+
+US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09-16 sobre las capturas del artefacto `capturas-landing`. De las demás secciones del diseño solo está montada Servicios; El estudio, Galería y Ubicación llegan con US-LAND-04, -03 y -07.
 
 ## Decisiones de US-LAND-01 (PO, 2026-09-16)
 
