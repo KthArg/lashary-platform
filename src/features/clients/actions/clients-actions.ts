@@ -9,7 +9,7 @@ import { hasClientFormErrors, validateClientForm } from '../validation/validate-
 import { normalizePhone } from '../validation/normalize-phone'
 import type { ClientFormValues } from '../types/client-form.types'
 import type { ClientRecord } from '../types/client.types'
-import type { ListClientsResult, SaveClientResult } from '../types/client-actions.types'
+import type { ListClientsQuery, ListClientsResult, SaveClientResult } from '../types/client-actions.types'
 
 const CLIENTS_TABLE = 'clients_profiles'
 const CLIENTS_PATH = '/admin/clients'
@@ -95,16 +95,40 @@ export async function updateClientAction(id: string, input: ClientFormValues): P
   return { ok: true, client: toRecord(data as ClientRow) }
 }
 
+const readPage = (page: unknown): number => (Number.isInteger(page) && (page as number) > 0 ? (page as number) : 0)
+
+const readPageSize = (pageSize: unknown): number =>
+  (CLIENTS_LIST_LIMITS.pageSizes as readonly number[]).includes(pageSize as number)
+    ? (pageSize as number)
+    : CLIENTS_LIST_LIMITS.defaultPageSize
+
 /**
- * Lee una pagina de clientas, las mas recientes primero (PERF-002). La pagina 0 es la que muestra
- * /admin/clients; navegar paginas y filtrar es US-CLI-01. Un `page` invalido se trata como 0.
+ * El texto de la administradora se busca tal cual: `%`, `_` y `\` se escapan para que no funcionen como
+ * comodines de LIKE, y `*` se quita porque PostgREST lo convierte en `%`. Vacio = sin filtro.
  */
-export async function listClientsAction(page = 0): Promise<ListClientsResult> {
+const toNamePattern = (name: unknown): string | null => {
+  if (typeof name !== 'string') return null
+  const term = name.trim().slice(0, CLIENTS_LIST_LIMITS.nameFilterMaxLength).replace(/\*/g, '').replace(/[\\%_]/g, '\\$&')
+  return term ? `%${term}%` : null
+}
+
+/**
+ * US-CLI-01 criterios 2 (nombre) y 3: una pagina de clientas, las mas recientes primero, con el total del filtro
+ * para saber cuantas paginas hay (PERF-002). Todo lo que llega se sanea: pagina invalida = 0, tamano fuera de
+ * `CLIENTS_LIST_LIMITS.pageSizes` = el de por defecto (DOM-007).
+ */
+export async function listClientsAction(query: ListClientsQuery = {}): Promise<ListClientsResult> {
   await requireAdminSession()
-  const from = (Number.isInteger(page) && page > 0 ? page : 0) * CLIENTS_LIST_LIMITS.pageSize
+  const page = readPage(query?.page)
+  const pageSize = readPageSize(query?.pageSize)
+  const namePattern = toNamePattern(query?.name)
+  const from = page * pageSize
+
   const supabase = await createClient()
-  const { data, error } = await supabase.from(CLIENTS_TABLE).select(CLIENT_COLUMNS)
-    .order('created_at', { ascending: false }).range(from, from + CLIENTS_LIST_LIMITS.pageSize - 1)
-  if (error || !data) return { ok: false, error: CLIENTS_ERROR_MESSAGES.loadFailed }
-  return { ok: true, clients: (data as ClientRow[]).map(toRecord) }
+  let request = supabase.from(CLIENTS_TABLE).select(CLIENT_COLUMNS, { count: 'exact' })
+  if (namePattern) request = request.ilike('full_name', namePattern)
+  const { data, error, count } = await request.order('created_at', { ascending: false }).range(from, from + pageSize - 1)
+
+  if (error || !data || count === null) return { ok: false, error: CLIENTS_ERROR_MESSAGES.loadFailed }
+  return { ok: true, clients: (data as ClientRow[]).map(toRecord), total: count, page, pageSize }
 }
