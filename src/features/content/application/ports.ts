@@ -8,4 +8,7 @@ export type RawLandingContent = Record<LandingContentKey, unknown>
 // Puerto de lectura del CMS. La implementación HTTP vive en cms/.
 export interface CmsReader {
   readSingleton(key: LandingContentKey): Promise<Result<unknown, CmsUnavailable>>
+  // Una colección responde `{ key, items: [...] }` en el orden del editor
+  // (docs/contracts/cms-api.md § Transporte).
+  readCollection(key: string): Promise<Result<unknown[], CmsUnavailable>>
 }

@@ -14,7 +14,7 @@
 | clients | pendiente | en_progreso | 1 / 1 / 0 / 0 / 3 |
 | content | pendiente | en_progreso | 0 / 0 / 0 / 0 / 3 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
-| landing | pendiente | en_progreso | 1 / 1 / 0 / 0 / 4 |
+| landing | pendiente | en_progreso | 2 / 0 / 0 / 0 / 4 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
 | payments | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
@@ -59,7 +59,7 @@
 
 ### landing (actualizado: 2026-09-16)
 - US-LAND-01 — terminada — PR #49 (us/US-LAND-01 a main); piezas PRs #35 a #45; PR #58 corrige la clave closing-cta del CMS; aprobacion visual del PO el 2026-09-16 sobre las capturas del artefacto capturas-landing; el modelo hero, intro y closing-cta esta en cms.config.ts de lashary-cms y las tres claves responden 200. Pruebas: landing-hero.test.tsx, landing-home.test.tsx, site-header.test.tsx, opening-frame.test.ts, cms-reader.test.ts, landing-source.test.ts, webhook.test.ts, get-landing-content.test.ts; e2e home-hero.spec.ts, home-responsive.spec.ts, home-screenshots.spec.ts
-- US-LAND-02 — en_progreso — falta: criterio 1 a medias: la fila muestra descripcion, pero no imagen ni ejemplos de resultados. Ni el catalogo (catalog_techniques) ni el contrato del CMS (docs/contracts/cms-api.md) tienen hoy de donde sacar esas imagenes; elegir la fuente es decision del PO y cambia un contrato, asi que no se invento un campo. El resto de criterios (2, 3, 4 y 5) queda demostrado en ui/__tests__/landing-techniques.test.tsx
+- US-LAND-02 — terminada — PR #63 (us/US-LAND-02 a main). Las fotos salen del CMS por la coleccion tecnicas, contrato v1.1 de docs/contracts/cms-api.md, cuya otra mitad es el PR #6 de lashary-cms (decision del PO el 2026-09-16: las imagenes van en el CMS). Criterios 1 a 5 demostrados en ui/__tests__/landing-techniques.test.tsx; el gateway, en content/application/__tests__/get-technique-media.test.ts, cms/__tests__/cms-reader.test.ts y cms/__tests__/webhook.test.ts. Verificado ademas contra el CMS local: fila publicada desde el panel, foto y ejemplo servidos por /api/content/tecnicas y renderizados en la landing tras el aviso firmado que invalida content:tecnicas
 - US-LAND-03 — no_iniciada
 - US-LAND-04 — no_iniciada
 - US-LAND-05 — no_iniciada
