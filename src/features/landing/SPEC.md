@@ -8,8 +8,8 @@ historias:
     estado: terminada
     evidencia: "PR #49 (us/US-LAND-01 a main); piezas PRs #35 a #45; PR #58 corrige la clave closing-cta del CMS; aprobacion visual del PO el 2026-09-16 sobre las capturas del artefacto capturas-landing; el modelo hero, intro y closing-cta esta en cms.config.ts de lashary-cms y las tres claves responden 200. Pruebas: landing-hero.test.tsx, landing-home.test.tsx, site-header.test.tsx, opening-frame.test.ts, cms-reader.test.ts, landing-source.test.ts, webhook.test.ts, get-landing-content.test.ts; e2e home-hero.spec.ts, home-responsive.spec.ts, home-screenshots.spec.ts"
   - id: US-LAND-02
-    estado: en_progreso
-    falta: "criterio 1 a medias: la fila muestra descripcion, pero no imagen ni ejemplos de resultados. Ni el catalogo (catalog_techniques) ni el contrato del CMS (docs/contracts/cms-api.md) tienen hoy de donde sacar esas imagenes; elegir la fuente es decision del PO y cambia un contrato, asi que no se invento un campo. El resto de criterios (2, 3, 4 y 5) queda demostrado en ui/__tests__/landing-techniques.test.tsx"
+    estado: terminada
+    evidencia: "PR #63 (us/US-LAND-02 a main). Las fotos salen del CMS por la coleccion tecnicas, contrato v1.1 de docs/contracts/cms-api.md, cuya otra mitad es el PR #6 de lashary-cms (decision del PO el 2026-09-16: las imagenes van en el CMS). Criterios 1 a 5 demostrados en ui/__tests__/landing-techniques.test.tsx; el gateway, en content/application/__tests__/get-technique-media.test.ts, cms/__tests__/cms-reader.test.ts y cms/__tests__/webhook.test.ts. Verificado ademas contra el CMS local: fila publicada desde el panel, foto y ejemplo servidos por /api/content/tecnicas y renderizados en la landing tras el aviso firmado que invalida content:tecnicas"
   - id: US-LAND-03
     estado: no_iniciada
   - id: US-LAND-04
@@ -52,6 +52,7 @@ Medición PERF-004 (2026-09-16, `next build` + `next start`, Playwright con emul
 - `ui/technique-view.ts`: adapta `TechniqueView` de `catalog` a lo que se pinta y formatea los colones enteros (ADR-0004) con `Intl` en `es-CR`. Se arma en el servidor para que el componente de cliente no arrastre `catalog` —ni su cliente de Supabase— al bundle.
 - `ui/routes.ts`: `reserveRouteFor(id)` lleva a `RESERVE_ROUTE` con la técnica en la query (`?tecnica=`). El portal hoy ignora el parámetro; lo recogerá US-AGE-05.
 - La descripción de cada técnica es texto del sitio, por familia de servicio (`techniqueDescriptions` en `ui/messages.ts`): el catálogo guarda precios y tiempos, no prosa. Una familia sin texto no rompe la fila.
+- Las **fotos** vienen del CMS (`getTechniqueMedia()` de `content`, colección `tecnicas`) y se cruzan por `familia`, que es el único campo estable en los dos lados. La fila abierta muestra la foto principal en retrato junto al texto, y los ejemplos como miniaturas. Una técnica sin fila en el CMS se muestra sin fotos: el catálogo manda qué técnicas existen, el CMS solo las ilustra.
 - `src/app/(site)/page.tsx` envuelve la lectura del catálogo en `try/catch`: si el catálogo se cae, la sección queda en su estado vacío y la landing sigue sirviéndose, igual que el contenido del CMS cae al respaldo.
 
 US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09-16 sobre las capturas del artefacto `capturas-landing`. De las demás secciones del diseño solo está montada Servicios; El estudio, Galería y Ubicación llegan con US-LAND-04, -03 y -07.

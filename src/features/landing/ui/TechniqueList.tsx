@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useId, useState } from 'react'
 import { landingMessages } from './messages'
@@ -55,9 +56,41 @@ export function TechniqueList({ techniques }: TechniqueListProps) {
               hidden={!isOpen}
               className={`${styles.body} ${isOpen ? styles.bodyOpen : ''}`}
             >
-                {technique.description && (
-                  <p className={styles.description}>{technique.description}</p>
-                )}
+                <div className={styles.layout}>
+                  {technique.image && (
+                    <figure className={styles.figure}>
+                      <Image
+                        src={technique.image.url}
+                        alt={technique.image.alt}
+                        fill
+                        className={styles.photo}
+                        sizes="(max-width: 768px) 100vw, 22rem"
+                      />
+                    </figure>
+                  )}
+
+                  <div className={styles.column}>
+                    {technique.description && (
+                      <p className={styles.description}>{technique.description}</p>
+                    )}
+
+                    {technique.examples.length > 0 && (
+                      <ul className={styles.examples}>
+                        {technique.examples.map((example) => (
+                          <li key={example.url} className={styles.example}>
+                            <Image
+                              src={example.url}
+                              alt={example.alt}
+                              fill
+                              className={styles.photo}
+                              sizes="5.5rem"
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
 
                 <div className={styles.detail}>
                   <span className={styles.detailItem}>

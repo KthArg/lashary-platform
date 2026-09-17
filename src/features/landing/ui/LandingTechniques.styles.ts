@@ -24,6 +24,15 @@ export const landingTechniquesStyles = {
   // La apertura se anima al abrir, no al cargar la página: el panel está siempre en el DOM.
   body: 'pb-site-row-body',
   bodyOpen: 'animate-site-in-quick motion-reduce:animate-none',
+
+  // Abierta: la foto a un lado y el texto al otro; en angosto, la foto primero y el texto debajo.
+  layout: 'flex flex-wrap items-start gap-site-row-gap',
+  figure: 'relative m-0 aspect-site-photo w-full max-w-site-photo flex-none overflow-hidden bg-site-taupe',
+  photo: 'object-cover',
+  column: 'flex-auto basis-site-text',
+
+  examples: 'mt-site-row-gap flex flex-wrap gap-2',
+  example: 'relative aspect-square w-site-thumb overflow-hidden bg-site-taupe',
   description:
     'm-0 max-w-site-technique-desc text-site-body leading-site-loose text-site-ink-soft',
   detail: 'mt-4 flex flex-wrap items-baseline gap-x-site-row-gap gap-y-2',

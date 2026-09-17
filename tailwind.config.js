@@ -123,6 +123,8 @@ module.exports = {
       },
       width: {
         'site-pill': '68vw',
+        // Miniaturas de los ejemplos de resultado.
+        'site-thumb': '5.5rem',
       },
       rotate: {
         // El "+" de una fila abierta gira hasta cruzarse: se lee como "cerrar" sin cambiar el glifo.
@@ -131,6 +133,10 @@ module.exports = {
       translate: {
         // Posición inicial de la foto: fuera de cuadro, debajo del título.
         'site-pill-start': 'calc(-50% + 56vh)',
+      },
+      aspectRatio: {
+        // Retrato de la foto de técnica, como las fotos del diseño.
+        'site-photo': '4 / 5',
       },
       borderRadius: {
         'site-pill': '50% / 100%',
@@ -142,6 +148,8 @@ module.exports = {
         'site-subtitle': '34ch',
         'site-closing': '18ch',
         'site-technique-desc': '52ch',
+        // Foto de la técnica dentro de la fila abierta (US-LAND-02).
+        'site-photo': '22rem',
       },
       transitionTimingFunction: {
         'site-out': 'cubic-bezier(0.16, 1, 0.3, 1)',

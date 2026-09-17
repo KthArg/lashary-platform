@@ -1,4 +1,4 @@
-import { getLandingContent } from '@/features/content'
+import { getLandingContent, getTechniqueMedia } from '@/features/content'
 import { listTechniques } from '@/features/catalog'
 import type { Metadata } from 'next'
 import { LandingHome, landingMessages, toLandingTechnique } from '@/features/landing'
@@ -22,8 +22,13 @@ export const metadata: Metadata = {
 // que el contenido del CMS cae al respaldo. La página pública nunca es la que falla.
 async function readTechniques() {
   try {
-    const page = await listTechniques({ activeOnly: true })
-    return page.items.map(toLandingTechnique)
+    // El catálogo manda qué técnicas hay; el CMS solo las ilustra, así que si falla se pintan
+    // sin foto en vez de no pintarse.
+    const [page, media] = await Promise.all([
+      listTechniques({ activeOnly: true }),
+      getTechniqueMedia(),
+    ])
+    return page.items.map((technique) => toLandingTechnique(technique, media))
   } catch (error) {
     console.warn('[landing] catálogo no disponible; la sección de técnicas queda vacía', error)
     return []

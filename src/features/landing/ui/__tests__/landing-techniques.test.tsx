@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { render, screen, cleanup, fireEvent, within } from '@testing-library/react'
 import type { TechniqueView } from '@/features/catalog'
+import type { TechniqueMediaByFamily } from '@/features/content'
 import {
   LandingTechniques,
   toLandingTechnique,
@@ -28,8 +29,21 @@ const catalogo = (overrides: Partial<TechniqueView> = {}): TechniqueView => ({
   ...overrides,
 })
 
-const seccion = (techniques: TechniqueView[]) =>
-  render(<LandingTechniques techniques={techniques.map(toLandingTechnique)} />)
+const seccion = (techniques: TechniqueView[], media: TechniqueMediaByFamily = {}) =>
+  render(
+    <LandingTechniques techniques={techniques.map((t) => toLandingTechnique(t, media))} />,
+  )
+
+// Fotos tal como las entrega el gateway del CMS, ya resueltas contra CMS_URL.
+const fotos: TechniqueMediaByFamily = {
+  lash_classic: {
+    image: { url: 'https://cms.test/clasico.jpg', alt: 'Mirada con set clásico' },
+    examples: [
+      { url: 'https://cms.test/clasico-1.jpg', alt: 'Resultado a los 7 días' },
+      { url: 'https://cms.test/clasico-2.jpg', alt: 'Resultado recién aplicado' },
+    ],
+  },
+}
 
 describe('LandingTechniques — US-LAND-02', () => {
   it('criterio 2: cada técnica muestra su precio y su duración, tomados del catálogo', () => {
@@ -128,6 +142,26 @@ describe('LandingTechniques — US-LAND-02', () => {
     const abierto = document.getElementById(panelId)
     expect(abierto).toBeTruthy()
     expect(abierto?.hasAttribute('hidden')).toBe(false)
+  })
+
+  it('criterio 1: la técnica abierta muestra su imagen y sus ejemplos de resultado', () => {
+    seccion([catalogo()], fotos)
+
+    fireEvent.click(screen.getByRole('button', { name: /Set clásico/ }))
+
+    expect(screen.getByAltText('Mirada con set clásico')).toBeTruthy()
+    expect(screen.getByAltText('Resultado a los 7 días')).toBeTruthy()
+    expect(screen.getByAltText('Resultado recién aplicado')).toBeTruthy()
+  })
+
+  it('criterio 1: una técnica sin fotos en el CMS se muestra igual, sin imágenes', () => {
+    // El catálogo manda qué técnicas existen; el CMS solo las ilustra.
+    seccion([catalogo({ name: 'Set volumen', family: 'lash_volume' })], fotos)
+
+    fireEvent.click(screen.getByRole('button', { name: /Set volumen/ }))
+
+    expect(screen.getByText(/Abanicos hechos a mano/)).toBeTruthy()
+    expect(screen.queryByRole('img')).toBeNull()
   })
 
   it('UI-003: sin técnicas la sección sigue existiendo y explica qué pasa', () => {

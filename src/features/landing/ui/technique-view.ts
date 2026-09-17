@@ -1,4 +1,5 @@
 import type { TechniqueView } from '@/features/catalog'
+import type { CmsImage, TechniqueMediaByFamily } from '@/features/content'
 import { techniqueDescriptions } from './messages'
 
 // Lo que la sección de técnicas necesita para pintarse: la vista pública del catálogo
@@ -13,9 +14,18 @@ export type LandingTechnique = {
   priceRetouch: number | null
   durationFirstTimeMin: number
   durationRetouchMin: number | null
+  // Fotos del CMS (docs/contracts/cms-api.md § `tecnicas`), cruzadas por familia. Una técnica
+  // sin fila en el CMS se muestra sin fotos: el catálogo manda qué técnicas existen.
+  image: CmsImage | null
+  examples: readonly CmsImage[]
 }
 
-export function toLandingTechnique(technique: TechniqueView): LandingTechnique {
+export function toLandingTechnique(
+  technique: TechniqueView,
+  media: TechniqueMediaByFamily = {},
+): LandingTechnique {
+  const fotos = media[technique.family]
+
   return {
     id: technique.id,
     name: technique.name,
@@ -24,6 +34,8 @@ export function toLandingTechnique(technique: TechniqueView): LandingTechnique {
     priceRetouch: technique.priceRetouch,
     durationFirstTimeMin: technique.durationFirstTimeMin,
     durationRetouchMin: technique.durationRetouchMin,
+    image: fotos?.image ?? null,
+    examples: fotos?.examples ?? [],
   }
 }
 
