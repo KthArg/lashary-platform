@@ -100,6 +100,7 @@ Reglas de consumo, para que la landing nunca dependa de que esto esté completo:
 - Si hay **varias filas con la misma familia**, vale la primera en el orden del editor. El resto se ignora; duplicar una familia no rompe nada.
 - Una fila cuya `familia` no es ninguna de las ocho del catálogo se ignora entera.
 - `ejemplo1..3` son tres ranuras fijas porque uno-cms no tiene campo de lista de imágenes. Las que falten, faltan; no hay que llenarlas en orden.
+- **Consecuencia aceptada de cruzar por familia:** dos técnicas del catálogo de la misma familia comparten fotos. Hoy el catálogo tiene una por familia y el efecto no se nota. Si algún día hay dos, o se separan en familias distintas, o esta colección pasa a cruzar por el id de la técnica — y entonces el panel deja de ser editable a mano y hay que elegir la técnica de una lista. Se decide cuando ocurra, no antes.
 
 ## Lo que no vive en el CMS
 
@@ -156,7 +157,6 @@ Contrato de demanda; se fijan con la primera historia que los consume.
 |---|---|---|
 | `contact` (singleton) | US-LAND-07 | forma del horario (uno-cms no admite listas dentro de un singleton) |
 | `about` (singleton) + `credentials` (colección) | US-LAND-04 | — |
-| `techniques` (colección) | US-LAND-02 | clave de enlace con el catálogo: `family` sirve solo con una técnica por familia |
 | `gallery` (colección) | US-LAND-03 | el consentimiento vive en la plataforma; cómo se referencia desde el par sin exponer datos |
 | `loyaltyInfo` (singleton) | US-LAND-05 | cómo evitar que el texto contradiga los niveles de US-LAND-06 |
 | `posts` (colección) | US-BLOG-01/02/03 | sin id, sin ruta por elemento y sin tipo fecha en uno-cms: el detalle busca por un campo `slug` que el CMS no hace único, la paginación y el orden por fecha ocurren en `content`, las imágenes del cuerpo no caben en el richtext |
