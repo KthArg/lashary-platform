@@ -1,0 +1,51 @@
+# Jira Branch — al subir una rama con ID de historia (us/US-XXX-NN, feat/us-xxx-nn-...), la tarjeta
+# pasa a In Progress; al abrir el PR de la historia hacia main, a Waiting QA. Una vía (repo → Jira) y
+# solo avanza: un fix sobre una historia en Done la deja en Done. El merge a main lo cubre jira-sync.yml.
+# Ramas sin ID en el nombre (fix/…, refactor/…) no tocan Jira. Guía: docs/process/CI_SECRETS.md
+name: Jira Branch
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+    branches:
+      - main # solo el PR de la historia completa; las piezas van contra us/<ID> (INT-001)
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jira-branch-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true # pushes seguidos a la misma rama: solo importa el último
+
+jobs:
+  sync:
+    if: github.event_name == 'push' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ID de historia desde el nombre de la rama
+        id: hist
+        env:
+          # Por env, nunca interpolado en el script: el nombre de rama lo escribe quien pushea.
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          ID=$(printf '%s' "$BRANCH" | grep -oiE 'us-[a-z]+-[0-9]+' | head -n 1 | tr '[:lower:]' '[:upper:]' || true)
+          if [ -z "$ID" ]; then
+            echo "::notice::La rama '$BRANCH' no lleva ID de historia (US-XXX-NN); no se toca Jira."
+          fi
+          echo "id=$ID" >> "$GITHUB_OUTPUT"
+
+      - name: Mover la tarjeta
+        if: steps.hist.outputs.id != ''
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_PROJECT_KEY: ${{ vars.JIRA_PROJECT_KEY }}
+          HIST_ID: ${{ steps.hist.outputs.id }}
+          TARGET: ${{ github.event_name == 'pull_request' && 'Waiting QA' || 'In Progress' }}
+        run: bash scripts/sync-jira.sh --issue "$HIST_ID" --to "$TARGET"
