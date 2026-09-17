@@ -3,6 +3,8 @@
 # Busca el issue por su ID (US-XXX-NN) en el summary y lo transiciona al estado mapeado.
 #
 # Local:   export JIRA_BASE_URL JIRA_USER_EMAIL JIRA_API_TOKEN; bash scripts/sync-jira.sh
+#   --issue US-XXX-NN --to "In Progress"   una sola historia a esa columna (jira-branch.yml);
+#                                          sin argumentos recorre todos los SPEC.md (jira-sync.yml).
 #   JIRA_DRY_RUN=1      busca y compara, no transiciona nada.
 #   JIRA_PROJECT_KEY    opcional; acota el JQL a ese proyecto.
 # Salida: 0 ok · 1 configuración/credenciales · 2 una o más historias fallaron.
@@ -11,6 +13,22 @@
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$SCRIPT_DIR/rules/lib.sh"
+
+ONE_ID=""; ONE_TO=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --issue) ONE_ID="${2:?--issue requiere un ID}"; shift 2 ;;
+    --to)    ONE_TO="${2:?--to requiere una columna de Jira}"; shift 2 ;;
+    *) echo "✖ Argumento desconocido: $1 (uso: [--issue US-XXX-NN --to \"<columna>\"])"; exit 1 ;;
+  esac
+done
+if [ -n "$ONE_ID$ONE_TO" ] && { [ -z "$ONE_ID" ] || [ -z "$ONE_TO" ]; }; then
+  echo "✖ --issue y --to van juntos."; exit 1
+fi
+case "$ONE_TO" in
+  ""|"To Do"|"In Progress"|"Waiting QA"|"Done") ;;
+  *) echo "✖ Columna desconocida: '$ONE_TO' (válidas: To Do, In Progress, Waiting QA, Done)."; exit 1 ;;
+esac
 
 for v in JIRA_BASE_URL JIRA_USER_EMAIL JIRA_API_TOKEN; do
   if [ -z "${!v:-}" ]; then
@@ -112,6 +130,11 @@ sync_issue() {
   fi
   echo "  ✔ $key: '$current' → '$target'."
 }
+
+# Modo puntual: una historia a una columna concreta (la rama la marca, no el SPEC).
+if [ -n "$ONE_ID" ]; then
+  if sync_issue "$ONE_ID" "$ONE_TO"; then exit 0; else exit 2; fi
+fi
 
 TOTAL=0; FALLOS=0
 # Sin subshell (ni pipe a while): los contadores deben sobrevivir al bucle.

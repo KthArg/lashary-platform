@@ -57,6 +57,20 @@ La cuenta del token necesita permiso *Browse projects* y *Transition issues* en 
 
 Qué mueve el primer run real: las historias `terminada` a *Done*, las `en_progreso` a *In Progress* y las `en_revision` a *Waiting QA*, según cada `SPEC.md`. El sync es de una vía (repo → Jira) y **solo avanza**: si una tarjeta ya va más adelante en Jira que el `SPEC.md` de `main` (trabajo en ramas sin mergear), se reporta `va adelante en Jira … no se retrocede` y no se toca. Jira nunca cambia el repo (EST-001).
 
+### Jira Branch (`jira-branch.yml`) — la tarjeta se mueve sola al empezar
+
+Mismos tres secretos. Corre en cada push a una rama que **lleve el ID de historia en el nombre** y al abrir el PR de la historia hacia `main`:
+
+| Evento en GitHub | Tarjeta en Jira |
+|---|---|
+| Push a `us/US-AGE-01`, `feat/us-age-01-…`, `fix/us-age-01-…` (cualquier prefijo, el ID en mayúsculas o minúsculas) | *In Progress* |
+| PR hacia `main` abierto o marcado *ready for review* (los draft no cuentan) | *Waiting QA* |
+| Merge a `main` | *Done* — lo hace `jira-sync.yml` leyendo el `SPEC.md` |
+
+Solo avanza: un `fix/us-auth-01-…` sobre una historia en *Done* la deja en *Done* (`va adelante en Jira … no se retrocede`). Los PRs de pieza hacia `us/<ID>` no mueven nada. Una rama **sin** `us-xxx-nn` en el nombre (`fix/ci-…`, `refactor/…`, o `feat/prod-02-…` sin el `us-`) es invisible para Jira: el run termina en verde con un aviso y la tarjeta no se toca. Por eso el ID en el nombre de la rama no es cosmético — es lo que evita que dos personas tomen la misma historia sin verlo en el tablero.
+
+Probar a mano una historia sin esperar un push: `bash scripts/sync-jira.sh --issue US-BLOG-01 --to "In Progress"` (con `JIRA_DRY_RUN=1` para solo mirar).
+
 ## Supabase Migrations
 
 | Secreto | Qué es | Dónde conseguirlo |
