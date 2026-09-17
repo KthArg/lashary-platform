@@ -13,7 +13,7 @@ printf '%s' "valor" | gh secret set NOMBRE    # equivalente para valores que no 
 gh secret list                                # confirma nombre y fecha; el valor no se puede leer nunca más
 ```
 
-Un salto de línea o un espacio al final del valor rompe `curl` con `exit 3` (así fallaron los dos primeros runs de Jira Sync). El script sanea, pero cargalos limpios.
+Un salto de línea, un espacio o basura de copiado rompe `curl` con `exit 3` (URL malformed). Así fallaron los dos primeros runs de Jira Sync: `JIRA_BASE_URL` se pegó desde un enlace renderizado y quedó como `https://<sitio>.atlassian.net](https://<sitio>.atlassian.net` — un link Markdown a medias. Antes de cargar, pegá el valor en la terminal con `printf '%s\n' "<valor>"` y mirá que sea exactamente lo que esperás: sin `](`, sin `/` final, sin espacios.
 
 ## Jira Sync
 
