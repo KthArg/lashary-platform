@@ -57,6 +57,18 @@ map_status() {
   esac
 }
 
+# Orden del tablero. El sync solo avanza: si Jira ya va más adelante que el SPEC de main (trabajo en
+# ramas sin mergear), no se retrocede la tarjeta. Columnas fuera del orden → 0 (se tratan como inicio).
+status_rank() {
+  case "$1" in
+    "To Do")       echo 1 ;;
+    "In Progress") echo 2 ;;
+    "Waiting QA")  echo 3 ;;
+    "Done")        echo 4 ;;
+    *)             echo 0 ;;
+  esac
+}
+
 # sync_issue <id-historia> <estado-jira> — 0 ok/omitido, 1 fallo.
 # Cada curl va en `if ! res=$(...)`: la función se invoca con `|| ...`, lo que desactiva errexit dentro.
 sync_issue() {
@@ -78,6 +90,9 @@ sync_issue() {
   current=$(printf '%s' "$res" | jq -r --arg k "$key" '.issues[] | select(.key == $k) | .fields.status.name')
   if [ "$current" = "$target" ]; then
     echo "  → $key ya está en '$target'."; return 0
+  fi
+  if [ "$(status_rank "$current")" -gt "$(status_rank "$target")" ]; then
+    echo "  → $key va adelante en Jira ('$current' > '$target'); no se retrocede."; return 0
   fi
 
   if ! res=$(jira_get "$JIRA_BASE_URL/rest/api/3/issue/$key/transitions"); then

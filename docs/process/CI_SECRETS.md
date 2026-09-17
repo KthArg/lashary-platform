@@ -55,7 +55,7 @@ La cuenta del token necesita permiso *Browse projects* y *Transition issues* en 
    gh run watch "$(gh run list --workflow=jira-sync.yml --limit 1 --json databaseId -q '.[0].databaseId')" --exit-status
    ```
 
-Qué mueve el primer run real: las historias `terminada` a *Done*, las `en_progreso` a *In Progress* y las `en_revision` a *Waiting QA*, según cada `SPEC.md`. El sync es de una vía (repo → Jira); Jira nunca cambia el repo (EST-001).
+Qué mueve el primer run real: las historias `terminada` a *Done*, las `en_progreso` a *In Progress* y las `en_revision` a *Waiting QA*, según cada `SPEC.md`. El sync es de una vía (repo → Jira) y **solo avanza**: si una tarjeta ya va más adelante en Jira que el `SPEC.md` de `main` (trabajo en ramas sin mergear), se reporta `va adelante en Jira … no se retrocede` y no se toca. Jira nunca cambia el repo (EST-001).
 
 ## Supabase Migrations
 
