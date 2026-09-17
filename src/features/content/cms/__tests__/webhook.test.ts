@@ -32,6 +32,12 @@ describe('evaluateCmsWebhook — aviso al publicar (docs/contracts/cms-api.md §
     expect(evaluateCmsWebhook(input)).toEqual({ status: 200, tags: ['content:closing-cta'] })
   })
 
+  it('acepta el tag de la coleccion de fotos: publicarlas renueva la landing', () => {
+    const rawBody = JSON.stringify({ tags: ['content:tecnicas'] })
+    const input = aviso({ rawBody, signature: sign(SECRET, String(NOW), rawBody) })
+    expect(evaluateCmsWebhook(input)).toEqual({ status: 200, tags: ['content:tecnicas'] })
+  })
+
   it('ignora tags desconocidos, repetidos o que no son texto', () => {
     const rawBody = JSON.stringify({ tags: ['content:hero', 'content:hero', 'settings', 'content:posts', 7] })
     const input = aviso({ rawBody, signature: sign(SECRET, String(NOW), rawBody) })

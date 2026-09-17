@@ -2,11 +2,11 @@
 feature: catalog
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-09-01
+actualizado: 2026-09-16
 historias:
   - id: US-AGE-08
-    estado: en_progreso
-    falta: "criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran en US-AGE-05 con el test obligatorio de DOM-002"
+    estado: terminada
+    evidencia: "PR #7 (catalogo de tecnicas con tiempos y precios) y PR #50 (escritura admin con auth_is_staff y politicas RLS), mergeados a main. Cerrada por el PO el 2026-09-16. Pruebas: domain/__tests__/technique.test.ts, application/__tests__/queries.test.ts, db/__tests__/technique-repository.test.ts, ui/__tests__/schema.test.ts, ui/__tests__/actions.test.ts, rls-isolation.test.ts. La lectura publica que consume el sitio queda demostrada ademas por landing/ui/__tests__/landing-techniques.test.tsx (US-LAND-02). Los criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran cuando exista la cita, en US-AGE-05 con el test obligatorio de DOM-002"
   - id: US-PROD-01
     estado: no_iniciada
   - id: US-PROM-01
@@ -24,7 +24,7 @@ Lo que se vende: técnicas con tiempos y precios, paquetes, promociones. Precio 
 
 ## Qué hace hoy
 
-US-AGE-08 sobre la rama `feat/us-age-08-catalog` (base: `feat/f0-platform-scaffold`).
+US-AGE-08 terminada: entregada en el PR #7 y cerrada con el PR #50, que suma la escritura admin y retira el flag `catalog_admin_write`. Lo único que sigue abierto no pertenece a esta historia: los criterios 7b y 8 se demuestran en US-AGE-05, que es donde nace la cita.
 
 **Depende de `auth` (US-AUTH-01):** usa `getAuthSession` / `requireAdminSession` del entry point de auth y las políticas de escritura leen `public.auth_user_roles`. En aislamiento esta rama no compila (`@/features/auth`) ni `supabase db reset` corre (`auth_user_roles` no existe); rebasa sobre `auth` mergeada antes del PR (INT-005).
 
