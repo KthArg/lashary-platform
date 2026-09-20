@@ -19,6 +19,15 @@ export const CLIENTS_TABLE_HEADERS = {
 // Una celda en blanco se lee como "no debe nada"; este texto dice que el dato todavia no existe (EST-005).
 export const CLIENTS_TABLE_TEXTS = { pendingColumnValue: 'Sin dato' } as const
 
+export const CLIENTS_PAGINATION_TEXTS = {
+  navLabel: 'Paginación de clientas',
+  previous: 'Anterior',
+  next: 'Siguiente',
+  pageStatus: (page: number, totalPages: number) => `Página ${page} de ${totalPages}`,
+  pageSizeLabel: 'Clientas por página',
+  totalCount: (total: number) => (total === 1 ? '1 clienta' : `${total} clientas`),
+} as const
+
 export const CLIENTS_PLACEHOLDERS = {
   fullName: 'María Fernández Rojas', phone: '8888 8888', email: 'maria@correo.com',
   notes: 'Preferencias, cómo llegó al estudio…',

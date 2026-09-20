@@ -6,7 +6,7 @@ actualizado: "2026-09-20"
 historias:
   - id: US-CLI-01
     estado: en_progreso
-    falta: "paginacion en el servidor con tamano de pagina configurable, filtro por nombre y estado de vacio por filtro; las columnas de morosidad y ultima cita existen sin dato y su filtro no existe: el dato espera a US-MOR-01 y a US-AGE-05 (criterios diferidos)"
+    falta: "filtro por nombre en la pantalla y su estado de vacio por filtro; las columnas de morosidad y ultima cita existen sin dato y su filtro no existe: el dato espera a US-MOR-01 y a US-AGE-05 (criterios diferidos)"
   - id: US-CLI-02
     estado: no_iniciada
   - id: US-CLI-03
@@ -56,7 +56,12 @@ La action ya recibe `{ page, pageSize, name }` y devuelve `{ clients, total, pag
 (10, 25 o 50) y cualquier otro valor usa 25; una página inválida es la 0; `name` filtra `full_name` con
 `ilike`, recortado a 120 caracteres, con `%`, `_` y `\` escapados y `*` quitado (PostgREST lo lee como
 `%`), así que lo escrito se busca como texto. `total` sale de `count: 'exact'` y cuenta todo lo que
-cumple el filtro. La página todavía no pasa ningún parámetro. Tiene sus tres estados (UI-003): carga en
+cumple el filtro. La página lee `?page` y `?pageSize` de la URL y se los pasa; `name` todavía no lo pasa
+nadie. Debajo de la tabla, `ClientsPagination` muestra "Página X de Y" con el total de clientas,
+*Anterior* y *Siguiente* como enlaces que solo cambian `page` y conservan el resto de la consulta, y un
+selector de 10, 25 o 50 que al cambiar vuelve a la primera página. En la primera y en la última página
+el enlace que no aplica se dibuja como texto, no como enlace muerto. Cuando la lectura falla o no hay
+ninguna clienta, la paginación no se dibuja. Lo demuestra `clients-pagination.test.tsx`. Tiene sus tres estados (UI-003): carga en
 `src/app/admin/clients/loading.tsx` (`role="status"`), error con *Reintentar* (`router.refresh()`) y
 vacío que sugiere *Agregar*. Tras un alta, `revalidatePath` vuelve a leer y la clienta nueva aparece.
 
@@ -97,7 +102,8 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 `ConfirmDialog`, el formulario, `AddClientButton`, `ClientsList`, `ClientRecord`, los hooks
 `useClientForm`, `useClientDialog` y `useFocusTrap`, `createClientAction`, `listClientsAction` y `updateClientAction` con sus tipos
 `SaveClientResult`, `ListClientsQuery` y `ListClientsResult`, `validateClientForm`, `normalizePhone` y las constantes de
-textos y límites, entre ellas `CLIENTS_LIST_LIMITS`, `CLIENTS_TABLE_HEADERS` y `CLIENTS_TABLE_TEXTS` (DOM-009).
+textos y límites, entre ellas `CLIENTS_LIST_LIMITS`, `CLIENTS_TABLE_HEADERS`, `CLIENTS_TABLE_TEXTS` y `CLIENTS_PAGINATION_TEXTS` (DOM-009).
+También exporta `ClientsPagination`.
 
 ## Invariantes
 
@@ -192,6 +198,11 @@ textos y límites, entre ellas `CLIENTS_LIST_LIMITS`, `CLIENTS_TABLE_HEADERS` y 
   `CLIENTS_TABLE_TEXTS.pendingColumnValue` en cursiva y atenuado, no una celda en blanco, que se leería
   como "no debe nada" y como "nunca ha venido". Sus filtros no existen todavía. **Consecuencia asumida:**
   al llegar el dato hay que cambiar esas dos celdas y la prueba que hoy cuenta los textos pendientes.
+- **2026-09-20 — El estado del listado vive en la URL (`?page`, `?pageSize`), no en el cliente.** La
+  página lo lee y `listClientsAction` lo sanea, así que basta un enlace para cambiar de página: la
+  lectura sigue ocurriendo en el servidor (PERF-002) y la pantalla se puede compartir o recargar sin
+  perder dónde estaba. **Consecuencia asumida:** cambiar el tamaño de página necesita `router.push`,
+  y eso obliga a que `ClientsPagination` sea un componente cliente.
 - **2026-09-20 — La columna de acciones lleva encabezado visible**, no `sr-only` como nació el
   2026-09-20 en esta misma pieza (decisión de José Loría). UI-004 se cumple igual: la columna tiene
   nombre accesible; ahora además se ve.
