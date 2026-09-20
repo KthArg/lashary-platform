@@ -38,8 +38,8 @@
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
-### clients (actualizado: 2026-09-16)
-- US-CLI-01 — en_progreso — falta: todo el listado: tabla con nombre y contacto, paginacion en el servidor con tamano de pagina configurable, filtro por nombre y estados de vacio por filtro; la columna y el filtro de estado de morosidad esperan a US-MOR-01 y la columna y el filtro por rango de ultima cita esperan a US-AGE-05 (criterios diferidos)
+### clients (actualizado: 2026-09-20)
+- US-CLI-01 — en_progreso — falta: paginacion en el servidor con tamano de pagina configurable, filtro por nombre y estado de vacio por filtro; las columnas de morosidad y ultima cita existen sin dato y su filtro no existe: el dato espera a US-MOR-01 y a US-AGE-05 (criterios diferidos)
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
