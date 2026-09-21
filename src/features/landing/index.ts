@@ -11,6 +11,7 @@ export { LandingStudio } from './ui/LandingStudio'
 export { LandingReasons } from './ui/LandingReasons'
 export { LandingLoyalty } from './ui/LandingLoyalty'
 export { LandingLocation } from './ui/LandingLocation'
+export { LandingFaq } from './ui/LandingFaq'
 export {
   landingSections,
   TECHNIQUES_SECTION,

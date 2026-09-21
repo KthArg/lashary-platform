@@ -49,6 +49,10 @@ export const landingMessages = {
     visit: (visit: number) => `${visit}.ª visita`,
     empty: 'Pronto vas a encontrar acá cómo funciona el programa de fidelidad del estudio.',
   },
+  faq: {
+    title: 'Preguntas',
+    index: '06',
+  },
   location: {
     title: 'Ubicación',
     index: '07',
