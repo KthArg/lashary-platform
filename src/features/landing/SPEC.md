@@ -73,6 +73,8 @@ Medición PERF-004 con la galería (2026-09-21, mismo método que la de US-LAND-
 - `STUDIO_SECTION` (`#estudio`) está en la navegación entre Servicios y Galería, como en el diseño; Por qué acá no tiene enlace, tampoco en el diseño. Numerales: Servicios 01, El estudio 02, Por qué acá 03, Galería 04.
 - `LandingHome` monta las dos secciones solo si recibe `studio`. La ruta siempre lo pasa, porque `getStudio()` nunca falla.
 
+Medición PERF-004 con El estudio y Por qué acá (2026-09-21, mismo método que la de la galería): LCP 1416–1464 ms en 3 corridas, elemento LCP el título del hero; JS inicial 151.0 KB comprimido (9 scripts). Las dos secciones se renderizan en el servidor y no suman JS de cliente.
+
 US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09-16 sobre las capturas del artefacto `capturas-landing`. De las demás secciones del diseño están montadas Servicios, El estudio, Por qué acá y Galería; Ubicación llega con US-LAND-07. "Las semanas después" y "Clientas" no tienen historia y quedan fuera (decisión del PO, 2026-09-21).
 
 ## Decisiones de US-LAND-01 (PO, 2026-09-16)
