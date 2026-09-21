@@ -30,6 +30,28 @@ export const landingMessages = {
     empty:
       'El catálogo se está actualizando. Escribinos y te contamos qué técnicas hay disponibles esta semana.',
   },
+  gallery: {
+    title: 'Galería',
+    index: '02',
+    filterLabel: 'Filtrar la galería por técnica',
+    all: 'Todas',
+    before: 'Antes',
+    after: 'Después',
+    empty: 'Pronto vas a ver acá resultados antes y después de clientas del estudio.',
+  },
+}
+
+// Nombre corto de cada familia para los filtros de la galería. El nombre completo de cada
+// técnica es del catálogo; aquí solo va la etiqueta del filtro (DOM-009).
+export const galleryFamilyLabels: Record<string, string> = {
+  lash_classic: 'Clásicas',
+  lash_volume: 'Volumen',
+  lash_extra_volume: 'Volumen extra',
+  brow_design: 'Diseño de cejas',
+  brow_lamination: 'Laminado de cejas',
+  henna: 'Henna',
+  waxing: 'Depilación',
+  lips: 'Labios',
 }
 
 // Descripción de cada familia de servicio. El catálogo (US-AGE-08) guarda nombre, precios y
