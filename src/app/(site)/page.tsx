@@ -1,4 +1,4 @@
-import { getGallery, getLandingContent, getTechniqueMedia } from '@/features/content'
+import { getGallery, getLandingContent, getStudio, getTechniqueMedia } from '@/features/content'
 import { listTechniques } from '@/features/catalog'
 import type { Metadata } from 'next'
 import { LandingHome, landingMessages, toLandingTechnique } from '@/features/landing'
@@ -36,11 +36,13 @@ async function readTechniques() {
 }
 
 export default async function HomePage() {
-  // getGallery() nunca lanza: con el CMS caído la galería muestra su estado vacío.
-  const [content, techniques, gallery] = await Promise.all([
+  // getStudio() y getGallery() nunca lanzan: con el CMS caído, El estudio sirve su respaldo y la
+  // galería muestra su estado vacío.
+  const [content, techniques, studio, gallery] = await Promise.all([
     getLandingContent(),
     readTechniques(),
+    getStudio(),
     getGallery(),
   ])
-  return <LandingHome content={content} techniques={techniques} gallery={gallery} />
+  return <LandingHome content={content} techniques={techniques} studio={studio} gallery={gallery} />
 }
