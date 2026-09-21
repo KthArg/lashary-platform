@@ -93,6 +93,8 @@ Medición PERF-004 con Fidelidad (2026-09-21, mismo método): LCP 1444–1476 ms
 - `ui/ExternalLink.tsx`: enlace a otro sitio con `target="_blank"`, `rel="noopener noreferrer"` y el aviso "(se abre en otra pestaña)" solo para lectores de pantalla.
 - Navegación: Servicios, El estudio, Galería, Fidelidad, Preguntas y Ubicación (`FAQ_SECTION`, `LOCATION_SECTION`). Numerales: Preguntas 06, Ubicación 07.
 
+Medición PERF-004 con Preguntas, Ubicación y el pie (2026-09-21, mismo método): LCP 1424–1436 ms en 3 corridas, elemento LCP el título del hero; JS inicial propio 151.6 KB (9 scripts). El mapa no se pide en la carga (`loading="lazy"`, 0 pedidos a Google Maps con la sección fuera de pantalla).
+
 US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09-16 sobre las capturas del artefacto `capturas-landing`. De las demás secciones del diseño están montadas Servicios, El estudio, Por qué acá y Galería, más Fidelidad, que no está en el diseño, Preguntas y Ubicación, y el pie de página. "Las semanas después" y "Clientas" no tienen historia y quedan fuera (decisión del PO, 2026-09-21).
 
 ## Decisiones de US-LAND-01 (PO, 2026-09-16)
