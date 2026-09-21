@@ -1,7 +1,7 @@
 -- catalog_staff_write.test.sql
--- US-AGE-08 · feature catalog — control positivo de escritura de staff (SEC-001, SEC-002).
+-- US-AGE-08 · feature catalog — control positivo de escritura de staff (SEC-001).
 --
--- Complementa src/features/catalog/__tests__/rls-isolation.test.ts, que solo prueba el control
+-- Complementa src/features/catalog/__tests__/rls-isolation.test.ts (SEC-002), que solo prueba el control
 -- negativo (anon y clienta no escriben). Aquí se demuestra que una sesión con rol admin o
 -- superadmin SÍ puede INSERT / UPDATE / DELETE en catalog_techniques, y que una clienta sigue
 -- sin poder. El rol se siembra como superusuario local dentro de la transacción; no se usa la
