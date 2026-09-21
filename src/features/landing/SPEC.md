@@ -18,7 +18,7 @@ historias:
     evidencia: "PRs #78 (contrato v1.3), #79 (validacion en content), #80 (getStudio con cache y aviso), #81 (seccion El estudio) y #82 (Por que aca, montaje y navegacion), apilados hacia us/US-LAND-04; la otra mitad del contrato esta en el main de lashary-cms (f4a4481). Criterios 1 y 2 en ui/__tests__/landing-studio.test.tsx y content/application/__tests__/get-studio.test.ts; 3 en content/cms/__tests__/studio-source.test.ts, webhook.test.ts y cms-reader.test.ts; 4 en landing-studio.test.tsx (Navegacion). Verificado ademas con un CMS simulado en next dev: retrato, 3 credenciales y 5 razones, sin scroll horizontal en 320, 375, 768, 1280, 1920 y 667x375; con el CMS caido, El estudio cae al respaldo y la pagina se sirve"
   - id: US-LAND-05
     estado: en_progreso
-    falta: "contrato v1.4 escrito (fidelidad y niveles-fidelidad, provisional hasta US-LAND-06); falta la lectura en content, la seccion Fidelidad en la landing, la navegacion y sus pruebas para los criterios 1 y 2"
+    falta: "contrato v1.4 y lectura en content (getLoyalty) hechos; falta la seccion Fidelidad en la landing, montarla, la navegacion y sus pruebas de componente para el criterio 1"
   - id: US-LAND-07
     estado: no_iniciada
 flags: []
