@@ -82,6 +82,8 @@ Medición PERF-004 con El estudio y Por qué acá (2026-09-21, mismo método que
 - Es **solo informativa**: el conteo de visitas de cada clienta es el motor de US-LAND-06. Los niveles vienen de la colección provisional `niveles-fidelidad` del CMS; cuando exista el motor, se leen de ahí (contrato v1.4).
 - Sin nada publicado, o con el CMS caído, muestra su estado vacío (UI-003) y no inventa beneficios. Con texto y sin niveles, muestra el texto solo.
 
+Medición PERF-004 con Fidelidad (2026-09-21, mismo método): LCP 1444–1476 ms en 3 corridas, elemento LCP el título del hero; JS inicial 151.1 KB comprimido (9 scripts). La sección es de servidor y no suma JS de cliente.
+
 US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09-16 sobre las capturas del artefacto `capturas-landing`. De las demás secciones del diseño están montadas Servicios, El estudio, Por qué acá y Galería, más Fidelidad, que no está en el diseño; Ubicación llega con US-LAND-07. "Las semanas después" y "Clientas" no tienen historia y quedan fuera (decisión del PO, 2026-09-21).
 
 ## Decisiones de US-LAND-01 (PO, 2026-09-16)
