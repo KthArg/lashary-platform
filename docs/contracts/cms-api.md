@@ -1,6 +1,6 @@
 # Contrato — API del CMS externo
 
-> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closing-cta` (US-LAND-01); v1.1 suma la colección `tecnicas`, que son **solo las fotos** de cada técnica (US-LAND-02); v1.2 suma la colección `galeria`, los pares antes y después con su casilla de consentimiento (US-LAND-03); v1.3 suma el singleton `about` y las colecciones `credenciales` y `razones`, para El estudio y Por qué acá (US-LAND-04). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-21.
+> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closing-cta` (US-LAND-01); v1.1 suma la colección `tecnicas`, que son **solo las fotos** de cada técnica (US-LAND-02); v1.2 suma la colección `galeria`, los pares antes y después con su casilla de consentimiento (US-LAND-03); v1.3 suma el singleton `estudio` y las colecciones `credenciales` y `razones`, para El estudio y Por qué acá (US-LAND-04). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-21.
 
 ## El CMS
 
@@ -124,9 +124,9 @@ Reglas de consumo:
 - El orden es el del editor. La plataforma muestra como máximo los **24 primeros** pares válidos; el resto se ignora (PERF-004).
 - **Límite de la casilla:** protege lo que publica la landing, no el archivo. Una foto subida al CMS queda en Vercel Blob con una URL pública aunque el par no tenga la casilla marcada. Por eso la foto de una clienta se sube **después** de tener su autorización, no antes.
 
-### `about` — singleton (v1.3, US-LAND-04)
+### `estudio` — singleton (v1.3, US-LAND-04)
 
-La sección "El estudio": quién es la dueña. Reemplaza el `about` de ejemplo que traía `lashary-cms` (`heading`, `body`, `visible`), que la plataforma nunca leyó.
+La sección "El estudio": quién es la dueña. Es un tipo nuevo y no el `about` de ejemplo que trae `lashary-cms` (`heading`, `body`, `visible`): ese lo usan las pruebas heredadas de uno-cms, y la plataforma no lo lee.
 
 | Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
 |---|---|---|---|---|
