@@ -11,8 +11,8 @@ historias:
     estado: terminada
     evidencia: "PR #63 (us/US-LAND-02 a main). Las fotos salen del CMS por la coleccion tecnicas, contrato v1.1 de docs/contracts/cms-api.md, cuya otra mitad es el PR #6 de lashary-cms (decision del PO el 2026-09-16: las imagenes van en el CMS). Criterios 1 a 5 demostrados en ui/__tests__/landing-techniques.test.tsx; el gateway, en content/application/__tests__/get-technique-media.test.ts, cms/__tests__/cms-reader.test.ts y cms/__tests__/webhook.test.ts. Verificado ademas contra el CMS local: fila publicada desde el panel, foto y ejemplo servidos por /api/content/tecnicas y renderizados en la landing tras el aviso firmado que invalida content:tecnicas"
   - id: US-LAND-03
-    estado: en_progreso
-    falta: "contrato v1.2, lectura en content y la seccion con su cuadricula y filtro (ui/LandingGallery.tsx, ui/GalleryGrid.tsx) hechos; falta la galeria ampliada, montar la seccion en la pagina y agregarla a la navegacion"
+    estado: terminada
+    evidencia: "PRs #74 (contrato v1.2, coleccion galeria), #75 (lectura en content), #76 (cuadricula y filtro) y #77 (galeria ampliada y montaje), apilados hacia us/US-LAND-03; la otra mitad del contrato esta en el main de lashary-cms (3506d01). Criterios 1 y 3 en ui/__tests__/landing-gallery.test.tsx; 2 en content/cms/__tests__/gallery-source.test.ts y webhook.test.ts; 4 en content/application/__tests__/get-gallery.test.ts. Verificado ademas con un CMS simulado en next dev: 6 pares de 7 (el septimo sin consentimiento no aparece), sin scroll horizontal en 320, 375, 768, 1280, 1920 y 667x375, y la galeria ampliada cabe en 667x375"
   - id: US-LAND-04
     estado: no_iniciada
   - id: US-LAND-05
@@ -34,7 +34,7 @@ Sitio publico: inicio, tecnicas, contacto, conoceme, galeria, fidelidad informat
 - `ui/SiteMenu.tsx`: menú a pantalla completa como diálogo modal. Foco en "Cerrar" al abrir, Tab atrapado, Escape cierra y devuelve el foco al botón, scroll de la página bloqueado mientras está abierto.
 - `ui/sections.ts`: `landingSections` lista hoy solo Servicios (`TECHNIQUES_SECTION`, ancla `#servicios`); cada historia agrega la suya al montarla. La sección se renderiza siempre, incluso sin técnicas, para que el ancla de la navegación nunca apunte al vacío.
 
-- `ui/LandingHome.tsx` + `src/app/(site)/page.tsx`: `/` es estática con revalidación de 600 s; lee `getLandingContent()` de `content` y `listTechniques({ activeOnly: true })` del entry point de `catalog` (ARCH-003), y compone hero, bienvenida, servicios y llamada final dentro de `<main id="inicio">`.
+- `ui/LandingHome.tsx` + `src/app/(site)/page.tsx`: `/` es estática con revalidación de 600 s; lee `getLandingContent()` y `getGallery()` de `content` y `listTechniques({ activeOnly: true })` del entry point de `catalog` (ARCH-003), y compone hero, bienvenida, servicios, galería y llamada final dentro de `<main id="inicio">`.
 - `ui/LandingHero.tsx`: título en dos líneas, subtítulo, "Reservar cita" (texto del CMS, destino `RESERVE_ROUTE`), enlace secundario solo con texto y destino, y la foto del CMS con `next/image`. Sin imagen, la píldora queda como relleno decorativo (`aria-hidden`).
 - `ui/opening-frame.ts` + `ui/use-opening-animation.ts`: la apertura de la foto al bajar, en una pista de 300vh. Con `prefers-reduced-motion: reduce` no se registra el scroll y el CSS muestra título y foto quietos, uno debajo del otro. En pantallas de hasta 500 px de alto (token `site-short`) el bloque del título se alinea arriba para no quedar bajo la cabecera.
 - `next.config.js`: imágenes remotas de Vercel Blob y, en desarrollo, del origen de `CMS_URL`. Next bloquea por SSRF imágenes de IPs privadas; solo con `next dev` y `CMS_URL` en loopback se permite (`dangerouslyAllowLocalIP`), nunca en producción.
@@ -56,7 +56,16 @@ Medición PERF-004 (2026-09-16, `next build` + `next start`, Playwright con emul
 - Las **fotos** vienen del CMS (`getTechniqueMedia()` de `content`, colección `tecnicas`) y se cruzan por `familia`, que es el único campo estable en los dos lados. La fila abierta muestra la foto principal en retrato junto al texto, y los ejemplos como miniaturas. Una técnica sin fila en el CMS se muestra sin fotos: el catálogo manda qué técnicas existen, el CMS solo las ilustra.
 - `src/app/(site)/page.tsx` envuelve la lectura del catálogo en `try/catch`: si el catálogo se cae, la sección queda en su estado vacío y la landing sigue sirviéndose, igual que el contenido del CMS cae al respaldo.
 
-US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09-16 sobre las capturas del artefacto `capturas-landing`. De las demás secciones del diseño solo está montada Servicios; El estudio, Galería y Ubicación llegan con US-LAND-04, -03 y -07.
+### Galería (US-LAND-03)
+
+- `ui/LandingGallery.tsx` (servidor): bloque oscuro con encabezado, filete y numeral. Sin pares muestra su estado vacío en vez de desaparecer (UI-003); el ancla `#galeria` existe siempre y la navegación la lista (`GALLERY_SECTION`).
+- `ui/GalleryGrid.tsx` (cliente, el único de la sección): cuadrícula responsiva de pares (token `grid-cols-site-gallery`), cada par con sus dos fotos 3:4 lado a lado y las etiquetas "Antes" y "Después". Filtro por técnica con botones `aria-pressed`, solo con las familias que tienen pares y solo si hay más de una. Etiquetas cortas de cada familia en `galleryFamilyLabels` (`ui/messages.ts`).
+- Galería ampliada: diálogo modal (`aria-modal`) con fondo sólido, foco atrapado que empieza en "Cerrar", Anterior y Siguiente dan la vuelta, las flechas del teclado recorren, Escape cierra y el foco vuelve al par que se estaba mirando; el scroll de la página queda bloqueado mientras está abierta. Su ancho se acota también por el alto de la pantalla (`max-w-site-lightbox`) para que quepa con el móvil en horizontal.
+- Los pares llegan de `getGallery()` de `content` **ya filtrados por consentimiento**: la sección no filtra y no puede olvidarse de hacerlo.
+
+Medición PERF-004 con la galería (2026-09-21, mismo método que la de US-LAND-01, con 6 pares de un CMS simulado y un Supabase simulado que responde 401 al instante): LCP 1436–1456 ms en 3 corridas, elemento LCP el título del hero; JS inicial 150.9 KB comprimido (9 scripts). Dentro del presupuesto. Sin el Supabase simulado el TTFB sube a 7 s en Windows porque el middleware reintenta contra un Supabase local apagado; eso es del entorno de medición, no de la página.
+
+US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09-16 sobre las capturas del artefacto `capturas-landing`. De las demás secciones del diseño están montadas Servicios y Galería; El estudio y Ubicación llegan con US-LAND-04 y -07.
 
 ## Decisiones de US-LAND-01 (PO, 2026-09-16)
 
@@ -75,5 +84,5 @@ US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09
 
 ## Contrato público (`index.ts`)
 
-- `SiteHeader`, `LandingHome`, `LandingHero`, `LandingIntro`, `LandingClosingCta`, `landingSections` y el tipo `SiteSection`.
+- `SiteHeader`, `LandingHome`, `LandingHero`, `LandingIntro`, `LandingClosingCta`, `LandingTechniques`, `LandingGallery`, `landingSections`, `TECHNIQUES_SECTION`, `GALLERY_SECTION` y el tipo `SiteSection`.
 - `RESERVE_ROUTE` y `landingMessages`.

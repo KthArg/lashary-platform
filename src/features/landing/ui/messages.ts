@@ -37,6 +37,11 @@ export const landingMessages = {
     all: 'Todas',
     before: 'Antes',
     after: 'Después',
+    hint: 'Tocá un par para verlo en grande. Flechas para navegar, Esc para cerrar.',
+    dialogLabel: 'Galería ampliada',
+    previous: 'Anterior',
+    next: 'Siguiente',
+    close: 'Cerrar',
     empty: 'Pronto vas a ver acá resultados antes y después de clientas del estudio.',
   },
 }
