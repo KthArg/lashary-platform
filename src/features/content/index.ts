@@ -7,10 +7,18 @@ export {
   techniqueMediaCacheTag,
 } from './cms/technique-media-source'
 export { loadGallery as getGallery, galleryCacheTag } from './cms/gallery-source'
+export { loadStudio as getStudio, studioCacheTags } from './cms/studio-source'
 // Borde de POST /api/cms/webhook (aviso al publicar). Lo monta src/app/api/cms/webhook/route.ts.
 export { receiveCmsWebhook } from './cms/webhook'
 export type { TechniqueMedia, TechniqueMediaByFamily } from './domain/technique-media'
 export type { GalleryFamily, GalleryPair } from './domain/gallery'
+export type {
+  Credential,
+  CredentialKind,
+  Reason,
+  StudioContent,
+  StudioProfile,
+} from './domain/studio'
 export type {
   CmsImage,
   ClosingCtaContent,

@@ -15,7 +15,7 @@ historias:
     evidencia: "PRs #74 (contrato v1.2, coleccion galeria), #75 (lectura en content), #76 (cuadricula y filtro) y #77 (galeria ampliada y montaje), apilados hacia us/US-LAND-03; la otra mitad del contrato esta en el main de lashary-cms (3506d01). Criterios 1 y 3 en ui/__tests__/landing-gallery.test.tsx; 2 en content/cms/__tests__/gallery-source.test.ts y webhook.test.ts; 4 en content/application/__tests__/get-gallery.test.ts. Verificado ademas con un CMS simulado en next dev: 6 pares de 7 (el septimo sin consentimiento no aparece), sin scroll horizontal en 320, 375, 768, 1280, 1920 y 667x375, y la galeria ampliada cabe en 667x375"
   - id: US-LAND-04
     estado: en_progreso
-    falta: "contrato v1.3 y validacion en content (get-studio) hechos; falta la fuente con cache y el entry point en content, las secciones El estudio y Por que aca en la landing, la navegacion y sus pruebas"
+    falta: "contrato v1.3 y lectura en content (getStudio) hechos; falta las secciones El estudio y Por que aca en la landing, la navegacion y sus pruebas de componente para los criterios 1, 2 y 4"
   - id: US-LAND-05
     estado: no_iniciada
   - id: US-LAND-07
