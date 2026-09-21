@@ -100,6 +100,8 @@ module.exports = {
         'site-row-gap': 'clamp(0.875rem, 2.6vw, 2.5rem)',
         'site-row-body': 'clamp(1.5rem, 3.5vw, 2.5rem)',
         'site-heading-gap': 'clamp(1.375rem, 4vh, 2.75rem)',
+        // Aire bajo las columnas del pie de página (US-LAND-07).
+        'site-footer-y': 'clamp(1.875rem, 5vh, 3.25rem)',
       },
       flexBasis: {
         'site-statement': '25rem',
@@ -155,6 +157,8 @@ module.exports = {
         'site-milestones': 'repeat(auto-fit, minmax(min(100%, 11rem), 1fr))',
         // Horario de Ubicación (US-LAND-07): días a un lado, horas al otro.
         'site-hours': 'auto 1fr',
+        // Pie de página (US-LAND-07): columnas de al menos 11.875rem.
+        'site-footer': 'repeat(auto-fit, minmax(min(100%, 11.875rem), 1fr))',
       },
       borderRadius: {
         'site-pill': '50% / 100%',

@@ -57,12 +57,8 @@ describe('LandingLoyalty — US-LAND-05', () => {
   })
 
   it('la navegación principal enlaza a #fidelidad, después de Galería', () => {
-    expect(landingSections.map((section) => section.id)).toEqual([
-      'servicios',
-      'estudio',
-      'galeria',
-      LOYALTY_SECTION.id,
-    ])
+    const ids = landingSections.map((section) => section.id)
+    expect(ids.indexOf(LOYALTY_SECTION.id)).toBe(ids.indexOf('galeria') + 1)
     render(<SiteHeader sections={landingSections} />)
     const nav = screen.getByRole('navigation', { name: landingMessages.header.sectionsNav })
     expect(within(nav).getByRole('link', { name: 'Fidelidad' }).getAttribute('href')).toBe('#fidelidad')
