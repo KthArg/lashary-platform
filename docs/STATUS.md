@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-16.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-20.
 
 ## Features
 
@@ -32,8 +32,8 @@
 - US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
 - US-AUTH-02 — terminada — PR #3, PR #18, tests: auth-client.test.tsx, rls-isolation.test.ts
 
-### catalog (actualizado: 2026-09-16)
-- US-AGE-08 — terminada — PR #7 (catalogo de tecnicas con tiempos y precios) y PR #50 (escritura admin con auth_is_staff y politicas RLS), mergeados a main. Cerrada por el PO el 2026-09-16. Pruebas: domain/__tests__/technique.test.ts, application/__tests__/queries.test.ts, db/__tests__/technique-repository.test.ts, ui/__tests__/schema.test.ts, ui/__tests__/actions.test.ts, rls-isolation.test.ts. La lectura publica que consume el sitio queda demostrada ademas por landing/ui/__tests__/landing-techniques.test.tsx (US-LAND-02). Los criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran cuando exista la cita, en US-AGE-05 con el test obligatorio de DOM-002
+### catalog (actualizado: 2026-09-20)
+- US-AGE-08 — terminada — PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx
 - US-PROD-01 — no_iniciada
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
@@ -113,6 +113,7 @@ Ninguno registrado.
 
 ## Deuda aceptada
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
+- catalog: Control positivo de escritura como staff contra la base real: ninguna prueba demuestra que una sesion con rol admin o superadmin puede INSERT, UPDATE y DELETE en catalog_techniques (politicas catalog_techniques_*_staff de supabase/migrations/20260902000001_catalog_write_policies.sql); rls-isolation.test.ts solo cubre el control negativo y actions.test.ts usa repositorio en memoria — aceptada en PR de cierre de US-AGE-08 (docs/us-age-08-close-out) — costo: 2h: prueba SQL local que siembra el rol como superusuario, fija request.jwt.claims y comprueba las tres escrituras con rollback; mas el arnes de Supabase local si aun no corre en el entorno de quien la escribe
 - clients: Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras — aceptada en PR #32, etiqueta excepcion-proceso — costo: 3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)
 
 ## Flags vivos

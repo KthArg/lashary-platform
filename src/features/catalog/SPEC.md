@@ -2,11 +2,11 @@
 feature: catalog
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-09-16
+actualizado: 2026-09-20
 historias:
   - id: US-AGE-08
     estado: terminada
-    evidencia: "PR #7 (catalogo de tecnicas con tiempos y precios) y PR #50 (escritura admin con auth_is_staff y politicas RLS), mergeados a main. Cerrada por el PO el 2026-09-16. Pruebas: domain/__tests__/technique.test.ts, application/__tests__/queries.test.ts, db/__tests__/technique-repository.test.ts, ui/__tests__/schema.test.ts, ui/__tests__/actions.test.ts, rls-isolation.test.ts. La lectura publica que consume el sitio queda demostrada ademas por landing/ui/__tests__/landing-techniques.test.tsx (US-LAND-02). Los criterios 7b y 8 (la cita no se altera / precio congelado) se demuestran cuando exista la cita, en US-AGE-05 con el test obligatorio de DOM-002"
+    evidencia: "PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx"
   - id: US-PROD-01
     estado: no_iniciada
   - id: US-PROM-01
@@ -14,7 +14,10 @@ historias:
   - id: US-PROM-02
     estado: no_iniciada
 flags: []
-deuda: []
+deuda:
+  - que: "Control positivo de escritura como staff contra la base real: ninguna prueba demuestra que una sesion con rol admin o superadmin puede INSERT, UPDATE y DELETE en catalog_techniques (politicas catalog_techniques_*_staff de supabase/migrations/20260902000001_catalog_write_policies.sql); rls-isolation.test.ts solo cubre el control negativo y actions.test.ts usa repositorio en memoria"
+    aceptada_en: "PR de cierre de US-AGE-08 (docs/us-age-08-close-out)"
+    costo: "2h: prueba SQL local que siembra el rol como superusuario, fija request.jwt.claims y comprueba las tres escrituras con rollback; mas el arnes de Supabase local si aun no corre en el entorno de quien la escribe"
 defectos: []
 ---
 
@@ -24,13 +27,13 @@ Lo que se vende: técnicas con tiempos y precios, paquetes, promociones. Precio 
 
 ## Qué hace hoy
 
-US-AGE-08 terminada: entregada en el PR #7 y cerrada con el PR #50, que suma la escritura admin y retira el flag `catalog_admin_write`. Lo único que sigue abierto no pertenece a esta historia: los criterios 7b y 8 se demuestran en US-AGE-05, que es donde nace la cita.
+US-AGE-08 terminada: PR #7 (catálogo, lectura y RLS) y PR #50 (escritura de administradora con `public.auth_is_staff()` y políticas RLS).
 
-**Depende de `auth` (US-AUTH-01):** usa `getAuthSession` / `requireAdminSession` del entry point de auth y las políticas de escritura leen `public.auth_user_roles`. En aislamiento esta rama no compila (`@/features/auth`) ni `supabase db reset` corre (`auth_user_roles` no existe); rebasa sobre `auth` mergeada antes del PR (INT-005).
+**Depende de `auth` (US-AUTH-01, `terminada`):** usa `getAuthSession` / `requireAdminSession` del entry point de auth y las políticas de escritura leen `public.auth_user_roles`.
 
 - Migración `supabase/migrations/20260902000000_catalog_techniques.sql`: enum `catalog_service_family` (8 familias), tabla `catalog_techniques` con los checks de DOM-001 (dinero entero) y D10 (retoque coherente), índice parcial `idx_catalog_techniques_family_active` (PERF-003), trigger `catalog_set_updated_at`.
 - Migración `supabase/migrations/20260902000001_catalog_write_policies.sql`: `public.auth_is_staff()` (`SECURITY DEFINER`, `search_path=''`, provisional acá hasta que la exponga `auth`) + políticas `catalog_techniques_{insert,update,delete}_staff`.
-- RLS (SEC-001): lectura pública para `anon` y `authenticated`; `INSERT/UPDATE/DELETE` solo cuando `public.auth_is_staff()` confirma rol `admin`/`superadmin`. `rls-isolation.test.ts` verifica que anón y clienta autenticada no pueden escribir; el control positivo (staff sí puede) se cubre en la integración de auth / US-AGE-05.
+- RLS (SEC-001): lectura pública para `anon` y `authenticated`; `INSERT/UPDATE/DELETE` solo cuando `public.auth_is_staff()` confirma rol `admin`/`superadmin`. `rls-isolation.test.ts` verifica que anón y clienta autenticada no pueden escribir; el control positivo (staff sí puede) no tiene prueba contra la base real: está registrado como deuda en el front-matter.
 - Seed `supabase/seed.sql`: una técnica por familia. Prueba `src/features/catalog/__tests__/seed.integration.test.ts` (criterio 2).
 - Capa `domain/`: entidad `Technique` con constructor validado (`Technique.create` → `Result`), invariantes DOM-007 y D10; `deactivate()`, `toView()` y `snapshot()`. Errores `CatalogError` / `TechniqueValidationError` / `TechniqueNotFound` / `TechniqueNameConflict` (DOM-006). Prueba `domain/__tests__/technique.test.ts`.
 - Capa `application/`: puerto `TechniqueRepository`; use-cases `listTechniques` / `getTechnique` (`queries.ts`, paginado PERF-002, tope 100) y `createTechnique` / `updateTechnique` / `deactivateTechnique` (`commands.ts`, id inyectado). `saveOrConflict` atrapa `TechniqueNameConflict` (violación de `catalog_techniques_name_unique`) y lo convierte a `Result` — antes llegaba como `Error` genérico sin tipar hasta el server action (DOM-006). Pruebas con repositorio en memoria (`__tests__/queries.test.ts`, `commands.test.ts`, incluye el caso de nombre duplicado).
@@ -40,11 +43,11 @@ US-AGE-08 terminada: entregada en el PR #7 y cerrada con el PR #50, que suma la 
 - Capa `ui/` + ruta `src/app/admin/catalog/`: `AdminCatalogPage` (server) lista las técnicas (`TechniqueTable`, DaisyUI, UI-001/002) con estado vacío + `loading.tsx` + `error.tsx` (UI-003, a11y UI-004), ambos importando texto de `client.ts`, no de `ui/messages` directo; `TechniqueForm` (client, `useActionState`) crea/edita/desactiva. El `layout.tsx` de la ruta exige staff con `requireAdminSession()` (redirige a `/admin`); los server actions chequean `isStaff()` (`require-staff.ts` → `getAuthSession`) para el mensaje amable — RLS conserva la autorización real (SEC-001). Validación **Zod** en el borde (`schema.ts`, DOM-007), texto externalizado en `messages.ts` (DOM-009). Pruebas `ui/__tests__/schema.test.ts`, `ui/__tests__/actions.test.ts`, `src/app/admin/catalog/layout.test.tsx`.
 - Test de aislamiento RLS `__tests__/rls-isolation.test.ts` (SEC-002): con token anónimo y con el token de una clienta autenticada real (sign-up, sin service-role key) verifica que `SELECT` funciona (lectura pública intencional) y que cada `INSERT` / `UPDATE` / `DELETE` falla y no altera los datos ni el conteo. El `beforeAll` falla ruidosamente si el seed no está cargado (sin falsos verdes). CI (`job-tests-reales`) levanta Supabase local + `db reset` antes de `npm test`; `supabase` CLI pinneada en `devDependencies`.
 
-Dónde se detiene: los criterios 7b y 8 (la cita no se altera / precio congelado) se cierran en US-AGE-05. El camino admin ya funciona para staff (RLS + `requireAdminSession`); falta rebasar sobre `auth` para que compile en aislamiento.
+Dónde se detiene: los criterios 7b y 8 (la cita no se altera / precio congelado) se trasladaron a US-AGE-05 (ver `docs/process/DEPENDENCIES.md`, «Criterios trasladados»). El camino admin usa RLS + `requireAdminSession`; su control positivo contra la base real es la deuda registrada arriba.
 
 ## Qué no hace todavía
 
-- **Criterio 7b / 8** (una técnica desactivada o con precio cambiado no altera citas ya agendadas): no hay tabla de citas (US-AGE-05, `no_iniciada`). El catálogo cumple su parte — no borra técnicas (solo `is_active = false`) y expone `TechniqueSnapshot` — pero el congelamiento se prueba en US-AGE-05 con el test obligatorio de DOM-002.
+- **Criterio 7b / 8** (una técnica desactivada o con precio cambiado no altera citas ya agendadas): trasladados a US-AGE-05, que trae la tabla de citas. El catálogo cumple su parte — no borra técnicas (solo `is_active = false`) y expone `TechniqueSnapshot` — y el congelamiento se prueba en US-AGE-05 con el test obligatorio de DOM-002.
 - Consumo de `buffer_min` en el calendario: US-AGE-02.
 - Consumo de `reapplication_interval_days` en recordatorios: US-NOT-05.
 - Paquetes (US-PROD-01) y promociones (US-PROM-01/02).
