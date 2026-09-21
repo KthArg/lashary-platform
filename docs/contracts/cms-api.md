@@ -1,6 +1,6 @@
 # Contrato — API del CMS externo
 
-> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closing-cta` (US-LAND-01); v1.1 suma la colección `tecnicas`, que son **solo las fotos** de cada técnica (US-LAND-02). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-16.
+> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closing-cta` (US-LAND-01); v1.1 suma la colección `tecnicas`, que son **solo las fotos** de cada técnica (US-LAND-02); v1.2 suma la colección `galeria`, los pares antes y después con su casilla de consentimiento (US-LAND-03). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-21.
 
 ## El CMS
 
@@ -102,13 +102,35 @@ Reglas de consumo, para que la landing nunca dependa de que esto esté completo:
 - `ejemplo1..3` son tres ranuras fijas porque uno-cms no tiene campo de lista de imágenes. Las que falten, faltan; no hay que llenarlas en orden.
 - **Consecuencia aceptada de cruzar por familia:** dos técnicas del catálogo de la misma familia comparten fotos. Hoy el catálogo tiene una por familia y el efecto no se nota. Si algún día hay dos, o se separan en familias distintas, o esta colección pasa a cruzar por el id de la técnica — y entonces el panel deja de ser editable a mano y hay que elegir la técnica de una lista. Se decide cuando ocurra, no antes.
 
+### `galeria` — colección (v1.2, US-LAND-03)
+
+Los pares antes y después de la galería de la landing. Cada fila es **un par**: la misma clienta antes y después del servicio.
+
+| Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
+|---|---|---|---|---|
+| `titulo` | text | sí | 80 | **solo para el panel**: es el `titleField`, lo que identifica el par en la lista. La plataforma **no lo lee** |
+| `familia` | select | sí | — | la técnica del par, para filtrar la galería. Los mismos valores que `tecnicas.familia`: `lash_classic`, `lash_volume`, `lash_extra_volume`, `brow_design`, `brow_lamination`, `henna`, `waxing`, `lips` |
+| `antes` | image | sí | — | foto antes del servicio; `alt` obligatorio al publicar |
+| `despues` | image | sí | — | foto después del servicio; `alt` obligatorio al publicar |
+| `consentimiento` | boolean | no; default `false`, así que siempre viene | — | la dueña confirma que la clienta autorizó publicar estas fotos |
+
+**El consentimiento es una casilla del CMS** (decisión del PO, 2026-09-21). En el CMS solo queda la afirmación "la clienta autorizó". La evidencia de esa autorización no entra al CMS, porque todo campo del CMS sale público por la API: quién firmó, cuándo y el documento firmado los guarda la dueña fuera del sistema.
+
+Reglas de consumo:
+
+- **Sin `consentimiento === true`, el par no se muestra**, aunque esté publicado. Un valor ausente, `false` o que no es booleano cuenta como sin consentimiento.
+- Un par sin las dos fotos válidas (con `url` y `alt`) se ignora entero: una foto sola no es un par.
+- Un par cuya `familia` no es ninguna de las ocho se ignora entero.
+- El orden es el del editor. La plataforma muestra como máximo los **24 primeros** pares válidos; el resto se ignora (PERF-004).
+- **Límite de la casilla:** protege lo que publica la landing, no el archivo. Una foto subida al CMS queda en Vercel Blob con una URL pública aunque el par no tenga la casilla marcada. Por eso la foto de una clienta se sube **después** de tener su autorización, no antes.
+
 ## Lo que no vive en el CMS
 
 | Dato | Dónde vive | Por qué |
 |---|---|---|
 | Destino de "Reservar cita" | código de la plataforma, ruta interna fija | es una ruta del sistema; editarla desde el panel puede romper el flujo (decisión del PO, 2026-09-16) |
 | Nombre, precio y duración de técnicas | catálogo, [catalog-api.md](catalog-api.md) | un hecho, un lugar (ADR-0001). Del CMS salen **solo las fotos**, por la colección `tecnicas` |
-| Registro de consentimiento de imágenes | plataforma | todo campo del CMS es público por la API |
+| Evidencia del consentimiento de imágenes (quién, cuándo, documento firmado) | fuera del sistema, con la dueña | todo campo del CMS es público por la API. En el CMS solo va la casilla `galeria.consentimiento` (v1.2) |
 | Niveles y beneficios de fidelidad | plataforma (US-LAND-06) | son reglas de negocio |
 | Navegación, logo y anclas de sección | código de la plataforma | estructura de la página, no contenido |
 
@@ -157,6 +179,5 @@ Contrato de demanda; se fijan con la primera historia que los consume.
 |---|---|---|
 | `contact` (singleton) | US-LAND-07 | forma del horario (uno-cms no admite listas dentro de un singleton) |
 | `about` (singleton) + `credentials` (colección) | US-LAND-04 | — |
-| `gallery` (colección) | US-LAND-03 | el consentimiento vive en la plataforma; cómo se referencia desde el par sin exponer datos |
 | `loyaltyInfo` (singleton) | US-LAND-05 | cómo evitar que el texto contradiga los niveles de US-LAND-06 |
 | `posts` (colección) | US-BLOG-01/02/03 | sin id, sin ruta por elemento y sin tipo fecha en uno-cms: el detalle busca por un campo `slug` que el CMS no hace único, la paginación y el orden por fecha ocurren en `content`, las imágenes del cuerpo no caben en el richtext |

@@ -2,7 +2,7 @@
 feature: content
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-09-16
+actualizado: 2026-09-21
 historias:
   - id: US-BLOG-01
     estado: no_iniciada
@@ -37,7 +37,7 @@ Se detiene antes de la UI: ninguna página de `landing` llama todavía a `getLan
 
 ## Contrato con el CMS
 
-[docs/contracts/cms-api.md](../../../docs/contracts/cms-api.md), vigente desde 2026-09-16 para transporte, invalidacion y los tipos `hero`, `intro` y `closing-cta` (clave con guion en el CMS). La v1.1 suma la coleccion `tecnicas`, que son solo las fotos de cada tecnica: el nombre, el precio y la duracion siguen saliendo del catalogo, y el cruce entre ambos lados es por `familia`. Consecuencia aceptada: dos tecnicas de la misma familia compartirian fotos; hoy el catalogo tiene una por familia. El CMS es uno-cms, instancia `lashary-cms`, en modo web remota. Lo que este gateway debe cumplir, segun el contrato:
+[docs/contracts/cms-api.md](../../../docs/contracts/cms-api.md), vigente desde 2026-09-16 para transporte, invalidacion y los tipos `hero`, `intro` y `closing-cta` (clave con guion en el CMS). La v1.1 suma la coleccion `tecnicas`, que son solo las fotos de cada tecnica: el nombre, el precio y la duracion siguen saliendo del catalogo, y el cruce entre ambos lados es por `familia`. Consecuencia aceptada: dos tecnicas de la misma familia compartirian fotos; hoy el catalogo tiene una por familia. La v1.2 suma la coleccion `galeria` (US-LAND-03): pares antes y despues con la casilla `consentimiento`, y la plataforma no muestra un par sin ella. El CMS es uno-cms, instancia `lashary-cms`, en modo web remota. Lo que este gateway debe cumplir, segun el contrato:
 
 - Lee solo desde el servidor, con `CMS_URL` y timeout de 3 s.
 - Valida cada respuesta contra las formas del contrato; lo que no encaja se degrada a la ultima copia en cache o al contenido de respaldo en codigo.
