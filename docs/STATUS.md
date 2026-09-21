@@ -113,7 +113,6 @@ Ninguno registrado.
 
 ## Deuda aceptada
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
-- catalog: Control positivo de escritura como staff contra la base real: ninguna prueba demuestra que una sesion con rol admin o superadmin puede INSERT, UPDATE y DELETE en catalog_techniques (politicas catalog_techniques_*_staff de supabase/migrations/20260902000001_catalog_write_policies.sql); rls-isolation.test.ts solo cubre el control negativo y actions.test.ts usa repositorio en memoria — aceptada en PR de cierre de US-AGE-08 (docs/us-age-08-close-out) — costo: 2h: prueba SQL local que siembra el rol como superusuario, fija request.jwt.claims y comprueba las tres escrituras con rollback; mas el arnes de Supabase local si aun no corre en el entorno de quien la escribe
 - clients: Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras — aceptada en PR #32, etiqueta excepcion-proceso — costo: 3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)
 
 ## Flags vivos
