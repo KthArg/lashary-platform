@@ -122,7 +122,8 @@ describe('LandingReasons — Por qué acá (plegada a US-LAND-04)', () => {
 
 describe('Navegación — criterio 4: El estudio es visible desde la navegación principal', () => {
   it('El estudio va entre Servicios y Galería, como en el diseño', () => {
-    expect(landingSections.map((section) => section.id)).toEqual(['servicios', STUDIO_SECTION.id, 'galeria'])
+    const ids = landingSections.map((section) => section.id)
+    expect(ids.slice(0, 3)).toEqual(['servicios', STUDIO_SECTION.id, 'galeria'])
   })
 
   it('la cabecera enlaza a #estudio', () => {

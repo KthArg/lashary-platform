@@ -42,6 +42,13 @@ export const landingMessages = {
     title: 'Por qué acá',
     index: '03',
   },
+  loyalty: {
+    title: 'Fidelidad',
+    index: '05',
+    levelsLabel: 'Beneficios por visita',
+    visit: (visit: number) => `${visit}.ª visita`,
+    empty: 'Pronto vas a encontrar acá cómo funciona el programa de fidelidad del estudio.',
+  },
   gallery: {
     title: 'Galería',
     index: '04',
