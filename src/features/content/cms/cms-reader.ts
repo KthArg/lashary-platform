@@ -1,6 +1,6 @@
 import { err, ok } from '@/shared/result'
 import { CmsUnavailable } from '../domain/errors'
-import { CMS_CONTENT_KEYS } from '../domain/landing-content'
+import { CMS_CONTENT_KEYS, type LandingContentKey } from '../domain/landing-content'
 import type { CmsReader } from '../application/ports'
 
 type CmsReaderOptions = {
@@ -48,7 +48,9 @@ export function createCmsReader({
 
   return {
     async readSingleton(key) {
-      const body = await read(CMS_CONTENT_KEYS[key], key)
+      // Solo los tipos de la landing tienen una clave distinta en el CMS (`closing-cta`).
+      const cmsKey = key in CMS_CONTENT_KEYS ? CMS_CONTENT_KEYS[key as LandingContentKey] : key
+      const body = await read(cmsKey, key)
       if (!body.ok) return body
 
       if (typeof body.value !== 'object' || body.value === null || !('data' in body.value)) {
