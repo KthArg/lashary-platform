@@ -12,7 +12,7 @@
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | en_progreso | 0 / 1 / 0 / 0 / 3 |
 | clients | pendiente | en_progreso | 1 / 1 / 0 / 0 / 3 |
-| content | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 3 |
+| content | pendiente | en_progreso | 0 / 0 / 0 / 0 / 3 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | landing | pendiente | en_progreso | 0 / 0 / 0 / 1 / 5 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |

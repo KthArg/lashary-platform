@@ -1,26 +1,57 @@
+# Supabase Migrations — aplica supabase/migrations/ al proyecto remoto al mergear a main.
+# Forward-only, máximo una migración por PR (INT-008). Los secretos viven solo en este job (SEC-003):
+#   SUPABASE_ACCESS_TOKEN  token personal de la Management API (supabase.com/dashboard/account/tokens)
+#   SUPABASE_PROJECT_ID    ref del proyecto remoto (20 caracteres, el de la URL del dashboard)
+#   SUPABASE_DB_PASSWORD   contraseña de Postgres del proyecto (Project Settings → Database)
+# Guía de configuración: docs/process/CI_SECRETS.md
 name: Supabase Migrations
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - 'supabase/migrations/**'
+      - '.github/workflows/supabase-migrate.yml'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Solo listar lo que se aplicaría, sin tocar la base'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-migrate
+  cancel-in-progress: false # nunca dos pushes de migraciones a la vez
 
 jobs:
   migrate:
     runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # SEC-008: Pin de herramienta de terceros (supabase/setup-cli) usando SHA
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@aa3515eac405eac768fa4a72147c22d88a283c7b
+      - name: Supabase CLI
+        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0, pinneada por SHA (SEC-008)
         with:
-          version: latest
+          version: 2.116.0 # misma versión que package.json — nada de latest (SEC-008)
 
-      - name: Push migrations to Supabase
-        run: supabase db push --project-ref ${{ secrets.SUPABASE_PROJECT_ID }}
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      # Falla temprano si el ref o la contraseña están mal; escribe solo en supabase/.temp (ignorado).
+      - name: Vincular proyecto remoto
+        run: supabase link --project-ref "$SUPABASE_PROJECT_ID" --yes
+
+      - name: Historial de migraciones (local vs remoto)
+        run: supabase migration list
+
+      - name: Aplicar migraciones
+        if: ${{ !inputs.dry_run }}
+        run: supabase db push --yes
+
+      - name: Simulación (workflow_dispatch con dry_run)
+        if: ${{ inputs.dry_run }}
+        run: supabase db push --dry-run
