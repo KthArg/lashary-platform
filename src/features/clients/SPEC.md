@@ -6,7 +6,7 @@ actualizado: "2026-09-20"
 historias:
   - id: US-CLI-01
     estado: en_progreso
-    falta: "filtro por nombre en la pantalla y su estado de vacio por filtro; las columnas de morosidad y ultima cita existen sin dato y su filtro no existe: el dato espera a US-MOR-01 y a US-AGE-05 (criterios diferidos)"
+    falta: "las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos); tambien falta extraer la construccion de URLs del listado a un hook, hoy duplicada en ClientsPagination y ClientsNameFilter"
   - id: US-CLI-02
     estado: no_iniciada
   - id: US-CLI-03
@@ -18,6 +18,9 @@ historias:
     evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
 flags: []
 deuda:
+  - que: "La construccion de URLs del listado esta duplicada en src/features/clients/components/ClientsPagination/ClientsPagination.tsx y src/features/clients/components/ClientsNameFilter/ClientsNameFilter.tsx: copiar la consulta actual, cambiar un parametro y borrar page"
+    aceptada_en: "pieza feat/US-CLI-01-name-filter"
+    costo: "1h: extraer una funcion pura de construccion de URL mas un hook que la use, y mover a la funcion pura las pruebas de URL de clients-pagination.test.tsx y clients-name-filter.test.tsx"
   - que: "Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras"
     aceptada_en: "PR #32, etiqueta excepcion-proceso"
     costo: "3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)"
@@ -56,8 +59,12 @@ La action ya recibe `{ page, pageSize, name }` y devuelve `{ clients, total, pag
 (10, 25 o 50) y cualquier otro valor usa 25; una página inválida es la 0; `name` filtra `full_name` con
 `ilike`, recortado a 120 caracteres, con `%`, `_` y `\` escapados y `*` quitado (PostgREST lo lee como
 `%`), así que lo escrito se busca como texto. `total` sale de `count: 'exact'` y cuenta todo lo que
-cumple el filtro. La página lee `?page` y `?pageSize` de la URL y se los pasa; `name` todavía no lo pasa
-nadie. Debajo de la tabla, `ClientsPagination` muestra "Página X de Y" con el total de clientas,
+cumple el filtro. La página lee `?page`, `?pageSize` y `?name` de la URL y se los pasa.
+Sobre la tabla, `ClientsNameFilter` es un `<form role="search">` con un campo de nombre limitado a
+`CLIENTS_LIST_LIMITS.nameFilterMaxLength`: al enviarlo escribe `?name` y borra `?page`, un texto en blanco
+quita el filtro, y con filtro activo aparece *Quitar filtro*. Sin coincidencias, la lista nombra el filtro
+en vez de decir que no hay clientas registradas (UI-003). Lo demuestran `clients-name-filter.test.tsx` y
+`clients-list.test.tsx`. Debajo de la tabla, `ClientsPagination` muestra "Página X de Y" con el total de clientas,
 *Anterior* y *Siguiente* como enlaces que solo cambian `page` y conservan el resto de la consulta, y un
 selector de 10, 25 o 50 que al cambiar vuelve a la primera página. En la primera y en la última página
 el enlace que no aplica se dibuja como texto, no como enlace muerto. Cuando la lectura falla o no hay
@@ -102,8 +109,8 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 `ConfirmDialog`, el formulario, `AddClientButton`, `ClientsList`, `ClientRecord`, los hooks
 `useClientForm`, `useClientDialog` y `useFocusTrap`, `createClientAction`, `listClientsAction` y `updateClientAction` con sus tipos
 `SaveClientResult`, `ListClientsQuery` y `ListClientsResult`, `validateClientForm`, `normalizePhone` y las constantes de
-textos y límites, entre ellas `CLIENTS_LIST_LIMITS`, `CLIENTS_TABLE_HEADERS`, `CLIENTS_TABLE_TEXTS` y `CLIENTS_PAGINATION_TEXTS` (DOM-009).
-También exporta `ClientsPagination`.
+textos y límites, entre ellas `CLIENTS_LIST_LIMITS`, `CLIENTS_TABLE_HEADERS`, `CLIENTS_TABLE_TEXTS` , `CLIENTS_PAGINATION_TEXTS` y `CLIENTS_FILTER_TEXTS` (DOM-009).
+También exporta `ClientsPagination` y `ClientsNameFilter`.
 
 ## Invariantes
 
@@ -203,6 +210,13 @@ También exporta `ClientsPagination`.
   lectura sigue ocurriendo en el servidor (PERF-002) y la pantalla se puede compartir o recargar sin
   perder dónde estaba. **Consecuencia asumida:** cambiar el tamaño de página necesita `router.push`,
   y eso obliga a que `ClientsPagination` sea un componente cliente.
+- **2026-09-20 — El filtro por nombre se envía, no se busca al teclear.** Un `<form>` con su botón
+  *Buscar*: cada pulsación sería una lectura a la base y una entrada en el historial del navegador.
+  El campo lleva `key={name}`, para que al quitar el filtro React lo remonte y no conserve lo escrito.
+- **2026-09-20 — La construcción de URLs del listado queda duplicada en `ClientsPagination` y
+  `ClientsNameFilter`** (~5 líneas cada uno). Se extrae a un hook con una función pura por debajo
+  ahora que existe el segundo consumidor; se pospone para no mezclar refactor y funcionalidad en la
+  misma pieza (INT-002). **Costo:** 1h, incluye mover las pruebas de construcción de URL a la función pura.
 - **2026-09-20 — La columna de acciones lleva encabezado visible**, no `sr-only` como nació el
   2026-09-20 en esta misma pieza (decisión de José Loría). UI-004 se cumple igual: la columna tiene
   nombre accesible; ahora además se ve.

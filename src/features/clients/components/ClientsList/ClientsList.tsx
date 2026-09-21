@@ -10,7 +10,7 @@ import type { ClientRecord } from '../../types/client.types'
 import type { ClientsListProps } from './ClientsList.types'
 
 /** US-CLI-05 criterio 2. Un solo dialogo para toda la lista: uno por fila multiplicaria focus traps. */
-export function ClientsList({ clients, isLoading = false, loadError = null }: ClientsListProps) {
+export function ClientsList({ clients, isLoading = false, loadError = null, activeNameFilter = null }: ClientsListProps) {
   const router = useRouter()
   const [editing, setEditing] = useState<ClientRecord | null>(null)
   // Con varios lapices hay que recordar cual se pulso para devolverle el foco (UI-004).
@@ -32,7 +32,12 @@ export function ClientsList({ clients, isLoading = false, loadError = null }: Cl
         </div>
       )
     }
-    if (clients.length === 0) return <p className={STYLES.empty}>{CLIENTS_LABELS.clientsListEmpty}</p>
+    if (clients.length === 0) {
+      const emptyMessage = activeNameFilter
+        ? CLIENTS_LABELS.clientsListEmptyForFilter(activeNameFilter)
+        : CLIENTS_LABELS.clientsListEmpty
+      return <p className={STYLES.empty}>{emptyMessage}</p>
+    }
     // US-CLI-01 criterio 1: tabla real, no una lista con aspecto de tabla; cada celda pertenece
     // a una columna con nombre, que es lo que el lector de pantalla anuncia (UI-004).
     return (
