@@ -113,6 +113,8 @@ module.exports = {
         'site-cta-lg': '3.75rem',
         // Área pulsable mínima de UI-004.
         'site-tap': '2.75rem',
+        // Mapa embebido de Ubicación (US-LAND-07), como el recuadro del diseño.
+        'site-map': '20rem',
       },
       lineHeight: {
         'site-loose': '1.75',
@@ -149,6 +151,8 @@ module.exports = {
         'site-reasons': 'repeat(auto-fit, minmax(min(100%, 16.25rem), 1fr))',
         // Niveles de fidelidad (US-LAND-05): una fila de hitos que se parte en angosto.
         'site-milestones': 'repeat(auto-fit, minmax(min(100%, 11rem), 1fr))',
+        // Horario de Ubicación (US-LAND-07): días a un lado, horas al otro.
+        'site-hours': 'auto 1fr',
       },
       borderRadius: {
         'site-pill': '50% / 100%',
