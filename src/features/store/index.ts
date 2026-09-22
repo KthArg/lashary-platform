@@ -8,6 +8,8 @@ export type {
   CadenaProductos,
 } from './domain/producto';
 
+export { aProductoEnTarjeta, formatearPrecioCrc } from './domain/producto';
+
 export type { CatalogoProductosPublico } from './application/obtener-grid-productos-publicos';
 
 export {
@@ -20,3 +22,4 @@ export type { OpcionesRenderGridProductos } from './ui/grid-productos-publicos';
 export { renderGridProductosPublicos } from './ui/grid-productos-publicos';
 
 export type { ClienteCms, DtoProductoCms } from './http/catalogo-productos-cms';
+export { CatalogoProductosDb } from './db/productos-db';
