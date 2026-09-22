@@ -20,7 +20,7 @@
 | payments | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | scheduling | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 11 |
-| store | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 4 |
+| store | pendiente | en_progreso | 0 / 1 / 0 / 0 / 3 |
 
 ## Detalle por feature
 
@@ -97,8 +97,8 @@
 - US-AGE-11 — no_iniciada
 - US-AGE-12 — no_iniciada
 
-### store (actualizado: 2026-08-29)
-- US-PROD-02 — no_iniciada
+### store (actualizado: 2026-09-09)
+- US-PROD-02 — en_progreso — falta: Panel admin para gestionar productos desde CMS.
 - US-PROD-03 — no_iniciada
 - US-SHOP-01 — no_iniciada
 - US-SHOP-02 — no_iniciada
