@@ -1,11 +1,12 @@
 ---
 feature: store
 dri: pendiente
-estado: no_iniciada
-actualizado: 2026-08-29
+estado: en_progreso
+actualizado: 2026-09-09
 historias:
   - id: US-PROD-02
-    estado: no_iniciada
+    estado: en_progreso
+    falta: Panel admin para gestionar productos desde CMS.
   - id: US-PROD-03
     estado: no_iniciada
   - id: US-SHOP-01
@@ -23,8 +24,21 @@ Tienda (F4): productos, carrito, checkout con comprobante. Stock y pedidos admin
 
 ## Qué hace hoy
 
-Hoy: no existe. Se detiene antes de todo.
+`US-PROD-02` implementado con:
+- Modelo de dominio (`domain/producto.ts`): tipos puros sin dependencias
+- Caso de uso (`application/obtener-grid-productos-publicos.ts`): orquestación de listado
+- Adaptador CMS (`http/catalogo-productos-cms.ts`): lectura desde API externa
+- Adaptador base de datos (`db/productos-db.ts`): lectura pública desde Supabase
+- Componente React (`ui/grid-productos-publicos.tsx`): grid responsivo con estados de UI
+- Strings externalizados (`ui/grid-productos-publicos.cadenas.es.ts`): i18n base
+- Integración en ruta pública `/productos` con catálogo desde la base de datos
+- Pruebas automatizadas de UI/integración para el grid, el adaptador CMS y la ruta pública
+- Endurecimiento anti-XSS en renderer HTML: escape de contenido y sanitización de URLs provenientes de CMS
+- Etiquetas ARIA y mensaje de carga externalizados en cadenas de UI
+- Acción de reintento configurable por URL (`urlReintento`) en el renderer
+
+Se detiene antes del panel admin para gestionar productos desde CMS.
 
 ## Contrato público
 
-Sin contrato todavía. Al crearse, entra por `index.ts` (ARCH-003).
+`index.ts` exporta el contrato completo para listar productos, renderizar grid y consultar catálogos (ARCH-003).
