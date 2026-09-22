@@ -19,6 +19,7 @@ vi.mock('next/link', () => ({
 
 const hrefOf = (name: string) => screen.getByRole('link', { name }).getAttribute('href')
 
+// La forma de la URL se prueba en clients-list-url.test.ts; aqui solo que los controles lleguen a ella.
 describe('ClientsPagination', () => {
   beforeEach(() => {
     mockPush.mockClear()
@@ -42,12 +43,6 @@ describe('ClientsPagination', () => {
     render(<ClientsPagination page={3} pageSize={25} total={80} />)
     expect(screen.queryByRole('link', { name: CLIENTS_PAGINATION_TEXTS.next })).toBeNull()
     expect(hrefOf(CLIENTS_PAGINATION_TEXTS.previous)).toBe('/admin/clients?page=2')
-  })
-
-  it('conserva el resto de la consulta al cambiar de pagina', () => {
-    currentSearch = 'name=ana&pageSize=10'
-    render(<ClientsPagination page={0} pageSize={10} total={30} />)
-    expect(hrefOf(CLIENTS_PAGINATION_TEXTS.next)).toBe('/admin/clients?name=ana&pageSize=10&page=1')
   })
 
   it('ofrece solo los tamanos permitidos y al cambiarlo vuelve a la primera pagina', () => {

@@ -14,6 +14,7 @@ vi.mock('next/navigation', () => ({
 const searchField = () => screen.getByLabelText(CLIENTS_FILTER_TEXTS.nameLabel) as HTMLInputElement
 const submit = () => fireEvent.click(screen.getByRole('button', { name: CLIENTS_FILTER_TEXTS.submit }))
 
+// La forma de la URL se prueba en clients-list-url.test.ts; aqui solo que el formulario llegue a ella.
 describe('ClientsNameFilter', () => {
   beforeEach(() => {
     mockPush.mockClear()
@@ -27,14 +28,6 @@ describe('ClientsNameFilter', () => {
     expect(mockPush).toHaveBeenCalledWith('/admin/clients?name=ana')
   })
 
-  it('vuelve a la primera pagina y conserva el tamano al filtrar', () => {
-    currentSearch = 'page=3&pageSize=50'
-    render(<ClientsNameFilter />)
-    fireEvent.change(searchField(), { target: { value: 'ana' } })
-    submit()
-    expect(mockPush).toHaveBeenCalledWith('/admin/clients?pageSize=50&name=ana')
-  })
-
   it('muestra el filtro activo en el campo y lo quita sin dejar la consulta rota', () => {
     currentSearch = 'name=ana'
     render(<ClientsNameFilter name="ana" />)
@@ -43,12 +36,9 @@ describe('ClientsNameFilter', () => {
     expect(mockPush).toHaveBeenCalledWith('/admin/clients')
   })
 
-  it('sin filtro activo no ofrece quitarlo, y un texto en blanco no filtra', () => {
+  it('sin filtro activo no ofrece quitarlo', () => {
     render(<ClientsNameFilter />)
     expect(screen.queryByRole('button', { name: CLIENTS_FILTER_TEXTS.clear })).toBeNull()
-    fireEvent.change(searchField(), { target: { value: '   ' } })
-    submit()
-    expect(mockPush).toHaveBeenCalledWith('/admin/clients')
   })
 
   it('no deja escribir mas de lo que la action acepta', () => {

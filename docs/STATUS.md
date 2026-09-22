@@ -38,8 +38,8 @@
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
-### clients (actualizado: 2026-09-20)
-- US-CLI-01 — en_progreso — falta: las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos); tambien falta extraer la construccion de URLs del listado a un hook, hoy duplicada en ClientsPagination y ClientsNameFilter
+### clients (actualizado: 2026-09-21)
+- US-CLI-01 — en_progreso — falta: las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
 - US-CLI-04 — no_iniciada
@@ -113,7 +113,6 @@ Ninguno registrado.
 
 ## Deuda aceptada
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
-- clients: La construccion de URLs del listado esta duplicada en src/features/clients/components/ClientsPagination/ClientsPagination.tsx y src/features/clients/components/ClientsNameFilter/ClientsNameFilter.tsx: copiar la consulta actual, cambiar un parametro y borrar page — aceptada en pieza feat/US-CLI-01-name-filter — costo: 1h: extraer una funcion pura de construccion de URL mas un hook que la use, y mover a la funcion pura las pruebas de URL de clients-pagination.test.tsx y clients-name-filter.test.tsx
 - clients: Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras — aceptada en PR #32, etiqueta excepcion-proceso — costo: 3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)
 
 ## Flags vivos

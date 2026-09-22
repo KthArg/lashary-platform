@@ -1,25 +1,15 @@
 'use client'
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useClientsListQuery } from '../../hooks/useClientsListQuery'
 import { CLIENTS_FILTER_TEXTS } from '../../constants/clients-strings'
 import { CLIENTS_LIST_LIMITS } from '../../constants/client-form'
 import { clientsNameFilterStyles as STYLES } from './ClientsNameFilter.styles'
 import type { ClientsNameFilterProps } from './ClientsNameFilter.types'
 
 export function ClientsNameFilter({ name = '' }: ClientsNameFilterProps) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const { navigateWith } = useClientsListQuery()
 
-  const applyName = (nextName: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    const trimmed = nextName.trim()
-    if (trimmed) params.set('name', trimmed)
-    else params.delete('name')
-    params.delete('page')
-    const query = params.toString()
-    router.push(query ? `${pathname}?${query}` : pathname)
-  }
+  const applyName = (nextName: string) => navigateWith({ name: nextName, page: null })
 
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
