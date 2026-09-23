@@ -12,7 +12,7 @@
 -- Correr con: npx supabase test db   (requiere `supabase start`)
 
 BEGIN;
-SELECT plan(12);
+SELECT plan(10);
 
 -- Dos usuarias: la disparadora de handle_new_auth_user() les da rol 'cliente'.
 INSERT INTO auth.users (id, email)
@@ -50,20 +50,21 @@ SELECT is(
     WHERE id = '00000000-0000-0000-0000-00000000e001'),
   1, 'admin: SELECT ve la fila que insertó');
 
-SELECT throws_ok(
-  $$UPDATE public.audit_events SET action = 'alterado'
-     WHERE id = '00000000-0000-0000-0000-00000000e001'$$,
-  '42501', NULL, 'admin: UPDATE denegado — append-only, sin excepción de rol');
+-- Sin política de UPDATE/DELETE, RLS no lanza error (a diferencia de INSERT): el USING
+-- implícito es "false" y el WHERE simplemente no encuentra ninguna fila que actualizar o
+-- borrar. Por eso NO se envuelve en throws_ok — se corre el intento y se verifica que no tuvo
+-- efecto, igual que hace catalog_staff_write.test.sql con sus intentos de clienta.
+UPDATE public.audit_events SET action = 'alterado'
+ WHERE id = '00000000-0000-0000-0000-00000000e001';
 
-SELECT throws_ok(
-  $$DELETE FROM public.audit_events
-     WHERE id = '00000000-0000-0000-0000-00000000e001'$$,
-  '42501', NULL, 'admin: DELETE denegado — append-only, sin excepción de rol');
+DELETE FROM public.audit_events
+ WHERE id = '00000000-0000-0000-0000-00000000e001';
 
 SELECT is(
   (SELECT action FROM public.audit_events
     WHERE id = '00000000-0000-0000-0000-00000000e001'),
-  'payments.deposit_exemption.granted', 'admin: la fila sigue intacta tras los intentos');
+  'payments.deposit_exemption.granted',
+  'admin: UPDATE y DELETE no tuvieron efecto — append-only, sin excepción de rol');
 
 -- ── Como clienta (contraste: la misma tabla, sin rol de staff) ──────────────
 SELECT set_config('request.jwt.claims',
@@ -81,15 +82,27 @@ SELECT throws_ok(
             '00000000-0000-0000-0000-0000000000c9')$$,
   '42501', NULL, 'clienta: INSERT denegado por RLS');
 
-SELECT throws_ok(
-  $$UPDATE public.audit_events SET action = 'alterado'
-     WHERE id = '00000000-0000-0000-0000-00000000e001'$$,
-  '42501', NULL, 'clienta: UPDATE denegado');
+UPDATE public.audit_events SET action = 'alterado'
+ WHERE id = '00000000-0000-0000-0000-00000000e001';
 
-SELECT throws_ok(
-  $$DELETE FROM public.audit_events
-     WHERE id = '00000000-0000-0000-0000-00000000e001'$$,
-  '42501', NULL, 'clienta: DELETE denegado');
+DELETE FROM public.audit_events
+ WHERE id = '00000000-0000-0000-0000-00000000e001';
+
+-- Clienta no tiene política de SELECT: no puede leer la fila para comprobar el efecto de sus
+-- propios intentos. Se vuelve a la sesión de admin, la única que puede verla, para confirmar
+-- que ni el UPDATE ni el DELETE de clienta tuvieron efecto.
+SELECT set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-0000-0000-0000000000b1","role":"authenticated"}', true);
+
+SELECT is(
+  (SELECT count(*)::int FROM public.audit_events
+    WHERE id = '00000000-0000-0000-0000-00000000e001'),
+  1, 'clienta: su UPDATE y su DELETE no tuvieron efecto — la fila sigue ahí');
+
+SELECT is(
+  (SELECT action FROM public.audit_events
+    WHERE id = '00000000-0000-0000-0000-00000000e001'),
+  'payments.deposit_exemption.granted', 'clienta: y su contenido no cambió');
 
 SELECT * FROM finish();
 ROLLBACK;
