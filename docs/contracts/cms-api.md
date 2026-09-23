@@ -1,6 +1,6 @@
 # Contrato — API del CMS externo
 
-> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro`, `closing-cta` (US-LAND-01) y `posts` (US-BLOG-01/02). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-16.
+> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro`, `closing-cta` (US-LAND-01) y `posts` (US-BLOG-01/02). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-22.
 
 ## El CMS
 
@@ -83,7 +83,7 @@ La clave lleva guion: uno-cms solo admite minúsculas, dígitos y guiones en las
 
 | Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
 |---|---|---|---|---|
-| `slug` | text | sí | 80 | identificador legible para la URL de la publicación |
+| `slug` | text | no | 80 | identificador legible para la URL de la publicación; sin valor, `content` lo deriva de `title` |
 | `title` | text | sí | 100 | título de la publicación |
 | `excerpt` | text multilínea | sí | 200 | resumen para la tarjeta del listado |
 | `featuredImage` | image | sí | — | imagen destacada; `alt` obligatorio al publicar |
@@ -95,8 +95,9 @@ La clave lleva guion: uno-cms solo admite minúsculas, dígitos y guiones en las
 Respuestas a lo que quedaba pendiente de decidir (§ Tipos en borrador, hasta este documento):
 
 - **Sin id ni ruta por elemento en uno-cms** (§ Transporte): `content` lee la colección completa (`GET {CMS_URL}/api/content/posts`) y arma su propia identidad de ruta a partir de `slug`. No existe ruta de uno-cms para una publicación suelta.
+- **`slug` opcional (decisión del PO, 2026-09-22):** la administradora no está obligada a escribirlo. `content` normaliza el valor que venga — o `title` si no viene — así: minúsculas, sin diacríticos, cada tramo de caracteres fuera de `a-z0-9` pasa a un guion, sin guiones en los extremos, recortado a 80 caracteres. Llenar `slug` es la forma de fijar la URL: con él vacío, editar `title` cambia la URL de la publicación. Si la normalización deja la cadena vacía, la publicación se descarta y se registra una advertencia.
 - **`slug` no único:** el CMS no lo garantiza. Si dos publicaciones comparten `slug`, `content` conserva la primera en el orden del editor y registra una advertencia; no falla la lectura completa (mismo criterio que § Degradación).
-- **Sin tipo fecha en uno-cms:** `publishedAt` es texto en ISO 8601; `content` lo parsea para ordenar y no falla si el formato no encaja — trata ese campo como ausente (§ Degradación).
+- **Sin tipo fecha en uno-cms:** `publishedAt` es texto en ISO 8601; `content` lo parsea para ordenar y no falla si el formato no encaja — trata ese campo como ausente y la publicación va al final del listado, en el orden del editor (§ Degradación).
 - **Orden y paginación:** ocurren en `content`, no en el CMS — orden descendente por `publishedAt`, paginado sobre un límite configurado (9 por página, US-BLOG-02).
 - **Imágenes dentro de `body`:** fuera de alcance de v1; el richtext no las admite (§ Formas de valor). Queda pendiente de una extensión futura de uno-cms si se necesita.
 

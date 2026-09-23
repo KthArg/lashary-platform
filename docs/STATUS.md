@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-21.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-22.
 
 ## Features
 
@@ -12,7 +12,7 @@
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | en_progreso | 1 / 0 / 0 / 0 / 3 |
 | clients | pendiente | en_progreso | 1 / 1 / 0 / 0 / 3 |
-| content | pendiente | en_progreso | 0 / 0 / 0 / 0 / 3 |
+| content | pendiente | en_progreso | 0 / 1 / 0 / 0 / 2 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | landing | pendiente | en_progreso | 0 / 0 / 0 / 1 / 5 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
@@ -45,8 +45,8 @@
 - US-CLI-04 — no_iniciada
 - US-CLI-05 — terminada — PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx
 
-### content (actualizado: 2026-09-16)
-- US-BLOG-01 — no_iniciada
+### content (actualizado: 2026-09-22)
+- US-BLOG-01 — en_progreso — falta: el tipo posts no esta confirmado en cms.config.ts de lashary-cms, y la seccion US-BLOG-01 de este spec no asigna cada criterio a su prueba de uno-cms fijada por SHA
 - US-BLOG-02 — no_iniciada
 - US-BLOG-03 — no_iniciada
 

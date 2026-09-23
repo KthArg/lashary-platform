@@ -2,10 +2,11 @@
 feature: content
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-09-16
+actualizado: 2026-09-22
 historias:
   - id: US-BLOG-01
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "el tipo posts no esta confirmado en cms.config.ts de lashary-cms, y la seccion US-BLOG-01 de este spec no asigna cada criterio a su prueba de uno-cms fijada por SHA"
   - id: US-BLOG-02
     estado: no_iniciada
   - id: US-BLOG-03
@@ -34,13 +35,13 @@ Se detiene antes de la UI: ninguna página de `landing` llama todavía a `getLan
 
 ## Contrato con el CMS
 
-[docs/contracts/cms-api.md](../../../docs/contracts/cms-api.md), vigente desde 2026-09-16 para transporte, invalidacion y los tipos `hero`, `intro` y `closing-cta` (clave con guion en el CMS). El CMS es uno-cms, instancia `lashary-cms`, en modo web remota. Lo que este gateway debe cumplir, segun el contrato:
+[docs/contracts/cms-api.md](../../../docs/contracts/cms-api.md), vigente desde 2026-09-16 para transporte, invalidacion y los tipos `hero`, `intro` y `closing-cta` (clave con guion en el CMS), y desde 2026-09-22 para `posts`. El CMS es uno-cms, instancia `lashary-cms`, en modo web remota. Lo que este gateway debe cumplir, segun el contrato:
 
 - Lee solo desde el servidor, con `CMS_URL` y timeout de 3 s.
 - Valida cada respuesta contra las formas del contrato; lo que no encaja se degrada a la ultima copia en cache o al contenido de respaldo en codigo.
 - Recibe el aviso firmado en `POST /api/cms/webhook` e invalida por tag; TTL de respaldo de 10 minutos.
 
-US-BLOG-01: los borradores separados de lo publicado estan verificados en uno-cms (columnas `draft` y `published`; la ruta publica lee `published`). El tipo `posts` es vigente en el contrato desde 2026-09-16; el gateway de lectura se construye en US-BLOG-02.
+US-BLOG-01: los borradores separados de lo publicado estan verificados en uno-cms (columnas `draft` y `published`; la ruta publica lee `published`). El tipo `posts` es vigente en el contrato desde 2026-09-22, con `slug` opcional derivado de `title` y `publishedAt` como texto `AAAA-MM-DD` (decisiones del PO, 2026-09-22); el gateway de lectura se construye en US-BLOG-02. Los criterios de US-BLOG-01 los cumple uno-cms (ADR-0001): la evidencia es el mapa criterio a prueba de uno-cms, fijado por SHA.
 
 ## Contrato público (`index.ts`)
 
