@@ -30,9 +30,21 @@ export const landingMessages = {
     empty:
       'El catálogo se está actualizando. Escribinos y te contamos qué técnicas hay disponibles esta semana.',
   },
+  studio: {
+    title: 'El estudio',
+    index: '02',
+    trajectory: 'Trayectoria',
+    education: 'Formación',
+    certifications: 'Certificaciones',
+    years: (years: number) => (years === 1 ? '1 año de experiencia' : `${years} años de experiencia`),
+  },
+  reasons: {
+    title: 'Por qué acá',
+    index: '03',
+  },
   gallery: {
     title: 'Galería',
-    index: '02',
+    index: '04',
     filterLabel: 'Filtrar la galería por técnica',
     all: 'Todas',
     before: 'Antes',

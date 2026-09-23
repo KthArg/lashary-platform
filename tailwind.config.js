@@ -145,6 +145,8 @@ module.exports = {
       gridTemplateColumns: {
         // Cuadrícula de la galería: tantas columnas como quepan, cada par de al menos 17rem.
         'site-gallery': 'repeat(auto-fill, minmax(min(100%, 17rem), 1fr))',
+        // Por qué acá (US-LAND-04): celdas de al menos 16.25rem, que se reparten el ancho.
+        'site-reasons': 'repeat(auto-fit, minmax(min(100%, 16.25rem), 1fr))',
       },
       borderRadius: {
         'site-pill': '50% / 100%',
@@ -158,6 +160,8 @@ module.exports = {
         'site-technique-desc': '52ch',
         // Foto de la técnica dentro de la fila abierta (US-LAND-02).
         'site-photo': '22rem',
+        // Retrato de la dueña en El estudio (US-LAND-04).
+        'site-portrait': '20.625rem',
         // El par ampliado de la galería (US-LAND-03). Lo acota también el alto de la pantalla:
         // dos fotos 3:4 lado a lado miden de alto 2/3 de su ancho, y tienen que caber junto a
         // los controles incluso con el móvil en horizontal.
