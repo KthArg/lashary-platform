@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup, within } from '@testing-library/react'
-import type { LandingContent } from '@/features/content'
+import type { LandingContent, StudioContent } from '@/features/content'
 import { LandingClosingCta, LandingHome, LandingIntro, RESERVE_ROUTE } from '@/features/landing'
 
 vi.mock('next/image', () => ({
@@ -24,6 +24,12 @@ const content: LandingContent = {
   },
   intro: { statement: 'Tiempo, luz y criterio.', body: 'Reviso tu pestaña primero.' },
   closingCta: { heading: 'La agenda es de una clienta', headingEmphasis: 'a la vez', body: 'Elegís día y hora.', ctaLabel: 'Quiero mi cita' },
+}
+
+const studio: StudioContent = {
+  profile: { name: 'Ana', role: 'Lash artist y fundadora', portrait: null, paragraphs: ['Abrí el estudio.'], yearsOfExperience: 7 },
+  credentials: [],
+  reasons: [{ title: 'Una clienta a la vez', text: 'Nadie espera.' }],
 }
 
 describe('LandingIntro — texto de bienvenida desde el CMS', () => {
@@ -56,15 +62,22 @@ describe('LandingClosingCta — llamada final a reservar', () => {
 })
 
 describe('LandingHome — la página de inicio compone las secciones con el contenido recibido', () => {
-  it('hero, bienvenida, servicios, galería y llamada final dentro de <main id="inicio">', () => {
+  it('hero, bienvenida, servicios, El estudio, Por qué acá, galería y llamada final dentro de <main id="inicio">', () => {
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener() {}, removeEventListener() {} }))
-    const { container } = render(<LandingHome content={content} />)
+    const { container } = render(<LandingHome content={content} studio={studio} />)
     const main = container.querySelector('main#inicio') as HTMLElement
     expect(within(main).getByRole('heading', { level: 1 }).textContent).toBe('extensiones de pestañasuna por una.')
     expect(within(main).getByText('Tiempo, luz y criterio.')).toBeTruthy()
-    // Servicios (US-LAND-02), Galería (US-LAND-03) y la llamada final, en ese orden.
+    // En el orden del diseño: Servicios (US-LAND-02), El estudio y Por qué acá (US-LAND-04),
+    // Galería (US-LAND-03) y la llamada final.
     const encabezados = within(main).getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
-    expect(encabezados).toEqual(['Servicios', 'Galería', 'La agenda es de una clienta a la vez'])
+    expect(encabezados).toEqual([
+      'Servicios',
+      'El estudio',
+      'Por qué acá',
+      'Galería',
+      'La agenda es de una clienta a la vez',
+    ])
     const reserveLinks = within(main).getAllByRole('link').filter((link) => link.getAttribute('href') === RESERVE_ROUTE)
     expect(reserveLinks).toHaveLength(2)
   })

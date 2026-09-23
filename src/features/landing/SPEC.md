@@ -14,8 +14,8 @@ historias:
     estado: terminada
     evidencia: "PRs #74 (contrato v1.2, coleccion galeria), #75 (lectura en content), #76 (cuadricula y filtro) y #77 (galeria ampliada y montaje), apilados hacia us/US-LAND-03; la otra mitad del contrato esta en el main de lashary-cms (3506d01). Criterios 1 y 3 en ui/__tests__/landing-gallery.test.tsx; 2 en content/cms/__tests__/gallery-source.test.ts y webhook.test.ts; 4 en content/application/__tests__/get-gallery.test.ts. Verificado ademas con un CMS simulado en next dev: 6 pares de 7 (el septimo sin consentimiento no aparece), sin scroll horizontal en 320, 375, 768, 1280, 1920 y 667x375, y la galeria ampliada cabe en 667x375"
   - id: US-LAND-04
-    estado: en_progreso
-    falta: "contrato v1.3, lectura en content (getStudio) y la seccion El estudio (ui/LandingStudio.tsx) hechos; falta Por que aca, montar las dos secciones en la pagina y agregar El estudio a la navegacion (criterio 4)"
+    estado: terminada
+    evidencia: "PRs #78 (contrato v1.3), #79 (validacion en content), #80 (getStudio con cache y aviso), #81 (seccion El estudio) y #82 (Por que aca, montaje y navegacion), apilados hacia us/US-LAND-04; la otra mitad del contrato esta en el main de lashary-cms (f4a4481). Criterios 1 y 2 en ui/__tests__/landing-studio.test.tsx y content/application/__tests__/get-studio.test.ts; 3 en content/cms/__tests__/studio-source.test.ts, webhook.test.ts y cms-reader.test.ts; 4 en landing-studio.test.tsx (Navegacion). Verificado ademas con un CMS simulado en next dev: retrato, 3 credenciales y 5 razones, sin scroll horizontal en 320, 375, 768, 1280, 1920 y 667x375; con el CMS caido, El estudio cae al respaldo y la pagina se sirve"
   - id: US-LAND-05
     estado: no_iniciada
   - id: US-LAND-07
@@ -33,9 +33,9 @@ Sitio publico: inicio, tecnicas, contacto, conoceme, galeria, fidelidad informat
 
 - `ui/SiteHeader.tsx`: cabecera fija de todas las páginas públicas (la monta `src/app/(site)/layout.tsx`). Marca con ancla a `#inicio`, "Reservar cita" hacia `RESERVE_ROUTE` (`/portal`) y, si hay secciones, la barra de enlaces (desde 860 px, token `site-nav`) y el botón de menú.
 - `ui/SiteMenu.tsx`: menú a pantalla completa como diálogo modal. Foco en "Cerrar" al abrir, Tab atrapado, Escape cierra y devuelve el foco al botón, scroll de la página bloqueado mientras está abierto.
-- `ui/sections.ts`: `landingSections` lista hoy solo Servicios (`TECHNIQUES_SECTION`, ancla `#servicios`); cada historia agrega la suya al montarla. La sección se renderiza siempre, incluso sin técnicas, para que el ancla de la navegación nunca apunte al vacío.
+- `ui/sections.ts`: `landingSections` lista Servicios, El estudio y Galería, en el orden del diseño; cada historia agrega la suya al montarla. La sección se renderiza siempre, incluso sin técnicas, para que el ancla de la navegación nunca apunte al vacío.
 
-- `ui/LandingHome.tsx` + `src/app/(site)/page.tsx`: `/` es estática con revalidación de 600 s; lee `getLandingContent()` y `getGallery()` de `content` y `listTechniques({ activeOnly: true })` del entry point de `catalog` (ARCH-003), y compone hero, bienvenida, servicios, galería y llamada final dentro de `<main id="inicio">`.
+- `ui/LandingHome.tsx` + `src/app/(site)/page.tsx`: `/` es estática con revalidación de 600 s; lee `getLandingContent()`, `getStudio()` y `getGallery()` de `content` y `listTechniques({ activeOnly: true })` del entry point de `catalog` (ARCH-003), y compone hero, bienvenida, servicios, El estudio, Por qué acá, galería y llamada final dentro de `<main id="inicio">`.
 - `ui/LandingHero.tsx`: título en dos líneas, subtítulo, "Reservar cita" (texto del CMS, destino `RESERVE_ROUTE`), enlace secundario solo con texto y destino, y la foto del CMS con `next/image`. Sin imagen, la píldora queda como relleno decorativo (`aria-hidden`).
 - `ui/opening-frame.ts` + `ui/use-opening-animation.ts`: la apertura de la foto al bajar, en una pista de 300vh. Con `prefers-reduced-motion: reduce` no se registra el scroll y el CSS muestra título y foto quietos, uno debajo del otro. En pantallas de hasta 500 px de alto (token `site-short`) el bloque del título se alinea arriba para no quedar bajo la cabecera.
 - `next.config.js`: imágenes remotas de Vercel Blob y, en desarrollo, del origen de `CMS_URL`. Next bloquea por SSRF imágenes de IPs privadas; solo con `next dev` y `CMS_URL` en loopback se permite (`dangerouslyAllowLocalIP`), nunca en producción.
@@ -66,7 +66,16 @@ Medición PERF-004 (2026-09-16, `next build` + `next start`, Playwright con emul
 
 Medición PERF-004 con la galería (2026-09-21, mismo método que la de US-LAND-01, con 6 pares de un CMS simulado y un Supabase simulado que responde 401 al instante): LCP 1436–1456 ms en 3 corridas, elemento LCP el título del hero; JS inicial 150.9 KB comprimido (9 scripts). Dentro del presupuesto. Sin el Supabase simulado el TTFB sube a 7 s en Windows porque el middleware reintenta contra un Supabase local apagado; eso es del entorno de medición, no de la página.
 
-US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09-16 sobre las capturas del artefacto `capturas-landing`. De las demás secciones del diseño están montadas Servicios y Galería; El estudio y Ubicación llegan con US-LAND-04 y -07.
+### El estudio y Por qué acá (US-LAND-04)
+
+- `ui/LandingStudio.tsx` (servidor): bloque oscuro con el retrato 4:5 (`max-w-site-portrait`), el texto en párrafos, el nombre en cursiva y su rol, y el bloque "Trayectoria" (criterio 2): años de experiencia y credenciales separadas en Formación y Certificaciones, con entidad y año. Sin retrato no hay recuadro vacío; sin nombre no se muestra el rol; sin años ni credenciales no hay bloque de trayectoria. Es lo que pasa con el respaldo de `content`, que no inventa a la dueña.
+- `ui/LandingReasons.tsx` (servidor): "Por qué acá", plegada a esta historia por decisión del PO. Lista ordenada en cuadrícula (`grid-cols-site-reasons`); nunca llega vacía, porque `content` cae a las razones del diseño.
+- `STUDIO_SECTION` (`#estudio`) está en la navegación entre Servicios y Galería, como en el diseño; Por qué acá no tiene enlace, tampoco en el diseño. Numerales: Servicios 01, El estudio 02, Por qué acá 03, Galería 04.
+- `LandingHome` monta las dos secciones solo si recibe `studio`. La ruta siempre lo pasa, porque `getStudio()` nunca falla.
+
+Medición PERF-004 con El estudio y Por qué acá (2026-09-21, mismo método que la de la galería): LCP 1416–1464 ms en 3 corridas, elemento LCP el título del hero; JS inicial 151.0 KB comprimido (9 scripts). Las dos secciones se renderizan en el servidor y no suman JS de cliente.
+
+US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09-16 sobre las capturas del artefacto `capturas-landing`. De las demás secciones del diseño están montadas Servicios, El estudio, Por qué acá y Galería; Ubicación llega con US-LAND-07. "Las semanas después" y "Clientas" no tienen historia y quedan fuera (decisión del PO, 2026-09-21).
 
 ## Decisiones de US-LAND-01 (PO, 2026-09-16)
 
@@ -85,5 +94,5 @@ US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09
 
 ## Contrato público (`index.ts`)
 
-- `SiteHeader`, `LandingHome`, `LandingHero`, `LandingIntro`, `LandingClosingCta`, `LandingTechniques`, `LandingGallery`, `landingSections`, `TECHNIQUES_SECTION`, `GALLERY_SECTION` y el tipo `SiteSection`.
+- `SiteHeader`, `LandingHome`, `LandingHero`, `LandingIntro`, `LandingClosingCta`, `LandingTechniques`, `LandingStudio`, `LandingReasons`, `LandingGallery`, `landingSections`, `TECHNIQUES_SECTION`, `STUDIO_SECTION`, `GALLERY_SECTION` y el tipo `SiteSection`.
 - `RESERVE_ROUTE` y `landingMessages`.

@@ -1,7 +1,14 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup, within } from '@testing-library/react'
 import type { StudioContent } from '@/features/content'
-import { LandingStudio, STUDIO_SECTION, landingMessages } from '@/features/landing'
+import {
+  LandingReasons,
+  LandingStudio,
+  SiteHeader,
+  STUDIO_SECTION,
+  landingMessages,
+  landingSections,
+} from '@/features/landing'
 
 vi.mock('next/image', () => ({
   default: ({ src, alt }: { src: string; alt: string }) => <img src={src} alt={alt} />,
@@ -89,5 +96,38 @@ describe('LandingStudio — US-LAND-04', () => {
     const { container } = render(<LandingStudio studio={publicado} />)
     expect(container.querySelector(`section#${STUDIO_SECTION.id}`)).toBeTruthy()
     expect(screen.getByRole('heading', { level: 2, name: copy.title })).toBeTruthy()
+  })
+})
+
+describe('LandingReasons — Por qué acá (plegada a US-LAND-04)', () => {
+  it('muestra cada razón con su título y su explicación, en orden', () => {
+    render(
+      <LandingReasons
+        reasons={[
+          { title: 'Una clienta a la vez', text: 'Nadie espera en la sala.' },
+          { title: 'Mapeo personalizado', text: 'Según la forma de tu ojo.' },
+        ]}
+      />,
+    )
+
+    expect(screen.getByRole('heading', { level: 2, name: landingMessages.reasons.title })).toBeTruthy()
+    const items = within(screen.getByRole('list')).getAllByRole('listitem')
+    expect(items.map((item) => within(item).getByRole('heading', { level: 3 }).textContent)).toEqual([
+      'Una clienta a la vez',
+      'Mapeo personalizado',
+    ])
+    expect(within(items[0]).getByText('Nadie espera en la sala.')).toBeTruthy()
+  })
+})
+
+describe('Navegación — criterio 4: El estudio es visible desde la navegación principal', () => {
+  it('El estudio va entre Servicios y Galería, como en el diseño', () => {
+    expect(landingSections.map((section) => section.id)).toEqual(['servicios', STUDIO_SECTION.id, 'galeria'])
+  })
+
+  it('la cabecera enlaza a #estudio', () => {
+    render(<SiteHeader sections={landingSections} />)
+    const nav = screen.getByRole('navigation', { name: landingMessages.header.sectionsNav })
+    expect(within(nav).getByRole('link', { name: 'El estudio' }).getAttribute('href')).toBe('#estudio')
   })
 })

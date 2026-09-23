@@ -38,9 +38,13 @@ export const landingMessages = {
     certifications: 'Certificaciones',
     years: (years: number) => (years === 1 ? '1 año de experiencia' : `${years} años de experiencia`),
   },
+  reasons: {
+    title: 'Por qué acá',
+    index: '03',
+  },
   gallery: {
     title: 'Galería',
-    index: '02',
+    index: '04',
     filterLabel: 'Filtrar la galería por técnica',
     all: 'Todas',
     before: 'Antes',
