@@ -33,3 +33,7 @@ export type { ListTechniquesQuery, Page } from './application/ports'
 // UI de administración (US-AGE-08). La compone la ruta src/app/admin/catalog/.
 export { AdminCatalogPage } from './ui/AdminCatalogPage'
 export { catalogMessages } from './ui/messages'
+
+// UI de administración de paquetes (US-PROD-01). La compone src/app/admin/catalog/packages/.
+// listPackages/getPackage se suman al contrato de solo lectura cuando la historia cierre.
+export { AdminPackagesPage } from './ui/AdminPackagesPage'

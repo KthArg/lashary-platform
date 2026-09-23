@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
+import Link from 'next/link'
 import { requireAdminSession, signOutAction } from '@/features/auth'
 import { catalogMessages } from '@/features/catalog/ui/messages'
+import { catalogRoutes } from '@/features/catalog/ui/routes'
 
 const m = catalogMessages.shell
 
@@ -16,6 +18,12 @@ export default async function AdminCatalogLayout({
       <nav className="navbar border-b border-base-300 bg-base-100 px-6">
         <span className="flex-1 font-serif text-lg">{m.brand}</span>
         <div className="flex flex-none items-center gap-3">
+          <Link href={catalogRoutes.admin} className="btn btn-ghost btn-sm">
+            {m.navTechniques}
+          </Link>
+          <Link href={catalogRoutes.packagesAdmin} className="btn btn-ghost btn-sm">
+            {m.navPackages}
+          </Link>
           <span className="hidden text-sm text-base-content/70 sm:inline">
             {session.user.email}
           </span>

@@ -73,8 +73,37 @@ export const catalogMessages = {
   shell: {
     brand: 'LASHARY',
     signOut: 'Cerrar sesión',
+    navTechniques: 'Técnicas',
+    navPackages: 'Paquetes',
   },
   packages: {
+    admin: {
+      title: 'Paquetes de servicios',
+      subtitle: 'Combos de dos o más técnicas con precio propio.',
+      newPackage: 'Nuevo paquete',
+      columns: {
+        name: 'Paquete',
+        techniques: 'Técnicas incluidas',
+        duration: 'Duración total',
+        price: 'Precio',
+        status: 'Estado',
+        actions: 'Acciones',
+      },
+      status: { active: 'Activo', inactive: 'Desactivado' },
+      rowActions: { edit: 'Editar', deactivate: 'Desactivar' },
+      minutesShort: 'min',
+      empty: {
+        title: 'Todavía no hay paquetes',
+        body: 'Creá el primer paquete combinando dos o más técnicas del catálogo.',
+        cta: 'Crear el primer paquete',
+      },
+      loading: 'Cargando los paquetes…',
+      error: {
+        title: 'No se pudieron cargar los paquetes',
+        body: 'Ocurrió un error al leer los paquetes del catálogo.',
+        retry: 'Reintentar',
+      },
+    },
     form: {
       legendCreate: 'Nuevo paquete',
       legendEdit: 'Editar paquete',
