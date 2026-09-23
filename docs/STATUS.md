@@ -34,7 +34,7 @@
 
 ### catalog (actualizado: 2026-09-22)
 - US-AGE-08 — terminada — PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx
-- US-PROD-01 — en_progreso — falta: application/db/UI de paquetes y sus políticas RLS de escritura; hasta ahora solo existe la migración de solo lectura (catalog_packages, catalog_package_techniques) y la entidad de dominio Package (domain/package.ts, domain/__tests__/package.test.ts) con sus invariantes (mínimo 2 técnicas sin duplicados, precio > 0)
+- US-PROD-01 — en_progreso — falta: comandos de escritura, db/UI de paquetes y sus políticas RLS de escritura; hasta ahora existen la migración de solo lectura, la entidad de dominio Package y los casos de uso de lectura listPackages/getPackage (application/queries.ts) con duración total calculada por técnicas miembro (criterio 2)
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
