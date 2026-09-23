@@ -4,6 +4,9 @@ export type SiteSection = { id: string; label: string }
 // renderiza siempre, incluso sin técnicas, para que ese ancla nunca apunte al vacío.
 export const TECHNIQUES_SECTION: SiteSection = { id: 'servicios', label: 'Servicios' }
 
+// El estudio (US-LAND-04). Entra en `landingSections` cuando la sección se monta en la página.
+export const STUDIO_SECTION: SiteSection = { id: 'estudio', label: 'El estudio' }
+
 // Galería (US-LAND-03). Como Servicios, se renderiza siempre para que el ancla exista.
 export const GALLERY_SECTION: SiteSection = { id: 'galeria', label: 'Galería' }
 
