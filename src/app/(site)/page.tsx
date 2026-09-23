@@ -1,6 +1,7 @@
-import { getLandingContent } from '@/features/content'
+import { getLandingContent, getTechniqueMedia } from '@/features/content'
+import { listTechniques } from '@/features/catalog'
 import type { Metadata } from 'next'
-import { LandingHome, landingMessages } from '@/features/landing'
+import { LandingHome, landingMessages, toLandingTechnique } from '@/features/landing'
 
 // Estática con revalidación: el TTL de respaldo del contrato del CMS (10 min). El aviso al
 // publicar la renueva antes (POST /api/cms/webhook).
@@ -17,7 +18,24 @@ export const metadata: Metadata = {
   },
 }
 
+// El catálogo caído no tumba la landing: la sección de técnicas queda en su estado vacío, igual
+// que el contenido del CMS cae al respaldo. La página pública nunca es la que falla.
+async function readTechniques() {
+  try {
+    // El catálogo manda qué técnicas hay; el CMS solo las ilustra, así que si falla se pintan
+    // sin foto en vez de no pintarse.
+    const [page, media] = await Promise.all([
+      listTechniques({ activeOnly: true }),
+      getTechniqueMedia(),
+    ])
+    return page.items.map((technique) => toLandingTechnique(technique, media))
+  } catch (error) {
+    console.warn('[landing] catálogo no disponible; la sección de técnicas queda vacía', error)
+    return []
+  }
+}
+
 export default async function HomePage() {
-  const content = await getLandingContent()
-  return <LandingHome content={content} />
+  const [content, techniques] = await Promise.all([getLandingContent(), readTechniques()])
+  return <LandingHome content={content} techniques={techniques} />
 }

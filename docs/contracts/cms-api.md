@@ -1,6 +1,6 @@
 # Contrato — API del CMS externo
 
-> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closing-cta` (US-LAND-01). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-16.
+> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closing-cta` (US-LAND-01); v1.1 suma la colección `tecnicas`, que son **solo las fotos** de cada técnica (US-LAND-02). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-16.
 
 ## El CMS
 
@@ -79,12 +79,35 @@ La clave lleva guion: uno-cms solo admite minúsculas, dígitos y guiones en las
 | `body` | text multilínea | no | 240 | texto de apoyo |
 | `ctaLabel` | text | no; default `"Reservar cita"`, así que siempre viene | 30 | texto del botón de reserva |
 
+### `tecnicas` — colección (v1.1, US-LAND-02)
+
+**Solo las fotos.** El nombre, el precio y la duración de cada técnica salen del catálogo, no de aquí (§ Lo que no vive en el CMS): un hecho, un lugar. Esta colección existe porque el catálogo no guarda imágenes y quien las cambia es la dueña, que ya edita en el panel.
+
+**El cruce es por `familia`**, no por nombre ni por id: es el enum `catalog_service_family` del catálogo ([catalog-api.md](catalog-api.md)), el único campo estable en los dos lados. Un nombre se reescribe en el panel y el id es un uuid que nadie va a copiar a mano.
+
+| Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
+|---|---|---|---|---|
+| `nombre` | text | sí | 80 | **solo para el panel**: es el `titleField`, lo que identifica la fila en la lista. La plataforma **no lo lee** — el nombre que se ve en el sitio viene del catálogo |
+| `familia` | select | sí | — | la llave de cruce. Valores: `lash_classic`, `lash_volume`, `lash_extra_volume`, `brow_design`, `brow_lamination`, `henna`, `waxing`, `lips` |
+| `imagen` | image | sí | — | foto principal de la técnica; `alt` obligatorio al publicar |
+| `ejemplo1` | image | no | — | ejemplo de resultado |
+| `ejemplo2` | image | no | — | ejemplo de resultado |
+| `ejemplo3` | image | no | — | ejemplo de resultado |
+
+Reglas de consumo, para que la landing nunca dependa de que esto esté completo:
+
+- Una familia **sin fila** en la colección, o con la fila sin publicar, se muestra sin fotos. No es un error: el catálogo manda qué técnicas existen, el CMS solo las ilustra.
+- Si hay **varias filas con la misma familia**, vale la primera en el orden del editor. El resto se ignora; duplicar una familia no rompe nada.
+- Una fila cuya `familia` no es ninguna de las ocho del catálogo se ignora entera.
+- `ejemplo1..3` son tres ranuras fijas porque uno-cms no tiene campo de lista de imágenes. Las que falten, faltan; no hay que llenarlas en orden.
+- **Consecuencia aceptada de cruzar por familia:** dos técnicas del catálogo de la misma familia comparten fotos. Hoy el catálogo tiene una por familia y el efecto no se nota. Si algún día hay dos, o se separan en familias distintas, o esta colección pasa a cruzar por el id de la técnica — y entonces el panel deja de ser editable a mano y hay que elegir la técnica de una lista. Se decide cuando ocurra, no antes.
+
 ## Lo que no vive en el CMS
 
 | Dato | Dónde vive | Por qué |
 |---|---|---|
 | Destino de "Reservar cita" | código de la plataforma, ruta interna fija | es una ruta del sistema; editarla desde el panel puede romper el flujo (decisión del PO, 2026-09-16) |
-| Nombre, precio y duración de técnicas | catálogo, [catalog-api.md](catalog-api.md) | un hecho, un lugar (ADR-0001) |
+| Nombre, precio y duración de técnicas | catálogo, [catalog-api.md](catalog-api.md) | un hecho, un lugar (ADR-0001). Del CMS salen **solo las fotos**, por la colección `tecnicas` |
 | Registro de consentimiento de imágenes | plataforma | todo campo del CMS es público por la API |
 | Niveles y beneficios de fidelidad | plataforma (US-LAND-06) | son reglas de negocio |
 | Navegación, logo y anclas de sección | código de la plataforma | estructura de la página, no contenido |
@@ -134,7 +157,6 @@ Contrato de demanda; se fijan con la primera historia que los consume.
 |---|---|---|
 | `contact` (singleton) | US-LAND-07 | forma del horario (uno-cms no admite listas dentro de un singleton) |
 | `about` (singleton) + `credentials` (colección) | US-LAND-04 | — |
-| `techniques` (colección) | US-LAND-02 | clave de enlace con el catálogo: `family` sirve solo con una técnica por familia |
 | `gallery` (colección) | US-LAND-03 | el consentimiento vive en la plataforma; cómo se referencia desde el par sin exponer datos |
 | `loyaltyInfo` (singleton) | US-LAND-05 | cómo evitar que el texto contradiga los niveles de US-LAND-06 |
 | `posts` (colección) | US-BLOG-01/02/03 | sin id, sin ruta por elemento y sin tipo fecha en uno-cms: el detalle busca por un campo `slug` que el CMS no hace único, la paginación y el orden por fecha ocurren en `content`, las imágenes del cuerpo no caben en el richtext |

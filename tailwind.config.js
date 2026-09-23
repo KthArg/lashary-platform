@@ -60,6 +60,12 @@ module.exports = {
         'site-statement': ['clamp(1.5rem, 3vw, 2.5rem)', { lineHeight: '1.2', letterSpacing: '-0.015em' }],
         'site-closing': ['clamp(2rem, 6vw, 5.4rem)', { lineHeight: '1.02', letterSpacing: '-0.03em' }],
         'site-menu': ['clamp(1.7rem, 5.4vw, 3.4rem)', { lineHeight: '1.06', letterSpacing: '-0.02em' }],
+        // Encabezado de sección con filete y numeral, y la fila de técnica (US-LAND-02).
+        'site-section-title': ['clamp(1.9rem, 4.6vw, 4rem)', { lineHeight: '1', letterSpacing: '-0.025em' }],
+        'site-section-index': ['0.9375rem', { lineHeight: '1' }],
+        'site-technique': ['clamp(1.35rem, 3vw, 2.3rem)', { lineHeight: '1.08', letterSpacing: '-0.02em' }],
+        'site-meta': ['0.875rem', { lineHeight: '1.4' }],
+        'site-sign': ['1.375rem', { lineHeight: '1' }],
       },
       letterSpacing: {
         'widest-plus': '0.2em',
@@ -84,14 +90,27 @@ module.exports = {
         'site-intro-top': 'clamp(3.5rem, 10vh, 7.5rem)',
         'site-columns': 'clamp(1.75rem, 5vw, 5.625rem)',
         'site-closing-top': 'clamp(2rem, 6vh, 4.375rem)',
+        // Fila de técnica: alto del área pulsable, separación entre título/meta y sangría del
+        // cuerpo desplegado (US-LAND-02).
+        'site-row-y': 'clamp(1.25rem, 3vw, 1.875rem)',
+        'site-row-gap': 'clamp(0.875rem, 2.6vw, 2.5rem)',
+        'site-row-body': 'clamp(1.5rem, 3.5vw, 2.5rem)',
+        'site-heading-gap': 'clamp(1.375rem, 4vh, 2.75rem)',
       },
       flexBasis: {
         'site-statement': '25rem',
         'site-text': '20rem',
         'site-aside': '23.75rem',
       },
+      scrollMargin: {
+        // La cabecera del sitio es fija: al saltar a un ancla, la sección se detiene debajo de
+        // ella en vez de quedar tapada.
+        'site-anchor': '5.625rem',
+      },
       minHeight: {
         'site-cta-lg': '3.75rem',
+        // Área pulsable mínima de UI-004.
+        'site-tap': '2.75rem',
       },
       lineHeight: {
         'site-loose': '1.75',
@@ -104,10 +123,20 @@ module.exports = {
       },
       width: {
         'site-pill': '68vw',
+        // Miniaturas de los ejemplos de resultado.
+        'site-thumb': '5.5rem',
+      },
+      rotate: {
+        // El "+" de una fila abierta gira hasta cruzarse: se lee como "cerrar" sin cambiar el glifo.
+        'site-sign': '135deg',
       },
       translate: {
         // Posición inicial de la foto: fuera de cuadro, debajo del título.
         'site-pill-start': 'calc(-50% + 56vh)',
+      },
+      aspectRatio: {
+        // Retrato de la foto de técnica, como las fotos del diseño.
+        'site-photo': '4 / 5',
       },
       borderRadius: {
         'site-pill': '50% / 100%',
@@ -118,6 +147,9 @@ module.exports = {
         'site-text': '46ch',
         'site-subtitle': '34ch',
         'site-closing': '18ch',
+        'site-technique-desc': '52ch',
+        // Foto de la técnica dentro de la fila abierta (US-LAND-02).
+        'site-photo': '22rem',
       },
       transitionTimingFunction: {
         'site-out': 'cubic-bezier(0.16, 1, 0.3, 1)',
@@ -131,6 +163,9 @@ module.exports = {
       animation: {
         'site-in': 'site-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both',
         'site-in-late': 'site-in 900ms cubic-bezier(0.16, 1, 0.3, 1) 260ms both',
+        // Apertura de una fila de técnica: responde a un clic, así que es más corta que la
+        // entrada de la página.
+        'site-in-quick': 'site-in 520ms cubic-bezier(0.16, 1, 0.3, 1) both',
       },
     },
   },
