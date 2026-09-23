@@ -9,7 +9,15 @@ export { LandingTechniques } from './ui/LandingTechniques'
 export { LandingGallery } from './ui/LandingGallery'
 export { LandingStudio } from './ui/LandingStudio'
 export { LandingReasons } from './ui/LandingReasons'
-export { landingSections, TECHNIQUES_SECTION, GALLERY_SECTION, STUDIO_SECTION, type SiteSection } from './ui/sections'
+export { LandingLoyalty } from './ui/LandingLoyalty'
+export {
+  landingSections,
+  TECHNIQUES_SECTION,
+  GALLERY_SECTION,
+  STUDIO_SECTION,
+  LOYALTY_SECTION,
+  type SiteSection,
+} from './ui/sections'
 export { RESERVE_ROUTE, reserveRouteFor, RESERVE_TECHNIQUE_PARAM } from './ui/routes'
 export { toLandingTechnique, formatColones, type LandingTechnique } from './ui/technique-view'
 export { landingMessages } from './ui/messages'
