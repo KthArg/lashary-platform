@@ -17,12 +17,25 @@ export const landingGalleryStyles = {
 
   grid: 'm-0 grid list-none grid-cols-site-gallery gap-2 p-0 sm:gap-4',
   // Un par: las dos fotos lado a lado, cada una con su etiqueta.
-  tile: 'flex w-full gap-1',
+  tile: 'flex w-full cursor-pointer gap-1 border-0 bg-transparent p-0 text-left outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-site-focus',
   tileIn: 'animate-site-in-quick motion-reduce:animate-none',
   half: 'relative m-0 aspect-site-gallery flex-1 overflow-hidden bg-site-taupe',
   photo: 'object-cover',
   label:
     'absolute bottom-2 left-2 bg-site-paper px-2 py-1 font-site-sans text-site-caption text-site-ink',
 
+  hint: 'mt-site-heading-gap text-site-meta text-site-taupe',
   empty: 'm-0 max-w-site-technique-desc text-site-body leading-site-loose text-site-taupe',
+
+  // Galería ampliada: diálogo modal sobre todo lo demás.
+  overlay:
+    'fixed inset-0 z-site-lightbox flex flex-col items-center justify-center gap-3 overflow-y-auto bg-site-night p-site-gutter text-site-paper',
+  top: 'flex w-full max-w-site-lightbox justify-end',
+  pair: 'flex w-full max-w-site-lightbox gap-2',
+  controls: 'flex flex-wrap items-center justify-center gap-3',
+  control:
+    'min-h-site-tap cursor-pointer border border-site-paper/40 bg-transparent px-5 font-site-sans text-site-cta text-site-paper outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-site-focus',
+  close:
+    'min-h-site-tap cursor-pointer border-0 bg-site-paper px-6 font-site-sans text-site-cta text-site-ink outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-site-focus',
+  counter: 'm-0 min-w-16 text-center text-site-meta text-site-taupe',
 }

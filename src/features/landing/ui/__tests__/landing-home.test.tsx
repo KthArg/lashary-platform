@@ -56,15 +56,15 @@ describe('LandingClosingCta — llamada final a reservar', () => {
 })
 
 describe('LandingHome — la página de inicio compone las secciones con el contenido recibido', () => {
-  it('hero, bienvenida, servicios y llamada final dentro de <main id="inicio">', () => {
+  it('hero, bienvenida, servicios, galería y llamada final dentro de <main id="inicio">', () => {
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener() {}, removeEventListener() {} }))
     const { container } = render(<LandingHome content={content} />)
     const main = container.querySelector('main#inicio') as HTMLElement
     expect(within(main).getByRole('heading', { level: 1 }).textContent).toBe('extensiones de pestañasuna por una.')
     expect(within(main).getByText('Tiempo, luz y criterio.')).toBeTruthy()
-    // Servicios (US-LAND-02) y la llamada final, en ese orden.
+    // Servicios (US-LAND-02), Galería (US-LAND-03) y la llamada final, en ese orden.
     const encabezados = within(main).getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
-    expect(encabezados).toEqual(['Servicios', 'La agenda es de una clienta a la vez'])
+    expect(encabezados).toEqual(['Servicios', 'Galería', 'La agenda es de una clienta a la vez'])
     const reserveLinks = within(main).getAllByRole('link').filter((link) => link.getAttribute('href') === RESERVE_ROUTE)
     expect(reserveLinks).toHaveLength(2)
   })
@@ -73,5 +73,11 @@ describe('LandingHome — la página de inicio compone las secciones con el cont
     vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener() {}, removeEventListener() {} }))
     const { container } = render(<LandingHome content={content} techniques={[]} />)
     expect(container.querySelector('main#inicio section#servicios')).toBeTruthy()
+  })
+
+  it('sin pares la galería sigue montada, con su estado vacío', () => {
+    vi.stubGlobal('matchMedia', (query: string) => ({ matches: false, media: query, addEventListener() {}, removeEventListener() {} }))
+    const { container } = render(<LandingHome content={content} gallery={[]} />)
+    expect(container.querySelector('main#inicio section#galeria')).toBeTruthy()
   })
 })

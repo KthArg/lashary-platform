@@ -38,6 +38,8 @@ module.exports = {
         'modal-top': '60',
         'site-header': '120',
         'site-menu': '150',
+        // La galería ampliada (US-LAND-03) queda sobre la cabecera y el menú.
+        'site-lightbox': '160',
       },
       screens: {
         // Ancho desde el que la cabecera del sitio muestra la navegación completa.
@@ -156,6 +158,10 @@ module.exports = {
         'site-technique-desc': '52ch',
         // Foto de la técnica dentro de la fila abierta (US-LAND-02).
         'site-photo': '22rem',
+        // El par ampliado de la galería (US-LAND-03). Lo acota también el alto de la pantalla:
+        // dos fotos 3:4 lado a lado miden de alto 2/3 de su ancho, y tienen que caber junto a
+        // los controles incluso con el móvil en horizontal.
+        'site-lightbox': 'min(56rem, 88svh)',
       },
       transitionTimingFunction: {
         'site-out': 'cubic-bezier(0.16, 1, 0.3, 1)',
