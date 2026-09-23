@@ -74,6 +74,32 @@ export const catalogMessages = {
     brand: 'LASHARY',
     signOut: 'Cerrar sesión',
   },
+  packages: {
+    form: {
+      legendCreate: 'Nuevo paquete',
+      legendEdit: 'Editar paquete',
+      fields: {
+        name: 'Nombre',
+        techniques: 'Técnicas incluidas (mínimo dos)',
+        price: 'Precio del paquete (colones)',
+      },
+      durationTotal: 'Duración total',
+      submitCreate: 'Crear paquete',
+      submitEdit: 'Guardar cambios',
+      cancel: 'Cancelar',
+      accessDenied:
+        'Tu sesión no tiene permisos para modificar los paquetes. Iniciá sesión como administradora.',
+      validationTitle: 'Revisá estos campos:',
+      savedCreate: 'Paquete creado.',
+      savedEdit: 'Cambios guardados.',
+      deactivated: 'Paquete desactivado.',
+      validation: {
+        name: 'El nombre es obligatorio',
+        techniqueIds: 'Elegí al menos dos técnicas',
+        price: 'El precio debe ser mayor que cero',
+      },
+    },
+  },
 } as const
 
 const FAMILY_LABELS: Record<ServiceFamily, string> = {
