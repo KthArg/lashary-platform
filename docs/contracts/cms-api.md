@@ -1,6 +1,6 @@
 # Contrato — API del CMS externo
 
-> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closing-cta` (US-LAND-01); v1.1 suma la colección `tecnicas`, que son **solo las fotos** de cada técnica (US-LAND-02); v1.2 suma la colección `galeria`, los pares antes y después con su casilla de consentimiento (US-LAND-03); v1.3 suma el singleton `estudio` y las colecciones `credenciales` y `razones`, para El estudio y Por qué acá (US-LAND-04). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-21.
+> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closing-cta` (US-LAND-01); v1.1 suma la colección `tecnicas`, que son **solo las fotos** de cada técnica (US-LAND-02); v1.2 suma la colección `galeria`, los pares antes y después con su casilla de consentimiento (US-LAND-03); v1.3 suma el singleton `estudio` y las colecciones `credenciales` y `razones`, para El estudio y Por qué acá (US-LAND-04); v1.4 suma el singleton `fidelidad` y la colección `niveles-fidelidad`, la mecánica informativa del programa (US-LAND-05). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-21.
 
 ## El CMS
 
@@ -162,6 +162,33 @@ La sección "Por qué acá": qué distingue al estudio.
 
 Una fila sin los dos campos válidos se ignora. Se muestran como máximo las **6 primeras** válidas, en el orden del editor. **Sin ninguna válida se usa el respaldo en código** (las razones del diseño de referencia): la sección no queda vacía.
 
+### `fidelidad` — singleton (v1.4, US-LAND-05)
+
+El texto de la sección informativa del programa de fidelidad.
+
+| Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
+|---|---|---|---|---|
+| `texto` | text multilínea | sí | 400 | cómo funciona el programa. Una línea en blanco separa párrafos, como en `estudio` |
+| `nota` | text | no | 200 | letra chica ("los beneficios no son acumulables") |
+
+### `niveles-fidelidad` — colección (v1.4, US-LAND-05, **provisional hasta US-LAND-06**)
+
+Qué beneficio da cada visita. La clave lleva guion, como `closing-cta`.
+
+| Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
+|---|---|---|---|---|
+| `visita` | number | sí | 1–50, entero | número de visita en que se obtiene el beneficio |
+| `beneficio` | text | sí | 80 | el beneficio, corto ("10 % de descuento", "servicio gratis") |
+| `detalle` | text | no | 160 | aclaración del beneficio |
+
+Reglas de consumo:
+
+- La plataforma **ordena por `visita`**, no por el orden del editor: la mecánica se lee de la primera visita a la última.
+- Un nivel sin `visita` válida o sin `beneficio` se ignora. Si dos niveles tienen la misma `visita`, vale el primero del editor. Se muestran como máximo **6**.
+- Sin `texto` publicado y sin niveles válidos, la sección muestra su estado vacío. **No hay respaldo en código**: inventar beneficios sería prometerle algo a una clienta.
+
+**Por qué los niveles son provisionales (decisión del PO, 2026-09-21).** Los niveles y beneficios son reglas de negocio de la plataforma (§ Lo que no vive en el CMS), y los administrará el motor de US-LAND-06. Mientras ese motor no existe, no hay nada que contradecir, así que viven aquí para que la sección informativa los pueda mostrar. Cuando US-LAND-06 llegue, se retiran en dos pasos (expand/contract): primero la plataforma lee los niveles del motor y deja de leer esta colección; después se quita de `cms.config.ts` y de este documento. El texto de `fidelidad` se queda en el CMS.
+
 ## Lo que no vive en el CMS
 
 | Dato | Dónde vive | Por qué |
@@ -169,7 +196,7 @@ Una fila sin los dos campos válidos se ignora. Se muestran como máximo las **6
 | Destino de "Reservar cita" | código de la plataforma, ruta interna fija | es una ruta del sistema; editarla desde el panel puede romper el flujo (decisión del PO, 2026-09-16) |
 | Nombre, precio y duración de técnicas | catálogo, [catalog-api.md](catalog-api.md) | un hecho, un lugar (ADR-0001). Del CMS salen **solo las fotos**, por la colección `tecnicas` |
 | Evidencia del consentimiento de imágenes (quién, cuándo, documento firmado) | fuera del sistema, con la dueña | todo campo del CMS es público por la API. En el CMS solo va la casilla `galeria.consentimiento` (v1.2) |
-| Niveles y beneficios de fidelidad | plataforma (US-LAND-06) | son reglas de negocio |
+| Niveles y beneficios de fidelidad | plataforma (US-LAND-06) | son reglas de negocio. Hasta que exista el motor, la colección provisional `niveles-fidelidad` (v1.4) los muestra |
 | Navegación, logo y anclas de sección | código de la plataforma | estructura de la página, no contenido |
 
 ## Invalidación
@@ -216,5 +243,4 @@ Contrato de demanda; se fijan con la primera historia que los consume.
 | Tipo propuesto | Historia | Pendiente de decidir |
 |---|---|---|
 | `contact` (singleton) | US-LAND-07 | forma del horario (uno-cms no admite listas dentro de un singleton) |
-| `loyaltyInfo` (singleton) | US-LAND-05 | cómo evitar que el texto contradiga los niveles de US-LAND-06 |
 | `posts` (colección) | US-BLOG-01/02/03 | sin id, sin ruta por elemento y sin tipo fecha en uno-cms: el detalle busca por un campo `slug` que el CMS no hace único, la paginación y el orden por fecha ocurren en `content`, las imágenes del cuerpo no caben en el richtext |

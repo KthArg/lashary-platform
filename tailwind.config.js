@@ -147,6 +147,8 @@ module.exports = {
         'site-gallery': 'repeat(auto-fill, minmax(min(100%, 17rem), 1fr))',
         // Por qué acá (US-LAND-04): celdas de al menos 16.25rem, que se reparten el ancho.
         'site-reasons': 'repeat(auto-fit, minmax(min(100%, 16.25rem), 1fr))',
+        // Niveles de fidelidad (US-LAND-05): una fila de hitos que se parte en angosto.
+        'site-milestones': 'repeat(auto-fit, minmax(min(100%, 11rem), 1fr))',
       },
       borderRadius: {
         'site-pill': '50% / 100%',

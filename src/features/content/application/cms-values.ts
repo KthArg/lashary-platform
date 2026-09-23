@@ -28,6 +28,14 @@ export const integer = (value: unknown, min: number, max: number): number | null
     ? value
     : null
 
+// Un texto multilínea partido en párrafos: una línea en blanco separa párrafos
+// (docs/contracts/cms-api.md § `estudio` y § `fidelidad`).
+export const paragraphsOf = (value: string): string[] =>
+  value
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter((paragraph) => paragraph !== '')
+
 export const dimension = (value: unknown): number | undefined =>
   typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined
 
