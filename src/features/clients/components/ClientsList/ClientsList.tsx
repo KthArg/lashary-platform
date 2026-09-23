@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CLIENTS_ARIA_LABELS, CLIENTS_BUTTON_TEXTS, CLIENTS_LABELS } from '../../constants/clients-strings'
+import { CLIENTS_ARIA_LABELS, CLIENTS_BUTTON_TEXTS, CLIENTS_LABELS, CLIENTS_TABLE_HEADERS, CLIENTS_TABLE_TEXTS } from '../../constants/clients-strings'
 import { CLIENTS_ICON_PATHS } from '../../constants/clients-icons'
 import { EditClientDialog } from '../EditClientDialog'
 import { clientsListStyles as STYLES } from './ClientsList.styles'
@@ -33,22 +33,45 @@ export function ClientsList({ clients, isLoading = false, loadError = null }: Cl
       )
     }
     if (clients.length === 0) return <p className={STYLES.empty}>{CLIENTS_LABELS.clientsListEmpty}</p>
+    // US-CLI-01 criterio 1: tabla real, no una lista con aspecto de tabla; cada celda pertenece
+    // a una columna con nombre, que es lo que el lector de pantalla anuncia (UI-004).
     return (
-      <ul className={STYLES.list}>
-        {clients.map((client) => (
-          <li key={client.id} className={STYLES.row}>
-            <span className={STYLES.name}>{client.fullName}</span>
-            {/* Solo icono: el aria-label es el unico nombre del boton, por eso nombra a la clienta (UI-004). */}
-            <button type="button" className={STYLES.editButton} title={CLIENTS_BUTTON_TEXTS.edit}
-              aria-label={CLIENTS_ARIA_LABELS.editClient(client.fullName)}
-              onClick={(event) => { triggerRef.current = event.currentTarget; setEditing(client) }}>
-              <svg className={STYLES.editIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-                <path d={CLIENTS_ICON_PATHS.editPencil} />
-              </svg>
-            </button>
-          </li>
-        ))}
-      </ul>
+      <div className={STYLES.tableWrapper}>
+        <table className={STYLES.table}>
+          <thead>
+            <tr>
+              <th scope="col" className={STYLES.headerCell}>{CLIENTS_TABLE_HEADERS.fullName}</th>
+              <th scope="col" className={STYLES.headerCell}>{CLIENTS_TABLE_HEADERS.phone}</th>
+              <th scope="col" className={STYLES.headerCell}>{CLIENTS_TABLE_HEADERS.email}</th>
+              <th scope="col" className={STYLES.headerCell}>{CLIENTS_TABLE_HEADERS.delinquencyStatus}</th>
+              <th scope="col" className={STYLES.headerCell}>{CLIENTS_TABLE_HEADERS.lastAppointment}</th>
+              <th scope="col" className={STYLES.headerCellActions}>{CLIENTS_TABLE_HEADERS.actions}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {clients.map((client) => (
+              <tr key={client.id} className={STYLES.row}>
+                <th scope="row" className={STYLES.nameCell}>{client.fullName}</th>
+                <td className={STYLES.contactCell}>{client.phone}</td>
+                <td className={STYLES.contactCell}>{client.email}</td>
+                {/* Columnas diferidas: el dato lo produciran US-MOR-01 y US-AGE-05; hoy no se inventa (EST-005). */}
+                <td className={STYLES.pendingCell}>{CLIENTS_TABLE_TEXTS.pendingColumnValue}</td>
+                <td className={STYLES.pendingCell}>{CLIENTS_TABLE_TEXTS.pendingColumnValue}</td>
+                <td className={STYLES.actionsCell}>
+                  {/* Solo icono: el aria-label es el unico nombre del boton, por eso nombra a la clienta (UI-004). */}
+                  <button type="button" className={STYLES.editButton} title={CLIENTS_BUTTON_TEXTS.edit}
+                    aria-label={CLIENTS_ARIA_LABELS.editClient(client.fullName)}
+                    onClick={(event) => { triggerRef.current = event.currentTarget; setEditing(client) }}>
+                    <svg className={STYLES.editIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                      <path d={CLIENTS_ICON_PATHS.editPencil} />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     )
   }
 
