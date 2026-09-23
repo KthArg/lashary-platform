@@ -6,9 +6,12 @@
 import {
   listTechniques as listTechniquesUseCase,
   getTechnique as getTechniqueUseCase,
+  listPackages as listPackagesUseCase,
+  getPackage as getPackageUseCase,
 } from './application/queries'
 import { techniqueRepository } from './db/technique-repository'
-import type { ListTechniquesQuery, Page } from './application/ports'
+import { packageRepository } from './db/package-repository'
+import type { ListTechniquesQuery, ListPackagesQuery, Page } from './application/ports'
 import type { TechniqueView } from './domain/technique'
 
 export async function listTechniques(
@@ -21,19 +24,30 @@ export async function getTechnique(id: string) {
   return getTechniqueUseCase(await techniqueRepository())(id)
 }
 
+// US-PROD-01 — paquetes: combos de dos o más técnicas con precio propio. Composición viva del
+// catálogo (sin snapshot todavía; DOM-002 llega con US-AGE-04). create/update/deactivate no se
+// exportan, igual que con técnicas: son admin, viven en catalog/ui/.
+export async function listPackages(query?: ListPackagesQuery) {
+  return listPackagesUseCase(await packageRepository())(query)
+}
+
+export async function getPackage(id: string) {
+  return getPackageUseCase(await packageRepository())(id)
+}
+
 export { SERVICE_FAMILIES } from './domain/technique'
 export type {
   ServiceFamily,
   TechniqueView,
   TechniqueSnapshot,
 } from './domain/technique'
-export { TechniqueNotFound } from './domain/errors'
-export type { ListTechniquesQuery, Page } from './application/ports'
+export { TechniqueNotFound, PackageNotFound } from './domain/errors'
+export type { ListTechniquesQuery, ListPackagesQuery, Page } from './application/ports'
+export type { PackageListItem } from './application/queries'
 
 // UI de administración (US-AGE-08). La compone la ruta src/app/admin/catalog/.
 export { AdminCatalogPage } from './ui/AdminCatalogPage'
 export { catalogMessages } from './ui/messages'
 
 // UI de administración de paquetes (US-PROD-01). La compone src/app/admin/catalog/packages/.
-// listPackages/getPackage se suman al contrato de solo lectura cuando la historia cierre.
 export { AdminPackagesPage } from './ui/AdminPackagesPage'
