@@ -5,6 +5,7 @@ import { techniqueMediaCacheTag } from './technique-media-source'
 import { galleryCacheTag } from './gallery-source'
 import { studioCacheTags } from './studio-source'
 import { loyaltyCacheTags } from './loyalty-source'
+import { contactCacheTags } from './contact-source'
 
 // Aviso al publicar de uno-cms (docs/contracts/cms-api.md § Invalidación).
 export const WEBHOOK_WINDOW_MS = 5 * 60 * 1000
@@ -36,6 +37,7 @@ const knownTags: readonly string[] = [
   galleryCacheTag,
   ...studioCacheTags,
   ...loyaltyCacheTags,
+  ...contactCacheTags,
 ]
 
 // Decide qué hacer con un aviso. Pura: no toca la caché ni el reloj, así se prueba entera.

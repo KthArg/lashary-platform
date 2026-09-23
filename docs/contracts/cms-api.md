@@ -1,6 +1,6 @@
 # Contrato — API del CMS externo
 
-> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closing-cta` (US-LAND-01); v1.1 suma la colección `tecnicas`, que son **solo las fotos** de cada técnica (US-LAND-02); v1.2 suma la colección `galeria`, los pares antes y después con su casilla de consentimiento (US-LAND-03); v1.3 suma el singleton `estudio` y las colecciones `credenciales` y `razones`, para El estudio y Por qué acá (US-LAND-04); v1.4 suma el singleton `fidelidad` y la colección `niveles-fidelidad`, la mecánica informativa del programa (US-LAND-05). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-21.
+> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closing-cta` (US-LAND-01); v1.1 suma la colección `tecnicas`, que son **solo las fotos** de cada técnica (US-LAND-02); v1.2 suma la colección `galeria`, los pares antes y después con su casilla de consentimiento (US-LAND-03); v1.3 suma el singleton `estudio` y las colecciones `credenciales` y `razones`, para El estudio y Por qué acá (US-LAND-04); v1.4 suma el singleton `fidelidad` y la colección `niveles-fidelidad`, la mecánica informativa del programa (US-LAND-05); v1.5 suma el singleton `contacto` y las colecciones `horarios` y `preguntas`, para Ubicación, Preguntas y el pie de página (US-LAND-07). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-21.
 
 ## El CMS
 
@@ -189,6 +189,48 @@ Reglas de consumo:
 
 **Por qué los niveles son provisionales (decisión del PO, 2026-09-21).** Los niveles y beneficios son reglas de negocio de la plataforma (§ Lo que no vive en el CMS), y los administrará el motor de US-LAND-06. Mientras ese motor no existe, no hay nada que contradecir, así que viven aquí para que la sección informativa los pueda mostrar. Cuando US-LAND-06 llegue, se retiran en dos pasos (expand/contract): primero la plataforma lee los niveles del motor y deja de leer esta colección; después se quita de `cms.config.ts` y de este documento. El texto de `fidelidad` se queda en el CMS.
 
+### `contacto` — singleton (v1.5, US-LAND-07)
+
+Dónde está el estudio y cómo contactarlo. Lo leen la sección Ubicación, el pie de página y el menú.
+
+| Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
+|---|---|---|---|---|
+| `direccion` | text | sí | 160 | dirección o zona de atención |
+| `ciudad` | text | no | 120 | ciudad y provincia ("Ciudad Quesada, Alajuela, Costa Rica") |
+| `nota` | text | no | 120 | aclaración ("Atención solo con cita reservada.") |
+| `whatsapp` | text | sí | 15 | número de WhatsApp **solo con dígitos y el código de país** ("50688887777"). Otro formato se trata como ausente |
+| `mensajeWhatsapp` | text multilínea | no; default `"Hola, quiero información para agendar una cita."`, así que siempre viene | 300 | mensaje inicial que abre la conversación |
+| `instagram` | link | sí | — | perfil de Instagram, el canal principal. Solo `https://` |
+| `facebook` | link | no | — | perfil de Facebook. Solo `https://` |
+| `tiktok` | link | no | — | perfil de TikTok. Solo `https://` |
+| `correo` | text | no | 120 | correo de contacto |
+| `mapa` | link | no | — | URL de **inserción** de Google Maps (Compartir → Insertar un mapa → el `src` del código). Solo se acepta si empieza por `https://www.google.com/maps/embed?`; otra URL se trata como ausente |
+| `mapaEnlace` | link | no | — | enlace para abrir la ubicación en Google Maps. Solo `https://` |
+
+El botón de WhatsApp lo arma la plataforma: `https://wa.me/<whatsapp>?text=<mensajeWhatsapp codificado>`. Sin `whatsapp` válido no hay botón. Sin `direccion` ni `whatsapp` publicados no hay contacto: **no hay respaldo en código**, porque inventar una dirección o un número mandaría a una clienta a un lugar que no existe.
+
+### `horarios` — colección (v1.5, US-LAND-07)
+
+El horario de atención. Es una colección porque uno-cms no admite listas dentro de un singleton.
+
+| Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
+|---|---|---|---|---|
+| `dias` | text | sí | 40 | "Lunes a viernes", "Sábado" |
+| `horas` | text | sí | 40 | "9:00 a 18:00", "Cerrado" |
+
+Una fila sin los dos campos se ignora. Se muestran como máximo 7, en el orden del editor. Sin respaldo.
+
+### `preguntas` — colección (v1.5, US-LAND-07)
+
+Preguntas frecuentes, plegadas a US-LAND-07 por decisión del PO: resuelven dudas antes de contactar. Es un tipo nuevo y no el `faqs` de ejemplo de `lashary-cms`, que usa richtext y lo usan las pruebas heredadas de uno-cms.
+
+| Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
+|---|---|---|---|---|
+| `pregunta` | text | sí | 160 | la pregunta |
+| `respuesta` | text multilínea | sí | 800 | la respuesta; una línea en blanco separa párrafos |
+
+Una fila sin los dos campos se ignora. Se muestran como máximo 12, en el orden del editor. **Sin ninguna válida se usa el respaldo en código** (las preguntas del diseño de referencia), como `razones`.
+
 ## Lo que no vive en el CMS
 
 | Dato | Dónde vive | Por qué |
@@ -242,5 +284,4 @@ Contrato de demanda; se fijan con la primera historia que los consume.
 
 | Tipo propuesto | Historia | Pendiente de decidir |
 |---|---|---|
-| `contact` (singleton) | US-LAND-07 | forma del horario (uno-cms no admite listas dentro de un singleton) |
 | `posts` (colección) | US-BLOG-01/02/03 | sin id, sin ruta por elemento y sin tipo fecha en uno-cms: el detalle busca por un campo `slug` que el CMS no hace único, la paginación y el orden por fecha ocurren en `content`, las imágenes del cuerpo no caben en el richtext |
