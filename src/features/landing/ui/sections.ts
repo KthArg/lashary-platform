@@ -14,6 +14,10 @@ export const GALLERY_SECTION: SiteSection = { id: 'galeria', label: 'Galería' }
 // Fidelidad (US-LAND-05). No está en el diseño: va después de Galería, con el mismo lenguaje.
 export const LOYALTY_SECTION: SiteSection = { id: 'fidelidad', label: 'Fidelidad' }
 
+// Preguntas y Ubicación (US-LAND-07). Entran en `landingSections` cuando se montan en la página.
+export const FAQ_SECTION: SiteSection = { id: 'preguntas', label: 'Preguntas' }
+export const LOCATION_SECTION: SiteSection = { id: 'ubicacion', label: 'Ubicación' }
+
 // Secciones de la landing que aparecen en la navegación, en orden. Cada historia agrega la suya
 // al montarla (Ubicación US-LAND-07).
 export const landingSections: readonly SiteSection[] = [
