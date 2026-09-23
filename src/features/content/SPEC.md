@@ -2,10 +2,11 @@
 feature: content
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-09-21
+actualizado: 2026-09-23
 historias:
   - id: US-BLOG-01
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "el tipo posts no esta confirmado en cms.config.ts de lashary-cms, y la seccion US-BLOG-01 de este spec no asigna cada criterio a su prueba de uno-cms fijada por SHA"
   - id: US-BLOG-02
     estado: no_iniciada
   - id: US-BLOG-03
@@ -41,13 +42,13 @@ Se detiene antes de la UI: ninguna página de `landing` llama todavía a `getLan
 
 ## Contrato con el CMS
 
-[docs/contracts/cms-api.md](../../../docs/contracts/cms-api.md), vigente desde 2026-09-16 para transporte, invalidacion y los tipos `hero`, `intro` y `closing-cta` (clave con guion en el CMS). La v1.1 suma la coleccion `tecnicas`, que son solo las fotos de cada tecnica: el nombre, el precio y la duracion siguen saliendo del catalogo, y el cruce entre ambos lados es por `familia`. Consecuencia aceptada: dos tecnicas de la misma familia compartirian fotos; hoy el catalogo tiene una por familia. La v1.2 suma la coleccion `galeria` (US-LAND-03): pares antes y despues con la casilla `consentimiento`, y la plataforma no muestra un par sin ella. La v1.3 suma el singleton `estudio` y las colecciones `credenciales` y `razones` (US-LAND-04). La v1.4 suma el singleton `fidelidad` y la colección `niveles-fidelidad` (US-LAND-05), provisional: cuando exista el motor de US-LAND-06, los niveles se leen de ahí y la colección se retira. La v1.5 suma el singleton `contacto` y las colecciones `horarios` y `preguntas` (US-LAND-07). El CMS es uno-cms, instancia `lashary-cms`, en modo web remota. Lo que este gateway debe cumplir, segun el contrato:
+[docs/contracts/cms-api.md](../../../docs/contracts/cms-api.md), vigente desde 2026-09-16 para transporte, invalidacion y los tipos `hero`, `intro` y `closing-cta` (clave con guion en el CMS). La v1.1 suma la coleccion `tecnicas`, que son solo las fotos de cada tecnica: el nombre, el precio y la duracion siguen saliendo del catalogo, y el cruce entre ambos lados es por `familia`. Consecuencia aceptada: dos tecnicas de la misma familia compartirian fotos; hoy el catalogo tiene una por familia. La v1.2 suma la coleccion `galeria` (US-LAND-03): pares antes y despues con la casilla `consentimiento`, y la plataforma no muestra un par sin ella. La v1.3 suma el singleton `estudio` y las colecciones `credenciales` y `razones` (US-LAND-04). La v1.4 suma el singleton `fidelidad` y la colección `niveles-fidelidad` (US-LAND-05), provisional: cuando exista el motor de US-LAND-06, los niveles se leen de ahí y la colección se retira. La v1.5 suma el singleton `contacto` y las colecciones `horarios` y `preguntas` (US-LAND-07). La v1.6 suma la colección `posts` (US-BLOG-01/02). El CMS es uno-cms, instancia `lashary-cms`, en modo web remota. Lo que este gateway debe cumplir, segun el contrato:
 
 - Lee solo desde el servidor, con `CMS_URL` y timeout de 3 s.
 - Valida cada respuesta contra las formas del contrato; lo que no encaja se degrada a la ultima copia en cache o al contenido de respaldo en codigo.
 - Recibe el aviso firmado en `POST /api/cms/webhook` e invalida por tag; TTL de respaldo de 10 minutos.
 
-US-BLOG-01: los borradores separados de lo publicado estan verificados en uno-cms (columnas `draft` y `published`; la ruta publica lee `published`). El tipo `posts` sigue en borrador en el contrato.
+US-BLOG-01: los borradores separados de lo publicado estan verificados en uno-cms (columnas `draft` y `published`; la ruta publica lee `published`). El tipo `posts` es vigente en el contrato desde la v1.6 (2026-09-23), con `slug` opcional derivado de `title` y `publishedAt` como texto `AAAA-MM-DD` (decisiones del PO, 2026-09-22); el gateway de lectura se construye en US-BLOG-02. Los criterios de US-BLOG-01 los cumple uno-cms (ADR-0001): la evidencia es el mapa criterio a prueba de uno-cms, fijado por SHA, y el commit de lashary-cms que declara `posts`.
 
 ## Contrato público (`index.ts`)
 

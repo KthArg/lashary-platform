@@ -1,6 +1,6 @@
 # Contrato — API del CMS externo
 
-> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closing-cta` (US-LAND-01); v1.1 suma la colección `tecnicas`, que son **solo las fotos** de cada técnica (US-LAND-02); v1.2 suma la colección `galeria`, los pares antes y después con su casilla de consentimiento (US-LAND-03); v1.3 suma el singleton `estudio` y las colecciones `credenciales` y `razones`, para El estudio y Por qué acá (US-LAND-04); v1.4 suma el singleton `fidelidad` y la colección `niveles-fidelidad`, la mecánica informativa del programa (US-LAND-05); v1.5 suma el singleton `contacto` y las colecciones `horarios` y `preguntas`, para Ubicación, Preguntas y el pie de página (US-LAND-07). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-21.
+> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closing-cta` (US-LAND-01); v1.1 suma la colección `tecnicas`, que son **solo las fotos** de cada técnica (US-LAND-02); v1.2 suma la colección `galeria`, los pares antes y después con su casilla de consentimiento (US-LAND-03); v1.3 suma el singleton `estudio` y las colecciones `credenciales` y `razones`, para El estudio y Por qué acá (US-LAND-04); v1.4 suma el singleton `fidelidad` y la colección `niveles-fidelidad`, la mecánica informativa del programa (US-LAND-05); v1.5 suma el singleton `contacto` y las colecciones `horarios` y `preguntas`, para Ubicación, Preguntas y el pie de página (US-LAND-07); v1.6 suma la colección `posts`, las publicaciones del blog (US-BLOG-01/02). No quedan tipos en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-23.
 
 ## El CMS
 
@@ -231,6 +231,28 @@ Preguntas frecuentes, plegadas a US-LAND-07 por decisión del PO: resuelven duda
 
 Una fila sin los dos campos se ignora. Se muestran como máximo 12, en el orden del editor. **Sin ninguna válida se usa el respaldo en código** (las preguntas del diseño de referencia), como `razones`.
 
+### `posts` — colección (v1.6, US-BLOG-01/02)
+
+Las publicaciones del blog. La administradora las crea, edita y elimina desde el panel de `lashary-cms` (US-BLOG-01); la plataforma solo las lee (US-BLOG-02/03).
+
+| Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
+|---|---|---|---|---|
+| `slug` | text | no | 80 | identificador legible para la URL de la publicación; sin valor, `content` lo deriva de `title` |
+| `title` | text | sí | 100 | título de la publicación |
+| `excerpt` | text multilínea | sí | 200 | resumen para la tarjeta del listado |
+| `featuredImage` | image | sí | — | imagen destacada; `alt` obligatorio al publicar |
+| `publishedAt` | text | sí | — | fecha de publicación en ISO 8601 (`AAAA-MM-DD`); uno-cms no tiene tipo fecha |
+| `body` | richtext | sí | — | cuerpo de la publicación (§ Formas de valor); sin imágenes dentro |
+| `seoTitle` | text | no | 60 | título para metadatos SEO; sin valor, `content` usa `title` |
+| `seoDescription` | text multilínea | no | 160 | descripción para metadatos SEO; sin valor, `content` usa `excerpt` |
+
+- **Sin id ni ruta por elemento en uno-cms** (§ Transporte): `content` lee la colección completa (`GET {CMS_URL}/api/content/posts`) y arma su propia identidad de ruta a partir de `slug`.
+- **`slug` opcional (decisión del PO, 2026-09-22):** `content` normaliza el valor que venga — o `title` si no viene — así: minúsculas, sin diacríticos, cada tramo de caracteres fuera de `a-z0-9` pasa a un guion, sin guiones en los extremos, recortado a 80 caracteres. Llenar `slug` es la forma de fijar la URL: con él vacío, editar `title` cambia la URL de la publicación. Si la normalización deja la cadena vacía, la publicación se descarta y se registra una advertencia.
+- **`slug` no único:** el CMS no lo garantiza. Si dos publicaciones comparten `slug`, `content` conserva la primera en el orden del editor y registra una advertencia; no falla la lectura completa (§ Degradación).
+- **Sin tipo fecha en uno-cms (decisión del PO, 2026-09-22):** `publishedAt` es texto en ISO 8601; `content` lo parsea para ordenar. Si no encaja, trata ese campo como ausente y la publicación va al final del listado, en el orden del editor.
+- **Orden y paginación:** ocurren en `content`, no en el CMS — orden descendente por `publishedAt`, paginado sobre un límite configurado (9 por página, US-BLOG-02).
+- **Imágenes dentro de `body`:** fuera de v1; el richtext no las admite (§ Formas de valor).
+
 ## Lo que no vive en el CMS
 
 | Dato | Dónde vive | Por qué |
@@ -282,6 +304,4 @@ ADR-0001 exige que la landing no caiga si el CMS falla.
 
 Contrato de demanda; se fijan con la primera historia que los consume.
 
-| Tipo propuesto | Historia | Pendiente de decidir |
-|---|---|---|
-| `posts` (colección) | US-BLOG-01/02/03 | sin id, sin ruta por elemento y sin tipo fecha en uno-cms: el detalle busca por un campo `slug` que el CMS no hace único, la paginación y el orden por fecha ocurren en `content`, las imágenes del cuerpo no caben en el richtext |
+Ninguno desde la v1.6: `posts` era el último.
