@@ -1,6 +1,6 @@
 # Contrato — API del CMS externo
 
-> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closing-cta` (US-LAND-01); v1.1 suma la colección `tecnicas`, que son **solo las fotos** de cada técnica (US-LAND-02); v1.2 suma la colección `galeria`, los pares antes y después con su casilla de consentimiento (US-LAND-03). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-21.
+> **Autoridad:** qué contenido lee esta plataforma del CMS, con qué forma y bajo qué garantías. Se versiona aquí antes de cualquier cambio de forma, en los dos lados (INT-003). **Lectores:** feature `content`; mantenedor del CMS. **Estado:** vigente — v1: transporte, garantías, invalidación y los tipos `hero`, `intro` y `closing-cta` (US-LAND-01); v1.1 suma la colección `tecnicas`, que son **solo las fotos** de cada técnica (US-LAND-02); v1.2 suma la colección `galeria`, los pares antes y después con su casilla de consentimiento (US-LAND-03); v1.3 suma el singleton `estudio` y las colecciones `credenciales` y `razones`, para El estudio y Por qué acá (US-LAND-04). Los demás tipos siguen en borrador (§ Tipos en borrador). **Actualizado:** 2026-09-21.
 
 ## El CMS
 
@@ -124,6 +124,44 @@ Reglas de consumo:
 - El orden es el del editor. La plataforma muestra como máximo los **24 primeros** pares válidos; el resto se ignora (PERF-004).
 - **Límite de la casilla:** protege lo que publica la landing, no el archivo. Una foto subida al CMS queda en Vercel Blob con una URL pública aunque el par no tenga la casilla marcada. Por eso la foto de una clienta se sube **después** de tener su autorización, no antes.
 
+### `estudio` — singleton (v1.3, US-LAND-04)
+
+La sección "El estudio": quién es la dueña. Es un tipo nuevo y no el `about` de ejemplo que trae `lashary-cms` (`heading`, `body`, `visible`): ese lo usan las pruebas heredadas de uno-cms, y la plataforma no lo lee.
+
+| Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
+|---|---|---|---|---|
+| `nombre` | text | sí | 80 | nombre de la dueña |
+| `rol` | text | no; default `"Lash artist y fundadora"`, así que siempre viene | 60 | lo que se lee bajo el nombre |
+| `retrato` | image | sí | — | retrato vertical (4:5 en el diseño); `alt` obligatorio al publicar |
+| `texto` | text multilínea | sí | 1200 | texto descriptivo. **Una línea en blanco separa párrafos**: uno-cms no tiene lista de párrafos y el richtext pediría un renderizador que esta sección no necesita |
+| `anosExperiencia` | number | no | 0–60, entero | años de experiencia en el área |
+
+Sin `nombre` ni `texto` publicados, se usa el respaldo del tipo entero (§ Degradación). Un `anosExperiencia` fuera de 0–60 o no entero se trata como ausente.
+
+### `credenciales` — colección (v1.3, US-LAND-04)
+
+La trayectoria de la dueña: formación y certificaciones.
+
+| Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
+|---|---|---|---|---|
+| `titulo` | text | sí | 120 | el curso o la certificación |
+| `tipo` | select | sí | — | `formacion` o `certificacion` |
+| `entidad` | text | no | 120 | quién la dio |
+| `anio` | number | no | 1970–2100, entero | año en que se obtuvo |
+
+Una fila sin `titulo` válido o con un `tipo` que no es de los dos se ignora. Se muestran como máximo las **12 primeras** válidas, en el orden del editor.
+
+### `razones` — colección (v1.3, US-LAND-04)
+
+La sección "Por qué acá": qué distingue al estudio.
+
+| Campo | Tipo | Requerido (`required`) | Máx. | Qué es |
+|---|---|---|---|---|
+| `titulo` | text | sí | 60 | la razón, corta |
+| `texto` | text multilínea | sí | 240 | la explicación |
+
+Una fila sin los dos campos válidos se ignora. Se muestran como máximo las **6 primeras** válidas, en el orden del editor. **Sin ninguna válida se usa el respaldo en código** (las razones del diseño de referencia): la sección no queda vacía.
+
 ## Lo que no vive en el CMS
 
 | Dato | Dónde vive | Por qué |
@@ -178,6 +216,5 @@ Contrato de demanda; se fijan con la primera historia que los consume.
 | Tipo propuesto | Historia | Pendiente de decidir |
 |---|---|---|
 | `contact` (singleton) | US-LAND-07 | forma del horario (uno-cms no admite listas dentro de un singleton) |
-| `about` (singleton) + `credentials` (colección) | US-LAND-04 | — |
 | `loyaltyInfo` (singleton) | US-LAND-05 | cómo evitar que el texto contradiga los niveles de US-LAND-06 |
 | `posts` (colección) | US-BLOG-01/02/03 | sin id, sin ruta por elemento y sin tipo fecha en uno-cms: el detalle busca por un campo `slug` que el CMS no hace único, la paginación y el orden por fecha ocurren en `content`, las imágenes del cuerpo no caben en el richtext |
