@@ -22,6 +22,12 @@ export const link = (value: unknown): string | null => {
   return candidate !== null && SAFE_LINK.test(candidate) ? candidate : null
 }
 
+// Un número entero dentro del rango que declara el contrato; fuera de él, ausente.
+export const integer = (value: unknown, min: number, max: number): number | null =>
+  typeof value === 'number' && Number.isInteger(value) && value >= min && value <= max
+    ? value
+    : null
+
 export const dimension = (value: unknown): number | undefined =>
   typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined
 
