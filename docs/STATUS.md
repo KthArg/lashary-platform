@@ -34,7 +34,7 @@
 
 ### catalog (actualizado: 2026-09-22)
 - US-AGE-08 — terminada — PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx
-- US-PROD-01 — en_progreso — falta: correr los tests de integración/RLS contra Supabase local (sin Docker en el entorno de quien los escribió) antes de cerrar como terminada; el resto — dominio, application, db, RLS, server actions, UI completa con formulario — ya está
+- US-PROD-01 — en_progreso — falta: correr contra Supabase local los tests package-repository.integration.test.ts y package-rls-isolation.test.ts, y abrir /admin/catalog/packages en un navegador para probar el formulario a mano; el codigo esta completo (dominio, application, db, RLS, server actions, UI, contrato) y sus pruebas unitarias corren en verde, pero sin esa ejecucion no hay evidencia para pasar a terminada (EST-005)
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
@@ -114,6 +114,7 @@ Ninguno registrado.
 ## Deuda aceptada
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
 - catalog: Control positivo de escritura como staff contra la base real: ninguna prueba demuestra que una sesion con rol admin o superadmin puede INSERT, UPDATE y DELETE en catalog_techniques (politicas catalog_techniques_*_staff de supabase/migrations/20260902000001_catalog_write_policies.sql); rls-isolation.test.ts solo cubre el control negativo y actions.test.ts usa repositorio en memoria — aceptada en PR de cierre de US-AGE-08 (docs/us-age-08-close-out) — costo: 2h: prueba SQL local que siembra el rol como superusuario, fija request.jwt.claims y comprueba las tres escrituras con rollback; mas el arnes de Supabase local si aun no corre en el entorno de quien la escribe
+- catalog: El mismo hueco de control positivo aplica a catalog_packages y catalog_package_techniques (politicas catalog_packages_*_staff y catalog_package_techniques_*_staff de supabase/migrations/20260922000001_catalog_package_write_policies.sql): package-rls-isolation.test.ts cubre solo el control negativo (anonimo y clienta no pueden escribir) y package-actions.test.ts usa repositorios mockeados. Sembrar el rol staff exige escribir en auth_user_roles saltandose RLS, es decir la service-role key, que SEC-003 prohibe poner al alcance de un agente — aceptada en PR de politicas RLS de paquetes (US-PROD-01, pieza 6) — costo: 0h adicionales si se resuelve junto con la deuda de catalog_techniques: es el mismo arnes de sesion staff, cubre las tres tablas a la vez
 - clients: Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras — aceptada en PR #32, etiqueta excepcion-proceso — costo: 3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)
 
 ## Flags vivos
