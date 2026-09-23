@@ -31,3 +31,29 @@ export class TechniqueNameConflict extends CatalogError {
     super(`ya existe una técnica llamada "${name}"`)
   }
 }
+
+export class PackageValidationError extends CatalogError {
+  readonly code = 'CATALOG_PACKAGE_INVALID'
+
+  constructor(public readonly problems: string[]) {
+    super(`paquete inválido: ${problems.join('; ')}`)
+  }
+}
+
+export class PackageNotFound extends CatalogError {
+  readonly code = 'CATALOG_PACKAGE_NOT_FOUND'
+
+  constructor(public readonly packageId: string) {
+    super(`no existe el paquete ${packageId}`)
+  }
+}
+
+// DOM-006: la violación de catalog_packages_name_unique es un caso de negocio esperable, igual
+// que TechniqueNameConflict (db/package-repository.ts).
+export class PackageNameConflict extends CatalogError {
+  readonly code = 'CATALOG_PACKAGE_NAME_CONFLICT'
+
+  constructor(public readonly name: string) {
+    super(`ya existe un paquete llamado "${name}"`)
+  }
+}
