@@ -6,9 +6,11 @@ export {
   loadTechniqueMedia as getTechniqueMedia,
   techniqueMediaCacheTag,
 } from './cms/technique-media-source'
+export { loadGallery as getGallery, galleryCacheTag } from './cms/gallery-source'
 // Borde de POST /api/cms/webhook (aviso al publicar). Lo monta src/app/api/cms/webhook/route.ts.
 export { receiveCmsWebhook } from './cms/webhook'
 export type { TechniqueMedia, TechniqueMediaByFamily } from './domain/technique-media'
+export type { GalleryFamily, GalleryPair } from './domain/gallery'
 export type {
   CmsImage,
   ClosingCtaContent,

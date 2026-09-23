@@ -12,7 +12,7 @@ historias:
     evidencia: "PR #63 (us/US-LAND-02 a main). Las fotos salen del CMS por la coleccion tecnicas, contrato v1.1 de docs/contracts/cms-api.md, cuya otra mitad es el PR #6 de lashary-cms (decision del PO el 2026-09-16: las imagenes van en el CMS). Criterios 1 a 5 demostrados en ui/__tests__/landing-techniques.test.tsx; el gateway, en content/application/__tests__/get-technique-media.test.ts, cms/__tests__/cms-reader.test.ts y cms/__tests__/webhook.test.ts. Verificado ademas contra el CMS local: fila publicada desde el panel, foto y ejemplo servidos por /api/content/tecnicas y renderizados en la landing tras el aviso firmado que invalida content:tecnicas"
   - id: US-LAND-03
     estado: en_progreso
-    falta: "contrato v1.2 escrito (coleccion galeria con casilla de consentimiento); falta la lectura en content, la seccion Galeria en la landing y sus pruebas para los criterios 1 a 4"
+    falta: "contrato v1.2 y lectura en content (getGallery, que solo entrega pares con consentimiento) hechos; falta la seccion Galeria en la landing y sus pruebas de componente para los criterios 1, 3 y 4"
   - id: US-LAND-04
     estado: no_iniciada
   - id: US-LAND-05
