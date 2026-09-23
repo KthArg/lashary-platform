@@ -1,14 +1,14 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-21.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-23.
 
 ## Features
 
 | Feature | DRI | Estado | terminada / en_progreso / bloqueada / en_revision / no_iniciada |
 |---|---|---|---|
 | account | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
-| audit | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
+| audit | pendiente | en_progreso | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | en_progreso | 1 / 0 / 0 / 0 / 3 |
 | clients | pendiente | en_progreso | 1 / 1 / 0 / 0 / 3 |
@@ -26,7 +26,7 @@
 
 ### account (actualizado: 2026-08-29)
 
-### audit (actualizado: 2026-08-29)
+### audit (actualizado: 2026-09-23)
 
 ### auth (actualizado: 2026-09-12)
 - US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
