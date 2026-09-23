@@ -137,6 +137,12 @@ module.exports = {
       aspectRatio: {
         // Retrato de la foto de técnica, como las fotos del diseño.
         'site-photo': '4 / 5',
+        // Cada foto de un par antes y después (US-LAND-03), vertical como en el diseño.
+        'site-gallery': '3 / 4',
+      },
+      gridTemplateColumns: {
+        // Cuadrícula de la galería: tantas columnas como quepan, cada par de al menos 17rem.
+        'site-gallery': 'repeat(auto-fill, minmax(min(100%, 17rem), 1fr))',
       },
       borderRadius: {
         'site-pill': '50% / 100%',
