@@ -40,6 +40,10 @@ export interface TechniqueRepository {
 
   findById(id: string): Promise<Technique | null>
 
+  // Batch por ids (PERF-005): createPackage/updatePackage validan varias técnicas a la vez y
+  // no pueden hacerlo con N llamadas a findById en un loop.
+  findByIds(ids: string[]): Promise<Technique[]>
+
   save(technique: Technique): Promise<void>
 }
 
