@@ -34,7 +34,7 @@
 
 ### catalog (actualizado: 2026-09-22)
 - US-AGE-08 — terminada — PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx
-- US-PROD-01 — en_progreso — falta: server actions y UI admin; el backend queda completo con esta pieza (dominio, application, db/package-repository.ts y RLS de escritura staff) — falta exponerlo en ui/ y en index.ts. Tests de integración/RLS escritos, pendientes de correr contra Supabase local (sin Docker en el entorno de quien los escribió)
+- US-PROD-01 — en_progreso — falta: UI admin (tabla, formulario, ruta) e index.ts; server actions y validación ya están (createPackageAction/updatePackageAction/deactivatePackageAction, package-schema.ts). Tests de integración/RLS escritos, pendientes de correr contra Supabase local (sin Docker en el entorno de quien los escribió)
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
