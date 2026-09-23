@@ -2,11 +2,11 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-09-16"
+actualizado: "2026-09-20"
 historias:
   - id: US-CLI-01
     estado: en_progreso
-    falta: "todo el listado: tabla con nombre y contacto, paginacion en el servidor con tamano de pagina configurable, filtro por nombre y estados de vacio por filtro; la columna y el filtro de estado de morosidad esperan a US-MOR-01 y la columna y el filtro por rango de ultima cita esperan a US-AGE-05 (criterios diferidos)"
+    falta: "paginacion en el servidor con tamano de pagina configurable, filtro por nombre y estado de vacio por filtro; las columnas de morosidad y ultima cita existen sin dato y su filtro no existe: el dato espera a US-MOR-01 y a US-AGE-05 (criterios diferidos)"
   - id: US-CLI-02
     estado: no_iniciada
   - id: US-CLI-03
@@ -44,7 +44,12 @@ cierra; si el servidor rechaza, el mensaje aparece dentro del modal y lo escrito
 de la base nunca llega a la pantalla: la action devuelve `{ ok: false, error }` con un texto de
 `CLIENTS_ERROR_MESSAGES`. La action también llama a `requireAdminSession()`.
 
-Debajo, `ClientsList` muestra las clientas que la página lee en el servidor con `listClientsAction()`:
+Debajo, `ClientsList` muestra las clientas en una tabla de seis columnas: nombre (celda `th scope="row"`),
+teléfono, correo, morosidad, última cita y acciones. Morosidad y última cita muestran
+`CLIENTS_TABLE_TEXTS.pendingColumnValue` ("Sin dato") en todas las filas: la columna existe, el dato no
+(criterios diferidos). `clients-list.test.tsx` exige los seis encabezados en orden, tantas celdas por fila
+como encabezados, y el texto de dato pendiente en las dos columnas diferidas. Las clientas las lee la
+página en el servidor con `listClientsAction()`:
 la primera página de 25, las más recientes primero y solo las columnas que muestra (PERF-002, PERF-005).
 La action ya recibe `{ page, pageSize, name }` y devuelve `{ clients, total, page, pageSize }`
 (US-CLI-01, sin pantalla todavía): el tamaño solo puede ser uno de `CLIENTS_LIST_LIMITS.pageSizes`
@@ -92,7 +97,7 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 `ConfirmDialog`, el formulario, `AddClientButton`, `ClientsList`, `ClientRecord`, los hooks
 `useClientForm`, `useClientDialog` y `useFocusTrap`, `createClientAction`, `listClientsAction` y `updateClientAction` con sus tipos
 `SaveClientResult`, `ListClientsQuery` y `ListClientsResult`, `validateClientForm`, `normalizePhone` y las constantes de
-textos y límites, entre ellas `CLIENTS_LIST_LIMITS` (DOM-009).
+textos y límites, entre ellas `CLIENTS_LIST_LIMITS`, `CLIENTS_TABLE_HEADERS` y `CLIENTS_TABLE_TEXTS` (DOM-009).
 
 ## Invariantes
 
@@ -181,3 +186,12 @@ textos y límites, entre ellas `CLIENTS_LIST_LIMITS` (DOM-009).
   no lo sirve un índice B-tree; el que sirve es GIN con `pg_trgm`, que es una migración. Con las clientas
   de hoy la lectura completa no se nota; se crea cuando una medición lo pida. Tampoco ignora tildes
   ("Maria" no encuentra "María"): eso pide `unaccent`, otra migración.
+- **2026-09-20 — Las columnas de morosidad y última cita se dibujan desde ya, sin dato, por decisión de
+  José Loría.** Matiza la decisión del 2026-09-16: la estructura de la tabla no espera a US-MOR-01 ni a
+  US-AGE-05, pero el dato sigue sin inventarse (EST-005). Cada celda muestra el texto
+  `CLIENTS_TABLE_TEXTS.pendingColumnValue` en cursiva y atenuado, no una celda en blanco, que se leería
+  como "no debe nada" y como "nunca ha venido". Sus filtros no existen todavía. **Consecuencia asumida:**
+  al llegar el dato hay que cambiar esas dos celdas y la prueba que hoy cuenta los textos pendientes.
+- **2026-09-20 — La columna de acciones lleva encabezado visible**, no `sr-only` como nació el
+  2026-09-20 en esta misma pieza (decisión de José Loría). UI-004 se cumple igual: la columna tiene
+  nombre accesible; ahora además se ve.

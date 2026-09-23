@@ -10,6 +10,15 @@ export const CLIENTS_LABELS = {
   editClientTitle: 'Editar clienta', editClientDescription: 'Cambia solo lo que necesites; los campos marcados siguen siendo obligatorios.',
 } as const
 
+// US-CLI-01 criterio 1. Morosidad y ultima cita ya tienen columna; su dato llega con US-MOR-01 y US-AGE-05.
+export const CLIENTS_TABLE_HEADERS = {
+  fullName: 'Nombre', phone: 'Teléfono', email: 'Correo',
+  delinquencyStatus: 'Morosidad', lastAppointment: 'Última cita', actions: 'Acciones',
+} as const
+
+// Una celda en blanco se lee como "no debe nada"; este texto dice que el dato todavia no existe (EST-005).
+export const CLIENTS_TABLE_TEXTS = { pendingColumnValue: 'Sin dato' } as const
+
 export const CLIENTS_PLACEHOLDERS = {
   fullName: 'María Fernández Rojas', phone: '8888 8888', email: 'maria@correo.com',
   notes: 'Preferencias, cómo llegó al estudio…',
