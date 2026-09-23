@@ -68,6 +68,8 @@ module.exports = {
         'site-technique': ['clamp(1.35rem, 3vw, 2.3rem)', { lineHeight: '1.08', letterSpacing: '-0.02em' }],
         'site-meta': ['0.875rem', { lineHeight: '1.4' }],
         'site-sign': ['1.375rem', { lineHeight: '1' }],
+        // Pregunta del acordeón de Preguntas (US-LAND-07).
+        'site-faq': ['clamp(1rem, 1.4vw, 1.25rem)', { lineHeight: '1.4' }],
       },
       letterSpacing: {
         'widest-plus': '0.2em',
@@ -168,6 +170,9 @@ module.exports = {
         'site-photo': '22rem',
         // Retrato de la dueña en El estudio (US-LAND-04).
         'site-portrait': '20.625rem',
+        // Preguntas (US-LAND-07): la lista y cada respuesta, como el diseño.
+        'site-faq': '55rem',
+        'site-faq-answer': '62ch',
         // El par ampliado de la galería (US-LAND-03). Lo acota también el alto de la pantalla:
         // dos fotos 3:4 lado a lado miden de alto 2/3 de su ancho, y tienen que caber junto a
         // los controles incluso con el móvil en horizontal.
