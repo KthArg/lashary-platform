@@ -29,7 +29,6 @@ export const landingLocationStyles = {
   social:
     'inline-flex min-h-site-tap items-center text-site-cta text-site-ink underline outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-site-focus',
   email: 'mt-4 block text-site-body text-site-ink-soft',
-  newTab: 'sr-only',
 
   map: 'min-h-site-map flex-1 basis-site-aside border-0 bg-site-taupe',
   mapLink:

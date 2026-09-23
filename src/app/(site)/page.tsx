@@ -1,4 +1,5 @@
 import {
+  getContact,
   getGallery,
   getLandingContent,
   getLoyalty,
@@ -42,14 +43,15 @@ async function readTechniques() {
 }
 
 export default async function HomePage() {
-  // getStudio(), getGallery() y getLoyalty() nunca lanzan: con el CMS caído, El estudio sirve su
-  // respaldo, y la galería y la fidelidad muestran su estado vacío.
-  const [content, techniques, studio, gallery, loyalty] = await Promise.all([
+  // Las lecturas del CMS nunca lanzan: con el CMS caído, El estudio y Preguntas sirven su
+  // respaldo, y la galería, la fidelidad y Ubicación muestran su estado vacío.
+  const [content, techniques, studio, gallery, loyalty, contact] = await Promise.all([
     getLandingContent(),
     readTechniques(),
     getStudio(),
     getGallery(),
     getLoyalty(),
+    getContact(),
   ])
   return (
     <LandingHome
@@ -58,6 +60,7 @@ export default async function HomePage() {
       studio={studio}
       gallery={gallery}
       loyalty={loyalty}
+      contact={contact}
     />
   )
 }

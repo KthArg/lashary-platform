@@ -20,8 +20,8 @@ historias:
     estado: terminada
     evidencia: "PRs #83 (contrato v1.4), #84 (getLoyalty) y #85 (seccion Fidelidad, montaje y navegacion), apilados hacia us/US-LAND-05; la otra mitad del contrato esta en el main de lashary-cms (8c55f64). Criterio 1 en ui/__tests__/landing-loyalty.test.tsx y content/application/__tests__/get-loyalty.test.ts; criterio 2 en content/cms/__tests__/loyalty-source.test.ts y webhook.test.ts. Verificado ademas con un CMS simulado en next dev: texto, letra chica y 3 niveles ordenados por visita, sin scroll horizontal en 320, 375, 768, 1280, 1920 y 667x375. Solo informativa: el conteo de visitas es US-LAND-06"
   - id: US-LAND-07
-    estado: en_progreso
-    falta: "contrato v1.5, lectura en content (getContact), la seccion Ubicacion y la seccion Preguntas (ui/LandingFaq.tsx) hechos; falta el pie de pagina, montar las secciones y la navegacion (criterio 5)"
+    estado: terminada
+    evidencia: "PRs #86 (contrato v1.5), #87 (validacion en content), #88 (getContact con cache y aviso), #89 (Ubicacion), #90 (Preguntas) y #91 (pie de pagina, montaje y navegacion), apilados hacia us/US-LAND-07; la otra mitad del contrato esta en el main de lashary-cms (6e43e3f). Criterios 1 a 3 en ui/__tests__/landing-location.test.tsx y content/application/__tests__/get-contact.test.ts; 4 en content/cms/__tests__/contact-source.test.ts y webhook.test.ts; 5 en ui/__tests__/site-footer.test.tsx. Verificado ademas con un CMS simulado en next dev: sin scroll horizontal en 320, 375, 768, 860, 1024, 1280, 1920 y 667x375, la navegacion de escritorio con sus 6 enlaces entra desde 860 px, y el enlace de WhatsApp lleva el mensaje codificado"
 flags: []
 deuda: []
 defectos: []
@@ -35,9 +35,9 @@ Sitio publico: inicio, tecnicas, contacto, conoceme, galeria, fidelidad informat
 
 - `ui/SiteHeader.tsx`: cabecera fija de todas las páginas públicas (la monta `src/app/(site)/layout.tsx`). Marca con ancla a `#inicio`, "Reservar cita" hacia `RESERVE_ROUTE` (`/portal`) y, si hay secciones, la barra de enlaces (desde 860 px, token `site-nav`) y el botón de menú.
 - `ui/SiteMenu.tsx`: menú a pantalla completa como diálogo modal. Foco en "Cerrar" al abrir, Tab atrapado, Escape cierra y devuelve el foco al botón, scroll de la página bloqueado mientras está abierto.
-- `ui/sections.ts`: `landingSections` lista Servicios, El estudio, Galería y Fidelidad, en el orden de la página; cada historia agrega la suya al montarla. La sección se renderiza siempre, incluso sin técnicas, para que el ancla de la navegación nunca apunte al vacío.
+- `ui/sections.ts`: `landingSections` lista Servicios, El estudio, Galería, Fidelidad, Preguntas y Ubicación, en el orden de la página; cada historia agrega la suya al montarla. La sección se renderiza siempre, incluso sin técnicas, para que el ancla de la navegación nunca apunte al vacío.
 
-- `ui/LandingHome.tsx` + `src/app/(site)/page.tsx`: `/` es estática con revalidación de 600 s; lee `getLandingContent()`, `getStudio()`, `getGallery()` y `getLoyalty()` de `content` y `listTechniques({ activeOnly: true })` del entry point de `catalog` (ARCH-003), y compone hero, bienvenida, servicios, El estudio, Por qué acá, galería, fidelidad y llamada final dentro de `<main id="inicio">`.
+- `ui/LandingHome.tsx` + `src/app/(site)/page.tsx`: `/` es estática con revalidación de 600 s; lee `getLandingContent()`, `getStudio()`, `getGallery()`, `getLoyalty()` y `getContact()` de `content` y `listTechniques({ activeOnly: true })` del entry point de `catalog` (ARCH-003), y compone hero, bienvenida, servicios, El estudio, Por qué acá, galería, fidelidad, preguntas, ubicación y llamada final dentro de `<main id="inicio">`.
 - `ui/LandingHero.tsx`: título en dos líneas, subtítulo, "Reservar cita" (texto del CMS, destino `RESERVE_ROUTE`), enlace secundario solo con texto y destino, y la foto del CMS con `next/image`. Sin imagen, la píldora queda como relleno decorativo (`aria-hidden`).
 - `ui/opening-frame.ts` + `ui/use-opening-animation.ts`: la apertura de la foto al bajar, en una pista de 300vh. Con `prefers-reduced-motion: reduce` no se registra el scroll y el CSS muestra título y foto quietos, uno debajo del otro. En pantallas de hasta 500 px de alto (token `site-short`) el bloque del título se alinea arriba para no quedar bajo la cabecera.
 - `next.config.js`: imágenes remotas de Vercel Blob y, en desarrollo, del origen de `CMS_URL`. Next bloquea por SSRF imágenes de IPs privadas; solo con `next dev` y `CMS_URL` en loopback se permite (`dangerouslyAllowLocalIP`), nunca en producción.
@@ -79,13 +79,23 @@ Medición PERF-004 con El estudio y Por qué acá (2026-09-21, mismo método que
 
 ### Fidelidad (US-LAND-05)
 
-- `ui/LandingLoyalty.tsx` (servidor): el texto del programa en párrafos con su letra chica, y los niveles como una fila de hitos ("5.ª visita" y su beneficio, `grid-cols-site-milestones`). El diseño no trae esta sección: usa su mismo lenguaje (encabezado con filete y numeral 05, filetes entre filas). Va después de Galería y antes de la llamada final, y `LOYALTY_SECTION` (`#fidelidad`) entra en la navegación.
+- `ui/LandingLoyalty.tsx` (servidor): el texto del programa en párrafos con su letra chica, y los niveles como una fila de hitos ("5.ª visita" y su beneficio, `grid-cols-site-milestones`). El diseño no trae esta sección: usa su mismo lenguaje (encabezado con filete y numeral 05, filetes entre filas). Va después de Galería y antes de la llamada final, y `LOYALTY_SECTION`, `FAQ_SECTION`, `LOCATION_SECTION` (`#fidelidad`) entra en la navegación.
 - Es **solo informativa**: el conteo de visitas de cada clienta es el motor de US-LAND-06. Los niveles vienen de la colección provisional `niveles-fidelidad` del CMS; cuando exista el motor, se leen de ahí (contrato v1.4).
 - Sin nada publicado, o con el CMS caído, muestra su estado vacío (UI-003) y no inventa beneficios. Con texto y sin niveles, muestra el texto solo.
 
 Medición PERF-004 con Fidelidad (2026-09-21, mismo método): LCP 1444–1476 ms en 3 corridas, elemento LCP el título del hero; JS inicial 151.1 KB comprimido (9 scripts). La sección es de servidor y no suma JS de cliente.
 
-US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09-16 sobre las capturas del artefacto `capturas-landing`. De las demás secciones del diseño están montadas Servicios, El estudio, Por qué acá y Galería, más Fidelidad, que no está en el diseño; Ubicación llega con US-LAND-07. "Las semanas después" y "Clientas" no tienen historia y quedan fuera (decisión del PO, 2026-09-21).
+### Preguntas, Ubicación y pie de página (US-LAND-07)
+
+- `ui/LandingFaq.tsx` + `ui/FaqList.tsx` (cliente): Preguntas, plegada a esta historia por decisión del PO. Acordeón en el que cada pregunta (`<h3>` con su botón, `aria-expanded` y `aria-controls`) se abre por su cuenta, con la primera abierta al cargar, como el diseño. El panel no se desmonta al cerrar. Nunca llega vacía: `content` cae a las preguntas del diseño.
+- `ui/LandingLocation.tsx` (servidor): dirección, ciudad, horario (`<dl>` en `grid-cols-site-hours`), nota, el botón de WhatsApp con su mensaje inicial (criterio 2), las redes con Instagram primero (criterio 3), el correo y el mapa. El mapa es un `<iframe>` con `title` y `loading="lazy"`, y solo recibe la URL de inserción de Google Maps que ya validó `content`; sin ella, un enlace "Abrir en Google Maps". Sin contacto ni horario, estado vacío: no se inventa a dónde ir.
+- `ui/SiteFooter.tsx` (servidor, lo monta `src/app/(site)/layout.tsx`): contacto, horario, dirección, "Cómo llegar" hacia `/#ubicacion` (criterio 5) y "Reservar cita". El layout lee `getContact()`, que comparte la entrada de caché con la página.
+- `ui/ExternalLink.tsx`: enlace a otro sitio con `target="_blank"`, `rel="noopener noreferrer"` y el aviso "(se abre en otra pestaña)" solo para lectores de pantalla.
+- Navegación: Servicios, El estudio, Galería, Fidelidad, Preguntas y Ubicación (`FAQ_SECTION`, `LOCATION_SECTION`). Numerales: Preguntas 06, Ubicación 07.
+
+Medición PERF-004 con Preguntas, Ubicación y el pie (2026-09-21, mismo método): LCP 1424–1436 ms en 3 corridas, elemento LCP el título del hero; JS inicial propio 151.6 KB (9 scripts). El mapa no se pide en la carga (`loading="lazy"`, 0 pedidos a Google Maps con la sección fuera de pantalla).
+
+US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09-16 sobre las capturas del artefacto `capturas-landing`. De las demás secciones del diseño están montadas Servicios, El estudio, Por qué acá y Galería, más Fidelidad, que no está en el diseño, Preguntas y Ubicación, y el pie de página. "Las semanas después" y "Clientas" no tienen historia y quedan fuera (decisión del PO, 2026-09-21).
 
 ## Decisiones de US-LAND-01 (PO, 2026-09-16)
 
@@ -104,5 +114,5 @@ US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09
 
 ## Contrato público (`index.ts`)
 
-- `SiteHeader`, `LandingHome`, `LandingHero`, `LandingIntro`, `LandingClosingCta`, `LandingTechniques`, `LandingStudio`, `LandingReasons`, `LandingGallery`, `LandingLoyalty`, `landingSections`, `TECHNIQUES_SECTION`, `STUDIO_SECTION`, `GALLERY_SECTION`, `LOYALTY_SECTION` y el tipo `SiteSection`.
+- `SiteHeader`, `LandingHome`, `LandingHero`, `LandingIntro`, `LandingClosingCta`, `LandingTechniques`, `LandingStudio`, `LandingReasons`, `LandingGallery`, `LandingLoyalty`, `LandingFaq`, `LandingLocation`, `SiteFooter`, `landingSections`, `TECHNIQUES_SECTION`, `STUDIO_SECTION`, `GALLERY_SECTION`, `LOYALTY_SECTION` y el tipo `SiteSection`.
 - `RESERVE_ROUTE` y `landingMessages`.

@@ -49,6 +49,18 @@ export const landingMessages = {
     visit: (visit: number) => `${visit}.ª visita`,
     empty: 'Pronto vas a encontrar acá cómo funciona el programa de fidelidad del estudio.',
   },
+  footer: {
+    label: 'Pie de página',
+    contact: 'Contacto',
+    whatsapp: 'WhatsApp',
+    instagram: 'Instagram',
+    hours: 'Horario',
+    studio: 'Estudio',
+    directions: 'Cómo llegar',
+    reservations: 'Reservas',
+    reserve: 'Reservar cita',
+    rights: (year: number) => `© ${year} LASHARY Beauty Studio. Todos los derechos reservados.`,
+  },
   faq: {
     title: 'Preguntas',
     index: '06',

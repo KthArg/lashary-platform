@@ -1,4 +1,5 @@
 import type { ContactInfo, OpeningHours } from '@/features/content'
+import { ExternalLink } from './ExternalLink'
 import { landingLocationStyles as styles } from './LandingLocation.styles'
 import { landingMessages } from './messages'
 import { LOCATION_SECTION } from './sections'
@@ -105,23 +106,5 @@ function ContactLinks({ contact }: { contact: ContactInfo }) {
         </a>
       )}
     </>
-  )
-}
-
-// Enlace a otro sitio: pestaña nueva, sin `opener` ni referente, y avisado al lector de pantalla.
-export function ExternalLink({
-  href,
-  className,
-  children,
-}: {
-  href: string
-  className: string
-  children: React.ReactNode
-}) {
-  return (
-    <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
-      {children}
-      <span className={styles.newTab}> {landingMessages.location.newTab}</span>
-    </a>
   )
 }

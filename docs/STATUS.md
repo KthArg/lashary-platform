@@ -14,7 +14,7 @@
 | clients | pendiente | en_progreso | 1 / 1 / 0 / 0 / 3 |
 | content | pendiente | en_progreso | 0 / 0 / 0 / 0 / 3 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
-| landing | pendiente | en_progreso | 5 / 1 / 0 / 0 / 0 |
+| landing | pendiente | en_progreso | 6 / 0 / 0 / 0 / 0 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
 | payments | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
@@ -63,7 +63,7 @@
 - US-LAND-03 — terminada — PRs #74 (contrato v1.2, coleccion galeria), #75 (lectura en content), #76 (cuadricula y filtro) y #77 (galeria ampliada y montaje), apilados hacia us/US-LAND-03; la otra mitad del contrato esta en el main de lashary-cms (3506d01). Criterios 1 y 3 en ui/__tests__/landing-gallery.test.tsx; 2 en content/cms/__tests__/gallery-source.test.ts y webhook.test.ts; 4 en content/application/__tests__/get-gallery.test.ts. Verificado ademas con un CMS simulado en next dev: 6 pares de 7 (el septimo sin consentimiento no aparece), sin scroll horizontal en 320, 375, 768, 1280, 1920 y 667x375, y la galeria ampliada cabe en 667x375
 - US-LAND-04 — terminada — PRs #78 (contrato v1.3), #79 (validacion en content), #80 (getStudio con cache y aviso), #81 (seccion El estudio) y #82 (Por que aca, montaje y navegacion), apilados hacia us/US-LAND-04; la otra mitad del contrato esta en el main de lashary-cms (f4a4481). Criterios 1 y 2 en ui/__tests__/landing-studio.test.tsx y content/application/__tests__/get-studio.test.ts; 3 en content/cms/__tests__/studio-source.test.ts, webhook.test.ts y cms-reader.test.ts; 4 en landing-studio.test.tsx (Navegacion). Verificado ademas con un CMS simulado en next dev: retrato, 3 credenciales y 5 razones, sin scroll horizontal en 320, 375, 768, 1280, 1920 y 667x375; con el CMS caido, El estudio cae al respaldo y la pagina se sirve
 - US-LAND-05 — terminada — PRs #83 (contrato v1.4), #84 (getLoyalty) y #85 (seccion Fidelidad, montaje y navegacion), apilados hacia us/US-LAND-05; la otra mitad del contrato esta en el main de lashary-cms (8c55f64). Criterio 1 en ui/__tests__/landing-loyalty.test.tsx y content/application/__tests__/get-loyalty.test.ts; criterio 2 en content/cms/__tests__/loyalty-source.test.ts y webhook.test.ts. Verificado ademas con un CMS simulado en next dev: texto, letra chica y 3 niveles ordenados por visita, sin scroll horizontal en 320, 375, 768, 1280, 1920 y 667x375. Solo informativa: el conteo de visitas es US-LAND-06
-- US-LAND-07 — en_progreso — falta: contrato v1.5, lectura en content (getContact), la seccion Ubicacion y la seccion Preguntas (ui/LandingFaq.tsx) hechos; falta el pie de pagina, montar las secciones y la navegacion (criterio 5)
+- US-LAND-07 — terminada — PRs #86 (contrato v1.5), #87 (validacion en content), #88 (getContact con cache y aviso), #89 (Ubicacion), #90 (Preguntas) y #91 (pie de pagina, montaje y navegacion), apilados hacia us/US-LAND-07; la otra mitad del contrato esta en el main de lashary-cms (6e43e3f). Criterios 1 a 3 en ui/__tests__/landing-location.test.tsx y content/application/__tests__/get-contact.test.ts; 4 en content/cms/__tests__/contact-source.test.ts y webhook.test.ts; 5 en ui/__tests__/site-footer.test.tsx. Verificado ademas con un CMS simulado en next dev: sin scroll horizontal en 320, 375, 768, 860, 1024, 1280, 1920 y 667x375, la navegacion de escritorio con sus 6 enlaces entra desde 860 px, y el enlace de WhatsApp lleva el mensaje codificado
 
 ### loyalty (actualizado: 2026-08-28)
 - US-LAND-06 — no_iniciada
