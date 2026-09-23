@@ -34,7 +34,7 @@
 
 ### catalog (actualizado: 2026-09-22)
 - US-AGE-08 — terminada — PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx
-- US-PROD-01 — en_progreso — falta: correr contra Supabase local los tests package-repository.integration.test.ts y package-rls-isolation.test.ts, y abrir /admin/catalog/packages en un navegador para probar el formulario a mano; el codigo esta completo (dominio, application, db, RLS, server actions, UI, contrato) y sus pruebas unitarias corren en verde, pero sin esa ejecucion no hay evidencia para pasar a terminada (EST-005)
+- US-PROD-01 — en_progreso — falta: probar a mano /admin/catalog/packages en un navegador (crear un paquete, ver la suma de duracion en vivo, desactivarlo); el codigo esta completo y sus pruebas corren en verde, incluidas package-repository.integration.test.ts y package-rls-isolation.test.ts contra Supabase local en CI (job pruebas (vitest) de los PR de la pila). Cierra como terminada con el PR de us/US-PROD-01 a main
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
