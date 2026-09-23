@@ -3,6 +3,7 @@ import { revalidateTag } from 'next/cache'
 import { landingCacheTags } from './landing-source'
 import { techniqueMediaCacheTag } from './technique-media-source'
 import { galleryCacheTag } from './gallery-source'
+import { studioCacheTags } from './studio-source'
 
 // Aviso al publicar de uno-cms (docs/contracts/cms-api.md § Invalidación).
 export const WEBHOOK_WINDOW_MS = 5 * 60 * 1000
@@ -28,7 +29,12 @@ function signatureMatches(secret: string, timestamp: string, rawBody: string, he
 }
 
 // Todo lo que este sitio sabe pedirle al CMS, y por tanto lo único que tiene sentido invalidar.
-const knownTags: readonly string[] = [...landingCacheTags, techniqueMediaCacheTag, galleryCacheTag]
+const knownTags: readonly string[] = [
+  ...landingCacheTags,
+  techniqueMediaCacheTag,
+  galleryCacheTag,
+  ...studioCacheTags,
+]
 
 // Decide qué hacer con un aviso. Pura: no toca la caché ni el reloj, así se prueba entera.
 // Firma sobre el cuerpo crudo, en tiempo constante; ventana de 5 min contra reenvíos. Del cuerpo
