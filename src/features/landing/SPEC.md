@@ -20,7 +20,8 @@ historias:
     estado: terminada
     evidencia: "PRs #83 (contrato v1.4), #84 (getLoyalty) y #85 (seccion Fidelidad, montaje y navegacion), apilados hacia us/US-LAND-05; la otra mitad del contrato esta en el main de lashary-cms (8c55f64). Criterio 1 en ui/__tests__/landing-loyalty.test.tsx y content/application/__tests__/get-loyalty.test.ts; criterio 2 en content/cms/__tests__/loyalty-source.test.ts y webhook.test.ts. Verificado ademas con un CMS simulado en next dev: texto, letra chica y 3 niveles ordenados por visita, sin scroll horizontal en 320, 375, 768, 1280, 1920 y 667x375. Solo informativa: el conteo de visitas es US-LAND-06"
   - id: US-LAND-07
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "contrato v1.5 escrito (contacto, horarios y preguntas); falta la lectura en content, las secciones Preguntas y Ubicacion, el pie de pagina, la navegacion y sus pruebas para los criterios 1 a 5"
 flags: []
 deuda: []
 defectos: []
