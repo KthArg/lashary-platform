@@ -1,3 +1,4 @@
+import type { Faq } from '../domain/contact'
 import type { LandingContent } from '../domain/landing-content'
 import type { StudioContent } from '../domain/studio'
 
@@ -59,3 +60,44 @@ export const studioFallback: StudioContent = {
     },
   ],
 }
+
+// Preguntas frecuentes de respaldo (US-LAND-07): las del diseño de referencia. Hablan de la
+// técnica en general, no de un dato del negocio, así que pueden mostrarse sin el CMS.
+export const faqFallback: Faq[] = [
+  {
+    question: '¿Cuánto duran las extensiones?',
+    paragraphs: [
+      'Entre tres y cuatro semanas, según tu ciclo natural de recambio. La pestaña natural se cae y se lleva la extensión con ella, así que el efecto se va aclarando poco a poco en lugar de terminarse de golpe.',
+    ],
+  },
+  {
+    question: '¿Cada cuánto hay que retocarlas?',
+    paragraphs: [
+      'Cada dos o tres semanas. El retoque quita las extensiones ya crecidas y repone las que se cayeron, y toma menos tiempo que una aplicación completa. Si pasan más de cinco semanas, conviene volver a empezar de cero.',
+    ],
+  },
+  {
+    question: '¿Dañan la pestaña natural?',
+    paragraphs: [
+      'No, si el peso y el largo respetan lo que tu pestaña puede sostener y cada extensión queda separada de la siguiente. El daño aparece cuando se aplica material demasiado pesado o cuando varias pestañas quedan pegadas entre sí. Por eso reviso tu pestaña antes de elegir la técnica.',
+    ],
+  },
+  {
+    question: '¿Cómo las cuido en casa?',
+    paragraphs: [
+      'Lavalas todos los días con espuma específica para pestañas y peinalas con el cepillito cuando estén secas. Evitá productos oleosos en el área del ojo, dormir con la cara contra la almohada y las pinzas rizadoras. Nada de máscara sobre las extensiones.',
+    ],
+  },
+  {
+    question: '¿Cuánto dura la cita?',
+    paragraphs: [
+      'Entre una y dos horas y media, según la técnica. Es tiempo con el ojo cerrado y acostada, así que muchas clientas se duermen. Reservá el rato completo sin apuros después.',
+    ],
+  },
+  {
+    question: '¿Qué llevo a la primera cita?',
+    paragraphs: [
+      'Vení sin maquillaje en los ojos y sin cremas en la zona. Si usás lentes de contacto, traé el estuche. Contame si tuviste alergia a algún adhesivo o si estás con tratamiento oftalmológico.',
+    ],
+  },
+]
