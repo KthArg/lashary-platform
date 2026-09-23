@@ -4,7 +4,6 @@ import { CLIENTS_LABELS } from '../../constants/clients-strings'
 import { clientFormFieldStyles as STYLES } from './ClientFormField.styles'
 import type { ClientFormFieldProps } from './ClientFormField.types'
 
-/** Un campo etiquetado del formulario de clienta: label, control y su mensaje de error. */
 export function ClientFormField({
   name, label, value, onChange, error, required = false,
   type = 'text', placeholder, maxLength, multiline = false, rows, autoFocus = false,

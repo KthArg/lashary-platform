@@ -4,10 +4,6 @@ import { AddClientDialog, CLIENTS_BUTTON_TEXTS, CLIENTS_LABELS } from '@/feature
 
 afterEach(cleanup)
 
-/**
- * UI-004 — hallazgo de la revision del PR: el modal declaraba role="dialog" aria-modal
- * pero el Tab se escapaba de la tarjeta al resto de la pagina.
- */
 const openModal = () => {
   render(<AddClientDialog />)
   const trigger = screen.getByRole('button', { name: CLIENTS_BUTTON_TEXTS.addClient })

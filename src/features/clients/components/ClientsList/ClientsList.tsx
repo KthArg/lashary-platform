@@ -9,11 +9,9 @@ import { clientsListStyles as STYLES } from './ClientsList.styles'
 import type { ClientRecord } from '../../types/client.types'
 import type { ClientsListProps } from './ClientsList.types'
 
-/** US-CLI-05 criterio 2. Un solo dialogo para toda la lista: uno por fila multiplicaria focus traps. */
 export function ClientsList({ clients, isLoading = false, loadError = null, activeNameFilter = null }: ClientsListProps) {
   const router = useRouter()
   const [editing, setEditing] = useState<ClientRecord | null>(null)
-  // Con varios lapices hay que recordar cual se pulso para devolverle el foco (UI-004).
   const triggerRef = useRef<HTMLButtonElement | null>(null)
 
   const closeEditor = useCallback(() => {
@@ -21,7 +19,6 @@ export function ClientsList({ clients, isLoading = false, loadError = null, acti
     triggerRef.current?.focus()
   }, [])
 
-  // UI-003: carga y error se anuncian al lector (status / alert); el error ofrece volver a leer.
   const renderBody = () => {
     if (isLoading) return <p role="status" className={STYLES.empty}>{CLIENTS_LABELS.clientsListLoading}</p>
     if (loadError) {
@@ -38,8 +35,6 @@ export function ClientsList({ clients, isLoading = false, loadError = null, acti
         : CLIENTS_LABELS.clientsListEmpty
       return <p className={STYLES.empty}>{emptyMessage}</p>
     }
-    // US-CLI-01 criterio 1: tabla real, no una lista con aspecto de tabla; cada celda pertenece
-    // a una columna con nombre, que es lo que el lector de pantalla anuncia (UI-004).
     return (
       <div className={STYLES.tableWrapper}>
         <table className={STYLES.table}>
@@ -59,11 +54,9 @@ export function ClientsList({ clients, isLoading = false, loadError = null, acti
                 <th scope="row" className={STYLES.nameCell}>{client.fullName}</th>
                 <td className={STYLES.contactCell}>{client.phone}</td>
                 <td className={STYLES.contactCell}>{client.email}</td>
-                {/* Columnas diferidas: el dato lo produciran US-MOR-01 y US-AGE-05; hoy no se inventa (EST-005). */}
                 <td className={STYLES.pendingCell}>{CLIENTS_TABLE_TEXTS.pendingColumnValue}</td>
                 <td className={STYLES.pendingCell}>{CLIENTS_TABLE_TEXTS.pendingColumnValue}</td>
                 <td className={STYLES.actionsCell}>
-                  {/* Solo icono: el aria-label es el unico nombre del boton, por eso nombra a la clienta (UI-004). */}
                   <button type="button" className={STYLES.editButton} title={CLIENTS_BUTTON_TEXTS.edit}
                     aria-label={CLIENTS_ARIA_LABELS.editClient(client.fullName)}
                     onClick={(event) => { triggerRef.current = event.currentTarget; setEditing(client) }}>

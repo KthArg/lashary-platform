@@ -6,7 +6,6 @@ import { CLIENT_FIXTURES } from './client-fixtures'
 const mockRefresh = vi.fn()
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: mockRefresh }) }))
 
-/** US-CLI-05 criterio 2 — un lapiz distinguible por clienta (UI-004) y estados vacio, carga y error (UI-003). */
 describe('ClientsList', () => {
   it('da a cada clienta un boton de editar con nombre propio y el icono oculto al lector', () => {
     render(<ClientsList clients={CLIENT_FIXTURES} />)
@@ -17,7 +16,6 @@ describe('ClientsList', () => {
     }
   })
 
-  /** US-CLI-01 criterio 1: nombre y contacto en columnas con nombre propio (UI-004). */
   it('muestra a cada clienta en una fila con nombre, telefono y correo', () => {
     render(<ClientsList clients={CLIENT_FIXTURES} />)
     const headers = screen.getAllByRole('columnheader').map((header) => header.textContent)
@@ -25,18 +23,15 @@ describe('ClientsList', () => {
       CLIENTS_TABLE_HEADERS.fullName, CLIENTS_TABLE_HEADERS.phone, CLIENTS_TABLE_HEADERS.email,
       CLIENTS_TABLE_HEADERS.delinquencyStatus, CLIENTS_TABLE_HEADERS.lastAppointment, CLIENTS_TABLE_HEADERS.actions,
     ])
-    // Una fila por clienta, mas la del encabezado.
     expect(screen.getAllByRole('row')).toHaveLength(CLIENT_FIXTURES.length + 1)
     for (const client of CLIENT_FIXTURES) {
       const row = screen.getByRole('row', { name: new RegExp(client.fullName) })
-      // Tantas celdas como columnas: si falta una, los datos se corren de columna.
       expect(row.querySelectorAll('th, td')).toHaveLength(Object.keys(CLIENTS_TABLE_HEADERS).length)
       expect(row.textContent).toContain(client.phone)
       expect(row.textContent).toContain(client.email)
     }
   })
 
-  /** Criterios diferidos: la columna existe, el dato no. En blanco se leeria como "no debe nada" (EST-005). */
   it('marca morosidad y ultima cita como sin dato mientras US-MOR-01 y US-AGE-05 no existan', () => {
     render(<ClientsList clients={CLIENT_FIXTURES} />)
     expect(screen.getAllByText(CLIENTS_TABLE_TEXTS.pendingColumnValue)).toHaveLength(CLIENT_FIXTURES.length * 2)
@@ -47,7 +42,6 @@ describe('ClientsList', () => {
     expect(screen.getByText(CLIENTS_LABELS.clientsListEmpty)).toBeTruthy()
   })
 
-  /** US-CLI-01 criterio 4: sin coincidencias con filtro no es lo mismo que sin clientas (UI-003). */
   it('con filtro activo y sin coincidencias nombra el filtro en vez de decir que no hay clientas', () => {
     render(<ClientsList clients={[]} activeNameFilter="ana" />)
     expect(screen.getByText(CLIENTS_LABELS.clientsListEmptyForFilter('ana'))).toBeTruthy()

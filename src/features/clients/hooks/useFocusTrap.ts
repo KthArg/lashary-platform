@@ -7,12 +7,6 @@ const FOCUSABLE_SELECTOR = [
   'input:not([disabled])', 'select:not([disabled])', '[tabindex]:not([tabindex="-1"])',
 ].join(', ')
 
-/**
- * Confina el foco dentro del contenedor mientras `isActive` (UI-004): sin esto el Tab
- * se escapa del dialogo al resto de la pagina, que queda operable detras del backdrop.
- * NO devuelve el foco al cerrar: eso le toca a quien abrio el dialogo, que es el unico
- * que sabe a que control volver.
- */
 export function useFocusTrap<T extends HTMLElement>(isActive: boolean) {
   const containerRef = useRef<T>(null)
 

@@ -14,7 +14,6 @@ vi.mock('next/navigation', () => ({
 const searchField = () => screen.getByLabelText(CLIENTS_FILTER_TEXTS.nameLabel) as HTMLInputElement
 const submit = () => fireEvent.click(screen.getByRole('button', { name: CLIENTS_FILTER_TEXTS.submit }))
 
-// La forma de la URL se prueba en clients-list-url.test.ts; aqui solo que el formulario llegue a ella.
 describe('ClientsNameFilter', () => {
   beforeEach(() => {
     mockPush.mockClear()

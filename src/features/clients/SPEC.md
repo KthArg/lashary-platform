@@ -228,3 +228,6 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
 - **2026-09-20 — La columna de acciones lleva encabezado visible**, no `sr-only` como nació el
   2026-09-20 en esta misma pieza (decisión de José Loría). UI-004 se cumple igual: la columna tiene
   nombre accesible; ahora además se ve.
+- **2026-09-23 — Se eliminaron los comentarios del código de la feature** (`src/features/clients/**` y
+  `src/app/admin/clients/**`, pruebas incluidas), por indicación del profesor. Solo se borraron líneas;
+  el comportamiento no cambia y las pruebas siguen pasando.
