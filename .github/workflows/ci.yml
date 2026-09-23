@@ -52,6 +52,8 @@ jobs:
             echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$(echo "$S" | jq -r .ANON_KEY)"
           } >> .env.local
       - run: npm test
+      - name: Pruebas SQL (pgTAP) — control positivo de escritura staff
+        run: npx supabase test db
 
   # e2e — Playwright contra el build de producción (playwright.config.ts levanta el servidor).
   # Lo porta US-LAND-01: criterio 2, "visible" en los anchos de e2e/support/viewports.ts.
