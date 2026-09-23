@@ -1,10 +1,14 @@
 import { ok, err, type Result } from '@/shared/result'
 import type { TechniqueView } from '../domain/technique'
-import { TechniqueNotFound } from '../domain/errors'
+import type { PackageView } from '../domain/package'
+import { TechniqueNotFound, PackageNotFound } from '../domain/errors'
 import type {
   ListTechniquesQuery,
+  ListPackagesQuery,
   Page,
   TechniqueRepository,
+  PackageRepository,
+  PackageWithDuration,
 } from './ports'
 
 const DEFAULT_PAGE_SIZE = 50
@@ -43,4 +47,41 @@ export const getTechnique =
     const technique = await repo.findById(id)
     if (technique === null) return err(new TechniqueNotFound(id))
     return ok(technique.toView())
+  }
+
+// DTO que expone la duración total (criterio 2) junto al resto de PackageView.
+export type PackageListItem = PackageView & { durationTotalMin: number }
+
+const toPackageListItem = (row: PackageWithDuration): PackageListItem => ({
+  ...row.pkg.toView(),
+  durationTotalMin: row.durationTotalMin,
+})
+
+export const listPackages =
+  (repo: PackageRepository) =>
+  async (query: ListPackagesQuery = {}): Promise<Page<PackageListItem>> => {
+    const page = clampPage(query.page)
+    const pageSize = clampPageSize(query.pageSize)
+    const activeOnly = query.activeOnly ?? true
+
+    const { items, total } = await repo.list({
+      activeOnly,
+      offset: (page - 1) * pageSize,
+      limit: pageSize,
+    })
+
+    return {
+      items: items.map(toPackageListItem),
+      page,
+      pageSize,
+      total,
+    }
+  }
+
+export const getPackage =
+  (repo: PackageRepository) =>
+  async (id: string): Promise<Result<PackageListItem, PackageNotFound>> => {
+    const row = await repo.findById(id)
+    if (row === null) return err(new PackageNotFound(id))
+    return ok(toPackageListItem(row))
   }
