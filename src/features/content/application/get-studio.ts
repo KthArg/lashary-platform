@@ -13,7 +13,7 @@ import {
   type StudioContent,
   type StudioProfile,
 } from '../domain/studio'
-import { field, image, integer, text } from './cms-values'
+import { field, image, integer, paragraphsOf, text } from './cms-values'
 import { studioFallback } from './fallback-messages'
 import type { CmsReader } from './ports'
 
@@ -39,13 +39,6 @@ export async function readRawStudio(
   if (!reasons.ok) return err(reasons.error)
   return ok({ profile: profile.value, credentials: credentials.value, reasons: reasons.value })
 }
-
-// Una línea en blanco separa párrafos (docs/contracts/cms-api.md § `estudio`).
-const paragraphsOf = (value: string): string[] =>
-  value
-    .split(/\n\s*\n/)
-    .map((paragraph) => paragraph.trim())
-    .filter((paragraph) => paragraph !== '')
 
 function toProfile(source: unknown, mediaBaseUrl: string): StudioProfile {
   const name = text(field(source, 'nombre'), 80)
