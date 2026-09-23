@@ -58,4 +58,29 @@ describe('createCmsReader — GET {CMS_URL}/api/content/:key', () => {
     expect(result.ok).toBe(false)
     if (!result.ok) expect(result.error.reason).toBe('TimeoutError')
   })
+
+  it('una colección se pide por su clave y devuelve los items en el orden del editor', async () => {
+    const fetchImpl = vi.fn(async () =>
+      jsonResponse({ key: 'tecnicas', items: [{ familia: 'lash_classic' }, { familia: 'lips' }] }),
+    )
+    const reader = createCmsReader({ baseUrl: 'https://cms.test', fetchImpl, now: () => 7 })
+
+    const result = await reader.readCollection('tecnicas')
+
+    expect(result).toEqual({ ok: true, value: [{ familia: 'lash_classic' }, { familia: 'lips' }] })
+    const [url] = fetchImpl.mock.calls[0] as unknown as [string]
+    expect(url).toBe('https://cms.test/api/content/tecnicas?v=7')
+  })
+
+  it('una colección sin items es CMS no disponible, no una lista vacía', async () => {
+    const reader = createCmsReader({
+      baseUrl: 'https://cms.test',
+      fetchImpl: async () => jsonResponse({ key: 'tecnicas', data: {} }),
+    })
+
+    const result = await reader.readCollection('tecnicas')
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.reason).toBe('respuesta sin items')
+  })
 })
