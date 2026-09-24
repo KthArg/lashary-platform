@@ -1,8 +1,8 @@
 ---
 feature: audit
 dri: pendiente
-estado: en_progreso
-actualizado: 2026-09-23
+estado: terminada
+actualizado: 2026-09-24
 historias:
   []
 flags: []
@@ -26,10 +26,16 @@ Capa `domain/`: entidad `AuditEvent` con constructor validado (`AuditEvent.creat
 
 Capa `application/`: puerto `AuditEventRepository` (`insert` únicamente — nadie necesita consultar la bitácora desde código todavía) y el use-case `record(deps)(input)` (`record.ts`), que arma el `AuditEvent`, lo persiste y devuelve su vista. Pruebas con repositorio en memoria (`__tests__/record.test.ts`).
 
-## Qué no hace todavía
+Capa `db/`: `SupabaseAuditEventRepository` (`toRow` mapea dominio → fila; sin `rowToDomain` porque el puerto no lee). Prueba unitaria del mapeo (`toRow`) y de integración (`insert()` denegado por RLS con token anónimo — no hay forma de ejercer el camino de éxito desde JS sin una sesión de staff real, igual que `catalog`; el camino de éxito lo prueba `audit_staff_access.test.sql`, pgTAP).
 
-Sin capa `db/` ni `index.ts` — el use-case `record()` existe pero nadie puede invocarlo desde otra feature todavía (no hay entry point público, ARCH-003). Próxima pieza de US-AGE-13. Sin capacidad de listar/consultar eventos: se agrega cuando una historia futura (p.ej. US-CLI-04) lo exija.
+`index.ts` (ARCH-003): un solo verbo — `record(input)` — cablea el repositorio de servidor, `randomUUID()` y `systemClock`. Quien llama no conoce nada de la persistencia interna. Exporta también `RecordAuditEventInput`, `AuditEventView`, `AuditEventPayload`, `AuditEventValidationError`.
 
-## Contrato público
+## Fuera de alcance por ahora
 
-Sin contrato todavía. Al crearse, entra por `index.ts` (ARCH-003).
+Sin capacidad de listar/consultar eventos (solo `insert`): se agrega cuando una historia futura (p.ej. US-CLI-04, que audita accesos al expediente) lo exija — no antes.
+
+## Contrato público (`index.ts`, ARCH-003)
+
+- `record(input: RecordAuditEventInput): Promise<Result<AuditEventView, AuditEventValidationError>>` — registra un evento. `input`: `{ actorId, action, entityType, entityId, payload? }`.
+- Tipos: `RecordAuditEventInput`, `AuditEventView`, `AuditEventPayload`.
+- Error: `AuditEventValidationError` (actor, acción, tipo o recurso vacíos).
