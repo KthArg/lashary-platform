@@ -13,7 +13,6 @@ vi.mock('../actions/clients-actions', () => ({
 }))
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }))
 
-/** US-CLI-05 criterio 2 — editar una clienta existente desde el lapiz de la lista. */
 const [first, second] = CLIENT_FIXTURES
 const pencilFor = (fullName: string) => screen.getByRole('button', { name: CLIENTS_ARIA_LABELS.editClient(fullName) })
 const inputValue = (label: string) => (screen.getByLabelText(label) as HTMLInputElement).value
@@ -38,7 +37,6 @@ describe('EditClientDialog', () => {
     expect(inputValue(CLIENTS_LABELS.fullNameInput)).toBe(second.fullName)
   })
 
-  // `isDirty` media "hay algo escrito": el formulario de edicion nace lleno y cancelar preguntaba igual.
   it('cierra sin preguntar si no se toco nada, y devuelve el foco al lapiz de esa fila', () => {
     renderAndOpen(second.fullName)
     cancel()

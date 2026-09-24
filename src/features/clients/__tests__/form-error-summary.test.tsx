@@ -2,11 +2,6 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { ClientForm, EMPTY_CLIENT_FORM_VALUES, CLIENTS_ERROR_MESSAGES, CLIENTS_LABELS, CLIENTS_BUTTON_TEXTS } from '@/features/clients'
 
-/**
- * US-CLI-05 criterio 1 — el resumen de errores debe desaparecer cuando ya no hay errores.
- * Defecto de la revision del PR: setErrors ponia la clave en undefined en vez de borrarla,
- * asi que Object.keys seguia contandola y el banner quedaba pegado con el formulario ya correcto.
- */
 const fill = (label: string, value: string) =>
   fireEvent.change(screen.getByLabelText(label), { target: { value } })
 

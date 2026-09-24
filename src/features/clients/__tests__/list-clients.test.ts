@@ -2,14 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { listClientsAction } from '../actions/clients-actions'
 import { CLIENTS_ERROR_MESSAGES, CLIENTS_LIST_LIMITS } from '@/features/clients'
 
-/** US-CLI-01: la lista de /admin/clients pagina y filtra en el servidor (PERF-002, PERF-005). */
 let dbResult: { data: unknown; error: unknown; count: number | null }
 const mockFrom = vi.fn()
 const mockSelect = vi.fn()
 const mockIlike = vi.fn()
 const mockOrder = vi.fn()
 const mockRange = vi.fn()
-// Cadena del query builder: cada paso registra su llamada y devuelve la misma cadena; `range` resuelve.
 const chain = {
   select: (...args: unknown[]) => { mockSelect(...args); return chain },
   ilike: (...args: unknown[]) => { mockIlike(...args); return chain },

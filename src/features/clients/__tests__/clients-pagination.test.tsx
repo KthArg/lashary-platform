@@ -19,7 +19,6 @@ vi.mock('next/link', () => ({
 
 const hrefOf = (name: string) => screen.getByRole('link', { name }).getAttribute('href')
 
-// La forma de la URL se prueba en clients-list-url.test.ts; aqui solo que los controles lleguen a ella.
 describe('ClientsPagination', () => {
   beforeEach(() => {
     mockPush.mockClear()

@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { AddClientDialog, CLIENTS_BUTTON_TEXTS, CLIENTS_ERROR_MESSAGES, CLIENTS_LABELS } from '@/features/clients'
 
-/** US-CLI-05 criterio 1 en la pantalla: el alta guarda por el server action, no en consola. */
 const mockCreate = vi.fn()
 vi.mock('../actions/clients-actions', () => ({ createClientAction: (...args: unknown[]) => mockCreate(...args) }))
 
