@@ -2,11 +2,11 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-09-20"
+actualizado: "2026-09-21"
 historias:
   - id: US-CLI-01
     estado: en_progreso
-    falta: "filtro por nombre en la pantalla y su estado de vacio por filtro; las columnas de morosidad y ultima cita existen sin dato y su filtro no existe: el dato espera a US-MOR-01 y a US-AGE-05 (criterios diferidos)"
+    falta: "las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)"
   - id: US-CLI-02
     estado: no_iniciada
   - id: US-CLI-03
@@ -56,8 +56,12 @@ La action ya recibe `{ page, pageSize, name }` y devuelve `{ clients, total, pag
 (10, 25 o 50) y cualquier otro valor usa 25; una página inválida es la 0; `name` filtra `full_name` con
 `ilike`, recortado a 120 caracteres, con `%`, `_` y `\` escapados y `*` quitado (PostgREST lo lee como
 `%`), así que lo escrito se busca como texto. `total` sale de `count: 'exact'` y cuenta todo lo que
-cumple el filtro. La página lee `?page` y `?pageSize` de la URL y se los pasa; `name` todavía no lo pasa
-nadie. Debajo de la tabla, `ClientsPagination` muestra "Página X de Y" con el total de clientas,
+cumple el filtro. La página lee `?page`, `?pageSize` y `?name` de la URL y se los pasa.
+Sobre la tabla, `ClientsNameFilter` es un `<form role="search">` con un campo de nombre limitado a
+`CLIENTS_LIST_LIMITS.nameFilterMaxLength`: al enviarlo escribe `?name` y borra `?page`, un texto en blanco
+quita el filtro, y con filtro activo aparece *Quitar filtro*. Sin coincidencias, la lista nombra el filtro
+en vez de decir que no hay clientas registradas (UI-003). Lo demuestran `clients-name-filter.test.tsx` y
+`clients-list.test.tsx`. Debajo de la tabla, `ClientsPagination` muestra "Página X de Y" con el total de clientas,
 *Anterior* y *Siguiente* como enlaces que solo cambian `page` y conservan el resto de la consulta, y un
 selector de 10, 25 o 50 que al cambiar vuelve a la primera página. En la primera y en la última página
 el enlace que no aplica se dibuja como texto, no como enlace muerto. Cuando la lectura falla o no hay
@@ -79,7 +83,9 @@ Google son redirigidas a `/admin`. El middleware de Edge ya cubría `/admin/*` (
 exacto), pero solo comprueba que haya sesión, no el rol — el rol lo comprueba esta página.
 
 La estructura de carpetas sigue la distribución de `auth`: `actions/`, `components/`, `hooks/`,
-`constants/`, `validation/`, `types/`, `__tests__/`; un subdirectorio por componente.
+`constants/`, `validation/`, `types/`, `urls/`, `__tests__/`; un subdirectorio por componente.
+`urls/` guarda la construcción pura de URLs del listado, separada de `hooks/` porque no usa React:
+así se prueba sin renderizar.
 
 ## Qué no hace todavía
 
@@ -102,8 +108,8 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 `ConfirmDialog`, el formulario, `AddClientButton`, `ClientsList`, `ClientRecord`, los hooks
 `useClientForm`, `useClientDialog` y `useFocusTrap`, `createClientAction`, `listClientsAction` y `updateClientAction` con sus tipos
 `SaveClientResult`, `ListClientsQuery` y `ListClientsResult`, `validateClientForm`, `normalizePhone` y las constantes de
-textos y límites, entre ellas `CLIENTS_LIST_LIMITS`, `CLIENTS_TABLE_HEADERS`, `CLIENTS_TABLE_TEXTS` y `CLIENTS_PAGINATION_TEXTS` (DOM-009).
-También exporta `ClientsPagination`.
+textos y límites, entre ellas `CLIENTS_LIST_LIMITS`, `CLIENTS_TABLE_HEADERS`, `CLIENTS_TABLE_TEXTS` , `CLIENTS_PAGINATION_TEXTS` y `CLIENTS_FILTER_TEXTS` (DOM-009).
+También exporta `ClientsPagination` y `ClientsNameFilter`.
 
 ## Invariantes
 
@@ -203,6 +209,22 @@ También exporta `ClientsPagination`.
   lectura sigue ocurriendo en el servidor (PERF-002) y la pantalla se puede compartir o recargar sin
   perder dónde estaba. **Consecuencia asumida:** cambiar el tamaño de página necesita `router.push`,
   y eso obliga a que `ClientsPagination` sea un componente cliente.
+- **2026-09-20 — El filtro por nombre se envía, no se busca al teclear.** Un `<form>` con su botón
+  *Buscar*: cada pulsación sería una lectura a la base y una entrada en el historial del navegador.
+  El campo lleva `key={name}`, para que al quitar el filtro React lo remonte y no conserve lo escrito.
+- **2026-09-20 — La construcción de URLs del listado queda duplicada en `ClientsPagination` y
+  `ClientsNameFilter`** (~5 líneas cada uno). Se extrae a un hook con una función pura por debajo
+  ahora que existe el segundo consumidor; se pospone para no mezclar refactor y funcionalidad en la
+  misma pieza (INT-002). **Costo:** 1h, incluye mover las pruebas de construcción de URL a la función pura.
+- **2026-09-21 — Pagada la deuda anterior: `urls/clients-list-url.ts` (puro) y
+  `hooks/useClientsListQuery.ts` (el que sabe de router).** El corte está donde está porque
+  `usePathname`, `useSearchParams` y `useRouter` son hooks: compartir código que los llama obliga a
+  que ese código sea un hook, pero las reglas de la consulta —que un nombre en blanco no filtra, que
+  filtrar o cambiar el tamaño vuelve a la primera página— no necesitan React y se prueban mejor sin él.
+  El hook expone `urlWith` (devuelve la URL, para un `<Link>` que navega solo) y `navigateWith` (la
+  empuja, para el `<select>` y el formulario, que no tienen enlace que seguir). **Consecuencia asumida:**
+  las pruebas de forma de URL viven en `clients-list-url.test.ts`; en los tests de componente queda
+  solo que el control llegue al hook, no cómo se arma la cadena.
 - **2026-09-20 — La columna de acciones lleva encabezado visible**, no `sr-only` como nació el
   2026-09-20 en esta misma pieza (decisión de José Loría). UI-004 se cumple igual: la columna tiene
   nombre accesible; ahora además se ve.

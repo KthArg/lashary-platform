@@ -6,6 +6,7 @@ export const CLIENTS_LABELS = {
   fullNameInput: 'Nombre completo', phoneInput: 'Teléfono', emailInput: 'Correo electrónico', notesInput: 'Notas generales',
   requiredMark: 'obligatorio', optionalMark: 'opcional',
   clientsListTitle: 'Clientas registradas', clientsListEmpty: 'Todavía no hay clientas registradas. Usa Agregar para registrar la primera.',
+  clientsListEmptyForFilter: (name: string) => `Ninguna clienta registrada coincide con «${name}».`,
   clientsListLoading: 'Cargando clientas…',
   editClientTitle: 'Editar clienta', editClientDescription: 'Cambia solo lo que necesites; los campos marcados siguen siendo obligatorios.',
 } as const
@@ -18,6 +19,15 @@ export const CLIENTS_TABLE_HEADERS = {
 
 // Una celda en blanco se lee como "no debe nada"; este texto dice que el dato todavia no existe (EST-005).
 export const CLIENTS_TABLE_TEXTS = { pendingColumnValue: 'Sin dato' } as const
+
+export const CLIENTS_FILTER_TEXTS = {
+  formLabel: 'Buscar clientas',
+  nameLabel: 'Buscar por nombre',
+  namePlaceholder: 'Parte del nombre',
+  submit: 'Buscar',
+  clear: 'Quitar filtro',
+  activeFilter: (name: string) => `Filtrando por «${name}»`,
+} as const
 
 export const CLIENTS_PAGINATION_TEXTS = {
   navLabel: 'Paginación de clientas',

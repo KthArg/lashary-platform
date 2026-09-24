@@ -47,6 +47,13 @@ describe('ClientsList', () => {
     expect(screen.getByText(CLIENTS_LABELS.clientsListEmpty)).toBeTruthy()
   })
 
+  /** US-CLI-01 criterio 4: sin coincidencias con filtro no es lo mismo que sin clientas (UI-003). */
+  it('con filtro activo y sin coincidencias nombra el filtro en vez de decir que no hay clientas', () => {
+    render(<ClientsList clients={[]} activeNameFilter="ana" />)
+    expect(screen.getByText(CLIENTS_LABELS.clientsListEmptyForFilter('ana'))).toBeTruthy()
+    expect(screen.queryByText(CLIENTS_LABELS.clientsListEmpty)).toBeNull()
+  })
+
   it('anuncia la carga sin mostrar el estado vacio', () => {
     render(<ClientsList clients={[]} isLoading />)
     expect(screen.getByRole('status').textContent).toBe(CLIENTS_LABELS.clientsListLoading)
