@@ -6,7 +6,7 @@ actualizado: 2026-09-24
 historias:
   - id: US-AGE-13
     estado: en_progreso
-    falta: "criterios 2, 3 y 4, y la parte 'por paquete' del criterio 1, dependen de tablas que todavia no existen (citas de US-AGE-05, cierre/ledger de US-AGE-12, paquetes de US-PROD-01) y quedan diferidos hasta que esas historias existan (mismo patron que AGE-05/AGE-11/CLI-06); el criterio 1 'por tecnica' ya lo satisface catalog_techniques.deposit (US-AGE-08); del criterio 5 (exonerar + bitacora) exemptClient() ya es invocable desde otra feature via index.ts y registra en audit.record(), pero falta la ruta/UI admin (server action + formulario) para que la administradora lo use de verdad"
+    falta: "criterios 2, 3 y 4, y la parte 'por paquete' del criterio 1, dependen de tablas que todavia no existen (citas de US-AGE-05, cierre/ledger de US-AGE-12, paquetes de US-PROD-01) y quedan diferidos hasta que esas historias existan (mismo patron que AGE-05/AGE-11/CLI-06); el criterio 1 'por tecnica' ya lo satisface catalog_techniques.deposit (US-AGE-08); del criterio 5 (exonerar + bitacora) el server action exemptClientAction() ya valida, llama a exemptClient() y audita, pero todavia no hay formulario (React) ni ruta admin para que la administradora lo use de verdad"
 flags: []
 deuda: []
 defectos: []
@@ -32,9 +32,11 @@ Capa `db/`: `SupabaseDepositExemptionRepository` (`toRow` mapea dominio → fila
 
 `index.ts` (ARCH-003): `exemptClient(input)` — cablea el repositorio de servidor, `randomUUID()`, `systemClock` **y `audit.record()` real**, importado del entry point de `audit` (único import cross-feature de toda la historia — `domain/` y `application/` de `payments` no conocen a `audit`, ARCH-004).
 
+Capa `ui/` (lógica, sin componentes todavía): `schema.ts` (Zod, DOM-007), `messages.ts` (texto externalizado, DOM-009), `action-state.ts`, `require-staff.ts` (mismo patrón que catalog). `actions.ts`: `exemptClientAction` (valida con Zod, resuelve `exemptedBy` de la sesión admin real vía `getAuthSession`, llama a `exemptClient` — importado del propio `index.ts` de `payments`, no re-cablea `deps` a mano) y `searchClientsAction` (envuelve `listClientsAction` de `clients`, por su entry point — ARCH-003; el selector de clienta reusa el buscador que ya existe, no inventa uno). Pruebas con `exemptClient`/`listClientsAction`/`getAuthSession` falsos (`__tests__/actions.test.ts`, `__tests__/schema.test.ts`).
+
 ## Qué no hace todavía
 
-Sin ruta ni UI admin: `exemptClient()` ya es invocable por código desde cualquier feature, pero no hay server action ni formulario para que la administradora lo use. Próximo incremento de US-AGE-13.
+Sin componentes de React ni ruta admin: la lógica del formulario existe y está probada, pero no hay nada que la administradora pueda abrir en el navegador todavía. Próximo incremento de US-AGE-13.
 
 ## Contrato público (`index.ts`, ARCH-003)
 
