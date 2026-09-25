@@ -6,7 +6,7 @@ actualizado: 2026-09-24
 historias:
   - id: US-AGE-13
     estado: en_progreso
-    falta: "criterios 2, 3 y 4, y la parte 'por paquete' del criterio 1, dependen de tablas que todavia no existen (citas de US-AGE-05, cierre/ledger de US-AGE-12, paquetes de US-PROD-01) y quedan diferidos hasta que esas historias existan (mismo patron que AGE-05/AGE-11/CLI-06); el criterio 1 'por tecnica' ya lo satisface catalog_techniques.deposit (US-AGE-08); del criterio 5 (exonerar + bitacora) el server action exemptClientAction() ya valida, llama a exemptClient() y audita, pero todavia no hay formulario (React) ni ruta admin para que la administradora lo use de verdad"
+    falta: "criterios 2, 3 y 4, y la parte 'por paquete' del criterio 1, dependen de tablas que todavia no existen (citas de US-AGE-05, cierre/ledger de US-AGE-12, paquetes de US-PROD-01) y quedan diferidos hasta que esas historias existan (mismo patron que AGE-05/AGE-11/CLI-06 en DEPENDENCIES.md); el criterio 1 'por tecnica' ya lo satisface catalog_techniques.deposit (US-AGE-08); el criterio 5 (exonerar + bitacora) ya esta completo: ExemptClientForm en /admin/payments, exemptClientAction valida y llama a exemptClient(), que audita en audit.record()"
 flags: []
 deuda: []
 defectos: []
@@ -32,11 +32,15 @@ Capa `db/`: `SupabaseDepositExemptionRepository` (`toRow` mapea dominio → fila
 
 `index.ts` (ARCH-003): `exemptClient(input)` — cablea el repositorio de servidor, `randomUUID()`, `systemClock` **y `audit.record()` real**, importado del entry point de `audit` (único import cross-feature de toda la historia — `domain/` y `application/` de `payments` no conocen a `audit`, ARCH-004).
 
-Capa `ui/` (lógica, sin componentes todavía): `schema.ts` (Zod, DOM-007), `messages.ts` (texto externalizado, DOM-009), `action-state.ts`, `require-staff.ts` (mismo patrón que catalog). `actions.ts`: `exemptClientAction` (valida con Zod, resuelve `exemptedBy` de la sesión admin real vía `getAuthSession`, llama a `exemptClient` — importado del propio `index.ts` de `payments`, no re-cablea `deps` a mano) y `searchClientsAction` (envuelve `listClientsAction` de `clients`, por su entry point — ARCH-003; el selector de clienta reusa el buscador que ya existe, no inventa uno). Pruebas con `exemptClient`/`listClientsAction`/`getAuthSession` falsos (`__tests__/actions.test.ts`, `__tests__/schema.test.ts`).
+Capa `ui/`: `schema.ts` (Zod, DOM-007), `messages.ts` (texto externalizado, DOM-009), `action-state.ts`, `require-staff.ts` (mismo patrón que catalog). `actions.ts`: `exemptClientAction` (valida con Zod, resuelve `exemptedBy` de la sesión admin real vía `getAuthSession`, llama a `exemptClient` — importado del propio `index.ts` de `payments`, no re-cablea `deps` a mano) y `searchClientsAction` (envuelve `listClientsAction` de `clients`, por su entry point — ARCH-003; el selector de clienta reusa el buscador que ya existe, no inventa uno). `ExemptClientForm.tsx` (client component, DaisyUI/UI-001/002): busca clienta por nombre → selecciona de la lista → escribe la razón → envía. UI-003: la lista de resultados tiene estado vacío ("sin resultados") y de carga (botón "Buscando…" mientras `searchClientsAction` corre en una `useTransition`); UI-004: cada campo tiene `<label>` asociado, los resultados son `<button>` nativos (operables por teclado sin ARIA que finja un patrón de listbox que no se implementó), y el área de "sin resultados" es `aria-live="polite"`. Pruebas con `exemptClient`/`listClientsAction`/`getAuthSession` falsos (`__tests__/actions.test.ts`, `__tests__/schema.test.ts`) y una prueba de componente con `@testing-library/react` para el flujo buscar → seleccionar → enviar (`__tests__/ExemptClientForm.test.tsx`).
+
+Ruta `src/app/admin/payments/`: `page.tsx` llama a `requireAdminSession()` (mensaje amable; RLS es la frontera real, SEC-001) y monta `ExemptClientForm`. Sin `loading.tsx`/`error.tsx` propios: a diferencia de `/admin/catalog`, esta página no hace una carga de datos bloqueante antes del primer render, así que no hay un estado de "cargando la página" que mostrar; si un incremento futuro agrega esa carga, entonces sí hace falta el `client.ts` que ese boundary exigiría (mismo motivo que documenta `catalog/ui/messages.ts`).
+
+Con esto el **criterio 5 de US-AGE-13 queda completo**: la administradora puede exonerar el anticipo de una clienta específica desde `/admin/payments`, y la exoneración queda en la bitácora de auditoría.
 
 ## Qué no hace todavía
 
-Sin componentes de React ni ruta admin: la lógica del formulario existe y está probada, pero no hay nada que la administradora pueda abrir en el navegador todavía. Próximo incremento de US-AGE-13.
+Nada de esta feature en concreto — lo que falta de US-AGE-13 son los criterios diferidos nombrados arriba (`falta:` de la historia), que dependen de tablas de otras historias.
 
 ## Contrato público (`index.ts`, ARCH-003)
 
