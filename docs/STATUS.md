@@ -80,7 +80,7 @@
 - US-CLI-06 — no_iniciada
 
 ### payments (actualizado: 2026-09-24)
-- US-AGE-13 — en_progreso — falta: criterios 2, 3 y 4, y la parte 'por paquete' del criterio 1, dependen de tablas que todavia no existen (citas de US-AGE-05, cierre/ledger de US-AGE-12, paquetes de US-PROD-01) y quedan diferidos hasta que esas historias existan (mismo patron que AGE-05/AGE-11/CLI-06); el criterio 1 'por tecnica' ya lo satisface catalog_techniques.deposit (US-AGE-08); del criterio 5 (exonerar + bitacora) exemptClient() ya es invocable desde otra feature via index.ts y registra en audit.record(), pero falta la ruta/UI admin (server action + formulario) para que la administradora lo use de verdad
+- US-AGE-13 — en_progreso — falta: criterios 2, 3 y 4, y la parte 'por paquete' del criterio 1, dependen de tablas que todavia no existen (citas de US-AGE-05, cierre/ledger de US-AGE-12, paquetes de US-PROD-01) y quedan diferidos hasta que esas historias existan (mismo patron que AGE-05/AGE-11/CLI-06); el criterio 1 'por tecnica' ya lo satisface catalog_techniques.deposit (US-AGE-08); del criterio 5 (exonerar + bitacora) el server action exemptClientAction() ya valida, llama a exemptClient() y audita, pero todavia no hay formulario (React) ni ruta admin para que la administradora lo use de verdad
 
 ### platform (actualizado: 2026-09-16)
 
