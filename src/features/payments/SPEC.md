@@ -6,7 +6,7 @@ actualizado: 2026-09-24
 historias:
   - id: US-AGE-13
     estado: en_progreso
-    falta: "criterios 2, 3 y 4, y la parte 'por paquete' del criterio 1, dependen de tablas que todavia no existen (citas de US-AGE-05, cierre/ledger de US-AGE-12, paquetes de US-PROD-01) y quedan diferidos hasta que esas historias existan (mismo patron que AGE-05/AGE-11/CLI-06); el criterio 1 'por tecnica' ya lo satisface catalog_techniques.deposit (US-AGE-08); del criterio 5 (exonerar + bitacora) el esquema payments_deposit_exemptions y su RLS existen, falta dominio/aplicacion/UI para otorgar la exoneracion de verdad"
+    falta: "criterios 2, 3 y 4, y la parte 'por paquete' del criterio 1, dependen de tablas que todavia no existen (citas de US-AGE-05, cierre/ledger de US-AGE-12, paquetes de US-PROD-01) y quedan diferidos hasta que esas historias existan (mismo patron que AGE-05/AGE-11/CLI-06); el criterio 1 'por tecnica' ya lo satisface catalog_techniques.deposit (US-AGE-08); del criterio 5 (exonerar + bitacora) exemptClient() ya es invocable desde otra feature via index.ts y registra en audit.record(), pero falta la ruta/UI admin (server action + formulario) para que la administradora lo use de verdad"
 flags: []
 deuda: []
 defectos: []
@@ -28,10 +28,16 @@ Capa `domain/`: entidad `DepositExemption` con constructor validado (`DepositExe
 
 Capa `application/`: puerto `DepositExemptionRepository` (`save`, lanza `ClientAlreadyExempt` ante la unicidad parcial de la base — mismo patrón que `TechniqueNameConflict` en catalog) y puerto `RecordAuditEvent` (hacia `audit.record()`, inyectado — `application/` no importa la feature `audit`, eso lo cablea `index.ts`). Use-case `exemptClient(deps)(input)` (`exempt-client.ts`): valida, guarda, y solo si guardó registra el evento en la bitácora (`payments.deposit_exemption.granted`); si el registro falla después de guardar, el error se propaga en vez de tragarse — nunca finge éxito silencioso. Pruebas con repositorio en memoria y `recordAuditEvent` falso (`__tests__/exempt-client.test.ts`).
 
+Capa `db/`: `SupabaseDepositExemptionRepository` (`toRow` mapea dominio → fila, exportada con test unitario propio; `save()` distingue `23505` (unique_violation, la constraint parcial de `client_id` activo) y lo convierte en `ClientAlreadyExempt` — cualquier otro error de Supabase sigue siendo una falla de infra genuina). Prueba de integración: `save()` con token anónimo denegado por RLS.
+
+`index.ts` (ARCH-003): `exemptClient(input)` — cablea el repositorio de servidor, `randomUUID()`, `systemClock` **y `audit.record()` real**, importado del entry point de `audit` (único import cross-feature de toda la historia — `domain/` y `application/` de `payments` no conocen a `audit`, ARCH-004).
+
 ## Qué no hace todavía
 
-Sin capa `db/`, `index.ts` ni UI — el use-case `exemptClient()` existe pero nadie puede invocarlo desde una ruta todavía. Próximo incremento de US-AGE-13.
+Sin ruta ni UI admin: `exemptClient()` ya es invocable por código desde cualquier feature, pero no hay server action ni formulario para que la administradora lo use. Próximo incremento de US-AGE-13.
 
-## Contrato público
+## Contrato público (`index.ts`, ARCH-003)
 
-Sin contrato todavía. Al crearse, entra por `index.ts` (ARCH-003).
+- `exemptClient(input: ExemptClientInput): Promise<Result<DepositExemptionView, DepositExemptionValidationError | ClientAlreadyExempt>>` — otorga la exoneración y la registra en la bitácora. `input`: `{ clientId, exemptedBy, reason }`.
+- Tipos: `ExemptClientInput`, `DepositExemptionView`.
+- Errores: `DepositExemptionValidationError` (campos vacíos), `ClientAlreadyExempt` (el cliente ya tiene una exoneración vigente).
