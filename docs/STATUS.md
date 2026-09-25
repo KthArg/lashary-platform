@@ -17,7 +17,7 @@
 | landing | pendiente | en_progreso | 6 / 0 / 0 / 0 / 0 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
-| payments | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
+| payments | pendiente | en_progreso | 0 / 1 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | scheduling | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 11 |
 | store | pendiente | en_progreso | 0 / 1 / 0 / 0 / 3 |
@@ -79,8 +79,8 @@
 - US-NOT-08 — no_iniciada
 - US-CLI-06 — no_iniciada
 
-### payments (actualizado: 2026-08-29)
-- US-AGE-13 — no_iniciada
+### payments (actualizado: 2026-09-24)
+- US-AGE-13 — en_progreso — falta: criterios 2, 3 y 4, y la parte 'por paquete' del criterio 1, dependen de tablas que todavia no existen (citas de US-AGE-05, cierre/ledger de US-AGE-12, paquetes de US-PROD-01) y quedan diferidos hasta que esas historias existan (mismo patron que AGE-05/AGE-11/CLI-06); el criterio 1 'por tecnica' ya lo satisface catalog_techniques.deposit (US-AGE-08); del criterio 5 (exonerar + bitacora) el esquema payments_deposit_exemptions y su RLS existen, falta dominio/aplicacion/UI para otorgar la exoneracion de verdad
 
 ### platform (actualizado: 2026-09-16)
 
