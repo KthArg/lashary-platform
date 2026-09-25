@@ -24,9 +24,13 @@ RLS (SEC-001): `SELECT` e `INSERT` solo para staff (`public.auth_is_staff()`); s
 
 Pruebas: `supabase/tests/database/payments_staff_access.test.sql` (pgTAP, control positivo: staff lee/inserta, nadie puede `UPDATE`/`DELETE`); `src/features/payments/__tests__/rls-isolation.test.ts` (SEC-002, control negativo: anon y una clienta autenticada real no leen ni escriben).
 
+Capa `domain/`: entidad `DepositExemption` con constructor validado (`DepositExemption.create` → `Result`), invariantes DOM-007 (cliente, quién exonera y razón no vacíos); nace siempre `active: true`. Error `DepositExemptionValidationError` (DOM-006). Reloj inyectado (DOM-004). Pruebas con fixtures de `shared/testing/fixed-clock.ts`.
+
+Capa `application/`: puerto `DepositExemptionRepository` (`save`, lanza `ClientAlreadyExempt` ante la unicidad parcial de la base — mismo patrón que `TechniqueNameConflict` en catalog) y puerto `RecordAuditEvent` (hacia `audit.record()`, inyectado — `application/` no importa la feature `audit`, eso lo cablea `index.ts`). Use-case `exemptClient(deps)(input)` (`exempt-client.ts`): valida, guarda, y solo si guardó registra el evento en la bitácora (`payments.deposit_exemption.granted`); si el registro falla después de guardar, el error se propaga en vez de tragarse — nunca finge éxito silencioso. Pruebas con repositorio en memoria y `recordAuditEvent` falso (`__tests__/exempt-client.test.ts`).
+
 ## Qué no hace todavía
 
-Sin capa `domain/`, `application/`, `db/`, `index.ts` ni UI — el esquema existe pero nadie puede otorgar una exoneración desde código todavía. Próximo incremento de US-AGE-13.
+Sin capa `db/`, `index.ts` ni UI — el use-case `exemptClient()` existe pero nadie puede invocarlo desde una ruta todavía. Próximo incremento de US-AGE-13.
 
 ## Contrato público
 
