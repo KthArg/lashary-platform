@@ -24,6 +24,12 @@ UPDATE public.auth_user_roles SET role = 'admin'
 UPDATE public.auth_user_roles SET role = 'superadmin'
  WHERE user_id = '00000000-0000-0000-0000-0000000000b2';
 
+-- Hermética: parte de tablas vacías aunque la base local tenga datos de desarrollo. Todo se
+-- deshace con el ROLLBACK final.
+DELETE FROM public.scheduling_weekly_availability;
+DELETE FROM public.scheduling_closed_dates;
+DELETE FROM public.scheduling_manual_blocks;
+
 -- Una fila por tabla, sembrada por el superusuario, para probar lectura y UPDATE.
 INSERT INTO public.scheduling_weekly_availability (id, resource_id, day_of_week, start_time, end_time)
 VALUES ('00000000-0000-0000-0000-00000000e001',
