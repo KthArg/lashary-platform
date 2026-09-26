@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { InvalidDayOfWeekError, InvalidTimeRangeError, WeeklyAvailabilityBlock } from '../domain/availability'
+import { InvalidDayOfWeekError, InvalidTimeRangeError } from '../domain/errors'
+import { WeeklyAvailabilityBlock } from '../domain/availability'
 
 describe('WeeklyAvailabilityBlock', () => {
   it('acepta un bloque válido', () => {
@@ -29,5 +30,21 @@ describe('WeeklyAvailabilityBlock', () => {
           endTime: '17:00',
         })
     ).toThrow(InvalidDayOfWeekError)
+  })
+
+  it('rechaza hora sin cero a la izquierda: "9:00" no es una comparación de texto válida', () => {
+    expect(
+      () => new WeeklyAvailabilityBlock({ resourceId: 'r1', dayOfWeek: 1, startTime: '9:00', endTime: '17:00' })
+    ).toThrow(InvalidTimeRangeError)
+  })
+
+  it('acepta horas con segundos, tal como las devuelve Postgres', () => {
+    const block = new WeeklyAvailabilityBlock({
+      resourceId: 'r1',
+      dayOfWeek: 1,
+      startTime: '09:00:00',
+      endTime: '17:00:00',
+    })
+    expect(block.endTime).toBe('17:00:00')
   })
 })
