@@ -29,6 +29,9 @@ export async function defineClosedDate(
   return repository.saveClosedDate(new ClosedDate(props))
 }
 
-export function listClosedDates(repository: SchedulingRepository, resourceId: string) {
+export function listClosedDates(
+  repository: SchedulingRepository,
+  resourceId: string
+): Promise<ClosedDate[]> {
   return repository.listClosedDates(resourceId)
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ClosedDate, WeeklyAvailabilityBlock } from '../domain/availability'
 import { defineClosedDate, defineWeeklyAvailability, listClosedDates } from '../application/manage-availability'
+import { listResources } from '../application/resources'
 import type { SchedulingRepository } from '../application/ports'
 
 function fakeRepository(): SchedulingRepository {
@@ -55,5 +56,12 @@ describe('defineClosedDate', () => {
     const repo = fakeRepository()
     await expect(defineClosedDate(repo, { resourceId: 'r1', closedDate: 'no-es-fecha' })).rejects.toThrow()
     await expect(listClosedDates(repo, 'r1')).resolves.toHaveLength(0)
+  })
+})
+
+describe('listResources', () => {
+  it('devuelve los recursos del repositorio (ADR-0005)', async () => {
+    const repo = fakeRepository()
+    await expect(listResources(repo)).resolves.toEqual([{ id: 'r1', name: 'Dueña' }])
   })
 })

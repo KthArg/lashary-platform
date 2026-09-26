@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import {
-  ClosedDate,
-  InvalidDateError,
-  InvalidDayOfWeekError,
-  InvalidTimeRangeError,
-  WeeklyAvailabilityBlock,
-} from '../domain/availability'
+import { InvalidDateError, InvalidDayOfWeekError, InvalidTimeRangeError } from '../domain/errors'
+import { ClosedDate, WeeklyAvailabilityBlock } from '../domain/availability'
 
 describe('WeeklyAvailabilityBlock', () => {
   it('acepta un bloque válido', () => {
@@ -55,7 +50,7 @@ describe('WeeklyAvailabilityBlock', () => {
 })
 
 describe('ClosedDate', () => {
-  it('acepta una fecha válida', () => {
+  it('AC-2: acepta una fecha válida', () => {
     expect(new ClosedDate({ resourceId: 'r1', closedDate: '2026-12-25', reason: 'Navidad' }).closedDate).toBe(
       '2026-12-25'
     )
