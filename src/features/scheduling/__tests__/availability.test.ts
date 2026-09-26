@@ -1,13 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import {
-  ClosedDate,
-  InvalidBlockRangeError,
-  InvalidDateError,
-  InvalidDayOfWeekError,
-  InvalidTimeRangeError,
-  ManualBlock,
-  WeeklyAvailabilityBlock,
-} from '../domain/availability'
+import { InvalidBlockRangeError, InvalidDateError, InvalidDayOfWeekError, InvalidTimeRangeError } from '../domain/errors'
+import { ClosedDate, ManualBlock, WeeklyAvailabilityBlock } from '../domain/availability'
 
 describe('WeeklyAvailabilityBlock', () => {
   it('acepta un bloque válido', () => {
@@ -69,7 +62,7 @@ describe('ClosedDate', () => {
 })
 
 describe('ManualBlock', () => {
-  it('acepta un bloqueo válido', () => {
+  it('AC-3 (mecanismo): acepta un bloqueo válido', () => {
     const block = new ManualBlock({
       resourceId: 'r1',
       startsAt: new Date('2026-10-01T14:00:00Z'),

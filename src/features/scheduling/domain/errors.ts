@@ -1,6 +1,3 @@
-// Errores de dominio de scheduling (DOM-006): cada uno hereda de DomainError con un code
-// estable, para que el borde mapee a HTTP status sin adivinar por el texto del mensaje.
-
 import { DomainError } from '@/shared/domain-error'
 
 export abstract class SchedulingError extends DomainError {}
@@ -36,5 +33,13 @@ export class ClosedDateAlreadyExistsError extends SchedulingError {
 
   constructor(closedDate: string) {
     super(`Ya existe un día no laborable registrado para el ${closedDate}.`)
+  }
+}
+
+export class InvalidBlockRangeError extends SchedulingError {
+  readonly code = 'SCHEDULING_INVALID_BLOCK_RANGE'
+
+  constructor() {
+    super('El bloqueo debe terminar después de empezar.')
   }
 }
