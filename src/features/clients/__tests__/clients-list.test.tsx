@@ -1,12 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { ClientsList, CLIENTS_ARIA_LABELS, CLIENTS_BUTTON_TEXTS, CLIENTS_ERROR_MESSAGES, CLIENTS_LABELS } from '@/features/clients'
+import { ClientsList, CLIENTS_ARIA_LABELS, CLIENTS_BUTTON_TEXTS, CLIENTS_ERROR_MESSAGES, CLIENTS_LABELS, CLIENTS_TABLE_HEADERS, CLIENTS_TABLE_TEXTS } from '@/features/clients'
 import { CLIENT_FIXTURES } from './client-fixtures'
 
 const mockRefresh = vi.fn()
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: mockRefresh }) }))
 
-/** US-CLI-05 criterio 2 — un lapiz distinguible por clienta (UI-004) y estados vacio, carga y error (UI-003). */
 describe('ClientsList', () => {
   it('da a cada clienta un boton de editar con nombre propio y el icono oculto al lector', () => {
     render(<ClientsList clients={CLIENT_FIXTURES} />)
@@ -17,9 +16,36 @@ describe('ClientsList', () => {
     }
   })
 
+  it('muestra a cada clienta en una fila con nombre, telefono y correo', () => {
+    render(<ClientsList clients={CLIENT_FIXTURES} />)
+    const headers = screen.getAllByRole('columnheader').map((header) => header.textContent)
+    expect(headers).toEqual([
+      CLIENTS_TABLE_HEADERS.fullName, CLIENTS_TABLE_HEADERS.phone, CLIENTS_TABLE_HEADERS.email,
+      CLIENTS_TABLE_HEADERS.delinquencyStatus, CLIENTS_TABLE_HEADERS.lastAppointment, CLIENTS_TABLE_HEADERS.actions,
+    ])
+    expect(screen.getAllByRole('row')).toHaveLength(CLIENT_FIXTURES.length + 1)
+    for (const client of CLIENT_FIXTURES) {
+      const row = screen.getByRole('row', { name: new RegExp(client.fullName) })
+      expect(row.querySelectorAll('th, td')).toHaveLength(Object.keys(CLIENTS_TABLE_HEADERS).length)
+      expect(row.textContent).toContain(client.phone)
+      expect(row.textContent).toContain(client.email)
+    }
+  })
+
+  it('marca morosidad y ultima cita como sin dato mientras US-MOR-01 y US-AGE-05 no existan', () => {
+    render(<ClientsList clients={CLIENT_FIXTURES} />)
+    expect(screen.getAllByText(CLIENTS_TABLE_TEXTS.pendingColumnValue)).toHaveLength(CLIENT_FIXTURES.length * 2)
+  })
+
   it('muestra el estado vacio cuando no hay clientas', () => {
     render(<ClientsList clients={[]} />)
     expect(screen.getByText(CLIENTS_LABELS.clientsListEmpty)).toBeTruthy()
+  })
+
+  it('con filtro activo y sin coincidencias nombra el filtro en vez de decir que no hay clientas', () => {
+    render(<ClientsList clients={[]} activeNameFilter="ana" />)
+    expect(screen.getByText(CLIENTS_LABELS.clientsListEmptyForFilter('ana'))).toBeTruthy()
+    expect(screen.queryByText(CLIENTS_LABELS.clientsListEmpty)).toBeNull()
   })
 
   it('anuncia la carga sin mostrar el estado vacio', () => {

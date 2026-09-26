@@ -10,14 +10,12 @@ import { ClientModal } from '../ClientModal'
 import { ClientForm } from '../ClientForm'
 import { ConfirmDialog } from '../ConfirmDialog'
 
-/** Coordina el boton, el modal, el descarte confirmado y el guardado de la clienta nueva (US-CLI-05 criterio 1). */
 export function AddClientDialog() {
   const [isOpen, setIsOpen] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
   const onClosed = useCallback(() => {
     setIsOpen(false)
-    // El foco vuelve a donde estaba antes de abrir, no al principio del documento (UI-004).
     triggerRef.current?.focus()
   }, [])
 

@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createClientAction } from '../actions/clients-actions'
 import { CLIENTS_ERROR_MESSAGES, normalizePhone } from '@/features/clients'
 
-/** US-CLI-05 criterios 1 y 4 en el borde: lo que createClientAction manda a clients_profiles. */
 let dbResult: { data: unknown; error: unknown }
 let phoneLookup: { data: unknown; error: unknown }
 const mockInsert = vi.fn()

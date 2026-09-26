@@ -6,6 +6,7 @@ import {
   deactivateTechnique,
 } from '@/features/catalog/application/commands'
 import {
+  TechniqueNameConflict,
   TechniqueNotFound,
   TechniqueValidationError,
 } from '@/features/catalog/domain/errors'
@@ -64,6 +65,19 @@ describe('createTechnique', () => {
     expect(isErr(result)).toBe(true)
     expect(repo.saveCalls).toBe(0)
   })
+
+  it('DOM-006: devuelve TechniqueNameConflict si el nombre ya existe, no un Error genérico', async () => {
+    const repo = new FakeTechniqueRepository([
+      makeTechnique({ id: 'existente', name: 'Set clásico' }),
+    ])
+    const result = await createTechnique(deps(repo, 'nuevo'))({
+      ...validModel(),
+      name: 'Set clásico',
+    })
+    expect(isErr(result)).toBe(true)
+    if (isErr(result)) expect(result.error).toBeInstanceOf(TechniqueNameConflict)
+    expect(repo.saveCalls).toBe(0)
+  })
 })
 
 describe('updateTechnique', () => {
@@ -107,6 +121,19 @@ describe('updateTechnique', () => {
     })
     expect(isErr(result)).toBe(true)
     expect(repo.saveCalls).toBe(before)
+  })
+
+  it('DOM-006: renombrar a un nombre ya usado por otra técnica devuelve TechniqueNameConflict', async () => {
+    const repo = new FakeTechniqueRepository([
+      makeTechnique({ id: 'e4', name: 'Set clásico' }),
+      makeTechnique({ id: 'e5', name: 'Laminado de cejas' }),
+    ])
+    const result = await updateTechnique(deps(repo))('e5', {
+      ...validModel(),
+      name: 'Set clásico',
+    })
+    expect(isErr(result)).toBe(true)
+    if (isErr(result)) expect(result.error).toBeInstanceOf(TechniqueNameConflict)
   })
 })
 

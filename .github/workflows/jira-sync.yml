@@ -1,0 +1,41 @@
+# Jira Sync — refleja en Jira el estado de las historias de los SPEC.md. Auxiliar, no compuerta.
+# Solo lee el repo; las credenciales entran por secretos y el script nunca las imprime (SEC-004).
+name: Jira Sync
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/features/**/SPEC.md'
+      - 'docs/backlog/**'
+      - 'scripts/sync-jira.sh'
+      - '.github/workflows/jira-sync.yml'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Simulación: busca y compara, no transiciona'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jira-sync
+  cancel-in-progress: false  # dos pushes seguidos se sincronizan en orden, nunca en paralelo
+
+jobs:
+  sync-to-jira:
+    runs-on: ubuntu-latest  # trae jq y curl >= 8 (--fail-with-body); sin apt-get
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sincronizar estados con Jira
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_PROJECT_KEY: ${{ vars.JIRA_PROJECT_KEY }}
+          JIRA_DRY_RUN: ${{ inputs.dry_run == true && '1' || '0' }}
+        run: bash scripts/sync-jira.sh

@@ -1,1 +1,3 @@
-export interface AdminClientsPageProps {}
+export interface AdminClientsPageProps {
+  searchParams?: Promise<{ page?: string; pageSize?: string; name?: string }>
+}

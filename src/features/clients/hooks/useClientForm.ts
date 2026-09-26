@@ -7,8 +7,6 @@ import type { ClientFormErrors, ClientFormValues } from '../types/client-form.ty
 
 const FIELD_KEYS = Object.values(CLIENT_FIELD_KEYS)
 
-// `isDirty` compara contra los valores INICIALES, no contra el vacio: el formulario de edicion nace
-// lleno, y abrir y cancelar sin tocar nada no debe pedir confirmacion de descarte.
 export function useClientForm(initialValues: ClientFormValues, onSubmitted?: (values: ClientFormValues) => void) {
   const [values, setValues] = useState<ClientFormValues>({ ...initialValues })
   const [errors, setErrors] = useState<ClientFormErrors>({})
@@ -21,8 +19,6 @@ export function useClientForm(initialValues: ClientFormValues, onSubmitted?: (va
 
   const setFieldValue = useCallback((field: ClientFieldKey, value: string) => {
     setValues((current) => ({ ...current, [field]: value }))
-    // La clave se BORRA, no se pone en undefined: Object.keys seguiria contandola
-    // y el banner de resumen no se limpiaria nunca.
     setErrors((current) => {
       if (!current[field]) return current
       const { [field]: _corregido, ...rest } = current

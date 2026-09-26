@@ -5,12 +5,6 @@ import { useFocusTrap } from '../../hooks/useFocusTrap'
 import { clientModalStyles as STYLES } from './ClientModal.styles'
 import type { ClientModalProps } from './ClientModal.types'
 
-/**
- * Contenedor del modal de alta y de edicion. Deliberadamente NO se cierra al hacer clic fuera:
- * la unica salida es un gesto explicito (boton Cancelar o Escape), que el contenedor confirma.
- * `isPaused` cede el foco al dialogo de confirmacion cuando este se monta encima (UI-004).
- * El id del titulo sale de useId: con dos modales en el arbol, un id fijo se duplicaria.
- */
 export function ClientModal({ isOpen, title, description, isPaused = false, onRequestClose, children }: ClientModalProps) {
   const titleId = useId()
   const cardRef = useFocusTrap<HTMLDivElement>(isOpen && !isPaused)
