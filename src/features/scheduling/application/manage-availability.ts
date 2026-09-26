@@ -1,5 +1,3 @@
-// Casos de uso de US-AGE-01: definir y listar disponibilidad. "define" valida el invariante
-// de dominio (constructor) antes de persistir — el repositorio no vuelve a validar.
 import {
   ClosedDate,
   type ClosedDateProps,
@@ -45,6 +43,9 @@ export async function defineManualBlock(
   return repository.saveManualBlock(new ManualBlock(props))
 }
 
-export function listManualBlocks(repository: SchedulingRepository, resourceId: string) {
+export function listManualBlocks(
+  repository: SchedulingRepository,
+  resourceId: string
+): Promise<ManualBlock[]> {
   return repository.listManualBlocks(resourceId)
 }

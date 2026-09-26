@@ -1,8 +1,7 @@
-// Implementación Supabase del puerto SchedulingRepository. Mapeo fila↔dominio vive solo acá;
-// fuera de domain/application, así que instanciar Date acá para parsear sería legítimo si
-// hiciera falta (DOM-004) — hoy no hace falta, start_time/end_time viajan como texto.
 import { createClient } from '@/shared/lib/supabase/server'
-import { ClosedDate, ManualBlock, WeeklyAvailabilityBlock } from '../domain/availability'
+import { ClosedDate, ManualBlock, WeeklyAvailabilityBlock, type DayOfWeek } from '../domain/availability'
+import { ClosedDateAlreadyExistsError } from '../domain/errors'
+import type { Resource } from '../domain/resource'
 import type { SchedulingRepository } from '../application/ports'
 
 const POSTGRES_UNIQUE_VIOLATION = '23505'
@@ -16,6 +15,9 @@ const WEEKLY_AVAILABILITY_COLUMNS = 'id, resource_id, day_of_week, start_time, e
 const CLOSED_DATES_TABLE = 'scheduling_closed_dates'
 const CLOSED_DATES_COLUMNS = 'id, resource_id, closed_date, reason'
 
+const MANUAL_BLOCKS_TABLE = 'scheduling_manual_blocks'
+const MANUAL_BLOCKS_COLUMNS = 'id, resource_id, starts_at, ends_at, reason'
+
 type WeeklyAvailabilityRow = {
   id: string
   resource_id: string
@@ -28,6 +30,14 @@ type ClosedDateRow = {
   id: string
   resource_id: string
   closed_date: string
+  reason: string | null
+}
+
+type ManualBlockRow = {
+  id: string
+  resource_id: string
+  starts_at: string
+  ends_at: string
   reason: string | null
 }
 
@@ -46,6 +56,16 @@ function closedDateRowToDomain(row: ClosedDateRow): ClosedDate {
     id: row.id,
     resourceId: row.resource_id,
     closedDate: row.closed_date,
+    reason: row.reason ?? undefined,
+  })
+}
+
+function manualBlockRowToDomain(row: ManualBlockRow): ManualBlock {
+  return new ManualBlock({
+    id: row.id,
+    resourceId: row.resource_id,
+    startsAt: new Date(row.starts_at),
+    endsAt: new Date(row.ends_at),
     reason: row.reason ?? undefined,
   })
 }
@@ -121,41 +141,27 @@ export const supabaseSchedulingRepository: SchedulingRepository = {
   async listManualBlocks(resourceId) {
     const supabase = await createClient()
     const { data, error } = await supabase
-      .from('scheduling_manual_blocks')
-      .select('id, resource_id, starts_at, ends_at, reason')
+      .from(MANUAL_BLOCKS_TABLE)
+      .select(MANUAL_BLOCKS_COLUMNS)
       .eq('resource_id', resourceId)
+      .order('starts_at')
     if (error) throw error
-    return (data ?? []).map(
-      (row) =>
-        new ManualBlock({
-          id: row.id,
-          resourceId: row.resource_id,
-          startsAt: new Date(row.starts_at),
-          endsAt: new Date(row.ends_at),
-          reason: row.reason ?? undefined,
-        })
-    )
+    return (data ?? []).map(manualBlockRowToDomain)
   },
 
   async saveManualBlock(block) {
     const supabase = await createClient()
     const { data, error } = await supabase
-      .from('scheduling_manual_blocks')
+      .from(MANUAL_BLOCKS_TABLE)
       .insert({
         resource_id: block.resourceId,
         starts_at: block.startsAt.toISOString(),
         ends_at: block.endsAt.toISOString(),
         reason: block.reason ?? null,
       })
-      .select('id, resource_id, starts_at, ends_at, reason')
+      .select(MANUAL_BLOCKS_COLUMNS)
       .single()
     if (error) throw error
-    return new ManualBlock({
-      id: data.id,
-      resourceId: data.resource_id,
-      startsAt: new Date(data.starts_at),
-      endsAt: new Date(data.ends_at),
-      reason: data.reason ?? undefined,
-    })
+    return manualBlockRowToDomain(data)
   },
 }

@@ -6,6 +6,7 @@ import {
   defineWeeklyAvailability,
   listClosedDates,
 } from '../application/manage-availability'
+import { listResources } from '../application/resources'
 import type { SchedulingRepository } from '../application/ports'
 
 function fakeRepository(): SchedulingRepository {
@@ -91,5 +92,12 @@ describe('defineManualBlock', () => {
         endsAt: new Date('2026-10-01T14:00:00Z'),
       })
     ).rejects.toThrow()
+  })
+})
+
+describe('listResources', () => {
+  it('devuelve los recursos del repositorio (ADR-0005)', async () => {
+    const repo = fakeRepository()
+    await expect(listResources(repo)).resolves.toEqual([{ id: 'r1', name: 'Dueña' }])
   })
 })
