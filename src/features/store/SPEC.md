@@ -6,7 +6,7 @@ actualizado: 2026-09-27
 historias:
   - id: US-PROD-02
     estado: en_progreso
-    falta: Panel admin (criterio 3) — faltan la UI y el wiring de la ruta `/admin/store`; dominio, aplicación, adaptador de escritura y acciones ya están.
+    falta: Panel admin (criterio 3) — falta el listado/tabla, el panel que los junta y el wiring de la ruta `/admin/store`; dominio, aplicación, adaptador de escritura, acciones y el formulario ya están.
   - id: US-PROD-03
     estado: no_iniciada
   - id: US-SHOP-01
@@ -47,6 +47,7 @@ Panel admin (criterio 3, "administrables desde el panel") — en construcción, 
 - Lógica de formulario separada del render en `hooks/useFormularioProductoAdmin.ts` (mismo patrón que `auth/hooks/useAdminLoginForm`)
 - Textos y rutas del panel externalizados en `constants/mensajes-admin-productos.ts` y `constants/rutas-admin-productos.ts` (DOM-009)
 - Pruebas automatizadas de acciones y esquema, y aislamiento RLS (`__tests__/rls-productos-admin.test.ts`, se salta sin Supabase local)
+- Formulario (`components/FormularioProductoAdmin/`): alta y edición, con `Feedback`/`Field` sin lógica — el `Feedback` despacha por `status` a un componente hoja por caso (idle/ok/forbidden/invalid), y la sección "desactivar" despacha por `modo` (crear/editar) a `SeccionDesactivar`/`SinSeccionDesactivar`
 
 ## Contrato público
 
