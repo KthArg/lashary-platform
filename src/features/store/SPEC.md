@@ -6,7 +6,7 @@ actualizado: 2026-09-27
 historias:
   - id: US-PROD-02
     estado: en_progreso
-    falta: Panel admin (criterio 3) — falta el adaptador de escritura, las acciones, la UI y el wiring; dominio y aplicación ya están.
+    falta: Panel admin (criterio 3) — faltan las acciones, la UI y el wiring; dominio, aplicación y adaptador de escritura ya están.
   - id: US-PROD-03
     estado: no_iniciada
   - id: US-SHOP-01
@@ -41,6 +41,9 @@ Panel admin (criterio 3, "administrables desde el panel") — en construcción, 
 - Constructor validado (`domain/producto.ts`, `construirProducto`): invariantes de negocio (DOM-007) — slug, nombre y URL de imagen no vacíos, precio entero positivo, orden de presentación entero no negativo; sin clases, `ProductoAdminVista` es un objeto plano
 - Errores tipados (`domain/errores-producto.ts`): `ProductoInvalido`, `ProductoNoEncontrado`, `ProductoSlugDuplicado` (DOM-006)
 - Casos de uso (`application/productos-admin-consultas.ts`, `application/productos-admin-comandos.ts`): listar paginado, obtener, crear, actualizar, desactivar — sobre el puerto `ProductoRepositorioAdmin` (`application/productos-admin-puertos.ts`), probados con repositorio fake (`application/__tests__/`)
+- Adaptador de escritura (`db/productos-admin-repositorio.ts`): CRUD contra `store_products` vía Supabase, mapea `23505` (slug duplicado) a error de dominio; sin clase, función factory con closures
+
+`db/productos-db.ts` y `http/catalogo-productos-cms.ts` (lectura pública) pasaron de clase a función factory (`catalogoProductosDb`, `catalogoProductosCms`) en la misma pieza, para no dejar dos convenciones a medio camino.
 
 ## Contrato público
 

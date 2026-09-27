@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import {
   CADENAS_GRID_PRODUCTOS_ES,
-  CatalogoProductosDb,
+  catalogoProductosDb,
   estadoGridProductosInicial,
   obtenerEstadoGridProductos,
   renderGridProductosPublicos,
@@ -141,7 +141,7 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
   })
 
   it('lee los productos desde la base de datos para la ruta pública', async () => {
-    const catalogo = new CatalogoProductosDb()
+    const catalogo = catalogoProductosDb()
     const productos = await catalogo.listarProductosPublicos()
 
     expect(productos).toHaveLength(2)

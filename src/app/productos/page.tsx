@@ -1,6 +1,6 @@
 import {
   CADENAS_GRID_PRODUCTOS_ES,
-  CatalogoProductosDb,
+  catalogoProductosDb,
   obtenerEstadoGridProductos,
   renderGridProductosPublicos,
 } from '@/features/store'
@@ -11,7 +11,7 @@ export const metadata = {
 }
 
 export default async function ProductosPage() {
-  const catalogo = new CatalogoProductosDb()
+  const catalogo = catalogoProductosDb()
   const estado = await obtenerEstadoGridProductos(catalogo, CADENAS_GRID_PRODUCTOS_ES)
 
   return (
