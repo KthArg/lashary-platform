@@ -5,8 +5,7 @@ estado: en_progreso
 actualizado: 2026-09-27
 historias:
   - id: US-PROD-02
-    estado: en_progreso
-    falta: Panel admin (criterio 3) — falta el wiring de la ruta `/admin/store` (contrato público, layout con requireAdminSession, loading/error); el resto ya está.
+    estado: en_revision
   - id: US-PROD-03
     estado: no_iniciada
   - id: US-SHOP-01
@@ -36,22 +35,20 @@ Tienda (F4): productos, carrito, checkout con comprobante. Stock y pedidos admin
 - Etiquetas ARIA y mensaje de carga externalizados en cadenas de UI
 - Acción de reintento configurable por URL (`urlReintento`) en el componente
 
-Panel admin (criterio 3, "administrables desde el panel") — en construcción, aún no montado:
+Panel admin (criterio 3, "administrables desde el panel") en `/admin/store`, protegido por `requireAdminSession` (redirect si no hay sesión staff) y por las políticas RLS `store_products_*_admin` (SEC-001):
 - Constructor validado (`domain/producto.ts`, `construirProducto`): invariantes de negocio (DOM-007) — slug, nombre y URL de imagen no vacíos, precio entero positivo, orden de presentación entero no negativo; sin clases, `ProductoAdminVista` es un objeto plano
-- Errores tipados (`domain/errores-producto.ts`): `ProductoInvalido`, `ProductoNoEncontrado`, `ProductoSlugDuplicado` (DOM-006)
+- Errores tipados (`domain/errores-producto.ts`): `ProductoInvalido`, `ProductoNoEncontrado`, `ProductoSlugDuplicado` (DOM-006), objetos discriminados por `tipo` con su type guard en vez de `instanceof`
 - Casos de uso (`application/productos-admin-consultas.ts`, `application/productos-admin-comandos.ts`): listar paginado, obtener, crear, actualizar, desactivar — sobre el puerto `ProductoRepositorioAdmin` (`application/productos-admin-puertos.ts`), probados con repositorio fake (`application/__tests__/`)
-- Adaptador de escritura (`db/productos-admin-repositorio.ts`): CRUD contra `store_products` vía Supabase, mapea `23505` (slug duplicado) a error de dominio; sin clase, función factory con closures
-
-`db/productos-db.ts` y `http/catalogo-productos-cms.ts` (lectura pública) pasaron de clase a función factory (`catalogoProductosDb`, `catalogoProductosCms`) en la misma pieza, para no dejar dos convenciones a medio camino.
+- Adaptador de escritura (`db/productos-admin-repositorio.ts`): CRUD contra `store_products` vía Supabase, mapea `23505` (slug duplicado) a error de dominio; sin clase, función factory con closures — `db/productos-db.ts` y `http/catalogo-productos-cms.ts` (lectura pública) siguen el mismo patrón
 - Server actions (`actions/productos-admin-actions.ts`) con validación de formato en el borde (`actions/esquema-producto-admin.ts`, Zod) y chequeo de rol amable (`actions/permiso-staff.ts`) — la autorización real la hace RLS
 - Lógica de formulario separada del render en `hooks/useFormularioProductoAdmin.ts` (mismo patrón que `auth/hooks/useAdminLoginForm`)
 - Textos y rutas del panel externalizados en `constants/mensajes-admin-productos.ts` y `constants/rutas-admin-productos.ts` (DOM-009)
-- Pruebas automatizadas de acciones y esquema, y aislamiento RLS (`__tests__/rls-productos-admin.test.ts`, se salta sin Supabase local)
-- Formulario (`components/FormularioProductoAdmin/`): alta y edición, con `Feedback`/`Field` sin lógica — el `Feedback` despacha por `status` a un componente hoja por caso (idle/ok/forbidden/invalid), y la sección "desactivar" despacha por `modo` (crear/editar) a `SeccionDesactivar`/`SinSeccionDesactivar`
-- Listado (`components/TablaProductosAdmin/`): recibe filas ya armadas (`aFilasProductoAdmin` en `TablaProductosAdmin.data.ts` — formato de precio, texto/clase de estado, href de edición) y solo pinta
-- Panel (`components/PanelAdminProductos/`): junta listado, formulario y estados vacío/carga/error (UI-003); `PanelAdminProductos.data.ts` decide el modo (formulario/vacío/listado) según los search params, y el `.tsx` despacha por tabla sin lógica
+- Componentes (`components/FormularioProductoAdmin/`, `components/TablaProductosAdmin/`, `components/PanelAdminProductos/`): listado, alta, edición y desactivación (no hay borrado físico) con estados vacío/carga/error (UI-003) y feedback accesible por rol `alert`/`status` (UI-004) — cada decisión de qué pintar sale precalculada de un `.data.ts` o un hook; los `.tsx` solo despachan por tabla o pintan, sin `if`/`?:`/`&&`
+- Pruebas automatizadas: dominio, casos de uso (repositorio fake), esquema, server actions, protección de layout, y aislamiento RLS (`__tests__/rls-productos-admin.test.ts`, se salta sin Supabase local)
+
+Organización de la capa de presentación (`components/`, `hooks/`, `actions/`, `constants/`) igual a la de `auth`: `domain/`, `application/`, `db/`, `http/` son la arquitectura DDD (ARCH-002/DOM-006/007) y no se solapan con esta convención.
 
 ## Contrato público
 
-`index.ts` exporta el contrato completo para listar productos, renderizar grid y consultar catálogos (ARCH-003).
+`index.ts` exporta el contrato completo para listar productos, renderizar grid, consultar catálogos y administrar productos (ARCH-003). `client.ts` expone solo los textos, para los boundaries de ruta que corren en el cliente.
 

@@ -20,7 +20,7 @@
 | payments | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | scheduling | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 11 |
-| store | pendiente | en_progreso | 0 / 1 / 0 / 0 / 3 |
+| store | pendiente | en_progreso | 0 / 0 / 0 / 1 / 3 |
 
 ## Detalle por feature
 
@@ -98,7 +98,7 @@
 - US-AGE-12 — no_iniciada
 
 ### store (actualizado: 2026-09-27)
-- US-PROD-02 — en_progreso — falta: Panel admin (criterio 3) — falta el wiring de la ruta `/admin/store` (contrato público, layout con requireAdminSession, loading/error); el resto ya está.
+- US-PROD-02 — en_revision
 - US-PROD-03 — no_iniciada
 - US-SHOP-01 — no_iniciada
 - US-SHOP-02 — no_iniciada
