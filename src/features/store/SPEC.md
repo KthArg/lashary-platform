@@ -6,7 +6,7 @@ actualizado: 2026-09-27
 historias:
   - id: US-PROD-02
     estado: en_progreso
-    falta: Panel admin (criterio 3) — falta el listado/tabla, el panel que los junta y el wiring de la ruta `/admin/store`; dominio, aplicación, adaptador de escritura, acciones y el formulario ya están.
+    falta: Panel admin (criterio 3) — falta el wiring de la ruta `/admin/store` (contrato público, layout con requireAdminSession, loading/error); el resto ya está.
   - id: US-PROD-03
     estado: no_iniciada
   - id: US-SHOP-01
@@ -48,6 +48,8 @@ Panel admin (criterio 3, "administrables desde el panel") — en construcción, 
 - Textos y rutas del panel externalizados en `constants/mensajes-admin-productos.ts` y `constants/rutas-admin-productos.ts` (DOM-009)
 - Pruebas automatizadas de acciones y esquema, y aislamiento RLS (`__tests__/rls-productos-admin.test.ts`, se salta sin Supabase local)
 - Formulario (`components/FormularioProductoAdmin/`): alta y edición, con `Feedback`/`Field` sin lógica — el `Feedback` despacha por `status` a un componente hoja por caso (idle/ok/forbidden/invalid), y la sección "desactivar" despacha por `modo` (crear/editar) a `SeccionDesactivar`/`SinSeccionDesactivar`
+- Listado (`components/TablaProductosAdmin/`): recibe filas ya armadas (`aFilasProductoAdmin` en `TablaProductosAdmin.data.ts` — formato de precio, texto/clase de estado, href de edición) y solo pinta
+- Panel (`components/PanelAdminProductos/`): junta listado, formulario y estados vacío/carga/error (UI-003); `PanelAdminProductos.data.ts` decide el modo (formulario/vacío/listado) según los search params, y el `.tsx` despacha por tabla sin lógica
 
 ## Contrato público
 
