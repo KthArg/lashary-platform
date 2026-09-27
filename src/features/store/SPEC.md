@@ -6,7 +6,7 @@ actualizado: 2026-09-27
 historias:
   - id: US-PROD-02
     estado: en_progreso
-    falta: Panel admin (criterio 3) — faltan las acciones, la UI y el wiring; dominio, aplicación y adaptador de escritura ya están.
+    falta: Panel admin (criterio 3) — faltan la UI y el wiring de la ruta `/admin/store`; dominio, aplicación, adaptador de escritura y acciones ya están.
   - id: US-PROD-03
     estado: no_iniciada
   - id: US-SHOP-01
@@ -44,6 +44,9 @@ Panel admin (criterio 3, "administrables desde el panel") — en construcción, 
 - Adaptador de escritura (`db/productos-admin-repositorio.ts`): CRUD contra `store_products` vía Supabase, mapea `23505` (slug duplicado) a error de dominio; sin clase, función factory con closures
 
 `db/productos-db.ts` y `http/catalogo-productos-cms.ts` (lectura pública) pasaron de clase a función factory (`catalogoProductosDb`, `catalogoProductosCms`) en la misma pieza, para no dejar dos convenciones a medio camino.
+- Server actions (`actions/productos-admin-actions.ts`) con validación de formato en el borde (`actions/esquema-producto-admin.ts`, Zod) y chequeo de rol amable (`actions/permiso-staff.ts`) — la autorización real la hace RLS
+- Lógica de formulario separada del render en `hooks/useFormularioProductoAdmin.ts` (mismo patrón que `auth/hooks/useAdminLoginForm`)
+- Textos y rutas del panel externalizados en `constants/mensajes-admin-productos.ts` y `constants/rutas-admin-productos.ts` (DOM-009)
 
 ## Contrato público
 
