@@ -47,6 +47,7 @@ Panel admin (criterio 3, "administrables desde el panel") — en construcción, 
 - Server actions (`actions/productos-admin-actions.ts`) con validación de formato en el borde (`actions/esquema-producto-admin.ts`, Zod) y chequeo de rol amable (`actions/permiso-staff.ts`) — la autorización real la hace RLS
 - Lógica de formulario separada del render en `hooks/useFormularioProductoAdmin.ts` (mismo patrón que `auth/hooks/useAdminLoginForm`)
 - Textos y rutas del panel externalizados en `constants/mensajes-admin-productos.ts` y `constants/rutas-admin-productos.ts` (DOM-009)
+- Pruebas automatizadas de acciones y esquema, y aislamiento RLS (`__tests__/rls-productos-admin.test.ts`, se salta sin Supabase local)
 
 ## Contrato público
 
