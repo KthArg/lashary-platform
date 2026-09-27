@@ -3,9 +3,9 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import {
   CADENAS_GRID_PRODUCTOS_ES,
   catalogoProductosDb,
+  GridProductosPublicos,
   estadoGridProductosInicial,
   obtenerEstadoGridProductos,
-  renderGridProductosPublicos,
   type CatalogoProductosPublico,
 } from '@/features/store'
 import ProductosPage from '@/app/productos/page'
@@ -110,25 +110,57 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
     })
   })
 
-  it('renderiza el grid con accesibilidad, escape y reintento seguro', () => {
-    const html = renderGridProductosPublicos(
-      {
-        tipo: 'listo',
-        tarjetas: [
-          {
-            id: '1',
-            nombre: '<script>alert(1)</script>',
-            urlImagen: 'javascript:alert(1)',
-            etiquetaPrecio: '₡18.000',
-          },
-        ],
-      },
-      { urlReintento: 'javascript:alert(1)' }
-    )
+  it('renderiza el grid con accesibilidad, escape de contenido y URL de imagen sanitizada', async () => {
+    const catalogo: CatalogoProductosPublico = {
+      listarProductosPublicos: vi.fn().mockResolvedValue([
+        {
+          id: '1',
+          nombre: '<script>alert(1)</script>',
+          urlImagen: 'javascript:alert(1)',
+          precioCrc: 18000,
+          activo: true,
+        },
+      ]),
+    }
+    const estado = await obtenerEstadoGridProductos(catalogo, CADENAS_GRID_PRODUCTOS_ES)
+    const html = renderToStaticMarkup(<GridProductosPublicos estado={estado} />)
 
     expect(html).toContain('aria-label="Catálogo de productos de mantenimiento"')
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
     expect(html).not.toContain('javascript:alert(1)')
+  })
+
+  it('sanitiza una URL de reintento insegura y no la usa como href del botón', () => {
+    const html = renderToStaticMarkup(
+      <GridProductosPublicos
+        estado={{
+          tipo: 'error',
+          titulo: 'No se pudo cargar el catálogo',
+          descripcion: 'Inténtalo de nuevo en unos minutos.',
+          etiquetaReintentar: 'Reintentar',
+        }}
+        urlReintento="javascript:alert(1)"
+      />
+    )
+
+    expect(html).not.toContain('javascript:alert(1)')
+    expect(html).toContain('disabled')
+  })
+
+  it('usa una URL de reintento segura como href del botón de reintento', () => {
+    const html = renderToStaticMarkup(
+      <GridProductosPublicos
+        estado={{
+          tipo: 'error',
+          titulo: 'No se pudo cargar el catálogo',
+          descripcion: 'Inténtalo de nuevo en unos minutos.',
+          etiquetaReintentar: 'Reintentar',
+        }}
+        urlReintento="/productos"
+      />
+    )
+
+    expect(html).toContain('href="/productos"')
   })
 
   it('integra la ruta pública /productos con el feature store', async () => {
