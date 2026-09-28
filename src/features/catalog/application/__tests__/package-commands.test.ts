@@ -6,13 +6,13 @@ import {
   deactivatePackage,
 } from '@/features/catalog/application/commands'
 import {
-  PackageNameConflict,
-  PackageNotFound,
-  PackageValidationError,
+  isPackageNameConflict,
+  isPackageNotFound,
+  isPackageValidationError,
 } from '@/features/catalog/domain/errors'
 import type { PackageWriteModel } from '@/features/catalog/application/ports'
 import { FakeTechniqueRepository } from './fake-repository'
-import { FakePackageRepository } from './fake-package-repository'
+import { createFakePackageRepository } from './fake-package-repository'
 import { makeTechnique } from './technique-fixture'
 import { makePackage } from './package-fixture'
 
@@ -23,7 +23,7 @@ const validModel = (techniqueIds: string[]): PackageWriteModel => ({
 })
 
 const deps = (
-  packageRepo: FakePackageRepository,
+  packageRepo: ReturnType<typeof createFakePackageRepository>,
   techniqueRepo: FakeTechniqueRepository,
   id = 'nuevo-id',
 ) => ({ packageRepo, techniqueRepo, newId: () => id })
@@ -34,7 +34,7 @@ describe('createPackage', () => {
       makeTechnique({ id: 't1', isActive: true }),
       makeTechnique({ id: 't2', isActive: true }),
     ])
-    const packageRepo = new FakePackageRepository()
+    const packageRepo = createFakePackageRepository()
     const result = await createPackage(deps(packageRepo, techniqueRepo, 'p1'))(
       validModel(['t1', 't2']),
     )
@@ -49,12 +49,12 @@ describe('createPackage', () => {
     const techniqueRepo = new FakeTechniqueRepository([
       makeTechnique({ id: 't1', isActive: true }),
     ])
-    const packageRepo = new FakePackageRepository()
+    const packageRepo = createFakePackageRepository()
     const result = await createPackage(deps(packageRepo, techniqueRepo))(
       validModel(['t1', 'no-existe']),
     )
     expect(isErr(result)).toBe(true)
-    if (isErr(result) && result.error instanceof PackageValidationError) {
+    if (isErr(result) && isPackageValidationError(result.error)) {
       expect(result.error.problems.join(' ')).toMatch(/no existen/i)
     } else {
       expect.fail('esperaba PackageValidationError')
@@ -67,12 +67,12 @@ describe('createPackage', () => {
       makeTechnique({ id: 't1', isActive: true }),
       makeTechnique({ id: 't2', isActive: false }),
     ])
-    const packageRepo = new FakePackageRepository()
+    const packageRepo = createFakePackageRepository()
     const result = await createPackage(deps(packageRepo, techniqueRepo))(
       validModel(['t1', 't2']),
     )
     expect(isErr(result)).toBe(true)
-    if (isErr(result) && result.error instanceof PackageValidationError) {
+    if (isErr(result) && isPackageValidationError(result.error)) {
       expect(result.error.problems.join(' ')).toMatch(/no están activas/i)
     } else {
       expect.fail('esperaba PackageValidationError')
@@ -84,7 +84,7 @@ describe('createPackage', () => {
     const techniqueRepo = new FakeTechniqueRepository([
       makeTechnique({ id: 't1', isActive: true }),
     ])
-    const packageRepo = new FakePackageRepository()
+    const packageRepo = createFakePackageRepository()
     const result = await createPackage(deps(packageRepo, techniqueRepo))(validModel(['t1']))
     expect(isErr(result)).toBe(true)
     expect(packageRepo.saveCalls).toBe(0)
@@ -95,7 +95,7 @@ describe('createPackage', () => {
       makeTechnique({ id: 't1', isActive: true }),
       makeTechnique({ id: 't2', isActive: true }),
     ])
-    const packageRepo = new FakePackageRepository()
+    const packageRepo = createFakePackageRepository()
     const result = await createPackage(deps(packageRepo, techniqueRepo))({
       ...validModel(['t1', 't2']),
       price: 30000.5,
@@ -109,14 +109,14 @@ describe('createPackage', () => {
       makeTechnique({ id: 't1', isActive: true }),
       makeTechnique({ id: 't2', isActive: true }),
     ])
-    const packageRepo = new FakePackageRepository([
+    const packageRepo = createFakePackageRepository([
       makePackage({ id: 'existente', name: 'Combo cejas' }),
     ])
     const result = await createPackage(deps(packageRepo, techniqueRepo, 'nuevo'))(
       validModel(['t1', 't2']),
     )
     expect(isErr(result)).toBe(true)
-    if (isErr(result)) expect(result.error).toBeInstanceOf(PackageNameConflict)
+    if (isErr(result)) expect(isPackageNameConflict(result.error)).toBe(true)
     expect(packageRepo.saveCalls).toBe(0)
   })
 })
@@ -127,7 +127,7 @@ describe('updatePackage', () => {
       makeTechnique({ id: 't1', isActive: true }),
       makeTechnique({ id: 't2', isActive: true }),
     ])
-    const packageRepo = new FakePackageRepository([
+    const packageRepo = createFakePackageRepository([
       makePackage({ id: 'e1', techniqueIds: ['t1', 't2'], isActive: true }),
     ])
     const result = await updatePackage(deps(packageRepo, techniqueRepo))('e1', {
@@ -145,7 +145,7 @@ describe('updatePackage', () => {
       makeTechnique({ id: 't1', isActive: true }),
       makeTechnique({ id: 't2', isActive: true }),
     ])
-    const packageRepo = new FakePackageRepository([
+    const packageRepo = createFakePackageRepository([
       makePackage({ id: 'e2', techniqueIds: ['t1', 't2'], isActive: false }),
     ])
     const result = await updatePackage(deps(packageRepo, techniqueRepo))(
@@ -161,13 +161,13 @@ describe('updatePackage', () => {
       makeTechnique({ id: 't1', isActive: true }),
       makeTechnique({ id: 't2', isActive: true }),
     ])
-    const packageRepo = new FakePackageRepository()
+    const packageRepo = createFakePackageRepository()
     const result = await updatePackage(deps(packageRepo, techniqueRepo))(
       'nope',
       validModel(['t1', 't2']),
     )
     expect(isErr(result)).toBe(true)
-    if (isErr(result)) expect(result.error).toBeInstanceOf(PackageNotFound)
+    if (isErr(result)) expect(isPackageNotFound(result.error)).toBe(true)
   })
 
   it('rechaza técnicas inválidas sin persistir', async () => {
@@ -175,7 +175,7 @@ describe('updatePackage', () => {
       makeTechnique({ id: 't1', isActive: true }),
       makeTechnique({ id: 't2', isActive: true }),
     ])
-    const packageRepo = new FakePackageRepository([
+    const packageRepo = createFakePackageRepository([
       makePackage({ id: 'e3', techniqueIds: ['t1', 't2'] }),
     ])
     const before = packageRepo.saveCalls
@@ -190,7 +190,7 @@ describe('updatePackage', () => {
 describe('deactivatePackage', () => {
   it('desactiva un paquete existente', async () => {
     const techniqueRepo = new FakeTechniqueRepository()
-    const packageRepo = new FakePackageRepository([
+    const packageRepo = createFakePackageRepository([
       makePackage({ id: 'd1', isActive: true }),
     ])
     const result = await deactivatePackage(deps(packageRepo, techniqueRepo))('d1')
@@ -202,7 +202,7 @@ describe('deactivatePackage', () => {
 
   it('devuelve PackageNotFound si no existe', async () => {
     const techniqueRepo = new FakeTechniqueRepository()
-    const packageRepo = new FakePackageRepository()
+    const packageRepo = createFakePackageRepository()
     const result = await deactivatePackage(deps(packageRepo, techniqueRepo))('nope')
     expect(isErr(result)).toBe(true)
   })
