@@ -1,6 +1,6 @@
 # Integración — reglas INT
 
-> **Autoridad:** cómo el código de seis personas está junto y funcionando cada día: ramas, PRs, contratos, flags, migraciones. **Lectores:** todo el equipo, cada día. **Estado:** vigente. **Actualizado:** 2026-09-16.
+> **Autoridad:** cómo el código de seis personas está junto y funcionando cada día: ramas, PRs, contratos, flags, migraciones. **Lectores:** todo el equipo, cada día. **Estado:** vigente. **Actualizado:** 2026-09-28.
 > Índice máquina: [rules.yaml](rules.yaml). El bucle de trabajo: [../process/WORK_LOOP.md](../process/WORK_LOOP.md).
 
 ## El punto
@@ -46,6 +46,24 @@ Seis personas integrando **a diario**: cada historia en su rama `us/<ID>`, hecha
 **Regla.** Migraciones versionadas en `supabase/migrations/`, solo hacia adelante, **máximo una por PR**, patrón expand/contract para cualquier cambio destructivo (renombrar/borrar columna = expandir, migrar datos, contraer en PR posterior).
 **Racional.** Una migración destructiva de un solo paso deja base y código desincronizados durante el deploy — con seis personas mergeando a diario, eso es una interrupción garantizada.
 **Cumplimiento.** L1 conteo y lint de migraciones en CI (F4).
+
+### INT-009 — Título de PR en Conventional Commits con historia y posición
+**Regla.** El título de todo PR sigue [Conventional Commits](https://www.conventionalcommits.org/es/v1.0.0/) y se escribe **en español**: `<tipo>(<ámbito>): <descripción>`, más un sufijo que depende de la rama:
+
+| Rama del PR | Sufijo | Ejemplo |
+|---|---|---|
+| Pieza de una historia (el nombre lleva el ID: `feat/us-prod-01-…`) | `(US-XXX-NN, i/N)` — posición `i` de `N` en la pila, `1 ≤ i ≤ N`, mismo ID que la rama | `feat(catalog): formulario de paquetes (US-PROD-01, 9/10)` |
+| Cierre de la historia, `us/<ID>` → `main` | `(US-XXX-NN)` | `feat(catalog): paquetes de servicios (US-PROD-01)` |
+| Sin historia (CI, reglas, docs de proceso) | ninguno | `fix(ci): el push a main no vuelve a medir el tamaño del PR` |
+
+- **Tipo:** `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `perf`, `build`, `ci`, `style` o `revert`. Un `!` antes de los dos puntos marca un cambio incompatible.
+- **Ámbito:** obligatorio, en minúsculas: la feature (`catalog`, `store`) o el área (`ci`, `reglas`, `int`).
+- **Descripción:** en español, lo que cambia visto desde quien lee el historial.
+
+**Racional.** A `main` llega un commit por historia (INT-005) y su mensaje es el título del PR: un título libre — `Us/us land 07`, `feat/US-CLI-01 Add filter by name`, o en inglés en un repo que trabaja en español — deja un historial que no se puede leer ni filtrar por historia. El sufijo con la posición hace legible una pila de piezas sin abrir cada PR.
+**Cumplimiento.** L1 `scripts/rules/check-pr-title.sh`, que corre en su propio workflow (`.github/workflows/pr-title.yml`) para re-evaluar cuando alguien **edita** el título; verifica formato, sufijo e ID contra la rama. L5 el revisor verifica el idioma, que ningún check puede juzgar.
+
+**Convención de commits (decisión de equipo, sin check).** Cada commit sigue el mismo `<tipo>(<ámbito>): <descripción>` en español; el sufijo de historia es recomendado, no obligatorio. Los merge commits que genera GitHub al mergear una pieza (INT-005) quedan exentos. No hay check: lo verifica el revisor, y la IA lo sigue porque está en [.agents/AGENTS.md](../../.agents/AGENTS.md).
 
 ## Dueños y propiedad colectiva
 
