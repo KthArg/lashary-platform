@@ -1,7 +1,7 @@
 import { ok, err, type Result } from '@/shared/result'
 import type { TechniqueView } from '../domain/technique'
-import type { PackageView } from '../domain/package'
-import { TechniqueNotFound, PackageNotFound } from '../domain/errors'
+import { packageToView, type PackageView } from '../domain/package'
+import { TechniqueNotFound, packageNotFound, type PackageNotFound } from '../domain/errors'
 import type {
   ListTechniquesQuery,
   ListPackagesQuery,
@@ -53,7 +53,7 @@ export const getTechnique =
 export type PackageListItem = PackageView & { durationTotalMin: number }
 
 const toPackageListItem = (row: PackageWithDuration): PackageListItem => ({
-  ...row.pkg.toView(),
+  ...packageToView(row.pkg),
   durationTotalMin: row.durationTotalMin,
 })
 
@@ -82,6 +82,6 @@ export const getPackage =
   (repo: PackageRepository) =>
   async (id: string): Promise<Result<PackageListItem, PackageNotFound>> => {
     const row = await repo.findById(id)
-    if (row === null) return err(new PackageNotFound(id))
+    if (row === null) return err(packageNotFound(id))
     return ok(toPackageListItem(row))
   }

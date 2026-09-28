@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { SupabasePackageRepository } from '@/features/catalog/db/package-repository'
+import { createSupabasePackageRepository } from '@/features/catalog/db/package-repository'
+import type { PackageRepository } from '@/features/catalog/application/ports'
 
 // Integración contra Supabase local (seed cargado). Lecturas con token anónimo; las escrituras
 // están denegadas por RLS (B1) hasta la migración de escritura (pieza 6). Se salta sin conexión.
@@ -22,12 +23,12 @@ if (!reachable) {
 }
 
 describe.skipIf(!reachable)('SupabasePackageRepository (Supabase local)', () => {
-  let repo: SupabasePackageRepository
+  let repo: PackageRepository
   let db: SupabaseClient
 
   beforeAll(() => {
     db = createClient(URL, KEY)
-    repo = new SupabasePackageRepository(db)
+    repo = createSupabasePackageRepository(db)
   })
 
   it('list reconstituye el dominio: el paquete del seed, con duración total calculada (criterio 2)', async () => {
