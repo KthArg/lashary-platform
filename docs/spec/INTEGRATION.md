@@ -65,6 +65,19 @@ Seis personas integrando **a diario**: cada historia en su rama `us/<ID>`, hecha
 
 **Convención de commits (decisión de equipo, sin check).** Cada commit sigue el mismo `<tipo>(<ámbito>): <descripción>` en español; el sufijo de historia es recomendado, no obligatorio. Los merge commits que genera GitHub al mergear una pieza (INT-005) quedan exentos. No hay check: lo verifica el revisor, y la IA lo sigue porque está en [.agents/AGENTS.md](../../.agents/AGENTS.md).
 
+**Estado del PR y etiquetas (convención de equipo, sin check).** Para que cualquiera sepa qué se está trabajando, mirando los PRs abiertos o Jira:
+
+| Momento | PR | Etiqueta | Jira (`jira-branch.yml`) | Revisor de Claude |
+|---|---|---|---|---|
+| Empieza la historia: primer commit de `us/<ID>` = su `SPEC.md` en `en_progreso` | `us/<ID>` → `main` en **draft** | `In-Progress` | el push la mueve a *In Progress* | no revisa drafts |
+| Un PR que todavía no está listo para revisión | draft | `In-Progress` | — | no revisa |
+| Listo para revisión (una pieza terminada se abre directamente así) | no draft (*Ready for review*) | `Waiting-QA`, que reemplaza a `In-Progress` | el PR de la historia la mueve a *Waiting QA* | revisa al abrirlo o marcarlo listo, y en cada push |
+| Un revisor humano lo considera listo para mergear (INT-005) | — | `QA-Approved` | — | — |
+
+- Una sola etiqueta de estado por PR: al pasar a `Waiting-QA` se quita `In-Progress`.
+- `QA-Approved` la pone **solo un revisor humano**. La IA nunca la pone.
+- No hay check: lo verifica el revisor, y la IA lo sigue por [.agents/AGENTS.md](../../.agents/AGENTS.md).
+
 ## Dueños y propiedad colectiva
 
 Cada feature tiene un **DRI** — responsable de que el spec sea verdad y de que la feature avance — pero **el código es de todos**: cualquiera puede y debe tocar cualquier feature. La propiedad exclusiva produce silos de conocimiento, reviews de sello y bus factor de uno en la feature más riesgosa. `CODEOWNERS` marca a quién se **notifica**, no quién puede editar — y lo dice en el propio archivo.

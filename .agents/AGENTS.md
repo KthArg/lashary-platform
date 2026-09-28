@@ -25,6 +25,12 @@ Decisiones del equipo. No todas tienen check: las que no, las verifica el reviso
 - **Sin `class` en código nuevo** ([ADR-0008](../docs/adr/ADR-0008-no-classes.md)). Entidades: `interface` + función `createX()` que valida y devuelve `Result`. Comportamiento: funciones puras (`deactivateX(x)`), no métodos. Errores: `interface` con `code` literal + fábrica + guarda `isXError()` en vez de `instanceof`. Repositorios y adaptadores: función fábrica que devuelve el puerto. Si la tarea toca una clase que ya existe, no la migres por tu cuenta: está listada en el ADR y se migra con su historia.
 - **Commits en Conventional Commits, en español**: `<tipo>(<ámbito>): <descripción>`, p.ej. `feat(catalog): formulario de paquetes`. Sin check; lo verifica el revisor ([INTEGRATION.md](../docs/spec/INTEGRATION.md#int-009)).
 - **Título de PR** — regla INT-009, **con check en CI**: el mismo formato en español, más `(US-XXX-NN, i/N)` si la rama es una pieza de una historia (`i` = posición en la pila de `N`), o `(US-XXX-NN)` si es el cierre `us/<ID>` → `main`. Ejemplo: `feat(catalog): formulario de paquetes (US-PROD-01, 9/10)`. Para probar un título antes de abrir el PR: `PR_TITLE="…" PR_HEAD_REF=<rama> bash scripts/rules/check-pr-title.sh`.
+- **Estado del PR y etiquetas** ([INTEGRATION.md](../docs/spec/INTEGRATION.md#int-009), convención sin check):
+  - Al empezar una historia, el primer commit de `us/<ID>` es su `SPEC.md` en `en_progreso`. Con ese commit abres el PR de la historia **en draft** con `In-Progress`: `gh pr create --draft --base main --head us/<ID> …` y luego `gh api repos/KthArg/lashary-platform/issues/<N>/labels -X POST -f "labels[]=In-Progress"`.
+  - Todo PR que aún no está listo va en draft con `In-Progress`. El revisor de Claude no revisa drafts.
+  - Cuando está listo: `gh pr ready <N>`, quitas `In-Progress` (`gh api -X DELETE repos/KthArg/lashary-platform/issues/<N>/labels/In-Progress`) y pones `Waiting-QA`. Una pieza terminada se abre directamente lista con `Waiting-QA`.
+  - **Nunca pongas `QA-Approved`**: es de los revisores humanos, para decir que el PR está listo para mergear.
+  - `gh pr edit` falla en este repo por la API de Projects clásicos: para etiquetas, título y cuerpo usa `gh api`.
 
 ## Advertencia de conflicto con regla (Capa 4)
 
