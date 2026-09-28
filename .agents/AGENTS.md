@@ -1,6 +1,6 @@
 # AGENTS.md — punto de entrada para IA
 
-> **Autoridad:** cómo debe operar cualquier agente de IA en este repositorio. **Lectores:** Claude y similares, al inicio de cada conversación. **Estado:** vigente. **Actualizado:** 2026-08-27.
+> **Autoridad:** cómo debe operar cualquier agente de IA en este repositorio. **Lectores:** Claude y similares, al inicio de cada conversación. **Estado:** vigente. **Actualizado:** 2026-09-28.
 
 ## Orden de lectura obligatorio al iniciar
 
@@ -17,6 +17,14 @@
 - **La compuerta:** nunca propongas commit, push o PR sin haber corrido `scripts/verify.sh` y mostrado su salida real. Si no se puede correr, dilo y detente. Prohibido "esto debería funcionar".
 - **Criterio cumplido = prueba nombrada.** Sin prueba, el estado es `en_progreso` con el faltante nombrado.
 - **Estado:** tras cambiar código de una feature, actualiza su `SPEC.md` y regenera `STATUS.md`. Jamás marques `terminada` sin que las pruebas hayan corrido.
+
+## Convenciones de código y de git
+
+Decisiones del equipo. No todas tienen check: las que no, las verifica el revisor humano — por eso tienes que seguirlas sin que nada te frene.
+
+- **Sin `class` en código nuevo** ([ADR-0008](../docs/adr/ADR-0008-no-classes.md)). Entidades: `interface` + función `createX()` que valida y devuelve `Result`. Comportamiento: funciones puras (`deactivateX(x)`), no métodos. Errores: `interface` con `code` literal + fábrica + guarda `isXError()` en vez de `instanceof`. Repositorios y adaptadores: función fábrica que devuelve el puerto. Si la tarea toca una clase que ya existe, no la migres por tu cuenta: está listada en el ADR y se migra con su historia.
+- **Commits en Conventional Commits, en español**: `<tipo>(<ámbito>): <descripción>`, p.ej. `feat(catalog): formulario de paquetes`. Sin check; lo verifica el revisor ([INTEGRATION.md](../docs/spec/INTEGRATION.md#int-009)).
+- **Título de PR** — regla INT-009, **con check en CI**: el mismo formato en español, más `(US-XXX-NN, i/N)` si la rama es una pieza de una historia (`i` = posición en la pila de `N`), o `(US-XXX-NN)` si es el cierre `us/<ID>` → `main`. Ejemplo: `feat(catalog): formulario de paquetes (US-PROD-01, 9/10)`. Para probar un título antes de abrir el PR: `PR_TITLE="…" PR_HEAD_REF=<rama> bash scripts/rules/check-pr-title.sh`.
 
 ## Advertencia de conflicto con regla (Capa 4)
 

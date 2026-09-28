@@ -24,6 +24,8 @@
 ## Revisión
 
 - [ ] Pieza: base `us/<ID>` (o la pieza anterior), rama ≤ 3 días, merge commit. PR a `main`: `us/<ID>` al día con `main`, historia completa, squash (INT-001/005).
+- [ ] Título y commits en Conventional Commits **en español**; el título termina en `(US-XXX-NN, i/N)` si es pieza o `(US-XXX-NN)` si es el cierre (INT-009 — CI valida el formato; el idioma, el revisor).
+- [ ] Ninguna `class` nueva: interfaces y funciones (ADR-0008).
 - [ ] Máximo una migración, forward-only (INT-008).
 - [ ] Sin imports ilegales entre features (ARCH-003/004).
 - [ ] Si toca auth, RLS, uploads, migraciones, dinero o expediente: checklist de `lashary-seguridad` corrido; RLS con su test de aislamiento (SEC-002).

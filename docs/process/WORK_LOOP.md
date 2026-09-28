@@ -38,3 +38,4 @@ Para cambios que **no tocan código fuente** (documentación, comentarios, confi
 3. Pieza contra `us/<ID>`: diff ≤ ~400 líneas, ≤ 2 features (INT-002); rama ≤ 3 días (INT-001). El PR `us/<ID>` → `main` está exento de ambos topes.
 4. Migración: máximo una, forward-only (INT-008).
 5. Reglas citadas por ID donde el PR las toca.
+6. Título y commits en Conventional Commits en español, con `(US-XXX-NN, i/N)` en el título si es pieza (INT-009); ninguna `class` nueva (ADR-0008).
