@@ -4,6 +4,7 @@ import { CatalogTabs } from './catalog-tabs'
 import { catalogStyles as s } from './catalog.styles'
 
 const SECTION_TITLE = 'Catálogo'
+const SECTION_SUBTITLE = 'Técnicas y paquetes de servicios del estudio'
 
 // Compuerta de staff para toda la ruta /admin/catalog. requireAdminSession redirige a /admin
 // si no hay sesión admin/superadmin; RLS conserva la autorización real (SEC-001).
@@ -16,7 +17,10 @@ export default async function AdminCatalogLayout({
   return (
     <>
       <header className={s.sectionHeader}>
-        <p className={s.sectionTitle}>{SECTION_TITLE}</p>
+        <div>
+          <h1 className={s.sectionTitle}>{SECTION_TITLE}</h1>
+          <p className={s.sectionSubtitle}>{SECTION_SUBTITLE}</p>
+        </div>
         <CatalogTabs />
       </header>
       {children}
