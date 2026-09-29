@@ -1,31 +1,24 @@
 import type { ReactNode } from 'react'
-import { requireAdminSession, signOutAction } from '@/features/auth'
-import { catalogMessages } from '@/features/catalog/ui/messages'
+import { requireAdminSession } from '@/features/auth'
+import { CatalogTabs } from './catalog-tabs'
+import { catalogStyles as s } from './catalog.styles'
 
-const m = catalogMessages.shell
+const SECTION_TITLE = 'Catálogo'
 
 // Compuerta de staff para toda la ruta /admin/catalog. requireAdminSession redirige a /admin
 // si no hay sesión admin/superadmin; RLS conserva la autorización real (SEC-001).
+// La sesión y el cierre de sesión viven en la barra lateral del layout /admin.
 export default async function AdminCatalogLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
-  const session = await requireAdminSession()
+  await requireAdminSession()
 
   return (
     <>
-      <nav className="navbar border-b border-base-300 bg-base-100 px-6">
-        <span className="flex-1 font-serif text-lg">{m.brand}</span>
-        <div className="flex flex-none items-center gap-3">
-          <span className="hidden text-sm text-base-content/70 sm:inline">
-            {session.user.email}
-          </span>
-          <form action={signOutAction}>
-            <button type="submit" className="btn btn-ghost btn-sm">
-              {m.signOut}
-            </button>
-          </form>
-        </div>
-      </nav>
+      <header className={s.sectionHeader}>
+        <p className={s.sectionTitle}>{SECTION_TITLE}</p>
+        <CatalogTabs />
+      </header>
       {children}
     </>
   )

@@ -7,4 +7,9 @@ export const catalogStyles = {
   retryButton: 'btn btn-outline btn-sm mt-4',
   loadingBox: 'flex items-center gap-3 rounded-box border border-base-300 p-10',
   spinner: 'loading loading-spinner',
+  sectionHeader: 'mx-auto flex max-w-6xl flex-col gap-3 px-6 pt-6',
+  sectionTitle: 'font-serif text-lg text-base-content/70',
+  tabs: 'tabs tabs-bordered w-fit',
+  tab: 'tab',
+  tabActive: 'tab tab-active',
 }
