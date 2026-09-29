@@ -2,7 +2,7 @@
 feature: auth
 dri: pendiente
 estado: terminada
-actualizado: "2026-09-12"
+actualizado: "2026-09-28"
 historias:
   - id: US-AUTH-01
     estado: terminada
@@ -38,6 +38,7 @@ Completadas las historias `US-AUTH-01` y `US-AUTH-02`.
 - Pruebas de aislamiento RLS cross-cliente (`rls-isolation.test.ts`) según `SEC-002`.
 - Textos y etiquetas de interfaz completamente externalizados en constantes (`auth-strings.ts`, DOM-009).
 - Separación atómica de componentes UI, hooks dedicados (`useGoogleSignIn`, `usePhoneRegistration`, `useAdminLoginForm`, `useInactivityTimeout`), estilos e interfaces.
+- `clientCitasTitle` / `clientCitasSubtitle` / `clientCitasPlaceholder` retirados de `auth-strings.ts`: la ruta `/portal/citas` que los usaba como placeholder ahora la compone `scheduling` (`US-AGE-03`).
 
 ## Contrato público (`src/features/auth/index.ts`)
 
