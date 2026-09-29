@@ -87,7 +87,7 @@
 ### scheduling (actualizado: 2026-09-28)
 - US-AGE-01 — no_iniciada
 - US-AGE-02 — no_iniciada
-- US-AGE-03 — en_progreso — falta: falta la UI/ruta que demuestra el criterio 1 de punta a punta (siguiente pieza de esta misma historia). Criterio 2 (detectar primera vez/re-aplicación por historial de citas) diferido: no existe scheduling_appointments todavía (la trae US-AGE-05, que depende de esta historia). Punto de extensión: application/no-appointment-history.ts (ClientHistoryPort), hoy siempre reporta sin historial; la corrección manual ya está resuelta en el use-case (isFirstTimeOverride). Ver docs/process/DEPENDENCIES.md, Criterios diferidos.
+- US-AGE-03 — en_progreso — falta: falta cablear la ruta (entry points + src/app/portal/citas/, siguiente pieza de esta misma historia). Criterio 2 (detectar primera vez/re-aplicación por historial de citas) diferido: no existe scheduling_appointments todavía (la trae US-AGE-05, que depende de esta historia). Punto de extensión: application/no-appointment-history.ts (ClientHistoryPort), hoy siempre reporta sin historial; la corrección manual ya está resuelta en el use-case (isFirstTimeOverride). Ver docs/process/DEPENDENCIES.md, Criterios diferidos.
 - US-AGE-04 — no_iniciada
 - US-AGE-05 — no_iniciada
 - US-AGE-06 — no_iniciada
