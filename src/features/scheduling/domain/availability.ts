@@ -1,7 +1,7 @@
 // Dominio de disponibilidad (US-AGE-01). Invariantes en el constructor (DOM-007); el reloj
 // no se instancia acá (DOM-004).
 
-import { InvalidDayOfWeekError, InvalidTimeRangeError } from './errors'
+import { InvalidDateError, InvalidDayOfWeekError, InvalidTimeRangeError } from './errors'
 
 // Convención EXTRACT(DOW) de Postgres: 0 = domingo ... 6 = sábado. Único lugar donde el rango
 // vive con nombre; el constructor lo valida desde acá, no con 0/6 repetidos a mano.
@@ -46,5 +46,32 @@ export class WeeklyAvailabilityBlock {
     this.dayOfWeek = props.dayOfWeek
     this.startTime = props.startTime
     this.endTime = props.endTime
+  }
+}
+
+// Días no laborables y feriados (AC-2, US-AGE-01). Fecha por recurso, única por
+// (resource_id, closed_date) en la base — no en el dominio: dos llamadas concurrentes se
+// resuelven en la base, no con una lectura-y-comparación en la aplicación.
+const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/
+
+export interface ClosedDateProps {
+  id?: string
+  resourceId: string
+  closedDate: string
+  reason?: string
+}
+
+export class ClosedDate {
+  readonly id?: string
+  readonly resourceId: string
+  readonly closedDate: string
+  readonly reason?: string
+
+  constructor(props: ClosedDateProps) {
+    if (!DATE_FORMAT.test(props.closedDate)) throw new InvalidDateError(props.closedDate)
+    this.id = props.id
+    this.resourceId = props.resourceId
+    this.closedDate = props.closedDate
+    this.reason = props.reason
   }
 }
