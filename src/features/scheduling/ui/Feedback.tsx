@@ -2,8 +2,6 @@ import { schedulingMessages } from './messages'
 import { feedbackStyles as s } from './Feedback.styles'
 import type { SchedulingActionState } from './action-state'
 
-// Compartido por los tres formularios del panel (weekly/closed/manual) — misma forma de
-// estado (SchedulingActionState) para los tres, así que una sola vez basta.
 export function Feedback({ status, message, problems }: SchedulingActionState) {
   if (status === 'idle') return null
   if (status === 'ok') {
