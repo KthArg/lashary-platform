@@ -1,10 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { createSupabasePackageRepository } from '@/features/catalog/db/package-repository'
+import { createSupabasePackageRepository } from '@/features/catalog/db/packages/package-repository'
 import type { PackageRepository } from '@/features/catalog/application/packages/ports'
-
-// Integración contra Supabase local (seed cargado). Lecturas con token anónimo; las escrituras
-// están denegadas por RLS (B1) hasta la migración de escritura (pieza 6). Se salta sin conexión.
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
@@ -39,7 +36,6 @@ describe.skipIf(!reachable)('SupabasePackageRepository (Supabase local)', () => 
     expect(pkg.name).toBe('Cejas y pestañas clásico')
     expect(pkg.techniqueIds).toHaveLength(2)
     expect(pkg.price.colones).toBe(30000)
-    // Set clásico: 120 + 15 · Diseño de cejas: 45 + 10 = 190
     expect(durationTotalMin).toBe(190)
   })
 
@@ -57,7 +53,6 @@ describe.skipIf(!reachable)('SupabasePackageRepository (Supabase local)', () => 
     const { items } = await repo.list({ activeOnly: true, offset: 0, limit: 1 })
     await expect(repo.save(items[0].pkg)).rejects.toThrow()
 
-    // y la fila no cambió
     const again = await repo.findById(items[0].pkg.id)
     expect(again?.pkg.name).toBe(items[0].pkg.name)
   })

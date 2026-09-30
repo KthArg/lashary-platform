@@ -2,15 +2,13 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { Money } from '@/shared/money'
 import { isOk } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
-import { createPackage, packageToView, type Package } from '../domain/packages/package'
-import { packageNameConflict } from '../domain/packages/errors'
-import type { PackageRepository, PackageWithDuration } from '../application/packages/ports'
+import { createPackage, packageToView, type Package } from '../../domain/packages/package'
+import { packageNameConflict } from '../../domain/packages/errors'
+import type { PackageRepository, PackageWithDuration } from '../../application/packages/ports'
 
 const TABLE = 'catalog_packages'
 const BRIDGE_TABLE = 'catalog_package_techniques'
 
-// Un solo join técnicas↔paquete (PERF-005): la duración total no vive en catalog_packages, se
-// suma acá a partir de las técnicas miembro, en la misma consulta que trae el paquete.
 const COLUMNS = `
   id, name, price, is_active,
   catalog_package_techniques ( technique_id, catalog_techniques ( duration_first_time_min, buffer_min ) )
@@ -29,8 +27,6 @@ type Row = {
 function rowToDomain(row: Row): PackageWithDuration {
   const techniqueIds = row.catalog_package_techniques.map((r) => r.technique_id)
   const durationTotalMin = row.catalog_package_techniques.reduce((total, r) => {
-    // catalog_techniques nunca debería venir null (FK real, sin borrado de técnicas) — 0 es
-    // una salvaguarda defensiva, no el camino esperado.
     const t = r.catalog_techniques
     return total + (t ? t.duration_first_time_min + t.buffer_min : 0)
   }, 0)
@@ -43,14 +39,11 @@ function rowToDomain(row: Row): PackageWithDuration {
     isActive: row.is_active,
   })
   if (!isOk(built)) {
-    // Una fila que no pasa los invariantes es corrupción de datos, no un caso de negocio.
     throw new Error(`fila inválida en ${TABLE} (${row.id}): ${built.error.message}`)
   }
   return { pkg: built.value, durationTotalMin }
 }
 
-// Sin `class` (en migración hacia ese estándar para código nuevo): fábrica que devuelve un
-// objeto que implementa PackageRepository, en vez de una instancia de una clase.
 export function createSupabasePackageRepository(db: SupabaseClient): PackageRepository {
   return {
     async list(params: { activeOnly: boolean; offset: number; limit: number }) {
@@ -76,10 +69,6 @@ export function createSupabasePackageRepository(db: SupabaseClient): PackageRepo
       return data ? rowToDomain(data as unknown as Row) : null
     },
 
-    // No transaccional: actualiza el paquete y reemplaza sus filas puente en llamadas
-    // secuenciales, no en una transacción SQL. Simplificación aceptada — DOM-011 (atomicidad) es
-    // para el reagendado de citas, no aplica a la composición de un paquete a esta escala
-    // (decisión documentada en SPEC.md).
     async save(pkg: Package): Promise<void> {
       const view = packageToView(pkg)
       const { error: upsertError } = await db
@@ -88,8 +77,6 @@ export function createSupabasePackageRepository(db: SupabaseClient): PackageRepo
           onConflict: 'id',
         })
       if (upsertError) {
-        // 23505 = unique_violation. La única constraint de unicidad de esta tabla es
-        // catalog_packages_name_unique — un caso de negocio esperable, no una falla de infra.
         if (upsertError.code === '23505') {
           throw packageNameConflict(view.name)
         }
@@ -111,7 +98,6 @@ export function createSupabasePackageRepository(db: SupabaseClient): PackageRepo
   }
 }
 
-// Fábrica para el contexto de servidor de Next (server components / actions).
 export async function packageRepository(): Promise<PackageRepository> {
   return createSupabasePackageRepository(await createClient())
 }

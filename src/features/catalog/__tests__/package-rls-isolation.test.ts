@@ -1,12 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-// SEC-002 — Test de aislamiento RLS para catalog_packages y catalog_package_techniques.
-//
-// Igual postura que catalog_techniques (__tests__/rls-isolation.test.ts): catálogo compartido
-// del estudio, lectura pública intencional, escritura solo para staff (público.auth_is_staff()).
-// Se salta si Supabase local no está disponible; en CI (job-tests-reales) sí lo está.
-
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 const PACKAGES = 'catalog_packages'
@@ -80,8 +74,6 @@ describe.skipIf(!reachable)(
         .select('*', { count: 'exact', head: true })
       initialBridgeCount = bridgeCount ?? 0
 
-      // Falla ruidosamente si el seed no está cargado — sin esto, los asserts de "no puede
-      // escribir" pasarían igual con un .eq('id', '') que no ejerce RLS de verdad.
       if (!samplePackageId || !sampleTechniqueId || initialPackageCount === 0) {
         throw new Error('setup: el seed de catalog_packages no está cargado')
       }
