@@ -2,7 +2,7 @@
 feature: store
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-09-27
+actualizado: 2026-09-30
 historias:
   - id: US-PROD-02
     estado: en_revision
@@ -28,7 +28,7 @@ Tienda (F4): productos, carrito, checkout con comprobante. Stock y pedidos admin
 - Caso de uso (`application/obtener-grid-productos-publicos.ts`): orquestación de listado
 - Adaptador CMS (`http/catalogo-productos-cms.ts`): lectura desde API externa
 - Adaptador base de datos (`db/productos-db.ts`): lectura pública desde Supabase
-- Componente React (`components/GridProductosPublicos/`): grid responsivo con estados de UI, JSX real (no HTML a mano) — React escapa contenido y atributos; sanitización de esquema de URL (`javascript:`/`data:`) aislada en `sanitizarUrl` (`domain/producto.ts`)
+- Componente React (`components/GridProductosPublicos/`): grid responsivo con estados de UI, JSX real (no HTML a mano) — React escapa contenido y atributos; sanitización de esquema de URL (`javascript:`/`data:`) aislada en `sanitizarUrl` (`domain/producto.ts`). Las variantes de estado (cargando/vacío/error/listo) y los botones de reintento viven consolidados en `Estados.tsx`, un archivo por familia en vez de uno por variante
 - Strings externalizados (`constants/grid-productos-publicos-cadenas-es.ts`): i18n base
 - Integración en ruta pública `/productos` con catálogo desde la base de datos
 - Pruebas automatizadas de UI/integración para el grid, el adaptador CMS y la ruta pública
