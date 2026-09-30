@@ -1,5 +1,3 @@
-// Casos de uso de US-AGE-01: definir y listar disponibilidad. "define" valida el invariante
-// de dominio (createX) antes de persistir — el repositorio no vuelve a validar.
 import { err, ok, isErr, type Result } from '@/shared/result'
 import {
   createClosedDate,
@@ -21,10 +19,6 @@ import type {
 } from '../domain/errors'
 import type { SchedulingRepository } from './ports'
 
-// DOM-006: repo.saveClosedDate() lanza ClosedDateAlreadyExistsError ante el UNIQUE
-// (resource_id, closed_date) — el único error de infra que en realidad es un caso de negocio.
-// Se atrapa acá, en el borde de application/, y se convierte a Result; cualquier otro throw es
-// una falla de infra real y se deja propagar.
 async function saveClosedDateOrConflict(
   repository: SchedulingRepository,
   closedDate: ClosedDate

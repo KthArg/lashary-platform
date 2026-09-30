@@ -50,9 +50,6 @@ type ManualBlockRow = {
   reason: string | null
 }
 
-// Una fila que no pasa los invariantes de dominio es corrupción de datos, no un caso de
-// negocio (a diferencia del UNIQUE de closed_date, ver saveClosedDate) — por eso lanza Error
-// nativo en vez de un error tipado de scheduling (DOM-006, patrón de catalog/db/package-repository.ts).
 function weeklyAvailabilityRowToDomain(row: WeeklyAvailabilityRow): WeeklyAvailabilityBlock {
   const built = createWeeklyAvailabilityBlock({
     id: row.id,
@@ -88,7 +85,6 @@ function manualBlockRowToDomain(row: ManualBlockRow): ManualBlock {
   return built.value
 }
 
-// Fábrica que devuelve un objeto que implementa SchedulingRepository, sin `class` (ADR-0008).
 export const supabaseSchedulingRepository: SchedulingRepository = {
   async listResources() {
     const supabase = await createClient()
@@ -151,8 +147,6 @@ export const supabaseSchedulingRepository: SchedulingRepository = {
       .select(CLOSED_DATES_COLUMNS)
       .single()
     if (error) {
-      // 23505 = unique_violation. La única constraint de unicidad de esta tabla es
-      // (resource_id, closed_date) — un feriado repetido, caso de negocio (DOM-006).
       if (error.code === POSTGRES_UNIQUE_VIOLATION) throw closedDateAlreadyExistsError(closedDate.closedDate)
       throw error
     }
