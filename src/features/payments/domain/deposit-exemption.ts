@@ -8,7 +8,6 @@ export type DepositExemptionInput = {
   createdAt: Date
 }
 
-// Vista pública de una exoneración.
 export type DepositExemptionView = {
   id: string
   clientId: string
@@ -23,9 +22,6 @@ type DepositExemptionProps = DepositExemptionView
 export class DepositExemption {
   private constructor(private readonly props: DepositExemptionProps) {}
 
-  // Constructor validado (DOM-007): una exoneración inválida no puede existir. Nace siempre
-  // activa — "levantarla" (active: false) no es parte del criterio 5 de US-AGE-13, se agrega
-  // cuando una historia futura construya esa capacidad. El reloj se inyecta (DOM-004).
   static create(
     id: string,
     input: DepositExemptionInput,

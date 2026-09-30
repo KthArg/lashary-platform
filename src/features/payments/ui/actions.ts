@@ -3,12 +3,12 @@
 import { revalidatePath } from 'next/cache'
 import { isErr } from '@/shared/result'
 import { exemptClient, ClientAlreadyExempt } from '@/features/payments'
-import { listClientsAction, type ClientRecord } from '@/features/clients'
+import { listClientsAction } from '@/features/clients'
 import { getAuthSession } from '@/features/auth'
 import { isStaff } from './require-staff'
 import { exemptClientFormSchema } from './schema'
 import { paymentsMessages } from './messages'
-import type { ExemptClientActionState } from './action-state'
+import type { ExemptClientActionState, SearchClientsResult } from './action-state'
 
 const m = paymentsMessages.exemption
 const EXEMPTIONS_PATH = '/admin/payments'
@@ -17,14 +17,12 @@ function forbidden(): ExemptClientActionState {
   return { status: 'forbidden', message: m.accessDenied }
 }
 
-// Búsqueda de clienta para el selector del formulario — reusa el contrato público de clients
-// (listClientsAction, ARCH-003), no le agrega nada propio.
-export async function searchClientsAction(name: string): Promise<ClientRecord[]> {
-  if (!(await isStaff())) return []
-  if (name.trim().length === 0) return []
+export async function searchClientsAction(name: string): Promise<SearchClientsResult> {
+  if (!(await isStaff())) return { ok: false }
+  if (name.trim().length === 0) return { ok: true, clients: [] }
 
   const result = await listClientsAction({ name, pageSize: 10 })
-  return result.ok ? result.clients : []
+  return result.ok ? { ok: true, clients: result.clients } : { ok: false }
 }
 
 export async function exemptClientAction(
@@ -54,7 +52,6 @@ export async function exemptClientAction(
     if (result.error instanceof ClientAlreadyExempt) {
       return { status: 'conflict', message: m.alreadyExempt }
     }
-    // El único error que queda tras excluir ClientAlreadyExempt es DepositExemptionValidationError.
     return { status: 'invalid', problems: result.error.problems }
   }
 

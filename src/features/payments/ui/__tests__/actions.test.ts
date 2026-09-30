@@ -89,29 +89,37 @@ describe('searchClientsAction', () => {
     mocks.isStaff.mockResolvedValue(true)
   })
 
-  it('sin sesión staff no busca nada', async () => {
+  it('sin sesión staff no busca nada y lo reporta como fallo', async () => {
     mocks.isStaff.mockResolvedValueOnce(false)
 
-    const clients = await searchClientsAction('maría')
+    const result = await searchClientsAction('maría')
 
-    expect(clients).toEqual([])
+    expect(result).toEqual({ ok: false })
     expect(mocks.listClientsAction).not.toHaveBeenCalled()
   })
 
-  it('con la caja vacía no busca nada', async () => {
-    const clients = await searchClientsAction('   ')
+  it('con la caja vacía no busca nada y no es un fallo', async () => {
+    const result = await searchClientsAction('   ')
 
-    expect(clients).toEqual([])
+    expect(result).toEqual({ ok: true, clients: [] })
     expect(mocks.listClientsAction).not.toHaveBeenCalled()
+  })
+
+  it('si listClientsAction falla, lo reporta como fallo y no como lista vacía', async () => {
+    mocks.listClientsAction.mockResolvedValue({ ok: false })
+
+    const result = await searchClientsAction('maría')
+
+    expect(result).toEqual({ ok: false })
   })
 
   it('delega la búsqueda a listClientsAction y devuelve sus resultados', async () => {
     const found = [{ id: 'c1', fullName: 'María', phone: '', email: '', notes: '' }]
     mocks.listClientsAction.mockResolvedValue({ ok: true, clients: found, total: 1, page: 0, pageSize: 10 })
 
-    const clients = await searchClientsAction('maría')
+    const result = await searchClientsAction('maría')
 
-    expect(clients).toEqual(found)
+    expect(result).toEqual({ ok: true, clients: found })
     expect(mocks.listClientsAction).toHaveBeenCalledWith({ name: 'maría', pageSize: 10 })
   })
 })

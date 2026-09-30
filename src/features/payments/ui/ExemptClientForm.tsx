@@ -5,7 +5,7 @@ import type { ClientRecord } from '@/features/clients'
 import { paymentsMessages } from './messages'
 import { exemptClientAction, searchClientsAction } from './actions'
 import { initialExemptClientActionState } from './action-state'
-import { exemptClientFormStyles as s } from './exempt-client-form.styles'
+import { exemptClientFormStyles as Styles } from './exempt-client-form.styles'
 
 const m = paymentsMessages.exemption
 
@@ -21,23 +21,23 @@ function Feedback({
   if (status === 'idle') return null
   if (status === 'ok') {
     return (
-      <div role="status" className={s.alertSuccess}>
+      <div role="status" className={Styles.alertSuccess}>
         <span>{message}</span>
       </div>
     )
   }
   if (status === 'forbidden' || status === 'conflict') {
     return (
-      <div role="alert" className={s.alertWarning}>
+      <div role="alert" className={Styles.alertWarning}>
         <span>{message}</span>
       </div>
     )
   }
   return (
-    <div role="alert" className={s.alertError}>
+    <div role="alert" className={Styles.alertError}>
       <div>
-        <p className={s.feedbackTitle}>{m.validationTitle}</p>
-        <ul className={s.feedbackList}>
+        <p className={Styles.feedbackTitle}>{m.validationTitle}</p>
+        <ul className={Styles.feedbackList}>
           {(problems ?? []).map((problem) => (
             <li key={problem}>{problem}</li>
           ))}
@@ -47,8 +47,6 @@ function Feedback({
   )
 }
 
-// Criterio 5 de US-AGE-13. UI-003: la lista de resultados tiene sus tres estados — cargando
-// (searching), vacía (searched && results vacíos) y su versión "sin buscar todavía" (idle).
 export function ExemptClientForm() {
   const [state, formAction, pending] = useActionState(
     exemptClientAction,
@@ -57,66 +55,76 @@ export function ExemptClientForm() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<ClientRecord[]>([])
   const [searched, setSearched] = useState(false)
+  const [searchFailed, setSearchFailed] = useState(false)
   const [selected, setSelected] = useState<ClientRecord | null>(null)
   const [searching, startSearch] = useTransition()
-  // useActionState no se puede reiniciar: al buscar de nuevo se descarta el resultado anterior
-  // por identidad, y reaparece solo cuando llega un estado nuevo del siguiente envío.
   const [dismissedState, setDismissedState] = useState(state)
+
+  const showFeedback = state !== dismissedState
+  const exempted = showFeedback && state.status === 'ok'
 
   function handleSearch() {
     setDismissedState(state)
     startSearch(async () => {
       const found = await searchClientsAction(query)
-      setResults(found)
+      setSearchFailed(!found.ok)
+      setResults(found.ok ? found.clients : [])
       setSearched(true)
       setSelected(null)
     })
   }
 
   return (
-    <section className={s.section}>
-      <h2 className={s.heading}>{m.title}</h2>
-      <p className={s.subtitle}>{m.subtitle}</p>
+    <section className={Styles.section}>
+      <h2 className={Styles.heading}>{m.title}</h2>
+      <p className={Styles.subtitle}>{m.subtitle}</p>
 
-      {state !== dismissedState && <Feedback {...state} />}
+      {showFeedback && <Feedback {...state} />}
 
-      <div className={s.searchRow}>
-        <label className={s.fieldLabel} htmlFor="client-search">
-          <span className={s.labelText}>{m.searchLabel}</span>
+      <div className={Styles.searchRow}>
+        <label className={Styles.fieldLabel} htmlFor="client-search">
+          <span className={Styles.labelText}>{m.searchLabel}</span>
           <input
             id="client-search"
             type="text"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={m.searchPlaceholder}
-            className={s.fieldInput}
+            className={Styles.fieldInput}
           />
         </label>
         <button
           type="button"
           onClick={handleSearch}
           disabled={searching || query.trim().length === 0}
-          className={s.searchButton}
+          className={Styles.searchButton}
         >
           {searching ? m.searching : m.searchLabel}
         </button>
       </div>
 
-      <div aria-live="polite">
-        {searched && !searching && results.length === 0 && (
-          <p className={s.statusText}>{m.noResults}</p>
-        )}
-      </div>
+      {!exempted && (
+        <div aria-live="polite">
+          {searched && !searching && searchFailed && (
+            <p role="alert" className={Styles.alertError}>
+              {m.searchFailed}
+            </p>
+          )}
+          {searched && !searching && !searchFailed && results.length === 0 && (
+            <p className={Styles.statusText}>{m.noResults}</p>
+          )}
+        </div>
+      )}
 
-      {results.length > 0 && (
-        <ul className={s.resultsList}>
+      {!exempted && results.length > 0 && (
+        <ul className={Styles.resultsList}>
           {results.map((client) => (
             <li key={client.id}>
               <button
                 type="button"
                 aria-pressed={selected?.id === client.id}
                 onClick={() => setSelected(client)}
-                className={selected?.id === client.id ? s.resultSelected : s.result}
+                className={selected?.id === client.id ? Styles.resultSelected : Styles.result}
               >
                 {client.fullName} — {client.phone}
               </button>
@@ -125,19 +133,19 @@ export function ExemptClientForm() {
         </ul>
       )}
 
-      {selected && (
-        <form action={formAction} className={s.form}>
+      {!exempted && selected && (
+        <form action={formAction} className={Styles.form}>
           <input type="hidden" name="clientId" value={selected.id} />
-          <p className={s.selectedLine}>
+          <p className={Styles.selectedLine}>
             {m.selected}: <strong>{selected.fullName}</strong>
           </p>
 
-          <label className={s.fieldLabel} htmlFor="reason">
-            <span className={s.labelText}>{m.reasonLabel}</span>
-            <textarea id="reason" name="reason" required rows={2} className={s.textarea} />
+          <label className={Styles.fieldLabel} htmlFor="reason">
+            <span className={Styles.labelText}>{m.reasonLabel}</span>
+            <textarea id="reason" name="reason" required rows={2} className={Styles.textarea} />
           </label>
 
-          <button type="submit" disabled={pending} className={s.submitButton}>
+          <button type="submit" disabled={pending} className={Styles.submitButton}>
             {m.submit}
           </button>
         </form>

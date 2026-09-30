@@ -8,9 +8,6 @@ import {
 import type { AuditEventValidationError } from '../domain/errors'
 import type { AuditEventRepository } from './ports'
 
-// Lo que llega de quien emite el evento (otra feature, desde su propio código de servidor — no
-// hay borde HTTP acá, así que no hay Zod que validar: quien llama ya construyó estos valores
-// desde su propio dominio, p.ej. el id de una técnica o de una clienta reales).
 export type RecordAuditEventInput = {
   actorId: string
   action: string

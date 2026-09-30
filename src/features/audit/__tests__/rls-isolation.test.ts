@@ -1,18 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-// SEC-002 — Test de aislamiento RLS para audit_events (bitácora de auditoría, US-AGE-13).
-//
-// A diferencia de catalog_techniques, esta tabla NO tiene lectura pública: es administrativa.
-// Este archivo prueba el control negativo — anon y una clienta autenticada real (sign-up, sin
-// service-role key, SEC-003) no leen ni escriben nada. El control positivo (staff sí puede, y
-// que NADIE, ni siquiera staff, puede UPDATE/DELETE) vive en
-// supabase/tests/database/audit_staff_access.test.sql (pgTAP), porque requiere sembrar un rol
-// en auth_user_roles, algo que RLS no permite hacer desde un cliente anónimo.
-//
-// Harness de aislamiento portado por US-AGE-08 (primera tabla con RLS en esta rama, ADR-0007).
-// Se salta si Supabase local no está disponible; en CI (job-tests-reales) sí lo está.
-
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 const TABLE = 'audit_events'

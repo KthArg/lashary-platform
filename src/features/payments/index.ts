@@ -1,7 +1,3 @@
-// Entry point público de la feature payments (ARCH-003). Único import cross-feature de toda la
-// historia: audit, por su entry point — el puerto RecordAuditEvent que declara application/
-// (ARCH-004: domain no importa otras features; application sí puede, por el entry point).
-
 import { randomUUID } from 'node:crypto'
 import { systemClock } from '@/shared/clock'
 import type { Result } from '@/shared/result'
@@ -30,6 +26,4 @@ export async function exemptClient(
 
 export type { ExemptClientInput, DepositExemptionView }
 export { ClientAlreadyExempt, DepositExemptionValidationError } from './domain/errors'
-
-// UI de administración (US-AGE-13, criterio 5). La compone la ruta src/app/admin/payments/.
 export { ExemptClientForm } from './ui/ExemptClientForm'

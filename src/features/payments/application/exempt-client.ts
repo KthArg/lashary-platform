@@ -23,9 +23,6 @@ export type ExemptClientDeps = {
   recordAuditEvent: RecordAuditEvent
 }
 
-// DOM-006: repo.save() lanza ClientAlreadyExempt ante la violación de unicidad parcial (un
-// cliente, una exoneración vigente) — el único error de infra que en realidad es un caso de
-// negocio esperable. Se atrapa acá y se convierte a Result; cualquier otro throw es infra real.
 async function saveOrConflict(
   repo: DepositExemptionRepository,
   exemption: DepositExemption,
@@ -57,10 +54,6 @@ export const exemptClient =
     const saved = await saveOrConflict(deps.repo, built.value)
     if (isErr(saved)) return saved
 
-    // Guardar antes de auditar: si repo.save() falla, no hay nada que registrar. Si el registro
-    // de auditoría falla después de guardar, el error se propaga (no se traga) — quien llama
-    // sabe que la exoneración quedó guardada pero sin bitácora, y puede alertar o reintentar;
-    // nunca se finge éxito silencioso (DOM-006).
     await deps.recordAuditEvent({
       actorId: input.exemptedBy,
       action: 'payments.deposit_exemption.granted',

@@ -20,7 +20,7 @@ beforeEach(() => {
 
 describe('ExemptClientForm', () => {
   it('busca, muestra "sin resultados" cuando no hay coincidencias', async () => {
-    mockSearch.mockResolvedValue([])
+    mockSearch.mockResolvedValue({ ok: true, clients: [] })
     render(<ExemptClientForm />)
 
     fireEvent.change(screen.getByLabelText(m.searchLabel), { target: { value: 'nadie' } })
@@ -28,10 +28,38 @@ describe('ExemptClientForm', () => {
 
     expect((await screen.findByText(m.noResults)).textContent).toBe(m.noResults)
     expect(mockSearch).toHaveBeenCalledWith('nadie')
+    expect(screen.queryByRole('alert')).toBeNull()
+  })
+
+  it('si la búsqueda falla, muestra un error distinto de "sin resultados"', async () => {
+    mockSearch.mockResolvedValue({ ok: false })
+    render(<ExemptClientForm />)
+
+    fireEvent.change(screen.getByLabelText(m.searchLabel), { target: { value: 'ana' } })
+    fireEvent.click(screen.getByRole('button', { name: m.searchLabel }))
+
+    expect((await screen.findByRole('alert')).textContent).toBe(m.searchFailed)
+    expect(screen.queryByText(m.noResults)).toBeNull()
+  })
+
+  it('tras exonerar con éxito, oculta la clienta seleccionada y el formulario de razón', async () => {
+    mockSearch.mockResolvedValue({ ok: true, clients: [CLIENT] })
+    mockExempt.mockResolvedValue({ status: 'ok', message: m.savedOk })
+    render(<ExemptClientForm />)
+
+    fireEvent.change(screen.getByLabelText(m.searchLabel), { target: { value: 'ana' } })
+    fireEvent.click(screen.getByRole('button', { name: m.searchLabel }))
+    fireEvent.click(await screen.findByRole('button', { name: /Ana Solís/ }))
+    fireEvent.change(screen.getByLabelText(m.reasonLabel), { target: { value: 'caso especial' } })
+    fireEvent.click(screen.getByRole('button', { name: m.submit }))
+
+    expect((await screen.findByRole('status')).textContent).toBe(m.savedOk)
+    expect(screen.queryByLabelText(m.reasonLabel)).toBeNull()
+    expect(screen.queryByRole('button', { name: /Ana Solís/ })).toBeNull()
   })
 
   it('busca, selecciona un resultado y envía la exoneración con su id y la razón', async () => {
-    mockSearch.mockResolvedValue([CLIENT])
+    mockSearch.mockResolvedValue({ ok: true, clients: [CLIENT] })
     mockExempt.mockResolvedValue({ status: 'ok', message: m.savedOk })
     render(<ExemptClientForm />)
 
@@ -51,7 +79,7 @@ describe('ExemptClientForm', () => {
   })
 
   it('el aviso de un envío anterior desaparece al buscar de nuevo', async () => {
-    mockSearch.mockResolvedValue([CLIENT])
+    mockSearch.mockResolvedValue({ ok: true, clients: [CLIENT] })
     mockExempt.mockResolvedValue({ status: 'conflict', message: m.alreadyExempt })
     render(<ExemptClientForm />)
 

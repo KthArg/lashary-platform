@@ -4,10 +4,6 @@ import { isOk } from '@/shared/result'
 import { AuditEvent } from '@/features/audit/domain/audit-event'
 import { SupabaseAuditEventRepository } from '@/features/audit/db/audit-event-repository'
 
-// Integración contra Supabase local. audit_events no tiene lectura pública (a diferencia de
-// catalog_techniques): con token anónimo solo hay algo que probar del lado de la escritura,
-// denegada por RLS (SEC-001, fail-closed). Se salta sin conexión.
-
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 

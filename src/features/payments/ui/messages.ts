@@ -1,4 +1,3 @@
-// Texto visible externalizado (DOM-009). Un solo idioma por ahora.
 export const paymentsMessages = {
   exemption: {
     title: 'Exonerar anticipo',
@@ -8,6 +7,7 @@ export const paymentsMessages = {
     searchPlaceholder: 'Nombre de la clienta',
     searching: 'Buscando…',
     noResults: 'Sin resultados',
+    searchFailed: 'No se pudo buscar. Revisá tu sesión e intentá de nuevo.',
     selected: 'Clienta seleccionada',
     reasonLabel: 'Razón de la exoneración',
     submit: 'Exonerar anticipo',

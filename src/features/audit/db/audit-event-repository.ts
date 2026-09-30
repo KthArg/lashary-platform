@@ -15,11 +15,6 @@ type InsertRow = {
   created_at: string
 }
 
-// Solo escribe: el puerto no pide lectura (application/ports.ts), así que no hay rowToDomain ni
-// Row de lectura — se agregan cuando una historia futura necesite consultar la bitácora.
-// Exportada para su test unitario: sin Supabase local no hay forma de ejercer un insert() que
-// tenga éxito (RLS exige sesión de staff, que las pruebas de integración no pueden simular), así
-// que el mapeo se prueba solo, aparte.
 export function toRow(event: AuditEvent): InsertRow {
   const view = event.toView()
   return {
@@ -42,7 +37,6 @@ export class SupabaseAuditEventRepository implements AuditEventRepository {
   }
 }
 
-// Fábrica para el contexto de servidor de Next (server components / actions / otras features).
 export async function auditEventRepository(): Promise<SupabaseAuditEventRepository> {
   return new SupabaseAuditEventRepository(await createClient())
 }

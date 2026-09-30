@@ -2,7 +2,7 @@
 feature: audit
 dri: pendiente
 estado: terminada
-actualizado: 2026-09-24
+actualizado: 2026-09-30
 historias:
   []
 flags: []
