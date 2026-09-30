@@ -1,3 +1,4 @@
+import type { Result } from '@/shared/result'
 import type { DepositExemption } from '../domain/deposit-exemption'
 
 export interface DepositExemptionRepository {
@@ -10,4 +11,4 @@ export type RecordAuditEvent = (input: {
   entityType: string
   entityId: string
   payload?: Record<string, unknown>
-}) => Promise<unknown>
+}) => Promise<Result<unknown, unknown>>

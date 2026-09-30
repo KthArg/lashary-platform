@@ -30,6 +30,11 @@ Capa `db/`: `SupabaseAuditEventRepository` (`toRow` mapea dominio → fila; sin 
 
 `index.ts` (ARCH-003): un solo verbo — `record(input)` — cablea el repositorio de servidor, `randomUUID()` y `systemClock`. Quien llama no conoce nada de la persistencia interna. Exporta también `RecordAuditEventInput`, `AuditEventView`, `AuditEventPayload`, `AuditEventValidationError`.
 
+## Decisiones que conviene conocer
+
+- **`actor_id` sin `ON DELETE`** (`NO ACTION`): borrar una fila de `auth.users` que ya generó eventos falla por la FK. Es coherente con una bitácora append-only, pero hoy no hay flujo de borrado de usuarios; si aparece, se decide en una migración forward (p.ej. anonimizar el actor) y no con `CASCADE`, que borraría evidencia.
+- **Fallo al registrar: `record()` no lo absorbe.** Si Supabase rechaza el `insert` (RLS, red), `record()` lanza `Error` genérico; si el evento es inválido, devuelve `err(AuditEventValidationError)`. Qué hacer ante el fallo lo decide quien llama. Hoy el único consumidor, `payments.exemptClient`, lo propaga: la exoneración ya quedó guardada y el error avisa que falta su evento (fail-closed hacia quien llama, no best-effort silencioso).
+
 ## Fuera de alcance por ahora
 
 Sin capacidad de listar/consultar eventos (solo `insert`): se agrega cuando una historia futura (p.ej. US-CLI-04, que audita accesos al expediente) lo exija — no antes.
