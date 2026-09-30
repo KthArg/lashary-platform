@@ -1,10 +1,10 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { isErr } from '@/shared/result'
 import { isStaff } from './require-staff'
 import { defineClosedDate, defineManualBlock, defineWeeklyAvailability } from '../application/manage-availability'
 import { supabaseSchedulingRepository } from '../db/supabase-scheduling-repository'
-import { SchedulingError } from '../domain/errors'
 import { closedDateFormSchema, manualBlockFormSchema, weeklyAvailabilityFormSchema } from './schema'
 import { parseCostaRicaLocalDateTime } from './parse-local-datetime'
 import { schedulingMessages } from './messages'
@@ -13,17 +13,6 @@ import type { SchedulingActionState } from './action-state'
 
 function forbidden(): SchedulingActionState {
   return { status: 'forbidden', message: schedulingMessages.shared.accessDenied }
-}
-
-async function runOrReportError(run: () => Promise<void>): Promise<SchedulingActionState> {
-  try {
-    await run()
-  } catch (error) {
-    if (error instanceof SchedulingError) return { status: 'invalid', problems: [error.message] }
-    throw error
-  }
-  revalidatePath(schedulingRoutes.admin)
-  return { status: 'idle' }
 }
 
 export async function defineWeeklyAvailabilityAction(
@@ -37,10 +26,10 @@ export async function defineWeeklyAvailabilityAction(
     return { status: 'invalid', problems: parsed.error.issues.map((issue: { message: string }) => issue.message) }
   }
 
-  const result = await runOrReportError(async () => {
-    await defineWeeklyAvailability(supabaseSchedulingRepository, parsed.data)
-  })
-  if (result.status === 'invalid') return result
+  const result = await defineWeeklyAvailability(supabaseSchedulingRepository, parsed.data)
+  if (isErr(result)) return { status: 'invalid', problems: [result.error.message] }
+
+  revalidatePath(schedulingRoutes.admin)
   return { status: 'ok', message: schedulingMessages.weeklyAvailability.form.saved }
 }
 
@@ -55,10 +44,10 @@ export async function defineClosedDateAction(
     return { status: 'invalid', problems: parsed.error.issues.map((issue: { message: string }) => issue.message) }
   }
 
-  const result = await runOrReportError(async () => {
-    await defineClosedDate(supabaseSchedulingRepository, parsed.data)
-  })
-  if (result.status === 'invalid') return result
+  const result = await defineClosedDate(supabaseSchedulingRepository, parsed.data)
+  if (isErr(result)) return { status: 'invalid', problems: [result.error.message] }
+
+  revalidatePath(schedulingRoutes.admin)
   return { status: 'ok', message: schedulingMessages.closedDates.form.saved }
 }
 
@@ -73,14 +62,14 @@ export async function defineManualBlockAction(
     return { status: 'invalid', problems: parsed.error.issues.map((issue: { message: string }) => issue.message) }
   }
 
-  const result = await runOrReportError(async () => {
-    await defineManualBlock(supabaseSchedulingRepository, {
-      resourceId: parsed.data.resourceId,
-      startsAt: parseCostaRicaLocalDateTime(parsed.data.startsAt),
-      endsAt: parseCostaRicaLocalDateTime(parsed.data.endsAt),
-      reason: parsed.data.reason,
-    })
+  const result = await defineManualBlock(supabaseSchedulingRepository, {
+    resourceId: parsed.data.resourceId,
+    startsAt: parseCostaRicaLocalDateTime(parsed.data.startsAt),
+    endsAt: parseCostaRicaLocalDateTime(parsed.data.endsAt),
+    reason: parsed.data.reason,
   })
-  if (result.status === 'invalid') return result
+  if (isErr(result)) return { status: 'invalid', problems: [result.error.message] }
+
+  revalidatePath(schedulingRoutes.admin)
   return { status: 'ok', message: schedulingMessages.manualBlocks.form.saved }
 }
