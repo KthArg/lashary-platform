@@ -4,12 +4,8 @@ import { packageNameConflict } from '@/features/catalog/domain/packages/errors'
 import type {
   PackageRepository,
   PackageWithDuration,
-} from '@/features/catalog/application/ports'
+} from '@/features/catalog/application/packages/ports'
 
-// Repositorio en memoria para probar los use-cases sin base de datos. `durationLookup` simula
-// el join a catalog_techniques que hace el repositorio real (PERF-005): el fake no conoce
-// técnicas, solo el mapeo que el test le da. Sin `class`: fábrica que devuelve un objeto con
-// el puerto implementado, más `saveCalls` como propiedad de solo lectura sobre el cierre.
 export function createFakePackageRepository(
   initial: Package[] = [],
   durationLookup: (techniqueIds: readonly string[]) => number = () => 0,

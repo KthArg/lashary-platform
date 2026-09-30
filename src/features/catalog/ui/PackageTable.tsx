@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import type { PackageListItem } from '../application/queries'
+import type { PackageListItem } from '../application/packages/queries'
 import { catalogMessages } from './messages'
 import { formatColones } from './format'
 import { catalogRoutes } from './routes'

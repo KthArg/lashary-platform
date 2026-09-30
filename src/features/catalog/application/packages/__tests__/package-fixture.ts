@@ -4,7 +4,6 @@ import { createPackage, type Package } from '@/features/catalog/domain/packages/
 
 let counter = 0
 
-// Construye un Package válido para los tests; los overrides ajustan lo que importe al caso.
 export function makePackage(overrides: Partial<{
   id: string
   name: string

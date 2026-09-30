@@ -21,12 +21,8 @@ import {
   type PackageNotFound,
   type PackageValidationError,
 } from '../domain/packages/errors'
-import type {
-  TechniqueRepository,
-  TechniqueWriteModel,
-  PackageRepository,
-  PackageWriteModel,
-} from './ports'
+import type { TechniqueRepository, TechniqueWriteModel } from './ports'
+import type { PackageRepository, PackageWriteModel } from './packages/ports'
 import { commandMessages } from './messages'
 
 // DOM-006: repo.save() lanza TechniqueNameConflict ante catalog_techniques_name_unique — el

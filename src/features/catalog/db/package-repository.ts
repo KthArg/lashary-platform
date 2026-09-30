@@ -4,7 +4,7 @@ import { isOk } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import { createPackage, packageToView, type Package } from '../domain/packages/package'
 import { packageNameConflict } from '../domain/packages/errors'
-import type { PackageRepository, PackageWithDuration } from '../application/ports'
+import type { PackageRepository, PackageWithDuration } from '../application/packages/ports'
 
 const TABLE = 'catalog_packages'
 const BRIDGE_TABLE = 'catalog_package_techniques'

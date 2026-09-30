@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import { isOk } from '@/shared/result'
+import { listTechniques as listTechniquesUseCase } from '../application/queries'
 import {
   listPackages as listPackagesUseCase,
   getPackage as getPackageUseCase,
-  listTechniques as listTechniquesUseCase,
-} from '../application/queries'
+} from '../application/packages/queries'
 import { packageRepository } from '../db/package-repository'
 import { techniqueRepository } from '../db/technique-repository'
 import { catalogMessages } from './messages'

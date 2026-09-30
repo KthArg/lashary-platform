@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { PackageWriteModel } from '../application/ports'
+import type { PackageWriteModel } from '../application/packages/ports'
 import { catalogMessages } from './messages'
 
 // Validación de formato en el borde, una sola vez, con Zod (DOM-007). El invariante de negocio
