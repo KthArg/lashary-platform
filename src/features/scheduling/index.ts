@@ -1,5 +1,3 @@
-// Entry point público de scheduling (ARCH-003): lo único importable desde afuera.
-// domain/ no importa de ninguna otra feature (ARCH-004).
 export type {
   ClosedDate,
   ClosedDateProps,
@@ -11,9 +9,7 @@ export type {
 } from './domain/availability'
 export { DAYS_OF_WEEK, createClosedDate, createManualBlock, createWeeklyAvailabilityBlock } from './domain/availability'
 export type { Resource } from './domain/resource'
-// Errores de scheduling: interfaces + función fábrica + guarda de tipo, sin `class` (ADR-0008).
-// Solo se exportan como tipo — las fábricas y guardas son internas a scheduling/, nada externo
-// las construye ni las revisa hoy.
+
 export type {
   ClosedDateAlreadyExistsError,
   InvalidBlockRangeError,

@@ -1,7 +1,3 @@
-// Errores de dominio de scheduling (DOM-006): interfaces + función fábrica + guarda de tipo,
-// sin `class` (ADR-0008). Cada uno tiene un code estable y discriminado; el borde mapea a
-// mensaje o HTTP status leyendo ese code, no adivinando por texto ni por instanceof.
-
 export interface InvalidTimeRangeError {
   readonly code: 'SCHEDULING_INVALID_TIME_RANGE'
   readonly message: string
@@ -68,8 +64,6 @@ export function isInvalidDateError(error: unknown): error is InvalidDateError {
   )
 }
 
-// Caso de negocio esperable (dos feriados el mismo día para el mismo recurso), resuelto por el
-// UNIQUE (resource_id, closed_date) de la base — se traduce acá en vez de relanzar el error crudo.
 export interface ClosedDateAlreadyExistsError {
   readonly code: 'SCHEDULING_CLOSED_DATE_EXISTS'
   readonly message: string
