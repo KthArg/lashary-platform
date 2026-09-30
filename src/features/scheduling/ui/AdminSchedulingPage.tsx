@@ -12,8 +12,6 @@ import { adminSchedulingPageStyles as s } from './AdminSchedulingPage.styles'
 
 const m = schedulingMessages
 
-// ADR-0005: recurso explícito desde el día uno, pero "la UI no muestra selector de recurso
-// mientras exista uno solo" — por eso se toma el primero sin ofrecer elegir.
 export async function AdminSchedulingPage() {
   const repo = supabaseSchedulingRepository
   const resources = await listResources(repo)
