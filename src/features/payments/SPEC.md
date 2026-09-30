@@ -22,7 +22,7 @@ Migración `supabase/migrations/20260924000000_payments_deposit_exemptions.sql`:
 
 RLS (SEC-001): `SELECT` e `INSERT` solo para staff (`public.auth_is_staff()`); sin políticas de `UPDATE` ni `DELETE` para nadie — "levantar" no es parte del criterio 5 de esta historia, se agrega cuando una historia futura lo exija.
 
-Pruebas: `supabase/tests/database/payments_staff_access.test.sql` (pgTAP, control positivo: staff lee/inserta, nadie puede `UPDATE`/`DELETE`); `src/features/payments/__tests__/rls-isolation.test.ts` (SEC-002, control negativo: anon y una clienta autenticada real no leen ni escriben).
+Pruebas: `supabase/tests/database/payments_staff_access.test.sql` (pgTAP, control positivo: staff lee/inserta, nadie puede `UPDATE`/`DELETE`); `src/features/payments/__tests__/rls-isolation.test.ts` (SEC-002, control negativo: anon y una clienta autenticada real no leen ni escriben). Las suites que hablan con Supabase (esta y `db/__tests__/deposit-exemption-repository.integration.test.ts`) sondean la conexión en un `beforeAll`, no al cargar el módulo: sin variables de entorno se omiten completas; con variables pero sin Supabase respondiendo, cada prueba se omite con `skip`; con Supabase arriba corren todas.
 
 Capa `domain/`: entidad `DepositExemption` con constructor validado (`DepositExemption.create` → `Result`), invariantes DOM-007 (cliente, quién exonera y razón no vacíos); nace siempre `active: true`. Error `DepositExemptionValidationError` (DOM-006). Reloj inyectado (DOM-004). Pruebas con fixtures de `shared/testing/fixed-clock.ts`.
 
