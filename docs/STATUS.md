@@ -85,7 +85,7 @@
 ### platform (actualizado: 2026-09-16)
 
 ### scheduling (actualizado: 2026-09-25)
-- US-AGE-01 — en_progreso — falta: El panel administrativo (UI) con su wiring en src/app. El criterio 'reducir disponibilidad no elimina citas ya agendadas' queda diferido: depende de scheduling_appointments, que no existe hasta US-AGE-05.
+- US-AGE-01 — en_progreso — falta: Componentes del panel administrativo (tablas y formularios de los tres conceptos) y su montaje en /admin/citas. El criterio 'reducir disponibilidad no elimina citas ya agendadas' queda diferido: depende de scheduling_appointments, que no existe hasta US-AGE-05.
 - US-AGE-02 — no_iniciada
 - US-AGE-03 — no_iniciada
 - US-AGE-04 — no_iniciada
