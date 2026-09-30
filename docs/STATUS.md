@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-24.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-29.
 
 ## Features
 
@@ -79,8 +79,8 @@
 - US-NOT-08 — no_iniciada
 - US-CLI-06 — no_iniciada
 
-### payments (actualizado: 2026-09-24)
-- US-AGE-13 — en_progreso — falta: criterios 2, 3 y 4, y la parte 'por paquete' del criterio 1, dependen de tablas que todavia no existen (citas de US-AGE-05, cierre/ledger de US-AGE-12, paquetes de US-PROD-01) y quedan diferidos hasta que esas historias existan (mismo patron que AGE-05/AGE-11/CLI-06 en DEPENDENCIES.md); el criterio 1 'por tecnica' ya lo satisface catalog_techniques.deposit (US-AGE-08); el criterio 5 (exonerar + bitacora) ya esta completo: ExemptClientForm en /admin/payments, exemptClientAction valida y llama a exemptClient(), que audita en audit.record()
+### payments (actualizado: 2026-09-29)
+- US-AGE-13 — en_progreso — falta: la parte 'por paquete' del criterio 1 queda diferida hasta US-PROD-01; los criterios 2 y 3 (citas, US-AGE-05) y 4 (cierre/ledger, US-AGE-12) se proponen trasladados a esas historias porque US-AGE-05 depende de US-AGE-13 y un diferido dejaria un ciclo (ver DEPENDENCIES.md, criterios trasladados; pendiente de aprobacion del PO); el criterio 1 'por tecnica' ya lo satisface catalog_techniques.deposit (US-AGE-08); el criterio 5 (exonerar + bitacora) ya esta completo: ExemptClientForm en /admin/payments, exemptClientAction valida y llama a exemptClient(), que audita en audit.record()
 
 ### platform (actualizado: 2026-09-16)
 

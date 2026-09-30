@@ -1,6 +1,6 @@
 # Grafo de dependencias entre historias
 
-> **Autoridad:** qué historia depende de cuál, y qué infraestructura sin historia propia carga cada una (ADR-0007). Se consulta en cada planificación de sprint (INT-007); lo lee `/empezables`. **Lectores:** PO y equipo al planificar; skills. **Estado:** vigente. **Actualizado:** 2026-09-20.
+> **Autoridad:** qué historia depende de cuál, y qué infraestructura sin historia propia carga cada una (ADR-0007). Se consulta en cada planificación de sprint (INT-007); lo lee `/empezables`. **Lectores:** PO y equipo al planificar; skills. **Estado:** vigente. **Actualizado:** 2026-09-29.
 > Derivado del backlog en [../backlog/](../backlog/) (que no trae columna de dependencias). Si el backlog cambia, este archivo se revisa en el mismo PR.
 
 ## Infraestructura sin historia propia (ADR-0007)
@@ -85,9 +85,12 @@ Historias tempranas con **un criterio** que depende de una historia de fase post
 1. **US-AGE-05** — "valida que el cliente no tenga morosidad activa" → requiere US-MOR-02 (F3).
 2. **US-AGE-11** — "indica si el cliente tiene morosidad activa" → requiere US-MOR-01 (F3).
 3. **US-CLI-06** — "visible en la vista del cliente" → la vista la porta US-MOR-03 (F3); si CLI-06 se implementa antes, ese criterio queda diferido con el faltante nombrado.
+4. **US-AGE-13** — criterio 1, parte "por paquete" («puedo definir el anticipo por técnica y por paquete») → requiere US-PROD-01 (paquetes). La parte "por técnica" ya la cubre `catalog_techniques.deposit` (US-AGE-08). US-PROD-01 depende solo de US-AGE-08, así que no hay ciclo: es un diferido normal.
 
 ## Criterios trasladados (propuesta pendiente de aprobación del PO)
 
 A diferencia de un criterio diferido, un criterio trasladado **cambia de historia dueña**: la historia de origen se marca `terminada` sin él y la historia de destino lo hereda como propio. Se usa cuando el criterio solo se puede demostrar con algo que la historia de destino construye y de la que la de origen es dependencia — un criterio diferido ahí dejaría un ciclo: la de destino esperaría a que la de origen terminara, y la de origen a que la de destino la cerrara.
 
 1. **US-AGE-08 → US-AGE-05** — criterios 7b («una técnica desactivada deja de mostrarse para nuevas reservas sin afectar citas ya agendadas», parte de citas ya agendadas) y 8 («el precio de una técnica queda congelado en las citas ya agendadas»). Requieren la tabla de citas que trae US-AGE-05, y US-AGE-05 depende transitivamente de US-AGE-08 (vía US-AGE-02 y US-AGE-03). US-AGE-08 conserva su parte: `is_active = false` en vez de borrar y `TechniqueSnapshot` expuesto. US-AGE-05 los demuestra con el test obligatorio de DOM-002.
+2. **US-AGE-13 → US-AGE-05** — criterios 2 («el monto del anticipo se muestra al cliente antes de confirmar la cita, junto con la advertencia de pérdida») y 3 («el anticipo requerido y el efectivamente registrado quedan almacenados en la cita, no recalculados a partir del catálogo»). Requieren la tabla de citas y el flujo de reserva que trae US-AGE-05, y US-AGE-05 depende de US-AGE-13 (por la bitácora y el anticipo): un criterio diferido ahí dejaría un ciclo. US-AGE-13 conserva su parte: el monto por técnica, `payments_deposit_exemptions` y la exoneración con su registro en la bitácora. US-AGE-05 los demuestra con el test de DOM-002 (el anticipo se copia a la cita).
+3. **US-AGE-13 → US-AGE-12** — criterio 4 («el anticipo se descuenta del saldo pendiente al cerrar la cita, de modo que el pago final sea la diferencia»). Requiere el cierre de cita y el ledger que porta US-AGE-12, cuya cadena (AGE-12 → AGE-11 → AGE-05) depende de US-AGE-13: mismo ciclo. US-AGE-12 lo demuestra con su primer asiento del ledger.
