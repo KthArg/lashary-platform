@@ -70,3 +70,22 @@ Punto de entrada (ARCH-003): `WeeklyAvailabilityBlock`/`ClosedDate`/`ManualBlock
 - Toda escritura en las cuatro tablas de scheduling pasa por RLS con rol `admin`/`superadmin` (`SEC-001`); ninguna ruta de aplicación es la frontera real de autorización.
 - La hora que ingresa la administradora se ancla explícitamente a UTC-6 antes de construir el `Date`; no depende de la zona horaria del servidor.
 - Sin Google Calendar ni ninguna integración con calendario externo: fuera de alcance de esta historia (ninguna de las 51 historias del backlog lo pide; ADR-0007 no admite alcance nuevo sin decisión del PO).
+
+## Pendiente heredado para quien tome US-AGE-05
+
+`US-AGE-01` quedó con un criterio sin implementar, porque depende de una tabla que todavía no existe:
+
+> "Reducir la disponibilidad no elimina citas ya agendadas: el sistema advierte y pide confirmación si el cambio afecta citas existentes."
+
+**Por qué falta:** comparar un cambio de disponibilidad contra citas exige `scheduling_appointments`, que crea `US-AGE-05`. Sin esa tabla no hay contra qué comparar, y una implementación "simulada" no demostraría nada (EST-005).
+
+**Cómo cerrarlo cuando la tabla exista:**
+1. Agregar al puerto `SchedulingRepository` (`application/ports.ts`) una consulta de citas activas que se solapan con un rango de un recurso.
+2. Los cambios que hoy reducen disponibilidad son dos: `defineClosedDate` (un feriado) y `defineManualBlock` (un bloqueo). Antes de guardarlos, consultar las citas afectadas; si hay, devolver un resultado de negocio "requiere confirmación" con esas citas (DOM-006: un resultado esperado se retorna, no se lanza) y no persistir hasta que llegue la confirmación explícita.
+3. En el panel (`ui/`), mostrar la advertencia con la lista de citas y reenviar el formulario con la confirmación. Los textos van en `ui/messages.ts` (DOM-009).
+4. Si más adelante se agrega editar o eliminar bloques semanales, esos cambios también pueden reducir disponibilidad y deben pasar por la misma verificación.
+5. Pruebas que lo demuestran: (a) cita existente + feriado ese día → advierte y no guarda; (b) sin citas afectadas → guarda; (c) con confirmación → guarda y la cita no se toca.
+
+**Al terminar:** quitar el `falta` de `US-AGE-01` y pasarla a `terminada` con las pruebas nombradas. Alternativa ya usada en `catalog` con `US-AGE-08`: mover el criterio a `US-AGE-05` por decisión del PO, registrándolo en `docs/process/DEPENDENCIES.md`.
+
+**Otras deudas de esta historia** (en el front-matter): solape de bloques semanales del mismo día, calendario real en `ClosedDate`, editar y eliminar desde el panel, y pruebas automatizadas de los formularios.
