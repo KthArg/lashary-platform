@@ -22,3 +22,4 @@ export {
 export { listResources } from './application/resources'
 
 export { supabaseSchedulingRepository } from './db/supabase-scheduling-repository'
+export { AdminSchedulingPage } from './ui/AdminSchedulingPage'
