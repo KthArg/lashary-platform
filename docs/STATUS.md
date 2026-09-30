@@ -85,7 +85,7 @@
 ### platform (actualizado: 2026-09-16)
 
 ### scheduling (actualizado: 2026-09-25)
-- US-AGE-01 — en_progreso — falta: Bloqueos manuales en el panel (tabla y formulario) y el montaje de la página en /admin/citas. El criterio 'reducir disponibilidad no elimina citas ya agendadas' queda diferido: depende de scheduling_appointments, que no existe hasta US-AGE-05.
+- US-AGE-01 — en_progreso — falta: Criterio 5 ('reducir disponibilidad no elimina citas ya agendadas: advierte y pide confirmación') diferido: depende de scheduling_appointments, que no existe hasta US-AGE-05. Criterios 1 a 4 implementados y verificados (ver 'Qué hace hoy').
 - US-AGE-02 — no_iniciada
 - US-AGE-03 — no_iniciada
 - US-AGE-04 — no_iniciada
@@ -116,6 +116,8 @@ Ninguno registrado.
 - clients: Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras — aceptada en PR #32, etiqueta excepcion-proceso — costo: 3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)
 - scheduling: Ningún bloque semanal de disponibilidad valida que no se superponga con otro del mismo día — ni en el constructor de WeeklyAvailabilityBlock, ni en defineWeeklyAvailability, ni en la migración (sin EXCLUDE). Es posible definir lunes 09:00-13:00 y lunes 12:00-18:00 a la vez. — aceptada en US-AGE-01, pieza 1/3 (disponibilidad semanal) — costo: 1h
 - scheduling: ClosedDate valida el formato YYYY-MM-DD por regex, no el calendario real: acepta fechas inexistentes como 2026-02-30 o 2026-13-01. — aceptada en US-AGE-01, pieza 2/3 (días no laborables) — costo: 30m
+- scheduling: Las entradas del panel no se pueden editar ni eliminar: los criterios del backlog solo piden 'definir'. Un bloque, feriado o bloqueo cargado por error no se corrige desde el panel. — aceptada en US-AGE-01, panel administrativo — costo: 3h
+- scheduling: La verificación del panel en navegador (guardar, listar, error de dominio, feriado repetido, hora de Costa Rica) se corrió a mano con Playwright contra Supabase local; no hay prueba e2e ni de componentes commiteada para los Server Actions y formularios. — aceptada en US-AGE-01, panel administrativo — costo: 3h
 
 ## Flags vivos
 
