@@ -9,7 +9,7 @@ import {
   isPackageNameConflict,
   isPackageNotFound,
   isPackageValidationError,
-} from '@/features/catalog/domain/errors'
+} from '@/features/catalog/domain/packages/errors'
 import type { PackageWriteModel } from '@/features/catalog/application/ports'
 import { FakeTechniqueRepository } from './fake-repository'
 import { createFakePackageRepository } from './fake-package-repository'

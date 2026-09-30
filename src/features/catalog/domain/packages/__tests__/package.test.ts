@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { Money } from '@/shared/money'
 import { isErr, isOk } from '@/shared/result'
-import { createPackage, deactivatePackage, packageToView } from '@/features/catalog/domain/package'
-import { isPackageValidationError } from '@/features/catalog/domain/errors'
+import { createPackage, deactivatePackage, packageToView } from '@/features/catalog/domain/packages/package'
+import { isPackageValidationError } from '@/features/catalog/domain/packages/errors'
 
 const validInput = () => ({
   id: '22222222-2222-2222-2222-222222222222',
@@ -22,7 +22,7 @@ describe('createPackage — invariantes de dominio (DOM-007, criterio 1)', () =>
     expect(r.value.name).toBe('Combo cejas')
     expect(r.value.techniqueIds).toHaveLength(2)
     expect(r.value.price.colones).toBe(30000)
-    expect(r.value.isActive).toBe(true) // default
+    expect(r.value.isActive).toBe(true)
   })
 
   it('crea un paquete válido con más de dos técnicas', () => {

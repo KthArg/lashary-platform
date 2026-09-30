@@ -1,6 +1,6 @@
 import { Money } from '@/shared/money'
 import { isOk } from '@/shared/result'
-import { createPackage, type Package } from '@/features/catalog/domain/package'
+import { createPackage, type Package } from '@/features/catalog/domain/packages/package'
 
 let counter = 0
 

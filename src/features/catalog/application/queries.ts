@@ -1,7 +1,8 @@
 import { ok, err, type Result } from '@/shared/result'
 import type { TechniqueView } from '../domain/technique'
-import { packageToView, type PackageView } from '../domain/package'
-import { TechniqueNotFound, packageNotFound, type PackageNotFound } from '../domain/errors'
+import { packageToView, type PackageView } from '../domain/packages/package'
+import { TechniqueNotFound } from '../domain/errors'
+import { packageNotFound, type PackageNotFound } from '../domain/packages/errors'
 import type {
   ListTechniquesQuery,
   ListPackagesQuery,

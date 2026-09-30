@@ -1,5 +1,5 @@
 import type { Technique, ServiceFamily } from '../domain/technique'
-import type { Package } from '../domain/package'
+import type { Package } from '../domain/packages/package'
 
 export type Page<T> = {
   items: T[]

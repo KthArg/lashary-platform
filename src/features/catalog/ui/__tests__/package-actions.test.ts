@@ -29,7 +29,7 @@ import {
   deactivatePackageAction,
 } from '@/features/catalog/ui/package-actions'
 import { initialPackageActionState } from '@/features/catalog/ui/action-state'
-import { packageNameConflict } from '@/features/catalog/domain/errors'
+import { packageNameConflict } from '@/features/catalog/domain/packages/errors'
 
 function form(
   fields: Record<string, string>,

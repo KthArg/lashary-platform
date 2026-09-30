@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { isErr, isOk } from '@/shared/result'
 import { listPackages, getPackage } from '@/features/catalog/application/queries'
-import { isPackageNotFound } from '@/features/catalog/domain/errors'
+import { isPackageNotFound } from '@/features/catalog/domain/packages/errors'
 import { createFakePackageRepository } from './fake-package-repository'
 import { makePackage } from './package-fixture'
 

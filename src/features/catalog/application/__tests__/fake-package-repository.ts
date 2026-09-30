@@ -1,6 +1,6 @@
-import type { Package } from '@/features/catalog/domain/package'
-import { packageToView } from '@/features/catalog/domain/package'
-import { packageNameConflict } from '@/features/catalog/domain/errors'
+import type { Package } from '@/features/catalog/domain/packages/package'
+import { packageToView } from '@/features/catalog/domain/packages/package'
+import { packageNameConflict } from '@/features/catalog/domain/packages/errors'
 import type {
   PackageRepository,
   PackageWithDuration,

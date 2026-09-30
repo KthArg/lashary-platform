@@ -7,18 +7,20 @@ import {
   packageToView,
   type Package,
   type PackageView,
-} from '../domain/package'
+} from '../domain/packages/package'
 import {
   TechniqueNameConflict,
   TechniqueNotFound,
   TechniqueValidationError,
+} from '../domain/errors'
+import {
   isPackageNameConflict,
   packageNotFound,
   packageValidationError,
   type PackageNameConflict,
   type PackageNotFound,
   type PackageValidationError,
-} from '../domain/errors'
+} from '../domain/packages/errors'
 import type {
   TechniqueRepository,
   TechniqueWriteModel,
