@@ -85,7 +85,7 @@
 ### platform (actualizado: 2026-09-16)
 
 ### scheduling (actualizado: 2026-09-25)
-- US-AGE-01 — en_progreso — falta: Criterio 5 ('reducir disponibilidad no elimina citas ya agendadas: advierte y pide confirmación') diferido: depende de scheduling_appointments, que no existe hasta US-AGE-05. Criterios 1 a 4 implementados y verificados (ver 'Qué hace hoy').
+- US-AGE-01 — en_progreso — falta: Criterio 5 ('reducir disponibilidad no elimina citas ya agendadas: advierte y pide confirmación') diferido: depende de scheduling_appointments, que no existe hasta US-AGE-05. Criterio 4 ('los cambios se reflejan inmediatamente en el calendario público') parcial: los datos ya son de lectura pública vía RLS, pero el calendario público en sí es US-AGE-02, no iniciada — nada renderiza ese reflejo todavía. Criterios 1 a 3 implementados y verificados (ver 'Qué hace hoy').
 - US-AGE-02 — no_iniciada
 - US-AGE-03 — no_iniciada
 - US-AGE-04 — no_iniciada
