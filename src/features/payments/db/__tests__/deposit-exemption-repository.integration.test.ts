@@ -4,10 +4,6 @@ import { isOk } from '@/shared/result'
 import { DepositExemption } from '@/features/payments/domain/deposit-exemption'
 import { SupabaseDepositExemptionRepository } from '@/features/payments/db/deposit-exemption-repository'
 
-// Integración contra Supabase local. payments_deposit_exemptions no tiene lectura pública: con
-// token anónimo solo hay algo que probar del lado de la escritura, denegada por RLS (SEC-001,
-// fail-closed). Se salta sin conexión.
-
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 
@@ -24,9 +20,6 @@ if (!reachable) {
   console.warn('[payments/db] Supabase local no disponible — suite omitida.')
 }
 
-// client_id (FK a clients_profiles) y exempted_by (FK a auth.users) inventados harían fallar el
-// insert por la FK antes de llegar a RLS (igual que en payments/__tests__/rls-isolation.test.ts)
-// — se usa una clienta real, dueña de su propio perfil (política clients_profiles_insert_own).
 async function seedRealIds(): Promise<{ userId: string; clientId: string }> {
   const anon = createClient(URL, KEY)
   const email = `db-test-${Date.now()}-${Math.random().toString(36).slice(2)}@lashary.test`

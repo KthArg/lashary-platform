@@ -15,9 +15,6 @@ type InsertRow = {
   created_at: string
 }
 
-// Solo escribe: el puerto no pide lectura (application/ports.ts). Exportada para su test
-// unitario — sin Supabase local no hay forma de ejercer un save() exitoso, RLS exige sesión de
-// staff real (igual que en audit).
 export function toRow(exemption: DepositExemption): InsertRow {
   const view = exemption.toView()
   return {
@@ -36,9 +33,6 @@ export class SupabaseDepositExemptionRepository implements DepositExemptionRepos
   async save(exemption: DepositExemption): Promise<void> {
     const { error } = await this.db.from(TABLE).insert(toRow(exemption))
     if (error) {
-      // 23505 = unique_violation (Postgres). La única constraint de unicidad de esta tabla es
-      // idx_payments_deposit_exemptions_client_active — un caso de negocio esperable (DOM-006),
-      // no una falla de infraestructura genuina.
       if (error.code === '23505') {
         throw new ClientAlreadyExempt(exemption.clientId)
       }
@@ -47,7 +41,6 @@ export class SupabaseDepositExemptionRepository implements DepositExemptionRepos
   }
 }
 
-// Fábrica para el contexto de servidor de Next (server components / actions).
 export async function depositExemptionRepository(): Promise<SupabaseDepositExemptionRepository> {
   return new SupabaseDepositExemptionRepository(await createClient())
 }
