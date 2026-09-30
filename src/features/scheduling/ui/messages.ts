@@ -1,6 +1,5 @@
 import type { DayOfWeek } from '../domain/availability'
 
-// Texto visible externalizado (DOM-009). Un solo idioma por ahora.
 export const schedulingMessages = {
   admin: {
     title: 'Disponibilidad de agenda',

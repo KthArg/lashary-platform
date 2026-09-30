@@ -2,10 +2,6 @@ import { z } from 'zod'
 import { DAYS_OF_WEEK, type DayOfWeek } from '../domain/availability'
 import { schedulingMessages } from './messages'
 
-// Validación de formato en el borde, una sola vez, con Zod (DOM-007). El invariante de negocio
-// real (rango de hora válido, calendario, etc.) lo aplica el constructor de la entidad — acá
-// solo se descartan formularios claramente incompletos o mal tipados antes de llegar ahí.
-
 const v = schedulingMessages.validation
 
 export const weeklyAvailabilityFormSchema = z

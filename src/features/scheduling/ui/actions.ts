@@ -15,8 +15,6 @@ function forbidden(): SchedulingActionState {
   return { status: 'forbidden', message: schedulingMessages.shared.accessDenied }
 }
 
-// El dominio lanza SchedulingError (no Result) en sus constructores — ver domain/availability.ts.
-// Cada action lo atrapa acá, el único lugar donde se mapea a mensaje de formulario (DOM-006).
 async function runOrReportError(run: () => Promise<void>): Promise<SchedulingActionState> {
   try {
     await run()
