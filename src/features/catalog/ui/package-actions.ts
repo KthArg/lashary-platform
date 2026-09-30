@@ -9,7 +9,7 @@ import {
   updatePackage,
   deactivatePackage,
   type PackageCommandDeps,
-} from '../application/commands'
+} from '../application/packages/commands'
 import { packageRepository } from '../db/package-repository'
 import { techniqueRepository } from '../db/technique-repository'
 import { packageFormSchema } from './package-schema'
