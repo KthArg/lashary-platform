@@ -7,7 +7,7 @@ import { packageNameConflict } from '../../domain/packages/errors'
 import type { PackageRepository, PackageWithDuration } from '../../application/packages/ports'
 
 const TABLE = 'catalog_packages'
-const BRIDGE_TABLE = 'catalog_package_techniques'
+const SAVE_FN = 'catalog_save_package'
 
 const COLUMNS = `
   id, name, price, is_active,
@@ -71,28 +71,18 @@ export function createSupabasePackageRepository(db: SupabaseClient): PackageRepo
 
     async save(pkg: Package): Promise<void> {
       const view = packageToView(pkg)
-      const { error: upsertError } = await db
-        .from(TABLE)
-        .upsert({ id: view.id, name: view.name, price: view.price, is_active: view.isActive }, {
-          onConflict: 'id',
-        })
-      if (upsertError) {
-        if (upsertError.code === '23505') {
+      const { error } = await db.rpc(SAVE_FN, {
+        p_id: view.id,
+        p_name: view.name,
+        p_price: view.price,
+        p_is_active: view.isActive,
+        p_technique_ids: view.techniqueIds,
+      })
+      if (error) {
+        if (error.code === '23505') {
           throw packageNameConflict(view.name)
         }
-        throw new Error(`${TABLE}.save: ${upsertError.message}`)
-      }
-
-      const { error: deleteError } = await db.from(BRIDGE_TABLE).delete().eq('package_id', view.id)
-      if (deleteError) {
-        throw new Error(`${BRIDGE_TABLE}.save: ${deleteError.message}`)
-      }
-
-      const { error: insertError } = await db
-        .from(BRIDGE_TABLE)
-        .insert(view.techniqueIds.map((technique_id) => ({ package_id: view.id, technique_id })))
-      if (insertError) {
-        throw new Error(`${BRIDGE_TABLE}.save: ${insertError.message}`)
+        throw new Error(`${SAVE_FN}: ${error.message}`)
       }
     },
   }
