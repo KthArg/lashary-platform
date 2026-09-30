@@ -12,12 +12,13 @@ export const metadata = {
 // todavía — esta página no hace una carga de datos bloqueante antes del primer render (a
 // diferencia de /admin/catalog); se agregan si un incremento futuro los necesita, junto con el
 // client.ts que ese boundary exigiría (ver nota en catalog/ui/messages.ts).
+// Sin <main> propio: el layout de /admin ya aporta el landmark.
 export default async function AdminPaymentsPage() {
   await requireAdminSession()
 
   return (
-    <main className={s.main}>
+    <div className={s.main}>
       <ExemptClientForm />
-    </main>
+    </div>
   )
 }

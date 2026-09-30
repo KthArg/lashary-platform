@@ -59,8 +59,12 @@ export function ExemptClientForm() {
   const [searched, setSearched] = useState(false)
   const [selected, setSelected] = useState<ClientRecord | null>(null)
   const [searching, startSearch] = useTransition()
+  // useActionState no se puede reiniciar: al buscar de nuevo se descarta el resultado anterior
+  // por identidad, y reaparece solo cuando llega un estado nuevo del siguiente envío.
+  const [dismissedState, setDismissedState] = useState(state)
 
   function handleSearch() {
+    setDismissedState(state)
     startSearch(async () => {
       const found = await searchClientsAction(query)
       setResults(found)
@@ -74,7 +78,7 @@ export function ExemptClientForm() {
       <h2 className={s.heading}>{m.title}</h2>
       <p className={s.subtitle}>{m.subtitle}</p>
 
-      <Feedback {...state} />
+      {state !== dismissedState && <Feedback {...state} />}
 
       <div className={s.searchRow}>
         <label className={s.fieldLabel} htmlFor="client-search">
