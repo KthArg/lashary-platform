@@ -5,6 +5,7 @@ import {
   defineManualBlock,
   defineWeeklyAvailability,
   listClosedDates,
+  listManualBlocks,
 } from '../application/manage-availability'
 import { listResources } from '../application/resources'
 import type { SchedulingRepository } from '../application/ports'
@@ -92,6 +93,22 @@ describe('defineManualBlock', () => {
         endsAt: new Date('2026-10-01T14:00:00Z'),
       })
     ).rejects.toThrow()
+  })
+
+  it('listManualBlocks devuelve solo los bloqueos del recurso pedido', async () => {
+    const repo = fakeRepository()
+    await defineManualBlock(repo, {
+      resourceId: 'r1',
+      startsAt: new Date('2026-10-01T14:00:00Z'),
+      endsAt: new Date('2026-10-01T15:00:00Z'),
+    })
+    await defineManualBlock(repo, {
+      resourceId: 'r2',
+      startsAt: new Date('2026-10-02T14:00:00Z'),
+      endsAt: new Date('2026-10-02T15:00:00Z'),
+    })
+    await expect(listManualBlocks(repo, 'r1')).resolves.toHaveLength(1)
+    await expect(listManualBlocks(repo, 'r2')).resolves.toHaveLength(1)
   })
 })
 
