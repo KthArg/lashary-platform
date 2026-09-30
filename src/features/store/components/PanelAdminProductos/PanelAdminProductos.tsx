@@ -1,8 +1,6 @@
 import type { ComponentType } from 'react'
 import { obtenerVistaPanelAdminProductos, type VistaPanelAdminProductos } from './PanelAdminProductos.data'
-import { PanelProductosFormulario } from './PanelProductosFormulario'
-import { PanelProductosVacio } from './PanelProductosVacio'
-import { PanelProductosListado } from './PanelProductosListado'
+import { PanelProductosFormulario, PanelProductosVacio, PanelProductosListado } from './PanelProductos'
 import type { PanelAdminProductosProps } from './PanelAdminProductos.types'
 
 const VISTAS_PANEL: Record<VistaPanelAdminProductos['modo'], ComponentType<any>> = {

@@ -26,3 +26,7 @@ export function SeccionDesactivar({
     </form>
   )
 }
+
+export function SinSeccionDesactivar() {
+  return null
+}
