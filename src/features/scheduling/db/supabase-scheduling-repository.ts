@@ -1,6 +1,15 @@
+import { isOk } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
-import { ClosedDate, ManualBlock, WeeklyAvailabilityBlock, type DayOfWeek } from '../domain/availability'
-import { ClosedDateAlreadyExistsError } from '../domain/errors'
+import {
+  createClosedDate,
+  createManualBlock,
+  createWeeklyAvailabilityBlock,
+  type ClosedDate,
+  type ManualBlock,
+  type WeeklyAvailabilityBlock,
+  type DayOfWeek,
+} from '../domain/availability'
+import { closedDateAlreadyExistsError } from '../domain/errors'
 import type { Resource } from '../domain/resource'
 import type { SchedulingRepository } from '../application/ports'
 
@@ -42,32 +51,38 @@ type ManualBlockRow = {
 }
 
 function weeklyAvailabilityRowToDomain(row: WeeklyAvailabilityRow): WeeklyAvailabilityBlock {
-  return new WeeklyAvailabilityBlock({
+  const built = createWeeklyAvailabilityBlock({
     id: row.id,
     resourceId: row.resource_id,
     dayOfWeek: row.day_of_week,
     startTime: row.start_time,
     endTime: row.end_time,
   })
+  if (!isOk(built)) throw new Error(`fila inválida en ${WEEKLY_AVAILABILITY_TABLE} (${row.id}): ${built.error.message}`)
+  return built.value
 }
 
 function closedDateRowToDomain(row: ClosedDateRow): ClosedDate {
-  return new ClosedDate({
+  const built = createClosedDate({
     id: row.id,
     resourceId: row.resource_id,
     closedDate: row.closed_date,
     reason: row.reason ?? undefined,
   })
+  if (!isOk(built)) throw new Error(`fila inválida en ${CLOSED_DATES_TABLE} (${row.id}): ${built.error.message}`)
+  return built.value
 }
 
 function manualBlockRowToDomain(row: ManualBlockRow): ManualBlock {
-  return new ManualBlock({
+  const built = createManualBlock({
     id: row.id,
     resourceId: row.resource_id,
     startsAt: new Date(row.starts_at),
     endsAt: new Date(row.ends_at),
     reason: row.reason ?? undefined,
   })
+  if (!isOk(built)) throw new Error(`fila inválida en ${MANUAL_BLOCKS_TABLE} (${row.id}): ${built.error.message}`)
+  return built.value
 }
 
 export const supabaseSchedulingRepository: SchedulingRepository = {
@@ -132,7 +147,7 @@ export const supabaseSchedulingRepository: SchedulingRepository = {
       .select(CLOSED_DATES_COLUMNS)
       .single()
     if (error) {
-      if (error.code === POSTGRES_UNIQUE_VIOLATION) throw new ClosedDateAlreadyExistsError(closedDate.closedDate)
+      if (error.code === POSTGRES_UNIQUE_VIOLATION) throw closedDateAlreadyExistsError(closedDate.closedDate)
       throw error
     }
     return closedDateRowToDomain(data)

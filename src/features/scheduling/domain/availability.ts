@@ -1,7 +1,15 @@
-import { InvalidBlockRangeError, InvalidDateError, InvalidDayOfWeekError, InvalidTimeRangeError } from './errors'
+import { ok, err, type Result } from '@/shared/result'
+import {
+  invalidBlockRangeError,
+  invalidDateError,
+  invalidDayOfWeekError,
+  invalidTimeRangeError,
+  type InvalidBlockRangeError,
+  type InvalidDateError,
+  type InvalidDayOfWeekError,
+  type InvalidTimeRangeError,
+} from './errors'
 
-// Convención EXTRACT(DOW) de Postgres: 0 = domingo ... 6 = sábado. Único lugar donde el rango
-// vive con nombre; el constructor lo valida desde acá, no con 0/6 repetidos a mano.
 export const DAYS_OF_WEEK = [0, 1, 2, 3, 4, 5, 6] as const
 export type DayOfWeek = (typeof DAYS_OF_WEEK)[number]
 
@@ -20,27 +28,31 @@ export interface WeeklyAvailabilityBlockProps {
   endTime: string
 }
 
-export class WeeklyAvailabilityBlock {
+export interface WeeklyAvailabilityBlock {
   readonly id?: string
   readonly resourceId: string
   readonly dayOfWeek: DayOfWeek
   readonly startTime: string
   readonly endTime: string
+}
 
-  constructor(props: WeeklyAvailabilityBlockProps) {
-    if (!DAYS_OF_WEEK.includes(props.dayOfWeek)) throw new InvalidDayOfWeekError(props.dayOfWeek)
-    if (!TIME_FORMAT.test(props.startTime) || !TIME_FORMAT.test(props.endTime)) {
-      throw new InvalidTimeRangeError(props.startTime, props.endTime)
-    }
-    if (toMinutesSinceMidnight(props.endTime) <= toMinutesSinceMidnight(props.startTime)) {
-      throw new InvalidTimeRangeError(props.startTime, props.endTime)
-    }
-    this.id = props.id
-    this.resourceId = props.resourceId
-    this.dayOfWeek = props.dayOfWeek
-    this.startTime = props.startTime
-    this.endTime = props.endTime
+export function createWeeklyAvailabilityBlock(
+  props: WeeklyAvailabilityBlockProps
+): Result<WeeklyAvailabilityBlock, InvalidDayOfWeekError | InvalidTimeRangeError> {
+  if (!DAYS_OF_WEEK.includes(props.dayOfWeek)) return err(invalidDayOfWeekError(props.dayOfWeek))
+  if (!TIME_FORMAT.test(props.startTime) || !TIME_FORMAT.test(props.endTime)) {
+    return err(invalidTimeRangeError(props.startTime, props.endTime))
   }
+  if (toMinutesSinceMidnight(props.endTime) <= toMinutesSinceMidnight(props.startTime)) {
+    return err(invalidTimeRangeError(props.startTime, props.endTime))
+  }
+  return ok({
+    id: props.id,
+    resourceId: props.resourceId,
+    dayOfWeek: props.dayOfWeek,
+    startTime: props.startTime,
+    endTime: props.endTime,
+  })
 }
 
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/
@@ -52,19 +64,21 @@ export interface ClosedDateProps {
   reason?: string
 }
 
-export class ClosedDate {
+export interface ClosedDate {
   readonly id?: string
   readonly resourceId: string
   readonly closedDate: string
   readonly reason?: string
+}
 
-  constructor(props: ClosedDateProps) {
-    if (!DATE_FORMAT.test(props.closedDate)) throw new InvalidDateError(props.closedDate)
-    this.id = props.id
-    this.resourceId = props.resourceId
-    this.closedDate = props.closedDate
-    this.reason = props.reason
-  }
+export function createClosedDate(props: ClosedDateProps): Result<ClosedDate, InvalidDateError> {
+  if (!DATE_FORMAT.test(props.closedDate)) return err(invalidDateError(props.closedDate))
+  return ok({
+    id: props.id,
+    resourceId: props.resourceId,
+    closedDate: props.closedDate,
+    reason: props.reason,
+  })
 }
 
 export interface ManualBlockProps {
@@ -75,19 +89,21 @@ export interface ManualBlockProps {
   reason?: string
 }
 
-export class ManualBlock {
+export interface ManualBlock {
   readonly id?: string
   readonly resourceId: string
   readonly startsAt: Date
   readonly endsAt: Date
   readonly reason?: string
+}
 
-  constructor(props: ManualBlockProps) {
-    if (props.endsAt.getTime() <= props.startsAt.getTime()) throw new InvalidBlockRangeError()
-    this.id = props.id
-    this.resourceId = props.resourceId
-    this.startsAt = props.startsAt
-    this.endsAt = props.endsAt
-    this.reason = props.reason
-  }
+export function createManualBlock(props: ManualBlockProps): Result<ManualBlock, InvalidBlockRangeError> {
+  if (props.endsAt.getTime() <= props.startsAt.getTime()) return err(invalidBlockRangeError())
+  return ok({
+    id: props.id,
+    resourceId: props.resourceId,
+    startsAt: props.startsAt,
+    endsAt: props.endsAt,
+    reason: props.reason,
+  })
 }
