@@ -6,7 +6,7 @@ actualizado: "2026-09-25"
 historias:
   - id: US-AGE-01
     estado: en_progreso
-    falta: "Componentes del panel administrativo (tablas y formularios de los tres conceptos) y su montaje en /admin/citas. El criterio 'reducir disponibilidad no elimina citas ya agendadas' queda diferido: depende de scheduling_appointments, que no existe hasta US-AGE-05."
+    falta: "Bloqueos manuales en el panel (tabla y formulario) y el montaje de la página en /admin/citas. El criterio 'reducir disponibilidad no elimina citas ya agendadas' queda diferido: depende de scheduling_appointments, que no existe hasta US-AGE-05."
   - id: US-AGE-02
     estado: no_iniciada
   - id: US-AGE-03
@@ -54,9 +54,9 @@ En progreso `US-AGE-01`, tres incrementos de datos (disponibilidad semanal, día
 - Casos de uso puros en `application/` (`defineWeeklyAvailability`/`listWeeklyAvailability`, `defineClosedDate`/`listClosedDates`, `defineManualBlock`/`listManualBlocks`, `listResources`) contra un puerto `SchedulingRepository`; implementación Supabase en `db/`.
 - Pruebas unitarias de dominio y de casos de uso (con repositorio falso, sin Supabase): `availability.test.ts`, `manage-availability.test.ts`, y el mapeo de la violación UNIQUE en `supabase-scheduling-repository.test.ts`; RLS real con pgTAP contra Postgres local en `supabase/tests/database/scheduling_rls.test.sql` (21 comprobaciones: anon, clienta, admin y superadmin sobre las tres tablas, más los `CHECK` y el `UNIQUE`; correr con `npx supabase test db`).
 
-Base del panel administrativo en `ui/` (sin componentes todavía): textos externalizados (DOM-009), esquemas Zod de formato en el borde (DOM-007), Server Actions `defineWeeklyAvailabilityAction`/`defineClosedDateAction`/`defineManualBlockAction` con chequeo de rol amable (`isStaff`, SEC-001) y captura de `SchedulingError` en un solo lugar (DOM-006), y la conversión de la hora ingresada (Costa Rica, UTC-6 fijo, sin horario de verano) a un instante UTC antes de construir el `Date` (DOM-003). Pruebas: `ui/__tests__/format.test.ts`, `ui/__tests__/parse-local-datetime.test.ts`.
+Base del panel administrativo en `ui/`: textos externalizados (DOM-009), esquemas Zod de formato en el borde (DOM-007), Server Actions `defineWeeklyAvailabilityAction`/`defineClosedDateAction`/`defineManualBlockAction` con chequeo de rol amable (`isStaff`, SEC-001) y captura de `SchedulingError` en un solo lugar (DOM-006), y la conversión de la hora ingresada (Costa Rica, UTC-6 fijo, sin horario de verano) a un instante UTC antes de construir el `Date` (DOM-003). Pruebas: `ui/__tests__/format.test.ts`, `ui/__tests__/parse-local-datetime.test.ts`.
 
-Siguientes incrementos: componentes del panel y su montaje en `/admin/citas`.
+Componentes ya escritos (`Feedback`, tabla y formulario de horario semanal, tabla y formulario de días no laborables); todavía no están montados en ninguna ruta. Siguientes incrementos: bloqueos manuales en el panel y montaje en `/admin/citas`.
 
 ## Contrato público (`src/features/scheduling/index.ts`)
 
