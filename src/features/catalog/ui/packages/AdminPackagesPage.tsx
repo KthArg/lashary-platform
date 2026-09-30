@@ -1,19 +1,19 @@
 import Link from 'next/link'
 import { isOk } from '@/shared/result'
-import { listTechniques as listTechniquesUseCase } from '../application/queries'
+import { listTechniques as listTechniquesUseCase } from '../../application/queries'
 import {
   listPackages as listPackagesUseCase,
   getPackage as getPackageUseCase,
-} from '../application/packages/queries'
-import { packageRepository } from '../db/packages/package-repository'
-import { techniqueRepository } from '../db/technique-repository'
-import { catalogMessages } from './messages'
-import { catalogRoutes } from './routes'
+} from '../../application/packages/queries'
+import { packageRepository } from '../../db/packages/package-repository'
+import { techniqueRepository } from '../../db/technique-repository'
+import { packageMessages } from './messages'
+import { catalogRoutes } from '../routes'
 import { adminPackagesPageStyles as s } from './AdminPackagesPage.styles'
 import { PackageTable } from './PackageTable'
 import { PackageForm } from './package-form'
 
-const m = catalogMessages.packages.admin
+const m = packageMessages.admin
 
 type SearchParams = { edit?: string; new?: string }
 
@@ -31,8 +31,6 @@ export async function AdminPackagesPage({
   ])
 
   const techniqueNameById = new Map(allTechniques.items.map((t) => [t.id, t.name]))
-  // El formulario solo ofrece técnicas activas (criterio 1: "técnicas existentes" que hoy se
-  // ofrecen); allTechniques se reusa filtrando en vez de pedirla dos veces al repositorio.
   const activeTechniques = allTechniques.items.filter((t) => t.isActive)
 
   const editResult = params.edit ? await getPackageUseCase(pkgRepo)(params.edit) : null
@@ -57,7 +55,7 @@ export async function AdminPackagesPage({
         <div className={s.formWrapper}>
           <PackageForm pkg={editing} techniques={activeTechniques} />
           <Link href={catalogRoutes.packagesAdmin} className={s.cancelLink}>
-            {catalogMessages.packages.form.cancel}
+            {packageMessages.form.cancel}
           </Link>
         </div>
       )}

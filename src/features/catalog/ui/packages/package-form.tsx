@@ -1,9 +1,9 @@
 'use client'
 
 import { useActionState, useMemo, useState } from 'react'
-import type { TechniqueView } from '../domain/technique'
-import type { PackageListItem } from '../application/packages/queries'
-import { catalogMessages } from './messages'
+import type { TechniqueView } from '../../domain/technique'
+import type { PackageListItem } from '../../application/packages/queries'
+import { packageMessages } from './messages'
 import {
   createPackageAction,
   updatePackageAction,
@@ -12,8 +12,8 @@ import {
 import { initialPackageActionState } from './action-state'
 import { packageFormStyles as s } from './package-form.styles'
 
-const f = catalogMessages.packages.form
-const admin = catalogMessages.packages.admin
+const f = packageMessages.form
+const admin = packageMessages.admin
 
 function Feedback({
   status,
@@ -53,10 +53,6 @@ function Feedback({
   )
 }
 
-// Duración por técnica = duración de primera vez + preparación/limpieza (mismo cómputo que
-// db/package-repository.ts usa para durationTotalMin, criterio 2). Se recalcula en el cliente
-// a medida que se marcan/desmarcan técnicas, para que el ajuste manual del precio (criterio 2)
-// se haga viendo el tiempo total real.
 export function PackageForm({
   pkg,
   techniques,

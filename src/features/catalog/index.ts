@@ -27,9 +27,6 @@ export async function getTechnique(id: string) {
   return getTechniqueUseCase(await techniqueRepository())(id)
 }
 
-// US-PROD-01 — paquetes: combos de dos o más técnicas con precio propio. Composición viva del
-// catálogo (sin snapshot todavía; DOM-002 llega con US-AGE-04). create/update/deactivate no se
-// exportan, igual que con técnicas: son admin, viven en catalog/ui/.
 export async function listPackages(query?: ListPackagesQuery) {
   return listPackagesUseCase(await packageRepository())(query)
 }
@@ -54,5 +51,4 @@ export type { PackageListItem } from './application/packages/queries'
 export { AdminCatalogPage } from './ui/AdminCatalogPage'
 export { catalogMessages } from './ui/messages'
 
-// UI de administración de paquetes (US-PROD-01). La compone src/app/admin/catalog/packages/.
-export { AdminPackagesPage } from './ui/AdminPackagesPage'
+export { AdminPackagesPage } from './ui/packages/AdminPackagesPage'
