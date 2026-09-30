@@ -7,29 +7,40 @@ import { SupabaseAuditEventRepository } from '@/features/audit/db/audit-event-re
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 
+const configured = Boolean(URL && KEY)
 let reachable = false
-if (URL && KEY) {
+
+async function probeSupabase(): Promise<boolean> {
   try {
     const res = await fetch(`${URL}/rest/v1/`, { headers: { apikey: KEY } })
-    reachable = res.status < 500
+    return res.status < 500
   } catch {
-    reachable = false
+    return false
   }
 }
-if (!reachable) {
-  console.warn('[audit/db] Supabase local no disponible — suite omitida.')
+
+function itLive(name: string, fn: () => Promise<void>) {
+  it(name, async (ctx) => {
+    ctx.skip(!reachable)
+    await fn()
+  })
 }
 
-describe.skipIf(!reachable)('SupabaseAuditEventRepository (Supabase local)', () => {
+describe.skipIf(!configured)('SupabaseAuditEventRepository (Supabase local)', () => {
   let repo: SupabaseAuditEventRepository
   let db: SupabaseClient
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    reachable = await probeSupabase()
+    if (!reachable) {
+      console.warn('[audit/db] Supabase local no disponible — suite omitida.')
+      return
+    }
     db = createClient(URL, KEY)
     repo = new SupabaseAuditEventRepository(db)
   })
 
-  it('insert() está denegado por RLS con token anónimo (SEC-001, fail-closed)', async () => {
+  itLive('insert() está denegado por RLS con token anónimo (SEC-001, fail-closed)', async () => {
     const built = AuditEvent.create('00000000-0000-0000-0000-00000000f001', {
       actorId: '00000000-0000-0000-0000-000000000000',
       action: 'rls.probe',

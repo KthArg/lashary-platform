@@ -7,17 +7,23 @@ import { SupabaseDepositExemptionRepository } from '@/features/payments/db/depos
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 
+const configured = Boolean(URL && KEY)
 let reachable = false
-if (URL && KEY) {
+
+async function probeSupabase(): Promise<boolean> {
   try {
     const res = await fetch(`${URL}/rest/v1/`, { headers: { apikey: KEY } })
-    reachable = res.status < 500
+    return res.status < 500
   } catch {
-    reachable = false
+    return false
   }
 }
-if (!reachable) {
-  console.warn('[payments/db] Supabase local no disponible — suite omitida.')
+
+function itLive(name: string, fn: () => Promise<void>) {
+  it(name, async (ctx) => {
+    ctx.skip(!reachable)
+    await fn()
+  })
 }
 
 async function seedRealIds(): Promise<{ userId: string; clientId: string }> {
@@ -44,13 +50,18 @@ async function seedRealIds(): Promise<{ userId: string; clientId: string }> {
   return { userId: data.user.id, clientId: profile.data.id as string }
 }
 
-describe.skipIf(!reachable)('SupabaseDepositExemptionRepository (Supabase local)', () => {
+describe.skipIf(!configured)('SupabaseDepositExemptionRepository (Supabase local)', () => {
   let repo: SupabaseDepositExemptionRepository
   let db: SupabaseClient
   let userId: string
   let clientId: string
 
   beforeAll(async () => {
+    reachable = await probeSupabase()
+    if (!reachable) {
+      console.warn('[payments/db] Supabase local no disponible — suite omitida.')
+      return
+    }
     db = createClient(URL, KEY)
     repo = new SupabaseDepositExemptionRepository(db)
     const seeded = await seedRealIds()
@@ -58,7 +69,7 @@ describe.skipIf(!reachable)('SupabaseDepositExemptionRepository (Supabase local)
     clientId = seeded.clientId
   })
 
-  it('save() está denegado por RLS con token anónimo (SEC-001, fail-closed)', async () => {
+  itLive('save() está denegado por RLS con token anónimo (SEC-001, fail-closed)', async () => {
     const built = DepositExemption.create('00000000-0000-0000-0000-00000000f101', {
       clientId,
       exemptedBy: userId,
