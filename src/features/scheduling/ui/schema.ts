@@ -1,48 +1,44 @@
 import { z } from 'zod'
 import { DAYS_OF_WEEK, type DayOfWeek } from '../domain/availability'
 import { schedulingMessages } from './messages'
+import { parseCostaRicaLocalDateTime } from './parse-local-datetime'
 
 const v = schedulingMessages.validation
 
-export const weeklyAvailabilityFormSchema = z
-  .object({
-    resourceId: z.string().trim().min(1),
-    dayOfWeek: z.coerce
-      .number()
-      .int()
-      .refine((value): value is DayOfWeek => (DAYS_OF_WEEK as readonly number[]).includes(value), v.dayOfWeek),
-    startTime: z.string().trim().min(1, v.startTime),
-    endTime: z.string().trim().min(1, v.endTime),
-  })
-  .transform((data) => ({
-    resourceId: data.resourceId,
-    dayOfWeek: data.dayOfWeek,
-    startTime: data.startTime,
-    endTime: data.endTime,
-  }))
+const requiredText = (message: string) =>
+  z.string({ required_error: message, invalid_type_error: message }).trim().min(1, message)
 
-export const closedDateFormSchema = z
-  .object({
-    resourceId: z.string().trim().min(1),
-    closedDate: z.string().trim().min(1, v.closedDate),
-    reason: z.string().trim().optional(),
-  })
-  .transform((data) => ({
-    resourceId: data.resourceId,
-    closedDate: data.closedDate,
-    reason: data.reason ? data.reason : undefined,
-  }))
+const optionalText = z
+  .string({ invalid_type_error: v.reason })
+  .trim()
+  .optional()
+  .transform((value) => value || undefined)
 
-export const manualBlockFormSchema = z
-  .object({
-    resourceId: z.string().trim().min(1),
-    startsAt: z.string().trim().min(1, v.startsAt),
-    endsAt: z.string().trim().min(1, v.endsAt),
-    reason: z.string().trim().optional(),
-  })
-  .transform((data) => ({
-    resourceId: data.resourceId,
-    startsAt: data.startsAt,
-    endsAt: data.endsAt,
-    reason: data.reason ? data.reason : undefined,
-  }))
+const costaRicaDateTime = (message: string) =>
+  requiredText(message)
+    .transform(parseCostaRicaLocalDateTime)
+    .refine((date) => !Number.isNaN(date.getTime()), message)
+
+const isDayOfWeek = (value: number): value is DayOfWeek => (DAYS_OF_WEEK as readonly number[]).includes(value)
+
+const resourceId = requiredText(v.resourceId)
+
+export const weeklyAvailabilityFormSchema = z.object({
+  resourceId,
+  dayOfWeek: z.coerce.number({ invalid_type_error: v.dayOfWeek }).int(v.dayOfWeek).refine(isDayOfWeek, v.dayOfWeek),
+  startTime: requiredText(v.startTime),
+  endTime: requiredText(v.endTime),
+})
+
+export const closedDateFormSchema = z.object({
+  resourceId,
+  closedDate: requiredText(v.closedDate),
+  reason: optionalText,
+})
+
+export const manualBlockFormSchema = z.object({
+  resourceId,
+  startsAt: costaRicaDateTime(v.startsAt),
+  endsAt: costaRicaDateTime(v.endsAt),
+  reason: optionalText,
+})
