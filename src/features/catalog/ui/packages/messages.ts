@@ -13,6 +13,13 @@ export const packageMessages = {
     },
     status: { active: 'Activo', inactive: 'Desactivado' },
     inactiveTechnique: '(desactivada)',
+    pagination: {
+      label: 'Páginas de paquetes',
+      previous: 'Anterior',
+      next: 'Siguiente',
+      page: 'Página',
+      of: 'de',
+    },
     rowActions: { edit: 'Editar', deactivate: 'Desactivar' },
     minutesShort: 'min',
     empty: {

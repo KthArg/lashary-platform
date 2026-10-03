@@ -1,7 +1,8 @@
 import { ok, err, type Result } from '@/shared/result'
 import { packageToView, type PackageView } from '../../domain/packages/package'
 import { packageNotFound, type PackageNotFound } from '../../domain/packages/errors'
-import type { Page } from '../ports'
+import type { TechniqueView } from '../../domain/technique'
+import type { Page, TechniqueRepository } from '../ports'
 import { clampPage, clampPageSize } from '../queries'
 import type { ListPackagesQuery, PackageRepository, PackageWithDuration } from './ports'
 
@@ -39,4 +40,12 @@ export const getPackage =
     const row = await repo.findById(id)
     if (row === null) return err(packageNotFound(id))
     return ok(toPackageListItem(row))
+  }
+
+export const listPackageTechniques =
+  (repo: TechniqueRepository) =>
+  async (packages: readonly Pick<PackageView, 'techniqueIds'>[]): Promise<TechniqueView[]> => {
+    const ids = Array.from(new Set(packages.flatMap((pkg) => pkg.techniqueIds)))
+    const techniques = await repo.findByIds(ids)
+    return techniques.map((technique) => technique.toView())
   }
