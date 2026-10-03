@@ -1,5 +1,6 @@
 import type { Package } from '@/features/catalog/domain/packages/package'
 import { packageToView } from '@/features/catalog/domain/packages/package'
+import { ok, err } from '@/shared/result'
 import { packageNameConflict } from '@/features/catalog/domain/packages/errors'
 import type {
   PackageRepository,
@@ -43,11 +44,12 @@ export function createFakePackageRepository(
       const name = packageToView(pkg).name
       for (const other of store.values()) {
         if (other.id !== pkg.id && packageToView(other).name === name) {
-          throw packageNameConflict(name)
+          return err(packageNameConflict(name))
         }
       }
       saveCalls += 1
       store.set(pkg.id, pkg)
+      return ok(undefined)
     },
   }
 }

@@ -29,6 +29,7 @@ import {
   deactivatePackageAction,
 } from '@/features/catalog/ui/packages/package-actions'
 import { initialPackageActionState } from '@/features/catalog/ui/packages/action-state'
+import { ok, err } from '@/shared/result'
 import { packageNameConflict } from '@/features/catalog/domain/packages/errors'
 
 function form(
@@ -51,7 +52,7 @@ describe('acciones administrativas de paquetes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.isStaff.mockResolvedValue(true)
-    mocks.packageSave.mockResolvedValue(undefined)
+    mocks.packageSave.mockResolvedValue(ok(undefined))
     mocks.techniqueFindByIds.mockResolvedValue(activeTechniques)
   })
 
@@ -95,7 +96,7 @@ describe('acciones administrativas de paquetes', () => {
   })
 
   it('DOM-006: un nombre duplicado vuelve como estado "invalid" con mensaje, no como excepción', async () => {
-    mocks.packageSave.mockRejectedValueOnce(packageNameConflict('Combo cejas'))
+    mocks.packageSave.mockResolvedValueOnce(err(packageNameConflict('Combo cejas')))
 
     const state = await createPackageAction(initialPackageActionState, form(validFields))
 

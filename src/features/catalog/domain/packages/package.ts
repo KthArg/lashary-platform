@@ -18,7 +18,10 @@ export type PackageInput = {
   isActive?: boolean
 }
 
+const packageBrand: unique symbol = Symbol('Package')
+
 export interface Package {
+  readonly [packageBrand]: true
   readonly id: string
   readonly name: string
   readonly techniqueIds: readonly string[]
@@ -49,6 +52,7 @@ export function createPackage(input: PackageInput): Result<Package, PackageValid
   }
 
   return ok({
+    [packageBrand]: true,
     id: input.id,
     name,
     techniqueIds: uniqueTechniqueIds,

@@ -8,7 +8,6 @@ import {
   type PackageView,
 } from '../../domain/packages/package'
 import {
-  isPackageNameConflict,
   packageNotFound,
   packageValidationError,
   type PackageNameConflict,
@@ -23,19 +22,6 @@ export type PackageCommandDeps = {
   packageRepo: PackageRepository
   techniqueRepo: TechniqueRepository
   newId: () => string
-}
-
-async function savePackageOrConflict(
-  repo: PackageRepository,
-  pkg: Package,
-): Promise<Result<void, PackageNameConflict>> {
-  try {
-    await repo.save(pkg)
-    return ok(undefined)
-  } catch (error) {
-    if (isPackageNameConflict(error)) return err(error)
-    throw error
-  }
 }
 
 async function resolveTechniques(
@@ -93,7 +79,7 @@ export const createPackage =
 
     const built = buildPackage(deps.newId(), model, true)
     if (isErr(built)) return built
-    const saved = await savePackageOrConflict(deps.packageRepo, built.value)
+    const saved = await deps.packageRepo.save(built.value)
     if (isErr(saved)) return saved
     return ok(packageToView(built.value))
   }
@@ -117,18 +103,19 @@ export const updatePackage =
 
     const built = buildPackage(id, model, existing.pkg.isActive)
     if (isErr(built)) return built
-    const saved = await savePackageOrConflict(deps.packageRepo, built.value)
+    const saved = await deps.packageRepo.save(built.value)
     if (isErr(saved)) return saved
     return ok(packageToView(built.value))
   }
 
 export const deactivatePackage =
   (deps: PackageCommandDeps) =>
-  async (id: string): Promise<Result<PackageView, PackageNotFound>> => {
+  async (id: string): Promise<Result<PackageView, PackageNotFound | PackageNameConflict>> => {
     const existing = await deps.packageRepo.findById(id)
     if (existing === null) return err(packageNotFound(id))
 
     const deactivated = deactivatePackageEntity(existing.pkg)
-    await deps.packageRepo.save(deactivated)
+    const saved = await deps.packageRepo.save(deactivated)
+    if (isErr(saved)) return saved
     return ok(packageToView(deactivated))
   }
