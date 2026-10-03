@@ -1,4 +1,6 @@
 import type { DayOfWeek } from '../domain/availability'
+import { SCHEDULING_ERROR_CODES, type SchedulingError } from '../domain/errors'
+import { formatClosedDate } from './format'
 
 export const schedulingMessages = {
   admin: {
@@ -72,6 +74,29 @@ export const schedulingMessages = {
     5: 'Viernes',
     6: 'Sábado',
   } satisfies Record<DayOfWeek, string>,
+  errors: {
+    invalidTimeRange: 'La hora de fin debe ser posterior a la hora de inicio.',
+    invalidDayOfWeek: 'El día de la semana no es válido.',
+    invalidDate: 'La fecha no es válida.',
+    closedDateExists: (date: string) => `Ya existe un día no laborable registrado para el ${date}.`,
+    invalidBlockRange: 'El bloqueo debe terminar después de empezar.',
+  },
 } as const
 
 export const dayLabel = (day: DayOfWeek): string => schedulingMessages.days[day]
+
+export function describeSchedulingError(error: SchedulingError): string {
+  const e = schedulingMessages.errors
+  switch (error.code) {
+    case SCHEDULING_ERROR_CODES.invalidTimeRange:
+      return e.invalidTimeRange
+    case SCHEDULING_ERROR_CODES.invalidDayOfWeek:
+      return e.invalidDayOfWeek
+    case SCHEDULING_ERROR_CODES.invalidDate:
+      return e.invalidDate
+    case SCHEDULING_ERROR_CODES.closedDateExists:
+      return e.closedDateExists(formatClosedDate(error.closedDate))
+    case SCHEDULING_ERROR_CODES.invalidBlockRange:
+      return e.invalidBlockRange
+  }
+}
