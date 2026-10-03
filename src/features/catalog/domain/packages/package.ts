@@ -29,7 +29,7 @@ export interface Package {
   readonly isActive: boolean
 }
 
-export function createPackage(input: PackageInput): Result<Package, PackageValidationError> {
+export function buildPackage(input: PackageInput): Result<Package, PackageValidationError> {
   const problems: string[] = []
 
   const name = input.name.trim()
@@ -61,7 +61,7 @@ export function createPackage(input: PackageInput): Result<Package, PackageValid
   })
 }
 
-export function deactivatePackage(pkg: Package): Package {
+export function markPackageInactive(pkg: Package): Package {
   return { ...pkg, isActive: false }
 }
 

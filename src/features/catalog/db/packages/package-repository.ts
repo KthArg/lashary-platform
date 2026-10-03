@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { Money } from '@/shared/money'
 import { ok, err, isOk, type Result } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
-import { createPackage, packageToView, type Package } from '../../domain/packages/package'
+import { buildPackage, packageToView, type Package } from '../../domain/packages/package'
 import { packageNameConflict, type PackageNameConflict } from '../../domain/packages/errors'
 import type { PackageRepository, PackageWithDuration } from '../../application/packages/ports'
 
@@ -32,7 +32,7 @@ function rowToDomain(row: Row): PackageWithDuration {
     return total + (t ? t.duration_first_time_min + t.buffer_min : 0)
   }, 0)
 
-  const built = createPackage({
+  const built = buildPackage({
     id: row.id,
     name: row.name,
     techniqueIds,

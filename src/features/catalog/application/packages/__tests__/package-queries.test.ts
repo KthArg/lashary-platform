@@ -5,11 +5,17 @@ import {
   getPackage,
   listPackageTechniques,
 } from '@/features/catalog/application/packages/queries'
+import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '@/features/catalog/application/queries'
 import { FakeTechniqueRepository } from '../../__tests__/fake-repository'
 import { makeTechnique } from '../../__tests__/technique-fixture'
 import { isPackageNotFound } from '@/features/catalog/domain/packages/errors'
 import { createFakePackageRepository } from './fake-package-repository'
 import { makePackage } from './package-fixture'
+
+const SET_CLASICO_MIN = 120
+const DISENO_CEJAS_MIN = 75
+const DURACION_DOS_TECNICAS = SET_CLASICO_MIN + DISENO_CEJAS_MIN
+const DURACION_PAQUETE = 90
 
 describe('listPackages', () => {
   it('devuelve solo activos por defecto, con duración total calculada (criterio 2)', async () => {
@@ -18,12 +24,12 @@ describe('listPackages', () => {
         makePackage({ id: 'a', name: 'A', isActive: true }),
         makePackage({ id: 'b', name: 'B', isActive: false }),
       ],
-      () => 195,
+      () => DURACION_DOS_TECNICAS,
     )
     const page = await listPackages(repo)()
     expect(page.items.map((p) => p.id)).toEqual(['a'])
     expect(page.total).toBe(1)
-    expect(page.items[0].durationTotalMin).toBe(195)
+    expect(page.items[0].durationTotalMin).toBe(DURACION_DOS_TECNICAS)
     expect(typeof page.items[0].price).toBe('number')
   })
 
@@ -36,19 +42,19 @@ describe('listPackages', () => {
     expect(page.total).toBe(2)
   })
 
-  it('pagina con tamaño por defecto 50 y tope 100', async () => {
+  it('pagina con el tamaño por defecto y respeta el tope', async () => {
     const repo = createFakePackageRepository(
-      Array.from({ length: 120 }, (_, i) =>
+      Array.from({ length: MAX_PAGE_SIZE + 20 }, (_, i) =>
         makePackage({ id: `p${i}`, name: `P${String(i).padStart(3, '0')}` }),
       ),
     )
     const first = await listPackages(repo)({ page: 1 })
-    expect(first.items).toHaveLength(50)
-    expect(first.pageSize).toBe(50)
+    expect(first.items).toHaveLength(DEFAULT_PAGE_SIZE)
+    expect(first.pageSize).toBe(DEFAULT_PAGE_SIZE)
 
-    const capped = await listPackages(repo)({ pageSize: 999 })
-    expect(capped.pageSize).toBe(100)
-    expect(capped.items).toHaveLength(100)
+    const capped = await listPackages(repo)({ pageSize: MAX_PAGE_SIZE * 10 })
+    expect(capped.pageSize).toBe(MAX_PAGE_SIZE)
+    expect(capped.items).toHaveLength(MAX_PAGE_SIZE)
   })
 
   it('normaliza page y pageSize inválidos', async () => {
@@ -61,12 +67,12 @@ describe('listPackages', () => {
 
 describe('getPackage', () => {
   it('devuelve el paquete con su duración cuando existe', async () => {
-    const repo = createFakePackageRepository([makePackage({ id: 'x' })], () => 90)
+    const repo = createFakePackageRepository([makePackage({ id: 'x' })], () => DURACION_PAQUETE)
     const result = await getPackage(repo)('x')
     expect(isOk(result)).toBe(true)
     if (isOk(result)) {
       expect(result.value.id).toBe('x')
-      expect(result.value.durationTotalMin).toBe(90)
+      expect(result.value.durationTotalMin).toBe(DURACION_PAQUETE)
     }
   })
 

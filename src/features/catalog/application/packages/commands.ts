@@ -1,8 +1,8 @@
 import { Money } from '@/shared/money'
 import { ok, err, isErr, type Result } from '@/shared/result'
 import {
-  createPackage as buildPackageEntity,
-  deactivatePackage as deactivatePackageEntity,
+  buildPackage,
+  markPackageInactive,
   packageToView,
   type Package,
   type PackageView,
@@ -46,7 +46,7 @@ async function resolveTechniques(
   return ok(undefined)
 }
 
-function buildPackage(
+function buildFromModel(
   id: string,
   model: PackageWriteModel,
   isActive: boolean,
@@ -58,7 +58,7 @@ function buildPackage(
     return err(packageValidationError([packageCommandMessages.invalidPrice]))
   }
 
-  return buildPackageEntity({
+  return buildPackage({
     id,
     name: model.name,
     techniqueIds: model.techniqueIds,
@@ -77,7 +77,7 @@ export const createPackage =
     const resolved = await resolveTechniques(deps.techniqueRepo, model.techniqueIds)
     if (isErr(resolved)) return resolved
 
-    const built = buildPackage(deps.newId(), model, true)
+    const built = buildFromModel(deps.newId(), model, true)
     if (isErr(built)) return built
     const saved = await deps.packageRepo.save(built.value)
     if (isErr(saved)) return saved
@@ -101,7 +101,7 @@ export const updatePackage =
     const resolved = await resolveTechniques(deps.techniqueRepo, model.techniqueIds)
     if (isErr(resolved)) return resolved
 
-    const built = buildPackage(id, model, existing.pkg.isActive)
+    const built = buildFromModel(id, model, existing.pkg.isActive)
     if (isErr(built)) return built
     const saved = await deps.packageRepo.save(built.value)
     if (isErr(saved)) return saved
@@ -114,7 +114,7 @@ export const deactivatePackage =
     const existing = await deps.packageRepo.findById(id)
     if (existing === null) return err(packageNotFound(id))
 
-    const deactivated = deactivatePackageEntity(existing.pkg)
+    const deactivated = markPackageInactive(existing.pkg)
     const saved = await deps.packageRepo.save(deactivated)
     if (isErr(saved)) return saved
     return ok(packageToView(deactivated))
