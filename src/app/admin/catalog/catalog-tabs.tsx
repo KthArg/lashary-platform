@@ -2,23 +2,21 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { catalogRoutes } from '@/features/catalog/ui/routes'
-import { catalogStyles as s } from './catalog.styles'
+import { catalogRoutes } from '@/features/catalog/client'
+import { CATALOG_SECTION } from './catalog-section.strings'
+import { catalogStyles as STYLES } from './catalog.styles'
 
-// Paquetes llega con US-PROD-01: al actualizar esta rama con main, pasa a catalogRoutes.packagesAdmin.
-// Productos (US-PROD-02, /admin/store) se suma cuando esa historia esté en main.
 const CATALOG_TABS = [
-  { label: 'Técnicas', href: catalogRoutes.admin },
-  { label: 'Paquetes', href: '/admin/catalog/packages' },
+  { label: CATALOG_SECTION.tabs.techniques, href: catalogRoutes.admin },
+  { label: CATALOG_SECTION.tabs.packages, href: '/admin/catalog/packages' },
 ]
 
 export function CatalogTabs() {
   const pathname = usePathname()
 
   return (
-    <div role="tablist" className={s.tabs}>
+    <div role="tablist" className={STYLES.tabs}>
       {CATALOG_TABS.map((tab) => {
-        // Coincidencia exacta: /admin/catalog es prefijo de /admin/catalog/packages.
         const isActive = pathname === tab.href
         return (
           <Link
@@ -26,7 +24,7 @@ export function CatalogTabs() {
             href={tab.href}
             role="tab"
             aria-current={isActive ? 'page' : undefined}
-            className={isActive ? s.tabActive : s.tab}
+            className={isActive ? STYLES.tabActive : STYLES.tab}
           >
             {tab.label}
           </Link>

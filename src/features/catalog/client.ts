@@ -3,3 +3,4 @@
 // (index.ts sí, vía techniqueRepository). Los boundaries de ruta que corren en el cliente
 // (loading.tsx, error.tsx) importan de aquí para no arrastrar código de servidor al bundle.
 export { catalogMessages } from './ui/messages'
+export { catalogRoutes } from './ui/routes'
