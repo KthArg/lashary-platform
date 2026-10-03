@@ -7,7 +7,7 @@ export const schedulingMessages = {
   },
   weeklyAvailability: {
     heading: 'Horario semanal',
-    description: 'Bloques de horario que se repiten cada semana (AC-1).',
+    description: 'Bloques de horario que se repiten cada semana.',
     columns: { day: 'Día', hours: 'Horario' },
     empty: 'Todavía no hay bloques de horario definidos.',
     form: {
@@ -23,7 +23,7 @@ export const schedulingMessages = {
   },
   closedDates: {
     heading: 'Días no laborables y feriados',
-    description: 'Fechas específicas en las que no se atiende (AC-2).',
+    description: 'Fechas específicas en las que no se atiende.',
     columns: { date: 'Fecha', reason: 'Motivo' },
     empty: 'Todavía no hay días no laborables registrados.',
     form: {
@@ -35,8 +35,7 @@ export const schedulingMessages = {
   },
   manualBlocks: {
     heading: 'Bloqueos manuales',
-    description:
-      'Bloqueo puntual de un rango de horas — el mecanismo de datos (AC-3); seleccionar varios y desbloquear es alcance de US-AGE-07.',
+    description: 'Rangos de horas puntuales en los que no se reciben citas.',
     columns: { range: 'Rango', reason: 'Motivo' },
     empty: 'Todavía no hay bloqueos manuales.',
     form: {
@@ -55,23 +54,24 @@ export const schedulingMessages = {
       'Todavía no existe el recurso agendable base. Contactá al equipo técnico antes de continuar.',
   },
   validation: {
+    resourceId: 'No se encontró el recurso de agenda. Recargá la página e intentá de nuevo.',
     dayOfWeek: 'Elegí un día de la semana válido',
     startTime: 'La hora de inicio es obligatoria',
     endTime: 'La hora de fin es obligatoria',
     closedDate: 'La fecha es obligatoria',
-    startsAt: 'La fecha y hora de inicio son obligatorias',
-    endsAt: 'La fecha y hora de fin son obligatorias',
+    startsAt: 'Ingresá una fecha y hora de inicio válidas',
+    endsAt: 'Ingresá una fecha y hora de fin válidas',
+    reason: 'El motivo debe ser texto',
   },
+  days: {
+    0: 'Domingo',
+    1: 'Lunes',
+    2: 'Martes',
+    3: 'Miércoles',
+    4: 'Jueves',
+    5: 'Viernes',
+    6: 'Sábado',
+  } satisfies Record<DayOfWeek, string>,
 } as const
 
-const DAY_LABELS: Record<DayOfWeek, string> = {
-  0: 'Domingo',
-  1: 'Lunes',
-  2: 'Martes',
-  3: 'Miércoles',
-  4: 'Jueves',
-  5: 'Viernes',
-  6: 'Sábado',
-}
-
-export const dayLabel = (day: DayOfWeek): string => DAY_LABELS[day]
+export const dayLabel = (day: DayOfWeek): string => schedulingMessages.days[day]

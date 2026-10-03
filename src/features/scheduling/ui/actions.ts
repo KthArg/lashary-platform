@@ -6,7 +6,6 @@ import { isStaff } from './require-staff'
 import { defineClosedDate, defineManualBlock, defineWeeklyAvailability } from '../application/manage-availability'
 import { supabaseSchedulingRepository } from '../db/supabase-scheduling-repository'
 import { closedDateFormSchema, manualBlockFormSchema, weeklyAvailabilityFormSchema } from './schema'
-import { parseCostaRicaLocalDateTime } from './parse-local-datetime'
 import { schedulingMessages } from './messages'
 import { schedulingRoutes } from './routes'
 import type { SchedulingActionState } from './action-state'
@@ -62,12 +61,7 @@ export async function defineManualBlockAction(
     return { status: 'invalid', problems: parsed.error.issues.map((issue: { message: string }) => issue.message) }
   }
 
-  const result = await defineManualBlock(supabaseSchedulingRepository, {
-    resourceId: parsed.data.resourceId,
-    startsAt: parseCostaRicaLocalDateTime(parsed.data.startsAt),
-    endsAt: parseCostaRicaLocalDateTime(parsed.data.endsAt),
-    reason: parsed.data.reason,
-  })
+  const result = await defineManualBlock(supabaseSchedulingRepository, parsed.data)
   if (isErr(result)) return { status: 'invalid', problems: [result.error.message] }
 
   revalidatePath(schedulingRoutes.admin)
