@@ -9,7 +9,7 @@ historias:
     evidencia: "PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx"
   - id: US-PROD-01
     estado: en_progreso
-    falta: "probar a mano /admin/catalog/packages en un navegador. El refactor sin class de esta historia esta completo (domain, application, db y tests); queda pendiente proponerlo como regla en rules.yaml (decision del equipo, no bloquea el cierre). El codigo funcional esta completo y sus pruebas corren en verde, incluidas package-repository.integration.test.ts y package-rls-isolation.test.ts contra Supabase local en CI. Cierra como terminada con el PR de us/US-PROD-01 a main"
+    falta: "solo el cierre: mergear la pila (#98 a #168) en us/US-PROD-01, actualizarla con main y mergear us/US-PROD-01 a main. Codigo completo, criterios 1 a 3 con prueba, UI probada a mano contra la base de pruebas lashary-pruebas (2026-10-03) y control positivo de staff en catalog_package_staff_write.test.sql. Pasa a terminada con ese merge"
   - id: US-PROM-01
     estado: no_iniciada
   - id: US-PROM-02
