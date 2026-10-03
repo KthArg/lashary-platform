@@ -58,7 +58,7 @@ function weeklyAvailabilityRowToDomain(row: WeeklyAvailabilityRow): WeeklyAvaila
     startTime: row.start_time,
     endTime: row.end_time,
   })
-  if (!isOk(built)) throw new Error(`fila inválida en ${WEEKLY_AVAILABILITY_TABLE} (${row.id}): ${built.error.message}`)
+  if (!isOk(built)) throw new Error(`fila inválida en ${WEEKLY_AVAILABILITY_TABLE} (${row.id}): ${built.error.code}`)
   return built.value
 }
 
@@ -69,7 +69,7 @@ function closedDateRowToDomain(row: ClosedDateRow): ClosedDate {
     closedDate: row.closed_date,
     reason: row.reason ?? undefined,
   })
-  if (!isOk(built)) throw new Error(`fila inválida en ${CLOSED_DATES_TABLE} (${row.id}): ${built.error.message}`)
+  if (!isOk(built)) throw new Error(`fila inválida en ${CLOSED_DATES_TABLE} (${row.id}): ${built.error.code}`)
   return built.value
 }
 
@@ -81,7 +81,7 @@ function manualBlockRowToDomain(row: ManualBlockRow): ManualBlock {
     endsAt: new Date(row.ends_at),
     reason: row.reason ?? undefined,
   })
-  if (!isOk(built)) throw new Error(`fila inválida en ${MANUAL_BLOCKS_TABLE} (${row.id}): ${built.error.message}`)
+  if (!isOk(built)) throw new Error(`fila inválida en ${MANUAL_BLOCKS_TABLE} (${row.id}): ${built.error.code}`)
   return built.value
 }
 

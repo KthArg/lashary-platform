@@ -1,107 +1,80 @@
+export const SCHEDULING_ERROR_CODES = {
+  invalidTimeRange: 'SCHEDULING_INVALID_TIME_RANGE',
+  invalidDayOfWeek: 'SCHEDULING_INVALID_DAY_OF_WEEK',
+  invalidDate: 'SCHEDULING_INVALID_DATE',
+  closedDateExists: 'SCHEDULING_CLOSED_DATE_EXISTS',
+  invalidBlockRange: 'SCHEDULING_INVALID_BLOCK_RANGE',
+} as const
+
+type SchedulingErrorCode = (typeof SCHEDULING_ERROR_CODES)[keyof typeof SCHEDULING_ERROR_CODES]
+
+function hasCode<T extends { code: SchedulingErrorCode }>(error: unknown, code: T['code']): error is T {
+  return typeof error === 'object' && error !== null && (error as { code?: unknown }).code === code
+}
+
 export interface InvalidTimeRangeError {
-  readonly code: 'SCHEDULING_INVALID_TIME_RANGE'
-  readonly message: string
+  readonly code: typeof SCHEDULING_ERROR_CODES.invalidTimeRange
   readonly startTime: string
   readonly endTime: string
 }
 
 export function invalidTimeRangeError(startTime: string, endTime: string): InvalidTimeRangeError {
-  return {
-    code: 'SCHEDULING_INVALID_TIME_RANGE',
-    message: `El horario de fin (${endTime}) debe ser posterior al de inicio (${startTime}).`,
-    startTime,
-    endTime,
-  }
+  return { code: SCHEDULING_ERROR_CODES.invalidTimeRange, startTime, endTime }
 }
 
-export function isInvalidTimeRangeError(error: unknown): error is InvalidTimeRangeError {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    (error as { code?: unknown }).code === 'SCHEDULING_INVALID_TIME_RANGE'
-  )
-}
+export const isInvalidTimeRangeError = (error: unknown): error is InvalidTimeRangeError =>
+  hasCode<InvalidTimeRangeError>(error, SCHEDULING_ERROR_CODES.invalidTimeRange)
 
 export interface InvalidDayOfWeekError {
-  readonly code: 'SCHEDULING_INVALID_DAY_OF_WEEK'
-  readonly message: string
+  readonly code: typeof SCHEDULING_ERROR_CODES.invalidDayOfWeek
   readonly value: number
 }
 
 export function invalidDayOfWeekError(value: number): InvalidDayOfWeekError {
-  return {
-    code: 'SCHEDULING_INVALID_DAY_OF_WEEK',
-    message: `Día de la semana inválido: ${value}. Debe estar entre 0 (domingo) y 6 (sábado).`,
-    value,
-  }
+  return { code: SCHEDULING_ERROR_CODES.invalidDayOfWeek, value }
 }
 
-export function isInvalidDayOfWeekError(error: unknown): error is InvalidDayOfWeekError {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    (error as { code?: unknown }).code === 'SCHEDULING_INVALID_DAY_OF_WEEK'
-  )
-}
+export const isInvalidDayOfWeekError = (error: unknown): error is InvalidDayOfWeekError =>
+  hasCode<InvalidDayOfWeekError>(error, SCHEDULING_ERROR_CODES.invalidDayOfWeek)
 
 export interface InvalidDateError {
-  readonly code: 'SCHEDULING_INVALID_DATE'
-  readonly message: string
+  readonly code: typeof SCHEDULING_ERROR_CODES.invalidDate
   readonly value: string
 }
 
 export function invalidDateError(value: string): InvalidDateError {
-  return {
-    code: 'SCHEDULING_INVALID_DATE',
-    message: `Fecha inválida: ${value}. Formato esperado YYYY-MM-DD.`,
-    value,
-  }
+  return { code: SCHEDULING_ERROR_CODES.invalidDate, value }
 }
 
-export function isInvalidDateError(error: unknown): error is InvalidDateError {
-  return (
-    typeof error === 'object' && error !== null && (error as { code?: unknown }).code === 'SCHEDULING_INVALID_DATE'
-  )
-}
+export const isInvalidDateError = (error: unknown): error is InvalidDateError =>
+  hasCode<InvalidDateError>(error, SCHEDULING_ERROR_CODES.invalidDate)
 
 export interface ClosedDateAlreadyExistsError {
-  readonly code: 'SCHEDULING_CLOSED_DATE_EXISTS'
-  readonly message: string
+  readonly code: typeof SCHEDULING_ERROR_CODES.closedDateExists
   readonly closedDate: string
 }
 
 export function closedDateAlreadyExistsError(closedDate: string): ClosedDateAlreadyExistsError {
-  return {
-    code: 'SCHEDULING_CLOSED_DATE_EXISTS',
-    message: `Ya existe un día no laborable registrado para el ${closedDate}.`,
-    closedDate,
-  }
+  return { code: SCHEDULING_ERROR_CODES.closedDateExists, closedDate }
 }
 
-export function isClosedDateAlreadyExistsError(error: unknown): error is ClosedDateAlreadyExistsError {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    (error as { code?: unknown }).code === 'SCHEDULING_CLOSED_DATE_EXISTS'
-  )
-}
+export const isClosedDateAlreadyExistsError = (error: unknown): error is ClosedDateAlreadyExistsError =>
+  hasCode<ClosedDateAlreadyExistsError>(error, SCHEDULING_ERROR_CODES.closedDateExists)
 
 export interface InvalidBlockRangeError {
-  readonly code: 'SCHEDULING_INVALID_BLOCK_RANGE'
-  readonly message: string
+  readonly code: typeof SCHEDULING_ERROR_CODES.invalidBlockRange
 }
 
 export function invalidBlockRangeError(): InvalidBlockRangeError {
-  return {
-    code: 'SCHEDULING_INVALID_BLOCK_RANGE',
-    message: 'El bloqueo debe terminar después de empezar.',
-  }
+  return { code: SCHEDULING_ERROR_CODES.invalidBlockRange }
 }
 
-export function isInvalidBlockRangeError(error: unknown): error is InvalidBlockRangeError {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    (error as { code?: unknown }).code === 'SCHEDULING_INVALID_BLOCK_RANGE'
-  )
-}
+export const isInvalidBlockRangeError = (error: unknown): error is InvalidBlockRangeError =>
+  hasCode<InvalidBlockRangeError>(error, SCHEDULING_ERROR_CODES.invalidBlockRange)
+
+export type SchedulingError =
+  | InvalidTimeRangeError
+  | InvalidDayOfWeekError
+  | InvalidDateError
+  | ClosedDateAlreadyExistsError
+  | InvalidBlockRangeError
