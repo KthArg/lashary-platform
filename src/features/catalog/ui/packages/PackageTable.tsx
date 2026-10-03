@@ -3,7 +3,7 @@ import type { PackageListItem } from '../../application/packages/queries'
 import { packageMessages } from './messages'
 import { formatColones } from '../format'
 import { catalogRoutes } from '../routes'
-import { packageTableStyles as s } from './PackageTable.styles'
+import { packageTableStyles as STYLES } from './PackageTable.styles'
 
 const m = packageMessages.admin
 
@@ -22,8 +22,8 @@ export function PackageTable({
   techniqueNameById: Map<string, string>
 }) {
   return (
-    <div className={s.wrapper}>
-      <table className={s.table}>
+    <div className={STYLES.wrapper}>
+      <table className={STYLES.table}>
         <thead>
           <tr>
             <th>{m.columns.name}</th>
@@ -32,26 +32,26 @@ export function PackageTable({
             <th>{m.columns.price}</th>
             <th>{m.columns.status}</th>
             <th>
-              <span className={s.srOnly}>{m.columns.actions}</span>
+              <span className={STYLES.srOnly}>{m.columns.actions}</span>
             </th>
           </tr>
         </thead>
         <tbody>
           {items.map((pkg) => (
             <tr key={pkg.id}>
-              <td className={s.nameCell}>{pkg.name}</td>
+              <td className={STYLES.nameCell}>{pkg.name}</td>
               <td>{techniquesCell(pkg, techniqueNameById)}</td>
               <td>
                 {pkg.durationTotalMin} {m.minutesShort}
               </td>
               <td>{formatColones(pkg.price)}</td>
               <td>
-                <span className={pkg.isActive ? s.badgeActive : s.badgeInactive}>
+                <span className={pkg.isActive ? STYLES.badgeActive : STYLES.badgeInactive}>
                   {pkg.isActive ? m.status.active : m.status.inactive}
                 </span>
               </td>
-              <td className={s.actionsCell}>
-                <Link href={catalogRoutes.editPackage(pkg.id)} className={s.editLink}>
+              <td className={STYLES.actionsCell}>
+                <Link href={catalogRoutes.editPackage(pkg.id)} className={STYLES.editLink}>
                   {m.rowActions.edit}
                 </Link>
               </td>

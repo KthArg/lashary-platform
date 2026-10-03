@@ -9,7 +9,7 @@ import { packageRepository } from '../../db/packages/package-repository'
 import { techniqueRepository } from '../../db/technique-repository'
 import { packageMessages } from './messages'
 import { catalogRoutes } from '../routes'
-import { adminPackagesPageStyles as s } from './AdminPackagesPage.styles'
+import { adminPackagesPageStyles as STYLES } from './AdminPackagesPage.styles'
 import { PackageTable } from './PackageTable'
 import { PackageForm } from './package-form'
 
@@ -38,33 +38,33 @@ export async function AdminPackagesPage({
   const showForm = params.new !== undefined || editing !== undefined
 
   return (
-    <main className={s.main}>
-      <header className={s.header}>
+    <main className={STYLES.main}>
+      <header className={STYLES.header}>
         <div>
-          <h1 className={s.title}>{m.title}</h1>
-          <p className={s.subtitle}>{m.subtitle}</p>
+          <h1 className={STYLES.title}>{m.title}</h1>
+          <p className={STYLES.subtitle}>{m.subtitle}</p>
         </div>
         {!showForm && (
-          <Link href={catalogRoutes.newPackage} className={s.newPackageLink}>
+          <Link href={catalogRoutes.newPackage} className={STYLES.newPackageLink}>
             {m.newPackage}
           </Link>
         )}
       </header>
 
       {showForm && (
-        <div className={s.formWrapper}>
+        <div className={STYLES.formWrapper}>
           <PackageForm pkg={editing} techniques={activeTechniques} />
-          <Link href={catalogRoutes.packagesAdmin} className={s.cancelLink}>
+          <Link href={catalogRoutes.packagesAdmin} className={STYLES.cancelLink}>
             {packageMessages.form.cancel}
           </Link>
         </div>
       )}
 
       {page.items.length === 0 ? (
-        <div className={s.emptyBox}>
-          <h2 className={s.emptyTitle}>{m.empty.title}</h2>
-          <p className={s.emptyBody}>{m.empty.body}</p>
-          <Link href={catalogRoutes.newPackage} className={s.emptyCta}>
+        <div className={STYLES.emptyBox}>
+          <h2 className={STYLES.emptyTitle}>{m.empty.title}</h2>
+          <p className={STYLES.emptyBody}>{m.empty.body}</p>
+          <Link href={catalogRoutes.newPackage} className={STYLES.emptyCta}>
             {m.empty.cta}
           </Link>
         </div>

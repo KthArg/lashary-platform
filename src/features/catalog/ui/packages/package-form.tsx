@@ -10,7 +10,7 @@ import {
   deactivatePackageAction,
 } from './package-actions'
 import { initialPackageActionState } from './action-state'
-import { packageFormStyles as s } from './package-form.styles'
+import { packageFormStyles as STYLES } from './package-form.styles'
 
 const f = packageMessages.form
 const admin = packageMessages.admin
@@ -27,23 +27,23 @@ function Feedback({
   if (status === 'idle') return null
   if (status === 'ok') {
     return (
-      <div role="status" className={s.alertSuccess}>
+      <div role="status" className={STYLES.alertSuccess}>
         <span>{message}</span>
       </div>
     )
   }
   if (status === 'forbidden') {
     return (
-      <div role="alert" className={s.alertWarning}>
+      <div role="alert" className={STYLES.alertWarning}>
         <span>{message}</span>
       </div>
     )
   }
   return (
-    <div role="alert" className={s.alertError}>
+    <div role="alert" className={STYLES.alertError}>
       <div>
-        <p className={s.feedbackTitle}>{f.validationTitle}</p>
-        <ul className={s.feedbackList}>
+        <p className={STYLES.feedbackTitle}>{f.validationTitle}</p>
+        <ul className={STYLES.feedbackList}>
           {(problems ?? []).map((problem) => (
             <li key={problem}>{problem}</li>
           ))}
@@ -94,38 +94,38 @@ export function PackageForm({
   }
 
   return (
-    <section className={s.section}>
-      <h2 className={s.heading}>{editing ? f.legendEdit : f.legendCreate}</h2>
+    <section className={STYLES.section}>
+      <h2 className={STYLES.heading}>{editing ? f.legendEdit : f.legendCreate}</h2>
 
       <Feedback {...state} />
 
-      <form action={formAction} className={s.form}>
+      <form action={formAction} className={STYLES.form}>
         {editing && <input type="hidden" name="id" value={pkg.id} />}
 
-        <label className={s.fieldLabel} htmlFor="name">
-          <span className={s.labelText}>{f.fields.name}</span>
+        <label className={STYLES.fieldLabel} htmlFor="name">
+          <span className={STYLES.labelText}>{f.fields.name}</span>
           <input
             id="name"
             name="name"
             type="text"
             required
             defaultValue={pkg?.name}
-            className={s.fieldInput}
+            className={STYLES.fieldInput}
           />
         </label>
 
-        <fieldset className={s.techniquesFieldset}>
-          <legend className={s.labelText}>{f.fields.techniques}</legend>
-          <div className={s.techniquesList}>
+        <fieldset className={STYLES.techniquesFieldset}>
+          <legend className={STYLES.labelText}>{f.fields.techniques}</legend>
+          <div className={STYLES.techniquesList}>
             {techniques.map((technique) => (
-              <label key={technique.id} className={s.techniqueOption}>
+              <label key={technique.id} className={STYLES.techniqueOption}>
                 <input
                   type="checkbox"
                   name="techniqueIds"
                   value={technique.id}
                   checked={selectedIds.has(technique.id)}
                   onChange={() => toggle(technique.id)}
-                  className={s.checkbox}
+                  className={STYLES.checkbox}
                 />
                 <span>
                   {technique.name} ({technique.durationFirstTimeMin + technique.bufferMin}{' '}
@@ -136,12 +136,12 @@ export function PackageForm({
           </div>
         </fieldset>
 
-        <p className={s.durationTotal}>
+        <p className={STYLES.durationTotal}>
           {f.durationTotal}: {totalDuration} {admin.minutesShort}
         </p>
 
-        <label className={s.fieldLabel} htmlFor="price">
-          <span className={s.labelText}>{f.fields.price}</span>
+        <label className={STYLES.fieldLabel} htmlFor="price">
+          <span className={STYLES.labelText}>{f.fields.price}</span>
           <input
             id="price"
             name="price"
@@ -150,22 +150,22 @@ export function PackageForm({
             step={1}
             required
             defaultValue={pkg?.price}
-            className={s.fieldInput}
+            className={STYLES.fieldInput}
           />
         </label>
 
-        <div className={s.submitWrapper}>
-          <button type="submit" className={s.submitButton} disabled={pending}>
+        <div className={STYLES.submitWrapper}>
+          <button type="submit" className={STYLES.submitButton} disabled={pending}>
             {editing ? f.submitEdit : f.submitCreate}
           </button>
         </div>
       </form>
 
       {editing && (
-        <form action={deactivateAction} className={s.deactivateForm}>
+        <form action={deactivateAction} className={STYLES.deactivateForm}>
           <input type="hidden" name="id" value={pkg.id} />
           <Feedback {...deactivateState} />
-          <button type="submit" className={s.deactivateButton} disabled={deactivating}>
+          <button type="submit" className={STYLES.deactivateButton} disabled={deactivating}>
             {admin.rowActions.deactivate}
           </button>
         </form>
