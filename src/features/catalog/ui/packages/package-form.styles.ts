@@ -14,6 +14,7 @@ export const packageFormStyles = {
   techniquesList: 'flex flex-col gap-2',
   techniqueOption: 'label cursor-pointer justify-start gap-3',
   checkbox: 'checkbox checkbox-sm',
+  inactiveBadge: 'badge badge-warning badge-sm',
   durationTotal: 'text-sm text-base-content/70',
   submitWrapper: '',
   submitButton: 'btn btn-primary',

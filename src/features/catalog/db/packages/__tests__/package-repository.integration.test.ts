@@ -47,6 +47,8 @@ describe.skipIf(!reachable)('SupabasePackageRepository (Supabase local)', () => 
     expect(
       await repo.findById('00000000-0000-0000-0000-000000000000'),
     ).toBeNull()
+    expect(await repo.findById('no-es-un-uuid')).toBeNull()
+    expect(await repo.findById('')).toBeNull()
   })
 
   it('save() está denegado por RLS con token anónimo (B1, fail-closed)', async () => {

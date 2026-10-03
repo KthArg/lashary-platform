@@ -84,6 +84,10 @@ export function PackageForm({
     [selectedIds, durationById],
   )
 
+  const hasInactiveSelected = techniques.some(
+    (t) => !t.isActive && selectedIds.has(t.id),
+  )
+
   function toggle(id: string) {
     setSelectedIds((prev) => {
       const next = new Set(prev)
@@ -131,10 +135,15 @@ export function PackageForm({
                   {technique.name} ({technique.durationFirstTimeMin + technique.bufferMin}{' '}
                   {admin.minutesShort})
                 </span>
+                {!technique.isActive && (
+                  <span className={STYLES.inactiveBadge}>{f.inactiveTechnique}</span>
+                )}
               </label>
             ))}
           </div>
         </fieldset>
+
+        {hasInactiveSelected && <p className={STYLES.alertWarning}>{f.inactiveHint}</p>}
 
         <p className={STYLES.durationTotal}>
           {f.durationTotal}: {totalDuration} {admin.minutesShort}

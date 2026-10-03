@@ -12,6 +12,7 @@ export const packageMessages = {
       actions: 'Acciones',
     },
     status: { active: 'Activo', inactive: 'Desactivado' },
+    inactiveTechnique: '(desactivada)',
     rowActions: { edit: 'Editar', deactivate: 'Desactivar' },
     minutesShort: 'min',
     empty: {
@@ -35,6 +36,9 @@ export const packageMessages = {
       price: 'Precio del paquete (colones)',
     },
     durationTotal: 'Duración total',
+    inactiveTechnique: 'desactivada',
+    inactiveHint:
+      'Este paquete incluye técnicas desactivadas. Quitalas o reactivalas en Técnicas antes de guardar.',
     submitCreate: 'Crear paquete',
     submitEdit: 'Guardar cambios',
     cancel: 'Cancelar',
