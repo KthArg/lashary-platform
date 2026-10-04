@@ -1,10 +1,9 @@
 'use client'
 
-// Ver nota en ../error.tsx: el texto viene del entry point cliente-seguro, no del index.ts.
-import { catalogMessages } from '@/features/catalog/client'
+import { packageMessages } from '@/features/catalog/client'
 import { catalogStyles } from '../catalog.styles'
 
-const m = catalogMessages.packages.admin
+const m = packageMessages.admin
 
 export default function Error({ reset }: { error: Error; reset: () => void }) {
   return (

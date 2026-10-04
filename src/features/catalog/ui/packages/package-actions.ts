@@ -3,18 +3,18 @@
 import { randomUUID } from 'node:crypto'
 import { revalidatePath } from 'next/cache'
 import { isErr } from '@/shared/result'
-import { isStaff } from './require-staff'
+import { isStaff } from '../require-staff'
 import {
   createPackage,
   updatePackage,
   deactivatePackage,
   type PackageCommandDeps,
-} from '../application/packages/commands'
-import { packageRepository } from '../db/packages/package-repository'
-import { techniqueRepository } from '../db/technique-repository'
+} from '../../application/packages/commands'
+import { packageRepository } from '../../db/packages/package-repository'
+import { techniqueRepository } from '../../db/technique-repository'
 import { packageFormSchema } from './package-schema'
-import { catalogMessages } from './messages'
-import { catalogRoutes } from './routes'
+import { packageMessages } from './messages'
+import { catalogRoutes } from '../routes'
 import type { PackageActionState } from './action-state'
 
 async function deps(): Promise<PackageCommandDeps> {
@@ -26,11 +26,9 @@ async function deps(): Promise<PackageCommandDeps> {
 }
 
 function forbidden(): PackageActionState {
-  return { status: 'forbidden', message: catalogMessages.packages.form.accessDenied }
+  return { status: 'forbidden', message: packageMessages.form.accessDenied }
 }
 
-// getAll('techniqueIds'), no Object.fromEntries(formData): el checklist del formulario envía
-// varios valores bajo el mismo nombre, y fromEntries se quedaría solo con el último.
 function parseForm(formData: FormData) {
   return packageFormSchema.safeParse({
     name: formData.get('name'),
@@ -60,7 +58,7 @@ export async function createPackageAction(
     }
   }
   revalidatePath(catalogRoutes.packagesAdmin)
-  return { status: 'ok', message: catalogMessages.packages.form.savedCreate }
+  return { status: 'ok', message: packageMessages.form.savedCreate }
 }
 
 export async function updatePackageAction(
@@ -85,7 +83,7 @@ export async function updatePackageAction(
     }
   }
   revalidatePath(catalogRoutes.packagesAdmin)
-  return { status: 'ok', message: catalogMessages.packages.form.savedEdit }
+  return { status: 'ok', message: packageMessages.form.savedEdit }
 }
 
 export async function deactivatePackageAction(
@@ -101,5 +99,5 @@ export async function deactivatePackageAction(
     return { status: 'invalid', problems: [result.error.message] }
   }
   revalidatePath(catalogRoutes.packagesAdmin)
-  return { status: 'ok', message: catalogMessages.packages.form.deactivated }
+  return { status: 'ok', message: packageMessages.form.deactivated }
 }

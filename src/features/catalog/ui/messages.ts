@@ -76,59 +76,6 @@ export const catalogMessages = {
     navTechniques: 'Técnicas',
     navPackages: 'Paquetes',
   },
-  packages: {
-    admin: {
-      title: 'Paquetes de servicios',
-      subtitle: 'Combos de dos o más técnicas con precio propio.',
-      newPackage: 'Nuevo paquete',
-      columns: {
-        name: 'Paquete',
-        techniques: 'Técnicas incluidas',
-        duration: 'Duración total',
-        price: 'Precio',
-        status: 'Estado',
-        actions: 'Acciones',
-      },
-      status: { active: 'Activo', inactive: 'Desactivado' },
-      rowActions: { edit: 'Editar', deactivate: 'Desactivar' },
-      minutesShort: 'min',
-      empty: {
-        title: 'Todavía no hay paquetes',
-        body: 'Creá el primer paquete combinando dos o más técnicas del catálogo.',
-        cta: 'Crear el primer paquete',
-      },
-      loading: 'Cargando los paquetes…',
-      error: {
-        title: 'No se pudieron cargar los paquetes',
-        body: 'Ocurrió un error al leer los paquetes del catálogo.',
-        retry: 'Reintentar',
-      },
-    },
-    form: {
-      legendCreate: 'Nuevo paquete',
-      legendEdit: 'Editar paquete',
-      fields: {
-        name: 'Nombre',
-        techniques: 'Técnicas incluidas (mínimo dos)',
-        price: 'Precio del paquete (colones)',
-      },
-      durationTotal: 'Duración total',
-      submitCreate: 'Crear paquete',
-      submitEdit: 'Guardar cambios',
-      cancel: 'Cancelar',
-      accessDenied:
-        'Tu sesión no tiene permisos para modificar los paquetes. Iniciá sesión como administradora.',
-      validationTitle: 'Revisá estos campos:',
-      savedCreate: 'Paquete creado.',
-      savedEdit: 'Cambios guardados.',
-      deactivated: 'Paquete desactivado.',
-      validation: {
-        name: 'El nombre es obligatorio',
-        techniqueIds: 'Elegí al menos dos técnicas',
-        price: 'El precio debe ser mayor que cero',
-      },
-    },
-  },
 } as const
 
 const FAMILY_LABELS: Record<ServiceFamily, string> = {

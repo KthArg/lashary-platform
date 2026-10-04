@@ -1,11 +1,11 @@
 import Link from 'next/link'
-import type { PackageListItem } from '../application/packages/queries'
-import { catalogMessages } from './messages'
-import { formatColones } from './format'
-import { catalogRoutes } from './routes'
+import type { PackageListItem } from '../../application/packages/queries'
+import { packageMessages } from './messages'
+import { formatColones } from '../format'
+import { catalogRoutes } from '../routes'
 import { packageTableStyles as s } from './PackageTable.styles'
 
-const m = catalogMessages.packages.admin
+const m = packageMessages.admin
 
 function techniquesCell(
   pkg: PackageListItem,

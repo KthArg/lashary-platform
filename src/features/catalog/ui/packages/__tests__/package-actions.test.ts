@@ -27,8 +27,8 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 import {
   createPackageAction,
   deactivatePackageAction,
-} from '@/features/catalog/ui/package-actions'
-import { initialPackageActionState } from '@/features/catalog/ui/action-state'
+} from '@/features/catalog/ui/packages/package-actions'
+import { initialPackageActionState } from '@/features/catalog/ui/packages/action-state'
 import { packageNameConflict } from '@/features/catalog/domain/packages/errors'
 
 function form(
