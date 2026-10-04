@@ -2,13 +2,14 @@
 feature: catalog
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-09-20
+actualizado: 2026-09-22
 historias:
   - id: US-AGE-08
     estado: terminada
     evidencia: "PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx"
   - id: US-PROD-01
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "application/db/UI de paquetes y sus políticas RLS de escritura; hasta ahora solo existe la migración de solo lectura (catalog_packages, catalog_package_techniques) y la entidad de dominio Package (domain/package.ts, domain/__tests__/package.test.ts) con sus invariantes (mínimo 2 técnicas sin duplicados, precio > 0)"
   - id: US-PROM-01
     estado: no_iniciada
   - id: US-PROM-02
@@ -44,6 +45,8 @@ US-AGE-08 terminada: PR #7 (catálogo, lectura y RLS) y PR #50 (escritura de adm
 - Test de aislamiento RLS `__tests__/rls-isolation.test.ts` (SEC-002): con token anónimo y con el token de una clienta autenticada real (sign-up, sin service-role key) verifica que `SELECT` funciona (lectura pública intencional) y que cada `INSERT` / `UPDATE` / `DELETE` falla y no altera los datos ni el conteo. El `beforeAll` falla ruidosamente si el seed no está cargado (sin falsos verdes). CI (`job-tests-reales`) levanta Supabase local + `db reset` antes de `npm test`; `supabase` CLI pinneada en `devDependencies`.
 
 Dónde se detiene: los criterios 7b y 8 (la cita no se altera / precio congelado) se trasladaron a US-AGE-05 (ver `docs/process/DEPENDENCIES.md`, «Criterios trasladados»). El camino admin usa RLS + `requireAdminSession`; su control positivo contra la base real es la deuda registrada arriba.
+
+**US-PROD-01 (en_progreso):** migración `supabase/migrations/20260922000000_catalog_packages.sql` (tablas `catalog_packages` y `catalog_package_techniques`, RLS de solo lectura pública por ahora — la escritura llega en una migración aparte) y entidad `domain/package.ts` (`Package.create` valida mínimo dos técnicas sin duplicados y precio > 0, DOM-007; `deactivate()` no borra, criterio 3). Aún sin `application/`, `db/`, políticas de escritura ni UI — ver "falta" en el front-matter.
 
 ## Qué no hace todavía
 

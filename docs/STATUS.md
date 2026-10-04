@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-21.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-22.
 
 ## Features
 
@@ -10,7 +10,7 @@
 | account | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | audit | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
-| catalog | pendiente | en_progreso | 1 / 0 / 0 / 0 / 3 |
+| catalog | pendiente | en_progreso | 1 / 1 / 0 / 0 / 2 |
 | clients | pendiente | en_progreso | 1 / 1 / 0 / 0 / 3 |
 | content | pendiente | en_progreso | 0 / 0 / 0 / 0 / 3 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
@@ -32,9 +32,9 @@
 - US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
 - US-AUTH-02 — terminada — PR #3, PR #18, tests: auth-client.test.tsx, rls-isolation.test.ts
 
-### catalog (actualizado: 2026-09-20)
+### catalog (actualizado: 2026-09-22)
 - US-AGE-08 — terminada — PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx
-- US-PROD-01 — no_iniciada
+- US-PROD-01 — en_progreso — falta: application/db/UI de paquetes y sus políticas RLS de escritura; hasta ahora solo existe la migración de solo lectura (catalog_packages, catalog_package_techniques) y la entidad de dominio Package (domain/package.ts, domain/__tests__/package.test.ts) con sus invariantes (mínimo 2 técnicas sin duplicados, precio > 0)
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
