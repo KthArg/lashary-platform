@@ -6,7 +6,7 @@ import {
 import { CLIENT_FIXTURES } from './client-fixtures'
 
 const mockUpdate = vi.fn()
-vi.mock('../actions/clients-actions', () => ({
+vi.mock('../ui/actions', () => ({
   updateClientAction: (...args: unknown[]) => mockUpdate(...args),
   createClientAction: vi.fn(),
   listClientsAction: vi.fn(),

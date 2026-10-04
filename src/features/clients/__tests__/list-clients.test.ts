@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { listClientsAction } from '../actions/clients-actions'
+import { listClientsAction } from '../ui/actions'
 import { CLIENTS_ERROR_MESSAGES, CLIENTS_LIST_LIMITS } from '@/features/clients'
 
 let dbResult: { data: unknown; error: unknown; count: number | null }

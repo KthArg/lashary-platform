@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-09-21"
+actualizado: "2026-10-04"
 historias:
   - id: US-CLI-01
     estado: en_progreso
@@ -82,10 +82,13 @@ Control de acceso de la capa de aplicación: la página y cada action llaman a
 Google son redirigidas a `/admin`. El middleware de Edge ya cubría `/admin/*` (salvo `/admin`
 exacto), pero solo comprueba que haya sesión, no el rol — el rol lo comprueba esta página.
 
-La estructura de carpetas sigue la distribución de `auth`: `actions/`, `components/`, `hooks/`,
-`constants/`, `validation/`, `types/`, `urls/`, `__tests__/`; un subdirectorio por componente.
-`urls/` guarda la construcción pura de URLs del listado, separada de `hooks/` porque no usa React:
-así se prueba sin renderizar.
+La estructura de carpetas sigue las capas de `docs/spec/ARCHITECTURE.md`, como `_template` y
+`catalog`: `domain/` (la clienta, sus límites, `normalizePhone` y `validateClientForm`),
+`application/` (los tipos de resultado de los casos de uso) y `ui/` (las server actions en
+`ui/actions.ts`, los textos en `ui/messages.ts`, los hooks en `ui/hooks/` y un subdirectorio por
+componente). No hay `http/`: la feature no tiene route handlers. `ui/clients-list-url.ts` guarda la
+construcción pura de URLs del listado, separada de `ui/hooks/` porque no usa React: así se prueba sin
+renderizar. Las pruebas siguen en `__tests__/`.
 
 ## Qué no hace todavía
 
@@ -231,3 +234,12 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
 - **2026-09-23 — Se eliminaron los comentarios del código de la feature** (`src/features/clients/**` y
   `src/app/admin/clients/**`, pruebas incluidas), por indicación del profesor. Solo se borraron líneas;
   el comportamiento no cambia y las pruebas siguen pasando.
+- **2026-10-04 — La feature pasa a las capas `domain/ application/ ui/`, por decisión de José Loría.**
+  Revierte la decisión del 2026-09-07: `catalog` ya sigue `docs/spec/ARCHITECTURE.md` y `clients` era
+  la feature distinta. Se movió con `git mv`, cambiando solo rutas de import; `index.ts` exporta los
+  mismos nombres, así que `src/app/admin/clients/` no cambia (ARCH-003). Los componentes conservan un
+  subdirectorio cada uno dentro de `ui/`: son 11 con hasta 4 archivos, y aplanarlos como `catalog`
+  dejaría unos 40 archivos en una sola carpeta. Las pruebas no se mueven: la evidencia de US-CLI-05 las
+  cita por nombre. Las decisiones anteriores nombran las rutas viejas (`actions/`, `validation/`,
+  `hooks/`…) porque son bitácora. **Consecuencia:** `check-domain-purity.sh` vigila ahora `domain/` y
+  `application/` de esta feature (DOM-004).
