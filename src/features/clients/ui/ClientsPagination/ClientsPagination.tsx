@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useClientsListQuery } from '../hooks/useClientsListQuery'
 import { CLIENTS_PAGINATION_TEXTS } from '../messages'
-import { CLIENTS_LIST_LIMITS } from '../../domain/client-form'
+import { CLIENTS_LIST_LIMITS } from '../../application/clients-list-limits'
 import { clientsPaginationStyles as STYLES } from './ClientsPagination.styles'
 import type { ClientsPaginationProps } from './ClientsPagination.types'
 

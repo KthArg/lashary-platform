@@ -16,7 +16,3 @@ export const CLIENT_FORM_PATTERNS = { phone: /^[0-9+\s-]+$/, email: /^[^\s@]+@[^
 export const EMPTY_CLIENT_FORM_VALUES = { fullName: '', phone: '', email: '', notes: '' } as const
 
 export const CLIENT_PHONE_FORMAT = { countryPrefix: '+506', localDigits: 8 } as const
-
-export const CLIENTS_LIST_LIMITS = {
-  pageSizes: [10, 25, 50], defaultPageSize: 25, nameFilterMaxLength: CLIENT_FORM_LIMITS.fullNameMaxLength,
-} as const

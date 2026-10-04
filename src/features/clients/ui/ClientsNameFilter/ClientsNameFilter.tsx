@@ -2,7 +2,7 @@
 
 import { useClientsListQuery } from '../hooks/useClientsListQuery'
 import { CLIENTS_FILTER_TEXTS } from '../messages'
-import { CLIENTS_LIST_LIMITS } from '../../domain/client-form'
+import { CLIENTS_LIST_LIMITS } from '../../application/clients-list-limits'
 import { clientsNameFilterStyles as STYLES } from './ClientsNameFilter.styles'
 import type { ClientsNameFilterProps } from './ClientsNameFilter.types'
 

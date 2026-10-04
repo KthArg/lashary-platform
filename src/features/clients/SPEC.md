@@ -84,7 +84,7 @@ exacto), pero solo comprueba que haya sesión, no el rol — el rol lo comprueba
 
 La estructura de carpetas sigue las capas de `docs/spec/ARCHITECTURE.md`, como `_template` y
 `catalog`: `domain/` (la clienta, sus límites, `normalizePhone` y `validateClientForm`),
-`application/` (los tipos de resultado de los casos de uso) y `ui/` (las server actions en
+`application/` (los tipos de resultado de los casos de uso y `CLIENTS_LIST_LIMITS`) y `ui/` (las server actions en
 `ui/actions.ts`, los textos en `ui/messages.ts`, los hooks en `ui/hooks/` y un subdirectorio por
 componente). No hay `http/`: la feature no tiene route handlers. `ui/clients-list-url.ts` guarda la
 construcción pura de URLs del listado, separada de `ui/hooks/` porque no usa React: así se prueba sin
@@ -243,3 +243,11 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
   cita por nombre. Las decisiones anteriores nombran las rutas viejas (`actions/`, `validation/`,
   `hooks/`…) porque son bitácora. **Consecuencia:** `check-domain-purity.sh` vigila ahora `domain/` y
   `application/` de esta feature (DOM-004).
+- **2026-10-04 — Las dependencias entre capas apuntan hacia adentro: `ui → application → domain`.**
+  Los textos de validación pasan a `domain/client-validation-messages.ts` y `ui/messages.ts` los
+  esparce dentro de `CLIENTS_ERROR_MESSAGES`, que conserva las mismas claves y textos; así
+  `validateClientForm` no importa de `ui/`. `CLIENTS_LIST_LIMITS` pasa a
+  `application/clients-list-limits.ts`: los tamaños de página son política del listado, no un
+  límite de la clienta. `EMPTY_CLIENT_FORM_VALUES` y `CLIENT_FORM_LIMITS.notesRows` se quedan en
+  `domain/client-form.ts` aunque solo los use el formulario: separarlos cambia la forma de constantes
+  públicas sin ganar nada hoy.
