@@ -1,6 +1,12 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { isErr, isOk } from '@/shared/result'
-import { listPackages, getPackage } from '@/features/catalog/application/packages/queries'
+import {
+  listPackages,
+  getPackage,
+  listPackageTechniques,
+} from '@/features/catalog/application/packages/queries'
+import { FakeTechniqueRepository } from '../../__tests__/fake-repository'
+import { makeTechnique } from '../../__tests__/technique-fixture'
 import { isPackageNotFound } from '@/features/catalog/domain/packages/errors'
 import { createFakePackageRepository } from './fake-package-repository'
 import { makePackage } from './package-fixture'
@@ -72,5 +78,29 @@ describe('getPackage', () => {
       expect(isPackageNotFound(result.error)).toBe(true)
       expect(result.error.packageId).toBe('nope')
     }
+  })
+})
+
+describe('listPackageTechniques', () => {
+  it('resuelve las técnicas de varios paquetes en una sola consulta, sin repetir ids', async () => {
+    const repo = new FakeTechniqueRepository([
+      makeTechnique({ id: 't1', name: 'Set clásico', isActive: true }),
+      makeTechnique({ id: 't2', name: 'Henna', isActive: false }),
+      makeTechnique({ id: 't3', name: 'Laminado', isActive: true }),
+    ])
+    const findByIds = vi.spyOn(repo, 'findByIds')
+
+    const techniques = await listPackageTechniques(repo)([
+      { techniqueIds: ['t1', 't2'] },
+      { techniqueIds: ['t2', 't3'] },
+    ])
+
+    expect(findByIds).toHaveBeenCalledTimes(1)
+    expect(findByIds).toHaveBeenCalledWith(['t1', 't2', 't3'])
+    expect(techniques.map((t) => [t.name, t.isActive])).toEqual([
+      ['Set clásico', true],
+      ['Henna', false],
+      ['Laminado', true],
+    ])
   })
 })
