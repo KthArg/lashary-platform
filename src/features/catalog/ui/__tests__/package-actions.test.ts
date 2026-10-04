@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/features/catalog/ui/require-staff', () => ({
   isStaff: mocks.isStaff,
 }))
-vi.mock('@/features/catalog/db/package-repository', () => ({
+vi.mock('@/features/catalog/db/packages/package-repository', () => ({
   packageRepository: vi.fn(async () => ({
     save: mocks.packageSave,
     findById: mocks.packageFindById,

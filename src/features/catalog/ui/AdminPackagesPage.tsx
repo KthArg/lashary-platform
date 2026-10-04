@@ -5,7 +5,7 @@ import {
   listPackages as listPackagesUseCase,
   getPackage as getPackageUseCase,
 } from '../application/packages/queries'
-import { packageRepository } from '../db/package-repository'
+import { packageRepository } from '../db/packages/package-repository'
 import { techniqueRepository } from '../db/technique-repository'
 import { catalogMessages } from './messages'
 import { catalogRoutes } from './routes'

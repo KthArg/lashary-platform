@@ -12,7 +12,7 @@ import {
   getPackage as getPackageUseCase,
 } from './application/packages/queries'
 import { techniqueRepository } from './db/technique-repository'
-import { packageRepository } from './db/package-repository'
+import { packageRepository } from './db/packages/package-repository'
 import type { ListTechniquesQuery, Page } from './application/ports'
 import type { ListPackagesQuery } from './application/packages/ports'
 import type { TechniqueView } from './domain/technique'

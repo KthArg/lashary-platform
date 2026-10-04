@@ -10,7 +10,7 @@ import {
   deactivatePackage,
   type PackageCommandDeps,
 } from '../application/packages/commands'
-import { packageRepository } from '../db/package-repository'
+import { packageRepository } from '../db/packages/package-repository'
 import { techniqueRepository } from '../db/technique-repository'
 import { packageFormSchema } from './package-schema'
 import { catalogMessages } from './messages'
