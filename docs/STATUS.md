@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-30.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-03.
 
 ## Features
 
@@ -32,7 +32,7 @@
 - US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
 - US-AUTH-02 — terminada — PR #3, PR #18, tests: auth-client.test.tsx, rls-isolation.test.ts
 
-### catalog (actualizado: 2026-09-30)
+### catalog (actualizado: 2026-10-03)
 - US-AGE-08 — terminada — PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx
 - US-PROD-01 — en_progreso — falta: probar a mano /admin/catalog/packages en un navegador. El refactor sin class de esta historia esta completo (domain, application, db y tests); queda pendiente proponerlo como regla en rules.yaml (decision del equipo, no bloquea el cierre). El codigo funcional esta completo y sus pruebas corren en verde, incluidas package-repository.integration.test.ts y package-rls-isolation.test.ts contra Supabase local en CI. Cierra como terminada con el PR de us/US-PROD-01 a main
 - US-PROM-01 — no_iniciada
