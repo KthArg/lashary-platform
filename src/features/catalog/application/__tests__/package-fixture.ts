@@ -1,6 +1,6 @@
 import { Money } from '@/shared/money'
 import { isOk } from '@/shared/result'
-import { Package } from '@/features/catalog/domain/package'
+import { createPackage, type Package } from '@/features/catalog/domain/package'
 
 let counter = 0
 
@@ -13,7 +13,7 @@ export function makePackage(overrides: Partial<{
   isActive: boolean
 }> = {}): Package {
   counter += 1
-  const result = Package.create({
+  const result = createPackage({
     id: overrides.id ?? `p-${counter}`,
     name: overrides.name ?? `Paquete ${counter}`,
     techniqueIds: overrides.techniqueIds ?? [`t-${counter}-1`, `t-${counter}-2`],

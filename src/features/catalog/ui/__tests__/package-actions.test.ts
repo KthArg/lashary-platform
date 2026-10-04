@@ -29,7 +29,7 @@ import {
   deactivatePackageAction,
 } from '@/features/catalog/ui/package-actions'
 import { initialPackageActionState } from '@/features/catalog/ui/action-state'
-import { PackageNameConflict } from '@/features/catalog/domain/errors'
+import { packageNameConflict } from '@/features/catalog/domain/errors'
 
 function form(
   fields: Record<string, string>,
@@ -95,7 +95,7 @@ describe('acciones administrativas de paquetes', () => {
   })
 
   it('DOM-006: un nombre duplicado vuelve como estado "invalid" con mensaje, no como excepción', async () => {
-    mocks.packageSave.mockRejectedValueOnce(new PackageNameConflict('Combo cejas'))
+    mocks.packageSave.mockRejectedValueOnce(packageNameConflict('Combo cejas'))
 
     const state = await createPackageAction(initialPackageActionState, form(validFields))
 

@@ -1,14 +1,23 @@
 import { Money } from '@/shared/money'
 import { ok, err, isErr, type Result } from '@/shared/result'
 import { Technique, type TechniqueView } from '../domain/technique'
-import { Package, type PackageView } from '../domain/package'
+import {
+  createPackage as buildPackageEntity,
+  deactivatePackage as deactivatePackageEntity,
+  packageToView,
+  type Package,
+  type PackageView,
+} from '../domain/package'
 import {
   TechniqueNameConflict,
   TechniqueNotFound,
   TechniqueValidationError,
-  PackageNameConflict,
-  PackageNotFound,
-  PackageValidationError,
+  isPackageNameConflict,
+  packageNotFound,
+  packageValidationError,
+  type PackageNameConflict,
+  type PackageNotFound,
+  type PackageValidationError,
 } from '../domain/errors'
 import type {
   TechniqueRepository,
@@ -160,7 +169,7 @@ async function savePackageOrConflict(
     await repo.save(pkg)
     return ok(undefined)
   } catch (error) {
-    if (error instanceof PackageNameConflict) return err(error)
+    if (isPackageNameConflict(error)) return err(error)
     throw error
   }
 }
@@ -186,7 +195,7 @@ async function resolveTechniques(
   if (inactive.length > 0) {
     problems.push(`las técnicas no están activas: ${inactive.join(', ')}`)
   }
-  if (problems.length > 0) return err(new PackageValidationError(problems))
+  if (problems.length > 0) return err(packageValidationError(problems))
   return ok(undefined)
 }
 
@@ -199,10 +208,10 @@ function buildPackage(
   try {
     price = Money.fromColones(model.price)
   } catch {
-    return err(new PackageValidationError([commandMessages.invalidPackagePrice]))
+    return err(packageValidationError([commandMessages.invalidPackagePrice]))
   }
 
-  return Package.create({
+  return buildPackageEntity({
     id,
     name: model.name,
     techniqueIds: model.techniqueIds,
@@ -225,7 +234,7 @@ export const createPackage =
     if (isErr(built)) return built
     const saved = await savePackageOrConflict(deps.packageRepo, built.value)
     if (isErr(saved)) return saved
-    return ok(built.value.toView())
+    return ok(packageToView(built.value))
   }
 
 export const updatePackage =
@@ -240,7 +249,7 @@ export const updatePackage =
     >
   > => {
     const existing = await deps.packageRepo.findById(id)
-    if (existing === null) return err(new PackageNotFound(id))
+    if (existing === null) return err(packageNotFound(id))
 
     const resolved = await resolveTechniques(deps.techniqueRepo, model.techniqueIds)
     if (isErr(resolved)) return resolved
@@ -249,16 +258,16 @@ export const updatePackage =
     if (isErr(built)) return built
     const saved = await savePackageOrConflict(deps.packageRepo, built.value)
     if (isErr(saved)) return saved
-    return ok(built.value.toView())
+    return ok(packageToView(built.value))
   }
 
 export const deactivatePackage =
   (deps: PackageCommandDeps) =>
   async (id: string): Promise<Result<PackageView, PackageNotFound>> => {
     const existing = await deps.packageRepo.findById(id)
-    if (existing === null) return err(new PackageNotFound(id))
+    if (existing === null) return err(packageNotFound(id))
 
-    const deactivated = existing.pkg.deactivate()
+    const deactivated = deactivatePackageEntity(existing.pkg)
     await deps.packageRepo.save(deactivated)
-    return ok(deactivated.toView())
+    return ok(packageToView(deactivated))
   }

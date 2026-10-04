@@ -32,28 +32,73 @@ export class TechniqueNameConflict extends CatalogError {
   }
 }
 
-export class PackageValidationError extends CatalogError {
-  readonly code = 'CATALOG_PACKAGE_INVALID'
+// Errores de Package: interfaces + funciones fábrica, sin `class` (en migración hacia ese
+// estándar para código nuevo — ver src/features/catalog/SPEC.md). No extienden CatalogError:
+// no hay ningún `instanceof DomainError` genérico en el repo que dependa de esa jerarquía.
+export interface PackageValidationError {
+  readonly code: 'CATALOG_PACKAGE_INVALID'
+  readonly message: string
+  readonly problems: string[]
+}
 
-  constructor(public readonly problems: string[]) {
-    super(`paquete inválido: ${problems.join('; ')}`)
+export function packageValidationError(problems: string[]): PackageValidationError {
+  return {
+    code: 'CATALOG_PACKAGE_INVALID',
+    message: `paquete inválido: ${problems.join('; ')}`,
+    problems,
   }
 }
 
-export class PackageNotFound extends CatalogError {
-  readonly code = 'CATALOG_PACKAGE_NOT_FOUND'
+export function isPackageValidationError(error: unknown): error is PackageValidationError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { code?: unknown }).code === 'CATALOG_PACKAGE_INVALID'
+  )
+}
 
-  constructor(public readonly packageId: string) {
-    super(`no existe el paquete ${packageId}`)
+export interface PackageNotFound {
+  readonly code: 'CATALOG_PACKAGE_NOT_FOUND'
+  readonly message: string
+  readonly packageId: string
+}
+
+export function packageNotFound(packageId: string): PackageNotFound {
+  return {
+    code: 'CATALOG_PACKAGE_NOT_FOUND',
+    message: `no existe el paquete ${packageId}`,
+    packageId,
   }
+}
+
+export function isPackageNotFound(error: unknown): error is PackageNotFound {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { code?: unknown }).code === 'CATALOG_PACKAGE_NOT_FOUND'
+  )
 }
 
 // DOM-006: la violación de catalog_packages_name_unique es un caso de negocio esperable, igual
 // que TechniqueNameConflict (db/package-repository.ts).
-export class PackageNameConflict extends CatalogError {
-  readonly code = 'CATALOG_PACKAGE_NAME_CONFLICT'
+export interface PackageNameConflict {
+  readonly code: 'CATALOG_PACKAGE_NAME_CONFLICT'
+  readonly message: string
+  readonly name: string
+}
 
-  constructor(public readonly name: string) {
-    super(`ya existe un paquete llamado "${name}"`)
+export function packageNameConflict(name: string): PackageNameConflict {
+  return {
+    code: 'CATALOG_PACKAGE_NAME_CONFLICT',
+    message: `ya existe un paquete llamado "${name}"`,
+    name,
   }
+}
+
+export function isPackageNameConflict(error: unknown): error is PackageNameConflict {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { code?: unknown }).code === 'CATALOG_PACKAGE_NAME_CONFLICT'
+  )
 }

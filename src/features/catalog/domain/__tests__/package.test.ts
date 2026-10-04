@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { Money } from '@/shared/money'
 import { isErr, isOk } from '@/shared/result'
-import { Package } from '@/features/catalog/domain/package'
-import { PackageValidationError } from '@/features/catalog/domain/errors'
+import { createPackage, deactivatePackage, packageToView } from '@/features/catalog/domain/package'
+import { isPackageValidationError } from '@/features/catalog/domain/errors'
 
 const validInput = () => ({
   id: '22222222-2222-2222-2222-222222222222',
@@ -14,9 +14,9 @@ const validInput = () => ({
   price: Money.fromColones(30000),
 })
 
-describe('Package.create — invariantes de dominio (DOM-007, criterio 1)', () => {
+describe('createPackage — invariantes de dominio (DOM-007, criterio 1)', () => {
   it('crea un paquete válido con dos técnicas', () => {
-    const r = Package.create(validInput())
+    const r = createPackage(validInput())
     expect(isOk(r)).toBe(true)
     if (!isOk(r)) return
     expect(r.value.name).toBe('Combo cejas')
@@ -26,7 +26,7 @@ describe('Package.create — invariantes de dominio (DOM-007, criterio 1)', () =
   })
 
   it('crea un paquete válido con más de dos técnicas', () => {
-    const r = Package.create({
+    const r = createPackage({
       ...validInput(),
       techniqueIds: [
         '11111111-1111-1111-1111-111111111111',
@@ -38,21 +38,21 @@ describe('Package.create — invariantes de dominio (DOM-007, criterio 1)', () =
   })
 
   it('recorta espacios del nombre', () => {
-    const r = Package.create({ ...validInput(), name: '  Combo cejas  ' })
+    const r = createPackage({ ...validInput(), name: '  Combo cejas  ' })
     if (!isOk(r)) throw new Error('esperaba ok')
     expect(r.value.name).toBe('Combo cejas')
   })
 
   it('rechaza nombre vacío', () => {
-    const r = Package.create({ ...validInput(), name: '   ' })
+    const r = createPackage({ ...validInput(), name: '   ' })
     expect(isErr(r)).toBe(true)
     if (!isErr(r)) return
-    expect(r.error).toBeInstanceOf(PackageValidationError)
+    expect(isPackageValidationError(r.error)).toBe(true)
     expect(r.error.problems.join(' ')).toMatch(/nombre/i)
   })
 
   it('rechaza menos de dos técnicas', () => {
-    const r = Package.create({
+    const r = createPackage({
       ...validInput(),
       techniqueIds: ['11111111-1111-1111-1111-111111111111'],
     })
@@ -62,27 +62,27 @@ describe('Package.create — invariantes de dominio (DOM-007, criterio 1)', () =
   })
 
   it('rechaza lista vacía de técnicas', () => {
-    const r = Package.create({ ...validInput(), techniqueIds: [] })
+    const r = createPackage({ ...validInput(), techniqueIds: [] })
     expect(isErr(r)).toBe(true)
   })
 
   it('rechaza técnicas repetidas', () => {
     const id = '11111111-1111-1111-1111-111111111111'
-    const r = Package.create({ ...validInput(), techniqueIds: [id, id] })
+    const r = createPackage({ ...validInput(), techniqueIds: [id, id] })
     expect(isErr(r)).toBe(true)
     if (!isErr(r)) return
     expect(r.error.problems.join(' ')).toMatch(/repetir/i)
   })
 
   it('rechaza precio no positivo', () => {
-    expect(isErr(Package.create({ ...validInput(), price: Money.zero() }))).toBe(true)
+    expect(isErr(createPackage({ ...validInput(), price: Money.zero() }))).toBe(true)
     expect(
-      isErr(Package.create({ ...validInput(), price: Money.fromColones(-1000) })),
+      isErr(createPackage({ ...validInput(), price: Money.fromColones(-1000) })),
     ).toBe(true)
   })
 
   it('acumula varios problemas en un solo error', () => {
-    const r = Package.create({
+    const r = createPackage({
       ...validInput(),
       name: '',
       techniqueIds: [],
@@ -95,20 +95,20 @@ describe('Package.create — invariantes de dominio (DOM-007, criterio 1)', () =
 })
 
 describe('Package — comportamiento (criterio 3)', () => {
-  it('deactivate devuelve una copia inactiva sin mutar la original', () => {
-    const r = Package.create(validInput())
+  it('deactivatePackage devuelve una copia inactiva sin mutar la original', () => {
+    const r = createPackage(validInput())
     if (!isOk(r)) throw new Error('esperaba ok')
     const original = r.value
-    const inactivo = original.deactivate()
+    const inactivo = deactivatePackage(original)
     expect(inactivo.isActive).toBe(false)
     expect(original.isActive).toBe(true)
     expect(inactivo.id).toBe(original.id)
   })
 
-  it('toView expone el precio en colones enteros y la lista de técnicas', () => {
-    const r = Package.create(validInput())
+  it('packageToView expone el precio en colones enteros y la lista de técnicas', () => {
+    const r = createPackage(validInput())
     if (!isOk(r)) throw new Error('esperaba ok')
-    expect(r.value.toView()).toEqual({
+    expect(packageToView(r.value)).toEqual({
       id: '22222222-2222-2222-2222-222222222222',
       name: 'Combo cejas',
       techniqueIds: [

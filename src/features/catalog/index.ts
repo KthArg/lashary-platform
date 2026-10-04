@@ -41,7 +41,10 @@ export type {
   TechniqueView,
   TechniqueSnapshot,
 } from './domain/technique'
-export { TechniqueNotFound, PackageNotFound } from './domain/errors'
+export { TechniqueNotFound } from './domain/errors'
+// PackageNotFound es una interfaz + función fábrica (sin class, ver domain/errors.ts), así que
+// solo hay tipo que exportar acá — el valor en runtime es packageNotFound(), interno a catalog/.
+export type { PackageNotFound } from './domain/errors'
 export type { ListTechniquesQuery, ListPackagesQuery, Page } from './application/ports'
 export type { PackageListItem } from './application/queries'
 

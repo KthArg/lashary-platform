@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { isErr, isOk } from '@/shared/result'
 import { listPackages, getPackage } from '@/features/catalog/application/queries'
-import { PackageNotFound } from '@/features/catalog/domain/errors'
-import { FakePackageRepository } from './fake-package-repository'
+import { isPackageNotFound } from '@/features/catalog/domain/errors'
+import { createFakePackageRepository } from './fake-package-repository'
 import { makePackage } from './package-fixture'
 
 describe('listPackages', () => {
   it('devuelve solo activos por defecto, con duración total calculada (criterio 2)', async () => {
-    const repo = new FakePackageRepository(
+    const repo = createFakePackageRepository(
       [
         makePackage({ id: 'a', name: 'A', isActive: true }),
         makePackage({ id: 'b', name: 'B', isActive: false }),
@@ -22,7 +22,7 @@ describe('listPackages', () => {
   })
 
   it('incluye inactivos cuando activeOnly = false', async () => {
-    const repo = new FakePackageRepository([
+    const repo = createFakePackageRepository([
       makePackage({ id: 'a', isActive: true }),
       makePackage({ id: 'b', isActive: false }),
     ])
@@ -31,7 +31,7 @@ describe('listPackages', () => {
   })
 
   it('pagina con tamaño por defecto 50 y tope 100', async () => {
-    const repo = new FakePackageRepository(
+    const repo = createFakePackageRepository(
       Array.from({ length: 120 }, (_, i) =>
         makePackage({ id: `p${i}`, name: `P${String(i).padStart(3, '0')}` }),
       ),
@@ -46,7 +46,7 @@ describe('listPackages', () => {
   })
 
   it('normaliza page y pageSize inválidos', async () => {
-    const repo = new FakePackageRepository([makePackage({ id: 'a' })])
+    const repo = createFakePackageRepository([makePackage({ id: 'a' })])
     const page = await listPackages(repo)({ page: 0, pageSize: -5 })
     expect(page.page).toBe(1)
     expect(page.pageSize).toBe(1)
@@ -55,7 +55,7 @@ describe('listPackages', () => {
 
 describe('getPackage', () => {
   it('devuelve el paquete con su duración cuando existe', async () => {
-    const repo = new FakePackageRepository([makePackage({ id: 'x' })], () => 90)
+    const repo = createFakePackageRepository([makePackage({ id: 'x' })], () => 90)
     const result = await getPackage(repo)('x')
     expect(isOk(result)).toBe(true)
     if (isOk(result)) {
@@ -65,11 +65,11 @@ describe('getPackage', () => {
   })
 
   it('devuelve PackageNotFound cuando no existe', async () => {
-    const repo = new FakePackageRepository([])
+    const repo = createFakePackageRepository([])
     const result = await getPackage(repo)('nope')
     expect(isErr(result)).toBe(true)
     if (isErr(result)) {
-      expect(result.error).toBeInstanceOf(PackageNotFound)
+      expect(isPackageNotFound(result.error)).toBe(true)
       expect(result.error.packageId).toBe('nope')
     }
   })
