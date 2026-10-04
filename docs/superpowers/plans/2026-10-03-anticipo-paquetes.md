@@ -1,6 +1,6 @@
 # Anticipo por paquete — US-AGE-13
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **Para agentes:** usar superpowers:executing-plans para ejecutar y verificar cada pieza; registrar los pasos con casillas.
 
 **Objetivo:** permitir que staff configure un anticipo independiente por paquete y demostrar el criterio original 1 de US-AGE-13.
 
@@ -29,6 +29,8 @@ Anticipo 0; rechazo de negativos y decimales; edición sin perder el anticipo al
 - [x] 17/20: columna y RPC nuevo con pruebas pgTAP; comprobar fallo antes de la migración y éxito después.
 - [ ] 18/20: dominio, comandos y repositorio; pruebas de creación, edición, desactivación y lectura.
 - [ ] 19/20: formulario, validación y actions; pruebas de ingreso, edición y envío.
-- [ ] 20/20: evidencia y faltantes en la pila original de payments, sin declarar integración o aprobación inexistentes.
+- [x] 20/20: evidencia y faltantes en la pila original de payments, sin declarar integración o aprobación inexistentes.
 
 Ejecutar verify.sh y pruebas pertinentes antes de cada commit/PR. Actualizar títulos de las 15 piezas existentes a N=20, respetando sus posiciones.
+
+La evidencia de la pieza 20/20 está publicada en #182, sobre la pila original de payments.
