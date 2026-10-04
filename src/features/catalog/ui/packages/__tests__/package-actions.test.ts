@@ -42,7 +42,7 @@ function form(
   return formData
 }
 
-const validFields = { name: 'Combo cejas', price: '30000' }
+const validFields = { name: 'Combo cejas', price: '30000', deposit: '9000' }
 const activeTechniques = [
   makeTechnique({ id: 't1', isActive: true }),
   makeTechnique({ id: 't2', isActive: true }),
@@ -82,6 +82,7 @@ describe('acciones administrativas de paquetes', () => {
 
     expect(state).toMatchObject({ status: 'ok', message: 'Paquete creado.' })
     expect(mocks.packageSave).toHaveBeenCalledTimes(1)
+    expect(mocks.packageSave.mock.calls[0][0].deposit.colones).toBe(9000)
   })
 
   it('rechaza si alguna técnica no existe o no está activa, sin guardar', async () => {

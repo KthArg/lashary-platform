@@ -50,7 +50,9 @@ export function buildPackage(input: PackageInput): Result<Package, PackageValida
     problems.push('el precio del paquete debe ser mayor que cero')
   }
   const deposit = input.deposit ?? Money.zero()
-  if (deposit.isNegative()) problems.push('el anticipo no puede ser negativo')
+  if (deposit.isNegative() || !Number.isSafeInteger(deposit.colones)) {
+    problems.push('el anticipo debe ser un entero no negativo dentro del rango seguro')
+  }
 
   if (problems.length > 0) {
     return err(packageValidationError(problems))

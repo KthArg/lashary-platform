@@ -134,3 +134,5 @@ La columna `catalog_packages.deposit` será `bigint NOT NULL DEFAULT 0 CHECK (de
 El modelo de escritura acepta `deposit` opcional para compatibilidad interna: omitirlo al crear equivale a `0`; omitirlo al editar conserva el valor guardado. El formulario nuevo lo exige explícitamente y rechaza vacío, negativos y decimales. Desactivar conserva el anticipo.
 
 Este contrato todavía requiere implementación y pruebas; sus piezas dependen de #173, #174 y #175 y no se integran antes de esas dependencias.
+
+El anticipo del paquete admite como máximo 9 007 199 254 740 991 colones, para conservar enteros exactos en JavaScript y PostgreSQL. El formulario valida la representación entera antes de convertirla.

@@ -5,6 +5,7 @@ const validForm = {
   name: 'Combo cejas',
   techniqueIds: ['t1', 't2'],
   price: '30000',
+  deposit: '0',
 }
 
 describe('packageFormSchema (DOM-007 — validación en el borde)', () => {
@@ -16,6 +17,7 @@ describe('packageFormSchema (DOM-007 — validación en el borde)', () => {
       name: 'Combo cejas',
       techniqueIds: ['t1', 't2'],
       price: 30000,
+      deposit: 0,
     })
   })
 
@@ -44,5 +46,16 @@ describe('packageFormSchema (DOM-007 — validación en el borde)', () => {
   it('rechaza un precio no entero', () => {
     const parsed = packageFormSchema.safeParse({ ...validForm, price: '30000.5' })
     expect(parsed.success).toBe(false)
+  })
+})
+
+describe('anticipo del formulario de paquetes', () => {
+  it.each(['0', '9000', '9007199254740991'])('acepta el anticipo %s en colones enteros', (deposit) => {
+    const result = packageFormSchema.safeParse({ ...validForm, deposit })
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.data.deposit).toBe(Number(deposit))
+  })
+  it.each(['', ' ', '-1', '1.5', '1.0000000000000001', '9007199254740993', null, undefined])('rechaza el anticipo inválido %s', (deposit) => {
+    expect(packageFormSchema.safeParse({ ...validForm, deposit }).success).toBe(false)
   })
 })
