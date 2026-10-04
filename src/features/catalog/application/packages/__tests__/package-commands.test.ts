@@ -80,7 +80,7 @@ describe('createPackage', () => {
     expect(packageRepo.saveCalls).toBe(0)
   })
 
-  it('rechaza menos de dos técnicas (delegado a createPackage)', async () => {
+  it('rechaza menos de dos técnicas (delegado a buildPackage)', async () => {
     const techniqueRepo = new FakeTechniqueRepository([
       makeTechnique({ id: 't1', isActive: true }),
     ])
