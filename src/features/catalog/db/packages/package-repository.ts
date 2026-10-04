@@ -8,6 +8,7 @@ import type { PackageRepository, PackageWithDuration } from '../../application/p
 
 const TABLE = 'catalog_packages'
 const SAVE_FN = 'catalog_save_package'
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 const COLUMNS = `
   id, name, price, is_active,
@@ -64,6 +65,7 @@ export function createSupabasePackageRepository(db: SupabaseClient): PackageRepo
     },
 
     async findById(id: string): Promise<PackageWithDuration | null> {
+      if (!UUID.test(id)) return null
       const { data, error } = await db.from(TABLE).select(COLUMNS).eq('id', id).maybeSingle()
       if (error) throw new Error(`${TABLE}.findById: ${error.message}`)
       return data ? rowToDomain(data as unknown as Row) : null

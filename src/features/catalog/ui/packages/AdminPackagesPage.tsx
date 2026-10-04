@@ -30,11 +30,16 @@ export async function AdminPackagesPage({
     listTechniquesUseCase(techRepo)({ activeOnly: false, pageSize: 100 }),
   ])
 
-  const techniqueNameById = new Map(allTechniques.items.map((t) => [t.id, t.name]))
-  const activeTechniques = allTechniques.items.filter((t) => t.isActive)
-
   const editResult = params.edit ? await getPackageUseCase(pkgRepo)(params.edit) : null
   const editing = editResult && isOk(editResult) ? editResult.value : undefined
+
+  const techniqueNameById = new Map(allTechniques.items.map((t) => [t.id, t.name]))
+  const inactiveTechniqueIds = new Set(
+    allTechniques.items.filter((t) => !t.isActive).map((t) => t.id),
+  )
+  const formTechniques = allTechniques.items.filter(
+    (t) => t.isActive || editing?.techniqueIds.includes(t.id),
+  )
   const showForm = params.new !== undefined || editing !== undefined
 
   return (
@@ -53,7 +58,7 @@ export async function AdminPackagesPage({
 
       {showForm && (
         <div className={STYLES.formWrapper}>
-          <PackageForm pkg={editing} techniques={activeTechniques} />
+          <PackageForm pkg={editing} techniques={formTechniques} />
           <Link href={catalogRoutes.packagesAdmin} className={STYLES.cancelLink}>
             {packageMessages.form.cancel}
           </Link>
@@ -69,7 +74,11 @@ export async function AdminPackagesPage({
           </Link>
         </div>
       ) : (
-        <PackageTable items={page.items} techniqueNameById={techniqueNameById} />
+        <PackageTable
+          items={page.items}
+          techniqueNameById={techniqueNameById}
+          inactiveTechniqueIds={inactiveTechniqueIds}
+        />
       )}
     </main>
   )

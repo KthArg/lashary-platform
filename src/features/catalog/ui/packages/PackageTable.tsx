@@ -10,16 +10,24 @@ const m = packageMessages.admin
 function techniquesCell(
   pkg: PackageListItem,
   techniqueNameById: Map<string, string>,
+  inactiveTechniqueIds: Set<string>,
 ): string {
-  return pkg.techniqueIds.map((id) => techniqueNameById.get(id) ?? id).join(', ')
+  return pkg.techniqueIds
+    .map((id) => {
+      const name = techniqueNameById.get(id) ?? id
+      return inactiveTechniqueIds.has(id) ? `${name} ${m.inactiveTechnique}` : name
+    })
+    .join(', ')
 }
 
 export function PackageTable({
   items,
   techniqueNameById,
+  inactiveTechniqueIds = new Set(),
 }: {
   items: PackageListItem[]
   techniqueNameById: Map<string, string>
+  inactiveTechniqueIds?: Set<string>
 }) {
   return (
     <div className={STYLES.wrapper}>
@@ -40,7 +48,7 @@ export function PackageTable({
           {items.map((pkg) => (
             <tr key={pkg.id}>
               <td className={STYLES.nameCell}>{pkg.name}</td>
-              <td>{techniquesCell(pkg, techniqueNameById)}</td>
+              <td>{techniquesCell(pkg, techniqueNameById, inactiveTechniqueIds)}</td>
               <td>
                 {pkg.durationTotalMin} {m.minutesShort}
               </td>
