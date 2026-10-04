@@ -1,21 +1,14 @@
 import Link from 'next/link'
-import { catalogRoutes } from '../routes'
-import { packageMessages } from './messages'
+import { catalogRoutes } from '../../../routes'
+import { packageMessages } from '../../constants/package-strings'
 import { packagePaginationStyles as STYLES } from './PackagePagination.styles'
+import type { PackagePaginationProps } from './PackagePagination.types'
 
 const m = packageMessages.admin.pagination
 
 const pageHref = (page: number) => `${catalogRoutes.packagesAdmin}?page=${page}`
 
-export function PackagePagination({
-  page,
-  pageSize,
-  total,
-}: {
-  page: number
-  pageSize: number
-  total: number
-}) {
+export function PackagePagination({ page, pageSize, total }: PackagePaginationProps) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
   if (totalPages === 1) return null
 

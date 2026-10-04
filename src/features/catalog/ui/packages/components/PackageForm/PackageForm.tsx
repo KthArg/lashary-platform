@@ -1,65 +1,21 @@
 'use client'
 
 import { useActionState, useMemo, useState } from 'react'
-import type { TechniqueView } from '../../domain/technique'
-import type { PackageListItem } from '../../application/packages/queries'
-import { packageMessages } from './messages'
+import { packageMessages } from '../../constants/package-strings'
 import {
   createPackageAction,
   updatePackageAction,
   deactivatePackageAction,
-} from './package-actions'
-import { initialPackageActionState } from './action-state'
-import { packageFormStyles as STYLES } from './package-form.styles'
+} from '../../actions/package-actions'
+import { initialPackageActionState } from '../../types/package-action-state'
+import { packageFormStyles as STYLES } from './PackageForm.styles'
+import { PackageFormFeedback } from '../PackageFormFeedback'
+import type { PackageFormProps } from './PackageForm.types'
 
 const f = packageMessages.form
 const admin = packageMessages.admin
 
-function Feedback({
-  status,
-  message,
-  problems,
-}: {
-  status: string
-  message?: string
-  problems?: string[]
-}) {
-  if (status === 'idle') return null
-  if (status === 'ok') {
-    return (
-      <div role="status" className={STYLES.alertSuccess}>
-        <span>{message}</span>
-      </div>
-    )
-  }
-  if (status === 'forbidden') {
-    return (
-      <div role="alert" className={STYLES.alertWarning}>
-        <span>{message}</span>
-      </div>
-    )
-  }
-  return (
-    <div role="alert" className={STYLES.alertError}>
-      <div>
-        <p className={STYLES.feedbackTitle}>{f.validationTitle}</p>
-        <ul className={STYLES.feedbackList}>
-          {(problems ?? []).map((problem) => (
-            <li key={problem}>{problem}</li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  )
-}
-
-export function PackageForm({
-  pkg,
-  techniques,
-}: {
-  pkg?: PackageListItem
-  techniques: TechniqueView[]
-}) {
+export function PackageForm({ pkg, techniques }: PackageFormProps) {
   const editing = pkg !== undefined
   const [state, formAction, pending] = useActionState(
     editing ? updatePackageAction : createPackageAction,
@@ -101,7 +57,7 @@ export function PackageForm({
     <section className={STYLES.section}>
       <h2 className={STYLES.heading}>{editing ? f.legendEdit : f.legendCreate}</h2>
 
-      <Feedback {...state} />
+      <PackageFormFeedback {...state} />
 
       <form action={formAction} className={STYLES.form}>
         {editing && <input type="hidden" name="id" value={pkg.id} />}
@@ -173,7 +129,7 @@ export function PackageForm({
       {editing && (
         <form action={deactivateAction} className={STYLES.deactivateForm}>
           <input type="hidden" name="id" value={pkg.id} />
-          <Feedback {...deactivateState} />
+          <PackageFormFeedback {...deactivateState} />
           <button type="submit" className={STYLES.deactivateButton} disabled={deactivating}>
             {admin.rowActions.deactivate}
           </button>

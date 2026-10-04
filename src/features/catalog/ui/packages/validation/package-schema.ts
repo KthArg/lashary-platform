@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import type { PackageWriteModel } from '../../application/packages/ports'
-import { packageMessages } from './messages'
+import type { PackageWriteModel } from '../../../application/packages/ports'
+import { packageMessages } from '../constants/package-strings'
 
 const v = packageMessages.form.validation
 

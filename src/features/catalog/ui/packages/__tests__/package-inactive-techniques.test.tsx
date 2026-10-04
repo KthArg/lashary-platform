@@ -2,15 +2,15 @@ import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { makeTechnique } from '@/features/catalog/application/__tests__/technique-fixture'
 
-vi.mock('@/features/catalog/ui/packages/package-actions', () => ({
+vi.mock('@/features/catalog/ui/packages/actions/package-actions', () => ({
   createPackageAction: vi.fn(),
   updatePackageAction: vi.fn(),
   deactivatePackageAction: vi.fn(),
 }))
 
-import { PackageForm } from '@/features/catalog/ui/packages/package-form'
-import { PackageTable } from '@/features/catalog/ui/packages/PackageTable'
-import { packageMessages } from '@/features/catalog/ui/packages/messages'
+import { PackageForm } from '@/features/catalog/ui/packages/components/PackageForm'
+import { PackageTable } from '@/features/catalog/ui/packages/components/PackageTable'
+import { packageMessages } from '@/features/catalog/ui/packages/constants/package-strings'
 import type { PackageListItem } from '@/features/catalog/application/packages/queries'
 
 const active = makeTechnique({ id: 't1', name: 'Set clásico', isActive: true }).toView()
