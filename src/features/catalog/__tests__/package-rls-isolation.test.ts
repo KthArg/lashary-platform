@@ -138,6 +138,25 @@ describe.skipIf(!reachable)(
       }
     })
 
+    it('ni anón ni clienta pueden guardar vía catalog_save_package (la función respeta RLS)', async () => {
+      for (const client of [anon, clienta]) {
+        const { error } = await client.rpc('catalog_save_package', {
+          p_id: samplePackageId,
+          p_name: 'RLS intento vía función',
+          p_price: 1,
+          p_is_active: true,
+          p_technique_ids: [],
+        })
+        expect(error).not.toBeNull()
+      }
+
+      const { count } = await anon
+        .from(BRIDGE)
+        .select('*', { count: 'exact', head: true })
+        .eq('package_id', samplePackageId)
+      expect(count).toBeGreaterThanOrEqual(2)
+    })
+
     it('tras los intentos, los conteos no cambiaron (nadie insertó ni borró)', async () => {
       const { count: pkgCount } = await anon
         .from(PACKAGES)
