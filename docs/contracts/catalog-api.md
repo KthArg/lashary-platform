@@ -97,6 +97,7 @@ type PackageListItem = {
   name: string
   techniqueIds: string[]
   price: number              // colones enteros, CRC (DOM-001) — no derivado, lo fija la administradora
+  deposit: number            // anticipo propio del paquete, colones enteros >= 0; 0 = sin anticipo
   isActive: boolean
   durationTotalMin: number   // suma de duración + preparación/limpieza de cada técnica miembro; no se guarda, se calcula al leer
 }
@@ -121,3 +122,15 @@ Ninguno todavía. Desactivar una técnica **no** notifica a `scheduling`: las ci
 
 - `public.auth_is_staff()` la define hoy la migración de catálogo `20260902000001_catalog_write_policies.sql` de forma provisional (lee `public.auth_user_roles`, de `auth`). Cuando `auth` la exponga en su propia migración, se retira de acá en una migración forward. Las políticas `catalog_techniques_*_staff` restringen la escritura a `admin`/`superadmin`.
 - Al implementarse US-AGE-05, confirmar que `TechniqueSnapshot` cubre todo lo que la cita necesita congelar; si falta un campo, se agrega aquí primero.
+
+## Anticipo por paquete — contrato de US-AGE-13
+
+La administradora fija `deposit` al crear o editar un paquete: entero de colones no negativo, independiente de los anticipos de sus técnicas. `0` significa sin anticipo; los paquetes existentes se inicializan en `0` y deben revisarse antes de ofrecer reservas que requieran anticipo. No se introduce un límite respecto del precio que no existe en el criterio.
+
+`listPackages` y `getPackage` expondrán `deposit` en `PackageListItem`. `scheduling` lo copiará a la cita al implementar la reserva; el aviso y el snapshot pertenecen a US-AGE-05 según el traslado aprobado del criterio original 3.
+
+La columna `catalog_packages.deposit` será `bigint NOT NULL DEFAULT 0 CHECK (deposit >= 0)`. El RPC nuevo `catalog_save_package_with_deposit` guardará paquete, técnicas y anticipo en una transacción, con `SECURITY INVOKER` y las políticas RLS existentes. El RPC previo seguirá disponible y conservará el anticipo al editar; no se cambia su firma.
+
+El modelo de escritura acepta `deposit` opcional para compatibilidad interna: omitirlo al crear equivale a `0`; omitirlo al editar conserva el valor guardado. El formulario nuevo lo exige explícitamente y rechaza vacío, negativos y decimales. Desactivar conserva el anticipo.
+
+Este contrato todavía requiere implementación y pruebas; sus piezas dependen de #173, #174 y #175 y no se integran antes de esas dependencias.
