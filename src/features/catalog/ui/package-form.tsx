@@ -2,7 +2,7 @@
 
 import { useActionState, useMemo, useState } from 'react'
 import type { TechniqueView } from '../domain/technique'
-import type { PackageListItem } from '../application/queries'
+import type { PackageListItem } from '../application/packages/queries'
 import { catalogMessages } from './messages'
 import {
   createPackageAction,

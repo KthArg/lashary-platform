@@ -1,24 +1,19 @@
 import { ok, err, type Result } from '@/shared/result'
 import type { TechniqueView } from '../domain/technique'
-import { packageToView, type PackageView } from '../domain/packages/package'
 import { TechniqueNotFound } from '../domain/errors'
-import { packageNotFound, type PackageNotFound } from '../domain/packages/errors'
 import type {
   ListTechniquesQuery,
-  ListPackagesQuery,
   Page,
   TechniqueRepository,
-  PackageRepository,
-  PackageWithDuration,
 } from './ports'
 
 const DEFAULT_PAGE_SIZE = 50
 const MAX_PAGE_SIZE = 100
 
-const clampPage = (value: number | undefined): number =>
+export const clampPage = (value: number | undefined): number =>
   Math.max(1, Math.trunc(value ?? 1) || 1)
 
-const clampPageSize = (value: number | undefined): number =>
+export const clampPageSize = (value: number | undefined): number =>
   Math.min(MAX_PAGE_SIZE, Math.max(1, Math.trunc(value ?? DEFAULT_PAGE_SIZE) || DEFAULT_PAGE_SIZE))
 
 export const listTechniques =
@@ -48,41 +43,4 @@ export const getTechnique =
     const technique = await repo.findById(id)
     if (technique === null) return err(new TechniqueNotFound(id))
     return ok(technique.toView())
-  }
-
-// DTO que expone la duración total (criterio 2) junto al resto de PackageView.
-export type PackageListItem = PackageView & { durationTotalMin: number }
-
-const toPackageListItem = (row: PackageWithDuration): PackageListItem => ({
-  ...packageToView(row.pkg),
-  durationTotalMin: row.durationTotalMin,
-})
-
-export const listPackages =
-  (repo: PackageRepository) =>
-  async (query: ListPackagesQuery = {}): Promise<Page<PackageListItem>> => {
-    const page = clampPage(query.page)
-    const pageSize = clampPageSize(query.pageSize)
-    const activeOnly = query.activeOnly ?? true
-
-    const { items, total } = await repo.list({
-      activeOnly,
-      offset: (page - 1) * pageSize,
-      limit: pageSize,
-    })
-
-    return {
-      items: items.map(toPackageListItem),
-      page,
-      pageSize,
-      total,
-    }
-  }
-
-export const getPackage =
-  (repo: PackageRepository) =>
-  async (id: string): Promise<Result<PackageListItem, PackageNotFound>> => {
-    const row = await repo.findById(id)
-    if (row === null) return err(packageNotFound(id))
-    return ok(toPackageListItem(row))
   }

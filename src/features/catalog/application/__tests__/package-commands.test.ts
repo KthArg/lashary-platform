@@ -10,11 +10,11 @@ import {
   isPackageNotFound,
   isPackageValidationError,
 } from '@/features/catalog/domain/packages/errors'
-import type { PackageWriteModel } from '@/features/catalog/application/ports'
+import type { PackageWriteModel } from '@/features/catalog/application/packages/ports'
 import { FakeTechniqueRepository } from './fake-repository'
-import { createFakePackageRepository } from './fake-package-repository'
+import { createFakePackageRepository } from '../packages/__tests__/fake-package-repository'
 import { makeTechnique } from './technique-fixture'
-import { makePackage } from './package-fixture'
+import { makePackage } from '../packages/__tests__/package-fixture'
 
 const validModel = (techniqueIds: string[]): PackageWriteModel => ({
   name: 'Combo cejas',

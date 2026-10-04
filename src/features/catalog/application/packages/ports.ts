@@ -1,0 +1,30 @@
+import type { Package } from '../../domain/packages/package'
+
+export type ListPackagesQuery = {
+  activeOnly?: boolean
+  page?: number
+  pageSize?: number
+}
+
+export type PackageWriteModel = {
+  name: string
+  techniqueIds: string[]
+  price: number
+}
+
+export type PackageWithDuration = {
+  pkg: Package
+  durationTotalMin: number
+}
+
+export interface PackageRepository {
+  list(params: {
+    activeOnly: boolean
+    offset: number
+    limit: number
+  }): Promise<{ items: PackageWithDuration[]; total: number }>
+
+  findById(id: string): Promise<PackageWithDuration | null>
+
+  save(pkg: Package): Promise<void>
+}

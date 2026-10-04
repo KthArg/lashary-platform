@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { isErr, isOk } from '@/shared/result'
-import { listPackages, getPackage } from '@/features/catalog/application/queries'
+import { listPackages, getPackage } from '@/features/catalog/application/packages/queries'
 import { isPackageNotFound } from '@/features/catalog/domain/packages/errors'
 import { createFakePackageRepository } from './fake-package-repository'
 import { makePackage } from './package-fixture'
@@ -12,7 +12,7 @@ describe('listPackages', () => {
         makePackage({ id: 'a', name: 'A', isActive: true }),
         makePackage({ id: 'b', name: 'B', isActive: false }),
       ],
-      () => 195, // p.ej. 120 + 75 minutos de dos técnicas
+      () => 195,
     )
     const page = await listPackages(repo)()
     expect(page.items.map((p) => p.id)).toEqual(['a'])
