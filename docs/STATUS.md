@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-30.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-03.
 
 ## Features
 
@@ -79,12 +79,12 @@
 - US-NOT-08 — no_iniciada
 - US-CLI-06 — no_iniciada
 
-### payments (actualizado: 2026-09-30)
-- US-AGE-13 — en_progreso — falta: la parte 'por paquete' del criterio 1 queda diferida hasta US-PROD-01; los criterios 2 y 3 (citas, US-AGE-05) y 4 (cierre/ledger, US-AGE-12) se proponen trasladados a esas historias porque US-AGE-05 depende de US-AGE-13 y un diferido dejaria un ciclo (ver DEPENDENCIES.md, criterios trasladados; pendiente de aprobacion del PO); el criterio 1 'por tecnica' ya lo satisface catalog_techniques.deposit (US-AGE-08); el criterio 5 (exonerar + bitacora) ya esta completo: ExemptClientForm en /admin/payments, exemptClientAction valida y llama a exemptClient(), que audita en audit.record()
+### payments (actualizado: 2026-10-03)
+- US-AGE-13 — en_progreso — falta: definir y demostrar el anticipo por paquete del criterio original 1 (US-PROD-01); el anticipo por tecnica ya lo satisface catalog_techniques.deposit (US-AGE-08) y el criterio original 5 lo cubren ExemptClientForm, exemptClientAction y exemptClient con audit.record(); el PO aprobo el traslado de los criterios originales 2 y 3 a US-AGE-05 y del 4 a US-AGE-12, comunicado por Bayron el 2026-10-03 (DEPENDENCIES.md)
 
 ### platform (actualizado: 2026-09-16)
 
-### scheduling (actualizado: 2026-08-29)
+### scheduling (actualizado: 2026-10-03)
 - US-AGE-01 — no_iniciada
 - US-AGE-02 — no_iniciada
 - US-AGE-03 — no_iniciada

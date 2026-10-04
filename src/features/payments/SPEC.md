@@ -2,11 +2,11 @@
 feature: payments
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-09-30
+actualizado: 2026-10-03
 historias:
   - id: US-AGE-13
     estado: en_progreso
-    falta: "la parte 'por paquete' del criterio 1 queda diferida hasta US-PROD-01; los criterios 2 y 3 (citas, US-AGE-05) y 4 (cierre/ledger, US-AGE-12) se proponen trasladados a esas historias porque US-AGE-05 depende de US-AGE-13 y un diferido dejaria un ciclo (ver DEPENDENCIES.md, criterios trasladados; pendiente de aprobacion del PO); el criterio 1 'por tecnica' ya lo satisface catalog_techniques.deposit (US-AGE-08); el criterio 5 (exonerar + bitacora) ya esta completo: ExemptClientForm en /admin/payments, exemptClientAction valida y llama a exemptClient(), que audita en audit.record()"
+    falta: "definir y demostrar el anticipo por paquete del criterio original 1 (US-PROD-01); el anticipo por tecnica ya lo satisface catalog_techniques.deposit (US-AGE-08) y el criterio original 5 lo cubren ExemptClientForm, exemptClientAction y exemptClient con audit.record(); el PO aprobo el traslado de los criterios originales 2 y 3 a US-AGE-05 y del 4 a US-AGE-12, comunicado por Bayron el 2026-10-03 (DEPENDENCIES.md)"
 flags: []
 deuda: []
 defectos: []
@@ -42,7 +42,11 @@ Con esto el **criterio 5 de US-AGE-13 queda completo**: la administradora puede 
 
 ## Qué no hace todavía
 
-Nada de esta feature en concreto — lo que falta de US-AGE-13 son los criterios diferidos nombrados arriba (`falta:` de la historia), que dependen de tablas de otras historias.
+US-AGE-13 conserva los criterios originales 1 (anticipo por técnica y paquete) y 5 (exoneración con bitácora). Falta definir y demostrar el anticipo por paquete del criterio 1, dependiente de US-PROD-01; la historia sigue `en_progreso`.
+
+El PO aprobó trasladar los criterios originales 2 y 3 a US-AGE-05 (mostrar el anticipo y la advertencia antes de confirmar, y guardar los montos en la cita) y el 4 a US-AGE-12 (descontar el anticipo al cerrar). Bayron comunicó la aprobación el 2026-10-03; el registro está en `docs/process/DEPENDENCIES.md`. Son requisitos obligatorios de las historias de destino, pendientes de implementación y pruebas allí.
+
+El feedback de #152 sobre los estilos se aplica en `ExemptClientForm.tsx` y `src/app/admin/payments/page.tsx`: ambos importan y usan el alias `STYLES`.
 
 ## Contrato público (`index.ts`, ARCH-003)
 
