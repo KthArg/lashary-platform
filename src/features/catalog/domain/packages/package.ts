@@ -2,11 +2,6 @@ import { Money } from '@/shared/money'
 import { ok, err, type Result } from '@/shared/result'
 import { packageValidationError, type PackageValidationError } from './errors'
 
-// Vista pública de un paquete (contrato: docs/contracts/catalog-api.md). Monto en colones
-// enteros para no arrastrar Money a través de la frontera de la feature. La duración total no
-// vive acá: se calcula uniendo las técnicas miembro (application/db), no se congela en el
-// paquete — el paquete es composición viva del catálogo, no un histórico (a diferencia de
-// TechniqueSnapshot, DOM-002 aplica recién cuando US-AGE-04 confirme una cita con paquete).
 export type PackageView = {
   id: string
   name: string
@@ -23,10 +18,6 @@ export type PackageInput = {
   isActive?: boolean
 }
 
-// Value object inmutable: datos ya validados, sin `class` (en migración hacia ese estándar
-// para código nuevo — ver src/features/catalog/SPEC.md). Se construye solo a través de
-// createPackage, nunca con un literal a mano, así una fila corrupta no puede fingir ser un
-// Package válido.
 export interface Package {
   readonly id: string
   readonly name: string
@@ -35,9 +26,6 @@ export interface Package {
   readonly isActive: boolean
 }
 
-// Constructor validado (DOM-007): un paquete inválido no puede existir. La validación de
-// formato del borde (Zod) ocurre antes; acá viven los invariantes de negocio, incluido el
-// criterio 1 (mínimo dos técnicas existentes, sin duplicados).
 export function createPackage(input: PackageInput): Result<Package, PackageValidationError> {
   const problems: string[] = []
 
