@@ -4,17 +4,17 @@ import {
   createPackage,
   updatePackage,
   deactivatePackage,
-} from '@/features/catalog/application/commands'
+} from '@/features/catalog/application/packages/commands'
 import {
   isPackageNameConflict,
   isPackageNotFound,
   isPackageValidationError,
 } from '@/features/catalog/domain/packages/errors'
 import type { PackageWriteModel } from '@/features/catalog/application/packages/ports'
-import { FakeTechniqueRepository } from './fake-repository'
-import { createFakePackageRepository } from '../packages/__tests__/fake-package-repository'
-import { makeTechnique } from './technique-fixture'
-import { makePackage } from '../packages/__tests__/package-fixture'
+import { FakeTechniqueRepository } from '../../__tests__/fake-repository'
+import { createFakePackageRepository } from './fake-package-repository'
+import { makeTechnique } from '../../__tests__/technique-fixture'
+import { makePackage } from './package-fixture'
 
 const validModel = (techniqueIds: string[]): PackageWriteModel => ({
   name: 'Combo cejas',
