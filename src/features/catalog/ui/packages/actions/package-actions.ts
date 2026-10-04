@@ -3,19 +3,19 @@
 import { randomUUID } from 'node:crypto'
 import { revalidatePath } from 'next/cache'
 import { isErr } from '@/shared/result'
-import { isStaff } from '../require-staff'
+import { isStaff } from '../../require-staff'
 import {
   createPackage,
   updatePackage,
   deactivatePackage,
   type PackageCommandDeps,
-} from '../../application/packages/commands'
-import { packageRepository } from '../../db/packages/package-repository'
-import { techniqueRepository } from '../../db/technique-repository'
-import { packageFormSchema } from './package-schema'
-import { packageMessages } from './messages'
-import { catalogRoutes } from '../routes'
-import type { PackageActionState } from './action-state'
+} from '../../../application/packages/commands'
+import { packageRepository } from '../../../db/packages/package-repository'
+import { techniqueRepository } from '../../../db/technique-repository'
+import { packageFormSchema } from '../validation/package-schema'
+import { packageMessages } from '../constants/package-strings'
+import { catalogRoutes } from '../../routes'
+import type { PackageActionState } from '../types/package-action-state'
 
 async function deps(): Promise<PackageCommandDeps> {
   return {

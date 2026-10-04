@@ -51,4 +51,4 @@ export type { PackageListItem } from './application/packages/queries'
 export { AdminCatalogPage } from './ui/AdminCatalogPage'
 export { catalogMessages } from './ui/messages'
 
-export { AdminPackagesPage } from './ui/packages/AdminPackagesPage'
+export { AdminPackagesPage } from './ui/packages/components/AdminPackagesPage'
