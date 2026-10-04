@@ -4,3 +4,4 @@
 // (loading.tsx, error.tsx) importan de aquí para no arrastrar código de servidor al bundle.
 export { catalogMessages } from './ui/messages'
 export { packageMessages } from './ui/packages/messages'
+export { catalogRoutes } from './ui/routes'

@@ -1,6 +1,14 @@
-import { getLandingContent } from '@/features/content'
+import {
+  getContact,
+  getGallery,
+  getLandingContent,
+  getLoyalty,
+  getStudio,
+  getTechniqueMedia,
+} from '@/features/content'
+import { listTechniques } from '@/features/catalog'
 import type { Metadata } from 'next'
-import { LandingHome, landingMessages } from '@/features/landing'
+import { LandingHome, landingMessages, toLandingTechnique } from '@/features/landing'
 
 // Estática con revalidación: el TTL de respaldo del contrato del CMS (10 min). El aviso al
 // publicar la renueva antes (POST /api/cms/webhook).
@@ -17,7 +25,42 @@ export const metadata: Metadata = {
   },
 }
 
+// El catálogo caído no tumba la landing: la sección de técnicas queda en su estado vacío, igual
+// que el contenido del CMS cae al respaldo. La página pública nunca es la que falla.
+async function readTechniques() {
+  try {
+    // El catálogo manda qué técnicas hay; el CMS solo las ilustra, así que si falla se pintan
+    // sin foto en vez de no pintarse.
+    const [page, media] = await Promise.all([
+      listTechniques({ activeOnly: true }),
+      getTechniqueMedia(),
+    ])
+    return page.items.map((technique) => toLandingTechnique(technique, media))
+  } catch (error) {
+    console.warn('[landing] catálogo no disponible; la sección de técnicas queda vacía', error)
+    return []
+  }
+}
+
 export default async function HomePage() {
-  const content = await getLandingContent()
-  return <LandingHome content={content} />
+  // Las lecturas del CMS nunca lanzan: con el CMS caído, El estudio y Preguntas sirven su
+  // respaldo, y la galería, la fidelidad y Ubicación muestran su estado vacío.
+  const [content, techniques, studio, gallery, loyalty, contact] = await Promise.all([
+    getLandingContent(),
+    readTechniques(),
+    getStudio(),
+    getGallery(),
+    getLoyalty(),
+    getContact(),
+  ])
+  return (
+    <LandingHome
+      content={content}
+      techniques={techniques}
+      studio={studio}
+      gallery={gallery}
+      loyalty={loyalty}
+      contact={contact}
+    />
+  )
 }

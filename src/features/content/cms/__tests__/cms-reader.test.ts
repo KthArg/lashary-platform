@@ -18,6 +18,16 @@ describe('createCmsReader — GET {CMS_URL}/api/content/:key', () => {
     expect(init.signal).toBeInstanceOf(AbortSignal)
   })
 
+  it('El estudio se pide con su propia clave, sin traducir', async () => {
+    const fetchImpl = vi.fn(async () => jsonResponse({ key: 'estudio', data: { nombre: 'x' } }))
+    const reader = createCmsReader({ baseUrl: 'https://cms.test', fetchImpl, now: () => 7 })
+
+    await reader.readSingleton('estudio')
+
+    const [url] = fetchImpl.mock.calls[0] as unknown as [string]
+    expect(url).toBe('https://cms.test/api/content/estudio?v=7')
+  })
+
   it('la llamada final se pide con su clave del CMS, closing-cta', async () => {
     const fetchImpl = vi.fn(async () => jsonResponse({ key: 'closing-cta', data: { heading: 'x' } }))
     const reader = createCmsReader({ baseUrl: 'https://cms.test', fetchImpl, now: () => 7 })
@@ -57,5 +67,30 @@ describe('createCmsReader — GET {CMS_URL}/api/content/:key', () => {
     const result = await reader.readSingleton('hero')
     expect(result.ok).toBe(false)
     if (!result.ok) expect(result.error.reason).toBe('TimeoutError')
+  })
+
+  it('una colección se pide por su clave y devuelve los items en el orden del editor', async () => {
+    const fetchImpl = vi.fn(async () =>
+      jsonResponse({ key: 'tecnicas', items: [{ familia: 'lash_classic' }, { familia: 'lips' }] }),
+    )
+    const reader = createCmsReader({ baseUrl: 'https://cms.test', fetchImpl, now: () => 7 })
+
+    const result = await reader.readCollection('tecnicas')
+
+    expect(result).toEqual({ ok: true, value: [{ familia: 'lash_classic' }, { familia: 'lips' }] })
+    const [url] = fetchImpl.mock.calls[0] as unknown as [string]
+    expect(url).toBe('https://cms.test/api/content/tecnicas?v=7')
+  })
+
+  it('una colección sin items es CMS no disponible, no una lista vacía', async () => {
+    const reader = createCmsReader({
+      baseUrl: 'https://cms.test',
+      fetchImpl: async () => jsonResponse({ key: 'tecnicas', data: {} }),
+    })
+
+    const result = await reader.readCollection('tecnicas')
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.reason).toBe('respuesta sin items')
   })
 })
