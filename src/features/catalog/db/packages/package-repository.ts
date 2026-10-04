@@ -1,9 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { Money } from '@/shared/money'
-import { isOk } from '@/shared/result'
+import { ok, err, isOk, type Result } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import { createPackage, packageToView, type Package } from '../../domain/packages/package'
-import { packageNameConflict } from '../../domain/packages/errors'
+import { packageNameConflict, type PackageNameConflict } from '../../domain/packages/errors'
 import type { PackageRepository, PackageWithDuration } from '../../application/packages/ports'
 
 const TABLE = 'catalog_packages'
@@ -69,7 +69,7 @@ export function createSupabasePackageRepository(db: SupabaseClient): PackageRepo
       return data ? rowToDomain(data as unknown as Row) : null
     },
 
-    async save(pkg: Package): Promise<void> {
+    async save(pkg: Package): Promise<Result<void, PackageNameConflict>> {
       const view = packageToView(pkg)
       const { error } = await db.rpc(SAVE_FN, {
         p_id: view.id,
@@ -79,11 +79,10 @@ export function createSupabasePackageRepository(db: SupabaseClient): PackageRepo
         p_technique_ids: view.techniqueIds,
       })
       if (error) {
-        if (error.code === '23505') {
-          throw packageNameConflict(view.name)
-        }
+        if (error.code === '23505') return err(packageNameConflict(view.name))
         throw new Error(`${SAVE_FN}: ${error.message}`)
       }
+      return ok(undefined)
     },
   }
 }

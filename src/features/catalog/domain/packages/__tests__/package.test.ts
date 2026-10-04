@@ -95,6 +95,15 @@ describe('createPackage — invariantes de dominio (DOM-007, criterio 1)', () =>
 })
 
 describe('Package — comportamiento (criterio 3)', () => {
+  it('solo createPackage marca un Package, y deactivatePackage conserva la marca', () => {
+    const r = createPackage(validInput())
+    if (!isOk(r)) throw new Error('setup')
+    expect(Object.getOwnPropertySymbols(r.value)).toHaveLength(1)
+    expect(Object.getOwnPropertySymbols(deactivatePackage(r.value))).toEqual(
+      Object.getOwnPropertySymbols(r.value),
+    )
+  })
+
   it('deactivatePackage devuelve una copia inactiva sin mutar la original', () => {
     const r = createPackage(validInput())
     if (!isOk(r)) throw new Error('esperaba ok')
