@@ -91,3 +91,9 @@ Historias tempranas con **un criterio** que depende de una historia de fase post
 A diferencia de un criterio diferido, un criterio trasladado **cambia de historia dueña**: la historia de origen se marca `terminada` sin él y la historia de destino lo hereda como propio. Se usa cuando el criterio solo se puede demostrar con algo que la historia de destino construye y de la que la de origen es dependencia — un criterio diferido ahí dejaría un ciclo: la de destino esperaría a que la de origen terminara, y la de origen a que la de destino la cerrara.
 
 1. **US-AGE-08 → US-AGE-05** — criterios 7b («una técnica desactivada deja de mostrarse para nuevas reservas sin afectar citas ya agendadas», parte de citas ya agendadas) y 8 («el precio de una técnica queda congelado en las citas ya agendadas»). Requieren la tabla de citas que trae US-AGE-05, y US-AGE-05 depende transitivamente de US-AGE-08 (vía US-AGE-02 y US-AGE-03). US-AGE-08 conserva su parte: `is_active = false` en vez de borrar y `TechniqueSnapshot` expuesto. US-AGE-05 los demuestra con el test obligatorio de DOM-002.
+
+## Traslado aprobado de US-AGE-13 (2026-10-03)
+
+Bayron comunicó que el PO aprobó trasladar los criterios originales 2 y 3 de US-AGE-13 a US-AGE-05 (aviso antes de confirmar y snapshot del anticipo requerido/registrado), y el 4 a US-AGE-12 (descuento al cerrar). El registro y la actualización del backlog están publicados en [#176](https://github.com/KthArg/lashary-platform/pull/176), en la pila original de payments. Esta decisión no aprueba el traslado histórico de US-AGE-08 descrito arriba.
+
+US-AGE-13 conserva los criterios originales 1 (anticipo por técnica y por paquete) y 5 (exoneración con bitácora). Los criterios trasladados siguen obligatorios en sus historias de destino. Integrar también #176 al completar ambas pilas; esta rama de catalog no sustituye el estado de payments.
