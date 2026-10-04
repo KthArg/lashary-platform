@@ -6,7 +6,7 @@ Fecha: 2026-10-04. Estado: en progreso; implementación publicada, pendiente de 
 
 | Posición | PR | Contenido | Líneas modificadas |
 |---|---|---|---|
-| 16/20 | [#178](https://github.com/KthArg/lashary-platform/pull/178) | Contrato de catalog y plan | 51 |
+| 16/20 | [#178](https://github.com/KthArg/lashary-platform/pull/178) | Contrato de catalog y plan | 63 |
 | 17/20 | [#179](https://github.com/KthArg/lashary-platform/pull/179) | Columna deposit, RPC y pruebas SQL | 89 |
 | 18/20 | [#180](https://github.com/KthArg/lashary-platform/pull/180) | Dominio, comandos y repositorio | 138 |
 | 19/20 | [#181](https://github.com/KthArg/lashary-platform/pull/181) | Formulario, listado y protección de precisión | 134 |
