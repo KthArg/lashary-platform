@@ -8,7 +8,7 @@
 | Feature | DRI | Estado | terminada / en_progreso / bloqueada / en_revision / no_iniciada |
 |---|---|---|---|
 | account | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
-| audit | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
+| audit | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | en_progreso | 2 / 0 / 0 / 0 / 2 |
 | clients | pendiente | en_progreso | 1 / 1 / 0 / 0 / 3 |
@@ -17,7 +17,7 @@
 | landing | pendiente | en_progreso | 6 / 0 / 0 / 0 / 0 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
-| payments | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
+| payments | pendiente | en_progreso | 0 / 1 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | scheduling | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 11 |
 | store | pendiente | en_progreso | 0 / 1 / 0 / 0 / 3 |
@@ -26,7 +26,7 @@
 
 ### account (actualizado: 2026-08-29)
 
-### audit (actualizado: 2026-08-29)
+### audit (actualizado: 2026-09-30)
 
 ### auth (actualizado: 2026-10-04)
 - US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
@@ -38,7 +38,7 @@
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
-### clients (actualizado: 2026-09-21)
+### clients (actualizado: 2026-10-03)
 - US-CLI-01 — en_progreso — falta: las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
@@ -79,12 +79,12 @@
 - US-NOT-08 — no_iniciada
 - US-CLI-06 — no_iniciada
 
-### payments (actualizado: 2026-08-29)
-- US-AGE-13 — no_iniciada
+### payments (actualizado: 2026-10-03)
+- US-AGE-13 — en_progreso — falta: definir y demostrar el anticipo por paquete del criterio original 1 (US-PROD-01); el anticipo por tecnica ya lo satisface catalog_techniques.deposit (US-AGE-08) y el criterio original 5 lo cubren ExemptClientForm, exemptClientAction y exemptClient con audit.record(); el PO aprobo el traslado de los criterios originales 2 y 3 a US-AGE-05 y del 4 a US-AGE-12, comunicado por Bayron el 2026-10-03 (DEPENDENCIES.md)
 
 ### platform (actualizado: 2026-09-16)
 
-### scheduling (actualizado: 2026-08-29)
+### scheduling (actualizado: 2026-10-03)
 - US-AGE-01 — no_iniciada
 - US-AGE-02 — no_iniciada
 - US-AGE-03 — no_iniciada
