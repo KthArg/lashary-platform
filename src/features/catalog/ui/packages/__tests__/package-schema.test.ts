@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { packageFormSchema } from '@/features/catalog/ui/packages/package-schema'
+import { packageFormSchema } from '@/features/catalog/ui/packages/validation/package-schema'
 
 const validForm = {
   name: 'Combo cejas',

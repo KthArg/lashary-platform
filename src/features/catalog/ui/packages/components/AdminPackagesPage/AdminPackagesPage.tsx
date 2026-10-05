@@ -1,29 +1,24 @@
 import Link from 'next/link'
 import { isOk } from '@/shared/result'
-import { listTechniques as listTechniquesUseCase } from '../../application/queries'
+import { listTechniques as listTechniquesUseCase } from '../../../../application/queries'
 import {
   listPackages as listPackagesUseCase,
   getPackage as getPackageUseCase,
   listPackageTechniques as listPackageTechniquesUseCase,
-} from '../../application/packages/queries'
-import { packageRepository } from '../../db/packages/package-repository'
-import { techniqueRepository } from '../../db/technique-repository'
-import { packageMessages } from './messages'
-import { catalogRoutes } from '../routes'
+} from '../../../../application/packages/queries'
+import { packageRepository } from '../../../../db/packages/package-repository'
+import { techniqueRepository } from '../../../../db/technique-repository'
+import { packageMessages } from '../../constants/package-strings'
+import { catalogRoutes } from '../../../routes'
 import { adminPackagesPageStyles as STYLES } from './AdminPackagesPage.styles'
-import { PackageTable } from './PackageTable'
-import { PackageForm } from './package-form'
-import { PackagePagination } from './PackagePagination'
+import { PackageTable } from '../PackageTable'
+import { PackageForm } from '../PackageForm'
+import { PackagePagination } from '../PackagePagination'
+import type { AdminPackagesPageProps } from './AdminPackagesPage.types'
 
 const m = packageMessages.admin
 
-type SearchParams = { edit?: string; new?: string; page?: string }
-
-export async function AdminPackagesPage({
-  searchParams,
-}: {
-  searchParams?: Promise<SearchParams>
-}) {
+export async function AdminPackagesPage({ searchParams }: AdminPackagesPageProps) {
   const params = (await searchParams) ?? {}
   const [pkgRepo, techRepo] = await Promise.all([packageRepository(), techniqueRepository()])
 

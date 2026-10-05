@@ -1,9 +1,10 @@
 import Link from 'next/link'
-import type { PackageListItem } from '../../application/packages/queries'
-import { packageMessages } from './messages'
-import { formatColones } from '../format'
-import { catalogRoutes } from '../routes'
+import type { PackageListItem } from '../../../../application/packages/queries'
+import { packageMessages } from '../../constants/package-strings'
+import { formatColones } from '../../../format'
+import { catalogRoutes } from '../../../routes'
 import { packageTableStyles as STYLES } from './PackageTable.styles'
+import type { PackageTableProps } from './PackageTable.types'
 
 const m = packageMessages.admin
 
@@ -24,11 +25,7 @@ export function PackageTable({
   items,
   techniqueNameById,
   inactiveTechniqueIds = new Set(),
-}: {
-  items: PackageListItem[]
-  techniqueNameById: Map<string, string>
-  inactiveTechniqueIds?: Set<string>
-}) {
+}: PackageTableProps) {
   return (
     <div className={STYLES.wrapper}>
       <table className={STYLES.table}>

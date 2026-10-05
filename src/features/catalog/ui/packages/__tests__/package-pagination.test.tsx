@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { PackagePagination } from '@/features/catalog/ui/packages/PackagePagination'
+import { PackagePagination } from '@/features/catalog/ui/packages/components/PackagePagination'
 
 describe('PackagePagination', () => {
   it('no se muestra si todo cabe en una página', () => {
