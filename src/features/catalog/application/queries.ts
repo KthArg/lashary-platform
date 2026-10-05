@@ -7,13 +7,13 @@ import type {
   TechniqueRepository,
 } from './ports'
 
-const DEFAULT_PAGE_SIZE = 50
-const MAX_PAGE_SIZE = 100
+export const DEFAULT_PAGE_SIZE = 50
+export const MAX_PAGE_SIZE = 100
 
-const clampPage = (value: number | undefined): number =>
+export const clampPage = (value: number | undefined): number =>
   Math.max(1, Math.trunc(value ?? 1) || 1)
 
-const clampPageSize = (value: number | undefined): number =>
+export const clampPageSize = (value: number | undefined): number =>
   Math.min(MAX_PAGE_SIZE, Math.max(1, Math.trunc(value ?? DEFAULT_PAGE_SIZE) || DEFAULT_PAGE_SIZE))
 
 export const listTechniques =

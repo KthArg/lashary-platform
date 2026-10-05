@@ -1,33 +1,22 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useClientsListQuery } from '../../hooks/useClientsListQuery'
 import { CLIENTS_PAGINATION_TEXTS } from '../../constants/clients-strings'
 import { CLIENTS_LIST_LIMITS } from '../../constants/client-form'
 import { clientsPaginationStyles as STYLES } from './ClientsPagination.styles'
 import type { ClientsPaginationProps } from './ClientsPagination.types'
 
 export function ClientsPagination({ page, pageSize, total }: ClientsPaginationProps) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const { urlWith, navigateWith } = useClientsListQuery()
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
   const hasPrevious = page > 0
   const hasNext = page + 1 < totalPages
 
-  const hrefForPage = (nextPage: number) => {
-    const params = new URLSearchParams(searchParams.toString())
-    params.set('page', String(nextPage))
-    return `${pathname}?${params.toString()}`
-  }
+  const hrefForPage = (nextPage: number) => urlWith({ page: nextPage })
 
-  const changePageSize = (nextPageSize: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    params.set('pageSize', nextPageSize)
-    params.delete('page')
-    router.push(`${pathname}?${params.toString()}`)
-  }
+  const changePageSize = (nextPageSize: number) => navigateWith({ pageSize: nextPageSize, page: null })
 
   return (
     <nav aria-label={CLIENTS_PAGINATION_TEXTS.navLabel} className={STYLES.nav}>
@@ -42,7 +31,7 @@ export function ClientsPagination({ page, pageSize, total }: ClientsPaginationPr
           id="clients-page-size"
           className={STYLES.sizeSelect}
           value={pageSize}
-          onChange={(event) => changePageSize(event.target.value)}
+          onChange={(event) => changePageSize(Number(event.target.value))}
         >
           {CLIENTS_LIST_LIMITS.pageSizes.map((size) => (
             <option key={size} value={size}>{size}</option>
