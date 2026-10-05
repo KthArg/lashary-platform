@@ -7,8 +7,8 @@ import type {
   ProductoRepositorioAdmin,
 } from './productos-admin-puertos'
 
-const TAMANO_PAGINA_DEFECTO = 50
-const TAMANO_PAGINA_MAX = 100
+export const TAMANO_PAGINA_DEFECTO = 50
+export const TAMANO_PAGINA_MAX = 100
 
 const acotarPagina = (value: number | undefined): number =>
   Math.max(1, Math.trunc(value ?? 1) || 1)

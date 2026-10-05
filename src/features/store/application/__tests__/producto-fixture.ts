@@ -1,7 +1,9 @@
+import { randomUUID } from 'node:crypto'
 import { isOk } from '@/shared/result'
 import { construirProducto, type ProductoAdminVista } from '@/features/store/domain/producto'
 
-let counter = 0
+export const PRECIO_FIXTURE_CRC = 18000
+export const ORDEN_FIXTURE = 0
 
 export function makeProducto(
   overrides: Partial<{
@@ -13,15 +15,15 @@ export function makeProducto(
     activo: boolean
   }> = {},
 ): ProductoAdminVista {
-  counter += 1
+  const id = overrides.id ?? `p-${randomUUID()}`
   const result = construirProducto({
-    id: overrides.id ?? `p-${counter}`,
-    slug: overrides.slug ?? `producto-${counter}`,
-    nombre: overrides.nombre ?? `Producto ${counter}`,
+    id,
+    slug: overrides.slug ?? `producto-${id}`,
+    nombre: overrides.nombre ?? `Producto ${id}`,
     descripcion: 'Descripción de prueba.',
     urlImagen: '/productos/prueba.jpg',
-    precioCrc: overrides.precioCrc ?? 18000,
-    ordenPresentacion: overrides.ordenPresentacion ?? 0,
+    precioCrc: overrides.precioCrc ?? PRECIO_FIXTURE_CRC,
+    ordenPresentacion: overrides.ordenPresentacion ?? ORDEN_FIXTURE,
     activo: overrides.activo ?? true,
   })
   if (!isOk(result)) {
