@@ -19,11 +19,12 @@ jobs:
         env:
           # check-pr-size.sh exime el PR us/<ID> → main (INT-001, INT-002).
           PR_HEAD_REF: ${{ github.head_ref }}
-          PR_BASE_REF: ${{ github.base_ref }}
+          # En una pila, github.base_ref apunta a su raíz; medir solo la pieza.
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
-          if [ -n "${{ github.base_ref }}" ]; then
-            git fetch origin "${{ github.base_ref }}"
-            bash scripts/verify.sh --base "origin/${{ github.base_ref }}"
+          if [ -n "$PR_BASE_REF" ]; then
+            git fetch origin "$PR_BASE_REF"
+            bash scripts/verify.sh --base "origin/$PR_BASE_REF"
           else
             # push a main: solo checks estáticos (sin rango de PR); el tamaño ya se midió en el PR
             PUSH_TO_MAIN=1 bash scripts/verify.sh --base "HEAD~1" || exit 1
