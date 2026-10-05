@@ -17,7 +17,7 @@
 - INT-005/009: merge commit entre piezas; Conventional Commits en español y posición i/N.
 - DOM-001/007/009, SEC-001/002: enteros no negativos, mensajes externalizados y RLS real.
 - No editar migraciones existentes ni usar credenciales service-role.
-- Base técnica: fix/catalog-save-package-invariants (#175), que contiene #173 y #174. Integrar esas dependencias antes de este trabajo.
+- Base técnica: main ya incluye #173, #174 y #175 (squash integrado el 2026-10-05). Las piezas 16 a 20 continúan después de #177, en una única pila de US-AGE-13.
 
 ## Revisión
 

@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-09-21"
+actualizado: "2026-10-03"
 historias:
   - id: US-CLI-01
     estado: en_progreso
@@ -88,6 +88,8 @@ La estructura de carpetas sigue la distribución de `auth`: `actions/`, `compone
 así se prueba sin renderizar.
 
 ## Qué no hace todavía
+
+No existe un flujo de archivado o borrado de clientas en esta rama. `docs/adr/ADR-0009-client-archival-and-exemptions.md` propone archivar sin eliminar el perfil ni sus referencias, con respaldo de Bayron el 2026-10-03 y revisión del equipo pendiente. Antes de implementarlo deben acordarse permisos, búsquedas y reservas, citas existentes y restauración. La migración de `payments` a `ON DELETE RESTRICT` también está pendiente; el `CASCADE` actual aún elimina exoneraciones si se borra un perfil. Este cambio de documentación no implementa archivado ni completa una historia de `clients`.
 
 **No hay prueba de aislamiento RLS (SEC-002)**; está registrada como deuda. Las pruebas de las
 actions simulan Supabase: demuestran qué se envía y se lee, no qué permite RLS.

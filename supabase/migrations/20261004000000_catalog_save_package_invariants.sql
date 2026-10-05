@@ -11,7 +11,7 @@ SECURITY INVOKER
 SET search_path = ''
 AS $$
 BEGIN
-  IF p_name IS NULL OR btrim(p_name) = '' THEN
+  IF p_name IS NULL OR p_name !~ '\S' THEN
     RAISE EXCEPTION 'catalog_save_package: el nombre no puede estar vacío'
       USING ERRCODE = '23514';
   END IF;
@@ -28,7 +28,7 @@ BEGIN
   END IF;
 
   INSERT INTO public.catalog_packages (id, name, price, is_active)
-  VALUES (p_id, btrim(p_name), p_price, p_is_active)
+  VALUES (p_id, regexp_replace(p_name, '^\s+|\s+$', '', 'g'), p_price, p_is_active)
   ON CONFLICT (id) DO UPDATE
     SET name = EXCLUDED.name,
         price = EXCLUDED.price,

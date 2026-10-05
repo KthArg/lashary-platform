@@ -1,6 +1,6 @@
 # Grafo de dependencias entre historias
 
-> **Autoridad:** qué historia depende de cuál, y qué infraestructura sin historia propia carga cada una (ADR-0007). Se consulta en cada planificación de sprint (INT-007); lo lee `/empezables`. **Lectores:** PO y equipo al planificar; skills. **Estado:** vigente. **Actualizado:** 2026-09-20.
+> **Autoridad:** qué historia depende de cuál, y qué infraestructura sin historia propia carga cada una (ADR-0007). Se consulta en cada planificación de sprint (INT-007); lo lee `/empezables`. **Lectores:** PO y equipo al planificar; skills. **Estado:** vigente. **Actualizado:** 2026-09-29.
 > Derivado del backlog en [../backlog/](../backlog/) (que no trae columna de dependencias). Si el backlog cambia, este archivo se revisa en el mismo PR.
 
 ## Infraestructura sin historia propia (ADR-0007)
@@ -85,15 +85,22 @@ Historias tempranas con **un criterio** que depende de una historia de fase post
 1. **US-AGE-05** — "valida que el cliente no tenga morosidad activa" → requiere US-MOR-02 (F3).
 2. **US-AGE-11** — "indica si el cliente tiene morosidad activa" → requiere US-MOR-01 (F3).
 3. **US-CLI-06** — "visible en la vista del cliente" → la vista la porta US-MOR-03 (F3); si CLI-06 se implementa antes, ese criterio queda diferido con el faltante nombrado.
+4. **US-AGE-13** — criterio 1, parte "por paquete" («puedo definir el anticipo por técnica y por paquete») → requiere US-PROD-01 (paquetes). La parte "por técnica" ya la cubre `catalog_techniques.deposit` (US-AGE-08). US-PROD-01 depende solo de US-AGE-08, así que no hay ciclo: es un diferido normal.
 
-## Criterios trasladados (propuesta pendiente de aprobación del PO)
+## Criterios trasladados
 
 A diferencia de un criterio diferido, un criterio trasladado **cambia de historia dueña**: la historia de origen se marca `terminada` sin él y la historia de destino lo hereda como propio. Se usa cuando el criterio solo se puede demostrar con algo que la historia de destino construye y de la que la de origen es dependencia — un criterio diferido ahí dejaría un ciclo: la de destino esperaría a que la de origen terminara, y la de origen a que la de destino la cerrara.
 
 1. **US-AGE-08 → US-AGE-05** — criterios 7b («una técnica desactivada deja de mostrarse para nuevas reservas sin afectar citas ya agendadas», parte de citas ya agendadas) y 8 («el precio de una técnica queda congelado en las citas ya agendadas»). Requieren la tabla de citas que trae US-AGE-05, y US-AGE-05 depende transitivamente de US-AGE-08 (vía US-AGE-02 y US-AGE-03). US-AGE-08 conserva su parte: `is_active = false` en vez de borrar y `TechniqueSnapshot` expuesto. US-AGE-05 los demuestra con el test obligatorio de DOM-002.
+2. **US-AGE-13 → US-AGE-05 — aprobado por el PO.** Criterios originales 2 («el monto del anticipo se muestra al cliente antes de confirmar la cita, junto con la advertencia de que se pierde si cancela fuera de la ventana permitida o si no asiste») y 3 («el anticipo requerido y el efectivamente registrado quedan almacenados en la cita, no recalculados a partir del catálogo actual»). Requieren la tabla de citas y el flujo de reserva que trae US-AGE-05, y US-AGE-05 depende de US-AGE-13 (por la bitácora y el anticipo): un criterio diferido ahí dejaría un ciclo. US-AGE-13 conserva su parte: el monto por técnica, `payments_deposit_exemptions` y la exoneración con su registro en la bitácora. US-AGE-05 deberá demostrar el aviso antes de confirmar y el snapshot del anticipo (DOM-002), incluidos los montos requerido y registrado.
+3. **US-AGE-13 → US-AGE-12 — aprobado por el PO.** Criterio original 4 («el anticipo se descuenta del saldo pendiente al cerrar la cita, de modo que el pago final sea la diferencia»). Requiere el cierre de cita y el ledger que porta US-AGE-12, cuya cadena (AGE-12 → AGE-11 → AGE-05) depende de US-AGE-13: mismo ciclo. US-AGE-12 deberá demostrar el descuento del anticipo en el saldo final y su asiento en el ledger.
 
-## Traslado aprobado de US-AGE-13 (2026-10-03)
+**Registro de la decisión (2026-10-03):** Bayron comunicó en esta conversación que el PO aprobó el traslado de los criterios originales 2, 3 y 4 de US-AGE-13. El backlog CSV y los SPEC de `payments` y `scheduling` reflejan ese alcance; los requisitos siguen obligatorios en las historias de destino. US-AGE-13 conserva los criterios originales 1 y 5 y sigue `en_progreso` por el anticipo por paquete (US-PROD-01). Esta aprobación no decide el traslado de US-AGE-08 del ítem 1 ni el FK cross-feature de la sección siguiente.
 
-Bayron comunicó que el PO aprobó trasladar los criterios originales 2 y 3 de US-AGE-13 a US-AGE-05 (aviso antes de confirmar y snapshot del anticipo requerido/registrado), y el 4 a US-AGE-12 (descuento al cerrar). El registro y la actualización del backlog están publicados en [#176](https://github.com/KthArg/lashary-platform/pull/176), en la pila original de payments. Esta decisión no aprueba el traslado histórico de US-AGE-08 descrito arriba.
+## FK cross-feature y archivado de clientas (ADR-0009 propuesto)
 
-US-AGE-13 conserva los criterios originales 1 (anticipo por técnica y por paquete) y 5 (exoneración con bitácora). Los criterios trasladados siguen obligatorios en sus historias de destino. Integrar también #176 al completar ambas pilas; esta rama de catalog no sustituye el estado de payments.
+`payments_deposit_exemptions.client_id` tiene FK real a `public.clients_profiles(id)`, tabla de la feature `clients` (US-AGE-13, migración `20260924000000_payments_deposit_exemptions.sql`). Es el primer FK entre tablas de dos features distintas; los demás apuntan a `auth.users`. El revisor automático lo marcó como tensión con ARCH-005.
+
+- **Por qué se mantiene por ahora:** la relación es homogénea y permanente (una exoneración siempre es de una clienta), el FK evita huérfanos y quitarlo toca la migración ya aprobada y arrastra el stack de US-AGE-13.
+- **Propuesta respaldada por Bayron el 2026-10-03:** archivar a la clienta sin borrar el perfil ni su historial, conservar esta FK específica como contrato entre `clients` y `payments`, y cambiar `CASCADE` por `RESTRICT` en una migración nueva. No se usa una cola de borrado. Ver [ADR-0009](../adr/ADR-0009-client-archival-and-exemptions.md), pendiente de revisión del equipo (INT-003).
+- **Estado real:** el archivado y la migración a `RESTRICT` todavía no están implementados. El `CASCADE` actual borraría las filas de exoneración al borrar el perfil; los eventos de `audit_events` permanecen. El hallazgo de #118 sigue pendiente hasta aprobar el ADR y verificar la migración.
