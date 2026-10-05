@@ -9,6 +9,8 @@ vi.mock('../actions/package-actions', () => ({
   createPackageAction: (...args: unknown[]) => mocks.crear(...args),
   updatePackageAction: (...args: unknown[]) => mocks.editar(...args),
   deactivatePackageAction: (...args: unknown[]) => mocks.desactivar(...args),
+  setPackageActiveAction: vi.fn(),
+  deletePackageAction: vi.fn(),
 }))
 const techniques = ['t1', 't2'].map((id) => makeTechnique({ id }).toView())
 const pkg = {
