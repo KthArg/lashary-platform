@@ -1,6 +1,6 @@
 # ADR-0009 — Archivado de clientas y conservación de exoneraciones
 
-> **Estado:** propuesto. **Fecha:** 2026-10-03. **Decisores:** propuesta respaldada por Bayron en esta conversación; pendiente de revisión del equipo.
+> **Estado:** aceptado. **Fecha:** 2026-10-03. **Decisores:** equipo, acuerdo comunicado por Bayron el 2026-10-05. La implementación y la revisión formal de los PR siguen pendientes.
 
 ## Contexto
 
@@ -10,9 +10,11 @@ El feedback de #118 señala el acoplamiento entre `payments` y `clients` y el bo
 
 En esta rama no existe un flujo de borrado o archivado de clientas ni uno para retirar exoneraciones. Las exoneraciones no tienen vencimiento automático. Una cola que espere a que desaparezcan no tiene una condición de finalización garantizada; dejar de estar activa tampoco equivale a borrar su historial.
 
-## Decisión propuesta
+## Decisión
 
 Archivar a la clienta para retirarla de las operaciones habituales sin borrar su perfil ni sus exoneraciones, citas, pagos o eventos de auditoría. El archivado no elimina ni revoca automáticamente una exoneración y no procesa un borrado posterior mediante una cola.
+
+Al reactivar a una clienta se conserva el historial, pero la exoneración anterior no se considera vigente automáticamente. Antes de aplicarla de nuevo debe revisarse si corresponde. El flujo de reactivación deberá definir quién realiza esa revisión y cómo registra su resultado; no basta con conservar el valor anterior de `active`.
 
 Conservar la FK específica `payments_deposit_exemptions.client_id → clients_profiles.id` como contrato de integridad entre `payments` y `clients`: evita exoneraciones huérfanas. Esta decisión no declara todas las tablas de `clients` como compartidas ni permite consultas directas a ellas desde `payments`. Cambios de esa clave requieren coordinación entre ambas features.
 
@@ -32,5 +34,5 @@ El borrado definitivo y la anonimización requieren una política posterior sobr
 - `clients` deberá implementar el archivado. Antes de escribir código se deben acordar permisos, comportamiento de búsquedas y reservas, tratamiento de citas existentes y posibilidad de restauración.
 - `payments` deberá publicar una migración y una prueba de base real: borrar un perfil con exoneración activa o inactiva falla y conserva ambas filas; el esquema deja de tener borrado en cascada.
 - El archivado requiere sus propias pruebas de acceso y comportamiento; no se considera implementado por existir este documento.
-- Este PR solo documenta el contrato y la propuesta. La FK actual todavía tiene `CASCADE`; el riesgo de #118 sigue pendiente hasta aprobar la decisión y aplicar y verificar la migración. No se edita la migración ya aprobada.
+- Este PR solo documenta el contrato y el acuerdo. La FK actual todavía tiene `CASCADE`; la decisión del equipo está resuelta, pero el riesgo de #118 sigue pendiente hasta aplicar y verificar la migración. No se edita la migración ya aprobada.
 - La aprobación del PO para trasladar los criterios originales 2, 3 y 4 de US-AGE-13 es una decisión distinta y permanece vigente.
