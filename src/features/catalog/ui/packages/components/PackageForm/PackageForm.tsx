@@ -1,0 +1,156 @@
+'use client'
+
+import { useActionState, useMemo, useState } from 'react'
+import { packageMessages } from '../../constants/package-strings'
+import {
+  createPackageAction,
+  updatePackageAction,
+  deactivatePackageAction,
+} from '../../actions/package-actions'
+import { initialPackageActionState } from '../../types/package-action-state'
+import { packageFormStyles as STYLES } from './PackageForm.styles'
+import { PackageFormFeedback } from '../PackageFormFeedback'
+import type { PackageFormProps } from './PackageForm.types'
+
+const f = packageMessages.form
+const admin = packageMessages.admin
+
+export function PackageForm({ pkg, techniques }: PackageFormProps) {
+  const editing = pkg !== undefined
+  const [state, formAction, pending] = useActionState(
+    editing ? updatePackageAction : createPackageAction,
+    initialPackageActionState,
+  )
+  const [deactivateState, deactivateAction, deactivating] = useActionState(
+    deactivatePackageAction,
+    initialPackageActionState,
+  )
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(
+    () => new Set(pkg?.techniqueIds ?? []),
+  )
+
+  const durationById = useMemo(
+    () => new Map(techniques.map((t) => [t.id, t.durationFirstTimeMin + t.bufferMin])),
+    [techniques],
+  )
+  const totalDuration = useMemo(
+    () =>
+      Array.from(selectedIds).reduce((sum, id) => sum + (durationById.get(id) ?? 0), 0),
+    [selectedIds, durationById],
+  )
+
+  const hasInactiveSelected = techniques.some(
+    (t) => !t.isActive && selectedIds.has(t.id),
+  )
+
+  function toggle(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  return (
+    <section className={STYLES.section}>
+      <h2 className={STYLES.heading}>{editing ? f.legendEdit : f.legendCreate}</h2>
+
+      <PackageFormFeedback {...state} />
+
+      <form action={formAction} className={STYLES.form}>
+        {editing && <input type="hidden" name="id" value={pkg.id} />}
+
+        <label className={STYLES.fieldLabel} htmlFor="name">
+          <span className={STYLES.labelText}>{f.fields.name}</span>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            required
+            defaultValue={pkg?.name}
+            className={STYLES.fieldInput}
+          />
+        </label>
+
+        <fieldset className={STYLES.techniquesFieldset}>
+          <legend className={STYLES.labelText}>{f.fields.techniques}</legend>
+          <div className={STYLES.techniquesList}>
+            {techniques.map((technique) => (
+              <label key={technique.id} className={STYLES.techniqueOption}>
+                <input
+                  type="checkbox"
+                  name="techniqueIds"
+                  value={technique.id}
+                  checked={selectedIds.has(technique.id)}
+                  onChange={() => toggle(technique.id)}
+                  className={STYLES.checkbox}
+                />
+                <span>
+                  {technique.name} ({technique.durationFirstTimeMin + technique.bufferMin}{' '}
+                  {admin.minutesShort})
+                </span>
+                {!technique.isActive && (
+                  <span className={STYLES.inactiveBadge}>{f.inactiveTechnique}</span>
+                )}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        {hasInactiveSelected && <p className={STYLES.alertWarning}>{f.inactiveHint}</p>}
+
+        <p className={STYLES.durationTotal}>
+          {f.durationTotal}: {totalDuration} {admin.minutesShort}
+        </p>
+
+        <label className={STYLES.fieldLabel} htmlFor="price">
+          <span className={STYLES.labelText}>{f.fields.price}</span>
+          <input
+            id="price"
+            name="price"
+            type="number"
+            min={1}
+            step={1}
+            required
+            defaultValue={pkg?.price}
+            className={STYLES.fieldInput}
+          />
+        </label>
+
+        <label className={STYLES.fieldLabel} htmlFor="deposit">
+          <span className={STYLES.labelText}>{f.fields.deposit}</span>
+          <input
+            id="deposit"
+            name="deposit"
+            type="number"
+            min={0}
+            step={1}
+            required
+            defaultValue={pkg?.deposit ?? 0}
+            aria-describedby="deposit-hint"
+            className={STYLES.fieldInput}
+          />
+        </label>
+        <p id="deposit-hint">{f.depositHint}</p>
+
+        <div className={STYLES.submitWrapper}>
+          <button type="submit" className={STYLES.submitButton} disabled={pending}>
+            {editing ? f.submitEdit : f.submitCreate}
+          </button>
+        </div>
+      </form>
+
+      {editing && (
+        <form action={deactivateAction} className={STYLES.deactivateForm}>
+          <input type="hidden" name="id" value={pkg.id} />
+          <PackageFormFeedback {...deactivateState} />
+          <button type="submit" className={STYLES.deactivateButton} disabled={deactivating}>
+            {admin.rowActions.deactivate}
+          </button>
+        </form>
+      )}
+    </section>
+  )
+}

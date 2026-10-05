@@ -78,6 +78,42 @@ type TechniqueSnapshot = {
 5. **Cambios de forma de este contrato se versionan aquí antes del cambio** (INT-003): un campo no desaparece sin aviso; `scheduling` y `landing` se enteran por este documento.
 6. **Autorización real por RLS** (SEC-001): la lectura es pública; la escritura la controla la base, no la app.
 
+## Paquetes (US-PROD-01)
+
+Un **paquete** combina dos o más técnicas existentes bajo un nombre y un precio propio, ajustado a mano por la administradora (no es la suma automática de precios). A diferencia de la técnica, el paquete **no** tiene snapshot todavía: es composición viva del catálogo — se congelará recién cuando US-AGE-04 confirme una cita con paquete (DOM-002).
+
+Tablas dueñas: `catalog_packages` y `catalog_package_techniques` (ARCH-006). Mismo acceso exclusivo por `index.ts` que las técnicas (ARCH-005).
+
+### `listPackages(params) => Promise<Page<PackageListItem>>`
+
+```ts
+type ListPackagesParams = {
+  activeOnly?: boolean   // default true
+  page?: number          // default 1
+  pageSize?: number      // default 50, máx 100 (PERF-002)
+}
+type PackageListItem = {
+  id: string
+  name: string
+  techniqueIds: string[]
+  price: number              // colones enteros, CRC (DOM-001) — no derivado, lo fija la administradora
+  deposit: number            // anticipo propio del paquete, colones enteros >= 0; 0 = sin anticipo
+  isActive: boolean
+  durationTotalMin: number   // suma de duración + preparación/limpieza de cada técnica miembro; no se guarda, se calcula al leer
+}
+```
+
+Ordena por `name`.
+
+### `getPackage(id) => Promise<PackageListItem | PackageNotFound>`
+
+### Garantías (paquetes)
+
+1. **El precio del paquete es independiente del precio de sus técnicas.** No hay recálculo automático; la administradora lo fija al crear/editar (criterio 2).
+2. **`durationTotalMin` se recalcula en cada lectura**, uniendo las técnicas miembro vigentes — no queda desactualizado si una técnica cambia su duración, pero tampoco es un valor congelado hasta que exista el snapshot de cita (US-AGE-04).
+3. **Nunca se borra un paquete.** Desactivar es `is_active = false` (criterio 3).
+4. **`create`/`update`/`deactivate` no son parte del contrato público** — mismo criterio que las técnicas.
+
 ## Eventos de dominio
 
 Ninguno todavía. Desactivar una técnica **no** notifica a `scheduling`: las citas ya agendadas llevan su propio `TechniqueSnapshot` y no se ven afectadas (DOM-002). Si una futura historia necesita reaccionar a cambios del catálogo, se agrega aquí un evento (ARCH-005: primero evento, después use-case).
@@ -86,3 +122,19 @@ Ninguno todavía. Desactivar una técnica **no** notifica a `scheduling`: las ci
 
 - `public.auth_is_staff()` la define hoy la migración de catálogo `20260902000001_catalog_write_policies.sql` de forma provisional (lee `public.auth_user_roles`, de `auth`). Cuando `auth` la exponga en su propia migración, se retira de acá en una migración forward. Las políticas `catalog_techniques_*_staff` restringen la escritura a `admin`/`superadmin`.
 - Al implementarse US-AGE-05, confirmar que `TechniqueSnapshot` cubre todo lo que la cita necesita congelar; si falta un campo, se agrega aquí primero.
+
+## Anticipo por paquete — contrato de US-AGE-13
+
+La administradora fija `deposit` al crear o editar un paquete: entero de colones no negativo, independiente de los anticipos de sus técnicas. `0` significa sin anticipo; los paquetes existentes se inicializan en `0` y deben revisarse antes de ofrecer reservas que requieran anticipo. No se introduce un límite respecto del precio que no existe en el criterio.
+
+`listPackages` y `getPackage` expondrán `deposit` en `PackageListItem`. `scheduling` lo copiará a la cita al implementar la reserva; el aviso y el snapshot pertenecen a US-AGE-05 según el traslado aprobado del criterio original 3.
+
+La columna `catalog_packages.deposit` será `bigint NOT NULL DEFAULT 0 CHECK (deposit >= 0)`. El RPC nuevo `catalog_save_package_with_deposit` guardará paquete, técnicas y anticipo en una transacción, con `SECURITY INVOKER` y las políticas RLS existentes. El RPC previo seguirá disponible y conservará el anticipo al editar; no se cambia su firma.
+
+El modelo de escritura acepta `deposit` opcional para compatibilidad interna: omitirlo al crear equivale a `0`; omitirlo al editar conserva el valor guardado. El formulario nuevo lo exige explícitamente y rechaza vacío, negativos y decimales. Desactivar conserva el anticipo.
+
+Este contrato está implementado y probado en #179–#181, pendiente de integración y aprobación; sus piezas dependen de #173, #174 y #175 y no se integran antes de esas dependencias.
+
+El anticipo del paquete admite como máximo 9 007 199 254 740 991 colones, para conservar enteros exactos en JavaScript y PostgreSQL. El formulario valida la representación entera antes de convertirla.
+
+La aprobación del traslado de criterios está registrada en `docs/process/DEPENDENCIES.md`, sección «Criterios trasladados», y en el PR #176 de la pila original.

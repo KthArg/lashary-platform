@@ -1,0 +1,27 @@
+# Título del PR — INT-009 (docs/spec/INTEGRATION.md). Mismo script que verify.sh: una implementación.
+# Va en un workflow aparte de ci.yml porque tiene que re-correr cuando alguien EDITA el título, y
+# ci.yml no escucha `edited` a propósito: re-correría vitest + Supabase + Playwright por cada edición
+# de la descripción, y un rojo viejo del último push seguiría bloqueando después de arreglar el título.
+# Para que bloquee el merge, este job tiene que estar marcado como requerido en el ruleset de main.
+name: pr-title
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  title:
+    name: título del PR (INT-009)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Conventional Commits con historia y posición
+        env:
+          # Por env, nunca interpolados en el script: el título y la rama los escribe quien abre el PR.
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_HEAD_REF: ${{ github.head_ref }}
+        run: bash scripts/rules/check-pr-title.sh

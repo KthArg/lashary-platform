@@ -1,0 +1,68 @@
+export const packageMessages = {
+  admin: {
+    title: 'Paquetes de servicios',
+    subtitle: 'Combos de dos o más técnicas con precio propio.',
+    newPackage: 'Nuevo paquete',
+    columns: {
+      name: 'Paquete',
+      techniques: 'Técnicas incluidas',
+      duration: 'Duración total',
+      price: 'Precio',
+      deposit: 'Anticipo',
+      status: 'Estado',
+      actions: 'Acciones',
+    },
+    status: { active: 'Activo', inactive: 'Desactivado' },
+    inactiveTechnique: '(desactivada)',
+    pagination: {
+      label: 'Páginas de paquetes',
+      previous: 'Anterior',
+      next: 'Siguiente',
+      page: 'Página',
+      of: 'de',
+    },
+    rowActions: { edit: 'Editar', deactivate: 'Desactivar' },
+    minutesShort: 'min',
+    empty: {
+      title: 'Todavía no hay paquetes',
+      body: 'Creá el primer paquete combinando dos o más técnicas del catálogo.',
+      cta: 'Crear el primer paquete',
+    },
+    loading: 'Cargando los paquetes…',
+    error: {
+      title: 'No se pudieron cargar los paquetes',
+      body: 'Ocurrió un error al leer los paquetes del catálogo.',
+      retry: 'Reintentar',
+    },
+  },
+  form: {
+    legendCreate: 'Nuevo paquete',
+    legendEdit: 'Editar paquete',
+    fields: {
+      name: 'Nombre',
+      techniques: 'Técnicas incluidas (mínimo dos)',
+      price: 'Precio del paquete (colones)',
+      deposit: 'Anticipo requerido (colones)',
+    },
+    durationTotal: 'Duración total',
+    depositHint: '0 significa que el paquete no requiere anticipo.',
+    inactiveTechnique: 'desactivada',
+    inactiveHint:
+      'Este paquete incluye técnicas desactivadas. Quitalas o reactivalas en Técnicas antes de guardar.',
+    submitCreate: 'Crear paquete',
+    submitEdit: 'Guardar cambios',
+    cancel: 'Cancelar',
+    accessDenied:
+      'Tu sesión no tiene permisos para modificar los paquetes. Iniciá sesión como administradora.',
+    validationTitle: 'Revisá estos campos:',
+    savedCreate: 'Paquete creado.',
+    savedEdit: 'Cambios guardados.',
+    deactivated: 'Paquete desactivado.',
+    validation: {
+      name: 'El nombre es obligatorio',
+      techniqueIds: 'Elegí al menos dos técnicas',
+      price: 'El precio debe ser mayor que cero',
+      deposit: 'El anticipo debe ser un entero de colones igual o mayor que cero',
+    },
+  },
+}
