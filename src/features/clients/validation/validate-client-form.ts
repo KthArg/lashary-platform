@@ -4,7 +4,6 @@ import type { ClientFormErrors, ClientFormValues } from '../types/client-form.ty
 
 const countDigits = (value: string): number => value.replace(/\D/g, '').length
 
-/** Validacion de formato en el borde (DOM-007): unica fuente de verdad del formulario. */
 export function validateClientForm(values: ClientFormValues): ClientFormErrors {
   const errors: ClientFormErrors = {}
   const fullName = values.fullName.trim()
@@ -13,7 +12,6 @@ export function validateClientForm(values: ClientFormValues): ClientFormErrors {
 
   if (!fullName) errors[CLIENT_FIELD_KEYS.fullName] = CLIENTS_ERROR_MESSAGES.fullNameRequired
   else if (fullName.length < CLIENT_FORM_LIMITS.fullNameMinLength) errors[CLIENT_FIELD_KEYS.fullName] = CLIENTS_ERROR_MESSAGES.fullNameTooShort
-  // Los maximos tambien van aqui: el `maxLength` del HTML no protege una llamada directa al server action.
   else if (fullName.length > CLIENT_FORM_LIMITS.fullNameMaxLength) errors[CLIENT_FIELD_KEYS.fullName] = CLIENTS_ERROR_MESSAGES.fullNameTooLong
 
   if (!phone) errors[CLIENT_FIELD_KEYS.phone] = CLIENTS_ERROR_MESSAGES.phoneRequired
