@@ -49,6 +49,8 @@ Dónde se detiene: los criterios 7b y 8 (la cita no se altera / precio congelado
 
 Dónde se detiene US-PROD-01: el código está completo y probado. Las pruebas unitarias (dominio, application con repositorios en memoria, schema y server actions con repositorios mockeados) corren en cualquier entorno; `db/__tests__/package-repository.integration.test.ts` (3 pruebas, incluida la duración total de 190 min del paquete del seed) y `__tests__/package-rls-isolation.test.ts` (5 pruebas, SEC-002) corren contra Supabase local en el job `pruebas (vitest)` de CI y pasan — en la máquina donde se escribieron se saltan por falta de Docker, no por estar rotas. Queda pendiente probar la UI a mano en un navegador; la historia pasa a `terminada` con el PR de `us/US-PROD-01` a `main` como evidencia (EST-005).
 
+**Eliminar y reactivar en la UI (US-PROD-01):** al editar un paquete, `PackageStatusToggle` (interruptor) lo activa o desactiva con `setPackageActiveAction`, y `DeletePackageDialog` (botón rojo con confirmación en un `<dialog>`) lo elimina con `deletePackageAction` y vuelve al listado; así desactivar y eliminar no se confunden.
+
 ## Qué no hace todavía
 
 - **Criterio 7b / 8** (una técnica desactivada o con precio cambiado no altera citas ya agendadas): trasladados a US-AGE-05, que trae la tabla de citas. El catálogo cumple su parte — no borra técnicas (solo `is_active = false`) y expone `TechniqueSnapshot` — y el congelamiento se prueba en US-AGE-05 con el test obligatorio de DOM-002.
