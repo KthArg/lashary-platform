@@ -39,5 +39,7 @@ export interface TechniqueRepository {
 
   findById(id: string): Promise<Technique | null>
 
+  findByIds(ids: string[]): Promise<Technique[]>
+
   save(technique: Technique): Promise<void>
 }

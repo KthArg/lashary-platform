@@ -29,6 +29,10 @@ export class FakeTechniqueRepository implements TechniqueRepository {
     return this.store.get(id) ?? null
   }
 
+  async findByIds(ids: string[]) {
+    return ids.map((id) => this.store.get(id)).filter((t): t is Technique => t !== undefined)
+  }
+
   async save(technique: Technique) {
     const name = technique.toView().name
     for (const other of this.store.values()) {

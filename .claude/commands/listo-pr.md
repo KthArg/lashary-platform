@@ -9,5 +9,6 @@ Verifica, citando regla por ID en cada punto:
 3. Pieza contra `us/<ID>`: diff ≤ ~400 líneas y ≤ 2 features (INT-002), rama ≤ 3 días (INT-001) — el PR `us/<ID>` → `main` está exento; máx. 1 migración forward-only (INT-008).
 4. Sin imports ilegales (ARCH-003/004); criterios mapeados a pruebas; deuda/flags registrados con dueño y fecha (INT-004, EST-006).
 5. Si el diff toca auth, RLS, uploads, migraciones, dinero o expediente: checklist de `lashary-seguridad` corrido.
+6. Ninguna `class` nueva en el diff (ADR-0008); commits en Conventional Commits en español; título propuesto validado con `PR_TITLE="…" PR_HEAD_REF=<rama> bash scripts/rules/check-pr-title.sh` (INT-009).
 
 Veredicto: **PASS** (y el texto sugerido para el PR según `.github/PULL_REQUEST_TEMPLATE.md`) o la lista exacta de bloqueos. Nunca "casi listo".
