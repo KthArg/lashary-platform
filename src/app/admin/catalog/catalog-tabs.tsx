@@ -8,7 +8,7 @@ import { catalogStyles as STYLES } from './catalog.styles'
 
 const CATALOG_TABS = [
   { label: CATALOG_SECTION.tabs.techniques, href: catalogRoutes.admin },
-  { label: CATALOG_SECTION.tabs.packages, href: '/admin/catalog/packages' },
+  { label: CATALOG_SECTION.tabs.packages, href: catalogRoutes.packagesAdmin },
 ]
 
 export function CatalogTabs() {

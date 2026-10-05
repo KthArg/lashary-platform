@@ -2,7 +2,7 @@
 feature: auth
 dri: pendiente
 estado: terminada
-actualizado: "2026-10-03"
+actualizado: "2026-10-04"
 historias:
   - id: US-AUTH-01
     estado: terminada
@@ -30,7 +30,7 @@ Completadas las historias `US-AUTH-01` y `US-AUTH-02`.
 - Inicio de sesión para administradores (`US-AUTH-01`) en ruta `/admin` mediante correo y contraseña, con validación de roles en `public.auth_user_roles`.
 - Guardia de rutas administrativas implementada en middleware de Edge (`src/middleware.ts`) y a nivel de servidor (`requireAdminSession`, CA-4).
 - Cierre automático de sesión tras 15 minutos de inactividad de usuario (`useInactivityTimeout`, `InactivityTimeout`, CA-5).
-- Navegación persistente administrativa mediante `AdminSidebar` y `layout.tsx` con accesos a dashboard, citas, clientas y catálogo (`/admin/catalog`, con pestañas Técnicas y Paquetes; la página de paquetes llega con US-PROD-01), y cierre de sesión desde cualquier vista (`US-AUTH-01`, CA-2).
+- Navegación persistente administrativa mediante `AdminSidebar` y `layout.tsx` con accesos a dashboard, citas, clientas y catálogo (`/admin/catalog`, con pestañas Técnicas y Paquetes), y cierre de sesión desde cualquier vista (`US-AUTH-01`, CA-2).
 - Navegación persistente de clientas mediante `ClientSidebar` (colapsable, responsive) y `src/app/portal/layout.tsx` con accesos a citas, carrito, cuenta y cierre de sesión (`US-AUTH-02`).
 - Inicio de sesión de clientas exclusivo vía Google OAuth con redirección a `/portal/citas` y captura modal obligatoria de teléfono post-login (`US-AUTH-02`), protegida en `src/app/portal/layout.tsx`.
 - Aislamiento de datos mediante Row Level Security (RLS) en Supabase (`SEC-001`).
