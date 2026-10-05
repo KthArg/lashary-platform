@@ -1,6 +1,3 @@
-// Claves, limites y patrones del formulario de alta de clienta.
-// Sin numeros ni cadenas sueltas en la logica: todo entra por aqui.
-
 export const CLIENT_FIELD_KEYS = { fullName: 'fullName', phone: 'phone', email: 'email', notes: 'notes' } as const
 
 export type ClientFieldKey = (typeof CLIENT_FIELD_KEYS)[keyof typeof CLIENT_FIELD_KEYS]
@@ -18,11 +15,8 @@ export const CLIENT_FORM_PATTERNS = { phone: /^[0-9+\s-]+$/, email: /^[^\s@]+@[^
 
 export const EMPTY_CLIENT_FORM_VALUES = { fullName: '', phone: '', email: '', notes: '' } as const
 
-// Un numero sin codigo de pais es de Costa Rica: `88887777` se guarda como `+50688887777`.
 export const CLIENT_PHONE_FORMAT = { countryPrefix: '+506', localDigits: 8 } as const
 
-// PERF-002: la pagina se elige solo entre estos tamanos; cualquier otro valor usa el de por defecto.
-// El filtro por nombre no puede ser mas largo que el nombre que se guarda.
 export const CLIENTS_LIST_LIMITS = {
   pageSizes: [10, 25, 50], defaultPageSize: 25, nameFilterMaxLength: CLIENT_FORM_LIMITS.fullNameMaxLength,
 } as const
