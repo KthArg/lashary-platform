@@ -1,4 +1,3 @@
-// Mismo encabezado que /admin/dashboard y /admin/citas. El <main> lo pone el layout de admin.
 export const adminClientsStyles = {
   page: 'space-y-4',
   header: 'flex flex-wrap items-end justify-between gap-4 border-b border-brand-border pb-4',
