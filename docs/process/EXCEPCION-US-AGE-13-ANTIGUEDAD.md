@@ -1,6 +1,8 @@
-# Propuesta de excepción de antigüedad para US-AGE-13
+# Excepción de antigüedad para US-AGE-13
 
-Fecha de propuesta: 2026-10-05. Pendiente de aprobación del equipo.
+Fecha de propuesta: 2026-10-05. Visto bueno del equipo comunicado por Bayron
+el 2026-10-05 para el alcance y el vencimiento indicados. Aprobación formal
+en GitHub e integración del PR #191 pendientes; la excepción aún no está activa.
 
 ## Justificación y alcance
 
@@ -16,7 +18,7 @@ El registro fija también la rama de cada PR y admite su base original o la raí
 `us/US-AGE-13`, a la que GitHub puede retargetearlo al integrar la pieza anterior.
 Otras piezas y bases de otras historias no quedan cubiertas.
 
-Vencimiento propuesto: final del 12 de octubre de 2026 en Costa Rica;
+Vencimiento acordado: final del 12 de octubre de 2026 en Costa Rica;
 el instante de corte es `2026-10-13T06:00:00Z`.
 
 ## Aprobación y activación
@@ -49,5 +51,5 @@ Las mismas pruebas se ejecutan en el job de reglas de CI.
 
 Tras integrar las piezas, retirar las 13 entradas del registro mediante un PR.
 Si vence el plazo antes, cualquier ampliación requiere nuevo acuerdo y revisión.
-El documento permanece como historial de la decisión; su propuesta no equivale
-a que el equipo ya la haya aprobado.
+El documento permanece como historial de la decisión. El visto bueno del equipo
+no sustituye la aprobación formal en GitHub, CI aprobado ni la integración en main.
