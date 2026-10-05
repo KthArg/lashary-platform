@@ -4,6 +4,8 @@ import {
   createPackage,
   updatePackage,
   deactivatePackage,
+  activatePackage,
+  deletePackage,
 } from '@/features/catalog/application/packages/commands'
 import {
   isPackageNameConflict,
@@ -205,5 +207,54 @@ describe('deactivatePackage', () => {
     const packageRepo = createFakePackageRepository()
     const result = await deactivatePackage(deps(packageRepo, techniqueRepo))('nope')
     expect(isErr(result)).toBe(true)
+  })
+})
+
+describe('activatePackage', () => {
+  it('reactiva un paquete desactivado cuyas técnicas siguen activas', async () => {
+    const techniqueRepo = new FakeTechniqueRepository([
+      makeTechnique({ id: 't1', isActive: true }),
+      makeTechnique({ id: 't2', isActive: true }),
+    ])
+    const packageRepo = createFakePackageRepository([
+      makePackage({ id: 'a1', techniqueIds: ['t1', 't2'], isActive: false }),
+    ])
+    const result = await activatePackage(deps(packageRepo, techniqueRepo))('a1')
+    expect(isOk(result)).toBe(true)
+    expect((await packageRepo.findById('a1'))?.pkg.isActive).toBe(true)
+  })
+
+  it('no reactiva si una de sus técnicas está desactivada', async () => {
+    const techniqueRepo = new FakeTechniqueRepository([
+      makeTechnique({ id: 't1', isActive: true }),
+      makeTechnique({ id: 't2', isActive: false }),
+    ])
+    const packageRepo = createFakePackageRepository([
+      makePackage({ id: 'a2', techniqueIds: ['t1', 't2'], isActive: false }),
+    ])
+    const result = await activatePackage(deps(packageRepo, techniqueRepo))('a2')
+    expect(isErr(result) && isPackageValidationError(result.error)).toBe(true)
+    expect((await packageRepo.findById('a2'))?.pkg.isActive).toBe(false)
+  })
+
+  it('devuelve PackageNotFound si no existe', async () => {
+    const result = await activatePackage(
+      deps(createFakePackageRepository(), new FakeTechniqueRepository()),
+    )('nope')
+    expect(isErr(result) && isPackageNotFound(result.error)).toBe(true)
+  })
+})
+
+describe('deletePackage', () => {
+  it('elimina un paquete existente', async () => {
+    const packageRepo = createFakePackageRepository([makePackage({ id: 'x1' })])
+    const result = await deletePackage({ packageRepo })('x1')
+    expect(isOk(result)).toBe(true)
+    expect(await packageRepo.findById('x1')).toBeNull()
+  })
+
+  it('devuelve PackageNotFound si no existe', async () => {
+    const result = await deletePackage({ packageRepo: createFakePackageRepository() })('nope')
+    expect(isErr(result) && isPackageNotFound(result.error)).toBe(true)
   })
 })

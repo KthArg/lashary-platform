@@ -2,6 +2,7 @@ import { Money } from '@/shared/money'
 import { ok, err, isErr, type Result } from '@/shared/result'
 import {
   buildPackage,
+  markPackageActive,
   markPackageInactive,
   packageToView,
   type Package,
@@ -118,4 +119,33 @@ export const deactivatePackage =
     const saved = await deps.packageRepo.save(deactivated)
     if (isErr(saved)) return saved
     return ok(packageToView(deactivated))
+  }
+
+export const activatePackage =
+  (deps: PackageCommandDeps) =>
+  async (
+    id: string,
+  ): Promise<
+    Result<PackageView, PackageNotFound | PackageValidationError | PackageNameConflict>
+  > => {
+    const existing = await deps.packageRepo.findById(id)
+    if (existing === null) return err(packageNotFound(id))
+
+    const resolved = await resolveTechniques(deps.techniqueRepo, [...existing.pkg.techniqueIds])
+    if (isErr(resolved)) return resolved
+
+    const activated = markPackageActive(existing.pkg)
+    const saved = await deps.packageRepo.save(activated)
+    if (isErr(saved)) return saved
+    return ok(packageToView(activated))
+  }
+
+export const deletePackage =
+  (deps: Pick<PackageCommandDeps, 'packageRepo'>) =>
+  async (id: string): Promise<Result<void, PackageNotFound>> => {
+    const existing = await deps.packageRepo.findById(id)
+    if (existing === null) return err(packageNotFound(id))
+
+    await deps.packageRepo.delete(id)
+    return ok(undefined)
   }

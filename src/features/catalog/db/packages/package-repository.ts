@@ -8,6 +8,7 @@ import type { PackageRepository, PackageWithDuration } from '../../application/p
 
 const TABLE = 'catalog_packages'
 const SAVE_FN = 'catalog_save_package'
+const DELETE_FN = 'catalog_delete_package'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 const COLUMNS = `
@@ -85,6 +86,11 @@ export function createSupabasePackageRepository(db: SupabaseClient): PackageRepo
         throw new Error(`${SAVE_FN}: ${error.message}`)
       }
       return ok(undefined)
+    },
+
+    async delete(id: string): Promise<void> {
+      const { error } = await db.rpc(DELETE_FN, { p_id: id })
+      if (error) throw new Error(`${DELETE_FN}: ${error.message}`)
     },
   }
 }

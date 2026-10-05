@@ -157,6 +157,18 @@ describe.skipIf(!reachable)(
       expect(count).toBeGreaterThanOrEqual(2)
     })
 
+    it('ni anón ni clienta pueden eliminar vía catalog_delete_package', async () => {
+      for (const client of [anon, clienta]) {
+        const { error } = await client.rpc('catalog_delete_package', { p_id: samplePackageId })
+        expect(error).not.toBeNull()
+      }
+      const { count } = await anon
+        .from(PACKAGES)
+        .select('*', { count: 'exact', head: true })
+        .eq('id', samplePackageId)
+      expect(count).toBe(1)
+    })
+
     it('tras los intentos, los conteos no cambiaron (nadie insertó ni borró)', async () => {
       const { count: pkgCount } = await anon
         .from(PACKAGES)
