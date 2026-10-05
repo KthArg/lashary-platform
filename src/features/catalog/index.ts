@@ -7,8 +7,14 @@ import {
   listTechniques as listTechniquesUseCase,
   getTechnique as getTechniqueUseCase,
 } from './application/queries'
+import {
+  listPackages as listPackagesUseCase,
+  getPackage as getPackageUseCase,
+} from './application/packages/queries'
 import { techniqueRepository } from './db/technique-repository'
+import { packageRepository } from './db/packages/package-repository'
 import type { ListTechniquesQuery, Page } from './application/ports'
+import type { ListPackagesQuery } from './application/packages/ports'
 import type { TechniqueView } from './domain/technique'
 
 export async function listTechniques(
@@ -21,6 +27,14 @@ export async function getTechnique(id: string) {
   return getTechniqueUseCase(await techniqueRepository())(id)
 }
 
+export async function listPackages(query?: ListPackagesQuery) {
+  return listPackagesUseCase(await packageRepository())(query)
+}
+
+export async function getPackage(id: string) {
+  return getPackageUseCase(await packageRepository())(id)
+}
+
 export { SERVICE_FAMILIES } from './domain/technique'
 export type {
   ServiceFamily,
@@ -28,8 +42,13 @@ export type {
   TechniqueSnapshot,
 } from './domain/technique'
 export { TechniqueNotFound } from './domain/errors'
+export type { PackageNotFound } from './domain/packages/errors'
 export type { ListTechniquesQuery, Page } from './application/ports'
+export type { ListPackagesQuery } from './application/packages/ports'
+export type { PackageListItem } from './application/packages/queries'
 
 // UI de administración (US-AGE-08). La compone la ruta src/app/admin/catalog/.
 export { AdminCatalogPage } from './ui/AdminCatalogPage'
 export { catalogMessages } from './ui/messages'
+
+export { AdminPackagesPage } from './ui/packages/components/AdminPackagesPage'

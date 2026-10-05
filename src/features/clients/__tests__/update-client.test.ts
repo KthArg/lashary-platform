@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { updateClientAction } from '../actions/clients-actions'
 import { CLIENTS_ERROR_MESSAGES } from '@/features/clients'
 
-/** US-CLI-05 criterio 2 en el borde: lo que updateClientAction manda a clients_profiles. */
 let phoneLookup: { data: unknown; error: unknown }
 let updateResult: { data: unknown; error: unknown }
 const mockUpdate = vi.fn()
