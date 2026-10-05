@@ -83,8 +83,11 @@ export type ProductoEntrada = {
   ordenPresentacion: number
 }
 
-const esEnteroNoNegativo = (n: number): boolean => Number.isInteger(n) && n >= 0
-const esEnteroPositivo = (n: number): boolean => Number.isInteger(n) && n > 0
+export const PRECIO_MINIMO_CRC = 1
+export const ORDEN_MINIMO = 0
+
+const esEnteroNoNegativo = (n: number): boolean => Number.isInteger(n) && n >= ORDEN_MINIMO
+const esEnteroPositivo = (n: number): boolean => Number.isInteger(n) && n >= PRECIO_MINIMO_CRC
 
 export function construirProducto(input: ProductoEntrada): Result<ProductoAdminVista, ProductoInvalido> {
   const problems: string[] = []

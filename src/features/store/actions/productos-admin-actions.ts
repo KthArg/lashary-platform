@@ -14,6 +14,7 @@ import { productoRepositorioAdmin } from '../db/productos-admin-repositorio'
 import { esquemaProductoAdmin } from './esquema-producto-admin'
 import { mensajesAdminProductos } from '../constants/mensajes-admin-productos'
 import { rutasAdminProductos } from '../constants/rutas-admin-productos'
+import { CAMPOS_PRODUCTO } from '../constants/campos-producto-admin'
 import type { EstadoAccionProducto } from './estado-accion-producto'
 
 async function deps(): Promise<ComandoProductoDeps> {
@@ -54,7 +55,7 @@ export async function actualizarProductoAction(
 ): Promise<EstadoAccionProducto> {
   if (!(await esStaff())) return prohibido()
 
-  const id = String(formData.get('id') ?? '')
+  const id = String(formData.get(CAMPOS_PRODUCTO.id) ?? '')
   const parsed = esquemaProductoAdmin.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     return {
@@ -79,7 +80,7 @@ export async function desactivarProductoAction(
 ): Promise<EstadoAccionProducto> {
   if (!(await esStaff())) return prohibido()
 
-  const id = String(formData.get('id') ?? '')
+  const id = String(formData.get(CAMPOS_PRODUCTO.id) ?? '')
 
   const result = await desactivarProducto(await deps())(id)
   if (isErr(result)) {

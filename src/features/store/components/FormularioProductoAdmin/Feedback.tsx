@@ -5,7 +5,12 @@ import { FeedbackOk } from './FeedbackOk'
 import { FeedbackForbidden } from './FeedbackForbidden'
 import { FeedbackInvalido } from './FeedbackInvalido'
 
-const FEEDBACKS: Record<EstadoAccionProducto['status'], ComponentType<any>> = {
+type FeedbackLeafProps = {
+  message?: string
+  problems: string[]
+}
+
+const FEEDBACKS: Record<EstadoAccionProducto['status'], ComponentType<FeedbackLeafProps>> = {
   idle: FeedbackIdle,
   ok: FeedbackOk,
   forbidden: FeedbackForbidden,
@@ -14,5 +19,5 @@ const FEEDBACKS: Record<EstadoAccionProducto['status'], ComponentType<any>> = {
 
 export function Feedback(estado: EstadoAccionProducto) {
   const Componente = FEEDBACKS[estado.status]
-  return <Componente message={estado.message} problems={estado.problems} />
+  return <Componente message={estado.message} problems={estado.problems ?? []} />
 }
