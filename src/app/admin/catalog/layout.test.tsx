@@ -7,7 +7,10 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/features/auth', () => ({
   requireAdminSession: mocks.requireAdminSession,
-  signOutAction: vi.fn(),
+}))
+
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/admin/catalog',
 }))
 
 import AdminCatalogLayout from './layout'
@@ -21,7 +24,7 @@ describe('protección de /admin/catalog', () => {
     ).rejects.toThrow('NEXT_REDIRECT:/admin')
   })
 
-  it('renderiza el panel y el cierre de sesión para staff', async () => {
+  it('renderiza la sección con pestañas Técnicas y Paquetes para staff', async () => {
     mocks.requireAdminSession.mockResolvedValueOnce({
       user: { email: 'admin@lashary.test' },
       role: 'admin',
@@ -30,6 +33,11 @@ describe('protección de /admin/catalog', () => {
     render(await AdminCatalogLayout({ children: <div>catálogo protegido</div> }))
 
     expect(screen.getByText('catálogo protegido')).toBeDefined()
-    expect(screen.getByRole('button', { name: /cerrar sesión/i })).toBeDefined()
+    const techniques = screen.getByRole('tab', { name: 'Técnicas' })
+    const packages = screen.getByRole('tab', { name: 'Paquetes' })
+    expect(techniques.getAttribute('href')).toBe('/admin/catalog')
+    expect(packages.getAttribute('href')).toBe('/admin/catalog/packages')
+    expect(techniques.getAttribute('aria-current')).toBe('page')
+    expect(packages.getAttribute('aria-current')).toBeNull()
   })
 })
