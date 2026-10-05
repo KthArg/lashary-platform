@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(20);
+SELECT plan(21);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -80,6 +80,11 @@ SELECT throws_ok(
       '00000000-0000-0000-0000-00000000d001', '   ', 32000, true,
       ARRAY['00000000-0000-0000-0000-00000000e002', '00000000-0000-0000-0000-00000000e003']::uuid[])$$,
   '23514', NULL, 'invariante: nombre vacío se rechaza');
+SELECT throws_ok(
+  $$SELECT public.catalog_save_package(
+      '00000000-0000-0000-0000-00000000d001', E'\t\n', 32000, true,
+      ARRAY['00000000-0000-0000-0000-00000000e002', '00000000-0000-0000-0000-00000000e003']::uuid[])$$,
+  '23514', NULL, 'invariante: nombre de solo tabs o saltos de línea se rechaza');
 SELECT is(
   (SELECT count(*)::int FROM public.catalog_package_techniques
     WHERE package_id = '00000000-0000-0000-0000-00000000d001'),

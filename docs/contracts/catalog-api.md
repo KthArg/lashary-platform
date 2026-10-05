@@ -137,4 +137,4 @@ Este contrato está implementado y probado en #179–#181, pendiente de integrac
 
 El anticipo del paquete admite como máximo 9 007 199 254 740 991 colones, para conservar enteros exactos en JavaScript y PostgreSQL. El formulario valida la representación entera antes de convertirla.
 
-La aprobación del traslado de criterios está registrada en `docs/process/DEPENDENCIES.md`, sección «Traslado aprobado de US-AGE-13», y en el PR #176 de la pila original.
+La aprobación del traslado de criterios está registrada en `docs/process/DEPENDENCIES.md`, sección «Criterios trasladados», y en el PR #176 de la pila original.
