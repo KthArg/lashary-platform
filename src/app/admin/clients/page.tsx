@@ -1,5 +1,12 @@
 import { requireAdminSession } from '@/features/auth'
-import { AddClientDialog, ClientsList, ClientsPagination, CLIENTS_LABELS, listClientsAction } from '@/features/clients'
+import {
+  AddClientDialog,
+  ClientsList,
+  ClientsNameFilter,
+  ClientsPagination,
+  CLIENTS_LABELS,
+  listClientsAction,
+} from '@/features/clients'
 import { adminClientsStyles as STYLES } from './clients.styles'
 import type { AdminClientsPageProps } from './clients.types'
 
@@ -16,9 +23,11 @@ const readNumber = (value: string | undefined): number | undefined => {
 export default async function AdminClientsPage({ searchParams }: AdminClientsPageProps) {
   await requireAdminSession()
   const params = (await searchParams) ?? {}
+  const name = params.name?.trim() ?? ''
   const result = await listClientsAction({
     page: readNumber(params.page),
     pageSize: readNumber(params.pageSize),
+    name: name || undefined,
   })
 
   return (
@@ -30,7 +39,12 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
         </div>
         <AddClientDialog />
       </header>
-      <ClientsList clients={result.ok ? result.clients : []} loadError={result.ok ? null : result.error} />
+      <ClientsNameFilter name={name} />
+      <ClientsList
+        clients={result.ok ? result.clients : []}
+        loadError={result.ok ? null : result.error}
+        activeNameFilter={name || null}
+      />
       {result.ok && result.total > 0 ? (
         <ClientsPagination page={result.page} pageSize={result.pageSize} total={result.total} />
       ) : null}
