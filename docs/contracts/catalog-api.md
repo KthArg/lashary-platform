@@ -135,4 +135,4 @@ El modelo de escritura acepta `deposit` opcional para compatibilidad interna: om
 
 Este contrato todavía requiere implementación y pruebas; sus piezas dependen de #173, #174 y #175 y no se integran antes de esas dependencias.
 
-La aprobación del traslado de criterios está registrada en `docs/process/DEPENDENCIES.md`, sección «Traslado aprobado de US-AGE-13», y en el PR #176 de la pila original.
+La aprobación del traslado de criterios está registrada en `docs/process/DEPENDENCIES.md`, sección «Criterios trasladados», y en el PR #176 de la pila original.
