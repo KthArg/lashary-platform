@@ -99,6 +99,13 @@ export class SupabaseTechniqueRepository implements TechniqueRepository {
     return data ? rowToDomain(data as Row) : null
   }
 
+  async findByIds(ids: string[]): Promise<Technique[]> {
+    if (ids.length === 0) return []
+    const { data, error } = await this.db.from(TABLE).select(COLUMNS).in('id', ids)
+    if (error) throw new Error(`${TABLE}.findByIds: ${error.message}`)
+    return (data ?? []).map((row) => rowToDomain(row as Row))
+  }
+
   async save(technique: Technique): Promise<void> {
     const { error } = await this.db
       .from(TABLE)

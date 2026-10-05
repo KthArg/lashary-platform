@@ -5,10 +5,6 @@ import { CLIENTS_ERROR_MESSAGES } from '../constants/clients-strings'
 import type { ClientFormValues } from '../types/client-form.types'
 import type { SaveClientResult } from '../types/client-actions.types'
 
-/**
- * El ciclo que comparten el alta y la edicion: descarte confirmado, guardado en curso y error del servidor.
- * Con la confirmacion abierta, Escape le pertenece a ella; guardando, nada cierra el modal a medias.
- */
 export function useClientDialog(save: (values: ClientFormValues) => Promise<SaveClientResult>, onClosed: () => void) {
   const [isDirty, setIsDirty] = useState(false)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
@@ -33,7 +29,6 @@ export function useClientDialog(save: (values: ClientFormValues) => Promise<Save
   const submit = useCallback(async (values: ClientFormValues) => {
     setIsSaving(true)
     setSaveError(null)
-    // Un fallo de red rechaza la promesa: se muestra como cualquier otro y el formulario conserva lo escrito.
     const result = await save(values).catch(() => null)
     setIsSaving(false)
     if (result?.ok) close()
