@@ -6,12 +6,6 @@ import { CLIENTS_CONFIRM_MESSAGES } from '../../constants/clients-strings'
 import { confirmDialogStyles as STYLES } from './ConfirmDialog.styles'
 import type { ConfirmDialogProps } from './ConfirmDialog.types'
 
-/**
- * Confirmacion de una accion destructiva, en el lenguaje visual del proyecto (UI-001).
- * Reemplaza a `window.confirm`, que un iframe sandbox ignora devolviendo `false`.
- * Vive en `clients` y no en `shared` a proposito: es su unico consumidor hoy. Sube a
- * `shared/` cuando aparezca el segundo, no antes.
- */
 export function ConfirmDialog({
   isOpen,
   title,
@@ -23,10 +17,8 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const titleId = useId()
   const messageId = useId()
-  // El foco entra en la opcion que no destruye nada: es el primer boton de la tarjeta (UI-004).
   const cardRef = useFocusTrap<HTMLDivElement>(isOpen)
 
-  // Escape equivale a la salida segura, nunca a la destructiva.
   useEffect(() => {
     if (!isOpen) return
     const handleKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') onCancel() }
