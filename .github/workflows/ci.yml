@@ -3,6 +3,7 @@
 name: ci
 on:
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches: [main]
 
@@ -15,14 +16,21 @@ jobs:
         with:
           fetch-depth: 0 # historia completa: INT-001 (edad de rama) y diffs contra base
 
+      - name: Pruebas de la excepción de antigüedad
+        run: bash scripts/tests/check-process-exception.test.sh
+
       - name: verify (contra la rama base)
         env:
           # check-pr-size.sh exime el PR us/<ID> → main (INT-001, INT-002).
           PR_HEAD_REF: ${{ github.head_ref }}
           # En una pila, github.base_ref apunta a su raíz; medir solo la pieza.
           PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_PROCESS_EXCEPTION: ${{ contains(github.event.pull_request.labels.*.name, 'excepcion-proceso') && '1' || '0' }}
         run: |
           if [ -n "$PR_BASE_REF" ]; then
+            # Registro aprobado de excepciones, independiente del contenido del PR.
+            git fetch origin main
             git fetch origin "$PR_BASE_REF"
             bash scripts/verify.sh --base "origin/$PR_BASE_REF"
           else

@@ -1,0 +1,14 @@
+regla,pr,rama,base,base_integracion,vence_utc
+INT-001,114,us/US-AGE-13-1-audit-schema,us/US-AGE-13,us/US-AGE-13,2026-10-13T06:00:00Z
+INT-001,115,us/US-AGE-13-2-audit-domain,us/US-AGE-13-1-audit-schema,us/US-AGE-13,2026-10-13T06:00:00Z
+INT-001,117,us/US-AGE-13-3-audit-entrypoint,us/US-AGE-13-2-audit-domain,us/US-AGE-13,2026-10-13T06:00:00Z
+INT-001,118,us/US-AGE-13-4-payments-schema,us/US-AGE-13-3-audit-entrypoint,us/US-AGE-13,2026-10-13T06:00:00Z
+INT-001,119,us/US-AGE-13-5-payments-domain,us/US-AGE-13-4-payments-schema,us/US-AGE-13,2026-10-13T06:00:00Z
+INT-001,120,us/US-AGE-13-6-payments-entrypoint,us/US-AGE-13-5-payments-domain,us/US-AGE-13,2026-10-13T06:00:00Z
+INT-001,121,us/US-AGE-13-7-payments-ui-actions,us/US-AGE-13-6-payments-entrypoint,us/US-AGE-13,2026-10-13T06:00:00Z
+INT-001,122,us/US-AGE-13-8-payments-ui-form,us/US-AGE-13-7-payments-ui-actions,us/US-AGE-13,2026-10-13T06:00:00Z
+INT-001,145,us/US-AGE-13-9-deferred-criteria,us/US-AGE-13-8-payments-ui-form,us/US-AGE-13,2026-10-13T06:00:00Z
+INT-001,146,us/US-AGE-13-10-payments-ui-polish,us/US-AGE-13-9-deferred-criteria,us/US-AGE-13,2026-10-13T06:00:00Z
+INT-001,152,us/US-AGE-13-11-review-feedback,us/US-AGE-13-10-payments-ui-polish,us/US-AGE-13,2026-10-13T06:00:00Z
+INT-001,153,us/US-AGE-13-12-review-feedback-2,us/US-AGE-13-11-review-feedback,us/US-AGE-13,2026-10-13T06:00:00Z
+INT-001,154,us/US-AGE-13-13-beforeall-probe,us/US-AGE-13-12-review-feedback-2,us/US-AGE-13,2026-10-13T06:00:00Z

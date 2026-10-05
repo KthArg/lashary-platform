@@ -54,13 +54,32 @@ if [ "$N_FEATURES" -gt "$MAX_FEATURES" ]; then
   fail_rule INT-002 "el diff toca código de $N_FEATURES features (máximo $MAX_FEATURES): $(changed_files | awk -F/ '$1=="src" && $2=="features" && $NF!="SPEC.md" {print $3}' | sort -u | tr '\n' ' ')"
 fi
 
+# Solo main puede aportar el registro aprobado; el contenido del PR no autoriza su excepción.
+age_exception_active() {
+  [ "${PR_PROCESS_EXCEPTION:-0}" = "1" ] || return 1
+  [[ "${PR_NUMBER:-}" =~ ^[1-9][0-9]*$ ]] || return 1
+  local expiry expiry_ts
+  expiry=$(git -C "$REPO_ROOT" show refs/remotes/origin/main:docs/process/excepciones-proceso.csv 2>/dev/null |
+    awk -F, -v pr="$PR_NUMBER" -v head="$HEAD_REF" -v base="$BASE_REF" '
+      $1 == "INT-001" && $2 == pr && $3 == head && ($4 == base || $5 == base) {
+        count++; value = $6; sub(/\r$/, "", value)
+      }
+      END { if (count == 1) print value }')
+  [[ "$expiry" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]] || return 1
+  expiry_ts=$(date -u -d "$expiry" +%s 2>/dev/null) || return 1
+  [ "$(date +%s)" -lt "$expiry_ts" ] || return 1
+  echo "Excepción INT-001: PR #$PR_NUMBER, registro en main, vigente hasta $expiry."
+}
+
 # INT-001 — edad de la rama (solo en modo rango, donde hay base contra la cual medir)
 if [ -n "$DIFF_RANGE" ]; then
   FIRST_COMMIT_TS=$(git -C "$REPO_ROOT" log --reverse --format=%ct "$DIFF_RANGE" 2>/dev/null | head -n 1 || true)
   if [ -n "$FIRST_COMMIT_TS" ]; then
     AGE_DAYS=$(( ( $(date +%s) - FIRST_COMMIT_TS ) / 86400 ))
     if [ "$AGE_DAYS" -gt "$MAX_BRANCH_AGE_DAYS" ]; then
-      fail_rule INT-001 "el primer commit de esta rama tiene $AGE_DAYS días (máximo $MAX_BRANCH_AGE_DAYS). La pieza estaba mal dimensionada: partirla"
+      if ! age_exception_active; then
+        fail_rule INT-001 "el primer commit de esta rama tiene $AGE_DAYS días (máximo $MAX_BRANCH_AGE_DAYS). La pieza estaba mal dimensionada: partirla"
+      fi
     fi
   fi
 fi

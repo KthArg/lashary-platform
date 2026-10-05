@@ -85,3 +85,11 @@ Cada feature tiene un **DRI** — responsable de que el spec sea verdad y de que
 ## El escape legítimo
 
 Desviarse se puede, con registro: una excepción **arquitectónica** exige ADR; una excepción de **proceso** exige PR etiquetado `excepcion-proceso` con justificación escrita. Si no existe forma aprobada de desviarse, la gente se desvía en silencio y el proyecto pierde el registro del porqué. El camino legítimo debe ser más barato que el silencioso.
+
+Para INT-001, CI reconoce una excepción vigente únicamente si la etiqueta está presente
+y el PR, su rama y su base coinciden con una entrada de
+[`excepciones-proceso.csv`](../process/excepciones-proceso.csv) integrada en main
+tras aprobación del equipo. El registro propuesto dentro de una pieza no autoriza su
+excepción. Las otras comprobaciones permanecen activas. La justificación y el retiro
+de las entradas de US-AGE-13 se documentan en
+[`EXCEPCION-US-AGE-13-ANTIGUEDAD.md`](../process/EXCEPCION-US-AGE-13-ANTIGUEDAD.md).
