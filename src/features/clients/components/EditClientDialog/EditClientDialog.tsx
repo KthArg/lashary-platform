@@ -10,10 +10,6 @@ import { ConfirmDialog } from '../ConfirmDialog'
 import type { ClientFormValues } from '../../types/client-form.types'
 import type { EditClientDialogProps } from './EditClientDialog.types'
 
-/**
- * US-CLI-05 criterio 2: el mismo modal, formulario y confirmacion del alta, con los datos cargados.
- * `key={client.id}` evita que pasar de una clienta a otra reuse el estado del formulario anterior.
- */
 export function EditClientDialog({ client, onClose }: EditClientDialogProps) {
   const clientId = client?.id ?? ''
   const save = useCallback((values: ClientFormValues) => updateClientAction(clientId, values), [clientId])

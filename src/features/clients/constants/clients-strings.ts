@@ -1,23 +1,29 @@
-// Textos visibles de la seccion de clientas, externalizados desde el primer commit (DOM-009).
-
 export const CLIENTS_LABELS = {
   sectionTitle: 'Gestión de Clientas', sectionSubtitle: 'Alta y edición manual del registro de clientas',
   newClientTitle: 'Nueva clienta', newClientDescription: 'Los campos marcados son obligatorios.',
   fullNameInput: 'Nombre completo', phoneInput: 'Teléfono', emailInput: 'Correo electrónico', notesInput: 'Notas generales',
   requiredMark: 'obligatorio', optionalMark: 'opcional',
   clientsListTitle: 'Clientas registradas', clientsListEmpty: 'Todavía no hay clientas registradas. Usa Agregar para registrar la primera.',
+  clientsListEmptyForFilter: (name: string) => `Ninguna clienta registrada coincide con «${name}».`,
   clientsListLoading: 'Cargando clientas…',
   editClientTitle: 'Editar clienta', editClientDescription: 'Cambia solo lo que necesites; los campos marcados siguen siendo obligatorios.',
 } as const
 
-// US-CLI-01 criterio 1. Morosidad y ultima cita ya tienen columna; su dato llega con US-MOR-01 y US-AGE-05.
 export const CLIENTS_TABLE_HEADERS = {
   fullName: 'Nombre', phone: 'Teléfono', email: 'Correo',
   delinquencyStatus: 'Morosidad', lastAppointment: 'Última cita', actions: 'Acciones',
 } as const
 
-// Una celda en blanco se lee como "no debe nada"; este texto dice que el dato todavia no existe (EST-005).
 export const CLIENTS_TABLE_TEXTS = { pendingColumnValue: 'Sin dato' } as const
+
+export const CLIENTS_FILTER_TEXTS = {
+  formLabel: 'Buscar clientas',
+  nameLabel: 'Buscar por nombre',
+  namePlaceholder: 'Parte del nombre',
+  submit: 'Buscar',
+  clear: 'Quitar filtro',
+  activeFilter: (name: string) => `Filtrando por «${name}»`,
+} as const
 
 export const CLIENTS_PAGINATION_TEXTS = {
   navLabel: 'Paginación de clientas',
@@ -44,7 +50,6 @@ export const CLIENTS_ERROR_MESSAGES = {
   fullNameTooLong: 'El nombre no puede superar los 120 caracteres', phoneTooLong: 'El teléfono no puede superar los 20 caracteres',
   emailTooLong: 'El correo no puede superar los 150 caracteres',
   formHasErrors: 'Revisa los campos marcados en rojo.',
-  // Sin el detalle de la base: a la administradora no le sirve y a un atacante sí.
   saveFailed: 'No se pudo guardar la clienta. Intenta de nuevo.',
   phoneTaken: 'Ya hay una clienta registrada con este teléfono.',
   loadFailed: 'No se pudieron cargar las clientas.',
@@ -60,5 +65,4 @@ export const CLIENTS_CONFIRM_MESSAGES = {
   discardEdits: 'Los cambios que hiciste en esta clienta se perderán. La clienta seguirá registrada como estaba.',
 } as const
 
-// Cuatro botones que dicen solo "Editar" son indistinguibles en un lector de pantalla (UI-004).
 export const CLIENTS_ARIA_LABELS = { editClient: (fullName: string) => `Editar a ${fullName}` } as const
