@@ -7,7 +7,7 @@
 # layers: ci (L1 determinista) | structural (L3 imposible de romper) | ai (L4 advisoria) | human (L5 revisión)
 # ci_status: implementado (script en scripts/rules/) | planificado_f6 (exige la app: tests, ESLint, presupuesto) | no_aplica (capa humana/estructural)
 version: 1
-updated: 2026-09-16
+updated: 2026-09-28
 
 rules:
   # ── Arquitectura ──────────────────────────────────────────────
@@ -258,6 +258,15 @@ rules:
     ci_status: implementado
     doc: docs/spec/INTEGRATION.md
     anchor: "#int-008"
+  - id: INT-009
+    title: Título de PR en Conventional Commits con historia y posición
+    statement: "El título de todo PR es <tipo>(<ámbito>): <descripción> en español; una pieza termina en (US-XXX-NN, i/N) y el cierre us/<ID> → main en (US-XXX-NN)."
+    rationale: El squash a main usa el título como mensaje del commit; un título sin formato deja un historial que no se puede leer ni filtrar por historia.
+    severity: alta
+    layers: [ci, human]
+    ci_status: implementado
+    doc: docs/spec/INTEGRATION.md
+    anchor: "#int-009"
 
   # ── Estado del proyecto ───────────────────────────────────────
   - id: EST-001

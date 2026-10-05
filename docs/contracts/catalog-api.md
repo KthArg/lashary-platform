@@ -78,6 +78,41 @@ type TechniqueSnapshot = {
 5. **Cambios de forma de este contrato se versionan aquí antes del cambio** (INT-003): un campo no desaparece sin aviso; `scheduling` y `landing` se enteran por este documento.
 6. **Autorización real por RLS** (SEC-001): la lectura es pública; la escritura la controla la base, no la app.
 
+## Paquetes (US-PROD-01)
+
+Un **paquete** combina dos o más técnicas existentes bajo un nombre y un precio propio, ajustado a mano por la administradora (no es la suma automática de precios). A diferencia de la técnica, el paquete **no** tiene snapshot todavía: es composición viva del catálogo — se congelará recién cuando US-AGE-04 confirme una cita con paquete (DOM-002).
+
+Tablas dueñas: `catalog_packages` y `catalog_package_techniques` (ARCH-006). Mismo acceso exclusivo por `index.ts` que las técnicas (ARCH-005).
+
+### `listPackages(params) => Promise<Page<PackageListItem>>`
+
+```ts
+type ListPackagesParams = {
+  activeOnly?: boolean   // default true
+  page?: number          // default 1
+  pageSize?: number      // default 50, máx 100 (PERF-002)
+}
+type PackageListItem = {
+  id: string
+  name: string
+  techniqueIds: string[]
+  price: number              // colones enteros, CRC (DOM-001) — no derivado, lo fija la administradora
+  isActive: boolean
+  durationTotalMin: number   // suma de duración + preparación/limpieza de cada técnica miembro; no se guarda, se calcula al leer
+}
+```
+
+Ordena por `name`.
+
+### `getPackage(id) => Promise<PackageListItem | PackageNotFound>`
+
+### Garantías (paquetes)
+
+1. **El precio del paquete es independiente del precio de sus técnicas.** No hay recálculo automático; la administradora lo fija al crear/editar (criterio 2).
+2. **`durationTotalMin` se recalcula en cada lectura**, uniendo las técnicas miembro vigentes — no queda desactualizado si una técnica cambia su duración, pero tampoco es un valor congelado hasta que exista el snapshot de cita (US-AGE-04).
+3. **Nunca se borra un paquete.** Desactivar es `is_active = false` (criterio 3).
+4. **`create`/`update`/`deactivate` no son parte del contrato público** — mismo criterio que las técnicas.
+
 ## Eventos de dominio
 
 Ninguno todavía. Desactivar una técnica **no** notifica a `scheduling`: las citas ya agendadas llevan su propio `TechniqueSnapshot` y no se ven afectadas (DOM-002). Si una futura historia necesita reaccionar a cambios del catálogo, se agrega aquí un evento (ARCH-005: primero evento, después use-case).
