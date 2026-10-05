@@ -42,7 +42,7 @@ Con esto el **criterio 5 de US-AGE-13 queda completo**: la administradora puede 
 
 ## Qué no hace todavía
 
-El contrato de conservación de exoneraciones al archivar clientas está propuesto en `docs/adr/ADR-0009-client-archival-and-exemptions.md`, respaldado por Bayron el 2026-10-03 y pendiente de revisión del equipo. Mantiene la FK específica a `clients_profiles` y propone una migración nueva de `ON DELETE CASCADE` a `RESTRICT`. La migración y su prueba contra la base real están pendientes; el esquema actual conserva `CASCADE` (feedback de #118).
+El contrato de conservación de exoneraciones al archivar clientas está documentado en `docs/adr/ADR-0009-client-archival-and-exemptions.md`, aceptado por el equipo, según el acuerdo comunicado por Bayron el 2026-10-05. Mantiene la FK específica a `clients_profiles` y requiere una migración nueva de `ON DELETE CASCADE` a `RESTRICT`. La migración y su prueba contra la base real están pendientes; el esquema actual conserva `CASCADE` (feedback de #118).
 
 US-AGE-13 conserva los criterios originales 1 (anticipo por técnica y paquete) y 5 (exoneración con bitácora). Falta definir y demostrar el anticipo por paquete del criterio 1, dependiente de US-PROD-01; la historia sigue `en_progreso`.
 
