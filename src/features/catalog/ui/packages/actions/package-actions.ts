@@ -2,12 +2,15 @@
 
 import { randomUUID } from 'node:crypto'
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { isErr } from '@/shared/result'
 import { isStaff } from '../../require-staff'
 import {
   createPackage,
   updatePackage,
   deactivatePackage,
+  activatePackage,
+  deletePackage,
   type PackageCommandDeps,
 } from '../../../application/packages/commands'
 import { packageRepository } from '../../../db/packages/package-repository'
@@ -86,7 +89,32 @@ export async function updatePackageAction(
   return { status: 'ok', message: packageMessages.form.savedEdit }
 }
 
-export async function deactivatePackageAction(
+export async function setPackageActiveAction(
+  _prev: PackageActionState,
+  formData: FormData,
+): Promise<PackageActionState> {
+  if (!(await isStaff())) return forbidden()
+
+  const id = String(formData.get('id') ?? '')
+  const active = formData.get('active') === 'true'
+
+  const result = active
+    ? await activatePackage(await deps())(id)
+    : await deactivatePackage(await deps())(id)
+  if (isErr(result)) {
+    return {
+      status: 'invalid',
+      problems: 'problems' in result.error ? result.error.problems : [result.error.message],
+    }
+  }
+  revalidatePath(catalogRoutes.packagesAdmin)
+  return {
+    status: 'ok',
+    message: active ? packageMessages.form.activated : packageMessages.form.deactivated,
+  }
+}
+
+export async function deletePackageAction(
   _prev: PackageActionState,
   formData: FormData,
 ): Promise<PackageActionState> {
@@ -94,10 +122,10 @@ export async function deactivatePackageAction(
 
   const id = String(formData.get('id') ?? '')
 
-  const result = await deactivatePackage(await deps())(id)
+  const result = await deletePackage({ packageRepo: await packageRepository() })(id)
   if (isErr(result)) {
     return { status: 'invalid', problems: [result.error.message] }
   }
   revalidatePath(catalogRoutes.packagesAdmin)
-  return { status: 'ok', message: packageMessages.form.deactivated }
+  redirect(catalogRoutes.packagesAdmin)
 }

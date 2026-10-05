@@ -5,11 +5,12 @@ import { packageMessages } from '../../constants/package-strings'
 import {
   createPackageAction,
   updatePackageAction,
-  deactivatePackageAction,
 } from '../../actions/package-actions'
 import { initialPackageActionState } from '../../types/package-action-state'
 import { packageFormStyles as STYLES } from './PackageForm.styles'
 import { PackageFormFeedback } from '../PackageFormFeedback'
+import { PackageStatusToggle } from '../PackageStatusToggle'
+import { DeletePackageDialog } from '../DeletePackageDialog'
 import type { PackageFormProps } from './PackageForm.types'
 
 const formMessages = packageMessages.form
@@ -19,10 +20,6 @@ export function PackageForm({ pkg, techniques }: PackageFormProps) {
   const editing = pkg !== undefined
   const [state, formAction, pending] = useActionState(
     editing ? updatePackageAction : createPackageAction,
-    initialPackageActionState,
-  )
-  const [deactivateState, deactivateAction, deactivating] = useActionState(
-    deactivatePackageAction,
     initialPackageActionState,
   )
 
@@ -127,13 +124,10 @@ export function PackageForm({ pkg, techniques }: PackageFormProps) {
       </form>
 
       {editing && (
-        <form action={deactivateAction} className={STYLES.deactivateForm}>
-          <input type="hidden" name="id" value={pkg.id} />
-          <PackageFormFeedback {...deactivateState} />
-          <button type="submit" className={STYLES.deactivateButton} disabled={deactivating}>
-            {admin.rowActions.deactivate}
-          </button>
-        </form>
+        <div className={STYLES.manageSection}>
+          <PackageStatusToggle packageId={pkg.id} isActive={pkg.isActive} />
+          <DeletePackageDialog packageId={pkg.id} packageName={pkg.name} />
+        </div>
       )}
     </section>
   )

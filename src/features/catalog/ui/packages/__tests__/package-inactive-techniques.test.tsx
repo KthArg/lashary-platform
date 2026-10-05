@@ -5,7 +5,8 @@ import { makeTechnique } from '@/features/catalog/application/techniques/__tests
 vi.mock('@/features/catalog/ui/packages/actions/package-actions', () => ({
   createPackageAction: vi.fn(),
   updatePackageAction: vi.fn(),
-  deactivatePackageAction: vi.fn(),
+  setPackageActiveAction: vi.fn(),
+  deletePackageAction: vi.fn(),
 }))
 
 import { PackageForm } from '@/features/catalog/ui/packages/components/PackageForm'
