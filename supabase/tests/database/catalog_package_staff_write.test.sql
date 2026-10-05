@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(14);
+SELECT plan(21);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -59,6 +59,39 @@ SELECT throws_ok(
       '00000000-0000-0000-0000-00000000d002', 'zz-test paquete editado', 1000, true,
       ARRAY['00000000-0000-0000-0000-00000000e001', '00000000-0000-0000-0000-00000000e002']::uuid[])$$,
   '23505', NULL, 'admin: un nombre repetido da unique_violation');
+
+SELECT throws_ok(
+  $$SELECT public.catalog_save_package(
+      '00000000-0000-0000-0000-00000000d001', 'zz-test paquete editado', 32000, true,
+      ARRAY['00000000-0000-0000-0000-00000000e001']::uuid[])$$,
+  '23514', NULL, 'invariante: una sola técnica se rechaza');
+SELECT throws_ok(
+  $$SELECT public.catalog_save_package(
+      '00000000-0000-0000-0000-00000000d001', 'zz-test paquete editado', 32000, true,
+      ARRAY[]::uuid[])$$,
+  '23514', NULL, 'invariante: sin técnicas se rechaza');
+SELECT throws_ok(
+  $$SELECT public.catalog_save_package(
+      '00000000-0000-0000-0000-00000000d001', 'zz-test paquete editado', 32000, true,
+      ARRAY['00000000-0000-0000-0000-00000000e002', '00000000-0000-0000-0000-00000000e002']::uuid[])$$,
+  '23514', NULL, 'invariante: técnicas repetidas se rechazan');
+SELECT throws_ok(
+  $$SELECT public.catalog_save_package(
+      '00000000-0000-0000-0000-00000000d001', '   ', 32000, true,
+      ARRAY['00000000-0000-0000-0000-00000000e002', '00000000-0000-0000-0000-00000000e003']::uuid[])$$,
+  '23514', NULL, 'invariante: nombre vacío se rechaza');
+SELECT throws_ok(
+  $$SELECT public.catalog_save_package(
+      '00000000-0000-0000-0000-00000000d001', E'\t\n', 32000, true,
+      ARRAY['00000000-0000-0000-0000-00000000e002', '00000000-0000-0000-0000-00000000e003']::uuid[])$$,
+  '23514', NULL, 'invariante: nombre de solo tabs o saltos de línea se rechaza');
+SELECT is(
+  (SELECT count(*)::int FROM public.catalog_package_techniques
+    WHERE package_id = '00000000-0000-0000-0000-00000000d001'),
+  2, 'invariante: tras los rechazos el paquete conserva sus dos técnicas');
+SELECT is(
+  (SELECT has_function_privilege('anon', 'public.catalog_save_package(uuid, text, bigint, boolean, uuid[])', 'EXECUTE')),
+  false, 'permisos: CREATE OR REPLACE conserva la función cerrada para anon');
 
 UPDATE public.catalog_packages SET is_active = false
  WHERE id = '00000000-0000-0000-0000-00000000d001';
