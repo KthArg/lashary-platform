@@ -36,3 +36,7 @@ El borrado definitivo y la anonimización requieren una política posterior sobr
 - El archivado requiere sus propias pruebas de acceso y comportamiento; no se considera implementado por existir este documento.
 - Este PR solo documenta el contrato y el acuerdo. La FK actual todavía tiene `CASCADE`; la decisión del equipo está resuelta, pero el riesgo de #118 sigue pendiente hasta aplicar y verificar la migración. No se edita la migración ya aprobada.
 - La aprobación del PO para trasladar los criterios originales 2, 3 y 4 de US-AGE-13 es una decisión distinta y permanece vigente.
+
+## Implementación de la protección (2026-10-05)
+
+La pieza 21 de US-AGE-13 añade `20261005000000_payments_exemption_history.sql` y `payments_exemption_history.test.sql`. Las 16 aserciones pasan en PostgreSQL local y la suite SQL completa aprueba 87 aserciones. También se comprobó que dos exoneraciones existentes antes de la migración conservan contenido y estado. Esta pieza protege la FK; su integración y despliegue siguen pendientes, así como el flujo de archivado y reactivación de `clients`. El estado anterior descrito arriba corresponde a #118 y al PR documental #177.
