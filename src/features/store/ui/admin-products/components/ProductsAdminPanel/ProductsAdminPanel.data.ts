@@ -1,16 +1,16 @@
 import { isOk } from '@/shared/result'
 import {
-  listarProductosAdmin,
-  obtenerProductoAdmin,
+  listAdminProducts,
+  getAdminProduct,
 } from '../../../../application/admin-products/queries'
-import { productoRepositorioAdmin } from '../../../../db/admin-product-repository'
-import type { ProductoAdminVista } from '../../../../domain/product'
+import { adminProductRepository } from '../../../../db/admin-product-repository'
+import type { AdminProduct } from '../../../../domain/product'
 import { aFilasProductoAdmin } from '../ProductsAdminTable/ProductsAdminTable.data'
 import type { FilaProductoAdmin } from '../ProductsAdminTable/ProductsAdminTable.types'
 import type { PanelAdminProductosSearchParams } from './ProductsAdminPanel.types'
 
 export type VistaPanelAdminProductos =
-  | { modo: 'formulario'; productoEnEdicion?: ProductoAdminVista }
+  | { modo: 'formulario'; productoEnEdicion?: AdminProduct }
   | { modo: 'vacio' }
   | { modo: 'listado'; filas: FilaProductoAdmin[] }
 
@@ -18,11 +18,11 @@ export async function obtenerVistaPanelAdminProductos(
   searchParams?: Promise<PanelAdminProductosSearchParams>,
 ): Promise<VistaPanelAdminProductos> {
   const params = (await searchParams) ?? {}
-  const repo = await productoRepositorioAdmin()
+  const repo = await adminProductRepository()
 
-  const page = await listarProductosAdmin(repo)({ activeOnly: false, pageSize: 100 })
+  const page = await listAdminProducts(repo)({ activeOnly: false, pageSize: 100 })
 
-  const editResult = params.edit ? await obtenerProductoAdmin(repo)(params.edit) : null
+  const editResult = params.edit ? await getAdminProduct(repo)(params.edit) : null
   const productoEnEdicion = editResult && isOk(editResult) ? editResult.value : undefined
   const mostrarFormulario = params.new !== undefined || productoEnEdicion !== undefined
 

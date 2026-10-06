@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
-import type { ProductoAdminVista } from '../../../domain/product'
+import type { AdminProduct } from '../../../domain/product'
 import { mensajesAdminProductos } from '../constants/product-strings'
 import {
   crearProductoAction,
@@ -12,7 +12,7 @@ import { estadoAccionInicial } from '../types/product-action-state'
 
 export type ModoFormularioProducto = 'crear' | 'editar'
 
-export function useFormularioProductoAdmin(producto?: ProductoAdminVista) {
+export function useFormularioProductoAdmin(producto?: AdminProduct) {
   const modo: ModoFormularioProducto = producto !== undefined ? 'editar' : 'crear'
   const f = mensajesAdminProductos.form
 

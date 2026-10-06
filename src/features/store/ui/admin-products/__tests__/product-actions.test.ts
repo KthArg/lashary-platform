@@ -10,7 +10,7 @@ vi.mock('@/features/store/ui/admin-products/actions/staff-permission', () => ({
   esStaff: mocks.esStaff,
 }))
 vi.mock('@/features/store/db/admin-product-repository', () => ({
-  productoRepositorioAdmin: vi.fn(async () => ({
+  adminProductRepository: vi.fn(async () => ({
     save: mocks.save,
     findById: mocks.findById,
   })),
@@ -22,7 +22,7 @@ import {
   desactivarProductoAction,
 } from '@/features/store/ui/admin-products/actions/product-actions'
 import { estadoAccionInicial } from '@/features/store/ui/admin-products/types/product-action-state'
-import { crearProductoSlugDuplicado } from '@/features/store/domain/product-errors'
+import { createDuplicateProductSlug } from '@/features/store/domain/product-errors'
 
 function form(fields: Record<string, string>): FormData {
   const formData = new FormData()
@@ -32,11 +32,11 @@ function form(fields: Record<string, string>): FormData {
 
 const validFields = {
   slug: 'serum-nutritivo-lashary',
-  nombre: 'Serum nutritivo Lashary',
-  descripcion: 'Tratamiento nutritivo.',
-  urlImagen: '/productos/serum-nutritivo.jpg',
-  precioCrc: '18000',
-  ordenPresentacion: '1',
+  name: 'Serum nutritivo Lashary',
+  description: 'Tratamiento nutritivo.',
+  imageUrl: '/productos/serum-nutritivo.jpg',
+  priceCrc: '18000',
+  displayOrder: '1',
 }
 
 describe('acciones administrativas de productos', () => {
@@ -59,7 +59,7 @@ describe('acciones administrativas de productos', () => {
   it('valida los datos de una administradora antes de guardar', async () => {
     const state = await crearProductoAction(
       estadoAccionInicial,
-      form({ ...validFields, slug: '', precioCrc: '-1' }),
+      form({ ...validFields, slug: '', priceCrc: '-1' }),
     )
 
     expect(state.status).toBe('invalid')
@@ -75,7 +75,7 @@ describe('acciones administrativas de productos', () => {
   })
 
   it('DOM-006: un slug duplicado vuelve como estado "invalid" con mensaje, no como excepción', async () => {
-    mocks.save.mockRejectedValueOnce(crearProductoSlugDuplicado('serum-nutritivo-lashary'))
+    mocks.save.mockRejectedValueOnce(createDuplicateProductSlug('serum-nutritivo-lashary'))
 
     const state = await crearProductoAction(estadoAccionInicial, form(validFields))
 

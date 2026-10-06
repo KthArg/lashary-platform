@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { ProductoEscritura } from '../../../application/admin-products/ports'
+import type { ProductWrite } from '../../../application/admin-products/ports'
 import { mensajesAdminProductos } from '../constants/product-strings'
 
 const v = mensajesAdminProductos.form.validation
@@ -7,20 +7,20 @@ const v = mensajesAdminProductos.form.validation
 export const esquemaProductoAdmin = z
   .object({
     slug: z.string().trim().min(1, v.slug),
-    nombre: z.string().trim().min(1, v.nombre),
-    descripcion: z.string().trim().optional().default(''),
-    urlImagen: z.string().trim().min(1, v.urlImagen),
-    precioCrc: z.coerce.number().int().positive(v.precioCrc),
-    ordenPresentacion: z.coerce.number().int().min(0, v.ordenPresentacion),
+    name: z.string().trim().min(1, v.nombre),
+    description: z.string().trim().optional().default(''),
+    imageUrl: z.string().trim().min(1, v.urlImagen),
+    priceCrc: z.coerce.number().int().positive(v.precioCrc),
+    displayOrder: z.coerce.number().int().min(0, v.ordenPresentacion),
   })
   .transform(
-    (data): ProductoEscritura => ({
+    (data): ProductWrite => ({
       slug: data.slug,
-      nombre: data.nombre,
-      descripcion: data.descripcion,
-      urlImagen: data.urlImagen,
-      precioCrc: data.precioCrc,
-      ordenPresentacion: data.ordenPresentacion,
+      name: data.name,
+      description: data.description,
+      imageUrl: data.imageUrl,
+      priceCrc: data.priceCrc,
+      displayOrder: data.displayOrder,
     }),
   )
 

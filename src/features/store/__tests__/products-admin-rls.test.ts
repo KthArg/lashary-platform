@@ -47,7 +47,7 @@ describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de store_products', () 
   let anon: SupabaseClient
   let clienta: SupabaseClient
   let sampleId = ''
-  let sampleNombre = ''
+  let sampleName = ''
   let initialCount = 0
 
   beforeAll(async () => {
@@ -56,7 +56,7 @@ describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de store_products', () 
 
     const { data } = await anon.from(TABLE).select('id, nombre').eq('activo', true).limit(1)
     sampleId = data?.[0]?.id ?? ''
-    sampleNombre = data?.[0]?.nombre ?? ''
+    sampleName = data?.[0]?.nombre ?? ''
 
     const { count } = await anon
       .from(TABLE)
@@ -118,7 +118,7 @@ describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de store_products', () 
       .select('nombre, precio_crc')
       .eq('id', sampleId)
       .single()
-    expect(data?.nombre).toBe(sampleNombre)
+    expect(data?.nombre).toBe(sampleName)
     expect(data?.precio_crc).not.toBe(999_999)
   })
 

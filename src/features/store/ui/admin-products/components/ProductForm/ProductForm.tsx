@@ -42,37 +42,37 @@ export function FormularioProductoAdmin({ producto }: FormularioProductoAdminPro
         <input type="hidden" name="id" value={producto?.id ?? ''} />
 
         <Field name="slug" label={f.fields.slug} defaultValue={producto?.slug} required />
-        <Field name="nombre" label={f.fields.nombre} defaultValue={producto?.nombre} required />
+        <Field name="name" label={f.fields.nombre} defaultValue={producto?.name} required />
         <Field
-          name="urlImagen"
+          name="imageUrl"
           label={f.fields.urlImagen}
-          defaultValue={producto?.urlImagen}
+          defaultValue={producto?.imageUrl}
           required
         />
         <Field
-          name="precioCrc"
+          name="priceCrc"
           label={f.fields.precioCrc}
           type="number"
           min={1}
           required
-          defaultValue={producto?.precioCrc}
+          defaultValue={producto?.priceCrc}
         />
         <Field
-          name="ordenPresentacion"
+          name="displayOrder"
           label={f.fields.ordenPresentacion}
           type="number"
           min={0}
           required
-          defaultValue={producto?.ordenPresentacion ?? 0}
+          defaultValue={producto?.displayOrder ?? 0}
         />
 
         <label className={STYLES.descripcionLabel} htmlFor="descripcion">
           <span className={STYLES.labelText}>{f.fields.descripcion}</span>
           <textarea
             id="descripcion"
-            name="descripcion"
+            name="description"
             rows={3}
-            defaultValue={producto?.descripcion}
+            defaultValue={producto?.description}
             className={STYLES.textarea}
           />
         </label>
@@ -85,7 +85,7 @@ export function FormularioProductoAdmin({ producto }: FormularioProductoAdminPro
       </form>
 
       <SeccionDesactivarDelModo
-        productoId={producto?.id ?? ''}
+        productId={producto?.id ?? ''}
         deactivateAction={deactivateAction}
         deactivateState={deactivateState}
         deactivating={deactivating}
