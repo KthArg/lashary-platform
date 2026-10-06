@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { AddClientDialog, CLIENTS_BUTTON_TEXTS, CLIENTS_ERROR_MESSAGES, CLIENTS_LABELS } from '@/features/clients'
 
 const mockCreate = vi.fn()
-vi.mock('../actions/clients-actions', () => ({ createClientAction: (...args: unknown[]) => mockCreate(...args) }))
+vi.mock('../ui/actions', () => ({ createClientAction: (...args: unknown[]) => mockCreate(...args) }))
 
 const typeInto = (label: string, value: string) => fireEvent.change(screen.getByLabelText(label), { target: { value } })
 const clickSave = () => fireEvent.click(screen.getByRole('button', { name: CLIENTS_BUTTON_TEXTS.save }))

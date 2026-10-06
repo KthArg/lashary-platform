@@ -1,0 +1,42 @@
+'use client'
+
+import { useCallback, useMemo, useState } from 'react'
+import { CLIENT_FIELD_KEYS, type ClientFieldKey } from '../../domain/client-form'
+import { hasClientFormErrors, validateClientForm } from '../../domain/validate-client-form'
+import type { ClientFormErrors, ClientFormValues } from '../../domain/client-form.types'
+
+const FIELD_KEYS = Object.values(CLIENT_FIELD_KEYS)
+
+export function useClientForm(initialValues: ClientFormValues, onSubmitted?: (values: ClientFormValues) => void) {
+  const [values, setValues] = useState<ClientFormValues>({ ...initialValues })
+  const [errors, setErrors] = useState<ClientFormErrors>({})
+  const [wasSubmitted, setWasSubmitted] = useState(false)
+
+  const isDirty = useMemo(
+    () => FIELD_KEYS.some((field) => values[field].trim() !== initialValues[field].trim()),
+    [values, initialValues],
+  )
+
+  const setFieldValue = useCallback((field: ClientFieldKey, value: string) => {
+    setValues((current) => ({ ...current, [field]: value }))
+    setErrors((current) => {
+      if (!current[field]) return current
+      const { [field]: _corregido, ...rest } = current
+      return rest
+    })
+  }, [])
+
+  const handleSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      setWasSubmitted(true)
+      const nextErrors = validateClientForm(values)
+      setErrors(nextErrors)
+      if (hasClientFormErrors(nextErrors)) return
+      onSubmitted?.(values)
+    },
+    [values, onSubmitted],
+  )
+
+  return { values, errors, wasSubmitted, isDirty, setFieldValue, handleSubmit }
+}

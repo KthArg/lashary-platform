@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createClientAction } from '../actions/clients-actions'
+import { createClientAction } from '../ui/actions'
 import { CLIENTS_ERROR_MESSAGES, normalizePhone } from '@/features/clients'
 
 let dbResult: { data: unknown; error: unknown }

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { updateClientAction } from '../actions/clients-actions'
+import { updateClientAction } from '../ui/actions'
 import { CLIENTS_ERROR_MESSAGES } from '@/features/clients'
 
 let phoneLookup: { data: unknown; error: unknown }
