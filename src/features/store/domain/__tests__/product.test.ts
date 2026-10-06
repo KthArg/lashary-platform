@@ -17,7 +17,7 @@ const validInput = () => ({
   displayOrder: 1,
 })
 
-describe('construirProducto — invariantes de dominio (DOM-007)', () => {
+describe('buildProduct — invariantes de dominio (DOM-007)', () => {
   it('crea un producto válido con todos los campos', () => {
     const result = buildProduct(validInput())
     expect(isOk(result)).toBe(true)
@@ -97,19 +97,19 @@ describe('construirProducto — invariantes de dominio (DOM-007)', () => {
   })
 })
 
-describe('marcarProductoInactivo', () => {
+describe('markProductInactive', () => {
   it('devuelve una copia inactiva sin mutar la original', () => {
     const result = buildProduct(validInput())
     if (!isOk(result)) throw new Error('esperaba ok')
     const original = result.value
-    const inactivo = markProductInactive(original)
-    expect(inactivo.isActive).toBe(false)
+    const inactive = markProductInactive(original)
+    expect(inactive.isActive).toBe(false)
     expect(original.isActive).toBe(true)
-    expect(inactivo.id).toBe(original.id)
+    expect(inactive.id).toBe(original.id)
   })
 })
 
-describe('sanitizarUrl', () => {
+describe('sanitizeUrl', () => {
   it('deja pasar una URL relativa o http(s) normal', () => {
     expect(sanitizeUrl('/productos/serum.jpg')).toBe('/productos/serum.jpg')
     expect(sanitizeUrl('https://cdn.lashary.com/a.jpg')).toBe('https://cdn.lashary.com/a.jpg')
@@ -130,26 +130,26 @@ describe('sanitizarUrl', () => {
   })
 })
 
-describe('aProductoEnTarjeta', () => {
+describe('toProductCard', () => {
   it('sanitiza la URL de imagen de un ProductoPublico no confiable (CMS/DB)', () => {
-    const tarjeta = toProductCard({
+    const card = toProductCard({
       id: '1',
       name: 'Producto',
       imageUrl: 'javascript:alert(1)',
       priceCrc: 18000,
       isActive: true,
     })
-    expect(tarjeta.imageUrl).toBe('')
+    expect(card.imageUrl).toBe('')
   })
 
   it('conserva una URL de imagen segura', () => {
-    const tarjeta = toProductCard({
+    const card = toProductCard({
       id: '1',
       name: 'Producto',
       imageUrl: '/productos/serum.jpg',
       priceCrc: 18000,
       isActive: true,
     })
-    expect(tarjeta.imageUrl).toBe('/productos/serum.jpg')
+    expect(card.imageUrl).toBe('/productos/serum.jpg')
   })
 })

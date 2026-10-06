@@ -26,7 +26,7 @@ const deps = (repo: FakeAdminProductRepository, id = 'nuevo-id') => ({
   newId: () => id,
 })
 
-describe('crearProducto', () => {
+describe('createProduct', () => {
   it('crea y persiste un producto válido', async () => {
     const repo = createFakeAdminProductRepository()
     const result = await createProduct(deps(repo, 'abc'))(validModel())
@@ -64,7 +64,7 @@ describe('crearProducto', () => {
   })
 })
 
-describe('actualizarProducto', () => {
+describe('updateProduct', () => {
   it('actualiza un producto existente conservando su estado activo', async () => {
     const repo = createFakeAdminProductRepository([makeProduct({ id: 'e1', isActive: true })])
     const result = await updateProduct(deps(repo))('e1', {
@@ -111,7 +111,7 @@ describe('actualizarProducto', () => {
   })
 })
 
-describe('desactivarProducto', () => {
+describe('deactivateProduct', () => {
   it('desactiva un producto existente', async () => {
     const repo = createFakeAdminProductRepository([makeProduct({ id: 'd1', isActive: true })])
     const result = await deactivateProduct(deps(repo))('d1')
