@@ -1,7 +1,6 @@
 'use client'
 
 import { useActionState } from 'react'
-import type { TechniqueView } from '../../../../domain/techniques/technique'
 import { SERVICE_FAMILIES } from '../../../../domain/techniques/technique'
 import { catalogMessages, familyLabel } from '../../constants/technique-strings'
 import {
@@ -11,74 +10,11 @@ import {
 } from '../../actions/technique-actions'
 import { initialActionState } from '../../types/technique-action-state'
 import { techniqueFormStyles as s } from './TechniqueForm.styles'
+import { TechniqueFormField } from '../TechniqueFormField'
+import { TechniqueFormFeedback } from '../TechniqueFormFeedback'
 import type { TechniqueFormProps } from './TechniqueForm.types'
 
 const f = catalogMessages.form
-
-type FieldProps = {
-  name: string
-  label: string
-  defaultValue?: string | number | null
-  type?: 'text' | 'number'
-  required?: boolean
-  min?: number
-}
-
-function Field({ name, label, defaultValue, type = 'text', required, min }: FieldProps) {
-  return (
-    <label className={s.fieldLabel} htmlFor={name}>
-      <span className={s.labelText}>{label}</span>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        required={required}
-        min={min}
-        step={type === 'number' ? 1 : undefined}
-        defaultValue={defaultValue ?? undefined}
-        className={s.fieldInput}
-      />
-    </label>
-  )
-}
-
-function Feedback({
-  status,
-  message,
-  problems,
-}: {
-  status: string
-  message?: string
-  problems?: string[]
-}) {
-  if (status === 'idle') return null
-  if (status === 'ok') {
-    return (
-      <div role="status" className={s.alertSuccess}>
-        <span>{message}</span>
-      </div>
-    )
-  }
-  if (status === 'forbidden') {
-    return (
-      <div role="alert" className={s.alertWarning}>
-        <span>{message}</span>
-      </div>
-    )
-  }
-  return (
-    <div role="alert" className={s.alertError}>
-      <div>
-        <p className={s.feedbackTitle}>{f.validationTitle}</p>
-        <ul className={s.feedbackList}>
-          {(problems ?? []).map((problem) => (
-            <li key={problem}>{problem}</li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  )
-}
 
 export function TechniqueForm({ technique }: TechniqueFormProps) {
   const editing = technique !== undefined
@@ -97,12 +33,12 @@ export function TechniqueForm({ technique }: TechniqueFormProps) {
         {editing ? f.legendEdit : f.legendCreate}
       </h2>
 
-      <Feedback {...state} />
+      <TechniqueFormFeedback {...state} />
 
       <form action={formAction} className={s.form}>
         {editing && <input type="hidden" name="id" value={technique.id} />}
 
-        <Field name="name" label={f.fields.name} defaultValue={technique?.name} required />
+        <TechniqueFormField name="name" label={f.fields.name} defaultValue={technique?.name} required />
 
         <label className={s.fieldLabel} htmlFor="family">
           <span className={s.labelText}>{f.fields.family}</span>
@@ -120,13 +56,13 @@ export function TechniqueForm({ technique }: TechniqueFormProps) {
           </select>
         </label>
 
-        <Field name="priceFirstTime" label={f.fields.priceFirstTime} type="number" min={1} required defaultValue={technique?.priceFirstTime} />
-        <Field name="priceRetouch" label={f.fields.priceRetouch} type="number" min={1} defaultValue={technique?.priceRetouch ?? ''} />
-        <Field name="durationFirstTimeMin" label={f.fields.durationFirstTimeMin} type="number" min={1} required defaultValue={technique?.durationFirstTimeMin} />
-        <Field name="durationRetouchMin" label={f.fields.durationRetouchMin} type="number" min={1} defaultValue={technique?.durationRetouchMin ?? ''} />
-        <Field name="bufferMin" label={f.fields.bufferMin} type="number" min={0} required defaultValue={technique?.bufferMin ?? 0} />
-        <Field name="reapplicationIntervalDays" label={f.fields.reapplicationIntervalDays} type="number" min={1} defaultValue={technique?.reapplicationIntervalDays ?? ''} />
-        <Field name="deposit" label={f.fields.deposit} type="number" min={0} required defaultValue={technique?.deposit ?? 0} />
+        <TechniqueFormField name="priceFirstTime" label={f.fields.priceFirstTime} type="number" min={1} required defaultValue={technique?.priceFirstTime} />
+        <TechniqueFormField name="priceRetouch" label={f.fields.priceRetouch} type="number" min={1} defaultValue={technique?.priceRetouch ?? ''} />
+        <TechniqueFormField name="durationFirstTimeMin" label={f.fields.durationFirstTimeMin} type="number" min={1} required defaultValue={technique?.durationFirstTimeMin} />
+        <TechniqueFormField name="durationRetouchMin" label={f.fields.durationRetouchMin} type="number" min={1} defaultValue={technique?.durationRetouchMin ?? ''} />
+        <TechniqueFormField name="bufferMin" label={f.fields.bufferMin} type="number" min={0} required defaultValue={technique?.bufferMin ?? 0} />
+        <TechniqueFormField name="reapplicationIntervalDays" label={f.fields.reapplicationIntervalDays} type="number" min={1} defaultValue={technique?.reapplicationIntervalDays ?? ''} />
+        <TechniqueFormField name="deposit" label={f.fields.deposit} type="number" min={0} required defaultValue={technique?.deposit ?? 0} />
 
         <label className={s.aftercareLabel} htmlFor="aftercareText">
           <span className={s.labelText}>{f.fields.aftercareText}</span>
@@ -150,7 +86,7 @@ export function TechniqueForm({ technique }: TechniqueFormProps) {
       {editing && (
         <form action={deactivateAction} className={s.deactivateForm}>
           <input type="hidden" name="id" value={technique.id} />
-          <Feedback {...deactivateState} />
+          <TechniqueFormFeedback {...deactivateState} />
           <button type="submit" className={s.deactivateButton} disabled={deactivating}>
             {catalogMessages.admin.rowActions.deactivate}
           </button>
