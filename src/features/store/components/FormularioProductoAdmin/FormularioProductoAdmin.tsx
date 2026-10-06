@@ -5,8 +5,7 @@ import { mensajesAdminProductos } from '../../constants/mensajes-admin-productos
 import { useFormularioProductoAdmin, type ModoFormularioProducto } from '../../hooks/useFormularioProductoAdmin'
 import { Field } from './Field'
 import { Feedback } from './Feedback'
-import { SeccionDesactivar } from './SeccionDesactivar'
-import { SinSeccionDesactivar } from './SinSeccionDesactivar'
+import { SeccionDesactivar, SinSeccionDesactivar } from './SeccionDesactivar'
 import { formularioProductoAdminStyles as s } from './FormularioProductoAdmin.styles'
 import type { FormularioProductoAdminProps } from './FormularioProductoAdmin.types'
 
