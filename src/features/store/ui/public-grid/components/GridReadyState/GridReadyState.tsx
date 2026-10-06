@@ -1,15 +1,13 @@
-import type { ProductGridState } from '../../../../domain/product'
-import { CADENAS_GRID_PRODUCTOS_ES } from '../../constants/public-grid-strings'
-import { gridProductosPublicosStyles as STYLES } from '../PublicProductsGrid/PublicProductsGrid.styles'
-import { TarjetaProducto } from '../ProductCard/ProductCard'
+import { PUBLIC_GRID_STRINGS } from '../../constants/public-grid-strings'
+import { publicProductsGridStyles as STYLES } from '../PublicProductsGrid/PublicProductsGrid.styles'
+import { ProductCard } from '../ProductCard'
+import type { GridReadyStateProps } from './GridReadyState.types'
 
-type Props = { estado: Extract<ProductGridState, { kind: 'ready' }> }
-
-export function EstadoListo({ estado }: Props) {
+export function GridReadyState({ state }: GridReadyStateProps) {
   return (
-    <section aria-label={CADENAS_GRID_PRODUCTOS_ES.catalogAriaLabel} className={STYLES.grid}>
-      {estado.cards.map((tarjeta) => (
-        <TarjetaProducto key={tarjeta.id} tarjeta={tarjeta} />
+    <section aria-label={PUBLIC_GRID_STRINGS.catalogAriaLabel} className={STYLES.grid}>
+      {state.cards.map((card) => (
+        <ProductCard key={card.id} card={card} />
       ))}
     </section>
   )

@@ -1,21 +1,21 @@
-import type { PublicProductCard } from '../../../../domain/product'
-import { CADENAS_GRID_PRODUCTOS_ES } from '../../constants/public-grid-strings'
-import { gridProductosPublicosStyles as STYLES } from '../PublicProductsGrid/PublicProductsGrid.styles'
+import { PUBLIC_GRID_STRINGS } from '../../constants/public-grid-strings'
+import { publicProductsGridStyles as STYLES } from '../PublicProductsGrid/PublicProductsGrid.styles'
+import type { ProductCardProps } from './ProductCard.types'
 
-export function TarjetaProducto({ tarjeta }: { tarjeta: PublicProductCard }) {
+export function ProductCard({ card }: ProductCardProps) {
   return (
-    <article className={STYLES.card} data-producto-id={tarjeta.id}>
+    <article className={STYLES.card} data-producto-id={card.id}>
       <figure>
         <img
-          src={tarjeta.imageUrl}
-          alt={`${CADENAS_GRID_PRODUCTOS_ES.productAltPrefix} ${tarjeta.name}`}
+          src={card.imageUrl}
+          alt={`${PUBLIC_GRID_STRINGS.productAltPrefix} ${card.name}`}
           className={STYLES.image}
           loading="lazy"
         />
       </figure>
       <div className={STYLES.cardBody}>
-        <h3 className={STYLES.cardTitle}>{tarjeta.name}</h3>
-        <p className={STYLES.price}>{tarjeta.priceLabel}</p>
+        <h3 className={STYLES.cardTitle}>{card.name}</h3>
+        <p className={STYLES.price}>{card.priceLabel}</p>
       </div>
     </article>
   )

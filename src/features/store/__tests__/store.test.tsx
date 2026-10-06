@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import {
-  CADENAS_GRID_PRODUCTOS_ES,
+  PUBLIC_GRID_STRINGS,
   publicProductsDb,
-  GridProductosPublicos,
+  PublicProductsGrid,
   initialProductGridState,
   getProductGridState,
   type PublicProductCatalog,
 } from '@/features/store'
-import ProductosPage from '@/app/productos/page'
+import ProductsPage from '@/app/productos/page'
 
 const mockSelect = vi.fn()
 const mockEq = vi.fn()
@@ -65,17 +65,17 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
       ]),
     }
 
-    const estado = await getProductGridState(catalog, CADENAS_GRID_PRODUCTOS_ES)
+    const state = await getProductGridState(catalog, PUBLIC_GRID_STRINGS)
 
-    expect(estado.kind).toBe('ready')
-    if (estado.kind === 'ready') {
-      expect(estado.cards).toHaveLength(1)
-      expect(estado.cards[0]).toMatchObject({
+    expect(state.kind).toBe('ready')
+    if (state.kind === 'ready') {
+      expect(state.cards).toHaveLength(1)
+      expect(state.cards[0]).toMatchObject({
         id: '1',
         name: 'Activo',
         imageUrl: '/a.jpg',
       })
-      expect(estado.cards[0].priceLabel).toContain('₡')
+      expect(state.cards[0].priceLabel).toContain('₡')
     }
   })
 
@@ -86,12 +86,12 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
       ]),
     }
 
-    const estado = await getProductGridState(catalog, CADENAS_GRID_PRODUCTOS_ES)
+    const state = await getProductGridState(catalog, PUBLIC_GRID_STRINGS)
 
-    expect(estado).toEqual({
+    expect(state).toEqual({
       kind: 'empty',
-      title: CADENAS_GRID_PRODUCTOS_ES.emptyTitle,
-      description: CADENAS_GRID_PRODUCTOS_ES.emptyDescription,
+      title: PUBLIC_GRID_STRINGS.emptyTitle,
+      description: PUBLIC_GRID_STRINGS.emptyDescription,
     })
   })
 
@@ -100,13 +100,13 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
       listPublicProducts: vi.fn().mockRejectedValue(new Error('cms offline')),
     }
 
-    const estado = await getProductGridState(catalog, CADENAS_GRID_PRODUCTOS_ES)
+    const state = await getProductGridState(catalog, PUBLIC_GRID_STRINGS)
 
-    expect(estado).toEqual({
+    expect(state).toEqual({
       kind: 'error',
-      title: CADENAS_GRID_PRODUCTOS_ES.errorTitle,
-      description: CADENAS_GRID_PRODUCTOS_ES.errorDescription,
-      retryLabel: CADENAS_GRID_PRODUCTOS_ES.retryLabel,
+      title: PUBLIC_GRID_STRINGS.errorTitle,
+      description: PUBLIC_GRID_STRINGS.errorDescription,
+      retryLabel: PUBLIC_GRID_STRINGS.retryLabel,
     })
   })
 
@@ -122,8 +122,8 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
         },
       ]),
     }
-    const estado = await getProductGridState(catalog, CADENAS_GRID_PRODUCTOS_ES)
-    const html = renderToStaticMarkup(<GridProductosPublicos estado={estado} />)
+    const state = await getProductGridState(catalog, PUBLIC_GRID_STRINGS)
+    const html = renderToStaticMarkup(<PublicProductsGrid state={state} />)
 
     expect(html).toContain('aria-label="Catálogo de productos de mantenimiento"')
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
@@ -140,22 +140,22 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
         isActive: row.activo,
       }))),
     }
-    const estado = await getProductGridState(catalog, CADENAS_GRID_PRODUCTOS_ES)
-    const html = renderToStaticMarkup(<GridProductosPublicos estado={estado} />)
+    const state = await getProductGridState(catalog, PUBLIC_GRID_STRINGS)
+    const html = renderToStaticMarkup(<PublicProductsGrid state={state} />)
 
     expect(html).toMatch(/class="[^"]*\bgrid-cols-1\b[^"]*\bsm:grid-cols-2\b[^"]*\blg:grid-cols-3\b/)
   })
 
   it('sanitiza una URL de reintento insegura y no la usa como href del botón', () => {
     const html = renderToStaticMarkup(
-      <GridProductosPublicos
-        estado={{
+      <PublicProductsGrid
+        state={{
           kind: 'error',
           title: 'No se pudo cargar el catálogo',
           description: 'Inténtalo de nuevo en unos minutos.',
           retryLabel: 'Reintentar',
         }}
-        urlReintento="javascript:alert(1)"
+        retryUrl="javascript:alert(1)"
       />
     )
 
@@ -165,14 +165,14 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
 
   it('usa una URL de reintento segura como href del botón de reintento', () => {
     const html = renderToStaticMarkup(
-      <GridProductosPublicos
-        estado={{
+      <PublicProductsGrid
+        state={{
           kind: 'error',
           title: 'No se pudo cargar el catálogo',
           description: 'Inténtalo de nuevo en unos minutos.',
           retryLabel: 'Reintentar',
         }}
-        urlReintento="/productos"
+        retryUrl="/productos"
       />
     )
 
@@ -180,7 +180,7 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
   })
 
   it('integra la ruta pública /productos con el feature store', async () => {
-    const page = await ProductosPage()
+    const page = await ProductsPage()
     const html = renderToStaticMarkup(page)
 
     expect(html).toContain('aria-label="Catálogo de productos de mantenimiento"')
@@ -198,7 +198,7 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
   })
 
   it('la ruta /productos renderiza múltiples productos provenientes de la base', async () => {
-    const page = await ProductosPage()
+    const page = await ProductsPage()
     const html = renderToStaticMarkup(page)
 
     expect(html).toContain('Serum nutritivo Lashary')
