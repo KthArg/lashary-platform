@@ -9,8 +9,8 @@ import {
   actualizarProducto,
   desactivarProducto,
   type ComandoProductoDeps,
-} from '../application/productos-admin-comandos'
-import { productoRepositorioAdmin } from '../db/productos-admin-repositorio'
+} from '../application/admin-products/commands'
+import { productoRepositorioAdmin } from '../db/admin-product-repository'
 import { esquemaProductoAdmin } from './esquema-producto-admin'
 import { mensajesAdminProductos } from '../constants/mensajes-admin-productos'
 import { rutasAdminProductos } from '../constants/rutas-admin-productos'

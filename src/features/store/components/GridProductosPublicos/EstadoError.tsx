@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react'
-import type { EstadoGridProductos } from '../../domain/producto'
+import type { EstadoGridProductos } from '../../domain/product'
 import { calcularBotonReintento, type BotonReintento } from './GridProductosPublicos.data'
 import { BotonReintentoActivo } from './BotonReintentoActivo'
 import { BotonReintentoInactivo } from './BotonReintentoInactivo'

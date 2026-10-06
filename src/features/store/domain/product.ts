@@ -1,5 +1,5 @@
 import { ok, err, type Result } from '@/shared/result'
-import { crearProductoInvalido, type ProductoInvalido } from './errores-producto'
+import { crearProductoInvalido, type ProductoInvalido } from './product-errors'
 
 export type ProductoPublico = {
   id: string;

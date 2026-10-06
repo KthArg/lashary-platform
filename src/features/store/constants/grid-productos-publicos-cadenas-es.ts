@@ -1,4 +1,4 @@
-import { CadenaProductos } from '../domain/producto';
+import { CadenaProductos } from '../domain/product';
 
 export const CADENAS_GRID_PRODUCTOS_ES: CadenaProductos = {
   tituloVacio: 'No hay productos disponibles',

@@ -1,6 +1,6 @@
-import type { ProductoAdminVista } from '@/features/store/domain/producto'
-import { crearProductoSlugDuplicado } from '@/features/store/domain/errores-producto'
-import type { ProductoRepositorioAdmin } from '@/features/store/application/productos-admin-puertos'
+import type { ProductoAdminVista } from '@/features/store/domain/product'
+import { crearProductoSlugDuplicado } from '@/features/store/domain/product-errors'
+import type { ProductoRepositorioAdmin } from '@/features/store/application/admin-products/ports'
 
 export type FakeProductoRepositorioAdmin = ProductoRepositorioAdmin & { saveCalls: number }
 

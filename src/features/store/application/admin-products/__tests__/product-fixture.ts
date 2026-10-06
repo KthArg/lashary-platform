@@ -1,5 +1,5 @@
 import { isOk } from '@/shared/result'
-import { construirProducto, type ProductoAdminVista } from '@/features/store/domain/producto'
+import { construirProducto, type ProductoAdminVista } from '@/features/store/domain/product'
 
 let counter = 0
 

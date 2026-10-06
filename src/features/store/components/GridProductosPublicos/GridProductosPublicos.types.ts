@@ -1,4 +1,4 @@
-import type { EstadoGridProductos } from '../../domain/producto'
+import type { EstadoGridProductos } from '../../domain/product'
 
 export type GridProductosPublicosProps = {
   estado: EstadoGridProductos

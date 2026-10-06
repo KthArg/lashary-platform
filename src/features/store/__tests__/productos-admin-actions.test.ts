@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/features/store/actions/permiso-staff', () => ({
   esStaff: mocks.esStaff,
 }))
-vi.mock('@/features/store/db/productos-admin-repositorio', () => ({
+vi.mock('@/features/store/db/admin-product-repository', () => ({
   productoRepositorioAdmin: vi.fn(async () => ({
     save: mocks.save,
     findById: mocks.findById,
@@ -22,7 +22,7 @@ import {
   desactivarProductoAction,
 } from '@/features/store/actions/productos-admin-actions'
 import { estadoAccionInicial } from '@/features/store/actions/estado-accion-producto'
-import { crearProductoSlugDuplicado } from '@/features/store/domain/errores-producto'
+import { crearProductoSlugDuplicado } from '@/features/store/domain/product-errors'
 
 function form(fields: Record<string, string>): FormData {
   const formData = new FormData()

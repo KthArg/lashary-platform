@@ -3,7 +3,7 @@ import {
   EstadoGridProductos,
   CadenaProductos,
   aProductoEnTarjeta,
-} from '../domain/producto';
+} from '../../domain/product';
 
 export type CatalogoProductosPublico = {
   listarProductosPublicos(): Promise<ProductoPublico[]>;

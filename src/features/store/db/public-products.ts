@@ -1,6 +1,6 @@
 import { createClient } from '@/shared/lib/supabase/server'
-import type { ProductoPublico } from '../domain/producto'
-import type { CatalogoProductosPublico } from '../application/obtener-grid-productos-publicos'
+import type { ProductoPublico } from '../domain/product'
+import type { CatalogoProductosPublico } from '../application/public-grid/get-public-grid-state'
 
 type FilaProductoDb = {
   id: string

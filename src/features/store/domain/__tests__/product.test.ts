@@ -5,7 +5,7 @@ import {
   marcarProductoInactivo,
   aProductoEnTarjeta,
   sanitizarUrl,
-} from '@/features/store/domain/producto'
+} from '@/features/store/domain/product'
 
 const validInput = () => ({
   id: '11111111-1111-1111-1111-111111111111',

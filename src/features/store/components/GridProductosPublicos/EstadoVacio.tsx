@@ -1,4 +1,4 @@
-import type { EstadoGridProductos } from '../../domain/producto'
+import type { EstadoGridProductos } from '../../domain/product'
 import { gridProductosPublicosStyles as STYLES } from './GridProductosPublicos.styles'
 
 type Props = { estado: Extract<EstadoGridProductos, { tipo: 'vacio' }> }

@@ -1,11 +1,11 @@
 import { ok, err, type Result } from '@/shared/result'
-import type { ProductoAdminVista } from '../domain/producto'
-import { crearProductoNoEncontrado, type ProductoNoEncontrado } from '../domain/errores-producto'
+import type { ProductoAdminVista } from '../../domain/product'
+import { crearProductoNoEncontrado, type ProductoNoEncontrado } from '../../domain/product-errors'
 import type {
   ListaProductosAdminQuery,
   PaginaProductos,
   ProductoRepositorioAdmin,
-} from './productos-admin-puertos'
+} from './ports'
 
 const TAMANO_PAGINA_DEFECTO = 50
 const TAMANO_PAGINA_MAX = 100

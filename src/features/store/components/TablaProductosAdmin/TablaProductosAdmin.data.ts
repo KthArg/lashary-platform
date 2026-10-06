@@ -1,4 +1,4 @@
-import { formatearPrecioCrc, type ProductoAdminVista } from '../../domain/producto'
+import { formatearPrecioCrc, type ProductoAdminVista } from '../../domain/product'
 import { mensajesAdminProductos } from '../../constants/mensajes-admin-productos'
 import { rutasAdminProductos } from '../../constants/rutas-admin-productos'
 import { tablaProductosAdminStyles as STYLES } from './TablaProductosAdmin.styles'

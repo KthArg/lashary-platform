@@ -1,4 +1,4 @@
-import { sanitizarUrl } from '../../domain/producto'
+import { sanitizarUrl } from '../../domain/product'
 
 export type BotonReintento = { modo: 'activo'; href: string } | { modo: 'inactivo' }
 
