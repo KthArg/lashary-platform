@@ -6,16 +6,17 @@
 import {
   listTechniques as listTechniquesUseCase,
   getTechnique as getTechniqueUseCase,
-} from './application/queries'
+} from './application/techniques/queries'
 import {
   listPackages as listPackagesUseCase,
   getPackage as getPackageUseCase,
 } from './application/packages/queries'
-import { techniqueRepository } from './db/technique-repository'
+import { techniqueRepository } from './db/techniques/technique-repository'
 import { packageRepository } from './db/packages/package-repository'
-import type { ListTechniquesQuery, Page } from './application/ports'
+import type { ListTechniquesQuery } from './application/techniques/ports'
+import type { Page } from './application/pagination'
 import type { ListPackagesQuery } from './application/packages/ports'
-import type { TechniqueView } from './domain/technique'
+import type { TechniqueView } from './domain/techniques/technique'
 
 export async function listTechniques(
   query?: ListTechniquesQuery,
@@ -35,15 +36,16 @@ export async function getPackage(id: string) {
   return getPackageUseCase(await packageRepository())(id)
 }
 
-export { SERVICE_FAMILIES } from './domain/technique'
+export { SERVICE_FAMILIES } from './domain/techniques/technique'
 export type {
   ServiceFamily,
   TechniqueView,
   TechniqueSnapshot,
-} from './domain/technique'
-export { TechniqueNotFound } from './domain/errors'
+} from './domain/techniques/technique'
+export { TechniqueNotFound } from './domain/techniques/errors'
 export type { PackageNotFound } from './domain/packages/errors'
-export type { ListTechniquesQuery, Page } from './application/ports'
+export type { ListTechniquesQuery } from './application/techniques/ports'
+export type { Page } from './application/pagination'
 export type { ListPackagesQuery } from './application/packages/ports'
 export type { PackageListItem } from './application/packages/queries'
 

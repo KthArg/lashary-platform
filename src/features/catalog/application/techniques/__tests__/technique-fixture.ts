@@ -1,6 +1,6 @@
 import { Money } from '@/shared/money'
 import { isOk } from '@/shared/result'
-import { Technique, type ServiceFamily } from '@/features/catalog/domain/technique'
+import { Technique, type ServiceFamily } from '@/features/catalog/domain/techniques/technique'
 
 let counter = 0
 

@@ -11,7 +11,7 @@ import {
   type PackageCommandDeps,
 } from '../../../application/packages/commands'
 import { packageRepository } from '../../../db/packages/package-repository'
-import { techniqueRepository } from '../../../db/technique-repository'
+import { techniqueRepository } from '../../../db/techniques/technique-repository'
 import { packageFormSchema } from '../validation/package-schema'
 import { packageMessages } from '../constants/package-strings'
 import { catalogRoutes } from '../../routes'

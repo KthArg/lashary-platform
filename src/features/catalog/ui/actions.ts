@@ -9,8 +9,8 @@ import {
   updateTechnique,
   deactivateTechnique,
   type CommandDeps,
-} from '../application/commands'
-import { techniqueRepository } from '../db/technique-repository'
+} from '../application/techniques/commands'
+import { techniqueRepository } from '../db/techniques/technique-repository'
 import { techniqueFormSchema } from './schema'
 import { catalogMessages } from './messages'
 import { catalogRoutes } from './routes'

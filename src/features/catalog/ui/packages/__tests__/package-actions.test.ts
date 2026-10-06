@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { makeTechnique } from '@/features/catalog/application/__tests__/technique-fixture'
+import { makeTechnique } from '@/features/catalog/application/techniques/__tests__/technique-fixture'
 
 const mocks = vi.hoisted(() => ({
   isStaff: vi.fn(),
@@ -17,7 +17,7 @@ vi.mock('@/features/catalog/db/packages/package-repository', () => ({
     findById: mocks.packageFindById,
   })),
 }))
-vi.mock('@/features/catalog/db/technique-repository', () => ({
+vi.mock('@/features/catalog/db/techniques/technique-repository', () => ({
   techniqueRepository: vi.fn(async () => ({
     findByIds: mocks.techniqueFindByIds,
   })),

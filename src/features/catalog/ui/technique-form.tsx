@@ -1,8 +1,8 @@
 'use client'
 
 import { useActionState } from 'react'
-import type { TechniqueView } from '../domain/technique'
-import { SERVICE_FAMILIES } from '../domain/technique'
+import type { TechniqueView } from '../domain/techniques/technique'
+import { SERVICE_FAMILIES } from '../domain/techniques/technique'
 import { catalogMessages, familyLabel } from './messages'
 import {
   createTechniqueAction,

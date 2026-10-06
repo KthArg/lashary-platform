@@ -1,20 +1,8 @@
 import { ok, err, type Result } from '@/shared/result'
-import type { TechniqueView } from '../domain/technique'
-import { TechniqueNotFound } from '../domain/errors'
-import type {
-  ListTechniquesQuery,
-  Page,
-  TechniqueRepository,
-} from './ports'
-
-export const DEFAULT_PAGE_SIZE = 50
-export const MAX_PAGE_SIZE = 100
-
-export const clampPage = (value: number | undefined): number =>
-  Math.max(1, Math.trunc(value ?? 1) || 1)
-
-export const clampPageSize = (value: number | undefined): number =>
-  Math.min(MAX_PAGE_SIZE, Math.max(1, Math.trunc(value ?? DEFAULT_PAGE_SIZE) || DEFAULT_PAGE_SIZE))
+import type { TechniqueView } from '../../domain/techniques/technique'
+import { TechniqueNotFound } from '../../domain/techniques/errors'
+import type { ListTechniquesQuery, TechniqueRepository } from './ports'
+import { clampPage, clampPageSize, type Page } from '../pagination'
 
 export const listTechniques =
   (repo: TechniqueRepository) =>

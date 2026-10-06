@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { isErr, isOk } from '@/shared/result'
-import { listTechniques, getTechnique } from '@/features/catalog/application/queries'
-import { TechniqueNotFound } from '@/features/catalog/domain/errors'
+import { listTechniques, getTechnique } from '@/features/catalog/application/techniques/queries'
+import { TechniqueNotFound } from '@/features/catalog/domain/techniques/errors'
 import { FakeTechniqueRepository } from './fake-repository'
 import { makeTechnique } from './technique-fixture'
 

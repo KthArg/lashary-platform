@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import type { TechniqueView } from '../domain/technique'
+import type { TechniqueView } from '../domain/techniques/technique'
 import { catalogMessages, familyLabel } from './messages'
 import { formatColones } from './format'
 import { catalogRoutes } from './routes'

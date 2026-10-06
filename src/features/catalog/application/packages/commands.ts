@@ -14,7 +14,7 @@ import {
   type PackageNotFound,
   type PackageValidationError,
 } from '../../domain/packages/errors'
-import type { TechniqueRepository } from '../ports'
+import type { TechniqueRepository } from '../techniques/ports'
 import type { PackageRepository, PackageWriteModel } from './ports'
 import { packageCommandMessages } from './messages'
 

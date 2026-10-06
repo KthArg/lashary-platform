@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock('@/features/catalog/ui/require-staff', () => ({
   isStaff: mocks.isStaff,
 }))
-vi.mock('@/features/catalog/db/technique-repository', () => ({
+vi.mock('@/features/catalog/db/techniques/technique-repository', () => ({
   techniqueRepository: vi.fn(async () => ({
     save: mocks.save,
     findById: mocks.findById,
@@ -22,7 +22,7 @@ import {
   deactivateTechniqueAction,
 } from '@/features/catalog/ui/actions'
 import { initialActionState } from '@/features/catalog/ui/action-state'
-import { TechniqueNameConflict } from '@/features/catalog/domain/errors'
+import { TechniqueNameConflict } from '@/features/catalog/domain/techniques/errors'
 
 function form(fields: Record<string, string>): FormData {
   const formData = new FormData()

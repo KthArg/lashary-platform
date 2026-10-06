@@ -3,8 +3,8 @@ import { isOk } from '@/shared/result'
 import {
   listTechniques as listTechniquesUseCase,
   getTechnique as getTechniqueUseCase,
-} from '../application/queries'
-import { techniqueRepository } from '../db/technique-repository'
+} from '../application/techniques/queries'
+import { techniqueRepository } from '../db/techniques/technique-repository'
 import { catalogMessages } from './messages'
 import { catalogRoutes } from './routes'
 import { adminCatalogPageStyles as s } from './AdminCatalogPage.styles'

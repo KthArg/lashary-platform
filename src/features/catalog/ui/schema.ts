@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { SERVICE_FAMILIES } from '../domain/technique'
-import type { TechniqueWriteModel } from '../application/ports'
+import { SERVICE_FAMILIES } from '../domain/techniques/technique'
+import type { TechniqueWriteModel } from '../application/techniques/ports'
 import { catalogMessages } from './messages'
 
 // Validación de formato en el borde, una sola vez, con Zod (DOM-007). Hacia adentro los datos

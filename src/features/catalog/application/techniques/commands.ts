@@ -1,11 +1,11 @@
 import { Money } from '@/shared/money'
 import { ok, err, isErr, type Result } from '@/shared/result'
-import { Technique, type TechniqueView } from '../domain/technique'
+import { Technique, type TechniqueView } from '../../domain/techniques/technique'
 import {
   TechniqueNameConflict,
   TechniqueNotFound,
   TechniqueValidationError,
-} from '../domain/errors'
+} from '../../domain/techniques/errors'
 import type { TechniqueRepository, TechniqueWriteModel } from './ports'
 import { commandMessages } from './messages'
 

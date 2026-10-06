@@ -1,11 +1,4 @@
-import type { Technique, ServiceFamily } from '../domain/technique'
-
-export type Page<T> = {
-  items: T[]
-  page: number
-  pageSize: number
-  total: number
-}
+import type { Technique, ServiceFamily } from '../../domain/techniques/technique'
 
 export type ListTechniquesQuery = {
   activeOnly?: boolean
