@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react'
 import { CLIENTS_ERROR_MESSAGES } from '../messages'
 import type { ClientFormValues } from '../../domain/client-form.types'
-import type { SaveClientResult } from '../../application/client-actions.types'
+import type { SaveClientResult } from '../actions.types'
 
 export function useClientDialog(save: (values: ClientFormValues) => Promise<SaveClientResult>, onClosed: () => void) {
   const [isDirty, setIsDirty] = useState(false)

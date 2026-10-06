@@ -84,9 +84,10 @@ exacto), pero solo comprueba que haya sesión, no el rol — el rol lo comprueba
 
 La estructura de carpetas sigue las capas de `docs/spec/ARCHITECTURE.md`, como `_template` y
 `catalog`: `domain/` (la clienta, sus límites, `normalizePhone` y `validateClientForm`),
-`application/` (los tipos de resultado de los casos de uso y `CLIENTS_LIST_LIMITS`) y `ui/` (las server actions en
-`ui/actions.ts`, los textos en `ui/messages.ts`, los hooks en `ui/hooks/` y un subdirectorio por
-componente). No hay `http/`: la feature no tiene route handlers. `ui/clients-list-url.ts` guarda la
+`application/` (los casos de uso `addClient`, `editClient` y `listClients`, el puerto
+`ClientRepository` y `CLIENTS_LIST_LIMITS`), `db/` (`clientRepository()`, lo único que conoce
+Supabase y `clients_profiles`) y `ui/` (las server actions en `ui/actions.ts`, los textos en
+`ui/messages.ts`, los hooks en `ui/hooks/` y un subdirectorio por componente). No hay `http/`: la feature no tiene route handlers. `ui/clients-list-url.ts` guarda la
 construcción pura de URLs del listado, separada de `ui/hooks/` porque no usa React: así se prueba sin
 renderizar. Las pruebas siguen en `__tests__/`.
 
@@ -251,3 +252,15 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
   límite de la clienta. `EMPTY_CLIENT_FORM_VALUES` y `CLIENT_FORM_LIMITS.notesRows` se quedan en
   `domain/client-form.ts` aunque solo los use el formulario: separarlos cambia la forma de constantes
   públicas sin ganar nada hoy.
+- **2026-10-04 — `ui/actions.ts` se parte como en `catalog`: action delgada, caso de uso y repositorio.**
+  La action solo exige la sesión, arma el repositorio, llama al caso de uso, traduce su código de
+  error a un texto de `CLIENTS_ERROR_MESSAGES` y revalida. Los casos de uso de `application/` validan,
+  normalizan, deciden el duplicado y sanean la página; devuelven `Result` con códigos
+  (`'phone-taken'`, `'not-found'`…), no textos, para no depender de `ui/`. `db/client-repository.ts`
+  es una función fábrica (ADR-0008) y guarda lo propio de Supabase: tabla, columnas, el patrón
+  `like` de los dígitos en orden y el escape de comodines del `ilike`. El `new Date()` de `updated_at`
+  vive ahí y no en `application/` (DOM-004). `SaveClientResult` y `ListClientsResult` llevan un texto
+  para la pantalla, así que pasan a `ui/actions.types.ts`; `ListClientsQuery` es la entrada del caso de
+  uso y pasa a `application/ports.ts`. Las pruebas de las actions no cambiaron y siguen pasando: la
+  secuencia de llamadas a Supabase es la misma. **Consecuencia asumida:** `updateClientAction` con un id
+  vacío crea el cliente de Supabase antes de rechazarlo, aunque no consulta la base.
