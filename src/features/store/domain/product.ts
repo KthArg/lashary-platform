@@ -1,63 +1,63 @@
 import { ok, err, type Result } from '@/shared/result'
 import { crearProductoInvalido, type ProductoInvalido } from './product-errors'
 
-export type ProductoPublico = {
+export type PublicProduct = {
   id: string;
-  nombre: string;
-  urlImagen: string;
-  precioCrc: number;
-  activo: boolean;
+  name: string;
+  imageUrl: string;
+  priceCrc: number;
+  isActive: boolean;
 };
 
-export type TarjetaProductoPublico = {
+export type PublicProductCard = {
   id: string;
-  nombre: string;
-  urlImagen: string;
-  etiquetaPrecio: string;
+  name: string;
+  imageUrl: string;
+  priceLabel: string;
 };
 
-export type EstadoGridProductos =
-  | { tipo: 'cargando' }
-  | { tipo: 'vacio'; titulo: string; descripcion: string }
-  | { tipo: 'error'; titulo: string; descripcion: string; etiquetaReintentar: string }
-  | { tipo: 'listo'; tarjetas: TarjetaProductoPublico[] };
+export type ProductGridState =
+  | { kind: 'loading' }
+  | { kind: 'empty'; title: string; description: string }
+  | { kind: 'error'; title: string; description: string; retryLabel: string }
+  | { kind: 'ready'; cards: PublicProductCard[] };
 
-export type CadenaProductos = {
-  tituloVacio: string;
-  descripcionVacio: string;
-  tituloError: string;
-  descripcionError: string;
-  etiquetaReintentar: string;
-  mensajeCargando: string;
-  ariaCatalogoProductos: string;
-  prefijoAltProducto: string;
-  ariaBotonReintentar: string;
+export type ProductGridStrings = {
+  emptyTitle: string;
+  emptyDescription: string;
+  errorTitle: string;
+  errorDescription: string;
+  retryLabel: string;
+  loadingMessage: string;
+  catalogAriaLabel: string;
+  productAltPrefix: string;
+  retryButtonAriaLabel: string;
 };
 
-export function formatearPrecioCrc(precioCrc: number): string {
-  const formateador = new Intl.NumberFormat('es-CR', {
+export function formatPriceCrc(priceCrc: number): string {
+  const formatter = new Intl.NumberFormat('es-CR', {
     style: 'currency',
     currency: 'CRC',
     maximumFractionDigits: 0,
   });
 
-  return formateador.format(precioCrc);
+  return formatter.format(priceCrc);
 }
 
-const ESQUEMA_URL_PELIGROSO = /^(javascript|data):/i;
+const DANGEROUS_URL_SCHEME = /^(javascript|data):/i;
 
-export function sanitizarUrl(url: string): string {
-  const limpia = url.trim();
-  if (!limpia || ESQUEMA_URL_PELIGROSO.test(limpia)) return '';
-  return limpia;
+export function sanitizeUrl(url: string): string {
+  const trimmed = url.trim();
+  if (!trimmed || DANGEROUS_URL_SCHEME.test(trimmed)) return '';
+  return trimmed;
 }
 
-export function aProductoEnTarjeta(producto: ProductoPublico): TarjetaProductoPublico {
+export function toProductCard(product: PublicProduct): PublicProductCard {
   return {
-    id: producto.id,
-    nombre: producto.nombre,
-    urlImagen: sanitizarUrl(producto.urlImagen),
-    etiquetaPrecio: formatearPrecioCrc(producto.precioCrc),
+    id: product.id,
+    name: product.name,
+    imageUrl: sanitizeUrl(product.imageUrl),
+    priceLabel: formatPriceCrc(product.priceCrc),
   };
 }
 

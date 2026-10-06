@@ -1,8 +1,8 @@
 import { createClient } from '@/shared/lib/supabase/server'
-import type { ProductoPublico } from '../domain/product'
-import type { CatalogoProductosPublico } from '../application/public-grid/get-public-grid-state'
+import type { PublicProduct } from '../domain/product'
+import type { PublicProductCatalog } from '../application/public-grid/get-public-grid-state'
 
-type FilaProductoDb = {
+type PublicProductRow = {
   id: string
   nombre: string
   url_imagen: string
@@ -10,9 +10,9 @@ type FilaProductoDb = {
   activo: boolean
 }
 
-export function catalogoProductosDb(): CatalogoProductosPublico {
+export function publicProductsDb(): PublicProductCatalog {
   return {
-    async listarProductosPublicos(): Promise<ProductoPublico[]> {
+    async listPublicProducts(): Promise<PublicProduct[]> {
       const supabase = await createClient()
       const { data, error } = await supabase
         .from('store_products')
@@ -25,12 +25,12 @@ export function catalogoProductosDb(): CatalogoProductosPublico {
         throw new Error('No se pudo leer el catálogo de productos desde la base de datos')
       }
 
-      return (data ?? []).map((producto: FilaProductoDb) => ({
-        id: producto.id,
-        nombre: producto.nombre,
-        urlImagen: producto.url_imagen,
-        precioCrc: producto.precio_crc,
-        activo: producto.activo,
+      return (data ?? []).map((product: PublicProductRow) => ({
+        id: product.id,
+        name: product.nombre,
+        imageUrl: product.url_imagen,
+        priceCrc: product.precio_crc,
+        isActive: product.activo,
       }))
     },
   }

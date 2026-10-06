@@ -1,7 +1,7 @@
-import { ProductoPublico } from '../domain/product';
-import { CatalogoProductosPublico } from '../application/public-grid/get-public-grid-state';
+import { PublicProduct } from '../domain/product';
+import { PublicProductCatalog } from '../application/public-grid/get-public-grid-state';
 
-export type DtoProductoCms = {
+export type CmsProductDto = {
   id: string;
   nombre: string;
   url_imagen: string;
@@ -9,21 +9,21 @@ export type DtoProductoCms = {
   activo: boolean;
 };
 
-export type ClienteCms = {
-  obtenerProductosPublicos(): Promise<DtoProductoCms[]>;
+export type CmsClient = {
+  getPublicProducts(): Promise<CmsProductDto[]>;
 };
 
-export function catalogoProductosCms(clienteCms: ClienteCms): CatalogoProductosPublico {
+export function cmsProductCatalog(cmsClient: CmsClient): PublicProductCatalog {
   return {
-    async listarProductosPublicos(): Promise<ProductoPublico[]> {
-      const productosDelCms = await clienteCms.obtenerProductosPublicos();
+    async listPublicProducts(): Promise<PublicProduct[]> {
+      const cmsProducts = await cmsClient.getPublicProducts();
 
-      return productosDelCms.map((producto) => ({
-        id: producto.id,
-        nombre: producto.nombre,
-        urlImagen: producto.url_imagen,
-        precioCrc: producto.precio_crc,
-        activo: producto.activo,
+      return cmsProducts.map((product) => ({
+        id: product.id,
+        name: product.nombre,
+        imageUrl: product.url_imagen,
+        priceCrc: product.precio_crc,
+        isActive: product.activo,
       }));
     },
   };

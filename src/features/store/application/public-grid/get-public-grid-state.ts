@@ -1,44 +1,44 @@
 import {
-  ProductoPublico,
-  EstadoGridProductos,
-  CadenaProductos,
-  aProductoEnTarjeta,
+  PublicProduct,
+  ProductGridState,
+  ProductGridStrings,
+  toProductCard,
 } from '../../domain/product';
 
-export type CatalogoProductosPublico = {
-  listarProductosPublicos(): Promise<ProductoPublico[]>;
+export type PublicProductCatalog = {
+  listPublicProducts(): Promise<PublicProduct[]>;
 };
 
-export function estadoGridProductosInicial(): EstadoGridProductos {
-  return { tipo: 'cargando' };
+export function initialProductGridState(): ProductGridState {
+  return { kind: 'loading' };
 }
 
-export async function obtenerEstadoGridProductos(
-  catalogo: CatalogoProductosPublico,
-  cadenas: CadenaProductos,
-): Promise<EstadoGridProductos> {
+export async function getProductGridState(
+  catalog: PublicProductCatalog,
+  strings: ProductGridStrings,
+): Promise<ProductGridState> {
   try {
-    const productos = await catalogo.listarProductosPublicos();
-    const productosActivos = productos.filter((p) => p.activo);
+    const products = await catalog.listPublicProducts();
+    const activeProducts = products.filter((product) => product.isActive);
 
-    if (productosActivos.length === 0) {
+    if (activeProducts.length === 0) {
       return {
-        tipo: 'vacio',
-        titulo: cadenas.tituloVacio,
-        descripcion: cadenas.descripcionVacio,
+        kind: 'empty',
+        title: strings.emptyTitle,
+        description: strings.emptyDescription,
       };
     }
 
     return {
-      tipo: 'listo',
-      tarjetas: productosActivos.map(aProductoEnTarjeta),
+      kind: 'ready',
+      cards: activeProducts.map(toProductCard),
     };
   } catch {
     return {
-      tipo: 'error',
-      titulo: cadenas.tituloError,
-      descripcion: cadenas.descripcionError,
-      etiquetaReintentar: cadenas.etiquetaReintentar,
+      kind: 'error',
+      title: strings.errorTitle,
+      description: strings.errorDescription,
+      retryLabel: strings.retryLabel,
     };
   }
 }
