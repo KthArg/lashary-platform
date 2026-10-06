@@ -98,7 +98,7 @@
 - US-AGE-12 — no_iniciada
 
 ### store (actualizado: 2026-09-27)
-- US-PROD-02 — en_progreso — falta: Panel admin (criterio 3) — falta el listado/tabla, el panel que los junta y el wiring de la ruta `/admin/store`; dominio, aplicación, adaptador de escritura, acciones y el formulario ya están.
+- US-PROD-02 — en_progreso — falta: Panel admin (criterio 3) — falta el wiring de la ruta `/admin/store` (contrato público, layout con requireAdminSession, loading/error); el resto ya está.
 - US-PROD-03 — no_iniciada
 - US-SHOP-01 — no_iniciada
 - US-SHOP-02 — no_iniciada
