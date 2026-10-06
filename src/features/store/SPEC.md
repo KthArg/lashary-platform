@@ -40,7 +40,7 @@ Tienda (F4): productos, carrito, checkout con comprobante. Stock y pedidos admin
 Panel admin (criterio 3, "administrables desde el panel") — en construcción, aún no montado:
 - Constructor validado (`domain/producto.ts`, `construirProducto`): invariantes de negocio (DOM-007) — slug, nombre y URL de imagen no vacíos, precio entero positivo, orden de presentación entero no negativo; sin clases, `ProductoAdminVista` es un objeto plano
 - Errores tipados (`domain/errores-producto.ts`): `ProductoInvalido`, `ProductoNoEncontrado`, `ProductoSlugDuplicado` (DOM-006)
-- Casos de uso (`application/productos-admin-consultas.ts`, `application/productos-admin-comandos.ts`): listar paginado, obtener, crear, actualizar, desactivar — sobre el puerto `ProductoRepositorioAdmin` (`application/productos-admin-puertos.ts`)
+- Casos de uso (`application/productos-admin-consultas.ts`, `application/productos-admin-comandos.ts`): listar paginado, obtener, crear, actualizar, desactivar — sobre el puerto `ProductoRepositorioAdmin` (`application/productos-admin-puertos.ts`), probados con repositorio fake (`application/__tests__/`)
 
 ## Contrato público
 
