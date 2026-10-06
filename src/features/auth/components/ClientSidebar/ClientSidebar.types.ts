@@ -6,7 +6,6 @@ export interface ClientSession {
   profile?: {
     full_name?: string | null
     phone?: string | null
-    [key: string]: unknown
   } | null
 }
 

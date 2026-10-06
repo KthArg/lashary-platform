@@ -4,7 +4,9 @@ import { createClient } from '@/shared/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { AUTH_ERROR_MESSAGES } from '../constants/auth-strings'
-import { AUTH_ROLES } from '../constants/roles'
+import { isStaffRole } from '../domain/roles'
+import { loadAuthSession } from '../application/session'
+import { createSupabaseAuthRepository } from '../db/auth-repository'
 
 export async function signInWithGoogleAction() {
   const supabase = await createClient()
@@ -53,13 +55,9 @@ export async function signInAdminAction(
     return { error: AUTH_ERROR_MESSAGES.invalidCredentials }
   }
 
-  const { data: roleData } = await supabase
-    .from('auth_user_roles')
-    .select('role')
-    .eq('user_id', data.user.id)
-    .single()
+  const role = await createSupabaseAuthRepository(supabase).findRole(data.user.id)
 
-  if (!roleData || ![AUTH_ROLES.ADMIN, AUTH_ROLES.SUPERADMIN].includes(roleData.role)) {
+  if (!isStaffRole(role)) {
     await supabase.auth.signOut()
     return { error: AUTH_ERROR_MESSAGES.accessDenied }
   }
@@ -80,28 +78,12 @@ export async function getAuthSession() {
 
   if (!user) return null
 
-  const { data: roleData } = await supabase
-    .from('auth_user_roles')
-    .select('role')
-    .eq('user_id', user.id)
-    .single()
-
-  const { data: clientProfile } = await supabase
-    .from('clients_profiles')
-    .select('*')
-    .eq('user_id', user.id)
-    .single()
-
-  return {
-    user,
-    role: roleData?.role || AUTH_ROLES.CLIENTE,
-    profile: clientProfile,
-  }
+  return loadAuthSession(createSupabaseAuthRepository(supabase), user)
 }
 
 export async function requireAdminSession() {
   const session = await getAuthSession()
-  if (!session?.user || ![AUTH_ROLES.ADMIN, AUTH_ROLES.SUPERADMIN].includes(session.role)) {
+  if (!session?.user || !isStaffRole(session.role)) {
     redirect('/admin')
   }
   return session
