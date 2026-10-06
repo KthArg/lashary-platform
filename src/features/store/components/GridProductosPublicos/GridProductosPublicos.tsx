@@ -1,9 +1,6 @@
 import type { ComponentType } from 'react'
 import type { EstadoGridProductos } from '../../domain/producto'
-import { EstadoCargando } from './EstadoCargando'
-import { EstadoVacio } from './EstadoVacio'
-import { EstadoError } from './EstadoError'
-import { EstadoListo } from './EstadoListo'
+import { EstadoCargando, EstadoVacio, EstadoError, EstadoListo } from './Estados'
 import type { GridProductosPublicosProps } from './GridProductosPublicos.types'
 
 const VISTAS_GRID: Record<EstadoGridProductos['tipo'], ComponentType<any>> = {

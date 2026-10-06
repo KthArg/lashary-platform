@@ -97,7 +97,7 @@
 - US-AGE-11 — no_iniciada
 - US-AGE-12 — no_iniciada
 
-### store (actualizado: 2026-09-27)
+### store (actualizado: 2026-09-30)
 - US-PROD-02 — en_revision
 - US-PROD-03 — no_iniciada
 - US-SHOP-01 — no_iniciada
