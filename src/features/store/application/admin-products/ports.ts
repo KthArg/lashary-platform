@@ -20,6 +20,7 @@ export type ProductWrite = {
   imageUrl: string
   priceCrc: number
   displayOrder: number
+  stock: number
 }
 
 export interface AdminProductRepository {

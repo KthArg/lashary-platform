@@ -40,6 +40,7 @@ function buildFromWrite(
     imageUrl: model.imageUrl,
     priceCrc: model.priceCrc,
     displayOrder: model.displayOrder,
+    stock: model.stock,
     isActive,
   })
 }

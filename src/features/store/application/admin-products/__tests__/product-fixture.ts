@@ -10,6 +10,7 @@ export function makeProduct(
     name: string
     priceCrc: number
     displayOrder: number
+    stock: number
     isActive: boolean
   }> = {},
 ): AdminProduct {
@@ -22,6 +23,7 @@ export function makeProduct(
     imageUrl: '/productos/prueba.jpg',
     priceCrc: overrides.priceCrc ?? 18000,
     displayOrder: overrides.displayOrder ?? 0,
+    stock: overrides.stock ?? 10,
     isActive: overrides.isActive ?? true,
   })
   if (!isOk(result)) {
