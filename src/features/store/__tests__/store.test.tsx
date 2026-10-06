@@ -130,6 +130,22 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
     expect(html).not.toContain('javascript:alert(1)')
   })
 
+  it('el grid es responsivo: una columna en móvil, dos desde sm y tres desde lg', async () => {
+    const catalogo: CatalogoProductosPublico = {
+      listarProductosPublicos: vi.fn().mockResolvedValue(mockDbRows.map((fila) => ({
+        id: fila.id,
+        nombre: fila.nombre,
+        urlImagen: fila.url_imagen,
+        precioCrc: fila.precio_crc,
+        activo: fila.activo,
+      }))),
+    }
+    const estado = await obtenerEstadoGridProductos(catalogo, CADENAS_GRID_PRODUCTOS_ES)
+    const html = renderToStaticMarkup(<GridProductosPublicos estado={estado} />)
+
+    expect(html).toMatch(/class="[^"]*\bgrid-cols-1\b[^"]*\bsm:grid-cols-2\b[^"]*\blg:grid-cols-3\b/)
+  })
+
   it('sanitiza una URL de reintento insegura y no la usa como href del botón', () => {
     const html = renderToStaticMarkup(
       <GridProductosPublicos

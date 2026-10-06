@@ -20,7 +20,7 @@
 | payments | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | scheduling | pendiente | en_progreso | 0 / 1 / 0 / 0 / 10 |
-| store | pendiente | en_progreso | 0 / 0 / 0 / 1 / 3 |
+| store | pendiente | en_progreso | 1 / 0 / 0 / 0 / 3 |
 
 ## Detalle por feature
 
@@ -97,8 +97,8 @@
 - US-AGE-11 — no_iniciada
 - US-AGE-12 — no_iniciada
 
-### store (actualizado: 2026-09-27)
-- US-PROD-02 — en_revision
+### store (actualizado: 2026-10-06)
+- US-PROD-02 — terminada — PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), producto.test.ts, productos-admin-comandos.test.ts, productos-admin-consultas.test.ts, esquema-producto-admin.test.ts, productos-admin-actions.test.ts, layout.test.tsx, rls-productos-admin.test.ts (omitida sin Supabase local, ver deuda)
 - US-PROD-03 — no_iniciada
 - US-SHOP-01 — no_iniciada
 - US-SHOP-02 — no_iniciada
@@ -114,6 +114,7 @@ Ninguno registrado.
 ## Deuda aceptada
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
 - clients: Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras — aceptada en PR #32, etiqueta excepcion-proceso — costo: 3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)
+- store: Prueba de aislamiento RLS (SEC-002) de las politicas store_products_*_admin (supabase/migrations/20260912000000_store_products.sql): src/features/store/__tests__/rls-productos-admin.test.ts se omite con describe.skipIf cuando no hay Supabase local, y CI no lo levanta, asi que no demuestra que anon y una clienta sin rol de staff no puedan INSERT, UPDATE ni DELETE — aceptada en PR de cierre us/US-PROD-02 a main — costo: 1h si ya existe el arnes de Supabase local en CI de la deuda de auth (PR #3); 3h si no: arnes mas correr la suite existente en CI
 
 ## Flags vivos
 

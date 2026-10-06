@@ -2,10 +2,11 @@
 feature: store
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-09-27
+actualizado: 2026-10-06
 historias:
   - id: US-PROD-02
-    estado: en_revision
+    estado: terminada
+    evidencia: "PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), producto.test.ts, productos-admin-comandos.test.ts, productos-admin-consultas.test.ts, esquema-producto-admin.test.ts, productos-admin-actions.test.ts, layout.test.tsx, rls-productos-admin.test.ts (omitida sin Supabase local, ver deuda)"
   - id: US-PROD-03
     estado: no_iniciada
   - id: US-SHOP-01
@@ -13,7 +14,10 @@ historias:
   - id: US-SHOP-02
     estado: no_iniciada
 flags: []
-deuda: []
+deuda:
+  - que: "Prueba de aislamiento RLS (SEC-002) de las politicas store_products_*_admin (supabase/migrations/20260912000000_store_products.sql): src/features/store/__tests__/rls-productos-admin.test.ts se omite con describe.skipIf cuando no hay Supabase local, y CI no lo levanta, asi que no demuestra que anon y una clienta sin rol de staff no puedan INSERT, UPDATE ni DELETE"
+    aceptada_en: "PR de cierre us/US-PROD-02 a main"
+    costo: "1h si ya existe el arnes de Supabase local en CI de la deuda de auth (PR #3); 3h si no: arnes mas correr la suite existente en CI"
 defectos: []
 ---
 
@@ -23,7 +27,7 @@ Tienda (F4): productos, carrito, checkout con comprobante. Stock y pedidos admin
 
 ## Qué hace hoy
 
-`US-PROD-02` implementado con:
+`US-PROD-02` terminada (2026-10-06): PRs #92, #93 y #123 a #133; el criterio 2 (grid responsivo) lo demuestra `store.test.tsx`, que comprueba `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`. Implementado con:
 - Modelo de dominio (`domain/producto.ts`): tipos puros sin dependencias
 - Caso de uso (`application/obtener-grid-productos-publicos.ts`): orquestación de listado
 - Adaptador CMS (`http/catalogo-productos-cms.ts`): lectura desde API externa
