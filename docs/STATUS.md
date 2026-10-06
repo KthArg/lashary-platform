@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-09-28.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-06.
 
 ## Features
 
@@ -10,7 +10,7 @@
 | account | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | audit | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
-| catalog | pendiente | en_progreso | 1 / 0 / 0 / 0 / 3 |
+| catalog | pendiente | en_progreso | 2 / 0 / 0 / 0 / 2 |
 | clients | pendiente | en_progreso | 1 / 1 / 0 / 0 / 3 |
 | content | pendiente | en_progreso | 0 / 0 / 0 / 0 / 3 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
@@ -20,7 +20,7 @@
 | payments | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | scheduling | pendiente | en_progreso | 0 / 1 / 0 / 0 / 10 |
-| store | pendiente | en_progreso | 0 / 1 / 0 / 0 / 3 |
+| store | pendiente | en_progreso | 0 / 0 / 0 / 1 / 3 |
 
 ## Detalle por feature
 
@@ -28,13 +28,13 @@
 
 ### audit (actualizado: 2026-08-29)
 
-### auth (actualizado: 2026-09-28)
+### auth (actualizado: 2026-10-06)
 - US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
 - US-AUTH-02 — terminada — PR #3, PR #18, tests: auth-client.test.tsx, rls-isolation.test.ts
 
-### catalog (actualizado: 2026-09-20)
+### catalog (actualizado: 2026-10-04)
 - US-AGE-08 — terminada — PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx
-- US-PROD-01 — no_iniciada
+- US-PROD-01 — terminada — PRs #98 a #107, #134, #157 a #168 (pila) y el cierre us/US-PROD-01 a main; tests: package.test.ts, package-commands.test.ts, package-queries.test.ts, package-actions.test.ts, package-schema.test.ts, package-inactive-techniques.test.tsx, package-pagination.test.tsx, package-repository.integration.test.ts, package-rls-isolation.test.ts, catalog_package_staff_write.test.sql; UI probada a mano contra lashary-pruebas (2026-10-03)
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
@@ -97,8 +97,8 @@
 - US-AGE-11 — no_iniciada
 - US-AGE-12 — no_iniciada
 
-### store (actualizado: 2026-09-21)
-- US-PROD-02 — en_progreso — falta: Panel admin para gestionar productos desde CMS.
+### store (actualizado: 2026-09-27)
+- US-PROD-02 — en_revision
 - US-PROD-03 — no_iniciada
 - US-SHOP-01 — no_iniciada
 - US-SHOP-02 — no_iniciada

@@ -70,10 +70,6 @@ export const catalogMessages = {
       aftercareText: 'El texto de cuidados posteriores es obligatorio',
     },
   },
-  shell: {
-    brand: 'LASHARY',
-    signOut: 'Cerrar sesión',
-  },
 } as const
 
 const FAMILY_LABELS: Record<ServiceFamily, string> = {

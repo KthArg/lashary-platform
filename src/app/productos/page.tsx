@@ -1,9 +1,6 @@
-import {
-  CADENAS_GRID_PRODUCTOS_ES,
-  CatalogoProductosDb,
-  obtenerEstadoGridProductos,
-  renderGridProductosPublicos,
-} from '@/features/store'
+import { GridProductosPublicos } from '@/features/store'
+import { obtenerVistaProductos } from './page.data'
+import { productosPageStyles as s } from './productos.styles'
 
 export const metadata = {
   title: 'Productos | LASHARY Beauty Studio',
@@ -11,15 +8,13 @@ export const metadata = {
 }
 
 export default async function ProductosPage() {
-  const catalogo = new CatalogoProductosDb()
-  const estado = await obtenerEstadoGridProductos(catalogo, CADENAS_GRID_PRODUCTOS_ES)
+  const estado = await obtenerVistaProductos()
 
   return (
-    <main className="min-h-screen bg-brand-cream px-4 py-12">
-      <div
-        className="mx-auto w-full max-w-6xl"
-        dangerouslySetInnerHTML={{ __html: renderGridProductosPublicos(estado) }}
-      />
+    <main className={s.main}>
+      <div className={s.container}>
+        <GridProductosPublicos estado={estado} />
+      </div>
     </main>
   )
 }

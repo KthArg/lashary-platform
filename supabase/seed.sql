@@ -39,6 +39,18 @@ VALUES
    30000, 18000, 120, 60, 20, NULL, 12000,
    'Mantener los labios hidratados con el bálsamo entregado. No exfoliar ni frotar durante la cicatrización (5 a 7 días).');
 
+-- Un paquete de ejemplo (US-PROD-01, criterio 1): combina dos técnicas del seed de arriba.
+-- Prueba db/__tests__/package-repository.integration.test.ts (criterio 2: duración total =
+-- 45 + 10 (Diseño de cejas) + 120 + 15 (Set clásico) = 190 minutos).
+INSERT INTO public.catalog_packages (name, price, is_active)
+VALUES ('Cejas y pestañas clásico', 30000, true);
+
+INSERT INTO public.catalog_package_techniques (package_id, technique_id)
+SELECT pkg.id, t.id
+FROM public.catalog_packages pkg, public.catalog_techniques t
+WHERE pkg.name = 'Cejas y pestañas clásico'
+  AND t.name IN ('Set clásico', 'Diseño de cejas');
+
 -- Datos de desarrollo: 5 clientas sin cuenta para ver /admin/clients con datos reales (US-CLI-05).
 -- Solo local: `supabase db reset` lo aplica después de las migraciones. No es una migración (INT-008)
 -- y no se corre en producción. Teléfonos en la forma de normalizePhone (+506 + 8 dígitos) y
@@ -55,3 +67,21 @@ FROM (VALUES
 ) AS v(full_name, email, phone, notes)
 -- Idempotente: correrlo dos veces no duplica teléfonos (criterio 3).
 WHERE NOT EXISTS (SELECT 1 FROM public.clients_profiles c WHERE c.phone = v.phone);
+
+-- Datos de desarrollo: 2 productos de ejemplo para /productos y /admin/store (US-PROD-02).
+-- Solo local: `supabase db reset` lo aplica después de las migraciones. No es una migración
+-- (INT-008) y no se corre en producción — antes vivían, por error, en la migración de esquema
+-- 20260912000000_store_products.sql; 20260926000000_store_products_remove_demo_seed.sql los
+-- retira de ahí.
+INSERT INTO public.store_products (slug, nombre, descripcion, url_imagen, precio_crc, activo, sort_order)
+VALUES
+  ('serum-nutritivo-lashary', 'Serum nutritivo Lashary', 'Tratamiento nutritivo para mantenimiento de pestañas.', '/productos/serum-nutritivo.jpg', 18000, true, 1),
+  ('cepillo-limpiador-lashary', 'Cepillo limpiador Lashary', 'Accesorio para limpieza suave diaria.', '/productos/cepillo-limpiador.jpg', 12000, true, 2)
+ON CONFLICT (slug) DO UPDATE SET
+  nombre = EXCLUDED.nombre,
+  descripcion = EXCLUDED.descripcion,
+  url_imagen = EXCLUDED.url_imagen,
+  precio_crc = EXCLUDED.precio_crc,
+  activo = EXCLUDED.activo,
+  sort_order = EXCLUDED.sort_order,
+  updated_at = timezone('utc', now());
