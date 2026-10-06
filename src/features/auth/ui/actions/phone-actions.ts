@@ -3,9 +3,9 @@
 import { createClient } from '@/shared/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { AUTH_ERROR_MESSAGES } from '../constants/auth-strings'
-import { validateClientPhone } from '../domain/phone'
-import { clientDisplayName } from '../application/session'
-import { createSupabaseAuthRepository } from '../db/auth-repository'
+import { validateClientPhone } from '../../domain/phone'
+import { clientDisplayName } from '../../application/session'
+import { createSupabaseAuthRepository } from '../../db/auth-repository'
 
 export async function updateClientPhoneAction(formData: FormData) {
   const phone = (formData.get('phone') as string)?.trim()
