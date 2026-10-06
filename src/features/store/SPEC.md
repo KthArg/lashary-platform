@@ -50,7 +50,7 @@ Panel admin (criterio 3, "administrables desde el panel") en `/admin/catalog/pro
 - Componentes (`components/FormularioProductoAdmin/`, `components/TablaProductosAdmin/`, `components/PanelAdminProductos/`): listado, alta, edición y desactivación (no hay borrado físico) con estados vacío/carga/error (UI-003) y feedback accesible por rol `alert`/`status` (UI-004) — cada decisión de qué pintar sale precalculada de un `.data.ts` o un hook; los `.tsx` solo despachan por tabla o pintan, sin `if`/`?:`/`&&`
 - Pruebas automatizadas: dominio, casos de uso (repositorio fake), esquema, server actions, protección de layout, y aislamiento RLS (`__tests__/rls-productos-admin.test.ts`, se salta sin Supabase local)
 
-Disposición de las capas (nombres en inglés): `application/admin-products/`, `application/public-grid/`, `domain/product.ts`, `db/` y `http/`; la ui conserva por ahora su disposición anterior.
+Disposición actual de archivos (nombres en inglés): `ui/admin-products/` y `ui/public-grid/` (components, hooks, actions, constants, types, validation, `__tests__`), `application/admin-products/`, `application/public-grid/`, `domain/product.ts`, `db/` y `http/`; las rutas citadas arriba con nombres en español corresponden a los equivalentes de este mapa.
 
 Organización de la capa de presentación (`components/`, `hooks/`, `actions/`, `constants/`) igual a la de `auth`: `domain/`, `application/`, `db/`, `http/` son la arquitectura DDD (ARCH-002/DOM-006/007) y no se solapan con esta convención.
 
