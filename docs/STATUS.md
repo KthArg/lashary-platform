@@ -20,7 +20,7 @@
 | payments | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | scheduling | pendiente | en_progreso | 0 / 1 / 0 / 0 / 10 |
-| store | pendiente | en_progreso | 1 / 0 / 0 / 0 / 3 |
+| store | pendiente | en_progreso | 1 / 1 / 0 / 0 / 2 |
 
 ## Detalle por feature
 
@@ -99,7 +99,7 @@
 
 ### store (actualizado: 2026-10-08)
 - US-PROD-02 — terminada — PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), product.test.ts, commands.test.ts, queries.test.ts, product-schema.test.ts, product-actions.test.ts, layout.test.tsx, products-admin-rls.test.ts (omitida sin Supabase local, ver deuda)
-- US-PROD-03 — no_iniciada
+- US-PROD-03 — en_progreso — falta: la columna store_products.existencias existe (supabase/migrations/20261006000000_store_products_existencias.sql) pero el panel admin no la edita; faltan la lectura del detalle por slug, la ruta /productos/[slug] con imagen, nombre, descripcion, precio y boton de agregar al carrito deshabilitado sin existencias, y el enlace desde el grid
 - US-SHOP-01 — no_iniciada
 - US-SHOP-02 — no_iniciada
 

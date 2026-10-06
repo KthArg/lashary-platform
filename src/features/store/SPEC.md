@@ -8,7 +8,8 @@ historias:
     estado: terminada
     evidencia: "PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), product.test.ts, commands.test.ts, queries.test.ts, product-schema.test.ts, product-actions.test.ts, layout.test.tsx, products-admin-rls.test.ts (omitida sin Supabase local, ver deuda)"
   - id: US-PROD-03
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "la columna store_products.existencias existe (supabase/migrations/20261006000000_store_products_existencias.sql) pero el panel admin no la edita; faltan la lectura del detalle por slug, la ruta /productos/[slug] con imagen, nombre, descripcion, precio y boton de agregar al carrito deshabilitado sin existencias, y el enlace desde el grid"
   - id: US-SHOP-01
     estado: no_iniciada
   - id: US-SHOP-02
@@ -50,6 +51,8 @@ Panel admin (criterio 3, "administrables desde el panel") en `/admin/catalog/pro
 - Componentes (`ProductForm`, `ProductsAdminTable` y `ProductsAdminPanel` en `ui/admin-products/components/`): listado, alta, edición y desactivación (no hay borrado físico) con estados vacío/carga/error (UI-003) y feedback accesible por rol `alert`/`status` (UI-004) — cada decisión de qué pintar sale precalculada de un `.data.ts` o un hook; los `.tsx` solo despachan por tabla o pintan, sin `if`/`?:`/`&&`
 - Pruebas automatizadas: dominio, casos de uso (repositorio fake), esquema, server actions, protección de layout, y aislamiento RLS (`__tests__/products-admin-rls.test.ts`, se salta sin Supabase local)
 
+
+`US-PROD-03` en progreso (2026-10-08). Existencias: la columna `store_products.existencias` (entero, `DEFAULT 0`, `CHECK >= 0`) la crea US-PROD-03 en `supabase/migrations/20261006000000_store_products_existencias.sql`, para que el detalle indique "agotado" y deshabilite la compra (criterio 3). La columna queda en español como las demás de `store_products` (`nombre`, `precio_crc`, `activo`); el código la lee como `stock`, igual que `precio_crc` se lee como `priceCrc`. El descuento al vender y el impedir vender más unidades de las disponibles son de US-SHOP-02. Las filas que ya existían quedan en 0 hasta que se carguen sus existencias. Sin índice: ninguna consulta filtra por esa columna (PERF-003). Sin política nueva: las políticas `store_products_*` cubren la fila completa.
 
 La capa de presentación se organiza por área en `ui/<area>/` (`admin-products`, `public-grid`), cada una con `components/<Componente>/` (`.tsx`, `.styles.ts`, `.types.ts`, `index.ts`), `hooks/`, `actions/`, `constants/`, `types/`, `validation/` y `__tests__/`; `domain/`, `application/`, `db/`, `http/` son la arquitectura DDD (ARCH-002/DOM-006/007) y no se solapan con esta convención.
 
