@@ -1,4 +1,4 @@
-import { techniqueFormFieldStyles as s } from './TechniqueFormField.styles'
+import { techniqueFormFieldStyles as STYLES } from './TechniqueFormField.styles'
 import type { TechniqueFormFieldProps } from './TechniqueFormField.types'
 
 export function TechniqueFormField({
@@ -10,8 +10,8 @@ export function TechniqueFormField({
   min,
 }: TechniqueFormFieldProps) {
   return (
-    <label className={s.fieldLabel} htmlFor={name}>
-      <span className={s.labelText}>{label}</span>
+    <label className={STYLES.fieldLabel} htmlFor={name}>
+      <span className={STYLES.labelText}>{label}</span>
       <input
         id={name}
         name={name}
@@ -20,7 +20,7 @@ export function TechniqueFormField({
         min={min}
         step={type === 'number' ? 1 : undefined}
         defaultValue={defaultValue ?? undefined}
-        className={s.fieldInput}
+        className={STYLES.fieldInput}
       />
     </label>
   )

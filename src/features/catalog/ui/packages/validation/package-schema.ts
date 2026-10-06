@@ -2,15 +2,15 @@ import { z } from 'zod'
 import type { PackageWriteModel } from '../../../application/packages/ports'
 import { packageMessages } from '../constants/package-strings'
 
-const v = packageMessages.form.validation
+const validationMessages = packageMessages.form.validation
 
 const requiredInt = z.coerce.number().int()
 
 export const packageFormSchema = z
   .object({
-    name: z.string().trim().min(1, v.name),
-    techniqueIds: z.array(z.string().trim().min(1)).min(2, v.techniqueIds),
-    price: requiredInt.positive(v.price),
+    name: z.string().trim().min(1, validationMessages.name),
+    techniqueIds: z.array(z.string().trim().min(1)).min(2, validationMessages.techniqueIds),
+    price: requiredInt.positive(validationMessages.price),
   })
   .transform(
     (data): PackageWriteModel => ({

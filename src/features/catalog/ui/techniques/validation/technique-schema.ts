@@ -6,7 +6,7 @@ import { catalogMessages } from '../constants/technique-strings'
 // Validación de formato en el borde, una sola vez, con Zod (DOM-007). Hacia adentro los datos
 // se asumen válidos de formato; los invariantes de negocio (D10, etc.) los aplica Technique.
 
-const v = catalogMessages.form.validation
+const validationMessages = catalogMessages.form.validation
 
 const requiredInt = z.coerce.number().int()
 
@@ -19,18 +19,18 @@ const optionalPositiveInt = z
 
 export const techniqueFormSchema = z
   .object({
-    name: z.string().trim().min(1, v.name),
+    name: z.string().trim().min(1, validationMessages.name),
     family: z.enum(SERVICE_FAMILIES, {
-      errorMap: () => ({ message: v.family }),
+      errorMap: () => ({ message: validationMessages.family }),
     }),
-    priceFirstTime: requiredInt.positive(v.priceFirstTime),
+    priceFirstTime: requiredInt.positive(validationMessages.priceFirstTime),
     priceRetouch: optionalPositiveInt,
-    durationFirstTimeMin: requiredInt.positive(v.durationFirstTimeMin),
+    durationFirstTimeMin: requiredInt.positive(validationMessages.durationFirstTimeMin),
     durationRetouchMin: optionalPositiveInt,
-    bufferMin: requiredInt.min(0, v.bufferMin),
+    bufferMin: requiredInt.min(0, validationMessages.bufferMin),
     reapplicationIntervalDays: optionalPositiveInt,
-    deposit: requiredInt.min(0, v.deposit),
-    aftercareText: z.string().trim().min(1, v.aftercareText),
+    deposit: requiredInt.min(0, validationMessages.deposit),
+    aftercareText: z.string().trim().min(1, validationMessages.aftercareText),
   })
   .transform(
     (data): TechniqueWriteModel => ({
