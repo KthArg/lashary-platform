@@ -24,7 +24,7 @@ describe('protección de /admin/catalog', () => {
     ).rejects.toThrow('NEXT_REDIRECT:/admin')
   })
 
-  it('renderiza la sección con pestañas Técnicas y Paquetes para staff', async () => {
+  it('renderiza la sección con pestañas Productos, Técnicas y Paquetes para staff', async () => {
     mocks.requireAdminSession.mockResolvedValueOnce({
       user: { email: 'admin@lashary.test' },
       role: 'admin',
@@ -33,6 +33,9 @@ describe('protección de /admin/catalog', () => {
     render(await AdminCatalogLayout({ children: <div>catálogo protegido</div> }))
 
     expect(screen.getByText('catálogo protegido')).toBeDefined()
+    const products = screen.getByRole('tab', { name: 'Productos' })
+    expect(products.getAttribute('href')).toBe('/admin/catalog/products')
+    expect(products.getAttribute('aria-current')).toBeNull()
     const techniques = screen.getByRole('tab', { name: 'Técnicas' })
     const packages = screen.getByRole('tab', { name: 'Paquetes' })
     expect(techniques.getAttribute('href')).toBe('/admin/catalog')
