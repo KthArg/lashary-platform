@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
-import type { ProductoAdminVista } from '../domain/producto'
+import { ORDEN_MINIMO, type ProductoAdminVista } from '../domain/producto'
 import { mensajesAdminProductos } from '../constants/mensajes-admin-productos'
 import {
   crearProductoAction,
@@ -11,6 +11,15 @@ import {
 import { estadoAccionInicial } from '../actions/estado-accion-producto'
 
 export type ModoFormularioProducto = 'crear' | 'editar'
+
+export type ValoresInicialesProducto = {
+  slug?: string
+  nombre?: string
+  urlImagen?: string
+  precioCrc?: number
+  ordenPresentacion: number
+  descripcion?: string
+}
 
 export function useFormularioProductoAdmin(producto?: ProductoAdminVista) {
   const modo: ModoFormularioProducto = producto !== undefined ? 'editar' : 'crear'
@@ -30,10 +39,22 @@ export function useFormularioProductoAdmin(producto?: ProductoAdminVista) {
     editar: { heading: f.legendEdit, submitLabel: f.submitEdit },
   }
 
+  const productoId = producto?.id ?? ''
+  const valoresIniciales: ValoresInicialesProducto = {
+    slug: producto?.slug,
+    nombre: producto?.nombre,
+    urlImagen: producto?.urlImagen,
+    precioCrc: producto?.precioCrc,
+    ordenPresentacion: producto?.ordenPresentacion ?? ORDEN_MINIMO,
+    descripcion: producto?.descripcion,
+  }
+
   return {
     modo,
     heading: textosPorModo[modo].heading,
     submitLabel: textosPorModo[modo].submitLabel,
+    productoId,
+    valoresIniciales,
     state,
     formAction,
     pending,

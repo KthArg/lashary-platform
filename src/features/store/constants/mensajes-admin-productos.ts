@@ -38,6 +38,7 @@ export const mensajesAdminProductos = {
     },
     submitCreate: 'Crear producto',
     submitEdit: 'Guardar cambios',
+    deactivateAction: 'Desactivar',
     cancel: 'Cancelar',
     accessDenied:
       'Tu sesión no tiene permisos para modificar el catálogo. Iniciá sesión como administradora.',
