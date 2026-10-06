@@ -3,18 +3,18 @@
 import { randomUUID } from 'node:crypto'
 import { revalidatePath } from 'next/cache'
 import { isErr } from '@/shared/result'
-import { isStaff } from './require-staff'
+import { isStaff } from '../../require-staff'
 import {
   createTechnique,
   updateTechnique,
   deactivateTechnique,
   type CommandDeps,
-} from '../application/techniques/commands'
-import { techniqueRepository } from '../db/techniques/technique-repository'
-import { techniqueFormSchema } from './schema'
-import { catalogMessages } from './messages'
-import { catalogRoutes } from './routes'
-import type { TechniqueActionState } from './action-state'
+} from '../../../application/techniques/commands'
+import { techniqueRepository } from '../../../db/techniques/technique-repository'
+import { techniqueFormSchema } from '../validation/technique-schema'
+import { catalogMessages } from '../constants/technique-strings'
+import { catalogRoutes } from '../../routes'
+import type { TechniqueActionState } from '../types/technique-action-state'
 
 async function deps(): Promise<CommandDeps> {
   return { repo: await techniqueRepository(), newId: () => randomUUID() }

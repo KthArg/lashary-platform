@@ -50,7 +50,7 @@ export type { ListPackagesQuery } from './application/packages/ports'
 export type { PackageListItem } from './application/packages/queries'
 
 // UI de administración (US-AGE-08). La compone la ruta src/app/admin/catalog/.
-export { AdminCatalogPage } from './ui/AdminCatalogPage'
-export { catalogMessages } from './ui/messages'
+export { AdminCatalogPage } from './ui/techniques/components/AdminCatalogPage'
+export { catalogMessages } from './ui/techniques/constants/technique-strings'
 
 export { AdminPackagesPage } from './ui/packages/components/AdminPackagesPage'

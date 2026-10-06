@@ -3,23 +3,20 @@ import { isOk } from '@/shared/result'
 import {
   listTechniques as listTechniquesUseCase,
   getTechnique as getTechniqueUseCase,
-} from '../application/techniques/queries'
-import { techniqueRepository } from '../db/techniques/technique-repository'
-import { catalogMessages } from './messages'
-import { catalogRoutes } from './routes'
+} from '../../../../application/techniques/queries'
+import { techniqueRepository } from '../../../../db/techniques/technique-repository'
+import { catalogMessages } from '../../constants/technique-strings'
+import { catalogRoutes } from '../../../routes'
 import { adminCatalogPageStyles as s } from './AdminCatalogPage.styles'
-import { TechniqueTable } from './TechniqueTable'
-import { TechniqueForm } from './technique-form'
+import { TechniqueTable } from '../TechniqueTable'
+import { TechniqueForm } from '../TechniqueForm'
+import type { AdminCatalogPageProps } from './AdminCatalogPage.types'
 
 const m = catalogMessages.admin
 
-type SearchParams = { edit?: string; new?: string }
-
 export async function AdminCatalogPage({
   searchParams,
-}: {
-  searchParams?: Promise<SearchParams>
-}) {
+}: AdminCatalogPageProps) {
   const params = (await searchParams) ?? {}
   const repo = await techniqueRepository()
 
