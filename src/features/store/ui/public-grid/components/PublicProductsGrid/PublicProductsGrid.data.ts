@@ -1,10 +1,10 @@
 import { sanitizeUrl } from '../../../../domain/product'
 
-export type BotonReintento = { modo: 'activo'; href: string } | { modo: 'inactivo' }
+export type RetryButtonModel = { mode: 'active'; href: string } | { mode: 'inactive' }
 
-export function calcularBotonReintento(urlReintento?: string): BotonReintento {
-  if (!urlReintento) return { modo: 'inactivo' }
-  const href = sanitizeUrl(urlReintento)
-  if (!href) return { modo: 'inactivo' }
-  return { modo: 'activo', href }
+export function getRetryButton(retryUrl?: string): RetryButtonModel {
+  if (!retryUrl) return { mode: 'inactive' }
+  const href = sanitizeUrl(retryUrl)
+  if (!href) return { mode: 'inactive' }
+  return { mode: 'active', href }
 }

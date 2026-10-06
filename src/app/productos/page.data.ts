@@ -1,11 +1,11 @@
 import {
-  CADENAS_GRID_PRODUCTOS_ES,
+  PUBLIC_GRID_STRINGS,
   publicProductsDb,
   getProductGridState,
   type ProductGridState,
 } from '@/features/store'
 
-export async function obtenerVistaProductos(): Promise<ProductGridState> {
+export async function getProductsView(): Promise<ProductGridState> {
   const catalog = publicProductsDb()
-  return getProductGridState(catalog, CADENAS_GRID_PRODUCTOS_ES)
+  return getProductGridState(catalog, PUBLIC_GRID_STRINGS)
 }

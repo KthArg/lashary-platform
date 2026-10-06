@@ -1,2 +1,2 @@
-export { GridProductosPublicos } from './PublicProductsGrid'
-export type { GridProductosPublicosProps } from './PublicProductsGrid.types'
+export { PublicProductsGrid } from './PublicProductsGrid'
+export type { PublicProductsGridProps } from './PublicProductsGrid.types'

@@ -1,30 +1,25 @@
 import type { ComponentType } from 'react'
-import type { ProductGridState } from '../../../../domain/product'
-import { calcularBotonReintento, type BotonReintento } from '../PublicProductsGrid/PublicProductsGrid.data'
-import { BotonReintentoActivo } from '../RetryButtonActive/RetryButtonActive'
-import { BotonReintentoInactivo } from '../RetryButtonInactive/RetryButtonInactive'
-import { gridProductosPublicosStyles as STYLES } from '../PublicProductsGrid/PublicProductsGrid.styles'
+import { getRetryButton, type RetryButtonModel } from '../PublicProductsGrid/PublicProductsGrid.data'
+import { RetryButtonActive } from '../RetryButtonActive'
+import { RetryButtonInactive } from '../RetryButtonInactive'
+import { publicProductsGridStyles as STYLES } from '../PublicProductsGrid/PublicProductsGrid.styles'
+import type { GridErrorStateProps } from './GridErrorState.types'
 
-type Props = {
-  estado: Extract<ProductGridState, { kind: 'error' }>
-  urlReintento?: string
+const RETRY_BUTTONS: Record<RetryButtonModel['mode'], ComponentType<any>> = {
+  active: RetryButtonActive,
+  inactive: RetryButtonInactive,
 }
 
-const BOTONES_REINTENTO: Record<BotonReintento['modo'], ComponentType<any>> = {
-  activo: BotonReintentoActivo,
-  inactivo: BotonReintentoInactivo,
-}
-
-export function EstadoError({ estado, urlReintento }: Props) {
-  const boton = calcularBotonReintento(urlReintento)
-  const BotonReintento = BOTONES_REINTENTO[boton.modo]
+export function GridErrorState({ state, retryUrl }: GridErrorStateProps) {
+  const button = getRetryButton(retryUrl)
+  const RetryButton = RETRY_BUTTONS[button.mode]
 
   return (
     <section className={STYLES.alertError} role="alert">
       <div>
-        <h2 className={STYLES.alertTitle}>{estado.title}</h2>
-        <p>{estado.description}</p>
-        <BotonReintento boton={boton} etiqueta={estado.retryLabel} />
+        <h2 className={STYLES.alertTitle}>{state.title}</h2>
+        <p>{state.description}</p>
+        <RetryButton button={button} label={state.retryLabel} />
       </div>
     </section>
   )

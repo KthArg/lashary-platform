@@ -1,6 +1,6 @@
 import { ProductGridStrings } from '../../../domain/product';
 
-export const CADENAS_GRID_PRODUCTOS_ES: ProductGridStrings = {
+export const PUBLIC_GRID_STRINGS: ProductGridStrings = {
   emptyTitle: 'No hay productos disponibles',
   emptyDescription: 'Pronto agregaremos nuevos productos de mantenimiento.',
   errorTitle: 'No se pudo cargar el catálogo',

@@ -1,17 +1,15 @@
-import { CADENAS_GRID_PRODUCTOS_ES } from '../../constants/public-grid-strings'
-import type { BotonReintento } from '../PublicProductsGrid/PublicProductsGrid.data'
-import { gridProductosPublicosStyles as STYLES } from '../PublicProductsGrid/PublicProductsGrid.styles'
+import { PUBLIC_GRID_STRINGS } from '../../constants/public-grid-strings'
+import { publicProductsGridStyles as STYLES } from '../PublicProductsGrid/PublicProductsGrid.styles'
+import type { RetryButtonActiveProps } from './RetryButtonActive.types'
 
-type Props = { boton: Extract<BotonReintento, { modo: 'activo' }>; etiqueta: string }
-
-export function BotonReintentoActivo({ boton, etiqueta }: Props) {
+export function RetryButtonActive({ button, label }: RetryButtonActiveProps) {
   return (
     <a
-      href={boton.href}
+      href={button.href}
       className={STYLES.retryButton}
-      aria-label={CADENAS_GRID_PRODUCTOS_ES.retryButtonAriaLabel}
+      aria-label={PUBLIC_GRID_STRINGS.retryButtonAriaLabel}
     >
-      {etiqueta}
+      {label}
     </a>
   )
 }

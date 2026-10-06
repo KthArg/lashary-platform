@@ -1,4 +1,4 @@
-export const gridProductosPublicosStyles = {
+export const publicProductsGridStyles = {
   card: 'card bg-base-100 shadow-sm',
   image: 'h-56 w-full object-cover',
   cardBody: 'card-body',
