@@ -67,3 +67,21 @@ FROM (VALUES
 ) AS v(full_name, email, phone, notes)
 -- Idempotente: correrlo dos veces no duplica teléfonos (criterio 3).
 WHERE NOT EXISTS (SELECT 1 FROM public.clients_profiles c WHERE c.phone = v.phone);
+
+-- Datos de desarrollo: 2 productos de ejemplo para /productos y /admin/store (US-PROD-02).
+-- Solo local: `supabase db reset` lo aplica después de las migraciones. No es una migración
+-- (INT-008) y no se corre en producción — antes vivían, por error, en la migración de esquema
+-- 20260912000000_store_products.sql; 20260926000000_store_products_remove_demo_seed.sql los
+-- retira de ahí.
+INSERT INTO public.store_products (slug, nombre, descripcion, url_imagen, precio_crc, activo, sort_order)
+VALUES
+  ('serum-nutritivo-lashary', 'Serum nutritivo Lashary', 'Tratamiento nutritivo para mantenimiento de pestañas.', '/productos/serum-nutritivo.jpg', 18000, true, 1),
+  ('cepillo-limpiador-lashary', 'Cepillo limpiador Lashary', 'Accesorio para limpieza suave diaria.', '/productos/cepillo-limpiador.jpg', 12000, true, 2)
+ON CONFLICT (slug) DO UPDATE SET
+  nombre = EXCLUDED.nombre,
+  descripcion = EXCLUDED.descripcion,
+  url_imagen = EXCLUDED.url_imagen,
+  precio_crc = EXCLUDED.precio_crc,
+  activo = EXCLUDED.activo,
+  sort_order = EXCLUDED.sort_order,
+  updated_at = timezone('utc', now());
