@@ -30,7 +30,7 @@ async function resolveTechniques(
 ): Promise<Result<void, PackageValidationError>> {
   const uniqueIds = Array.from(new Set(techniqueIds))
   const found = await techniqueRepo.findByIds(uniqueIds)
-  const foundById = new Map(found.map((t) => [t.id, t]))
+  const foundById = new Map(found.map((technique) => [technique.id, technique]))
 
   const missing = uniqueIds.filter((id) => !foundById.has(id))
   const inactive = uniqueIds.filter((id) => foundById.get(id)?.isActive === false)

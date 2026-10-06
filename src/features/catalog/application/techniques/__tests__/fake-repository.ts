@@ -10,14 +10,14 @@ export class FakeTechniqueRepository implements TechniqueRepository {
   saveCalls = 0
 
   constructor(initial: Technique[] = []) {
-    for (const t of initial) this.store.set(t.id, t)
+    for (const technique of initial) this.store.set(technique.id, technique)
   }
 
   async list(params: { activeOnly: boolean; offset: number; limit: number }) {
     let all = [...this.store.values()]
-    if (params.activeOnly) all = all.filter((t) => t.isActive)
+    if (params.activeOnly) all = all.filter((technique) => technique.isActive)
     all.sort(
-      (a, b) => a.family.localeCompare(b.family) || a.name.localeCompare(b.name),
+      (first, second) => first.family.localeCompare(second.family) || first.name.localeCompare(second.name),
     )
     return {
       items: all.slice(params.offset, params.offset + params.limit),
@@ -30,7 +30,7 @@ export class FakeTechniqueRepository implements TechniqueRepository {
   }
 
   async findByIds(ids: string[]) {
-    return ids.map((id) => this.store.get(id)).filter((t): t is Technique => t !== undefined)
+    return ids.map((id) => this.store.get(id)).filter((technique): technique is Technique => technique !== undefined)
   }
 
   async save(technique: Technique) {
