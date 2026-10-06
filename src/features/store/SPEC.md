@@ -2,11 +2,11 @@
 feature: store
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-09-21
+actualizado: 2026-09-27
 historias:
   - id: US-PROD-02
     estado: en_progreso
-    falta: Panel admin para gestionar productos desde CMS.
+    falta: Panel admin (criterio 3) — falta el resto de las capas (aplicación, adaptador de escritura, acciones, UI y wiring); la base de dominio ya está.
   - id: US-PROD-03
     estado: no_iniciada
   - id: US-SHOP-01
@@ -37,7 +37,9 @@ Tienda (F4): productos, carrito, checkout con comprobante. Stock y pedidos admin
 - Etiquetas ARIA y mensaje de carga externalizados en cadenas de UI
 - Acción de reintento configurable por URL (`urlReintento`) en el renderer
 
-Se detiene antes del panel admin para gestionar productos desde CMS.
+Panel admin (criterio 3, "administrables desde el panel") — en construcción, aún no montado:
+- Constructor validado (`domain/producto.ts`, `construirProducto`): invariantes de negocio (DOM-007) — slug, nombre y URL de imagen no vacíos, precio entero positivo, orden de presentación entero no negativo; sin clases, `ProductoAdminVista` es un objeto plano
+- Errores tipados (`domain/errores-producto.ts`): `ProductoInvalido`, `ProductoNoEncontrado`, `ProductoSlugDuplicado` (DOM-006)
 
 ## Contrato público
 

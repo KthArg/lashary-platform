@@ -97,8 +97,8 @@
 - US-AGE-11 — no_iniciada
 - US-AGE-12 — no_iniciada
 
-### store (actualizado: 2026-09-21)
-- US-PROD-02 — en_progreso — falta: Panel admin para gestionar productos desde CMS.
+### store (actualizado: 2026-09-27)
+- US-PROD-02 — en_progreso — falta: Panel admin (criterio 3) — falta el resto de las capas (aplicación, adaptador de escritura, acciones, UI y wiring); la base de dominio ya está.
 - US-PROD-03 — no_iniciada
 - US-SHOP-01 — no_iniciada
 - US-SHOP-02 — no_iniciada
