@@ -1,39 +1,39 @@
 import Link from 'next/link'
 import { mensajesAdminProductos } from '../../constants/mensajes-admin-productos'
-import { tablaProductosAdminStyles as s } from './TablaProductosAdmin.styles'
+import { tablaProductosAdminStyles as STYLES } from './TablaProductosAdmin.styles'
 import type { TablaProductosAdminProps } from './TablaProductosAdmin.types'
 
-const m = mensajesAdminProductos.admin
+const textosPanel = mensajesAdminProductos.admin
 
 export function TablaProductosAdmin({ filas }: TablaProductosAdminProps) {
   return (
-    <div className={s.wrapper}>
-      <table className={s.table}>
+    <div className={STYLES.wrapper}>
+      <table className={STYLES.table}>
         <thead>
           <tr>
-            <th>{m.columns.nombre}</th>
-            <th>{m.columns.slug}</th>
-            <th>{m.columns.precio}</th>
-            <th>{m.columns.orden}</th>
-            <th>{m.columns.status}</th>
+            <th>{textosPanel.columns.nombre}</th>
+            <th>{textosPanel.columns.slug}</th>
+            <th>{textosPanel.columns.precio}</th>
+            <th>{textosPanel.columns.orden}</th>
+            <th>{textosPanel.columns.status}</th>
             <th>
-              <span className={s.srOnly}>{m.columns.actions}</span>
+              <span className={STYLES.srOnly}>{textosPanel.columns.actions}</span>
             </th>
           </tr>
         </thead>
         <tbody>
           {filas.map((fila) => (
             <tr key={fila.id}>
-              <td className={s.nameCell}>{fila.nombre}</td>
+              <td className={STYLES.nameCell}>{fila.nombre}</td>
               <td>{fila.slug}</td>
               <td>{fila.precioFormateado}</td>
               <td>{fila.orden}</td>
               <td>
                 <span className={fila.estadoClase}>{fila.estadoTexto}</span>
               </td>
-              <td className={s.actionsCell}>
-                <Link href={fila.hrefEditar} className={s.editLink}>
-                  {m.rowActions.edit}
+              <td className={STYLES.actionsCell}>
+                <Link href={fila.hrefEditar} className={STYLES.editLink}>
+                  {textosPanel.rowActions.edit}
                 </Link>
               </td>
             </tr>

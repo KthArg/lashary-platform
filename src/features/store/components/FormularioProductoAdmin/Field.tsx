@@ -1,4 +1,4 @@
-import { formularioProductoAdminStyles as s } from './FormularioProductoAdmin.styles'
+import { formularioProductoAdminStyles as STYLES } from './FormularioProductoAdmin.styles'
 
 type Props = {
   name: string
@@ -11,8 +11,8 @@ type Props = {
 
 export function Field({ name, label, defaultValue, type = 'text', required, min }: Props) {
   return (
-    <label className={s.fieldLabel} htmlFor={name}>
-      <span className={s.labelText}>{label}</span>
+    <label className={STYLES.fieldLabel} htmlFor={name}>
+      <span className={STYLES.labelText}>{label}</span>
       <input
         id={name}
         name={name}
@@ -21,7 +21,7 @@ export function Field({ name, label, defaultValue, type = 'text', required, min 
         min={min}
         step={1}
         defaultValue={defaultValue}
-        className={s.fieldInput}
+        className={STYLES.fieldInput}
       />
     </label>
   )

@@ -1,6 +1,6 @@
 import { GridProductosPublicos } from '@/features/store'
 import { obtenerVistaProductos } from './page.data'
-import { productosPageStyles as s } from './productos.styles'
+import { productosPageStyles as STYLES } from './productos.styles'
 
 export const metadata = {
   title: 'Productos | LASHARY Beauty Studio',
@@ -11,8 +11,8 @@ export default async function ProductosPage() {
   const estado = await obtenerVistaProductos()
 
   return (
-    <main className={s.main}>
-      <div className={s.container}>
+    <main className={STYLES.main}>
+      <div className={STYLES.container}>
         <GridProductosPublicos estado={estado} />
       </div>
     </main>

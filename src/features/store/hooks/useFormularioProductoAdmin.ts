@@ -14,7 +14,7 @@ export type ModoFormularioProducto = 'crear' | 'editar'
 
 export function useFormularioProductoAdmin(producto?: ProductoAdminVista) {
   const modo: ModoFormularioProducto = producto !== undefined ? 'editar' : 'crear'
-  const f = mensajesAdminProductos.form
+  const textosFormulario = mensajesAdminProductos.form
 
   const [state, formAction, pending] = useActionState(
     modo === 'editar' ? actualizarProductoAction : crearProductoAction,
@@ -26,8 +26,8 @@ export function useFormularioProductoAdmin(producto?: ProductoAdminVista) {
   )
 
   const textosPorModo: Record<ModoFormularioProducto, { heading: string; submitLabel: string }> = {
-    crear: { heading: f.legendCreate, submitLabel: f.submitCreate },
-    editar: { heading: f.legendEdit, submitLabel: f.submitEdit },
+    crear: { heading: textosFormulario.legendCreate, submitLabel: textosFormulario.submitCreate },
+    editar: { heading: textosFormulario.legendEdit, submitLabel: textosFormulario.submitEdit },
   }
 
   return {

@@ -52,6 +52,8 @@ Panel admin (criterio 3, "administrables desde el panel") en `/admin/store`, pro
 
 Organización de la capa de presentación (`components/`, `hooks/`, `actions/`, `constants/`) igual a la de `auth`: `domain/`, `application/`, `db/`, `http/` son la arquitectura DDD (ARCH-002/DOM-006/007) y no se solapan con esta convención.
 
+La presentación de store (y sus rutas `/productos` y `/admin/store`) usa nombres descriptivos en vez de alias de una letra (2026-10-06): los estilos se importan como `STYLES`, igual que en clients, y los textos se guardan en `textosPanel` (`mensajesAdminProductos.admin`), `textosFormulario` (`.form`), `mensajesValidacion` (`.form.validation`), `textosError` (`.admin.error`) y `textosEncabezado` (`.shell`).
+
 ## Contrato público
 
 `index.ts` exporta el contrato completo para listar productos, renderizar grid, consultar catálogos y administrar productos (ARCH-003). `client.ts` expone solo los textos, para los boundaries de ruta que corren en el cliente.
