@@ -3,6 +3,8 @@ import { isErr, isOk } from '@/shared/result'
 import {
   listarProductosAdmin,
   obtenerProductoAdmin,
+  TAMANO_PAGINA_DEFECTO,
+  TAMANO_PAGINA_MAX,
 } from '@/features/store/application/productos-admin-consultas'
 import { crearFakeProductoRepositorioAdmin } from './fake-repositorio-productos'
 import { makeProducto } from './producto-fixture'
@@ -28,17 +30,22 @@ describe('listarProductosAdmin', () => {
     expect(page.total).toBe(2)
   })
 
-  it('pagina con tamaño por defecto 50 y tope 100', async () => {
+  it(`pagina con tamaño por defecto ${TAMANO_PAGINA_DEFECTO} y tope ${TAMANO_PAGINA_MAX}`, async () => {
     const repo = crearFakeProductoRepositorioAdmin(
-      Array.from({ length: 120 }, (_, i) => makeProducto({ id: `p${i}`, ordenPresentacion: i })),
+      Array.from({ length: TAMANO_PAGINA_MAX + 20 }, (_, i) =>
+        makeProducto({ id: `p${i}`, ordenPresentacion: i }),
+      ),
     )
     const first = await listarProductosAdmin(repo)({ page: 1, activeOnly: false })
-    expect(first.items).toHaveLength(50)
-    expect(first.pageSize).toBe(50)
+    expect(first.items).toHaveLength(TAMANO_PAGINA_DEFECTO)
+    expect(first.pageSize).toBe(TAMANO_PAGINA_DEFECTO)
 
-    const capped = await listarProductosAdmin(repo)({ pageSize: 999, activeOnly: false })
-    expect(capped.pageSize).toBe(100)
-    expect(capped.items).toHaveLength(100)
+    const capped = await listarProductosAdmin(repo)({
+      pageSize: TAMANO_PAGINA_MAX + 1,
+      activeOnly: false,
+    })
+    expect(capped.pageSize).toBe(TAMANO_PAGINA_MAX)
+    expect(capped.items).toHaveLength(TAMANO_PAGINA_MAX)
   })
 
   it('normaliza page y pageSize inválidos', async () => {

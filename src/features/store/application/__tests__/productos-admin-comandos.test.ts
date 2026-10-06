@@ -12,12 +12,15 @@ import {
 } from './fake-repositorio-productos'
 import { makeProducto } from './producto-fixture'
 
+const SLUG_EXISTENTE = 'cepillo-limpiador-lashary'
+const PRECIO_VALIDO_CRC = 12000
+
 const validModel = (): ProductoEscritura => ({
-  slug: 'cepillo-limpiador-lashary',
+  slug: SLUG_EXISTENTE,
   nombre: 'Cepillo limpiador Lashary',
   descripcion: 'Accesorio para limpieza suave diaria.',
   urlImagen: '/productos/cepillo-limpiador.jpg',
-  precioCrc: 12000,
+  precioCrc: PRECIO_VALIDO_CRC,
   ordenPresentacion: 2,
 })
 
@@ -33,7 +36,7 @@ describe('crearProducto', () => {
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
     expect(result.value.id).toBe('abc')
-    expect(result.value.precioCrc).toBe(12000)
+    expect(result.value.precioCrc).toBe(PRECIO_VALIDO_CRC)
     expect(repo.saveCalls).toBe(1)
     expect(await repo.findById('abc')).not.toBeNull()
   })
@@ -48,14 +51,14 @@ describe('crearProducto', () => {
 
   it('rechaza montos no enteros', async () => {
     const repo = crearFakeProductoRepositorioAdmin()
-    const result = await crearProducto(deps(repo))({ ...validModel(), precioCrc: 12000.5 })
+    const result = await crearProducto(deps(repo))({ ...validModel(), precioCrc: PRECIO_VALIDO_CRC + 0.5 })
     expect(isErr(result)).toBe(true)
     expect(repo.saveCalls).toBe(0)
   })
 
   it('DOM-006: devuelve ProductoSlugDuplicado si el slug ya existe, no un Error genérico', async () => {
     const repo = crearFakeProductoRepositorioAdmin([
-      makeProducto({ id: 'existente', slug: 'cepillo-limpiador-lashary' }),
+      makeProducto({ id: 'existente', slug: SLUG_EXISTENTE }),
     ])
     const result = await crearProducto(deps(repo, 'nuevo'))(validModel())
     expect(isErr(result)).toBe(true)
@@ -125,5 +128,6 @@ describe('desactivarProducto', () => {
     const repo = crearFakeProductoRepositorioAdmin()
     const result = await desactivarProducto(deps(repo))('nope')
     expect(isErr(result)).toBe(true)
+    if (isErr(result)) expect(result.error.tipo).toBe('ProductoNoEncontrado')
   })
 })

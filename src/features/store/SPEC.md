@@ -2,7 +2,7 @@
 feature: store
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-09-27
+actualizado: 2026-10-05
 historias:
   - id: US-PROD-02
     estado: en_progreso
