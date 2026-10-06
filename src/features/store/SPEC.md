@@ -6,7 +6,7 @@ actualizado: 2026-10-06
 historias:
   - id: US-PROD-02
     estado: terminada
-    evidencia: "PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), producto.test.ts, productos-admin-comandos.test.ts, productos-admin-consultas.test.ts, esquema-producto-admin.test.ts, productos-admin-actions.test.ts, layout.test.tsx, rls-productos-admin.test.ts (omitida sin Supabase local, ver deuda)"
+    evidencia: "PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), product.test.ts, commands.test.ts, queries.test.ts, product-schema.test.ts, product-actions.test.ts, layout.test.tsx, products-admin-rls.test.ts (omitida sin Supabase local, ver deuda)"
   - id: US-PROD-03
     estado: no_iniciada
   - id: US-SHOP-01
