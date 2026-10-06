@@ -9,9 +9,9 @@ export { aProductoEnTarjeta, formatearPrecioCrc } from './domain/producto';
 
 export type { CatalogoProductosPublico } from './application/obtener-grid-productos-publicos';
 
-export { CADENAS_GRID_PRODUCTOS_ES } from './ui/grid-productos-publicos.cadenas.es';
-export type { OpcionesRenderGridProductos } from './ui/grid-productos-publicos';
-export { renderGridProductosPublicos } from './ui/grid-productos-publicos';
+export { CADENAS_GRID_PRODUCTOS_ES } from './constants/grid-productos-publicos-cadenas-es';
+export type { GridProductosPublicosProps } from './components/GridProductosPublicos';
+export { GridProductosPublicos } from './components/GridProductosPublicos';
 
 export {
   estadoGridProductosInicial,

@@ -5,18 +5,14 @@ import {
   aProductoEnTarjeta,
 } from '../domain/producto';
 
-// Contrato que cumplen todos los adaptadores de catálogo
 export type CatalogoProductosPublico = {
   listarProductosPublicos(): Promise<ProductoPublico[]>;
 };
 
-// Estado inicial mientras se carga el catálogo
 export function estadoGridProductosInicial(): EstadoGridProductos {
   return { tipo: 'cargando' };
 }
 
-// Caso de uso: obtener estado del grid desde un catálogo
-// Orquesta: traer → filtrar activos → transformar → retornar estado completo
 export async function obtenerEstadoGridProductos(
   catalogo: CatalogoProductosPublico,
   cadenas: CadenaProductos,
