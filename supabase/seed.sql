@@ -71,7 +71,7 @@ WHERE NOT EXISTS (SELECT 1 FROM public.clients_profiles c WHERE c.phone = v.phon
 -- Datos de desarrollo: 2 productos de ejemplo para /productos y /admin/store (US-PROD-02).
 -- Solo local: `supabase db reset` lo aplica después de las migraciones. No es una migración
 -- (INT-008) y no se corre en producción — antes vivían, por error, en la migración de esquema
--- 20260912000000_store_products.sql; 20260926000000_store_products_remove_demo_seed.sql los
+-- 20260912000000_store_products.sql; 20261006000000_store_products_remove_demo_seed.sql los
 -- retira de ahí.
 INSERT INTO public.store_products (slug, nombre, descripcion, url_imagen, precio_crc, activo, sort_order)
 VALUES
