@@ -1,25 +1,25 @@
 'use client'
 
 import type { ComponentType } from 'react'
-import { mensajesAdminProductos } from '../../constants/product-strings'
-import { useFormularioProductoAdmin, type ModoFormularioProducto } from '../../hooks/useProductForm'
-import { Field } from '../ProductFormField/ProductFormField'
-import { Feedback } from '../ProductFormFeedback/ProductFormFeedback'
-import { SeccionDesactivar } from '../DeactivateSection/DeactivateSection'
-import { SinSeccionDesactivar } from '../NoDeactivateSection/NoDeactivateSection'
-import { formularioProductoAdminStyles as STYLES } from './ProductForm.styles'
-import type { FormularioProductoAdminProps } from './ProductForm.types'
+import { productStrings } from '../../constants/product-strings'
+import { useProductForm, type ProductFormMode } from '../../hooks/useProductForm'
+import { ProductFormField } from '../ProductFormField'
+import { ProductFormFeedback } from '../ProductFormFeedback'
+import { DeactivateSection } from '../DeactivateSection'
+import { NoDeactivateSection } from '../NoDeactivateSection'
+import { productFormStyles as STYLES } from './ProductForm.styles'
+import type { ProductFormProps } from './ProductForm.types'
 
-const f = mensajesAdminProductos.form
+const formMessages = productStrings.form
 
-const SECCIONES_DESACTIVAR: Record<ModoFormularioProducto, ComponentType<any>> = {
-  crear: SinSeccionDesactivar,
-  editar: SeccionDesactivar,
+const DEACTIVATE_SECTIONS: Record<ProductFormMode, ComponentType<any>> = {
+  create: NoDeactivateSection,
+  edit: DeactivateSection,
 }
 
-export function FormularioProductoAdmin({ producto }: FormularioProductoAdminProps) {
+export function ProductForm({ product }: ProductFormProps) {
   const {
-    modo,
+    mode,
     heading,
     submitLabel,
     state,
@@ -28,51 +28,61 @@ export function FormularioProductoAdmin({ producto }: FormularioProductoAdminPro
     deactivateState,
     deactivateAction,
     deactivating,
-  } = useFormularioProductoAdmin(producto)
+  } = useProductForm(product)
 
-  const SeccionDesactivarDelModo = SECCIONES_DESACTIVAR[modo]
+  const DeactivateSectionForMode = DEACTIVATE_SECTIONS[mode]
 
   return (
     <section className={STYLES.section}>
       <h2 className={STYLES.heading}>{heading}</h2>
 
-      <Feedback {...state} />
+      <ProductFormFeedback {...state} />
 
       <form action={formAction} className={STYLES.form}>
-        <input type="hidden" name="id" value={producto?.id ?? ''} />
+        <input type="hidden" name="id" value={product?.id ?? ''} />
 
-        <Field name="slug" label={f.fields.slug} defaultValue={producto?.slug} required />
-        <Field name="name" label={f.fields.nombre} defaultValue={producto?.name} required />
-        <Field
-          name="imageUrl"
-          label={f.fields.urlImagen}
-          defaultValue={producto?.imageUrl}
+        <ProductFormField
+          name="slug"
+          label={formMessages.fields.slug}
+          defaultValue={product?.slug}
           required
         />
-        <Field
+        <ProductFormField
+          name="name"
+          label={formMessages.fields.name}
+          defaultValue={product?.name}
+          required
+        />
+        <ProductFormField
+          name="imageUrl"
+          label={formMessages.fields.imageUrl}
+          defaultValue={product?.imageUrl}
+          required
+        />
+        <ProductFormField
           name="priceCrc"
-          label={f.fields.precioCrc}
+          label={formMessages.fields.priceCrc}
           type="number"
           min={1}
           required
-          defaultValue={producto?.priceCrc}
+          defaultValue={product?.priceCrc}
         />
-        <Field
+        <ProductFormField
           name="displayOrder"
-          label={f.fields.ordenPresentacion}
+          label={formMessages.fields.displayOrder}
           type="number"
           min={0}
           required
-          defaultValue={producto?.displayOrder ?? 0}
+          defaultValue={product?.displayOrder ?? 0}
         />
 
-        <label className={STYLES.descripcionLabel} htmlFor="descripcion">
-          <span className={STYLES.labelText}>{f.fields.descripcion}</span>
+        <label className={STYLES.descriptionLabel} htmlFor="descripcion">
+          <span className={STYLES.labelText}>{formMessages.fields.description}</span>
           <textarea
             id="descripcion"
             name="description"
             rows={3}
-            defaultValue={producto?.description}
+            defaultValue={product?.description}
             className={STYLES.textarea}
           />
         </label>
@@ -84,8 +94,8 @@ export function FormularioProductoAdmin({ producto }: FormularioProductoAdminPro
         </div>
       </form>
 
-      <SeccionDesactivarDelModo
-        productId={producto?.id ?? ''}
+      <DeactivateSectionForMode
+        productId={product?.id ?? ''}
         deactivateAction={deactivateAction}
         deactivateState={deactivateState}
         deactivating={deactivating}

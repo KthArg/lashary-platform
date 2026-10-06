@@ -1,4 +1,4 @@
-export const tablaProductosAdminStyles = {
+export const productsAdminTableStyles = {
   wrapper: 'overflow-x-auto rounded-box border border-base-300',
   table: 'table table-zebra',
   srOnly: 'sr-only',

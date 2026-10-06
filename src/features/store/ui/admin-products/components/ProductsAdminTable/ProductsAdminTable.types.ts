@@ -1,14 +1,14 @@
-export type FilaProductoAdmin = {
+export interface AdminProductRow {
   id: string
-  nombre: string
+  name: string
   slug: string
-  precioFormateado: string
-  orden: number
-  estadoTexto: string
-  estadoClase: string
-  hrefEditar: string
+  formattedPrice: string
+  order: number
+  statusText: string
+  statusClass: string
+  editHref: string
 }
 
-export type TablaProductosAdminProps = {
-  filas: FilaProductoAdmin[]
+export interface ProductsAdminTableProps {
+  rows: AdminProductRow[]
 }

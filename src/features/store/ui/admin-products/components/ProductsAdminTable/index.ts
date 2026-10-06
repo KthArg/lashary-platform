@@ -1,2 +1,2 @@
-export { TablaProductosAdmin } from './ProductsAdminTable'
-export type { TablaProductosAdminProps } from './ProductsAdminTable.types'
+export { ProductsAdminTable } from './ProductsAdminTable'
+export type { ProductsAdminTableProps, AdminProductRow } from './ProductsAdminTable.types'

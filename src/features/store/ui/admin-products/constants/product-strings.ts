@@ -1,13 +1,13 @@
-export const mensajesAdminProductos = {
+export const productStrings = {
   admin: {
     title: 'Productos de la tienda',
     subtitle: 'Productos de mantenimiento del catálogo público. El sitio lee de aquí.',
     newProduct: 'Nuevo producto',
     columns: {
-      nombre: 'Producto',
+      name: 'Producto',
       slug: 'Slug',
-      precio: 'Precio',
-      orden: 'Orden',
+      price: 'Precio',
+      order: 'Orden',
       status: 'Estado',
       actions: 'Acciones',
     },
@@ -30,11 +30,11 @@ export const mensajesAdminProductos = {
     legendEdit: 'Editar producto',
     fields: {
       slug: 'Slug (identificador único en la URL)',
-      nombre: 'Nombre',
-      descripcion: 'Descripción',
-      urlImagen: 'URL de la imagen',
-      precioCrc: 'Precio (colones)',
-      ordenPresentacion: 'Orden de presentación',
+      name: 'Nombre',
+      description: 'Descripción',
+      imageUrl: 'URL de la imagen',
+      priceCrc: 'Precio (colones)',
+      displayOrder: 'Orden de presentación',
     },
     submitCreate: 'Crear producto',
     submitEdit: 'Guardar cambios',
@@ -47,10 +47,10 @@ export const mensajesAdminProductos = {
     deactivated: 'Producto desactivado.',
     validation: {
       slug: 'El slug es obligatorio',
-      nombre: 'El nombre es obligatorio',
-      urlImagen: 'La URL de la imagen es obligatoria',
-      precioCrc: 'El precio debe ser mayor que cero',
-      ordenPresentacion: 'El orden de presentación no puede ser negativo',
+      name: 'El nombre es obligatorio',
+      imageUrl: 'La URL de la imagen es obligatoria',
+      priceCrc: 'El precio debe ser mayor que cero',
+      displayOrder: 'El orden de presentación no puede ser negativo',
     },
   },
   shell: {

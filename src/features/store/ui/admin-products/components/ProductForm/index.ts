@@ -1,2 +1,2 @@
-export { FormularioProductoAdmin } from './ProductForm'
-export type { FormularioProductoAdminProps } from './ProductForm.types'
+export { ProductForm } from './ProductForm'
+export type { ProductFormProps } from './ProductForm.types'

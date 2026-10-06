@@ -3,12 +3,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { catalogRoutes } from '@/features/catalog/client'
-import { rutasAdminProductos } from '@/features/store/client'
+import { productRoutes } from '@/features/store/client'
 import { CATALOG_SECTION } from './catalog-section.strings'
 import { catalogStyles as STYLES } from './catalog.styles'
 
 const CATALOG_TABS = [
-  { label: CATALOG_SECTION.tabs.products, href: rutasAdminProductos.admin },
+  { label: CATALOG_SECTION.tabs.products, href: productRoutes.admin },
   { label: CATALOG_SECTION.tabs.techniques, href: catalogRoutes.admin },
   { label: CATALOG_SECTION.tabs.packages, href: catalogRoutes.packagesAdmin },
 ]

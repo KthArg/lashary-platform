@@ -1,18 +1,18 @@
 import type { ComponentType } from 'react'
-import { obtenerVistaPanelAdminProductos, type VistaPanelAdminProductos } from './ProductsAdminPanel.data'
-import { PanelProductosFormulario } from '../ProductsPanelForm/ProductsPanelForm'
-import { PanelProductosVacio } from '../ProductsPanelEmpty/ProductsPanelEmpty'
-import { PanelProductosListado } from '../ProductsPanelList/ProductsPanelList'
-import type { PanelAdminProductosProps } from './ProductsAdminPanel.types'
+import { getProductsAdminPanelView, type ProductsAdminPanelView } from './ProductsAdminPanel.data'
+import { ProductsPanelForm } from '../ProductsPanelForm'
+import { ProductsPanelEmpty } from '../ProductsPanelEmpty'
+import { ProductsPanelList } from '../ProductsPanelList'
+import type { ProductsAdminPanelProps } from './ProductsAdminPanel.types'
 
-const VISTAS_PANEL: Record<VistaPanelAdminProductos['modo'], ComponentType<any>> = {
-  formulario: PanelProductosFormulario,
-  vacio: PanelProductosVacio,
-  listado: PanelProductosListado,
+const PANEL_VIEWS: Record<ProductsAdminPanelView['mode'], ComponentType<any>> = {
+  form: ProductsPanelForm,
+  empty: ProductsPanelEmpty,
+  list: ProductsPanelList,
 }
 
-export async function PanelAdminProductos({ searchParams }: PanelAdminProductosProps) {
-  const vista = await obtenerVistaPanelAdminProductos(searchParams)
-  const Vista = VISTAS_PANEL[vista.modo]
-  return <Vista vista={vista} />
+export async function ProductsAdminPanel({ searchParams }: ProductsAdminPanelProps) {
+  const view = await getProductsAdminPanelView(searchParams)
+  const View = PANEL_VIEWS[view.mode]
+  return <View view={view} />
 }

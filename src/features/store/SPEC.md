@@ -32,22 +32,22 @@ Tienda (F4): productos, carrito, checkout con comprobante. Stock y pedidos admin
 - Caso de uso (`application/obtener-grid-productos-publicos.ts`): orquestación de listado
 - Adaptador CMS (`http/catalogo-productos-cms.ts`): lectura desde API externa
 - Adaptador base de datos (`db/productos-db.ts`): lectura pública desde Supabase
-- Componente React (`components/GridProductosPublicos/`): grid responsivo con estados de UI, JSX real (no HTML a mano) — React escapa contenido y atributos; sanitización de esquema de URL (`javascript:`/`data:`) aislada en `sanitizeUrl` (`domain/producto.ts`)
-- Strings externalizados (`constants/grid-productos-publicos-cadenas-es.ts`): i18n base
+- Componente React (`ui/public-grid/components/PublicProductsGrid/`): grid responsivo con estados de UI, JSX real (no HTML a mano) — React escapa contenido y atributos; sanitización de esquema de URL (`javascript:`/`data:`) aislada en `sanitizeUrl` (`domain/producto.ts`)
+- Strings externalizados (`ui/public-grid/constants/public-grid-strings.ts` (`PUBLIC_GRID_STRINGS`)): i18n base
 - Integración en ruta pública `/productos` con catálogo desde la base de datos
 - Pruebas automatizadas de UI/integración para el grid, el adaptador CMS y la ruta pública
 - Etiquetas ARIA y mensaje de carga externalizados en cadenas de UI
 - Acción de reintento configurable por URL (`urlReintento`) en el componente
 
-Panel admin (criterio 3, "administrables desde el panel") en `/admin/catalog/products`, como pestaña Productos de la sección Catálogo (los componentes importan sus estilos como `STYLES`, igual que catalog y clients) junto a Técnicas y Paquetes (`/admin/store` redirige ahí; `rutasAdminProductos` se expone en `client.ts` para las pestañas), protegido por `requireAdminSession` del layout de `/admin/catalog` (redirect si no hay sesión staff) y por las políticas RLS `store_products_*_admin` (SEC-001):
+Panel admin (criterio 3, "administrables desde el panel") en `/admin/catalog/products`, como pestaña Productos de la sección Catálogo (los componentes importan sus estilos como `STYLES`, igual que catalog y clients) junto a Técnicas y Paquetes (`/admin/store` redirige ahí; `productRoutes` se expone en `client.ts` para las pestañas), protegido por `requireAdminSession` del layout de `/admin/catalog` (redirect si no hay sesión staff) y por las políticas RLS `store_products_*_admin` (SEC-001):
 - Constructor validado (`domain/producto.ts`, `buildProduct`): invariantes de negocio (DOM-007) — slug, nombre y URL de imagen no vacíos, precio entero positivo, orden de presentación entero no negativo; sin clases, `AdminProduct` es un objeto plano
 - Errores tipados (`domain/errores-producto.ts`): `InvalidProduct`, `ProductNotFound`, `DuplicateProductSlug` (DOM-006), objetos discriminados por `kind` con su type guard en vez de `instanceof`
 - Casos de uso (`application/productos-admin-consultas.ts`, `application/productos-admin-comandos.ts`): listar paginado, obtener, crear, actualizar, desactivar — sobre el puerto `AdminProductRepository` (`application/productos-admin-puertos.ts`), probados con repositorio fake (`application/__tests__/`)
 - Adaptador de escritura (`db/productos-admin-repositorio.ts`): CRUD contra `store_products` vía Supabase, mapea `23505` (slug duplicado) a error de dominio; sin clase, función factory con closures — `db/productos-db.ts` y `http/catalogo-productos-cms.ts` (lectura pública) siguen el mismo patrón
-- Server actions (`actions/productos-admin-actions.ts`) con validación de formato en el borde (`actions/esquema-producto-admin.ts`, Zod) y chequeo de rol amable (`actions/permiso-staff.ts`) — la autorización real la hace RLS
-- Lógica de formulario separada del render en `hooks/useFormularioProductoAdmin.ts` (mismo patrón que `auth/hooks/useAdminLoginForm`)
-- Textos y rutas del panel externalizados en `constants/mensajes-admin-productos.ts` y `constants/rutas-admin-productos.ts` (DOM-009)
-- Componentes (`components/FormularioProductoAdmin/`, `components/TablaProductosAdmin/`, `components/PanelAdminProductos/`): listado, alta, edición y desactivación (no hay borrado físico) con estados vacío/carga/error (UI-003) y feedback accesible por rol `alert`/`status` (UI-004) — cada decisión de qué pintar sale precalculada de un `.data.ts` o un hook; los `.tsx` solo despachan por tabla o pintan, sin `if`/`?:`/`&&`
+- Server actions (`ui/admin-products/actions/product-actions.ts`) con validación de formato en el borde (`ui/admin-products/validation/product-schema.ts`, `productSchema`, Zod) y chequeo de rol amable (`ui/admin-products/actions/staff-permission.ts`, `isStaff`) — la autorización real la hace RLS
+- Lógica de formulario separada del render en `ui/admin-products/hooks/useProductForm.ts` (mismo patrón que `auth/hooks/useAdminLoginForm`)
+- Textos y rutas del panel externalizados en `ui/admin-products/constants/product-strings.ts` (`productStrings`) y `product-routes.ts` (`productRoutes`) (DOM-009)
+- Componentes (`ProductForm`, `ProductsAdminTable` y `ProductsAdminPanel` en `ui/admin-products/components/`): listado, alta, edición y desactivación (no hay borrado físico) con estados vacío/carga/error (UI-003) y feedback accesible por rol `alert`/`status` (UI-004) — cada decisión de qué pintar sale precalculada de un `.data.ts` o un hook; los `.tsx` solo despachan por tabla o pintan, sin `if`/`?:`/`&&`
 - Pruebas automatizadas: dominio, casos de uso (repositorio fake), esquema, server actions, protección de layout, y aislamiento RLS (`__tests__/rls-productos-admin.test.ts`, se salta sin Supabase local)
 
 Disposición actual de archivos (nombres en inglés): `ui/admin-products/` y `ui/public-grid/` (components, hooks, actions, constants, types, validation, `__tests__`), `application/admin-products/`, `application/public-grid/`, `domain/product.ts`, `db/` y `http/`; las rutas citadas arriba con nombres en español corresponden a los equivalentes de este mapa.

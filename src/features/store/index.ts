@@ -22,6 +22,6 @@ export type { CmsClient, CmsProductDto } from './http/products-cms-catalog';
 export { cmsProductCatalog } from './http/products-cms-catalog';
 export { publicProductsDb } from './db/public-products';
 
-export { PanelAdminProductos } from './ui/admin-products/components/ProductsAdminPanel';
-export { mensajesAdminProductos } from './ui/admin-products/constants/product-strings';
+export { ProductsAdminPanel } from './ui/admin-products/components/ProductsAdminPanel';
+export { productStrings } from './ui/admin-products/constants/product-strings';
 export type { AdminProduct } from './domain/product';

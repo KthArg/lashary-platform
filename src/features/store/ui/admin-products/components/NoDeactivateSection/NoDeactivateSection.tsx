@@ -1,3 +1,3 @@
-export function SinSeccionDesactivar() {
+export function NoDeactivateSection() {
   return null
 }

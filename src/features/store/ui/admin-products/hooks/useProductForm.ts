@@ -2,38 +2,38 @@
 
 import { useActionState } from 'react'
 import type { AdminProduct } from '../../../domain/product'
-import { mensajesAdminProductos } from '../constants/product-strings'
+import { productStrings } from '../constants/product-strings'
 import {
-  crearProductoAction,
-  actualizarProductoAction,
-  desactivarProductoAction,
+  createProductAction,
+  updateProductAction,
+  deactivateProductAction,
 } from '../actions/product-actions'
-import { estadoAccionInicial } from '../types/product-action-state'
+import { initialProductActionState } from '../types/product-action-state'
 
-export type ModoFormularioProducto = 'crear' | 'editar'
+export type ProductFormMode = 'create' | 'edit'
 
-export function useFormularioProductoAdmin(producto?: AdminProduct) {
-  const modo: ModoFormularioProducto = producto !== undefined ? 'editar' : 'crear'
-  const f = mensajesAdminProductos.form
+export function useProductForm(product?: AdminProduct) {
+  const mode: ProductFormMode = product !== undefined ? 'edit' : 'create'
+  const formMessages = productStrings.form
 
   const [state, formAction, pending] = useActionState(
-    modo === 'editar' ? actualizarProductoAction : crearProductoAction,
-    estadoAccionInicial,
+    mode === 'edit' ? updateProductAction : createProductAction,
+    initialProductActionState,
   )
   const [deactivateState, deactivateAction, deactivating] = useActionState(
-    desactivarProductoAction,
-    estadoAccionInicial,
+    deactivateProductAction,
+    initialProductActionState,
   )
 
-  const textosPorModo: Record<ModoFormularioProducto, { heading: string; submitLabel: string }> = {
-    crear: { heading: f.legendCreate, submitLabel: f.submitCreate },
-    editar: { heading: f.legendEdit, submitLabel: f.submitEdit },
+  const textsByMode: Record<ProductFormMode, { heading: string; submitLabel: string }> = {
+    create: { heading: formMessages.legendCreate, submitLabel: formMessages.submitCreate },
+    edit: { heading: formMessages.legendEdit, submitLabel: formMessages.submitEdit },
   }
 
   return {
-    modo,
-    heading: textosPorModo[modo].heading,
-    submitLabel: textosPorModo[modo].submitLabel,
+    mode,
+    heading: textsByMode[mode].heading,
+    submitLabel: textsByMode[mode].submitLabel,
     state,
     formAction,
     pending,

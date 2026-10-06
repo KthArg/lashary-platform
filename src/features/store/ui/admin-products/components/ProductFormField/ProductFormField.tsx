@@ -1,15 +1,14 @@
-import { formularioProductoAdminStyles as STYLES } from '../ProductForm/ProductForm.styles'
+import { productFormStyles as STYLES } from '../ProductForm/ProductForm.styles'
+import type { ProductFormFieldProps } from './ProductFormField.types'
 
-type Props = {
-  name: string
-  label: string
-  defaultValue?: string | number
-  type?: 'text' | 'number'
-  required?: boolean
-  min?: number
-}
-
-export function Field({ name, label, defaultValue, type = 'text', required, min }: Props) {
+export function ProductFormField({
+  name,
+  label,
+  defaultValue,
+  type = 'text',
+  required,
+  min,
+}: ProductFormFieldProps) {
   return (
     <label className={STYLES.fieldLabel} htmlFor={name}>
       <span className={STYLES.labelText}>{label}</span>

@@ -1,4 +1,4 @@
-export const panelAdminProductosStyles = {
+export const productsAdminPanelStyles = {
   main: 'mx-auto flex max-w-6xl flex-col gap-6 p-6',
   header: 'flex flex-wrap items-start justify-between gap-4',
   title: 'font-serif text-2xl',

@@ -1,7 +1,7 @@
-export type EstadoAccionProducto = {
+export interface ProductActionState {
   status: 'idle' | 'ok' | 'invalid' | 'forbidden'
   message?: string
   problems?: string[]
 }
 
-export const estadoAccionInicial: EstadoAccionProducto = { status: 'idle' }
+export const initialProductActionState: ProductActionState = { status: 'idle' }

@@ -1,3 +1,3 @@
-export function FeedbackIdle() {
+export function ProductFormFeedbackIdle() {
   return null
 }
