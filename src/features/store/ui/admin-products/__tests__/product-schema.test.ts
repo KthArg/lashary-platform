@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { productSchema } from '@/features/store/ui/admin-products/validation/product-schema'
+import { productStrings } from '@/features/store/ui/admin-products/constants/product-strings'
 
 const validForm = {
   slug: 'serum-nutritivo-lashary',
@@ -8,6 +9,7 @@ const validForm = {
   imageUrl: '/productos/serum-nutritivo.jpg',
   priceCrc: '18000',
   displayOrder: '1',
+  stock: '5',
 }
 
 describe('productSchema (DOM-007 — validación en el borde)', () => {
@@ -22,6 +24,7 @@ describe('productSchema (DOM-007 — validación en el borde)', () => {
       imageUrl: '/productos/serum-nutritivo.jpg',
       priceCrc: 18000,
       displayOrder: 1,
+      stock: 5,
     })
   })
 
@@ -71,5 +74,36 @@ describe('productSchema (DOM-007 — validación en el borde)', () => {
   it('rechaza un orden de presentación negativo', () => {
     const parsed = productSchema.safeParse({ ...validForm, displayOrder: '-1' })
     expect(parsed.success).toBe(false)
+  })
+
+  it('acepta cero existencias escritas a propósito', () => {
+    const parsed = productSchema.safeParse({ ...validForm, stock: '0' })
+    expect(parsed.success).toBe(true)
+    if (!parsed.success) return
+    expect(parsed.data.stock).toBe(0)
+  })
+
+  it('rechaza el campo de existencias vacío en vez de convertirlo en cero', () => {
+    const parsed = productSchema.safeParse({ ...validForm, stock: '   ' })
+    expect(parsed.success).toBe(false)
+    if (parsed.success) return
+    expect(parsed.error.issues.map((issue) => issue.message)).toContain(
+      productStrings.form.validation.stockRequired,
+    )
+  })
+
+  it('rechaza el formulario sin el campo de existencias', () => {
+    const { stock, ...withoutStock } = validForm
+    const parsed = productSchema.safeParse(withoutStock)
+    expect(parsed.success).toBe(false)
+    if (parsed.success) return
+    expect(parsed.error.issues.map((issue) => issue.message)).toContain(
+      productStrings.form.validation.stockRequired,
+    )
+  })
+
+  it('rechaza existencias negativas o con decimales', () => {
+    expect(productSchema.safeParse({ ...validForm, stock: '-1' }).success).toBe(false)
+    expect(productSchema.safeParse({ ...validForm, stock: '2.5' }).success).toBe(false)
   })
 })

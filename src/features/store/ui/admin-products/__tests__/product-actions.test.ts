@@ -23,6 +23,7 @@ import {
 } from '@/features/store/ui/admin-products/actions/product-actions'
 import { initialProductActionState } from '@/features/store/ui/admin-products/types/product-action-state'
 import { createDuplicateProductSlug } from '@/features/store/domain/product-errors'
+import { productStrings } from '@/features/store/ui/admin-products/constants/product-strings'
 
 function form(fields: Record<string, string>): FormData {
   const formData = new FormData()
@@ -37,6 +38,7 @@ const validFields = {
   imageUrl: '/productos/serum-nutritivo.jpg',
   priceCrc: '18000',
   displayOrder: '1',
+  stock: '4',
 }
 
 describe('acciones administrativas de productos', () => {
@@ -64,6 +66,17 @@ describe('acciones administrativas de productos', () => {
 
     expect(state.status).toBe('invalid')
     expect(state.problems?.length).toBeGreaterThanOrEqual(2)
+    expect(mocks.save).not.toHaveBeenCalled()
+  })
+
+  it('no guarda si la administradora deja vacío el campo de existencias', async () => {
+    const state = await createProductAction(
+      initialProductActionState,
+      form({ ...validFields, stock: '' }),
+    )
+
+    expect(state.status).toBe('invalid')
+    expect(state.problems).toContain(productStrings.form.validation.stockRequired)
     expect(mocks.save).not.toHaveBeenCalled()
   })
 

@@ -13,6 +13,7 @@ export function toAdminProductRows(items: AdminProduct[]): AdminProductRow[] {
     slug: product.slug,
     formattedPrice: formatPriceCrc(product.priceCrc),
     order: product.displayOrder,
+    stock: product.stock,
     statusText: product.isActive ? adminMessages.status.active : adminMessages.status.inactive,
     statusClass: product.isActive ? STYLES.badgeActive : STYLES.badgeInactive,
     editHref: productRoutes.editProduct(product.id),
