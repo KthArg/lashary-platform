@@ -2,11 +2,11 @@
 feature: payments
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-03
+actualizado: 2026-10-05
 historias:
   - id: US-AGE-13
     estado: en_progreso
-    falta: "definir y demostrar el anticipo por paquete del criterio original 1 (US-PROD-01); el anticipo por tecnica ya lo satisface catalog_techniques.deposit (US-AGE-08) y el criterio original 5 lo cubren ExemptClientForm, exemptClientAction y exemptClient con audit.record(); el PO aprobo el traslado de los criterios originales 2 y 3 a US-AGE-05 y del 4 a US-AGE-12, comunicado por Bayron el 2026-10-03 (DEPENDENCIES.md)"
+    falta: "integrar el anticipo por paquete implementado y probado en #178–#181, con #173–#175 ya integrados en main; completar aprobaciones pendientes y resolver la conservación de exoneraciones de #118 mediante ADR-0009 y migración; traslado de criterios 2 y 3 a US-AGE-05 y 4 a US-AGE-12 aprobado por el PO"
 flags: []
 deuda: []
 defectos: []
@@ -55,3 +55,13 @@ El feedback de #152 sobre los estilos se aplica en `ExemptClientForm.tsx` y `src
 - `exemptClient(input: ExemptClientInput): Promise<Result<DepositExemptionView, DepositExemptionValidationError | ClientAlreadyExempt>>` — otorga la exoneración y la registra en la bitácora. `input`: `{ clientId, exemptedBy, reason }`.
 - Tipos: `ExemptClientInput`, `DepositExemptionView`.
 - Errores: `DepositExemptionValidationError` (campos vacíos), `ClientAlreadyExempt` (el cliente ya tiene una exoneración vigente).
+
+## Evidencia del anticipo por paquete (2026-10-05)
+
+El criterio original 1 está implementado en la pila #178–#181, basada en los paquetes de #173–#175: contrato, columna y RPC, dominio y repositorio, formulario y listado. El anticipo es propio del paquete, no la suma de sus técnicas; 0 significa sin anticipo. La edición y desactivación conservan el monto.
+
+Verificación: 72 pruebas unitarias y de interfaz, 17 aserciones pgTAP en una base temporal aislada y tipado de src correcto. Incluye valores inválidos, límite entero seguro, RLS y rollback completo. Las tres pruebas HTTP existentes no pudieron pasar en el Supabase de desarrollo porque todavía no contiene las tablas de paquetes. La revisión independiente no dejó hallazgos pendientes; las aprobaciones de GitHub son un paso separado.
+
+Esta pieza documental continúa después de #181 y hereda el código de la pila unificada; su diff solo añade evidencia. US-AGE-13 permanece en progreso hasta integrar las piezas, obtener las aprobaciones necesarias y resolver el hallazgo de conservación de exoneraciones. Detalle y orden en `docs/process/US-AGE-13-EVIDENCE.md`.
+
+La pila se actualizó con main después del squash de #175: 20 piezas en una sola cadena, conservando el historial mediante merge commits, sin push forzado. Pasaron 117 pruebas unitarias/UI combinadas, 58 aserciones SQL (21 de invariantes, 17 de anticipo, 10 de audit y 10 de payments) y el tipado de src.
