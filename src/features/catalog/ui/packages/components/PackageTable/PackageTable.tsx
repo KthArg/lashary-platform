@@ -35,6 +35,7 @@ export function PackageTable({
             <th>{m.columns.techniques}</th>
             <th>{m.columns.duration}</th>
             <th>{m.columns.price}</th>
+            <th>{m.columns.deposit}</th>
             <th>{m.columns.status}</th>
             <th>
               <span className={STYLES.srOnly}>{m.columns.actions}</span>
@@ -50,6 +51,7 @@ export function PackageTable({
                 {pkg.durationTotalMin} {m.minutesShort}
               </td>
               <td>{formatColones(pkg.price)}</td>
+              <td>{formatColones(pkg.deposit)}</td>
               <td>
                 <span className={pkg.isActive ? STYLES.badgeActive : STYLES.badgeInactive}>
                   {pkg.isActive ? m.status.active : m.status.inactive}
