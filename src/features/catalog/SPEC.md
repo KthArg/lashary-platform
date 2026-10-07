@@ -103,3 +103,9 @@ Detalle y garantías: [docs/contracts/catalog-api.md](../../../docs/contracts/ca
 ## Flags
 
 Ninguno. `catalog_admin_write` se retiró al integrar `public.auth_is_staff()` y las políticas RLS de escritura.
+
+## Incremento de US-AGE-13: anticipo por paquete
+
+Contrato ampliado en `docs/contracts/catalog-api.md`: `PackageListItem.deposit`, monto propio por paquete en colones enteros no negativos. Falta columna/RPC, dominio/repositorio y formulario con pruebas reales. La ampliación no implementa reservas ni cierre; esos criterios se trasladaron a US-AGE-05/12 con aprobación del PO. Las dependencias #173, #174 y #175 ya están integradas en main; esta pieza continúa después de #177 en la pila de US-AGE-13.
+
+La dueña de US-AGE-13 sigue siendo `payments`; este incremento de `catalog` aporta el anticipo por paquete. El estado en progreso y el registro del PO se conservan desde #176 en esta pila unificada. La integración de las dependencias no declara terminada US-AGE-13.
