@@ -6,7 +6,7 @@ actualizado: 2026-10-05
 historias:
   - id: US-AGE-13
     estado: en_progreso
-    falta: "integrar el anticipo por paquete implementado y probado en #178–#181, con #173–#175 ya integrados en main; completar aprobaciones pendientes y resolver la conservación de exoneraciones de #118 mediante ADR-0009 y migración; traslado de criterios 2 y 3 a US-AGE-05 y 4 a US-AGE-12 aprobado por el PO"
+    falta: "integrar el anticipo por paquete implementado y probado en #178–#181, con #173–#175 ya integrados en main; completar aprobaciones pendientes y integrar la protección del historial de exoneraciones de #118 implementada y probada en la pieza 21 (ADR-0009); traslado de criterios 2 y 3 a US-AGE-05 y 4 a US-AGE-12 aprobado por el PO"
 flags: []
 deuda: []
 defectos: []
@@ -18,7 +18,7 @@ Anticipos, y la infraestructura de pagos sin historia propia (ADR-0007): el ledg
 
 ## Qué hace hoy
 
-Migración `supabase/migrations/20260924000000_payments_deposit_exemptions.sql`: tabla `payments_deposit_exemptions` (prefijo `payments_`, ARCH-006) — `client_id` (FK real a `clients_profiles`: a diferencia de `audit_events`, esta relación es homogénea y permanente, siempre apunta al mismo tipo de recurso; cruza el límite de feature, ver `docs/process/DEPENDENCIES.md`, «FK cross-feature», y `ON DELETE CASCADE` se llevaría el historial de exoneraciones de una clienta borrada), `exempted_by` (FK a `auth.users`, quién la otorgó), `reason`, `active` (por defecto `true`; la columna existe para cuando "levantar" una exoneración tenga su propia historia — hoy sin política de `UPDATE` para nadie), `created_at`/`updated_at` UTC (DOM-003). Índice único parcial `(client_id) WHERE active` — un cliente no puede tener dos exoneraciones vigentes a la vez, e indexa la FK (PERF-003) de paso. Índice en `exempted_by`.
+Migración `supabase/migrations/20260924000000_payments_deposit_exemptions.sql`: tabla `payments_deposit_exemptions` (prefijo `payments_`, ARCH-006) — `client_id` (FK real a `clients_profiles`: a diferencia de `audit_events`, esta relación es homogénea y permanente, siempre apunta al mismo tipo de recurso; cruza el límite de feature, ver `docs/process/DEPENDENCIES.md`, «FK cross-feature», y la migración posterior `20261005000000_payments_exemption_history.sql` sustituye `CASCADE` por `RESTRICT` para impedir la pérdida de historial), `exempted_by` (FK a `auth.users`, quién la otorgó), `reason`, `active` (por defecto `true`; la columna existe para cuando "levantar" una exoneración tenga su propia historia — hoy sin política de `UPDATE` para nadie), `created_at`/`updated_at` UTC (DOM-003). Índice único parcial `(client_id) WHERE active` — un cliente no puede tener dos exoneraciones vigentes a la vez, e indexa la FK (PERF-003) de paso. Índice en `exempted_by`.
 
 RLS (SEC-001): `SELECT` e `INSERT` solo para staff (`public.auth_is_staff()`); sin políticas de `UPDATE` ni `DELETE` para nadie — "levantar" no es parte del criterio 5 de esta historia, se agrega cuando una historia futura lo exija.
 
@@ -42,7 +42,7 @@ Con esto el **criterio 5 de US-AGE-13 queda completo**: la administradora puede 
 
 ## Qué no hace todavía
 
-El contrato de conservación de exoneraciones al archivar clientas está documentado en `docs/adr/ADR-0009-client-archival-and-exemptions.md`, aceptado por el equipo, según el acuerdo comunicado por Bayron el 2026-10-05. Mantiene la FK específica a `clients_profiles` y requiere una migración nueva de `ON DELETE CASCADE` a `RESTRICT`. La migración y su prueba contra la base real están pendientes; el esquema actual conserva `CASCADE` (feedback de #118).
+El contrato de conservación de exoneraciones al archivar clientas está documentado en `docs/adr/ADR-0009-client-archival-and-exemptions.md`, aceptado por el equipo, según el acuerdo comunicado por Bayron el 2026-10-05. Mantiene la FK específica a `clients_profiles` y requiere una migración nueva de `ON DELETE CASCADE` a `RESTRICT`. La migración `20261005000000_payments_exemption_history.sql` implementa esa protección. `payments_exemption_history.test.sql` demuestra en PostgreSQL local el bloqueo del borrado directo e indirecto, la conservación de perfiles y exoneraciones activas e históricas y la integridad de la FK. Su integración y aplicación en producción siguen pendientes. El archivado y la revisión de exoneraciones al reactivar clientas aún no están implementados.
 
 US-AGE-13 conserva los criterios originales 1 (anticipo por técnica y paquete) y 5 (exoneración con bitácora). Falta definir y demostrar el anticipo por paquete del criterio 1, dependiente de US-PROD-01; la historia sigue `en_progreso`.
 
@@ -65,3 +65,7 @@ Verificación: 72 pruebas unitarias y de interfaz, 17 aserciones pgTAP en una ba
 Esta pieza documental continúa después de #181 y hereda el código de la pila unificada; su diff solo añade evidencia. US-AGE-13 permanece en progreso hasta integrar las piezas, obtener las aprobaciones necesarias y resolver el hallazgo de conservación de exoneraciones. Detalle y orden en `docs/process/US-AGE-13-EVIDENCE.md`.
 
 La pila se actualizó con main después del squash de #175: 20 piezas en una sola cadena, conservando el historial mediante merge commits, sin push forzado. Pasaron 117 pruebas unitarias/UI combinadas, 58 aserciones SQL (21 de invariantes, 17 de anticipo, 10 de audit y 10 de payments) y el tipado de src.
+
+## Protección del historial de exoneraciones (pieza 21/21)
+
+Una migración nueva cambia únicamente la acción de borrado de la FK de clientas a RESTRICT, dentro de una transacción. Conserva las filas existentes, índices y políticas RLS. No cambia la API ni implementa archivado. Las 16 aserciones de payments_exemption_history.test.sql pasan en una base PostgreSQL local temporal; las pruebas detectaron la pérdida de historial con CASCADE antes del cambio. US-AGE-13 permanece en progreso hasta completar integración, CI y aprobaciones.
