@@ -38,8 +38,8 @@ function buildFromWrite(
     name: model.name,
     description: model.description,
     imageUrl: model.imageUrl,
-    precioCrc: model.precioCrc,
-    ordenPresentacion: model.ordenPresentacion,
+    priceCrc: model.priceCrc,
+    displayOrder: model.displayOrder,
     activo,
   })
 }

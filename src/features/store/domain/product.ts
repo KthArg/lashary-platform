@@ -67,9 +67,9 @@ export type AdminProduct = {
   name: string
   description: string
   imageUrl: string
-  precioCrc: number
+  priceCrc: number
   activo: boolean
-  ordenPresentacion: number
+  displayOrder: number
 }
 
 export type ProductInput = {
@@ -78,9 +78,9 @@ export type ProductInput = {
   name: string
   description: string
   imageUrl: string
-  precioCrc: number
+  priceCrc: number
   activo?: boolean
-  ordenPresentacion: number
+  displayOrder: number
 }
 
 const isNonNegativeInteger = (n: number): boolean => Number.isInteger(n) && n >= 0
@@ -98,11 +98,11 @@ export function buildProduct(input: ProductInput): Result<AdminProduct, InvalidP
   const imageUrl = input.imageUrl.trim()
   if (imageUrl.length === 0) problems.push('la URL de la imagen no puede estar vacía')
 
-  if (!isPositiveInteger(input.precioCrc)) {
+  if (!isPositiveInteger(input.priceCrc)) {
     problems.push('el precio debe ser un entero de colones mayor que cero')
   }
 
-  if (!isNonNegativeInteger(input.ordenPresentacion)) {
+  if (!isNonNegativeInteger(input.displayOrder)) {
     problems.push('el orden de presentación debe ser un entero no negativo')
   }
 
@@ -116,9 +116,9 @@ export function buildProduct(input: ProductInput): Result<AdminProduct, InvalidP
     name,
     description: input.description.trim(),
     imageUrl,
-    precioCrc: input.precioCrc,
+    priceCrc: input.priceCrc,
     activo: input.activo ?? true,
-    ordenPresentacion: input.ordenPresentacion,
+    displayOrder: input.displayOrder,
   })
 }
 

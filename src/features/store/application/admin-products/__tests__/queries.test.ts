@@ -16,7 +16,7 @@ describe('listAdminProducts', () => {
     const page = await listAdminProducts(repo)()
     expect(page.items.map((p) => p.id)).toEqual(['a'])
     expect(page.total).toBe(1)
-    expect(typeof page.items[0].precioCrc).toBe('number')
+    expect(typeof page.items[0].priceCrc).toBe('number')
   })
 
   it('incluye inactivos cuando activeOnly = false', async () => {
@@ -30,7 +30,7 @@ describe('listAdminProducts', () => {
 
   it('pagina con tamaño por defecto 50 y tope 100', async () => {
     const repo = createFakeAdminProductRepository(
-      Array.from({ length: 120 }, (_, i) => makeProduct({ id: `p${i}`, ordenPresentacion: i })),
+      Array.from({ length: 120 }, (_, i) => makeProduct({ id: `p${i}`, displayOrder: i })),
     )
     const first = await listAdminProducts(repo)({ page: 1, activeOnly: false })
     expect(first.items).toHaveLength(50)

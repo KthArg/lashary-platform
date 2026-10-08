@@ -6,8 +6,8 @@ const validForm = {
   name: 'Serum nutritivo Lashary',
   description: 'Tratamiento nutritivo para mantenimiento de pestañas.',
   imageUrl: '/productos/serum-nutritivo.jpg',
-  precioCrc: '18000',
-  ordenPresentacion: '1',
+  priceCrc: '18000',
+  displayOrder: '1',
 }
 
 describe('esquemaProductoAdmin (DOM-007 — validación en el borde)', () => {
@@ -20,8 +20,8 @@ describe('esquemaProductoAdmin (DOM-007 — validación en el borde)', () => {
       name: 'Serum nutritivo Lashary',
       description: 'Tratamiento nutritivo para mantenimiento de pestañas.',
       imageUrl: '/productos/serum-nutritivo.jpg',
-      precioCrc: 18000,
-      ordenPresentacion: 1,
+      priceCrc: 18000,
+      displayOrder: 1,
     })
   })
 
@@ -51,7 +51,7 @@ describe('esquemaProductoAdmin (DOM-007 — validación en el borde)', () => {
       ...validForm,
       slug: '   ',
       name: '   ',
-      precioCrc: '0',
+      priceCrc: '0',
     })
     expect(parsed.success).toBe(false)
     if (parsed.success) return
@@ -59,17 +59,17 @@ describe('esquemaProductoAdmin (DOM-007 — validación en el borde)', () => {
   })
 
   it('acepta orden de presentación en cero', () => {
-    const parsed = esquemaProductoAdmin.safeParse({ ...validForm, ordenPresentacion: '0' })
+    const parsed = esquemaProductoAdmin.safeParse({ ...validForm, displayOrder: '0' })
     expect(parsed.success).toBe(true)
   })
 
   it('rechaza un precio no entero', () => {
-    const parsed = esquemaProductoAdmin.safeParse({ ...validForm, precioCrc: '18000.5' })
+    const parsed = esquemaProductoAdmin.safeParse({ ...validForm, priceCrc: '18000.5' })
     expect(parsed.success).toBe(false)
   })
 
   it('rechaza un orden de presentación negativo', () => {
-    const parsed = esquemaProductoAdmin.safeParse({ ...validForm, ordenPresentacion: '-1' })
+    const parsed = esquemaProductoAdmin.safeParse({ ...validForm, displayOrder: '-1' })
     expect(parsed.success).toBe(false)
   })
 })

@@ -35,8 +35,8 @@ const validFields = {
   name: 'Serum nutritivo Lashary',
   description: 'Tratamiento nutritivo.',
   imageUrl: '/productos/serum-nutritivo.jpg',
-  precioCrc: '18000',
-  ordenPresentacion: '1',
+  priceCrc: '18000',
+  displayOrder: '1',
 }
 
 describe('acciones administrativas de productos', () => {
@@ -59,7 +59,7 @@ describe('acciones administrativas de productos', () => {
   it('valida los datos de una administradora antes de guardar', async () => {
     const state = await crearProductoAction(
       estadoAccionInicial,
-      form({ ...validFields, slug: '', precioCrc: '-1' }),
+      form({ ...validFields, slug: '', priceCrc: '-1' }),
     )
 
     expect(state.status).toBe('invalid')
