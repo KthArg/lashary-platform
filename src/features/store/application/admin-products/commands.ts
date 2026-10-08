@@ -1,5 +1,10 @@
 import { ok, err, isErr, type Result } from '@/shared/result'
-import { buildProduct, markProductInactive, type AdminProduct } from '../../domain/product'
+import {
+  buildProduct,
+  markProductActive,
+  markProductInactive,
+  type AdminProduct,
+} from '../../domain/product'
 import { firstAvailableSlug, slugFromName } from '../../domain/product-slug'
 import {
   createProductNotFound,
@@ -88,4 +93,15 @@ export const deactivateProduct =
     const deactivated = markProductInactive(existing)
     await deps.repo.save(deactivated)
     return ok(deactivated)
+  }
+
+export const activateProduct =
+  (deps: ProductCommandDeps) =>
+  async (id: string): Promise<Result<AdminProduct, ProductNotFound>> => {
+    const existing = await deps.repo.findById(id)
+    if (existing === null) return err(createProductNotFound(id))
+
+    const activated = markProductActive(existing)
+    await deps.repo.save(activated)
+    return ok(activated)
   }

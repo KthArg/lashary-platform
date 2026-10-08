@@ -4,6 +4,7 @@ import {
   createProduct,
   updateProduct,
   deactivateProduct,
+  activateProduct,
 } from '@/features/store/application/admin-products/commands'
 import type { ProductWrite } from '@/features/store/application/admin-products/ports'
 import {
@@ -141,6 +142,23 @@ describe('updateProduct', () => {
     expect(result.value.name).toBe('Serum renovado')
     expect(result.value.slug).toBe('serum-original')
     expect((await repo.findById('e4'))?.slug).toBe('serum-original')
+  })
+})
+
+describe('activateProduct', () => {
+  it('vuelve a activar un producto desactivado', async () => {
+    const repo = createFakeAdminProductRepository([makeProduct({ id: 'a1', isActive: false })])
+    const result = await activateProduct(deps(repo))('a1')
+    if (!isOk(result)) throw new Error('esperaba ok')
+    expect(result.value.isActive).toBe(true)
+    expect((await repo.findById('a1'))?.isActive).toBe(true)
+  })
+
+  it('devuelve ProductNotFound si no existe', async () => {
+    const repo = createFakeAdminProductRepository()
+    const result = await activateProduct(deps(repo))('nope')
+    expect(isErr(result)).toBe(true)
+    if (isErr(result)) expect(result.error.kind).toBe('ProductNotFound')
   })
 })
 
