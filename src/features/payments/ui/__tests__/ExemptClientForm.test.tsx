@@ -50,6 +50,22 @@ describe('ExemptClientForm', () => {
     expect(formData.get('reason')).toBe('caso especial')
   })
 
+  it('el aviso de un envío anterior desaparece al buscar de nuevo', async () => {
+    mockSearch.mockResolvedValue([CLIENT])
+    mockExempt.mockResolvedValue({ status: 'conflict', message: m.alreadyExempt })
+    render(<ExemptClientForm />)
+
+    fireEvent.change(screen.getByLabelText(m.searchLabel), { target: { value: 'ana' } })
+    fireEvent.click(screen.getByRole('button', { name: m.searchLabel }))
+    fireEvent.click(await screen.findByRole('button', { name: /Ana Solís/ }))
+    fireEvent.change(screen.getByLabelText(m.reasonLabel), { target: { value: 'otra vez' } })
+    fireEvent.click(screen.getByRole('button', { name: m.submit }))
+    expect((await screen.findByRole('alert')).textContent).toBe(m.alreadyExempt)
+
+    fireEvent.click(screen.getByRole('button', { name: m.searchLabel }))
+    await waitFor(() => expect(screen.queryByRole('alert')).toBeNull())
+  })
+
   it('sin clienta seleccionada, no muestra el formulario de razón', () => {
     render(<ExemptClientForm />)
     expect(screen.queryByLabelText(m.reasonLabel)).toBeNull()
