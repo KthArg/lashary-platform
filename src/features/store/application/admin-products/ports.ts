@@ -1,4 +1,4 @@
-import type { ProductoAdminVista } from '../../domain/product'
+import type { AdminProduct } from '../../domain/product'
 
 export type PaginaProductos<T> = {
   items: T[]
@@ -27,9 +27,9 @@ export interface ProductoRepositorioAdmin {
     activeOnly: boolean
     offset: number
     limit: number
-  }): Promise<{ items: ProductoAdminVista[]; total: number }>
+  }): Promise<{ items: AdminProduct[]; total: number }>
 
-  findById(id: string): Promise<ProductoAdminVista | null>
+  findById(id: string): Promise<AdminProduct | null>
 
-  save(producto: ProductoAdminVista): Promise<void>
+  save(producto: AdminProduct): Promise<void>
 }

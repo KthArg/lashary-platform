@@ -1,8 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isOk } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
-import { construirProducto, type ProductoAdminVista } from '../domain/product'
-import { crearProductoSlugDuplicado } from '../domain/product-errors'
+import { buildProduct, type AdminProduct } from '../domain/product'
+import { createDuplicateProductSlug } from '../domain/product-errors'
 import type { ProductoRepositorioAdmin } from '../application/admin-products/ports'
 
 const TABLE = 'store_products'
@@ -19,8 +19,8 @@ type Fila = {
   sort_order: number
 }
 
-function filaADominio(fila: Fila): ProductoAdminVista {
-  const construido = construirProducto({
+function filaADominio(fila: Fila): AdminProduct {
+  const construido = buildProduct({
     id: fila.id,
     slug: fila.slug,
     nombre: fila.nombre,
@@ -36,7 +36,7 @@ function filaADominio(fila: Fila): ProductoAdminVista {
   return construido.value
 }
 
-function dominioAFila(producto: ProductoAdminVista): Fila {
+function dominioAFila(producto: AdminProduct): Fila {
   return {
     id: producto.id,
     slug: producto.slug,
@@ -69,17 +69,17 @@ function crearRepositorioAdmin(db: SupabaseClient): ProductoRepositorioAdmin {
       }
     },
 
-    async findById(id: string): Promise<ProductoAdminVista | null> {
+    async findById(id: string): Promise<AdminProduct | null> {
       const { data, error } = await db.from(TABLE).select(COLUMNS).eq('id', id).maybeSingle()
       if (error) throw new Error(`${TABLE}.findById: ${error.message}`)
       return data ? filaADominio(data as Fila) : null
     },
 
-    async save(producto: ProductoAdminVista): Promise<void> {
+    async save(producto: AdminProduct): Promise<void> {
       const { error } = await db.from(TABLE).upsert(dominioAFila(producto), { onConflict: 'id' })
       if (error) {
         if (error.code === '23505') {
-          throw crearProductoSlugDuplicado(producto.slug)
+          throw createDuplicateProductSlug(producto.slug)
         }
         throw new Error(`${TABLE}.save: ${error.message}`)
       }

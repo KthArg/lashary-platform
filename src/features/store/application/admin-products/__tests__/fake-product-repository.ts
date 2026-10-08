@@ -1,13 +1,13 @@
-import type { ProductoAdminVista } from '@/features/store/domain/product'
-import { crearProductoSlugDuplicado } from '@/features/store/domain/product-errors'
+import type { AdminProduct } from '@/features/store/domain/product'
+import { createDuplicateProductSlug } from '@/features/store/domain/product-errors'
 import type { ProductoRepositorioAdmin } from '@/features/store/application/admin-products/ports'
 
 export type FakeProductoRepositorioAdmin = ProductoRepositorioAdmin & { saveCalls: number }
 
 export function crearFakeProductoRepositorioAdmin(
-  initial: ProductoAdminVista[] = [],
+  initial: AdminProduct[] = [],
 ): FakeProductoRepositorioAdmin {
-  const store = new Map<string, ProductoAdminVista>()
+  const store = new Map<string, AdminProduct>()
   for (const p of initial) store.set(p.id, p)
 
   const repo: FakeProductoRepositorioAdmin = {
@@ -27,10 +27,10 @@ export function crearFakeProductoRepositorioAdmin(
       return store.get(id) ?? null
     },
 
-    async save(producto: ProductoAdminVista) {
+    async save(producto: AdminProduct) {
       for (const other of store.values()) {
         if (other.id !== producto.id && other.slug === producto.slug) {
-          throw crearProductoSlugDuplicado(producto.slug)
+          throw createDuplicateProductSlug(producto.slug)
         }
       }
       repo.saveCalls += 1

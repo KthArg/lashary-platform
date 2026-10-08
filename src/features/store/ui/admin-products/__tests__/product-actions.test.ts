@@ -22,7 +22,7 @@ import {
   desactivarProductoAction,
 } from '@/features/store/ui/admin-products/actions/product-actions'
 import { estadoAccionInicial } from '@/features/store/ui/admin-products/types/product-action-state'
-import { crearProductoSlugDuplicado } from '@/features/store/domain/product-errors'
+import { createDuplicateProductSlug } from '@/features/store/domain/product-errors'
 
 function form(fields: Record<string, string>): FormData {
   const formData = new FormData()
@@ -75,7 +75,7 @@ describe('acciones administrativas de productos', () => {
   })
 
   it('DOM-006: un slug duplicado vuelve como estado "invalid" con mensaje, no como excepción', async () => {
-    mocks.save.mockRejectedValueOnce(crearProductoSlugDuplicado('serum-nutritivo-lashary'))
+    mocks.save.mockRejectedValueOnce(createDuplicateProductSlug('serum-nutritivo-lashary'))
 
     const state = await crearProductoAction(estadoAccionInicial, form(validFields))
 

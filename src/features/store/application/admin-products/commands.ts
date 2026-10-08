@@ -1,23 +1,23 @@
 import { ok, err, isErr, type Result } from '@/shared/result'
-import { construirProducto, marcarProductoInactivo, type ProductoAdminVista } from '../../domain/product'
+import { buildProduct, markProductInactive, type AdminProduct } from '../../domain/product'
 import {
-  crearProductoNoEncontrado,
-  esProductoSlugDuplicado,
-  type ProductoInvalido,
-  type ProductoNoEncontrado,
-  type ProductoSlugDuplicado,
+  createProductNotFound,
+  isDuplicateProductSlug,
+  type InvalidProduct,
+  type ProductNotFound,
+  type DuplicateProductSlug,
 } from '../../domain/product-errors'
 import type { ProductoEscritura, ProductoRepositorioAdmin } from './ports'
 
 async function guardarOConflicto(
   repo: ProductoRepositorioAdmin,
-  producto: ProductoAdminVista,
-): Promise<Result<void, ProductoSlugDuplicado>> {
+  producto: AdminProduct,
+): Promise<Result<void, DuplicateProductSlug>> {
   try {
     await repo.save(producto)
     return ok(undefined)
   } catch (error) {
-    if (esProductoSlugDuplicado(error)) return err(error)
+    if (isDuplicateProductSlug(error)) return err(error)
     throw error
   }
 }
@@ -31,8 +31,8 @@ function construirDesdeEscritura(
   id: string,
   model: ProductoEscritura,
   activo: boolean,
-): Result<ProductoAdminVista, ProductoInvalido> {
-  return construirProducto({
+): Result<AdminProduct, InvalidProduct> {
+  return buildProduct({
     id,
     slug: model.slug,
     nombre: model.nombre,
@@ -48,7 +48,7 @@ export const crearProducto =
   (deps: ComandoProductoDeps) =>
   async (
     model: ProductoEscritura,
-  ): Promise<Result<ProductoAdminVista, ProductoInvalido | ProductoSlugDuplicado>> => {
+  ): Promise<Result<AdminProduct, InvalidProduct | DuplicateProductSlug>> => {
     const construido = construirDesdeEscritura(deps.newId(), model, true)
     if (isErr(construido)) return construido
     const guardado = await guardarOConflicto(deps.repo, construido.value)
@@ -62,10 +62,10 @@ export const actualizarProducto =
     id: string,
     model: ProductoEscritura,
   ): Promise<
-    Result<ProductoAdminVista, ProductoNoEncontrado | ProductoInvalido | ProductoSlugDuplicado>
+    Result<AdminProduct, ProductNotFound | InvalidProduct | DuplicateProductSlug>
   > => {
     const existente = await deps.repo.findById(id)
-    if (existente === null) return err(crearProductoNoEncontrado(id))
+    if (existente === null) return err(createProductNotFound(id))
 
     const construido = construirDesdeEscritura(id, model, existente.activo)
     if (isErr(construido)) return construido
@@ -76,11 +76,11 @@ export const actualizarProducto =
 
 export const desactivarProducto =
   (deps: ComandoProductoDeps) =>
-  async (id: string): Promise<Result<ProductoAdminVista, ProductoNoEncontrado>> => {
+  async (id: string): Promise<Result<AdminProduct, ProductNotFound>> => {
     const existente = await deps.repo.findById(id)
-    if (existente === null) return err(crearProductoNoEncontrado(id))
+    if (existente === null) return err(createProductNotFound(id))
 
-    const desactivado = marcarProductoInactivo(existente)
+    const desactivado = markProductInactive(existente)
     await deps.repo.save(desactivado)
     return ok(desactivado)
   }

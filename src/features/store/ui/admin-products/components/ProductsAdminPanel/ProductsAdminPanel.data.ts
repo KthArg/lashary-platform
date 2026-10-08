@@ -4,13 +4,13 @@ import {
   obtenerProductoAdmin,
 } from '../../../../application/admin-products/queries'
 import { productoRepositorioAdmin } from '../../../../db/admin-product-repository'
-import type { ProductoAdminVista } from '../../../../domain/product'
+import type { AdminProduct } from '../../../../domain/product'
 import { aFilasProductoAdmin } from '../ProductsAdminTable/ProductsAdminTable.data'
 import type { FilaProductoAdmin } from '../ProductsAdminTable/ProductsAdminTable.types'
 import type { PanelAdminProductosSearchParams } from './ProductsAdminPanel.types'
 
 export type VistaPanelAdminProductos =
-  | { modo: 'formulario'; productoEnEdicion?: ProductoAdminVista }
+  | { modo: 'formulario'; productoEnEdicion?: AdminProduct }
   | { modo: 'vacio' }
   | { modo: 'listado'; filas: FilaProductoAdmin[] }
 
