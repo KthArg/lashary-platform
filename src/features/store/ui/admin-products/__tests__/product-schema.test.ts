@@ -11,7 +11,7 @@ const validForm = {
 }
 
 describe('productSchema (DOM-007 — validación en el borde)', () => {
-  it('convierte los strings del formulario en el ProductoEscritura', () => {
+  it('convierte los strings del formulario en el ProductWrite', () => {
     const parsed = productSchema.safeParse(validForm)
     expect(parsed.success).toBe(true)
     if (!parsed.success) return
@@ -26,8 +26,8 @@ describe('productSchema (DOM-007 — validación en el borde)', () => {
   })
 
   it('mapea la descripción ausente a cadena vacía', () => {
-    const { description, ...sinDescripcion } = validForm
-    const parsed = productSchema.safeParse(sinDescripcion)
+    const { description, ...withoutDescription } = validForm
+    const parsed = productSchema.safeParse(withoutDescription)
     expect(parsed.success).toBe(true)
     if (!parsed.success) return
     expect(parsed.data.description).toBe('')

@@ -1,4 +1,4 @@
-export type ProductActionState = {
+export interface ProductActionState {
   status: 'idle' | 'ok' | 'invalid' | 'forbidden'
   message?: string
   problems?: string[]

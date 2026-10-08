@@ -20,7 +20,7 @@ async function deps(): Promise<ProductCommandDeps> {
   return { repo: await adminProductRepository(), newId: () => randomUUID() }
 }
 
-function prohibido(): ProductActionState {
+function forbidden(): ProductActionState {
   return { status: 'forbidden', message: productStrings.form.accessDenied }
 }
 
@@ -28,7 +28,7 @@ export async function createProductAction(
   _prev: ProductActionState,
   formData: FormData,
 ): Promise<ProductActionState> {
-  if (!(await isStaff())) return prohibido()
+  if (!(await isStaff())) return forbidden()
 
   const parsed = productSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -52,7 +52,7 @@ export async function updateProductAction(
   _prev: ProductActionState,
   formData: FormData,
 ): Promise<ProductActionState> {
-  if (!(await isStaff())) return prohibido()
+  if (!(await isStaff())) return forbidden()
 
   const id = String(formData.get('id') ?? '')
   const parsed = productSchema.safeParse(Object.fromEntries(formData))
@@ -77,7 +77,7 @@ export async function deactivateProductAction(
   _prev: ProductActionState,
   formData: FormData,
 ): Promise<ProductActionState> {
-  if (!(await isStaff())) return prohibido()
+  if (!(await isStaff())) return forbidden()
 
   const id = String(formData.get('id') ?? '')
 

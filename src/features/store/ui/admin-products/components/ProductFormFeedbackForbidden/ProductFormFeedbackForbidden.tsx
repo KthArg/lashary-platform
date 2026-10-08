@@ -1,6 +1,7 @@
-import { formularioProductoAdminStyles as STYLES } from '../ProductForm/ProductForm.styles'
+import { productFormStyles as STYLES } from '../ProductForm/ProductForm.styles'
+import type { ProductFormFeedbackForbiddenProps } from './ProductFormFeedbackForbidden.types'
 
-export function FeedbackForbidden({ message }: { message?: string }) {
+export function ProductFormFeedbackForbidden({ message }: ProductFormFeedbackForbiddenProps) {
   return (
     <div role="alert" className={STYLES.alertWarning}>
       <span>{message}</span>

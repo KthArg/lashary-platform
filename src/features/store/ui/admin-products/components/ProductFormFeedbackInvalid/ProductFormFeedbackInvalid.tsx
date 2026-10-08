@@ -1,7 +1,8 @@
 import { productStrings } from '../../constants/product-strings'
-import { formularioProductoAdminStyles as STYLES } from '../ProductForm/ProductForm.styles'
+import { productFormStyles as STYLES } from '../ProductForm/ProductForm.styles'
+import type { ProductFormFeedbackInvalidProps } from './ProductFormFeedbackInvalid.types'
 
-export function FeedbackInvalido({ problems }: { problems?: string[] }) {
+export function ProductFormFeedbackInvalid({ problems }: ProductFormFeedbackInvalidProps) {
   return (
     <div role="alert" className={STYLES.alertError}>
       <div>
