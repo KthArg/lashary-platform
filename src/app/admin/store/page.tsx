@@ -1,5 +1,6 @@
-export { PanelAdminProductos as default } from '@/features/store'
+import { redirect } from 'next/navigation'
+import { rutasAdminProductos } from '@/features/store/client'
 
-export const metadata = {
-  title: 'Productos | LASHARY Beauty Studio',
+export default function AdminStoreRedirect() {
+  redirect(rutasAdminProductos.admin)
 }

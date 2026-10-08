@@ -1,7 +1,8 @@
 export const CATALOG_SECTION = {
   title: 'Catálogo',
-  subtitle: 'Técnicas y paquetes de servicios del estudio',
+  subtitle: 'Productos, técnicas y paquetes del estudio',
   tabs: {
+    products: 'Productos',
     techniques: 'Técnicas',
     packages: 'Paquetes',
   },
