@@ -97,10 +97,10 @@ A diferencia de un criterio diferido, un criterio trasladado **cambia de histori
 
 **Registro de la decisión (2026-10-03):** Bayron comunicó en esta conversación que el PO aprobó el traslado de los criterios originales 2, 3 y 4 de US-AGE-13. El backlog CSV y los SPEC de `payments` y `scheduling` reflejan ese alcance; los requisitos siguen obligatorios en las historias de destino. US-AGE-13 conserva los criterios originales 1 y 5 y sigue `en_progreso` por el anticipo por paquete (US-PROD-01). Esta aprobación no decide el traslado de US-AGE-08 del ítem 1 ni el FK cross-feature de la sección siguiente.
 
-## FK cross-feature (pendiente de decisión del equipo)
+## FK cross-feature y archivado de clientas (ADR-0009 aceptado)
 
 `payments_deposit_exemptions.client_id` tiene FK real a `public.clients_profiles(id)`, tabla de la feature `clients` (US-AGE-13, migración `20260924000000_payments_deposit_exemptions.sql`). Es el primer FK entre tablas de dos features distintas; los demás apuntan a `auth.users`. El revisor automático lo marcó como tensión con ARCH-005.
 
 - **Por qué se mantiene por ahora:** la relación es homogénea y permanente (una exoneración siempre es de una clienta), el FK evita huérfanos y quitarlo toca la migración ya aprobada y arrastra el stack de US-AGE-13.
-- **Qué falta decidir:** si `clients_profiles` es una tabla núcleo aceptable como destino de FK (análoga a `auth.users`) — eso pide un ADR (INT-003) — o si el FK se reemplaza por validación en `application/` contra un use-case público de `clients`.
-- **`ON DELETE CASCADE`:** borrar un perfil de clienta borraría su historial de exoneraciones sin pasar por RLS ni bitácora. Aún no existe un flujo de borrado de clientas; decidirlo antes de construirlo.
+- **Acuerdo del equipo comunicado por Bayron el 2026-10-05:** archivar a la clienta sin borrar el perfil ni su historial, conservar esta FK específica como contrato entre `clients` y `payments`, y cambiar `CASCADE` por `RESTRICT` en una migración nueva. No se usa una cola de borrado. Ver [ADR-0009](../adr/ADR-0009-client-archival-and-exemptions.md), aceptado por el equipo (INT-003).
+- **Estado real:** el archivado y la migración a `RESTRICT` todavía no están implementados. El `CASCADE` actual borraría las filas de exoneración al borrar el perfil; los eventos de `audit_events` permanecen. El hallazgo de #118 sigue pendiente hasta implementar y verificar la migración.
