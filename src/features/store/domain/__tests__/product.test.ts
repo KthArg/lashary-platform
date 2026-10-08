@@ -156,6 +156,7 @@ describe('toProductCard', () => {
   it('sanitiza la URL de imagen de un PublicProduct no confiable (CMS/DB)', () => {
     const card = toProductCard({
       id: '1',
+      slug: 'producto',
       name: 'Producto',
       imageUrl: 'javascript:alert(1)',
       priceCrc: 18000,
@@ -167,6 +168,7 @@ describe('toProductCard', () => {
   it('conserva una URL de imagen segura', () => {
     const card = toProductCard({
       id: '1',
+      slug: 'producto',
       name: 'Producto',
       imageUrl: '/productos/serum.jpg',
       priceCrc: 18000,

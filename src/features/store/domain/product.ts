@@ -3,6 +3,7 @@ import { createInvalidProduct, type InvalidProduct } from './product-errors'
 
 export type PublicProduct = {
   id: string;
+  slug: string;
   name: string;
   imageUrl: string;
   priceCrc: number;
@@ -11,6 +12,7 @@ export type PublicProduct = {
 
 export type PublicProductCard = {
   id: string;
+  slug: string;
   name: string;
   imageUrl: string;
   priceLabel: string;
@@ -55,6 +57,7 @@ export function sanitizeUrl(url: string): string {
 export function toProductCard(product: PublicProduct): PublicProductCard {
   return {
     id: product.id,
+    slug: product.slug,
     name: product.name,
     imageUrl: sanitizeUrl(product.imageUrl),
     priceLabel: formatPriceCrc(product.priceCrc),
