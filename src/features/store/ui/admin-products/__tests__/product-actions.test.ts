@@ -22,7 +22,9 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 import {
   createProductAction,
   deactivateProductAction,
+  activateProductAction,
 } from '@/features/store/ui/admin-products/actions/product-actions'
+import { makeProduct } from '@/features/store/application/admin-products/__tests__/product-fixture'
 import { initialProductActionState } from '@/features/store/ui/admin-products/types/product-action-state'
 import { createDuplicateProductSlug } from '@/features/store/domain/product-errors'
 import { productStrings } from '@/features/store/ui/admin-products/constants/product-strings'
@@ -98,6 +100,24 @@ describe('acciones administrativas de productos', () => {
     expect(state.problems).toEqual([
       'ya existe un producto con el slug "serum-nutritivo-lashary"',
     ])
+  })
+
+  it('permite a una administradora volver a activar un producto desactivado', async () => {
+    mocks.findById.mockResolvedValueOnce(makeProduct({ id: 'inactivo', isActive: false }))
+
+    const state = await activateProductAction(initialProductActionState, form({ id: 'inactivo' }))
+
+    expect(state).toMatchObject({ status: 'ok', message: productStrings.form.activated })
+    expect(mocks.save).toHaveBeenCalledWith(expect.objectContaining({ id: 'inactivo', isActive: true }))
+  })
+
+  it('rechaza activar mediante una llamada directa sin sesión staff', async () => {
+    mocks.isStaff.mockResolvedValueOnce(false)
+
+    const state = await activateProductAction(initialProductActionState, form({ id: 'algo' }))
+
+    expect(state.status).toBe('forbidden')
+    expect(mocks.findById).not.toHaveBeenCalled()
   })
 
   it('rechaza desactivar mediante una llamada directa sin sesión staff', async () => {

@@ -209,6 +209,13 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
     expect(html).toContain('href="/productos/cepillo-limpiador-lashary"')
   })
 
+  it('el botón "Ver más" de cada tarjeta nombra su producto para lectores de pantalla', async () => {
+    const html = renderToStaticMarkup(await ProductsPage())
+
+    expect(html).toContain(PUBLIC_GRID_STRINGS.viewMoreLabel)
+    expect(html).toMatch(/<span class="sr-only">: Serum nutritivo Lashary<\/span>/)
+  })
+
   it('la ruta /productos renderiza múltiples productos provenientes de la base', async () => {
     const page = await ProductsPage()
     const html = renderToStaticMarkup(page)
