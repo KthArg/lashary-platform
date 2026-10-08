@@ -1,13 +1,17 @@
 import { z } from 'zod'
 import type { ProductWrite } from '../../../application/admin-products/ports'
+import { slugFromName } from '../../../domain/product-slug'
 import { productStrings } from '../constants/product-strings'
 
 const validationMessages = productStrings.form.validation
 
 export const productSchema = z
   .object({
-    slug: z.string().trim().min(1, validationMessages.slug),
-    name: z.string().trim().min(1, validationMessages.name),
+    name: z
+      .string()
+      .trim()
+      .min(1, validationMessages.name)
+      .refine((name) => slugFromName(name).length > 0, validationMessages.nameWithoutLetters),
     description: z.string().trim().optional().default(''),
     imageUrl: z.string().trim().min(1, validationMessages.imageUrl),
     priceCrc: z.coerce.number().int().positive(validationMessages.priceCrc),
@@ -20,7 +24,6 @@ export const productSchema = z
   })
   .transform(
     (data): ProductWrite => ({
-      slug: data.slug,
       name: data.name,
       description: data.description,
       imageUrl: data.imageUrl,

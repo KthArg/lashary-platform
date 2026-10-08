@@ -78,6 +78,12 @@ function createAdminProductRepository(db: SupabaseClient): AdminProductRepositor
       return data ? rowToDomain(data as ProductRow) : null
     },
 
+    async listSlugsStartingWith(prefix: string): Promise<string[]> {
+      const { data, error } = await db.from(TABLE).select('slug').like('slug', `${prefix}%`)
+      if (error) throw new Error(`${TABLE}.listSlugsStartingWith: ${error.message}`)
+      return (data ?? []).map((row: { slug: string }) => row.slug)
+    },
+
     async save(product: AdminProduct): Promise<void> {
       const { error } = await db.from(TABLE).upsert(domainToRow(product), { onConflict: 'id' })
       if (error) {

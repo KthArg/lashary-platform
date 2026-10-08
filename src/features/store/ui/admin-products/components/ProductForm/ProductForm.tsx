@@ -42,12 +42,6 @@ export function ProductForm({ product }: ProductFormProps) {
         <input type="hidden" name="id" value={product?.id ?? ''} />
 
         <ProductFormField
-          name="slug"
-          label={formMessages.fields.slug}
-          defaultValue={product?.slug}
-          required
-        />
-        <ProductFormField
           name="name"
           label={formMessages.fields.name}
           defaultValue={product?.name}
