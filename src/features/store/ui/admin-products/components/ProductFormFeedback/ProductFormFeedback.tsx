@@ -1,18 +1,19 @@
 import type { ComponentType } from 'react'
 import type { ProductActionState } from '../../types/product-action-state'
-import { FeedbackIdle } from '../ProductFormFeedbackIdle/ProductFormFeedbackIdle'
-import { FeedbackOk } from '../ProductFormFeedbackOk/ProductFormFeedbackOk'
-import { FeedbackForbidden } from '../ProductFormFeedbackForbidden/ProductFormFeedbackForbidden'
-import { FeedbackInvalido } from '../ProductFormFeedbackInvalid/ProductFormFeedbackInvalid'
+import { ProductFormFeedbackIdle } from '../ProductFormFeedbackIdle'
+import { ProductFormFeedbackOk } from '../ProductFormFeedbackOk'
+import { ProductFormFeedbackForbidden } from '../ProductFormFeedbackForbidden'
+import { ProductFormFeedbackInvalid } from '../ProductFormFeedbackInvalid'
+import type { ProductFormFeedbackProps } from './ProductFormFeedback.types'
 
 const FEEDBACKS: Record<ProductActionState['status'], ComponentType<any>> = {
-  idle: FeedbackIdle,
-  ok: FeedbackOk,
-  forbidden: FeedbackForbidden,
-  invalid: FeedbackInvalido,
+  idle: ProductFormFeedbackIdle,
+  ok: ProductFormFeedbackOk,
+  forbidden: ProductFormFeedbackForbidden,
+  invalid: ProductFormFeedbackInvalid,
 }
 
-export function Feedback(estado: ProductActionState) {
-  const Componente = FEEDBACKS[estado.status]
-  return <Componente message={estado.message} problems={estado.problems} />
+export function ProductFormFeedback(state: ProductFormFeedbackProps) {
+  const Feedback = FEEDBACKS[state.status]
+  return <Feedback message={state.message} problems={state.problems} />
 }

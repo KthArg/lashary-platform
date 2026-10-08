@@ -1,5 +1,5 @@
 import type { AdminProduct } from '../../../../domain/product'
 
-export type FormularioProductoAdminProps = {
-  producto?: AdminProduct
+export interface ProductFormProps {
+  product?: AdminProduct
 }

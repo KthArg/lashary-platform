@@ -1,4 +1,4 @@
-export const formularioProductoAdminStyles = {
+export const productFormStyles = {
   fieldLabel: 'form-control w-full',
   labelText: 'label-text',
   fieldInput: 'input input-bordered w-full',
@@ -10,7 +10,7 @@ export const formularioProductoAdminStyles = {
   section: 'flex flex-col gap-4',
   heading: 'font-serif text-xl',
   form: 'grid gap-4 sm:grid-cols-2',
-  descripcionLabel: 'form-control w-full sm:col-span-2',
+  descriptionLabel: 'form-control w-full sm:col-span-2',
   textarea: 'textarea textarea-bordered w-full',
   submitWrapper: 'sm:col-span-2',
   submitButton: 'btn btn-primary',

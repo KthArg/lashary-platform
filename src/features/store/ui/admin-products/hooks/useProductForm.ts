@@ -10,14 +10,14 @@ import {
 } from '../actions/product-actions'
 import { initialProductActionState } from '../types/product-action-state'
 
-export type ProductFormMode = 'crear' | 'editar'
+export type ProductFormMode = 'create' | 'edit'
 
-export function useProductForm(producto?: AdminProduct) {
-  const modo: ProductFormMode = producto !== undefined ? 'editar' : 'crear'
-  const f = productStrings.form
+export function useProductForm(product?: AdminProduct) {
+  const mode: ProductFormMode = product !== undefined ? 'edit' : 'create'
+  const formMessages = productStrings.form
 
   const [state, formAction, pending] = useActionState(
-    modo === 'editar' ? updateProductAction : createProductAction,
+    mode === 'edit' ? updateProductAction : createProductAction,
     initialProductActionState,
   )
   const [deactivateState, deactivateAction, deactivating] = useActionState(
@@ -25,15 +25,15 @@ export function useProductForm(producto?: AdminProduct) {
     initialProductActionState,
   )
 
-  const textosPorModo: Record<ProductFormMode, { heading: string; submitLabel: string }> = {
-    crear: { heading: f.legendCreate, submitLabel: f.submitCreate },
-    editar: { heading: f.legendEdit, submitLabel: f.submitEdit },
+  const textsByMode: Record<ProductFormMode, { heading: string; submitLabel: string }> = {
+    create: { heading: formMessages.legendCreate, submitLabel: formMessages.submitCreate },
+    edit: { heading: formMessages.legendEdit, submitLabel: formMessages.submitEdit },
   }
 
   return {
-    modo,
-    heading: textosPorModo[modo].heading,
-    submitLabel: textosPorModo[modo].submitLabel,
+    mode,
+    heading: textsByMode[mode].heading,
+    submitLabel: textsByMode[mode].submitLabel,
     state,
     formAction,
     pending,
