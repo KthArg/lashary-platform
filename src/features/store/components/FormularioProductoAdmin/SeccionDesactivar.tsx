@@ -1,7 +1,7 @@
 import type { EstadoAccionProducto } from '../../actions/estado-accion-producto'
 import { mensajesAdminProductos } from '../../constants/mensajes-admin-productos'
 import { Feedback } from './Feedback'
-import { formularioProductoAdminStyles as s } from './FormularioProductoAdmin.styles'
+import { formularioProductoAdminStyles as STYLES } from './FormularioProductoAdmin.styles'
 
 type Props = {
   productoId: string
@@ -17,10 +17,10 @@ export function SeccionDesactivar({
   deactivating,
 }: Props) {
   return (
-    <form action={deactivateAction} className={s.deactivateForm}>
+    <form action={deactivateAction} className={STYLES.deactivateForm}>
       <input type="hidden" name="id" value={productoId} />
       <Feedback {...deactivateState} />
-      <button type="submit" className={s.deactivateButton} disabled={deactivating}>
+      <button type="submit" className={STYLES.deactivateButton} disabled={deactivating}>
         {mensajesAdminProductos.admin.rowActions.deactivate}
       </button>
     </form>

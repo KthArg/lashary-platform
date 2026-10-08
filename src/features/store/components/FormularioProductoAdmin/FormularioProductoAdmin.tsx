@@ -7,7 +7,7 @@ import { Field } from './Field'
 import { Feedback } from './Feedback'
 import { SeccionDesactivar } from './SeccionDesactivar'
 import { SinSeccionDesactivar } from './SinSeccionDesactivar'
-import { formularioProductoAdminStyles as s } from './FormularioProductoAdmin.styles'
+import { formularioProductoAdminStyles as STYLES } from './FormularioProductoAdmin.styles'
 import type { FormularioProductoAdminProps } from './FormularioProductoAdmin.types'
 
 const f = mensajesAdminProductos.form
@@ -33,12 +33,12 @@ export function FormularioProductoAdmin({ producto }: FormularioProductoAdminPro
   const SeccionDesactivarDelModo = SECCIONES_DESACTIVAR[modo]
 
   return (
-    <section className={s.section}>
-      <h2 className={s.heading}>{heading}</h2>
+    <section className={STYLES.section}>
+      <h2 className={STYLES.heading}>{heading}</h2>
 
       <Feedback {...state} />
 
-      <form action={formAction} className={s.form}>
+      <form action={formAction} className={STYLES.form}>
         <input type="hidden" name="id" value={producto?.id ?? ''} />
 
         <Field name="slug" label={f.fields.slug} defaultValue={producto?.slug} required />
@@ -66,19 +66,19 @@ export function FormularioProductoAdmin({ producto }: FormularioProductoAdminPro
           defaultValue={producto?.ordenPresentacion ?? 0}
         />
 
-        <label className={s.descripcionLabel} htmlFor="descripcion">
-          <span className={s.labelText}>{f.fields.descripcion}</span>
+        <label className={STYLES.descripcionLabel} htmlFor="descripcion">
+          <span className={STYLES.labelText}>{f.fields.descripcion}</span>
           <textarea
             id="descripcion"
             name="descripcion"
             rows={3}
             defaultValue={producto?.descripcion}
-            className={s.textarea}
+            className={STYLES.textarea}
           />
         </label>
 
-        <div className={s.submitWrapper}>
-          <button type="submit" className={s.submitButton} disabled={pending}>
+        <div className={STYLES.submitWrapper}>
+          <button type="submit" className={STYLES.submitButton} disabled={pending}>
             {submitLabel}
           </button>
         </div>
