@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { ProductoEscritura } from '../../../application/admin-products/ports'
+import type { ProductWrite } from '../../../application/admin-products/ports'
 import { mensajesAdminProductos } from '../constants/product-strings'
 
 const v = mensajesAdminProductos.form.validation
@@ -14,7 +14,7 @@ export const esquemaProductoAdmin = z
     ordenPresentacion: z.coerce.number().int().min(0, v.ordenPresentacion),
   })
   .transform(
-    (data): ProductoEscritura => ({
+    (data): ProductWrite => ({
       slug: data.slug,
       nombre: data.nombre,
       descripcion: data.descripcion,

@@ -11,7 +11,7 @@ const validForm = {
 }
 
 describe('esquemaProductoAdmin (DOM-007 — validación en el borde)', () => {
-  it('convierte los strings del formulario en el ProductoEscritura', () => {
+  it('convierte los strings del formulario en el ProductWrite', () => {
     const parsed = esquemaProductoAdmin.safeParse(validForm)
     expect(parsed.success).toBe(true)
     if (!parsed.success) return
