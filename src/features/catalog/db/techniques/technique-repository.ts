@@ -2,9 +2,9 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { Money } from '@/shared/money'
 import { isOk } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
-import { Technique, type ServiceFamily } from '../domain/technique'
-import { TechniqueNameConflict } from '../domain/errors'
-import type { TechniqueRepository } from '../application/ports'
+import { Technique, type ServiceFamily } from '../../domain/techniques/technique'
+import { TechniqueNameConflict } from '../../domain/techniques/errors'
+import type { TechniqueRepository } from '../../application/techniques/ports'
 
 const TABLE = 'catalog_techniques'
 const COLUMNS =

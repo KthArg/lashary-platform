@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { Money } from '@/shared/money'
 import { isErr, isOk } from '@/shared/result'
-import { Technique } from '@/features/catalog/domain/technique'
-import { TechniqueValidationError } from '@/features/catalog/domain/errors'
+import { Technique } from '@/features/catalog/domain/techniques/technique'
+import { TechniqueValidationError } from '@/features/catalog/domain/techniques/errors'
 
 const validInput = () => ({
   id: '11111111-1111-1111-1111-111111111111',

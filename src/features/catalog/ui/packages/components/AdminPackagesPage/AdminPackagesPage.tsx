@@ -1,13 +1,13 @@
 import Link from 'next/link'
 import { isOk } from '@/shared/result'
-import { listTechniques as listTechniquesUseCase } from '../../../../application/queries'
+import { listTechniques as listTechniquesUseCase } from '../../../../application/techniques/queries'
 import {
   listPackages as listPackagesUseCase,
   getPackage as getPackageUseCase,
   listPackageTechniques as listPackageTechniquesUseCase,
 } from '../../../../application/packages/queries'
 import { packageRepository } from '../../../../db/packages/package-repository'
-import { techniqueRepository } from '../../../../db/technique-repository'
+import { techniqueRepository } from '../../../../db/techniques/technique-repository'
 import { packageMessages } from '../../constants/package-strings'
 import { catalogRoutes } from '../../../routes'
 import { adminPackagesPageStyles as STYLES } from './AdminPackagesPage.styles'

@@ -1,6 +1,6 @@
-import { Technique } from '@/features/catalog/domain/technique'
-import { TechniqueNameConflict } from '@/features/catalog/domain/errors'
-import type { TechniqueRepository } from '@/features/catalog/application/ports'
+import { Technique } from '@/features/catalog/domain/techniques/technique'
+import { TechniqueNameConflict } from '@/features/catalog/domain/techniques/errors'
+import type { TechniqueRepository } from '@/features/catalog/application/techniques/ports'
 
 // Repositorio en memoria para probar los use-cases sin base de datos. Simula la constraint
 // catalog_techniques_name_unique (DOM-006): dos técnicas con distinto id no pueden compartir

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { makeTechnique } from '@/features/catalog/application/__tests__/technique-fixture'
+import { makeTechnique } from '@/features/catalog/application/techniques/__tests__/technique-fixture'
 
 vi.mock('@/features/catalog/ui/packages/actions/package-actions', () => ({
   createPackageAction: vi.fn(),

@@ -4,13 +4,13 @@ import {
   createTechnique,
   updateTechnique,
   deactivateTechnique,
-} from '@/features/catalog/application/commands'
+} from '@/features/catalog/application/techniques/commands'
 import {
   TechniqueNameConflict,
   TechniqueNotFound,
   TechniqueValidationError,
-} from '@/features/catalog/domain/errors'
-import type { TechniqueWriteModel } from '@/features/catalog/application/ports'
+} from '@/features/catalog/domain/techniques/errors'
+import type { TechniqueWriteModel } from '@/features/catalog/application/techniques/ports'
 import { FakeTechniqueRepository } from './fake-repository'
 import { makeTechnique } from './technique-fixture'
 

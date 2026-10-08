@@ -5,9 +5,9 @@ import {
   getPackage,
   listPackageTechniques,
 } from '@/features/catalog/application/packages/queries'
-import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '@/features/catalog/application/queries'
-import { FakeTechniqueRepository } from '../../__tests__/fake-repository'
-import { makeTechnique } from '../../__tests__/technique-fixture'
+import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '@/features/catalog/application/pagination'
+import { FakeTechniqueRepository } from '../../techniques/__tests__/fake-repository'
+import { makeTechnique } from '../../techniques/__tests__/technique-fixture'
 import { isPackageNotFound } from '@/features/catalog/domain/packages/errors'
 import { createFakePackageRepository } from './fake-package-repository'
 import { makePackage } from './package-fixture'

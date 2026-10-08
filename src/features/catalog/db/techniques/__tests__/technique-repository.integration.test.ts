@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { SupabaseTechniqueRepository } from '@/features/catalog/db/technique-repository'
+import { SupabaseTechniqueRepository } from '@/features/catalog/db/techniques/technique-repository'
 
 // Integración contra Supabase local (seed cargado). Lecturas con token anónimo; las escrituras
 // están denegadas por RLS (B1) y se verifican como tal. Se salta sin conexión.

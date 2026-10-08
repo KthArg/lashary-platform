@@ -1,9 +1,9 @@
 import { ok, err, type Result } from '@/shared/result'
 import { packageToView, type PackageView } from '../../domain/packages/package'
 import { packageNotFound, type PackageNotFound } from '../../domain/packages/errors'
-import type { TechniqueView } from '../../domain/technique'
-import type { Page, TechniqueRepository } from '../ports'
-import { clampPage, clampPageSize } from '../queries'
+import type { TechniqueView } from '../../domain/techniques/technique'
+import type { TechniqueRepository } from '../techniques/ports'
+import { clampPage, clampPageSize, type Page } from '../pagination'
 import type { ListPackagesQuery, PackageRepository, PackageWithDuration } from './ports'
 
 export type PackageListItem = PackageView & { durationTotalMin: number }
