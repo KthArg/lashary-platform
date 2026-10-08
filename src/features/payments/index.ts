@@ -30,3 +30,6 @@ export async function exemptClient(
 
 export type { ExemptClientInput, DepositExemptionView }
 export { ClientAlreadyExempt, DepositExemptionValidationError } from './domain/errors'
+
+// UI de administración (US-AGE-13, criterio 5). La compone la ruta src/app/admin/payments/.
+export { ExemptClientForm } from './ui/ExemptClientForm'
