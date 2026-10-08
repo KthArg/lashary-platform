@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ClientAlreadyExempt } from '../../domain/errors'
+import { ClientAlreadyExempt, DepositExemptionValidationError } from '../../domain/errors'
 
 const mocks = vi.hoisted(() => ({
   isStaff: vi.fn(),
@@ -80,6 +80,17 @@ describe('exemptClientAction', () => {
     const state = await exemptClientAction(initialExemptClientActionState, form(validFields))
 
     expect(state.status).toBe('conflict')
+  })
+
+  it('un error de validación del dominio vuelve como "invalid" con sus problemas', async () => {
+    mocks.exemptClient.mockResolvedValueOnce({
+      ok: false,
+      error: new DepositExemptionValidationError(['la razón no puede estar vacía']),
+    })
+
+    const state = await exemptClientAction(initialExemptClientActionState, form(validFields))
+
+    expect(state).toEqual({ status: 'invalid', problems: ['la razón no puede estar vacía'] })
   })
 })
 

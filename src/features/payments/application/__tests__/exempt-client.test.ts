@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isOk, isErr } from '@/shared/result'
+import { ok, err, isOk, isErr } from '@/shared/result'
 import { fixedClock, fixedDate } from '@/shared/testing/fixed-clock'
 import type { DepositExemption } from '../../domain/deposit-exemption'
 import { ClientAlreadyExempt } from '../../domain/errors'
@@ -35,6 +35,7 @@ describe('exemptClient', () => {
     const auditCalls: unknown[] = []
     const recordAuditEvent: RecordAuditEvent = async (input) => {
       auditCalls.push(input)
+      return ok(undefined)
     }
 
     const result = await exemptClient(buildDeps(repo, recordAuditEvent))({
@@ -71,6 +72,7 @@ describe('exemptClient', () => {
     const auditCalls: unknown[] = []
     const recordAuditEvent: RecordAuditEvent = async (input) => {
       auditCalls.push(input)
+      return ok(undefined)
     }
 
     const result = await exemptClient(buildDeps(repo, recordAuditEvent))({
@@ -86,7 +88,7 @@ describe('exemptClient', () => {
 
   it('un cliente con exoneración vigente no puede recibir una segunda (Result, no throw)', async () => {
     const repo = new InMemoryDepositExemptionRepository()
-    const recordAuditEvent: RecordAuditEvent = async () => {}
+    const recordAuditEvent: RecordAuditEvent = async () => ok(undefined)
     const deps = buildDeps(repo, recordAuditEvent)
 
     const first = await exemptClient(deps)({
@@ -105,6 +107,37 @@ describe('exemptClient', () => {
     expect(isErr(second)).toBe(true)
     if (isOk(second)) return
     expect(second.error).toBeInstanceOf(ClientAlreadyExempt)
+    expect(repo.saved).toHaveLength(1)
+  })
+
+  it('si la bitácora lanza después de guardar, el error se propaga y la exoneración queda guardada', async () => {
+    const repo = new InMemoryDepositExemptionRepository()
+    const recordAuditEvent: RecordAuditEvent = async () => {
+      throw new Error('bitácora caída')
+    }
+
+    await expect(
+      exemptClient(buildDeps(repo, recordAuditEvent))({
+        clientId: '00000000-0000-0000-0000-0000000000c1',
+        exemptedBy: '00000000-0000-0000-0000-0000000000a1',
+        reason: 'caso especial',
+      }),
+    ).rejects.toThrow('bitácora caída')
+    expect(repo.saved).toHaveLength(1)
+  })
+
+  it('si la bitácora devuelve err, no se finge éxito: el error se propaga', async () => {
+    const repo = new InMemoryDepositExemptionRepository()
+    const auditError = new Error('evento de auditoría inválido')
+    const recordAuditEvent: RecordAuditEvent = async () => err(auditError)
+
+    await expect(
+      exemptClient(buildDeps(repo, recordAuditEvent))({
+        clientId: '00000000-0000-0000-0000-0000000000c1',
+        exemptedBy: '00000000-0000-0000-0000-0000000000a1',
+        reason: 'caso especial',
+      }),
+    ).rejects.toBe(auditError)
     expect(repo.saved).toHaveLength(1)
   })
 })

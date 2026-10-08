@@ -54,13 +54,14 @@ export const exemptClient =
     const saved = await saveOrConflict(deps.repo, built.value)
     if (isErr(saved)) return saved
 
-    await deps.recordAuditEvent({
+    const audited = await deps.recordAuditEvent({
       actorId: input.exemptedBy,
       action: 'payments.deposit_exemption.granted',
       entityType: 'clients_profile',
       entityId: input.clientId,
       payload: { reason: input.reason, exemptionId: built.value.id },
     })
+    if (isErr(audited)) throw audited.error
 
     return ok(built.value.toView())
   }
