@@ -1,7 +1,6 @@
 import { ok, err, type Result } from '@/shared/result'
 import { AuditEventValidationError } from './errors'
 
-// Detalle específico de la acción (p.ej. la razón de una exoneración). jsonb en la base.
 export type AuditEventPayload = Record<string, unknown>
 
 export type AuditEventInput = {
@@ -13,7 +12,6 @@ export type AuditEventInput = {
   createdAt: Date
 }
 
-// Vista pública de un evento (lo que devuelve record() a quien lo llamó).
 export type AuditEventView = {
   id: string
   actorId: string
@@ -29,9 +27,6 @@ type AuditEventProps = AuditEventView
 export class AuditEvent {
   private constructor(private readonly props: AuditEventProps) {}
 
-  // Constructor validado (DOM-007): un evento inválido no puede existir. El id lo genera quien
-  // llama (application/), igual que en catalog — la entidad nace ya identificada. createdAt
-  // llega desde afuera porque el reloj se inyecta (DOM-004); esta entidad no lo pide.
   static create(
     id: string,
     input: AuditEventInput,

@@ -1,7 +1,3 @@
-// Entry point público de la feature audit (ARCH-003). Superficie de un solo verbo, de servidor:
-// registrar un evento en la bitácora. Cablea el repositorio Supabase, el generador de id y el
-// reloj real — quien llama no conoce nada de la persistencia interna.
-
 import { randomUUID } from 'node:crypto'
 import { systemClock } from '@/shared/clock'
 import type { Result } from '@/shared/result'
