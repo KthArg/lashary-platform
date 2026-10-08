@@ -1,19 +1,19 @@
 import type { AdminProduct } from '../../domain/product'
 
-export type PaginaProductos<T> = {
+export type ProductPage<T> = {
   items: T[]
   page: number
   pageSize: number
   total: number
 }
 
-export type ListaProductosAdminQuery = {
+export type AdminProductListQuery = {
   activeOnly?: boolean
   page?: number
   pageSize?: number
 }
 
-export type ProductoEscritura = {
+export type ProductWrite = {
   slug: string
   nombre: string
   descripcion: string
@@ -22,7 +22,7 @@ export type ProductoEscritura = {
   ordenPresentacion: number
 }
 
-export interface ProductoRepositorioAdmin {
+export interface AdminProductRepository {
   list(params: {
     activeOnly: boolean
     offset: number

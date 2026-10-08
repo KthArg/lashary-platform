@@ -10,7 +10,7 @@ vi.mock('@/features/store/ui/admin-products/actions/staff-permission', () => ({
   esStaff: mocks.esStaff,
 }))
 vi.mock('@/features/store/db/admin-product-repository', () => ({
-  productoRepositorioAdmin: vi.fn(async () => ({
+  adminProductRepository: vi.fn(async () => ({
     save: mocks.save,
     findById: mocks.findById,
   })),

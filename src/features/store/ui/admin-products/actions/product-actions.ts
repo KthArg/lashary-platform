@@ -5,19 +5,19 @@ import { revalidatePath } from 'next/cache'
 import { isErr } from '@/shared/result'
 import { esStaff } from './staff-permission'
 import {
-  crearProducto,
-  actualizarProducto,
-  desactivarProducto,
-  type ComandoProductoDeps,
+  createProduct,
+  updateProduct,
+  deactivateProduct,
+  type ProductCommandDeps,
 } from '../../../application/admin-products/commands'
-import { productoRepositorioAdmin } from '../../../db/admin-product-repository'
+import { adminProductRepository } from '../../../db/admin-product-repository'
 import { esquemaProductoAdmin } from '../validation/product-schema'
 import { mensajesAdminProductos } from '../constants/product-strings'
 import { rutasAdminProductos } from '../constants/product-routes'
 import type { EstadoAccionProducto } from '../types/product-action-state'
 
-async function deps(): Promise<ComandoProductoDeps> {
-  return { repo: await productoRepositorioAdmin(), newId: () => randomUUID() }
+async function deps(): Promise<ProductCommandDeps> {
+  return { repo: await adminProductRepository(), newId: () => randomUUID() }
 }
 
 function prohibido(): EstadoAccionProducto {
@@ -37,7 +37,7 @@ export async function crearProductoAction(
       problems: parsed.error.issues.map((issue) => issue.message),
     }
   }
-  const result = await crearProducto(await deps())(parsed.data)
+  const result = await createProduct(await deps())(parsed.data)
   if (isErr(result)) {
     return {
       status: 'invalid',
@@ -62,7 +62,7 @@ export async function actualizarProductoAction(
       problems: parsed.error.issues.map((issue) => issue.message),
     }
   }
-  const result = await actualizarProducto(await deps())(id, parsed.data)
+  const result = await updateProduct(await deps())(id, parsed.data)
   if (isErr(result)) {
     return {
       status: 'invalid',
@@ -81,7 +81,7 @@ export async function desactivarProductoAction(
 
   const id = String(formData.get('id') ?? '')
 
-  const result = await desactivarProducto(await deps())(id)
+  const result = await deactivateProduct(await deps())(id)
   if (isErr(result)) {
     return { status: 'invalid', problems: [result.error.message] }
   }

@@ -3,12 +3,12 @@ import { isOk } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import { buildProduct, type AdminProduct } from '../domain/product'
 import { createDuplicateProductSlug } from '../domain/product-errors'
-import type { ProductoRepositorioAdmin } from '../application/admin-products/ports'
+import type { AdminProductRepository } from '../application/admin-products/ports'
 
 const TABLE = 'store_products'
 const COLUMNS = 'id, slug, nombre, descripcion, url_imagen, precio_crc, activo, sort_order'
 
-type Fila = {
+type ProductRow = {
   id: string
   slug: string
   nombre: string
@@ -19,7 +19,7 @@ type Fila = {
   sort_order: number
 }
 
-function filaADominio(fila: Fila): AdminProduct {
+function rowToDomain(fila: ProductRow): AdminProduct {
   const construido = buildProduct({
     id: fila.id,
     slug: fila.slug,
@@ -36,7 +36,7 @@ function filaADominio(fila: Fila): AdminProduct {
   return construido.value
 }
 
-function dominioAFila(producto: AdminProduct): Fila {
+function domainToRow(producto: AdminProduct): ProductRow {
   return {
     id: producto.id,
     slug: producto.slug,
@@ -49,7 +49,7 @@ function dominioAFila(producto: AdminProduct): Fila {
   }
 }
 
-function crearRepositorioAdmin(db: SupabaseClient): ProductoRepositorioAdmin {
+function createAdminProductRepository(db: SupabaseClient): AdminProductRepository {
   return {
     async list(params: { activeOnly: boolean; offset: number; limit: number }) {
       let query = db
@@ -64,7 +64,7 @@ function crearRepositorioAdmin(db: SupabaseClient): ProductoRepositorioAdmin {
       const { data, error, count } = await query
       if (error) throw new Error(`${TABLE}.list: ${error.message}`)
       return {
-        items: (data ?? []).map((fila) => filaADominio(fila as Fila)),
+        items: (data ?? []).map((fila) => rowToDomain(fila as ProductRow)),
         total: count ?? 0,
       }
     },
@@ -72,11 +72,11 @@ function crearRepositorioAdmin(db: SupabaseClient): ProductoRepositorioAdmin {
     async findById(id: string): Promise<AdminProduct | null> {
       const { data, error } = await db.from(TABLE).select(COLUMNS).eq('id', id).maybeSingle()
       if (error) throw new Error(`${TABLE}.findById: ${error.message}`)
-      return data ? filaADominio(data as Fila) : null
+      return data ? rowToDomain(data as ProductRow) : null
     },
 
     async save(producto: AdminProduct): Promise<void> {
-      const { error } = await db.from(TABLE).upsert(dominioAFila(producto), { onConflict: 'id' })
+      const { error } = await db.from(TABLE).upsert(domainToRow(producto), { onConflict: 'id' })
       if (error) {
         if (error.code === '23505') {
           throw createDuplicateProductSlug(producto.slug)
@@ -87,6 +87,6 @@ function crearRepositorioAdmin(db: SupabaseClient): ProductoRepositorioAdmin {
   }
 }
 
-export async function productoRepositorioAdmin(): Promise<ProductoRepositorioAdmin> {
-  return crearRepositorioAdmin(await createClient())
+export async function adminProductRepository(): Promise<AdminProductRepository> {
+  return createAdminProductRepository(await createClient())
 }

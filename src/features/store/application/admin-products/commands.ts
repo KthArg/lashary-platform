@@ -7,10 +7,10 @@ import {
   type ProductNotFound,
   type DuplicateProductSlug,
 } from '../../domain/product-errors'
-import type { ProductoEscritura, ProductoRepositorioAdmin } from './ports'
+import type { ProductWrite, AdminProductRepository } from './ports'
 
-async function guardarOConflicto(
-  repo: ProductoRepositorioAdmin,
+async function saveOrConflict(
+  repo: AdminProductRepository,
   producto: AdminProduct,
 ): Promise<Result<void, DuplicateProductSlug>> {
   try {
@@ -22,14 +22,14 @@ async function guardarOConflicto(
   }
 }
 
-export type ComandoProductoDeps = {
-  repo: ProductoRepositorioAdmin
+export type ProductCommandDeps = {
+  repo: AdminProductRepository
   newId: () => string
 }
 
-function construirDesdeEscritura(
+function buildFromWrite(
   id: string,
-  model: ProductoEscritura,
+  model: ProductWrite,
   activo: boolean,
 ): Result<AdminProduct, InvalidProduct> {
   return buildProduct({
@@ -44,38 +44,38 @@ function construirDesdeEscritura(
   })
 }
 
-export const crearProducto =
-  (deps: ComandoProductoDeps) =>
+export const createProduct =
+  (deps: ProductCommandDeps) =>
   async (
-    model: ProductoEscritura,
+    model: ProductWrite,
   ): Promise<Result<AdminProduct, InvalidProduct | DuplicateProductSlug>> => {
-    const construido = construirDesdeEscritura(deps.newId(), model, true)
+    const construido = buildFromWrite(deps.newId(), model, true)
     if (isErr(construido)) return construido
-    const guardado = await guardarOConflicto(deps.repo, construido.value)
+    const guardado = await saveOrConflict(deps.repo, construido.value)
     if (isErr(guardado)) return guardado
     return ok(construido.value)
   }
 
-export const actualizarProducto =
-  (deps: ComandoProductoDeps) =>
+export const updateProduct =
+  (deps: ProductCommandDeps) =>
   async (
     id: string,
-    model: ProductoEscritura,
+    model: ProductWrite,
   ): Promise<
     Result<AdminProduct, ProductNotFound | InvalidProduct | DuplicateProductSlug>
   > => {
     const existente = await deps.repo.findById(id)
     if (existente === null) return err(createProductNotFound(id))
 
-    const construido = construirDesdeEscritura(id, model, existente.activo)
+    const construido = buildFromWrite(id, model, existente.activo)
     if (isErr(construido)) return construido
-    const guardado = await guardarOConflicto(deps.repo, construido.value)
+    const guardado = await saveOrConflict(deps.repo, construido.value)
     if (isErr(guardado)) return guardado
     return ok(construido.value)
   }
 
-export const desactivarProducto =
-  (deps: ComandoProductoDeps) =>
+export const deactivateProduct =
+  (deps: ProductCommandDeps) =>
   async (id: string): Promise<Result<AdminProduct, ProductNotFound>> => {
     const existente = await deps.repo.findById(id)
     if (existente === null) return err(createProductNotFound(id))

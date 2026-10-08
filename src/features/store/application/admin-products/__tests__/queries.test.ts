@@ -1,65 +1,65 @@
 import { describe, it, expect } from 'vitest'
 import { isErr, isOk } from '@/shared/result'
 import {
-  listarProductosAdmin,
-  obtenerProductoAdmin,
+  listAdminProducts,
+  getAdminProduct,
 } from '@/features/store/application/admin-products/queries'
-import { crearFakeProductoRepositorioAdmin } from './fake-product-repository'
-import { makeProducto } from './product-fixture'
+import { createFakeAdminProductRepository } from './fake-product-repository'
+import { makeProduct } from './product-fixture'
 
-describe('listarProductosAdmin', () => {
+describe('listAdminProducts', () => {
   it('devuelve solo activos por defecto, como AdminProduct', async () => {
-    const repo = crearFakeProductoRepositorioAdmin([
-      makeProducto({ id: 'a', activo: true }),
-      makeProducto({ id: 'b', activo: false }),
+    const repo = createFakeAdminProductRepository([
+      makeProduct({ id: 'a', activo: true }),
+      makeProduct({ id: 'b', activo: false }),
     ])
-    const page = await listarProductosAdmin(repo)()
+    const page = await listAdminProducts(repo)()
     expect(page.items.map((p) => p.id)).toEqual(['a'])
     expect(page.total).toBe(1)
     expect(typeof page.items[0].precioCrc).toBe('number')
   })
 
   it('incluye inactivos cuando activeOnly = false', async () => {
-    const repo = crearFakeProductoRepositorioAdmin([
-      makeProducto({ id: 'a', activo: true }),
-      makeProducto({ id: 'b', activo: false }),
+    const repo = createFakeAdminProductRepository([
+      makeProduct({ id: 'a', activo: true }),
+      makeProduct({ id: 'b', activo: false }),
     ])
-    const page = await listarProductosAdmin(repo)({ activeOnly: false })
+    const page = await listAdminProducts(repo)({ activeOnly: false })
     expect(page.total).toBe(2)
   })
 
   it('pagina con tamaño por defecto 50 y tope 100', async () => {
-    const repo = crearFakeProductoRepositorioAdmin(
-      Array.from({ length: 120 }, (_, i) => makeProducto({ id: `p${i}`, ordenPresentacion: i })),
+    const repo = createFakeAdminProductRepository(
+      Array.from({ length: 120 }, (_, i) => makeProduct({ id: `p${i}`, ordenPresentacion: i })),
     )
-    const first = await listarProductosAdmin(repo)({ page: 1, activeOnly: false })
+    const first = await listAdminProducts(repo)({ page: 1, activeOnly: false })
     expect(first.items).toHaveLength(50)
     expect(first.pageSize).toBe(50)
 
-    const capped = await listarProductosAdmin(repo)({ pageSize: 999, activeOnly: false })
+    const capped = await listAdminProducts(repo)({ pageSize: 999, activeOnly: false })
     expect(capped.pageSize).toBe(100)
     expect(capped.items).toHaveLength(100)
   })
 
   it('normaliza page y pageSize inválidos', async () => {
-    const repo = crearFakeProductoRepositorioAdmin([makeProducto({ id: 'a' })])
-    const page = await listarProductosAdmin(repo)({ page: 0, pageSize: -5 })
+    const repo = createFakeAdminProductRepository([makeProduct({ id: 'a' })])
+    const page = await listAdminProducts(repo)({ page: 0, pageSize: -5 })
     expect(page.page).toBe(1)
     expect(page.pageSize).toBe(1)
   })
 })
 
-describe('obtenerProductoAdmin', () => {
+describe('getAdminProduct', () => {
   it('devuelve el producto cuando existe', async () => {
-    const repo = crearFakeProductoRepositorioAdmin([makeProducto({ id: 'x' })])
-    const result = await obtenerProductoAdmin(repo)('x')
+    const repo = createFakeAdminProductRepository([makeProduct({ id: 'x' })])
+    const result = await getAdminProduct(repo)('x')
     expect(isOk(result)).toBe(true)
     if (isOk(result)) expect(result.value.id).toBe('x')
   })
 
   it('devuelve ProductNotFound cuando no existe', async () => {
-    const repo = crearFakeProductoRepositorioAdmin([])
-    const result = await obtenerProductoAdmin(repo)('nope')
+    const repo = createFakeAdminProductRepository([])
+    const result = await getAdminProduct(repo)('nope')
     expect(isErr(result)).toBe(true)
     if (isErr(result)) {
       expect(result.error.tipo).toBe('ProductNotFound')

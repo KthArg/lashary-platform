@@ -1,18 +1,18 @@
 import { describe, it, expect } from 'vitest'
 import { isErr, isOk } from '@/shared/result'
 import {
-  crearProducto,
-  actualizarProducto,
-  desactivarProducto,
+  createProduct,
+  updateProduct,
+  deactivateProduct,
 } from '@/features/store/application/admin-products/commands'
-import type { ProductoEscritura } from '@/features/store/application/admin-products/ports'
+import type { ProductWrite } from '@/features/store/application/admin-products/ports'
 import {
-  crearFakeProductoRepositorioAdmin,
-  type FakeProductoRepositorioAdmin,
+  createFakeAdminProductRepository,
+  type FakeAdminProductRepository,
 } from './fake-product-repository'
-import { makeProducto } from './product-fixture'
+import { makeProduct } from './product-fixture'
 
-const validModel = (): ProductoEscritura => ({
+const validModel = (): ProductWrite => ({
   slug: 'cepillo-limpiador-lashary',
   nombre: 'Cepillo limpiador Lashary',
   descripcion: 'Accesorio para limpieza suave diaria.',
@@ -21,15 +21,15 @@ const validModel = (): ProductoEscritura => ({
   ordenPresentacion: 2,
 })
 
-const deps = (repo: FakeProductoRepositorioAdmin, id = 'nuevo-id') => ({
+const deps = (repo: FakeAdminProductRepository, id = 'nuevo-id') => ({
   repo,
   newId: () => id,
 })
 
-describe('crearProducto', () => {
+describe('createProduct', () => {
   it('crea y persiste un producto válido', async () => {
-    const repo = crearFakeProductoRepositorioAdmin()
-    const result = await crearProducto(deps(repo, 'abc'))(validModel())
+    const repo = createFakeAdminProductRepository()
+    const result = await createProduct(deps(repo, 'abc'))(validModel())
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
     expect(result.value.id).toBe('abc')
@@ -39,35 +39,35 @@ describe('crearProducto', () => {
   })
 
   it('rechaza y no persiste un producto inválido', async () => {
-    const repo = crearFakeProductoRepositorioAdmin()
-    const result = await crearProducto(deps(repo))({ ...validModel(), slug: '' })
+    const repo = createFakeAdminProductRepository()
+    const result = await createProduct(deps(repo))({ ...validModel(), slug: '' })
     expect(isErr(result)).toBe(true)
     if (isErr(result)) expect(result.error.tipo).toBe('InvalidProduct')
     expect(repo.saveCalls).toBe(0)
   })
 
   it('rechaza montos no enteros', async () => {
-    const repo = crearFakeProductoRepositorioAdmin()
-    const result = await crearProducto(deps(repo))({ ...validModel(), precioCrc: 12000.5 })
+    const repo = createFakeAdminProductRepository()
+    const result = await createProduct(deps(repo))({ ...validModel(), precioCrc: 12000.5 })
     expect(isErr(result)).toBe(true)
     expect(repo.saveCalls).toBe(0)
   })
 
   it('DOM-006: devuelve DuplicateProductSlug si el slug ya existe, no un Error genérico', async () => {
-    const repo = crearFakeProductoRepositorioAdmin([
-      makeProducto({ id: 'existente', slug: 'cepillo-limpiador-lashary' }),
+    const repo = createFakeAdminProductRepository([
+      makeProduct({ id: 'existente', slug: 'cepillo-limpiador-lashary' }),
     ])
-    const result = await crearProducto(deps(repo, 'nuevo'))(validModel())
+    const result = await createProduct(deps(repo, 'nuevo'))(validModel())
     expect(isErr(result)).toBe(true)
     if (isErr(result)) expect(result.error.tipo).toBe('DuplicateProductSlug')
     expect(repo.saveCalls).toBe(0)
   })
 })
 
-describe('actualizarProducto', () => {
+describe('updateProduct', () => {
   it('actualiza un producto existente conservando su estado activo', async () => {
-    const repo = crearFakeProductoRepositorioAdmin([makeProducto({ id: 'e1', activo: true })])
-    const result = await actualizarProducto(deps(repo))('e1', {
+    const repo = createFakeAdminProductRepository([makeProduct({ id: 'e1', activo: true })])
+    const result = await updateProduct(deps(repo))('e1', {
       ...validModel(),
       nombre: 'Renombrado',
     })
@@ -79,42 +79,42 @@ describe('actualizarProducto', () => {
   })
 
   it('preserva activo=false al actualizar un producto desactivado', async () => {
-    const repo = crearFakeProductoRepositorioAdmin([makeProducto({ id: 'e2', activo: false })])
-    const result = await actualizarProducto(deps(repo))('e2', validModel())
+    const repo = createFakeAdminProductRepository([makeProduct({ id: 'e2', activo: false })])
+    const result = await updateProduct(deps(repo))('e2', validModel())
     if (!isOk(result)) throw new Error('esperaba ok')
     expect(result.value.activo).toBe(false)
   })
 
   it('devuelve ProductNotFound si no existe', async () => {
-    const repo = crearFakeProductoRepositorioAdmin()
-    const result = await actualizarProducto(deps(repo))('nope', validModel())
+    const repo = createFakeAdminProductRepository()
+    const result = await updateProduct(deps(repo))('nope', validModel())
     expect(isErr(result)).toBe(true)
     if (isErr(result)) expect(result.error.tipo).toBe('ProductNotFound')
   })
 
   it('rechaza cambios inválidos sin persistir', async () => {
-    const repo = crearFakeProductoRepositorioAdmin([makeProducto({ id: 'e3' })])
+    const repo = createFakeAdminProductRepository([makeProduct({ id: 'e3' })])
     const before = repo.saveCalls
-    const result = await actualizarProducto(deps(repo))('e3', { ...validModel(), nombre: '   ' })
+    const result = await updateProduct(deps(repo))('e3', { ...validModel(), nombre: '   ' })
     expect(isErr(result)).toBe(true)
     expect(repo.saveCalls).toBe(before)
   })
 
   it('DOM-006: renombrar el slug a uno ya usado por otro producto devuelve DuplicateProductSlug', async () => {
-    const repo = crearFakeProductoRepositorioAdmin([
-      makeProducto({ id: 'e4', slug: 'slug-a' }),
-      makeProducto({ id: 'e5', slug: 'slug-b' }),
+    const repo = createFakeAdminProductRepository([
+      makeProduct({ id: 'e4', slug: 'slug-a' }),
+      makeProduct({ id: 'e5', slug: 'slug-b' }),
     ])
-    const result = await actualizarProducto(deps(repo))('e5', { ...validModel(), slug: 'slug-a' })
+    const result = await updateProduct(deps(repo))('e5', { ...validModel(), slug: 'slug-a' })
     expect(isErr(result)).toBe(true)
     if (isErr(result)) expect(result.error.tipo).toBe('DuplicateProductSlug')
   })
 })
 
-describe('desactivarProducto', () => {
+describe('deactivateProduct', () => {
   it('desactiva un producto existente', async () => {
-    const repo = crearFakeProductoRepositorioAdmin([makeProducto({ id: 'd1', activo: true })])
-    const result = await desactivarProducto(deps(repo))('d1')
+    const repo = createFakeAdminProductRepository([makeProduct({ id: 'd1', activo: true })])
+    const result = await deactivateProduct(deps(repo))('d1')
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
     expect(result.value.activo).toBe(false)
@@ -122,8 +122,8 @@ describe('desactivarProducto', () => {
   })
 
   it('devuelve ProductNotFound si no existe', async () => {
-    const repo = crearFakeProductoRepositorioAdmin()
-    const result = await desactivarProducto(deps(repo))('nope')
+    const repo = createFakeAdminProductRepository()
+    const result = await deactivateProduct(deps(repo))('nope')
     expect(isErr(result)).toBe(true)
   })
 })

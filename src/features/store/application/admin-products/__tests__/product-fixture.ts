@@ -3,7 +3,7 @@ import { buildProduct, type AdminProduct } from '@/features/store/domain/product
 
 let counter = 0
 
-export function makeProducto(
+export function makeProduct(
   overrides: Partial<{
     id: string
     slug: string
