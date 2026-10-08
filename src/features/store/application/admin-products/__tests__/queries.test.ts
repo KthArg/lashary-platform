@@ -7,22 +7,22 @@ import {
 import { createFakeAdminProductRepository } from './fake-product-repository'
 import { makeProduct } from './product-fixture'
 
-describe('listAdminProducts', () => {
-  it('devuelve solo activos por defecto, como AdminProduct', async () => {
+describe('listarProductosAdmin', () => {
+  it('devuelve solo activos por defecto, como ProductoAdminVista', async () => {
     const repo = createFakeAdminProductRepository([
-      makeProduct({ id: 'a', activo: true }),
-      makeProduct({ id: 'b', activo: false }),
+      makeProduct({ id: 'a', isActive: true }),
+      makeProduct({ id: 'b', isActive: false }),
     ])
     const page = await listAdminProducts(repo)()
-    expect(page.items.map((p) => p.id)).toEqual(['a'])
+    expect(page.items.map((product) => product.id)).toEqual(['a'])
     expect(page.total).toBe(1)
     expect(typeof page.items[0].priceCrc).toBe('number')
   })
 
   it('incluye inactivos cuando activeOnly = false', async () => {
     const repo = createFakeAdminProductRepository([
-      makeProduct({ id: 'a', activo: true }),
-      makeProduct({ id: 'b', activo: false }),
+      makeProduct({ id: 'a', isActive: true }),
+      makeProduct({ id: 'b', isActive: false }),
     ])
     const page = await listAdminProducts(repo)({ activeOnly: false })
     expect(page.total).toBe(2)
@@ -49,7 +49,7 @@ describe('listAdminProducts', () => {
   })
 })
 
-describe('getAdminProduct', () => {
+describe('obtenerProductoAdmin', () => {
   it('devuelve el producto cuando existe', async () => {
     const repo = createFakeAdminProductRepository([makeProduct({ id: 'x' })])
     const result = await getAdminProduct(repo)('x')
@@ -57,13 +57,13 @@ describe('getAdminProduct', () => {
     if (isOk(result)) expect(result.value.id).toBe('x')
   })
 
-  it('devuelve ProductNotFound cuando no existe', async () => {
+  it('devuelve ProductoNoEncontrado cuando no existe', async () => {
     const repo = createFakeAdminProductRepository([])
     const result = await getAdminProduct(repo)('nope')
     expect(isErr(result)).toBe(true)
     if (isErr(result)) {
-      expect(result.error.tipo).toBe('ProductNotFound')
-      expect(result.error.productoId).toBe('nope')
+      expect(result.error.kind).toBe('ProductNotFound')
+      expect(result.error.productId).toBe('nope')
     }
   })
 })

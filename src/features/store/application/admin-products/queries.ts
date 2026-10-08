@@ -43,7 +43,7 @@ export const listAdminProducts =
 export const getAdminProduct =
   (repo: AdminProductRepository) =>
   async (id: string): Promise<Result<AdminProduct, ProductNotFound>> => {
-    const producto = await repo.findById(id)
-    if (producto === null) return err(createProductNotFound(id))
-    return ok(producto)
+    const product = await repo.findById(id)
+    if (product === null) return err(createProductNotFound(id))
+    return ok(product)
   }

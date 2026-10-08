@@ -7,11 +7,11 @@ const v = mensajesAdminProductos.form.validation
 export const esquemaProductoAdmin = z
   .object({
     slug: z.string().trim().min(1, v.slug),
-    name: z.string().trim().min(1, v.name),
+    name: z.string().trim().min(1, v.nombre),
     description: z.string().trim().optional().default(''),
-    imageUrl: z.string().trim().min(1, v.imageUrl),
-    priceCrc: z.coerce.number().int().positive(v.priceCrc),
-    displayOrder: z.coerce.number().int().min(0, v.displayOrder),
+    imageUrl: z.string().trim().min(1, v.urlImagen),
+    priceCrc: z.coerce.number().int().positive(v.precioCrc),
+    displayOrder: z.coerce.number().int().min(0, v.ordenPresentacion),
   })
   .transform(
     (data): ProductWrite => ({

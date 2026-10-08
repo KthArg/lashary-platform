@@ -11,7 +11,7 @@ export function TablaProductosAdmin({ filas }: TablaProductosAdminProps) {
       <table className={STYLES.table}>
         <thead>
           <tr>
-            <th>{m.columns.name}</th>
+            <th>{m.columns.nombre}</th>
             <th>{m.columns.slug}</th>
             <th>{m.columns.precio}</th>
             <th>{m.columns.orden}</th>
@@ -24,7 +24,7 @@ export function TablaProductosAdmin({ filas }: TablaProductosAdminProps) {
         <tbody>
           {filas.map((fila) => (
             <tr key={fila.id}>
-              <td className={STYLES.nameCell}>{fila.name}</td>
+              <td className={STYLES.nameCell}>{fila.nombre}</td>
               <td>{fila.slug}</td>
               <td>{fila.precioFormateado}</td>
               <td>{fila.orden}</td>

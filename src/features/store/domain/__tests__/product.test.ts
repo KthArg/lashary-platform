@@ -17,53 +17,53 @@ const validInput = () => ({
   displayOrder: 1,
 })
 
-describe('buildProduct — invariantes de dominio (DOM-007)', () => {
+describe('construirProducto — invariantes de dominio (DOM-007)', () => {
   it('crea un producto válido con todos los campos', () => {
-    const r = buildProduct(validInput())
-    expect(isOk(r)).toBe(true)
-    if (!isOk(r)) return
-    expect(r.value.name).toBe('Serum nutritivo Lashary')
-    expect(r.value.slug).toBe('serum-nutritivo-lashary')
-    expect(r.value.priceCrc).toBe(18000)
-    expect(r.value.activo).toBe(true)
+    const result = buildProduct(validInput())
+    expect(isOk(result)).toBe(true)
+    if (!isOk(result)) return
+    expect(result.value.name).toBe('Serum nutritivo Lashary')
+    expect(result.value.slug).toBe('serum-nutritivo-lashary')
+    expect(result.value.priceCrc).toBe(18000)
+    expect(result.value.isActive).toBe(true)
   })
 
-  it('recorta espacios de slug, name, descripción y imageUrl', () => {
-    const r = buildProduct({
+  it('recorta espacios de slug, nombre, descripción e imageUrl', () => {
+    const result = buildProduct({
       ...validInput(),
       slug: '  serum-nutritivo-lashary  ',
       name: '  Serum nutritivo Lashary  ',
       description: '  cuidados  ',
       imageUrl: '  /productos/serum-nutritivo.jpg  ',
     })
-    if (!isOk(r)) throw new Error('esperaba ok')
-    expect(r.value.slug).toBe('serum-nutritivo-lashary')
-    expect(r.value.name).toBe('Serum nutritivo Lashary')
-    expect(r.value.description).toBe('cuidados')
-    expect(r.value.imageUrl).toBe('/productos/serum-nutritivo.jpg')
+    if (!isOk(result)) throw new Error('esperaba ok')
+    expect(result.value.slug).toBe('serum-nutritivo-lashary')
+    expect(result.value.name).toBe('Serum nutritivo Lashary')
+    expect(result.value.description).toBe('cuidados')
+    expect(result.value.imageUrl).toBe('/productos/serum-nutritivo.jpg')
   })
 
   it('acepta descripción vacía', () => {
-    const r = buildProduct({ ...validInput(), description: '' })
-    expect(isOk(r)).toBe(true)
+    const result = buildProduct({ ...validInput(), description: '' })
+    expect(isOk(result)).toBe(true)
   })
 
   it('rechaza slug vacío', () => {
-    const r = buildProduct({ ...validInput(), slug: '   ' })
-    expect(isErr(r)).toBe(true)
-    if (!isErr(r)) return
-    expect(r.error.tipo).toBe('InvalidProduct')
-    expect(r.error.problems.join(' ')).toMatch(/slug/i)
+    const result = buildProduct({ ...validInput(), slug: '   ' })
+    expect(isErr(result)).toBe(true)
+    if (!isErr(result)) return
+    expect(result.error.kind).toBe('InvalidProduct')
+    expect(result.error.problems.join(' ')).toMatch(/slug/i)
   })
 
-  it('rechaza name vacío', () => {
-    const r = buildProduct({ ...validInput(), name: '   ' })
-    expect(isErr(r)).toBe(true)
+  it('rechaza nombre vacío', () => {
+    const result = buildProduct({ ...validInput(), name: '   ' })
+    expect(isErr(result)).toBe(true)
   })
 
   it('rechaza imageUrl vacía', () => {
-    const r = buildProduct({ ...validInput(), imageUrl: '   ' })
-    expect(isErr(r)).toBe(true)
+    const result = buildProduct({ ...validInput(), imageUrl: '   ' })
+    expect(isErr(result)).toBe(true)
   })
 
   it('rechaza precio no positivo', () => {
@@ -85,31 +85,31 @@ describe('buildProduct — invariantes de dominio (DOM-007)', () => {
   })
 
   it('acumula varios problemas en un solo error', () => {
-    const r = buildProduct({
+    const result = buildProduct({
       ...validInput(),
       slug: '',
       name: '',
       displayOrder: -5,
     })
-    expect(isErr(r)).toBe(true)
-    if (!isErr(r)) return
-    expect(r.error.problems.length).toBeGreaterThanOrEqual(3)
+    expect(isErr(result)).toBe(true)
+    if (!isErr(result)) return
+    expect(result.error.problems.length).toBeGreaterThanOrEqual(3)
   })
 })
 
-describe('markProductInactive', () => {
+describe('marcarProductoInactivo', () => {
   it('devuelve una copia inactiva sin mutar la original', () => {
-    const r = buildProduct(validInput())
-    if (!isOk(r)) throw new Error('esperaba ok')
-    const original = r.value
+    const result = buildProduct(validInput())
+    if (!isOk(result)) throw new Error('esperaba ok')
+    const original = result.value
     const inactivo = markProductInactive(original)
-    expect(inactivo.activo).toBe(false)
-    expect(original.activo).toBe(true)
+    expect(inactivo.isActive).toBe(false)
+    expect(original.isActive).toBe(true)
     expect(inactivo.id).toBe(original.id)
   })
 })
 
-describe('sanitizeUrl', () => {
+describe('sanitizarUrl', () => {
   it('deja pasar una URL relativa o http(s) normal', () => {
     expect(sanitizeUrl('/productos/serum.jpg')).toBe('/productos/serum.jpg')
     expect(sanitizeUrl('https://cdn.lashary.com/a.jpg')).toBe('https://cdn.lashary.com/a.jpg')
@@ -130,8 +130,8 @@ describe('sanitizeUrl', () => {
   })
 })
 
-describe('toProductCard', () => {
-  it('sanitiza la URL de imagen de un PublicProduct no confiable (CMS/DB)', () => {
+describe('aProductoEnTarjeta', () => {
+  it('sanitiza la URL de imagen de un ProductoPublico no confiable (CMS/DB)', () => {
     const tarjeta = toProductCard({
       id: '1',
       name: 'Producto',

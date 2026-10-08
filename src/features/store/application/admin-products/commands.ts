@@ -11,10 +11,10 @@ import type { ProductWrite, AdminProductRepository } from './ports'
 
 async function saveOrConflict(
   repo: AdminProductRepository,
-  producto: AdminProduct,
+  product: AdminProduct,
 ): Promise<Result<void, DuplicateProductSlug>> {
   try {
-    await repo.save(producto)
+    await repo.save(product)
     return ok(undefined)
   } catch (error) {
     if (isDuplicateProductSlug(error)) return err(error)
@@ -30,7 +30,7 @@ export type ProductCommandDeps = {
 function buildFromWrite(
   id: string,
   model: ProductWrite,
-  activo: boolean,
+  isActive: boolean,
 ): Result<AdminProduct, InvalidProduct> {
   return buildProduct({
     id,
@@ -40,7 +40,7 @@ function buildFromWrite(
     imageUrl: model.imageUrl,
     priceCrc: model.priceCrc,
     displayOrder: model.displayOrder,
-    activo,
+    isActive,
   })
 }
 
@@ -49,11 +49,11 @@ export const createProduct =
   async (
     model: ProductWrite,
   ): Promise<Result<AdminProduct, InvalidProduct | DuplicateProductSlug>> => {
-    const construido = buildFromWrite(deps.newId(), model, true)
-    if (isErr(construido)) return construido
-    const guardado = await saveOrConflict(deps.repo, construido.value)
-    if (isErr(guardado)) return guardado
-    return ok(construido.value)
+    const built = buildFromWrite(deps.newId(), model, true)
+    if (isErr(built)) return built
+    const saved = await saveOrConflict(deps.repo, built.value)
+    if (isErr(saved)) return saved
+    return ok(built.value)
   }
 
 export const updateProduct =
@@ -64,23 +64,23 @@ export const updateProduct =
   ): Promise<
     Result<AdminProduct, ProductNotFound | InvalidProduct | DuplicateProductSlug>
   > => {
-    const existente = await deps.repo.findById(id)
-    if (existente === null) return err(createProductNotFound(id))
+    const existing = await deps.repo.findById(id)
+    if (existing === null) return err(createProductNotFound(id))
 
-    const construido = buildFromWrite(id, model, existente.activo)
-    if (isErr(construido)) return construido
-    const guardado = await saveOrConflict(deps.repo, construido.value)
-    if (isErr(guardado)) return guardado
-    return ok(construido.value)
+    const built = buildFromWrite(id, model, existing.isActive)
+    if (isErr(built)) return built
+    const saved = await saveOrConflict(deps.repo, built.value)
+    if (isErr(saved)) return saved
+    return ok(built.value)
   }
 
 export const deactivateProduct =
   (deps: ProductCommandDeps) =>
   async (id: string): Promise<Result<AdminProduct, ProductNotFound>> => {
-    const existente = await deps.repo.findById(id)
-    if (existente === null) return err(createProductNotFound(id))
+    const existing = await deps.repo.findById(id)
+    if (existing === null) return err(createProductNotFound(id))
 
-    const desactivado = markProductInactive(existente)
-    await deps.repo.save(desactivado)
-    return ok(desactivado)
+    const deactivated = markProductInactive(existing)
+    await deps.repo.save(deactivated)
+    return ok(deactivated)
   }

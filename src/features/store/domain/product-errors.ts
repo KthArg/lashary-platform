@@ -1,19 +1,19 @@
 export type InvalidProduct = {
-  tipo: 'InvalidProduct'
+  kind: 'InvalidProduct'
   code: 'STORE_PRODUCTO_INVALIDO'
   message: string
   problems: string[]
 }
 
 export type ProductNotFound = {
-  tipo: 'ProductNotFound'
+  kind: 'ProductNotFound'
   code: 'STORE_PRODUCTO_NO_ENCONTRADO'
   message: string
-  productoId: string
+  productId: string
 }
 
 export type DuplicateProductSlug = {
-  tipo: 'DuplicateProductSlug'
+  kind: 'DuplicateProductSlug'
   code: 'STORE_PRODUCTO_SLUG_DUPLICADO'
   message: string
   slug: string
@@ -23,25 +23,25 @@ export type ProductError = InvalidProduct | ProductNotFound | DuplicateProductSl
 
 export function createInvalidProduct(problems: string[]): InvalidProduct {
   return {
-    tipo: 'InvalidProduct',
+    kind: 'InvalidProduct',
     code: 'STORE_PRODUCTO_INVALIDO',
     message: `producto inválido: ${problems.join('; ')}`,
     problems,
   }
 }
 
-export function createProductNotFound(productoId: string): ProductNotFound {
+export function createProductNotFound(productId: string): ProductNotFound {
   return {
-    tipo: 'ProductNotFound',
+    kind: 'ProductNotFound',
     code: 'STORE_PRODUCTO_NO_ENCONTRADO',
-    message: `no existe el producto ${productoId}`,
-    productoId,
+    message: `no existe el producto ${productId}`,
+    productId,
   }
 }
 
 export function createDuplicateProductSlug(slug: string): DuplicateProductSlug {
   return {
-    tipo: 'DuplicateProductSlug',
+    kind: 'DuplicateProductSlug',
     code: 'STORE_PRODUCTO_SLUG_DUPLICADO',
     message: `ya existe un producto con el slug "${slug}"`,
     slug,
@@ -52,6 +52,6 @@ export function isDuplicateProductSlug(error: unknown): error is DuplicateProduc
   return (
     typeof error === 'object' &&
     error !== null &&
-    (error as { tipo?: unknown }).tipo === 'DuplicateProductSlug'
+    (error as { kind?: unknown }).kind === 'DuplicateProductSlug'
   )
 }

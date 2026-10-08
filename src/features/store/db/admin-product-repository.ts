@@ -19,33 +19,33 @@ type ProductRow = {
   sort_order: number
 }
 
-function rowToDomain(fila: ProductRow): AdminProduct {
-  const construido = buildProduct({
-    id: fila.id,
-    slug: fila.slug,
-    name: fila.nombre,
-    description: fila.descripcion,
-    imageUrl: fila.url_imagen,
-    priceCrc: Number(fila.precio_crc),
-    displayOrder: fila.sort_order,
-    activo: fila.activo,
+function rowToDomain(row: ProductRow): AdminProduct {
+  const built = buildProduct({
+    id: row.id,
+    slug: row.slug,
+    name: row.nombre,
+    description: row.descripcion,
+    imageUrl: row.url_imagen,
+    priceCrc: Number(row.precio_crc),
+    displayOrder: row.sort_order,
+    isActive: row.activo,
   })
-  if (!isOk(construido)) {
-    throw new Error(`fila inválida en ${TABLE} (${fila.id}): ${construido.error.message}`)
+  if (!isOk(built)) {
+    throw new Error(`fila inválida en ${TABLE} (${row.id}): ${built.error.message}`)
   }
-  return construido.value
+  return built.value
 }
 
-function domainToRow(producto: AdminProduct): ProductRow {
+function domainToRow(product: AdminProduct): ProductRow {
   return {
-    id: producto.id,
-    slug: producto.slug,
-    nombre: producto.name,
-    descripcion: producto.description,
-    url_imagen: producto.imageUrl,
-    precio_crc: producto.priceCrc,
-    activo: producto.activo,
-    sort_order: producto.displayOrder,
+    id: product.id,
+    slug: product.slug,
+    nombre: product.name,
+    descripcion: product.description,
+    url_imagen: product.imageUrl,
+    precio_crc: product.priceCrc,
+    activo: product.isActive,
+    sort_order: product.displayOrder,
   }
 }
 
@@ -64,7 +64,7 @@ function createAdminProductRepository(db: SupabaseClient): AdminProductRepositor
       const { data, error, count } = await query
       if (error) throw new Error(`${TABLE}.list: ${error.message}`)
       return {
-        items: (data ?? []).map((fila) => rowToDomain(fila as ProductRow)),
+        items: (data ?? []).map((row) => rowToDomain(row as ProductRow)),
         total: count ?? 0,
       }
     },
@@ -75,11 +75,11 @@ function createAdminProductRepository(db: SupabaseClient): AdminProductRepositor
       return data ? rowToDomain(data as ProductRow) : null
     },
 
-    async save(producto: AdminProduct): Promise<void> {
-      const { error } = await db.from(TABLE).upsert(domainToRow(producto), { onConflict: 'id' })
+    async save(product: AdminProduct): Promise<void> {
+      const { error } = await db.from(TABLE).upsert(domainToRow(product), { onConflict: 'id' })
       if (error) {
         if (error.code === '23505') {
-          throw createDuplicateProductSlug(producto.slug)
+          throw createDuplicateProductSlug(product.slug)
         }
         throw new Error(`${TABLE}.save: ${error.message}`)
       }

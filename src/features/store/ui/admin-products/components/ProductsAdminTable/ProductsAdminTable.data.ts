@@ -9,12 +9,12 @@ export function aFilasProductoAdmin(items: AdminProduct[]): FilaProductoAdmin[] 
 
   return items.map((producto) => ({
     id: producto.id,
-    name: producto.name,
+    nombre: producto.name,
     slug: producto.slug,
     precioFormateado: formatPriceCrc(producto.priceCrc),
     orden: producto.displayOrder,
-    estadoTexto: producto.activo ? m.status.active : m.status.inactive,
-    estadoClase: producto.activo ? STYLES.badgeActive : STYLES.badgeInactive,
+    estadoTexto: producto.isActive ? m.status.active : m.status.inactive,
+    estadoClase: producto.isActive ? STYLES.badgeActive : STYLES.badgeInactive,
     hrefEditar: rutasAdminProductos.editarProducto(producto.id),
   }))
 }

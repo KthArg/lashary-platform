@@ -68,7 +68,7 @@ export type AdminProduct = {
   description: string
   imageUrl: string
   priceCrc: number
-  activo: boolean
+  isActive: boolean
   displayOrder: number
 }
 
@@ -79,12 +79,12 @@ export type ProductInput = {
   description: string
   imageUrl: string
   priceCrc: number
-  activo?: boolean
+  isActive?: boolean
   displayOrder: number
 }
 
-const isNonNegativeInteger = (n: number): boolean => Number.isInteger(n) && n >= 0
-const isPositiveInteger = (n: number): boolean => Number.isInteger(n) && n > 0
+const isNonNegativeInteger = (value: number): boolean => Number.isInteger(value) && value >= 0
+const isPositiveInteger = (value: number): boolean => Number.isInteger(value) && value > 0
 
 export function buildProduct(input: ProductInput): Result<AdminProduct, InvalidProduct> {
   const problems: string[] = []
@@ -93,7 +93,7 @@ export function buildProduct(input: ProductInput): Result<AdminProduct, InvalidP
   if (slug.length === 0) problems.push('el slug no puede estar vacío')
 
   const name = input.name.trim()
-  if (name.length === 0) problems.push('el name no puede estar vacío')
+  if (name.length === 0) problems.push('el nombre no puede estar vacío')
 
   const imageUrl = input.imageUrl.trim()
   if (imageUrl.length === 0) problems.push('la URL de la imagen no puede estar vacía')
@@ -117,11 +117,11 @@ export function buildProduct(input: ProductInput): Result<AdminProduct, InvalidP
     description: input.description.trim(),
     imageUrl,
     priceCrc: input.priceCrc,
-    activo: input.activo ?? true,
+    isActive: input.isActive ?? true,
     displayOrder: input.displayOrder,
   })
 }
 
-export function markProductInactive(producto: AdminProduct): AdminProduct {
-  return { ...producto, activo: false }
+export function markProductInactive(product: AdminProduct): AdminProduct {
+  return { ...product, isActive: false }
 }

@@ -42,16 +42,16 @@ export function FormularioProductoAdmin({ producto }: FormularioProductoAdminPro
         <input type="hidden" name="id" value={producto?.id ?? ''} />
 
         <Field name="slug" label={f.fields.slug} defaultValue={producto?.slug} required />
-        <Field name="name" label={f.fields.name} defaultValue={producto?.name} required />
+        <Field name="name" label={f.fields.nombre} defaultValue={producto?.name} required />
         <Field
           name="imageUrl"
-          label={f.fields.imageUrl}
+          label={f.fields.urlImagen}
           defaultValue={producto?.imageUrl}
           required
         />
         <Field
           name="priceCrc"
-          label={f.fields.priceCrc}
+          label={f.fields.precioCrc}
           type="number"
           min={1}
           required
@@ -59,17 +59,17 @@ export function FormularioProductoAdmin({ producto }: FormularioProductoAdminPro
         />
         <Field
           name="displayOrder"
-          label={f.fields.displayOrder}
+          label={f.fields.ordenPresentacion}
           type="number"
           min={0}
           required
           defaultValue={producto?.displayOrder ?? 0}
         />
 
-        <label className={STYLES.descripcionLabel} htmlFor="description">
-          <span className={STYLES.labelText}>{f.fields.description}</span>
+        <label className={STYLES.descripcionLabel} htmlFor="descripcion">
+          <span className={STYLES.labelText}>{f.fields.descripcion}</span>
           <textarea
-            id="description"
+            id="descripcion"
             name="description"
             rows={3}
             defaultValue={producto?.description}
@@ -85,7 +85,7 @@ export function FormularioProductoAdmin({ producto }: FormularioProductoAdminPro
       </form>
 
       <SeccionDesactivarDelModo
-        productoId={producto?.id ?? ''}
+        productId={producto?.id ?? ''}
         deactivateAction={deactivateAction}
         deactivateState={deactivateState}
         deactivating={deactivating}
