@@ -3,6 +3,7 @@ export const publicProductsGridStyles = {
   image: 'h-56 w-full object-cover',
   cardBody: 'card-body',
   cardTitle: 'card-title text-base-content',
+  cardLink: 'link link-hover',
   price: 'text-base font-semibold text-primary',
   alert: 'alert',
   alertError: 'alert alert-error',

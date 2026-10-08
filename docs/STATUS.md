@@ -99,7 +99,7 @@
 
 ### store (actualizado: 2026-10-08)
 - US-PROD-02 — terminada — PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), product.test.ts, commands.test.ts, queries.test.ts, product-schema.test.ts, product-actions.test.ts, layout.test.tsx, products-admin-rls.test.ts (omitida sin Supabase local, ver deuda)
-- US-PROD-03 — en_progreso — falta: la columna store_products.existencias existe y la administradora la edita en /admin/catalog/products; el slug lo genera el sistema a partir del nombre; la lectura del detalle por slug existe (getPublicProductDetail); faltan la ruta /productos/[slug] con imagen, nombre, descripcion, precio y boton de agregar al carrito deshabilitado sin existencias, y el enlace desde el grid
+- US-PROD-03 — en_progreso — falta: los criterios 1, 2 y 3 tienen prueba en product-detail-page.test.tsx (ruta /productos/[slug] con imagen, nombre, descripcion, precio, boton de agregar al carrito y aviso Agotado con la compra deshabilitada; enlace desde el grid en store.test.tsx); falta el PR de cierre us/US-PROD-03 a main para marcarla terminada (EST-005)
 - US-SHOP-01 — no_iniciada
 - US-SHOP-02 — no_iniciada
 
