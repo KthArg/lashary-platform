@@ -4,8 +4,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { HeroContent } from '@/features/content'
 import { landingHeroStyles as styles } from './LandingHero.styles'
-import { RESERVE_ROUTE } from './routes'
-import { useOpeningAnimation } from './use-opening-animation'
+import { RESERVE_ROUTE } from '../../../routes'
+import { useOpeningAnimation } from '../../hooks/use-opening-animation'
 
 type LandingHeroProps = {
   hero: HeroContent

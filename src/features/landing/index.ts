@@ -1,18 +1,18 @@
 // Entry point público de la feature landing (ARCH-003): el sitio público.
 
-export { SiteHeader } from './ui/SiteHeader'
-export { SiteFooter } from './ui/SiteFooter'
-export { LandingHome } from './ui/LandingHome'
-export { LandingHero } from './ui/LandingHero'
-export { LandingIntro } from './ui/LandingIntro'
-export { LandingClosingCta } from './ui/LandingClosingCta'
-export { LandingTechniques } from './ui/LandingTechniques'
-export { LandingGallery } from './ui/LandingGallery'
-export { LandingStudio } from './ui/LandingStudio'
-export { LandingReasons } from './ui/LandingReasons'
-export { LandingLoyalty } from './ui/LandingLoyalty'
-export { LandingLocation } from './ui/LandingLocation'
-export { LandingFaq } from './ui/LandingFaq'
+export { SiteHeader } from './ui/site-shell/components/SiteHeader/SiteHeader'
+export { SiteFooter } from './ui/site-shell/components/SiteFooter/SiteFooter'
+export { LandingHome } from './ui/home/components/LandingHome/LandingHome'
+export { LandingHero } from './ui/home/components/LandingHero/LandingHero'
+export { LandingIntro } from './ui/home/components/LandingIntro/LandingIntro'
+export { LandingClosingCta } from './ui/home/components/LandingClosingCta/LandingClosingCta'
+export { LandingTechniques } from './ui/home/components/LandingTechniques/LandingTechniques'
+export { LandingGallery } from './ui/home/components/LandingGallery/LandingGallery'
+export { LandingStudio } from './ui/home/components/LandingStudio/LandingStudio'
+export { LandingReasons } from './ui/home/components/LandingReasons/LandingReasons'
+export { LandingLoyalty } from './ui/home/components/LandingLoyalty/LandingLoyalty'
+export { LandingLocation } from './ui/home/components/LandingLocation/LandingLocation'
+export { LandingFaq } from './ui/home/components/LandingFaq/LandingFaq'
 export {
   landingSections,
   TECHNIQUES_SECTION,
@@ -25,4 +25,4 @@ export {
 } from './ui/sections'
 export { LOGIN_ROUTE, RESERVE_ROUTE, reserveRouteFor, RESERVE_TECHNIQUE_PARAM } from './ui/routes'
 export { toLandingTechnique, formatColones, type LandingTechnique } from './ui/technique-view'
-export { landingMessages } from './ui/messages'
+export { landingMessages } from './ui/constants/landing-strings'

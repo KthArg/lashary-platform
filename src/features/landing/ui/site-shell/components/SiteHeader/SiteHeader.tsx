@@ -2,11 +2,11 @@
 
 import Link from 'next/link'
 import { useCallback, useRef, useState } from 'react'
-import { landingMessages } from './messages'
-import { HOME_ANCHOR, LOGIN_ROUTE, RESERVE_ROUTE } from './routes'
-import type { SiteSection } from './sections'
+import { landingMessages } from '../../../constants/landing-strings'
+import { HOME_ANCHOR, LOGIN_ROUTE, RESERVE_ROUTE } from '../../../routes'
+import type { SiteSection } from '../../../sections'
 import { siteHeaderStyles as styles } from './SiteHeader.styles'
-import { SiteMenu } from './SiteMenu'
+import { SiteMenu } from '../SiteMenu/SiteMenu'
 
 type SiteHeaderProps = {
   sections: readonly SiteSection[]

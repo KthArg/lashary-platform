@@ -2,7 +2,7 @@
 
 import { useId, useState } from 'react'
 import type { Faq } from '@/features/content'
-import { landingFaqStyles as styles } from './LandingFaq.styles'
+import { landingFaqStyles as styles } from '../LandingFaq/LandingFaq.styles'
 
 type FaqListProps = {
   faqs: readonly Faq[]

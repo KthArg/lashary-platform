@@ -1,8 +1,8 @@
-import { landingMessages } from './messages'
+import { landingMessages } from '../../../constants/landing-strings'
 import { landingTechniquesStyles as styles } from './LandingTechniques.styles'
-import { TechniqueList } from './TechniqueList'
-import { TECHNIQUES_SECTION } from './sections'
-import type { LandingTechnique } from './technique-view'
+import { TechniqueList } from '../TechniqueList/TechniqueList'
+import { TECHNIQUES_SECTION } from '../../../sections'
+import type { LandingTechnique } from '../../../technique-view'
 
 type LandingTechniquesProps = {
   techniques: readonly LandingTechnique[]

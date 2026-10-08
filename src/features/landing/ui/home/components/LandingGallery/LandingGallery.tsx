@@ -1,8 +1,8 @@
 import type { GalleryPair } from '@/features/content'
-import { GalleryGrid } from './GalleryGrid'
+import { GalleryGrid } from '../GalleryGrid/GalleryGrid'
 import { landingGalleryStyles as styles } from './LandingGallery.styles'
-import { landingMessages } from './messages'
-import { GALLERY_SECTION } from './sections'
+import { landingMessages } from '../../../constants/landing-strings'
+import { GALLERY_SECTION } from '../../../sections'
 
 type LandingGalleryProps = {
   pairs: readonly GalleryPair[]

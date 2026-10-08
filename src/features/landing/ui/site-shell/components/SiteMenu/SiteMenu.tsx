@@ -2,11 +2,11 @@
 
 import Link from 'next/link'
 import { useEffect } from 'react'
-import { landingMessages } from './messages'
-import { LOGIN_ROUTE, RESERVE_ROUTE } from './routes'
-import type { SiteSection } from './sections'
+import { landingMessages } from '../../../constants/landing-strings'
+import { LOGIN_ROUTE, RESERVE_ROUTE } from '../../../routes'
+import type { SiteSection } from '../../../sections'
 import { siteMenuStyles as styles } from './SiteMenu.styles'
-import { useFocusTrap } from './use-focus-trap'
+import { useFocusTrap } from '../../hooks/use-focus-trap'
 
 type SiteMenuProps = {
   sections: readonly SiteSection[]

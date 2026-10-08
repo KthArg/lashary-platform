@@ -1,7 +1,7 @@
 import type { LoyaltyContent } from '@/features/content'
 import { landingLoyaltyStyles as styles } from './LandingLoyalty.styles'
-import { landingMessages } from './messages'
-import { LOYALTY_SECTION } from './sections'
+import { landingMessages } from '../../../constants/landing-strings'
+import { LOYALTY_SECTION } from '../../../sections'
 
 type LandingLoyaltyProps = {
   loyalty: LoyaltyContent

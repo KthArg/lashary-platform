@@ -1,8 +1,8 @@
 import type { ContactInfo, OpeningHours } from '@/features/content'
-import { ExternalLink } from './ExternalLink'
+import { ExternalLink } from '../../../site-shell/components/ExternalLink/ExternalLink'
 import { landingLocationStyles as styles } from './LandingLocation.styles'
-import { landingMessages } from './messages'
-import { LOCATION_SECTION } from './sections'
+import { landingMessages } from '../../../constants/landing-strings'
+import { LOCATION_SECTION } from '../../../sections'
 
 type LandingLocationProps = {
   contact: ContactInfo | null
