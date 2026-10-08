@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import type { Credential } from '@/features/content'
-import { landingStudioStyles as styles } from './LandingStudio.styles'
+import { landingStudioStyles as STYLES } from './LandingStudio.styles'
 import { landingMessages } from '../../../constants/landing-strings'
 import { STUDIO_SECTION } from '../../../sections'
 import type { LandingStudioProps } from './LandingStudio.types'
@@ -16,32 +16,32 @@ export function LandingStudio({ studio }: LandingStudioProps) {
   const hasTrajectory = profile.yearsOfExperience !== null || credentials.length > 0
 
   return (
-    <section id={STUDIO_SECTION.id} className={styles.section}>
-      <div className={styles.inner}>
-        <div className={styles.heading}>
-          <h2 className={styles.title}>{copy.title}</h2>
-          <span aria-hidden="true" className={styles.rule} />
-          <span aria-hidden="true" className={styles.index}>
+    <section id={STUDIO_SECTION.id} className={STYLES.section}>
+      <div className={STYLES.inner}>
+        <div className={STYLES.heading}>
+          <h2 className={STYLES.title}>{copy.title}</h2>
+          <span aria-hidden="true" className={STYLES.rule} />
+          <span aria-hidden="true" className={STYLES.index}>
             {copy.index}
           </span>
         </div>
 
-        <div className={styles.layout}>
+        <div className={STYLES.layout}>
           {profile.portrait && (
-            <figure className={styles.portrait}>
+            <figure className={STYLES.portrait}>
               <Image
                 src={profile.portrait.url}
                 alt={profile.portrait.alt}
                 fill
-                className={styles.photo}
+                className={STYLES.photo}
                 sizes="(max-width: 768px) 100vw, 20.625rem"
               />
             </figure>
           )}
 
-          <div className={styles.column}>
+          <div className={STYLES.column}>
             {profile.paragraphs.map((paragraph) => (
-              <p key={paragraph} className={styles.paragraph}>
+              <p key={paragraph} className={STYLES.paragraph}>
                 {paragraph}
               </p>
             ))}
@@ -49,16 +49,16 @@ export function LandingStudio({ studio }: LandingStudioProps) {
             {/* El rol solo acompaña a un nombre: suelto no dice de quién es. */}
             {profile.name && (
               <>
-                <p className={styles.name}>{profile.name}</p>
-                <p className={styles.role}>{profile.role}</p>
+                <p className={STYLES.name}>{profile.name}</p>
+                <p className={STYLES.role}>{profile.role}</p>
               </>
             )}
 
             {hasTrajectory && (
-              <div className={styles.trajectory}>
-                <h3 className={styles.trajectoryTitle}>{copy.trajectory}</h3>
+              <div className={STYLES.trajectory}>
+                <h3 className={STYLES.trajectoryTitle}>{copy.trajectory}</h3>
                 {profile.yearsOfExperience !== null && (
-                  <p className={styles.years}>{copy.years(profile.yearsOfExperience)}</p>
+                  <p className={STYLES.years}>{copy.years(profile.yearsOfExperience)}</p>
                 )}
                 <CredentialGroup title={copy.education} credentials={education} />
                 <CredentialGroup title={copy.certifications} credentials={certifications} />
@@ -75,14 +75,14 @@ function CredentialGroup({ title, credentials }: { title: string; credentials: C
   if (credentials.length === 0) return null
   return (
     <>
-      <h4 className={styles.groupTitle}>{title}</h4>
-      <ul className={styles.list}>
+      <h4 className={STYLES.groupTitle}>{title}</h4>
+      <ul className={STYLES.list}>
         {credentials.map((credential) => {
           const meta = [credential.issuer, credential.year].filter((part) => part !== null).join(' · ')
           return (
-            <li key={`${credential.title}-${credential.year ?? ''}`} className={styles.item}>
+            <li key={`${credential.title}-${credential.year ?? ''}`} className={STYLES.item}>
               {credential.title}
-              {meta && <span className={styles.itemMeta}> — {meta}</span>}
+              {meta && <span className={STYLES.itemMeta}> — {meta}</span>}
             </li>
           )
         })}

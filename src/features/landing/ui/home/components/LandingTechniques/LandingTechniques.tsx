@@ -1,5 +1,5 @@
 import { landingMessages } from '../../../constants/landing-strings'
-import { landingTechniquesStyles as styles } from './LandingTechniques.styles'
+import { landingTechniquesStyles as STYLES } from './LandingTechniques.styles'
 import { TechniqueList } from '../TechniqueList'
 import { TECHNIQUES_SECTION } from '../../../sections'
 import type { LandingTechniquesProps } from './LandingTechniques.types'
@@ -11,18 +11,18 @@ export function LandingTechniques({ techniques }: LandingTechniquesProps) {
   const copy = landingMessages.techniques
 
   return (
-    <section id={TECHNIQUES_SECTION.id} className={styles.section}>
-      <div className={styles.inner}>
-        <div className={styles.heading}>
-          <h2 className={styles.title}>{copy.title}</h2>
-          <span aria-hidden="true" className={styles.rule} />
-          <span aria-hidden="true" className={styles.index}>
+    <section id={TECHNIQUES_SECTION.id} className={STYLES.section}>
+      <div className={STYLES.inner}>
+        <div className={STYLES.heading}>
+          <h2 className={STYLES.title}>{copy.title}</h2>
+          <span aria-hidden="true" className={STYLES.rule} />
+          <span aria-hidden="true" className={STYLES.index}>
             {copy.index}
           </span>
         </div>
 
         {techniques.length === 0 ? (
-          <p className={styles.empty}>{copy.empty}</p>
+          <p className={STYLES.empty}>{copy.empty}</p>
         ) : (
           <TechniqueList techniques={techniques} />
         )}

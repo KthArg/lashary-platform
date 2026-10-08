@@ -1,7 +1,7 @@
 'use client'
 
 import { useId, useState } from 'react'
-import { landingFaqStyles as styles } from '../LandingFaq/LandingFaq.styles'
+import { landingFaqStyles as STYLES } from '../LandingFaq/LandingFaq.styles'
 import type { FaqListProps } from './FaqList.types'
 
 // Acordeón de preguntas, como el diseño: cada una se abre y se cierra por su cuenta, y la
@@ -19,23 +19,23 @@ export function FaqList({ faqs }: FaqListProps) {
     })
 
   return (
-    <ul className={styles.list}>
+    <ul className={STYLES.list}>
       {faqs.map((faq, index) => {
         const isOpen = open.has(index)
         const answerId = `${baseId}-${index}`
 
         return (
-          <li key={faq.question} className={styles.item}>
-            <h3 className={styles.question}>
+          <li key={faq.question} className={STYLES.item}>
+            <h3 className={STYLES.question}>
               <button
                 type="button"
                 aria-expanded={isOpen}
                 aria-controls={answerId}
                 onClick={() => toggle(index)}
-                className={styles.trigger}
+                className={STYLES.trigger}
               >
                 <span>{faq.question}</span>
-                <span aria-hidden="true" className={`${styles.sign} ${isOpen ? styles.signOpen : ''}`}>
+                <span aria-hidden="true" className={`${STYLES.sign} ${isOpen ? STYLES.signOpen : ''}`}>
                   +
                 </span>
               </button>
@@ -45,10 +45,10 @@ export function FaqList({ faqs }: FaqListProps) {
             <div
               id={answerId}
               hidden={!isOpen}
-              className={`${styles.answer} ${isOpen ? styles.answerOpen : ''}`}
+              className={`${STYLES.answer} ${isOpen ? STYLES.answerOpen : ''}`}
             >
               {faq.paragraphs.map((paragraph) => (
-                <p key={paragraph} className={styles.paragraph}>
+                <p key={paragraph} className={STYLES.paragraph}>
                   {paragraph}
                 </p>
               ))}

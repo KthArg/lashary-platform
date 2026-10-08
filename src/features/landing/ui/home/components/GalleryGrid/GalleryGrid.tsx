@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { GalleryPair } from '@/features/content'
-import { landingGalleryStyles as styles } from '../LandingGallery/LandingGallery.styles'
+import { landingGalleryStyles as STYLES } from '../LandingGallery/LandingGallery.styles'
 import { galleryFamilyLabels, landingMessages } from '../../../constants/landing-strings'
 import { useFocusTrap } from '../../../site-shell/hooks/use-focus-trap'
 import type { GalleryGridProps } from './GalleryGrid.types'
@@ -36,14 +36,14 @@ export function GalleryGrid({ pairs }: GalleryGridProps) {
   return (
     <>
       {families.length > 1 && (
-        <div role="group" aria-label={copy.filterLabel} className={styles.filters}>
+        <div role="group" aria-label={copy.filterLabel} className={STYLES.filters}>
           {[ALL, ...families].map((family) => (
             <button
               key={family}
               type="button"
               aria-pressed={filter === family}
               onClick={() => selectFilter(family)}
-              className={`${styles.filter} ${filter === family ? styles.filterActive : ''}`}
+              className={`${STYLES.filter} ${filter === family ? STYLES.filterActive : ''}`}
             >
               {family === ALL ? copy.all : (galleryFamilyLabels[family] ?? family)}
             </button>
@@ -51,17 +51,17 @@ export function GalleryGrid({ pairs }: GalleryGridProps) {
         </div>
       )}
 
-      <ul className={styles.grid}>
+      <ul className={STYLES.grid}>
         {visible.map((pair, index) => (
           // El filtro rehace la lista: la clave incluye el filtro para que la entrada se anime.
-          <li key={`${filter}-${pair.after.url}`} className={styles.tileIn}>
+          <li key={`${filter}-${pair.after.url}`} className={STYLES.tileIn}>
             <button
               ref={(node) => {
                 tileRefs.current[index] = node
               }}
               type="button"
               onClick={() => setOpenIndex(index)}
-              className={styles.tile}
+              className={STYLES.tile}
             >
               <PairPhotos pair={pair} sizes="(max-width: 640px) 50vw, 15rem" />
             </button>
@@ -69,7 +69,7 @@ export function GalleryGrid({ pairs }: GalleryGridProps) {
         ))}
       </ul>
 
-      <p className={styles.hint}>{copy.hint}</p>
+      <p className={STYLES.hint}>{copy.hint}</p>
 
       {openIndex !== null && visible[openIndex] && (
         <GalleryLightbox
@@ -123,27 +123,27 @@ function GalleryLightbox({ pairs, index, onNavigate, onClose }: GalleryLightboxP
       role="dialog"
       aria-modal="true"
       aria-label={copy.dialogLabel}
-      className={styles.overlay}
+      className={STYLES.overlay}
     >
       {/* "Cerrar" va primero: es lo que enfoca la trampa de foco al abrir, como en el menú. */}
-      <div className={styles.top}>
-        <button type="button" onClick={onClose} className={styles.close}>
+      <div className={STYLES.top}>
+        <button type="button" onClick={onClose} className={STYLES.close}>
           {copy.close}
         </button>
       </div>
 
-      <div className={styles.pair}>
+      <div className={STYLES.pair}>
         <PairPhotos pair={pairs[index]} sizes="(max-width: 896px) 50vw, 28rem" />
       </div>
 
-      <div className={styles.controls}>
-        <button type="button" onClick={previous} className={styles.control}>
+      <div className={STYLES.controls}>
+        <button type="button" onClick={previous} className={STYLES.control}>
           {copy.previous}
         </button>
-        <p className={styles.counter} aria-live="polite">
+        <p className={STYLES.counter} aria-live="polite">
           {index + 1} / {total}
         </p>
-        <button type="button" onClick={next} className={styles.control}>
+        <button type="button" onClick={next} className={STYLES.control}>
           {copy.next}
         </button>
       </div>
@@ -161,9 +161,9 @@ function PairPhotos({ pair, sizes }: { pair: GalleryPair; sizes: string }) {
         { photo: pair.before, label: copy.before },
         { photo: pair.after, label: copy.after },
       ].map(({ photo, label }) => (
-        <span key={label} className={styles.half}>
-          <Image src={photo.url} alt={photo.alt} fill sizes={sizes} className={styles.photo} />
-          <span className={styles.label}>{label}</span>
+        <span key={label} className={STYLES.half}>
+          <Image src={photo.url} alt={photo.alt} fill sizes={sizes} className={STYLES.photo} />
+          <span className={STYLES.label}>{label}</span>
         </span>
       ))}
     </>

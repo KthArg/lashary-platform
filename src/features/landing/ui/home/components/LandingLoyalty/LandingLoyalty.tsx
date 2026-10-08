@@ -1,4 +1,4 @@
-import { landingLoyaltyStyles as styles } from './LandingLoyalty.styles'
+import { landingLoyaltyStyles as STYLES } from './LandingLoyalty.styles'
 import { landingMessages } from '../../../constants/landing-strings'
 import { LOYALTY_SECTION } from '../../../sections'
 import type { LandingLoyaltyProps } from './LandingLoyalty.types'
@@ -11,38 +11,38 @@ export function LandingLoyalty({ loyalty }: LandingLoyaltyProps) {
   const isEmpty = loyalty.paragraphs.length === 0 && loyalty.levels.length === 0
 
   return (
-    <section id={LOYALTY_SECTION.id} className={styles.section}>
-      <div className={styles.inner}>
-        <div className={styles.heading}>
-          <h2 className={styles.title}>{copy.title}</h2>
-          <span aria-hidden="true" className={styles.rule} />
-          <span aria-hidden="true" className={styles.index}>
+    <section id={LOYALTY_SECTION.id} className={STYLES.section}>
+      <div className={STYLES.inner}>
+        <div className={STYLES.heading}>
+          <h2 className={STYLES.title}>{copy.title}</h2>
+          <span aria-hidden="true" className={STYLES.rule} />
+          <span aria-hidden="true" className={STYLES.index}>
             {copy.index}
           </span>
         </div>
 
         {isEmpty ? (
-          <p className={styles.empty}>{copy.empty}</p>
+          <p className={STYLES.empty}>{copy.empty}</p>
         ) : (
-          <div className={styles.layout}>
-            <div className={styles.text}>
+          <div className={STYLES.layout}>
+            <div className={STYLES.text}>
               {loyalty.paragraphs.map((paragraph) => (
-                <p key={paragraph} className={styles.paragraph}>
+                <p key={paragraph} className={STYLES.paragraph}>
                   {paragraph}
                 </p>
               ))}
-              {loyalty.note && <p className={styles.note}>{loyalty.note}</p>}
+              {loyalty.note && <p className={STYLES.note}>{loyalty.note}</p>}
             </div>
 
             {loyalty.levels.length > 0 && (
-              <div className={styles.levels}>
-                <h3 className={styles.levelsTitle}>{copy.levelsLabel}</h3>
-                <ol className={styles.list}>
+              <div className={STYLES.levels}>
+                <h3 className={STYLES.levelsTitle}>{copy.levelsLabel}</h3>
+                <ol className={STYLES.list}>
                   {loyalty.levels.map((level) => (
-                    <li key={level.visit} className={styles.level}>
-                      <p className={styles.visit}>{copy.visit(level.visit)}</p>
-                      <p className={styles.benefit}>{level.benefit}</p>
-                      {level.detail && <p className={styles.detail}>{level.detail}</p>}
+                    <li key={level.visit} className={STYLES.level}>
+                      <p className={STYLES.visit}>{copy.visit(level.visit)}</p>
+                      <p className={STYLES.benefit}>{level.benefit}</p>
+                      {level.detail && <p className={STYLES.detail}>{level.detail}</p>}
                     </li>
                   ))}
                 </ol>

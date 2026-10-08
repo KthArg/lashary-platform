@@ -1,5 +1,5 @@
 import { FaqList } from '../FaqList'
-import { landingFaqStyles as styles } from './LandingFaq.styles'
+import { landingFaqStyles as STYLES } from './LandingFaq.styles'
 import { landingMessages } from '../../../constants/landing-strings'
 import { FAQ_SECTION } from '../../../sections'
 import type { LandingFaqProps } from './LandingFaq.types'
@@ -10,12 +10,12 @@ export function LandingFaq({ faqs }: LandingFaqProps) {
   const copy = landingMessages.faq
 
   return (
-    <section id={FAQ_SECTION.id} className={styles.section}>
-      <div className={styles.inner}>
-        <div className={styles.heading}>
-          <h2 className={styles.title}>{copy.title}</h2>
-          <span aria-hidden="true" className={styles.rule} />
-          <span aria-hidden="true" className={styles.index}>
+    <section id={FAQ_SECTION.id} className={STYLES.section}>
+      <div className={STYLES.inner}>
+        <div className={STYLES.heading}>
+          <h2 className={STYLES.title}>{copy.title}</h2>
+          <span aria-hidden="true" className={STYLES.rule} />
+          <span aria-hidden="true" className={STYLES.index}>
             {copy.index}
           </span>
         </div>
