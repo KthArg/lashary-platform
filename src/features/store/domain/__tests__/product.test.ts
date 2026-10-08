@@ -3,8 +3,8 @@ import { isErr, isOk } from '@/shared/result'
 import {
   construirProducto,
   marcarProductoInactivo,
-  aProductoEnTarjeta,
-  sanitizarUrl,
+  toProductCard,
+  sanitizeUrl,
 } from '@/features/store/domain/product'
 
 const validInput = () => ({
@@ -109,30 +109,30 @@ describe('marcarProductoInactivo', () => {
   })
 })
 
-describe('sanitizarUrl', () => {
+describe('sanitizeUrl', () => {
   it('deja pasar una URL relativa o http(s) normal', () => {
-    expect(sanitizarUrl('/productos/serum.jpg')).toBe('/productos/serum.jpg')
-    expect(sanitizarUrl('https://cdn.lashary.com/a.jpg')).toBe('https://cdn.lashary.com/a.jpg')
+    expect(sanitizeUrl('/productos/serum.jpg')).toBe('/productos/serum.jpg')
+    expect(sanitizeUrl('https://cdn.lashary.com/a.jpg')).toBe('https://cdn.lashary.com/a.jpg')
   })
 
   it('recorta espacios', () => {
-    expect(sanitizarUrl('  /productos/serum.jpg  ')).toBe('/productos/serum.jpg')
+    expect(sanitizeUrl('  /productos/serum.jpg  ')).toBe('/productos/serum.jpg')
   })
 
   it('bloquea esquema javascript: y data: (mayúsculas incluidas)', () => {
-    expect(sanitizarUrl('javascript:alert(1)')).toBe('')
-    expect(sanitizarUrl('JAVASCRIPT:alert(1)')).toBe('')
-    expect(sanitizarUrl('data:text/html,<script>alert(1)</script>')).toBe('')
+    expect(sanitizeUrl('javascript:alert(1)')).toBe('')
+    expect(sanitizeUrl('JAVASCRIPT:alert(1)')).toBe('')
+    expect(sanitizeUrl('data:text/html,<script>alert(1)</script>')).toBe('')
   })
 
   it('devuelve vacío para una URL vacía', () => {
-    expect(sanitizarUrl('   ')).toBe('')
+    expect(sanitizeUrl('   ')).toBe('')
   })
 })
 
-describe('aProductoEnTarjeta', () => {
-  it('sanitiza la URL de imagen de un ProductoPublico no confiable (CMS/DB)', () => {
-    const tarjeta = aProductoEnTarjeta({
+describe('toProductCard', () => {
+  it('sanitiza la URL de imagen de un PublicProduct no confiable (CMS/DB)', () => {
+    const tarjeta = toProductCard({
       id: '1',
       nombre: 'Producto',
       urlImagen: 'javascript:alert(1)',
@@ -143,7 +143,7 @@ describe('aProductoEnTarjeta', () => {
   })
 
   it('conserva una URL de imagen segura', () => {
-    const tarjeta = aProductoEnTarjeta({
+    const tarjeta = toProductCard({
       id: '1',
       nombre: 'Producto',
       urlImagen: '/productos/serum.jpg',

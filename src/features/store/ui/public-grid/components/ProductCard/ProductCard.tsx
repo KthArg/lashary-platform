@@ -1,8 +1,8 @@
-import type { TarjetaProductoPublico } from '../../../../domain/product'
+import type { PublicProductCard } from '../../../../domain/product'
 import { CADENAS_GRID_PRODUCTOS_ES } from '../../constants/public-grid-strings'
 import { gridProductosPublicosStyles as STYLES } from '../PublicProductsGrid/PublicProductsGrid.styles'
 
-export function TarjetaProducto({ tarjeta }: { tarjeta: TarjetaProductoPublico }) {
+export function TarjetaProducto({ tarjeta }: { tarjeta: PublicProductCard }) {
   return (
     <article className={STYLES.card} data-producto-id={tarjeta.id}>
       <figure>

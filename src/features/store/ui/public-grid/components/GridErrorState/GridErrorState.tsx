@@ -1,12 +1,12 @@
 import type { ComponentType } from 'react'
-import type { EstadoGridProductos } from '../../../../domain/product'
+import type { ProductGridState } from '../../../../domain/product'
 import { calcularBotonReintento, type BotonReintento } from '../PublicProductsGrid/PublicProductsGrid.data'
 import { BotonReintentoActivo } from '../RetryButtonActive/RetryButtonActive'
 import { BotonReintentoInactivo } from '../RetryButtonInactive/RetryButtonInactive'
 import { gridProductosPublicosStyles as STYLES } from '../PublicProductsGrid/PublicProductsGrid.styles'
 
 type Props = {
-  estado: Extract<EstadoGridProductos, { tipo: 'error' }>
+  estado: Extract<ProductGridState, { tipo: 'error' }>
   urlReintento?: string
 }
 

@@ -32,7 +32,7 @@ Tienda (F4): productos, carrito, checkout con comprobante. Stock y pedidos admin
 - Caso de uso (`application/obtener-grid-productos-publicos.ts`): orquestación de listado
 - Adaptador CMS (`http/catalogo-productos-cms.ts`): lectura desde API externa
 - Adaptador base de datos (`db/productos-db.ts`): lectura pública desde Supabase
-- Componente React (`components/GridProductosPublicos/`): grid responsivo con estados de UI, JSX real (no HTML a mano) — React escapa contenido y atributos; sanitización de esquema de URL (`javascript:`/`data:`) aislada en `sanitizarUrl` (`domain/producto.ts`)
+- Componente React (`components/GridProductosPublicos/`): grid responsivo con estados de UI, JSX real (no HTML a mano) — React escapa contenido y atributos; sanitización de esquema de URL (`javascript:`/`data:`) aislada en `sanitizeUrl` (`domain/producto.ts`)
 - Strings externalizados (`constants/grid-productos-publicos-cadenas-es.ts`): i18n base
 - Integración en ruta pública `/productos` con catálogo desde la base de datos
 - Pruebas automatizadas de UI/integración para el grid, el adaptador CMS y la ruta pública

@@ -1,7 +1,7 @@
-import { ProductoPublico } from '../domain/product';
-import { CatalogoProductosPublico } from '../application/public-grid/get-public-grid-state';
+import { PublicProduct } from '../domain/product';
+import { PublicProductCatalog } from '../application/public-grid/get-public-grid-state';
 
-export type DtoProductoCms = {
+export type CmsProductDto = {
   id: string;
   nombre: string;
   url_imagen: string;
@@ -9,14 +9,14 @@ export type DtoProductoCms = {
   activo: boolean;
 };
 
-export type ClienteCms = {
-  obtenerProductosPublicos(): Promise<DtoProductoCms[]>;
+export type CmsClient = {
+  getPublicProducts(): Promise<CmsProductDto[]>;
 };
 
-export function catalogoProductosCms(clienteCms: ClienteCms): CatalogoProductosPublico {
+export function cmsProductCatalog(clienteCms: CmsClient): PublicProductCatalog {
   return {
-    async listarProductosPublicos(): Promise<ProductoPublico[]> {
-      const productosDelCms = await clienteCms.obtenerProductosPublicos();
+    async listPublicProducts(): Promise<PublicProduct[]> {
+      const productosDelCms = await clienteCms.getPublicProducts();
 
       return productosDelCms.map((producto) => ({
         id: producto.id,

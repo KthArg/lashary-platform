@@ -1,6 +1,6 @@
-import type { EstadoGridProductos } from '../../../../domain/product'
+import type { ProductGridState } from '../../../../domain/product'
 
 export type GridProductosPublicosProps = {
-  estado: EstadoGridProductos
+  estado: ProductGridState
   urlReintento?: string
 }
