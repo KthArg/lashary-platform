@@ -10,7 +10,7 @@ export function makeProduct(
     name: string
     priceCrc: number
     displayOrder: number
-    activo: boolean
+    isActive: boolean
   }> = {},
 ): AdminProduct {
   counter += 1
@@ -22,7 +22,7 @@ export function makeProduct(
     imageUrl: '/productos/prueba.jpg',
     priceCrc: overrides.priceCrc ?? 18000,
     displayOrder: overrides.displayOrder ?? 0,
-    activo: overrides.activo ?? true,
+    isActive: overrides.isActive ?? true,
   })
   if (!isOk(result)) {
     throw new Error(`fixture inválida: ${result.error.message}`)

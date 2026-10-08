@@ -8,15 +8,15 @@ export function createFakeAdminProductRepository(
   initial: AdminProduct[] = [],
 ): FakeAdminProductRepository {
   const store = new Map<string, AdminProduct>()
-  for (const p of initial) store.set(p.id, p)
+  for (const product of initial) store.set(product.id, product)
 
   const repo: FakeAdminProductRepository = {
     saveCalls: 0,
 
     async list(params: { activeOnly: boolean; offset: number; limit: number }) {
       let all = [...store.values()]
-      if (params.activeOnly) all = all.filter((p) => p.activo)
-      all.sort((a, b) => a.displayOrder - b.displayOrder)
+      if (params.activeOnly) all = all.filter((product) => product.isActive)
+      all.sort((first, second) => first.displayOrder - second.displayOrder)
       return {
         items: all.slice(params.offset, params.offset + params.limit),
         total: all.length,
@@ -27,14 +27,14 @@ export function createFakeAdminProductRepository(
       return store.get(id) ?? null
     },
 
-    async save(producto: AdminProduct) {
+    async save(product: AdminProduct) {
       for (const other of store.values()) {
-        if (other.id !== producto.id && other.slug === producto.slug) {
-          throw createDuplicateProductSlug(producto.slug)
+        if (other.id !== product.id && other.slug === product.slug) {
+          throw createDuplicateProductSlug(product.slug)
         }
       }
       repo.saveCalls += 1
-      store.set(producto.id, producto)
+      store.set(product.id, product)
     },
   }
 

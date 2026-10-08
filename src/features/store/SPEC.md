@@ -28,7 +28,7 @@ Tienda (F4): productos, carrito, checkout con comprobante. Stock y pedidos admin
 ## Qué hace hoy
 
 `US-PROD-02` terminada (2026-10-06): PRs #92, #93 y #123 a #133; el criterio 2 (grid responsivo) lo demuestra `store.test.tsx`, que comprueba `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`. Implementado con:
-- Modelo de dominio (`domain/producto.ts`): tipos puros sin dependencias, con campos y estados de la cuadrícula pública en inglés
+- Modelo de dominio (`domain/producto.ts`): tipos puros sin dependencias
 - Caso de uso (`application/obtener-grid-productos-publicos.ts`): orquestación de listado
 - Adaptador CMS (`http/catalogo-productos-cms.ts`): lectura desde API externa
 - Adaptador base de datos (`db/productos-db.ts`): lectura pública desde Supabase
@@ -40,8 +40,8 @@ Tienda (F4): productos, carrito, checkout con comprobante. Stock y pedidos admin
 - Acción de reintento configurable por URL (`urlReintento`) en el componente
 
 Panel admin (criterio 3, "administrables desde el panel") en `/admin/catalog/products`, como pestaña Productos de la sección Catálogo (los componentes importan sus estilos como `STYLES`, igual que catalog y clients) junto a Técnicas y Paquetes (`/admin/store` redirige ahí; `rutasAdminProductos` se expone en `client.ts` para las pestañas), protegido por `requireAdminSession` del layout de `/admin/catalog` (redirect si no hay sesión staff) y por las políticas RLS `store_products_*_admin` (SEC-001):
-- Constructor validado (`domain/producto.ts`, `buildProduct`): invariantes de negocio (DOM-007) — slug, nombre (`name`) y URL de imagen (`imageUrl`) no vacíos, precio (`priceCrc`) entero positivo, orden de presentación (`displayOrder`) entero no negativo; sin clases, `AdminProduct` es un objeto plano
-- Errores tipados (`domain/errores-producto.ts`): `InvalidProduct`, `ProductNotFound`, `DuplicateProductSlug` (DOM-006), objetos discriminados por `tipo` con su type guard en vez de `instanceof`
+- Constructor validado (`domain/producto.ts`, `buildProduct`): invariantes de negocio (DOM-007) — slug, nombre y URL de imagen no vacíos, precio entero positivo, orden de presentación entero no negativo; sin clases, `AdminProduct` es un objeto plano
+- Errores tipados (`domain/errores-producto.ts`): `InvalidProduct`, `ProductNotFound`, `DuplicateProductSlug` (DOM-006), objetos discriminados por `kind` con su type guard en vez de `instanceof`
 - Casos de uso (`application/productos-admin-consultas.ts`, `application/productos-admin-comandos.ts`): listar paginado, obtener, crear, actualizar, desactivar — sobre el puerto `AdminProductRepository` (`application/productos-admin-puertos.ts`), probados con repositorio fake (`application/__tests__/`)
 - Adaptador de escritura (`db/productos-admin-repositorio.ts`): CRUD contra `store_products` vía Supabase, mapea `23505` (slug duplicado) a error de dominio; sin clase, función factory con closures — `db/productos-db.ts` y `http/catalogo-productos-cms.ts` (lectura pública) siguen el mismo patrón
 - Server actions (`actions/productos-admin-actions.ts`) con validación de formato en el borde (`actions/esquema-producto-admin.ts`, Zod) y chequeo de rol amable (`actions/permiso-staff.ts`) — la autorización real la hace RLS

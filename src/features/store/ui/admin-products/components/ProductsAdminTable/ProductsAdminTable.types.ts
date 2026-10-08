@@ -1,6 +1,6 @@
 export type FilaProductoAdmin = {
   id: string
-  name: string
+  nombre: string
   slug: string
   precioFormateado: string
   orden: number

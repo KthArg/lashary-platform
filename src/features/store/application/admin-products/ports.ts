@@ -31,5 +31,5 @@ export interface AdminProductRepository {
 
   findById(id: string): Promise<AdminProduct | null>
 
-  save(producto: AdminProduct): Promise<void>
+  save(product: AdminProduct): Promise<void>
 }
