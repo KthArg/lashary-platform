@@ -18,7 +18,7 @@ export function toLandingTechnique(
   technique: TechniqueView,
   media: TechniqueMediaByFamily = {},
 ): LandingTechnique {
-  const fotos = media[technique.family]
+  const photos = media[technique.family]
 
   return {
     id: technique.id,
@@ -28,15 +28,15 @@ export function toLandingTechnique(
     priceRetouch: technique.priceRetouch,
     durationFirstTimeMin: technique.durationFirstTimeMin,
     durationRetouchMin: technique.durationRetouchMin,
-    image: fotos?.image ?? null,
-    examples: fotos?.examples ?? [],
+    image: photos?.image ?? null,
+    examples: photos?.examples ?? [],
   }
 }
 
-const colones = new Intl.NumberFormat('es-CR', {
+const colonFormatter = new Intl.NumberFormat('es-CR', {
   style: 'currency',
   currency: 'CRC',
   maximumFractionDigits: 0,
 })
 
-export const formatColones = (value: number): string => colones.format(value)
+export const formatColones = (value: number): string => colonFormatter.format(value)

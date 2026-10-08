@@ -13,7 +13,7 @@ afterEach(cleanup)
 
 const copy = landingMessages.loyalty
 
-const publicada: LoyaltyContent = {
+const published: LoyaltyContent = {
   paragraphs: ['Cada cita completada suma una visita.', 'Los beneficios se aplican solos.'],
   note: 'Los beneficios no son acumulables.',
   levels: [
@@ -25,14 +25,14 @@ const publicada: LoyaltyContent = {
 
 describe('LandingLoyalty — US-LAND-05', () => {
   it('criterio 1: la mecánica del programa, con qué beneficio da cada visita', () => {
-    render(<LandingLoyalty loyalty={publicada} />)
+    render(<LandingLoyalty loyalty={published} />)
 
     expect(screen.getByRole('heading', { level: 2, name: copy.title })).toBeTruthy()
     expect(screen.getByText('Cada cita completada suma una visita.')).toBeTruthy()
     expect(screen.getByText('Los beneficios no son acumulables.')).toBeTruthy()
 
-    const niveles = within(screen.getByRole('list')).getAllByRole('listitem')
-    expect(niveles.map((nivel) => nivel.textContent)).toEqual([
+    const levels = within(screen.getByRole('list')).getAllByRole('listitem')
+    expect(levels.map((nivel) => nivel.textContent)).toEqual([
       '5.ª visita10 % de descuento',
       '8.ª visita15 % de descuento',
       '10.ª visitaServicio gratisEn la técnica que elijas.',
@@ -40,7 +40,7 @@ describe('LandingLoyalty — US-LAND-05', () => {
   })
 
   it('con texto y sin niveles muestra el texto sin una lista vacía', () => {
-    render(<LandingLoyalty loyalty={{ ...publicada, levels: [] }} />)
+    render(<LandingLoyalty loyalty={{ ...published, levels: [] }} />)
 
     expect(screen.getByText('Cada cita completada suma una visita.')).toBeTruthy()
     expect(screen.queryByRole('list')).toBeNull()

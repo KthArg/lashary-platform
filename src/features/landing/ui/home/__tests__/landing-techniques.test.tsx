@@ -12,7 +12,7 @@ import {
 
 afterEach(cleanup)
 
-const catalogo = (overrides: Partial<TechniqueView> = {}): TechniqueView => ({
+const makeTechnique = (overrides: Partial<TechniqueView> = {}): TechniqueView => ({
   id: '11111111-1111-4111-8111-111111111111',
   name: 'Set clásico',
   family: 'lash_classic',
@@ -28,12 +28,12 @@ const catalogo = (overrides: Partial<TechniqueView> = {}): TechniqueView => ({
   ...overrides,
 })
 
-const seccion = (techniques: TechniqueView[], media: TechniqueMediaByFamily = {}) =>
+const renderSection = (techniques: TechniqueView[], media: TechniqueMediaByFamily = {}) =>
   render(
-    <LandingTechniques techniques={techniques.map((t) => toLandingTechnique(t, media))} />,
+    <LandingTechniques techniques={techniques.map((technique) => toLandingTechnique(technique, media))} />,
   )
 
-const fotos: TechniqueMediaByFamily = {
+const photos: TechniqueMediaByFamily = {
   lash_classic: {
     image: { url: 'https://cms.test/clasico.jpg', alt: 'Mirada con set clásico' },
     examples: [
@@ -45,27 +45,27 @@ const fotos: TechniqueMediaByFamily = {
 
 describe('LandingTechniques — US-LAND-02', () => {
   it('criterio 2: cada técnica muestra su precio y su duración, tomados del catálogo', () => {
-    seccion([catalogo()])
+    renderSection([makeTechnique()])
 
-    const fila = screen.getByRole('button', { name: /Set clásico/ })
-    expect(within(fila).getByText('120 min')).toBeTruthy()
-    expect(fila.textContent).toContain('25')
-    expect(fila.textContent).not.toContain('25000')
+    const row = screen.getByRole('button', { name: /Set clásico/ })
+    expect(within(row).getByText('120 min')).toBeTruthy()
+    expect(row.textContent).toContain('25')
+    expect(row.textContent).not.toContain('25000')
   })
 
   it('criterio 3: con precio de retoque muestra los dos precios', () => {
-    seccion([catalogo()])
+    renderSection([makeTechnique()])
 
     fireEvent.click(screen.getByRole('button', { name: /Set clásico/ }))
 
     expect(screen.getByText(/Primera vez:/)).toBeTruthy()
-    const retoque = screen.getByText(/Retoque:/)
-    expect(retoque.textContent).toContain('15')
-    expect(retoque.textContent).toContain('75 min')
+    const touchUp = screen.getByText(/Retoque:/)
+    expect(touchUp.textContent).toContain('15')
+    expect(touchUp.textContent).toContain('75 min')
   })
 
   it('criterio 3: sin precio de retoque no inventa un segundo precio', () => {
-    seccion([catalogo({ name: 'Laminado de cejas', family: 'brow_lamination', priceRetouch: null, durationRetouchMin: null })])
+    renderSection([makeTechnique({ name: 'Laminado de cejas', family: 'brow_lamination', priceRetouch: null, durationRetouchMin: null })])
 
     fireEvent.click(screen.getByRole('button', { name: /Laminado de cejas/ }))
 
@@ -74,7 +74,7 @@ describe('LandingTechniques — US-LAND-02', () => {
   })
 
   it('criterio 1: al abrir la técnica muestra su descripción', () => {
-    seccion([catalogo()])
+    renderSection([makeTechnique()])
 
     fireEvent.click(screen.getByRole('button', { name: /Set clásico/ }))
 
@@ -82,66 +82,66 @@ describe('LandingTechniques — US-LAND-02', () => {
   })
 
   it('criterio 4: lista las técnicas que entrega el catálogo, en su orden', () => {
-    seccion([
-      catalogo(),
-      catalogo({ id: '22222222-2222-4222-8222-222222222222', name: 'Set volumen', family: 'lash_volume' }),
+    renderSection([
+      makeTechnique(),
+      makeTechnique({ id: '22222222-2222-4222-8222-222222222222', name: 'Set volumen', family: 'lash_volume' }),
     ])
 
-    const nombres = screen.getAllByRole('button').map((boton) => boton.textContent ?? '')
-    expect(nombres[0]).toContain('Set clásico')
-    expect(nombres[1]).toContain('Set volumen')
+    const names = screen.getAllByRole('button').map((button) => button.textContent ?? '')
+    expect(names[0]).toContain('Set clásico')
+    expect(names[1]).toContain('Set volumen')
   })
 
   it('criterio 5: cada técnica abierta enlaza a reservar esa misma técnica', () => {
-    const tecnica = catalogo()
-    seccion([tecnica])
+    const technique = makeTechnique()
+    renderSection([technique])
 
     fireEvent.click(screen.getByRole('button', { name: /Set clásico/ }))
 
-    const enlace = screen.getByRole('link', { name: 'Reservar esta técnica' })
-    expect(enlace.getAttribute('href')).toBe(`${RESERVE_ROUTE}?tecnica=${tecnica.id}`)
+    const link = screen.getByRole('link', { name: 'Reservar esta técnica' })
+    expect(link.getAttribute('href')).toBe(`${RESERVE_ROUTE}?tecnica=${technique.id}`)
   })
 
   it('acordeón: abre una fila a la vez y la abierta se cierra al volver a pulsarla', () => {
-    seccion([
-      catalogo(),
-      catalogo({ id: '22222222-2222-4222-8222-222222222222', name: 'Set volumen', family: 'lash_volume' }),
+    renderSection([
+      makeTechnique(),
+      makeTechnique({ id: '22222222-2222-4222-8222-222222222222', name: 'Set volumen', family: 'lash_volume' }),
     ])
 
-    const clasico = screen.getByRole('button', { name: /Set clásico/ })
-    const volumen = screen.getByRole('button', { name: /Set volumen/ })
+    const classic = screen.getByRole('button', { name: /Set clásico/ })
+    const volume = screen.getByRole('button', { name: /Set volumen/ })
 
-    fireEvent.click(clasico)
-    expect(clasico.getAttribute('aria-expanded')).toBe('true')
+    fireEvent.click(classic)
+    expect(classic.getAttribute('aria-expanded')).toBe('true')
 
-    fireEvent.click(volumen)
-    expect(clasico.getAttribute('aria-expanded')).toBe('false')
-    expect(volumen.getAttribute('aria-expanded')).toBe('true')
+    fireEvent.click(volume)
+    expect(classic.getAttribute('aria-expanded')).toBe('false')
+    expect(volume.getAttribute('aria-expanded')).toBe('true')
 
-    fireEvent.click(volumen)
-    expect(volumen.getAttribute('aria-expanded')).toBe('false')
+    fireEvent.click(volume)
+    expect(volume.getAttribute('aria-expanded')).toBe('false')
   })
 
   it('UI-004: aria-controls apunta a un nodo real, con la fila abierta y con la fila cerrada', () => {
-    seccion([catalogo()])
+    renderSection([makeTechnique()])
 
-    const fila = screen.getByRole('button', { name: /Set clásico/ })
-    const panelId = fila.getAttribute('aria-controls') ?? ''
+    const row = screen.getByRole('button', { name: /Set clásico/ })
+    const panelId = row.getAttribute('aria-controls') ?? ''
     expect(panelId).not.toBe('')
 
-    const cerrado = document.getElementById(panelId)
-    expect(cerrado).toBeTruthy()
-    expect(cerrado?.hasAttribute('hidden')).toBe(true)
+    const closed = document.getElementById(panelId)
+    expect(closed).toBeTruthy()
+    expect(closed?.hasAttribute('hidden')).toBe(true)
 
-    fireEvent.click(fila)
+    fireEvent.click(row)
 
-    const abierto = document.getElementById(panelId)
-    expect(abierto).toBeTruthy()
-    expect(abierto?.hasAttribute('hidden')).toBe(false)
+    const opened = document.getElementById(panelId)
+    expect(opened).toBeTruthy()
+    expect(opened?.hasAttribute('hidden')).toBe(false)
   })
 
   it('criterio 1: la técnica abierta muestra su imagen y sus ejemplos de resultado', () => {
-    seccion([catalogo()], fotos)
+    renderSection([makeTechnique()], photos)
 
     fireEvent.click(screen.getByRole('button', { name: /Set clásico/ }))
 
@@ -151,7 +151,7 @@ describe('LandingTechniques — US-LAND-02', () => {
   })
 
   it('criterio 1: una técnica sin fotos en el CMS se muestra igual, sin imágenes', () => {
-    seccion([catalogo({ name: 'Set volumen', family: 'lash_volume' })], fotos)
+    renderSection([makeTechnique({ name: 'Set volumen', family: 'lash_volume' })], photos)
 
     fireEvent.click(screen.getByRole('button', { name: /Set volumen/ }))
 
@@ -160,7 +160,7 @@ describe('LandingTechniques — US-LAND-02', () => {
   })
 
   it('UI-003: sin técnicas la sección sigue existiendo y explica qué pasa', () => {
-    const { container } = seccion([])
+    const { container } = renderSection([])
 
     expect(container.querySelector(`#${TECHNIQUES_SECTION.id}`)).toBeTruthy()
     expect(screen.getByText(/El catálogo se está actualizando/)).toBeTruthy()
@@ -168,9 +168,9 @@ describe('LandingTechniques — US-LAND-02', () => {
   })
 
   it('la sección está en la navegación del sitio, así que su ancla existe', () => {
-    const { container } = seccion([catalogo()])
+    const { container } = renderSection([makeTechnique()])
 
-    expect(landingSections.some((s) => s.id === TECHNIQUES_SECTION.id)).toBe(true)
+    expect(landingSections.some((section) => section.id === TECHNIQUES_SECTION.id)).toBe(true)
     expect(container.querySelector(`#${TECHNIQUES_SECTION.id}`)).toBeTruthy()
   })
 })

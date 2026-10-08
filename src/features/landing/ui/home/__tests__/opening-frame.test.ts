@@ -3,19 +3,19 @@ import { openingFrame } from '../hooks/opening-frame'
 
 describe('openingFrame — apertura de la foto del hero', () => {
   it('arriba de todo: la foto está fuera de cuadro y el título se ve entero', () => {
-    const f = openingFrame(0, 1280, 800)
-    expect(f.translateY).toBeGreaterThan(800 / 2)
-    expect(f.typeOpacity).toBe(1)
-    expect(f.width).toBeCloseTo(1280 * 0.68)
+    const frame = openingFrame(0, 1280, 800)
+    expect(frame.translateY).toBeGreaterThan(800 / 2)
+    expect(frame.typeOpacity).toBe(1)
+    expect(frame.width).toBeCloseTo(1280 * 0.68)
   })
 
   it('al final del recorrido: la foto ocupa la pantalla, sin redondeo, y el título ya no se ve', () => {
-    const f = openingFrame(1, 1280, 800)
-    expect(f.width).toBeCloseTo(1280)
-    expect(f.height).toBeCloseTo(800)
-    expect(f.translateY).toBeCloseTo(0)
-    expect(f.radiusX).toBeCloseTo(0)
-    expect(f.typeOpacity).toBe(0)
+    const frame = openingFrame(1, 1280, 800)
+    expect(frame.width).toBeCloseTo(1280)
+    expect(frame.height).toBeCloseTo(800)
+    expect(frame.translateY).toBeCloseTo(0)
+    expect(frame.radiusX).toBeCloseTo(0)
+    expect(frame.typeOpacity).toBe(0)
   })
 
   it('en pantallas angostas la píldora arranca más ancha', () => {

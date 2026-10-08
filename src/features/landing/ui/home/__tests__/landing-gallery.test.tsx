@@ -11,22 +11,22 @@ afterEach(cleanup)
 
 const copy = landingMessages.gallery
 
-const par = (family: GalleryPair['family'], name: string): GalleryPair => ({
+const makePair = (family: GalleryPair['family'], name: string): GalleryPair => ({
   family,
   before: { url: `https://cms.test/${name}-antes.jpg`, alt: `${name}, antes` },
   after: { url: `https://cms.test/${name}-despues.jpg`, alt: `${name}, después` },
 })
 
-const pares = [par('lash_classic', 'Ana'), par('lash_volume', 'Bea'), par('lash_classic', 'Caro')]
+const pairs = [makePair('lash_classic', 'Ana'), makePair('lash_volume', 'Bea'), makePair('lash_classic', 'Caro')]
 
-const pares_en_cuadricula = () => within(screen.getByRole('list')).getAllByRole('button')
-const dialogo = () => screen.getByRole('dialog', { name: copy.dialogLabel })
+const gridPairs = () => within(screen.getByRole('list')).getAllByRole('button')
+const lightbox = () => screen.getByRole('dialog', { name: copy.dialogLabel })
 
 describe('LandingGallery — US-LAND-03', () => {
   it('criterio 1: cada par muestra su foto antes y su foto después, etiquetadas', () => {
-    render(<LandingGallery pairs={[pares[0]]} />)
+    render(<LandingGallery pairs={[pairs[0]]} />)
 
-    const [tile] = pares_en_cuadricula()
+    const [tile] = gridPairs()
     expect(within(tile).getByAltText('Ana, antes').getAttribute('src')).toBe('https://cms.test/Ana-antes.jpg')
     expect(within(tile).getByAltText('Ana, después').getAttribute('src')).toBe('https://cms.test/Ana-despues.jpg')
     expect(within(tile).getByText(copy.before)).toBeTruthy()
@@ -34,49 +34,49 @@ describe('LandingGallery — US-LAND-03', () => {
   })
 
   it('criterio 3: la cuadrícula muestra todos los pares y se filtra por técnica', () => {
-    render(<LandingGallery pairs={pares} />)
-    expect(pares_en_cuadricula()).toHaveLength(3)
+    render(<LandingGallery pairs={pairs} />)
+    expect(gridPairs()).toHaveLength(3)
 
-    const filtros = screen.getByRole('group', { name: copy.filterLabel })
-    fireEvent.click(within(filtros).getByRole('button', { name: 'Volumen' }))
+    const filters = screen.getByRole('group', { name: copy.filterLabel })
+    fireEvent.click(within(filters).getByRole('button', { name: 'Volumen' }))
 
-    expect(pares_en_cuadricula()).toHaveLength(1)
+    expect(gridPairs()).toHaveLength(1)
     expect(screen.getByAltText('Bea, después')).toBeTruthy()
-    expect(within(filtros).getByRole('button', { name: 'Volumen' }).getAttribute('aria-pressed')).toBe('true')
+    expect(within(filters).getByRole('button', { name: 'Volumen' }).getAttribute('aria-pressed')).toBe('true')
 
-    fireEvent.click(within(filtros).getByRole('button', { name: copy.all }))
-    expect(pares_en_cuadricula()).toHaveLength(3)
+    fireEvent.click(within(filters).getByRole('button', { name: copy.all }))
+    expect(gridPairs()).toHaveLength(3)
   })
 
   it('con una sola técnica no ofrece filtros: no hay nada que filtrar', () => {
-    render(<LandingGallery pairs={[pares[0], pares[2]]} />)
+    render(<LandingGallery pairs={[pairs[0], pairs[2]]} />)
     expect(screen.queryByRole('group', { name: copy.filterLabel })).toBeNull()
   })
 
   it('criterio 3: la galería ampliada abre el par elegido y recorre los demás con botones y flechas', () => {
-    render(<LandingGallery pairs={pares} />)
-    fireEvent.click(pares_en_cuadricula()[1])
+    render(<LandingGallery pairs={pairs} />)
+    fireEvent.click(gridPairs()[1])
 
-    expect(within(dialogo()).getByAltText('Bea, antes')).toBeTruthy()
-    expect(within(dialogo()).getByText('2 / 3')).toBeTruthy()
+    expect(within(lightbox()).getByAltText('Bea, antes')).toBeTruthy()
+    expect(within(lightbox()).getByText('2 / 3')).toBeTruthy()
 
-    fireEvent.click(within(dialogo()).getByRole('button', { name: copy.next }))
-    expect(within(dialogo()).getByAltText('Caro, después')).toBeTruthy()
+    fireEvent.click(within(lightbox()).getByRole('button', { name: copy.next }))
+    expect(within(lightbox()).getByAltText('Caro, después')).toBeTruthy()
 
     fireEvent.keyDown(document, { key: 'ArrowRight' })
-    expect(within(dialogo()).getByText('1 / 3')).toBeTruthy()
+    expect(within(lightbox()).getByText('1 / 3')).toBeTruthy()
 
     fireEvent.keyDown(document, { key: 'ArrowLeft' })
-    expect(within(dialogo()).getByText('3 / 3')).toBeTruthy()
+    expect(within(lightbox()).getByText('3 / 3')).toBeTruthy()
   })
 
   it('UI-004: la galería ampliada es un diálogo modal que enfoca "Cerrar", y Escape devuelve el foco al par', () => {
-    render(<LandingGallery pairs={pares} />)
-    const tile = pares_en_cuadricula()[2]
+    render(<LandingGallery pairs={pairs} />)
+    const tile = gridPairs()[2]
     fireEvent.click(tile)
 
-    expect(dialogo().getAttribute('aria-modal')).toBe('true')
-    expect(document.activeElement).toBe(within(dialogo()).getByRole('button', { name: copy.close }))
+    expect(lightbox().getAttribute('aria-modal')).toBe('true')
+    expect(document.activeElement).toBe(within(lightbox()).getByRole('button', { name: copy.close }))
     expect(document.body.style.overflow).toBe('hidden')
 
     fireEvent.keyDown(document, { key: 'Escape' })
@@ -87,9 +87,9 @@ describe('LandingGallery — US-LAND-03', () => {
   })
 
   it('"Cerrar" cierra la galería ampliada', () => {
-    render(<LandingGallery pairs={pares} />)
-    fireEvent.click(pares_en_cuadricula()[0])
-    fireEvent.click(within(dialogo()).getByRole('button', { name: copy.close }))
+    render(<LandingGallery pairs={pairs} />)
+    fireEvent.click(gridPairs()[0])
+    fireEvent.click(within(lightbox()).getByRole('button', { name: copy.close }))
     expect(screen.queryByRole('dialog')).toBeNull()
   })
 

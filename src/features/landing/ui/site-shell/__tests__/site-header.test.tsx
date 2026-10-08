@@ -68,9 +68,9 @@ describe('SiteMenu — UI-004: operable con teclado', () => {
   it('numera las secciones y ofrece reservar', () => {
     openMenu()
     const dialog = screen.getByRole('dialog')
-    const servicios = within(dialog).getByRole('link', { name: 'Servicios' })
-    expect(servicios.getAttribute('href')).toBe('#servicios')
-    expect(servicios.textContent).toBe('01Servicios')
+    const servicesLink = within(dialog).getByRole('link', { name: 'Servicios' })
+    expect(servicesLink.getAttribute('href')).toBe('#servicios')
+    expect(servicesLink.textContent).toBe('01Servicios')
     expect(within(dialog).getByRole('link', { name: landingMessages.menu.reserve }).getAttribute('href')).toBe(RESERVE_ROUTE)
   })
 

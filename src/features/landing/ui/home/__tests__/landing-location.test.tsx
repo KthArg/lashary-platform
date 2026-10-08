@@ -7,7 +7,7 @@ afterEach(cleanup)
 
 const copy = landingMessages.location
 
-const contacto: ContactInfo = {
+const contactInfo: ContactInfo = {
   address: '200 m norte de la iglesia',
   city: 'Ciudad Quesada, Alajuela, Costa Rica',
   note: 'Atención solo con cita reservada.',
@@ -24,16 +24,16 @@ const contacto: ContactInfo = {
   mapLink: 'https://maps.app.goo.gl/abc',
 }
 
-const horario: OpeningHours[] = [
+const openingHours: OpeningHours[] = [
   { days: 'Lunes a viernes', hours: '9:00 a 18:00' },
   { days: 'Domingo', hours: 'Cerrado' },
 ]
 
-const externo = (name: string) => screen.getByRole('link', { name: `${name} ${copy.newTab}` })
+const externalLink = (name: string) => screen.getByRole('link', { name: `${name} ${copy.newTab}` })
 
 describe('LandingLocation — US-LAND-07', () => {
   it('criterio 1: ubicación, horario y medios de contacto', () => {
-    render(<LandingLocation contact={contacto} hours={horario} />)
+    render(<LandingLocation contact={contactInfo} hours={openingHours} />)
 
     expect(screen.getByText('200 m norte de la iglesia')).toBeTruthy()
     expect(screen.getByText('Ciudad Quesada, Alajuela, Costa Rica')).toBeTruthy()
@@ -47,45 +47,45 @@ describe('LandingLocation — US-LAND-07', () => {
   })
 
   it('criterio 2: el botón de WhatsApp abre la conversación con el mensaje inicial', () => {
-    render(<LandingLocation contact={contacto} hours={horario} />)
+    render(<LandingLocation contact={contactInfo} hours={openingHours} />)
 
-    const whatsapp = externo(copy.whatsapp)
-    expect(whatsapp.getAttribute('href')).toBe(contacto.whatsapp?.href)
+    const whatsapp = externalLink(copy.whatsapp)
+    expect(whatsapp.getAttribute('href')).toBe(contactInfo.whatsapp?.href)
     expect(whatsapp.getAttribute('target')).toBe('_blank')
     expect(whatsapp.getAttribute('rel')).toBe('noopener noreferrer')
   })
 
   it('criterio 3: las redes, con Instagram primero, y solo las que existen', () => {
-    render(<LandingLocation contact={contacto} hours={horario} />)
+    render(<LandingLocation contact={contactInfo} hours={openingHours} />)
 
-    expect(externo(copy.instagram).getAttribute('href')).toBe('https://instagram.com/lashary')
-    expect(externo(copy.tiktok).getAttribute('href')).toBe('https://tiktok.com/@lashary')
+    expect(externalLink(copy.instagram).getAttribute('href')).toBe('https://instagram.com/lashary')
+    expect(externalLink(copy.tiktok).getAttribute('href')).toBe('https://tiktok.com/@lashary')
     expect(screen.queryByRole('link', { name: new RegExp(copy.facebook) })).toBeNull()
 
-    const redes = screen.getAllByRole('link').map((link) => link.textContent ?? '')
-    expect(redes.findIndex((name) => name.startsWith(copy.instagram))).toBeLessThan(
-      redes.findIndex((name) => name.startsWith(copy.tiktok)),
+    const socials = screen.getAllByRole('link').map((link) => link.textContent ?? '')
+    expect(socials.findIndex((name) => name.startsWith(copy.instagram))).toBeLessThan(
+      socials.findIndex((name) => name.startsWith(copy.tiktok)),
     )
   })
 
   it('el mapa embebido lleva título y carga diferida; sin él, un enlace para abrirlo', () => {
-    const { rerender } = render(<LandingLocation contact={contacto} hours={horario} />)
+    const { rerender } = render(<LandingLocation contact={contactInfo} hours={openingHours} />)
 
-    const mapa = screen.getByTitle(copy.mapTitle)
-    expect(mapa.tagName).toBe('IFRAME')
-    expect(mapa.getAttribute('src')).toBe(contacto.mapEmbed)
-    expect(mapa.getAttribute('loading')).toBe('lazy')
+    const map = screen.getByTitle(copy.mapTitle)
+    expect(map.tagName).toBe('IFRAME')
+    expect(map.getAttribute('src')).toBe(contactInfo.mapEmbed)
+    expect(map.getAttribute('loading')).toBe('lazy')
 
-    rerender(<LandingLocation contact={{ ...contacto, mapEmbed: null }} hours={horario} />)
+    rerender(<LandingLocation contact={{ ...contactInfo, mapEmbed: null }} hours={openingHours} />)
     expect(screen.queryByTitle(copy.mapTitle)).toBeNull()
-    expect(externo(copy.openMap).getAttribute('href')).toBe(contacto.mapLink)
+    expect(externalLink(copy.openMap).getAttribute('href')).toBe(contactInfo.mapLink)
   })
 
   it('sin WhatsApp válido no hay botón, y el resto se muestra igual', () => {
-    render(<LandingLocation contact={{ ...contacto, whatsapp: null }} hours={horario} />)
+    render(<LandingLocation contact={{ ...contactInfo, whatsapp: null }} hours={openingHours} />)
 
     expect(screen.queryByRole('link', { name: new RegExp(copy.whatsapp) })).toBeNull()
-    expect(externo(copy.instagram)).toBeTruthy()
+    expect(externalLink(copy.instagram)).toBeTruthy()
   })
 
   it('UI-003: sin contacto ni horario la sección sigue existiendo y no inventa a dónde ir', () => {
