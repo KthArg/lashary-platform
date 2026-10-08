@@ -3,9 +3,9 @@ import { esquemaProductoAdmin } from '@/features/store/ui/admin-products/validat
 
 const validForm = {
   slug: 'serum-nutritivo-lashary',
-  nombre: 'Serum nutritivo Lashary',
-  descripcion: 'Tratamiento nutritivo para mantenimiento de pestañas.',
-  urlImagen: '/productos/serum-nutritivo.jpg',
+  name: 'Serum nutritivo Lashary',
+  description: 'Tratamiento nutritivo para mantenimiento de pestañas.',
+  imageUrl: '/productos/serum-nutritivo.jpg',
   precioCrc: '18000',
   ordenPresentacion: '1',
 }
@@ -17,40 +17,40 @@ describe('esquemaProductoAdmin (DOM-007 — validación en el borde)', () => {
     if (!parsed.success) return
     expect(parsed.data).toEqual({
       slug: 'serum-nutritivo-lashary',
-      nombre: 'Serum nutritivo Lashary',
-      descripcion: 'Tratamiento nutritivo para mantenimiento de pestañas.',
-      urlImagen: '/productos/serum-nutritivo.jpg',
+      name: 'Serum nutritivo Lashary',
+      description: 'Tratamiento nutritivo para mantenimiento de pestañas.',
+      imageUrl: '/productos/serum-nutritivo.jpg',
       precioCrc: 18000,
       ordenPresentacion: 1,
     })
   })
 
   it('mapea la descripción ausente a cadena vacía', () => {
-    const { descripcion, ...sinDescripcion } = validForm
+    const { description, ...sinDescripcion } = validForm
     const parsed = esquemaProductoAdmin.safeParse(sinDescripcion)
     expect(parsed.success).toBe(true)
     if (!parsed.success) return
-    expect(parsed.data.descripcion).toBe('')
+    expect(parsed.data.description).toBe('')
   })
 
   it('recorta slug, nombre y descripción', () => {
     const parsed = esquemaProductoAdmin.safeParse({
       ...validForm,
       slug: '  serum-nutritivo-lashary  ',
-      nombre: '  Serum nutritivo Lashary  ',
-      descripcion: '  cuidados  ',
+      name: '  Serum nutritivo Lashary  ',
+      description: '  cuidados  ',
     })
     if (!parsed.success) throw new Error('esperaba éxito')
     expect(parsed.data.slug).toBe('serum-nutritivo-lashary')
-    expect(parsed.data.nombre).toBe('Serum nutritivo Lashary')
-    expect(parsed.data.descripcion).toBe('cuidados')
+    expect(parsed.data.name).toBe('Serum nutritivo Lashary')
+    expect(parsed.data.description).toBe('cuidados')
   })
 
   it('rechaza slug vacío, nombre vacío y precio no positivo', () => {
     const parsed = esquemaProductoAdmin.safeParse({
       ...validForm,
       slug: '   ',
-      nombre: '   ',
+      name: '   ',
       precioCrc: '0',
     })
     expect(parsed.success).toBe(false)

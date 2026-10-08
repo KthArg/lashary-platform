@@ -15,9 +15,9 @@ export type AdminProductListQuery = {
 
 export type ProductWrite = {
   slug: string
-  nombre: string
-  descripcion: string
-  urlImagen: string
+  name: string
+  description: string
+  imageUrl: string
   precioCrc: number
   ordenPresentacion: number
 }

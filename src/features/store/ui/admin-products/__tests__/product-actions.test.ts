@@ -32,9 +32,9 @@ function form(fields: Record<string, string>): FormData {
 
 const validFields = {
   slug: 'serum-nutritivo-lashary',
-  nombre: 'Serum nutritivo Lashary',
-  descripcion: 'Tratamiento nutritivo.',
-  urlImagen: '/productos/serum-nutritivo.jpg',
+  name: 'Serum nutritivo Lashary',
+  description: 'Tratamiento nutritivo.',
+  imageUrl: '/productos/serum-nutritivo.jpg',
   precioCrc: '18000',
   ordenPresentacion: '1',
 }

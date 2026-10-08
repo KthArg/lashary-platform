@@ -7,7 +7,7 @@ export function makeProduct(
   overrides: Partial<{
     id: string
     slug: string
-    nombre: string
+    name: string
     precioCrc: number
     ordenPresentacion: number
     activo: boolean
@@ -17,9 +17,9 @@ export function makeProduct(
   const result = buildProduct({
     id: overrides.id ?? `p-${counter}`,
     slug: overrides.slug ?? `producto-${counter}`,
-    nombre: overrides.nombre ?? `Producto ${counter}`,
-    descripcion: 'Descripción de prueba.',
-    urlImagen: '/productos/prueba.jpg',
+    name: overrides.name ?? `Producto ${counter}`,
+    description: 'Descripción de prueba.',
+    imageUrl: '/productos/prueba.jpg',
     precioCrc: overrides.precioCrc ?? 18000,
     ordenPresentacion: overrides.ordenPresentacion ?? 0,
     activo: overrides.activo ?? true,
