@@ -13,17 +13,17 @@ export type CmsClient = {
   getPublicProducts(): Promise<CmsProductDto[]>;
 };
 
-export function cmsProductCatalog(clienteCms: CmsClient): PublicProductCatalog {
+export function cmsProductCatalog(cmsClient: CmsClient): PublicProductCatalog {
   return {
     async listPublicProducts(): Promise<PublicProduct[]> {
-      const productosDelCms = await clienteCms.getPublicProducts();
+      const cmsProducts = await cmsClient.getPublicProducts();
 
-      return productosDelCms.map((producto) => ({
-        id: producto.id,
-        nombre: producto.nombre,
-        urlImagen: producto.url_imagen,
-        precioCrc: producto.precio_crc,
-        activo: producto.activo,
+      return cmsProducts.map((product) => ({
+        id: product.id,
+        name: product.nombre,
+        imageUrl: product.url_imagen,
+        priceCrc: product.precio_crc,
+        isActive: product.activo,
       }));
     },
   };

@@ -28,7 +28,7 @@ Tienda (F4): productos, carrito, checkout con comprobante. Stock y pedidos admin
 ## Qué hace hoy
 
 `US-PROD-02` terminada (2026-10-06): PRs #92, #93 y #123 a #133; el criterio 2 (grid responsivo) lo demuestra `store.test.tsx`, que comprueba `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`. Implementado con:
-- Modelo de dominio (`domain/producto.ts`): tipos puros sin dependencias
+- Modelo de dominio (`domain/producto.ts`): tipos puros sin dependencias, con campos y estados de la cuadrícula pública en inglés
 - Caso de uso (`application/obtener-grid-productos-publicos.ts`): orquestación de listado
 - Adaptador CMS (`http/catalogo-productos-cms.ts`): lectura desde API externa
 - Adaptador base de datos (`db/productos-db.ts`): lectura pública desde Supabase

@@ -4,7 +4,7 @@ import { gridProductosPublicosStyles as STYLES } from '../PublicProductsGrid/Pub
 export function EstadoCargando() {
   return (
     <div className={STYLES.alert} role="status">
-      <span>{CADENAS_GRID_PRODUCTOS_ES.mensajeCargando}</span>
+      <span>{CADENAS_GRID_PRODUCTOS_ES.loadingMessage}</span>
     </div>
   )
 }

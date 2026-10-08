@@ -134,22 +134,22 @@ describe('toProductCard', () => {
   it('sanitiza la URL de imagen de un PublicProduct no confiable (CMS/DB)', () => {
     const tarjeta = toProductCard({
       id: '1',
-      nombre: 'Producto',
-      urlImagen: 'javascript:alert(1)',
-      precioCrc: 18000,
-      activo: true,
+      name: 'Producto',
+      imageUrl: 'javascript:alert(1)',
+      priceCrc: 18000,
+      isActive: true,
     })
-    expect(tarjeta.urlImagen).toBe('')
+    expect(tarjeta.imageUrl).toBe('')
   })
 
   it('conserva una URL de imagen segura', () => {
     const tarjeta = toProductCard({
       id: '1',
-      nombre: 'Producto',
-      urlImagen: '/productos/serum.jpg',
-      precioCrc: 18000,
-      activo: true,
+      name: 'Producto',
+      imageUrl: '/productos/serum.jpg',
+      priceCrc: 18000,
+      isActive: true,
     })
-    expect(tarjeta.urlImagen).toBe('/productos/serum.jpg')
+    expect(tarjeta.imageUrl).toBe('/productos/serum.jpg')
   })
 })

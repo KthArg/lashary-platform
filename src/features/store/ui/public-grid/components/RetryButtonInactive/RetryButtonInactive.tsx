@@ -11,7 +11,7 @@ export function BotonReintentoInactivo({ etiqueta }: Props) {
       disabled
       aria-disabled="true"
       className={STYLES.retryButton}
-      aria-label={CADENAS_GRID_PRODUCTOS_ES.ariaBotonReintentar}
+      aria-label={CADENAS_GRID_PRODUCTOS_ES.retryButtonAriaLabel}
     >
       {etiqueta}
     </button>

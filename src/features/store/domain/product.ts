@@ -3,61 +3,61 @@ import { crearProductoInvalido, type ProductoInvalido } from './product-errors'
 
 export type PublicProduct = {
   id: string;
-  nombre: string;
-  urlImagen: string;
-  precioCrc: number;
-  activo: boolean;
+  name: string;
+  imageUrl: string;
+  priceCrc: number;
+  isActive: boolean;
 };
 
 export type PublicProductCard = {
   id: string;
-  nombre: string;
-  urlImagen: string;
-  etiquetaPrecio: string;
+  name: string;
+  imageUrl: string;
+  priceLabel: string;
 };
 
 export type ProductGridState =
-  | { tipo: 'cargando' }
-  | { tipo: 'vacio'; titulo: string; descripcion: string }
-  | { tipo: 'error'; titulo: string; descripcion: string; etiquetaReintentar: string }
-  | { tipo: 'listo'; tarjetas: PublicProductCard[] };
+  | { kind: 'loading' }
+  | { kind: 'empty'; title: string; description: string }
+  | { kind: 'error'; title: string; description: string; retryLabel: string }
+  | { kind: 'ready'; cards: PublicProductCard[] };
 
 export type ProductGridStrings = {
-  tituloVacio: string;
-  descripcionVacio: string;
-  tituloError: string;
-  descripcionError: string;
-  etiquetaReintentar: string;
-  mensajeCargando: string;
-  ariaCatalogoProductos: string;
-  prefijoAltProducto: string;
-  ariaBotonReintentar: string;
+  emptyTitle: string;
+  emptyDescription: string;
+  errorTitle: string;
+  errorDescription: string;
+  retryLabel: string;
+  loadingMessage: string;
+  catalogAriaLabel: string;
+  productAltPrefix: string;
+  retryButtonAriaLabel: string;
 };
 
-export function formatPriceCrc(precioCrc: number): string {
-  const formateador = new Intl.NumberFormat('es-CR', {
+export function formatPriceCrc(priceCrc: number): string {
+  const formatter = new Intl.NumberFormat('es-CR', {
     style: 'currency',
     currency: 'CRC',
     maximumFractionDigits: 0,
   });
 
-  return formateador.format(precioCrc);
+  return formatter.format(priceCrc);
 }
 
 const DANGEROUS_URL_SCHEME = /^(javascript|data):/i;
 
 export function sanitizeUrl(url: string): string {
-  const limpia = url.trim();
-  if (!limpia || DANGEROUS_URL_SCHEME.test(limpia)) return '';
-  return limpia;
+  const trimmed = url.trim();
+  if (!trimmed || DANGEROUS_URL_SCHEME.test(trimmed)) return '';
+  return trimmed;
 }
 
-export function toProductCard(producto: PublicProduct): PublicProductCard {
+export function toProductCard(product: PublicProduct): PublicProductCard {
   return {
-    id: producto.id,
-    nombre: producto.nombre,
-    urlImagen: sanitizeUrl(producto.urlImagen),
-    etiquetaPrecio: formatPriceCrc(producto.precioCrc),
+    id: product.id,
+    name: product.name,
+    imageUrl: sanitizeUrl(product.imageUrl),
+    priceLabel: formatPriceCrc(product.priceCrc),
   };
 }
 
