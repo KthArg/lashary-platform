@@ -9,7 +9,7 @@ historias:
     evidencia: "PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), product.test.ts, commands.test.ts, queries.test.ts, product-schema.test.ts, product-actions.test.ts, layout.test.tsx, products-admin-rls.test.ts (omitida sin Supabase local, ver deuda)"
   - id: US-PROD-03
     estado: en_progreso
-    falta: "la columna store_products.existencias existe y la administradora la edita en /admin/catalog/products; el slug lo genera el sistema a partir del nombre; faltan la lectura del detalle por slug, la ruta /productos/[slug] con imagen, nombre, descripcion, precio y boton de agregar al carrito deshabilitado sin existencias, y el enlace desde el grid"
+    falta: "la columna store_products.existencias existe y la administradora la edita en /admin/catalog/products; el slug lo genera el sistema a partir del nombre; la lectura del detalle por slug existe (getPublicProductDetail); faltan la ruta /productos/[slug] con imagen, nombre, descripcion, precio y boton de agregar al carrito deshabilitado sin existencias, y el enlace desde el grid"
   - id: US-SHOP-01
     estado: no_iniciada
   - id: US-SHOP-02
@@ -56,9 +56,11 @@ Panel admin (criterio 3, "administrables desde el panel") en `/admin/catalog/pro
 
 Slug (US-PROD-03, condición previa de la URL `/productos/[slug]`; cambia el panel de US-PROD-02): la administradora ya no lo escribe. Al crear, `slugFromName` (`domain/product-slug.ts`) lo saca del nombre: minúsculas, sin tildes (`ñ` → `n`), y cada tramo de espacios o símbolos se vuelve un `-`. Si ya existe, `firstAvailableSlug` agrega `-2`, `-3`… con los slugs que devuelve `listSlugsStartingWith`, que incluye los productos desactivados porque el `UNIQUE` de la columna también los cuenta. Si dos altas simultáneas eligen el mismo slug, el `UNIQUE` sigue respondiendo `DuplicateProductSlug` (DOM-006). Al editar, el slug se conserva aunque cambie el nombre, para no romper enlaces ya compartidos; se descartó regenerarlo. `productSchema` descarta un `slug` enviado en el formulario y rechaza un nombre sin letras ni números, porque no daría slug (DOM-007). Sin migración: la columna y su `UNIQUE` se quedan.
 
+Lectura del detalle (US-PROD-03, primera mitad del criterio 3): `getPublicProductDetail` (`application/public-detail/get-public-product-detail.ts`) recibe un slug y devuelve un `PublicProductDetail` (`domain/product-detail.ts`) o `PublicProductNotFound` (DOM-006). Es un error aparte de `ProductNotFound`, porque aquel identifica por `productId` y este por slug. El detalle lleva slug, nombre, descripción, imagen saneada con `sanitizeUrl`, precio formateado e `isAvailable`. No lleva el número de existencias: la tienda solo necesita saber si hay o no. Un producto desactivado responde igual que uno inexistente, para que la tienda no revele que existió. Lo filtran tres capas: RLS (`store_products_select_public_active`, SEC-001), el `.eq('activo', true)` de `db/public-product-detail.ts` y el caso de uso. Un error de la base lanza, porque es inesperado; la página de la pieza siguiente lo muestra como estado de error (UI-003). Sin índice nuevo: el `UNIQUE` de `slug` ya indexa la búsqueda (PERF-003).
+
 La capa de presentación se organiza por área en `ui/<area>/` (`admin-products`, `public-grid`), cada una con `components/<Componente>/` (`.tsx`, `.styles.ts`, `.types.ts`, `index.ts`), `hooks/`, `actions/`, `constants/`, `types/`, `validation/` y `__tests__/`; `domain/`, `application/`, `db/`, `http/` son la arquitectura DDD (ARCH-002/DOM-006/007) y no se solapan con esta convención.
 
 ## Contrato público
 
-`index.ts` exporta el contrato completo para listar productos, renderizar grid, consultar catálogos y administrar productos (ARCH-003). `client.ts` expone solo los textos, para los boundaries de ruta que corren en el cliente.
+`index.ts` exporta el contrato completo para listar productos, renderizar grid, consultar catálogos, leer el detalle público por slug (`getPublicProductDetail`, `publicProductDetailDb`) y administrar productos (ARCH-003). `client.ts` expone solo los textos, para los boundaries de ruta que corren en el cliente.
 
