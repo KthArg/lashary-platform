@@ -1,6 +1,6 @@
-import { CadenaProductos } from '../../../domain/product';
+import { ProductGridStrings } from '../../../domain/product';
 
-export const CADENAS_GRID_PRODUCTOS_ES: CadenaProductos = {
+export const CADENAS_GRID_PRODUCTOS_ES: ProductGridStrings = {
   tituloVacio: 'No hay productos disponibles',
   descripcionVacio: 'Pronto agregaremos nuevos productos de mantenimiento.',
   tituloError: 'No se pudo cargar el catálogo',

@@ -1,7 +1,7 @@
 import { ok, err, type Result } from '@/shared/result'
 import { crearProductoInvalido, type ProductoInvalido } from './product-errors'
 
-export type ProductoPublico = {
+export type PublicProduct = {
   id: string;
   nombre: string;
   urlImagen: string;
@@ -9,20 +9,20 @@ export type ProductoPublico = {
   activo: boolean;
 };
 
-export type TarjetaProductoPublico = {
+export type PublicProductCard = {
   id: string;
   nombre: string;
   urlImagen: string;
   etiquetaPrecio: string;
 };
 
-export type EstadoGridProductos =
+export type ProductGridState =
   | { tipo: 'cargando' }
   | { tipo: 'vacio'; titulo: string; descripcion: string }
   | { tipo: 'error'; titulo: string; descripcion: string; etiquetaReintentar: string }
-  | { tipo: 'listo'; tarjetas: TarjetaProductoPublico[] };
+  | { tipo: 'listo'; tarjetas: PublicProductCard[] };
 
-export type CadenaProductos = {
+export type ProductGridStrings = {
   tituloVacio: string;
   descripcionVacio: string;
   tituloError: string;
@@ -34,7 +34,7 @@ export type CadenaProductos = {
   ariaBotonReintentar: string;
 };
 
-export function formatearPrecioCrc(precioCrc: number): string {
+export function formatPriceCrc(precioCrc: number): string {
   const formateador = new Intl.NumberFormat('es-CR', {
     style: 'currency',
     currency: 'CRC',
@@ -44,20 +44,20 @@ export function formatearPrecioCrc(precioCrc: number): string {
   return formateador.format(precioCrc);
 }
 
-const ESQUEMA_URL_PELIGROSO = /^(javascript|data):/i;
+const DANGEROUS_URL_SCHEME = /^(javascript|data):/i;
 
-export function sanitizarUrl(url: string): string {
+export function sanitizeUrl(url: string): string {
   const limpia = url.trim();
-  if (!limpia || ESQUEMA_URL_PELIGROSO.test(limpia)) return '';
+  if (!limpia || DANGEROUS_URL_SCHEME.test(limpia)) return '';
   return limpia;
 }
 
-export function aProductoEnTarjeta(producto: ProductoPublico): TarjetaProductoPublico {
+export function toProductCard(producto: PublicProduct): PublicProductCard {
   return {
     id: producto.id,
     nombre: producto.nombre,
-    urlImagen: sanitizarUrl(producto.urlImagen),
-    etiquetaPrecio: formatearPrecioCrc(producto.precioCrc),
+    urlImagen: sanitizeUrl(producto.urlImagen),
+    etiquetaPrecio: formatPriceCrc(producto.precioCrc),
   };
 }
 

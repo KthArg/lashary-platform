@@ -1,24 +1,24 @@
 import {
-  ProductoPublico,
-  EstadoGridProductos,
-  CadenaProductos,
-  aProductoEnTarjeta,
+  PublicProduct,
+  ProductGridState,
+  ProductGridStrings,
+  toProductCard,
 } from '../../domain/product';
 
-export type CatalogoProductosPublico = {
-  listarProductosPublicos(): Promise<ProductoPublico[]>;
+export type PublicProductCatalog = {
+  listPublicProducts(): Promise<PublicProduct[]>;
 };
 
-export function estadoGridProductosInicial(): EstadoGridProductos {
+export function initialProductGridState(): ProductGridState {
   return { tipo: 'cargando' };
 }
 
-export async function obtenerEstadoGridProductos(
-  catalogo: CatalogoProductosPublico,
-  cadenas: CadenaProductos,
-): Promise<EstadoGridProductos> {
+export async function getProductGridState(
+  catalogo: PublicProductCatalog,
+  cadenas: ProductGridStrings,
+): Promise<ProductGridState> {
   try {
-    const productos = await catalogo.listarProductosPublicos();
+    const productos = await catalogo.listPublicProducts();
     const productosActivos = productos.filter((p) => p.activo);
 
     if (productosActivos.length === 0) {
@@ -31,7 +31,7 @@ export async function obtenerEstadoGridProductos(
 
     return {
       tipo: 'listo',
-      tarjetas: productosActivos.map(aProductoEnTarjeta),
+      tarjetas: productosActivos.map(toProductCard),
     };
   } catch {
     return {

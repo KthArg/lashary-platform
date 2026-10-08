@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import {
   CADENAS_GRID_PRODUCTOS_ES,
-  catalogoProductosDb,
+  publicProductsDb,
   GridProductosPublicos,
-  estadoGridProductosInicial,
-  obtenerEstadoGridProductos,
-  type CatalogoProductosPublico,
+  initialProductGridState,
+  getProductGridState,
+  type PublicProductCatalog,
 } from '@/features/store'
 import ProductosPage from '@/app/productos/page'
 
@@ -58,14 +58,14 @@ beforeEach(() => {
 
 describe('US-PROD-02: productos públicos en cuadricula', () => {
   it('filtra productos inactivos y convierte los activos en tarjetas', async () => {
-    const catalogo: CatalogoProductosPublico = {
-      listarProductosPublicos: vi.fn().mockResolvedValue([
+    const catalogo: PublicProductCatalog = {
+      listPublicProducts: vi.fn().mockResolvedValue([
         { id: '1', nombre: 'Activo', urlImagen: '/a.jpg', precioCrc: 1000, activo: true },
         { id: '2', nombre: 'Inactivo', urlImagen: '/b.jpg', precioCrc: 2000, activo: false },
       ]),
     }
 
-    const estado = await obtenerEstadoGridProductos(catalogo, CADENAS_GRID_PRODUCTOS_ES)
+    const estado = await getProductGridState(catalogo, CADENAS_GRID_PRODUCTOS_ES)
 
     expect(estado.tipo).toBe('listo')
     if (estado.tipo === 'listo') {
@@ -80,13 +80,13 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
   })
 
   it('devuelve estado vacío cuando no hay productos activos', async () => {
-    const catalogo: CatalogoProductosPublico = {
-      listarProductosPublicos: vi.fn().mockResolvedValue([
+    const catalogo: PublicProductCatalog = {
+      listPublicProducts: vi.fn().mockResolvedValue([
         { id: '1', nombre: 'Uno', urlImagen: '/a.jpg', precioCrc: 1000, activo: false },
       ]),
     }
 
-    const estado = await obtenerEstadoGridProductos(catalogo, CADENAS_GRID_PRODUCTOS_ES)
+    const estado = await getProductGridState(catalogo, CADENAS_GRID_PRODUCTOS_ES)
 
     expect(estado).toEqual({
       tipo: 'vacio',
@@ -96,11 +96,11 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
   })
 
   it('devuelve estado de error cuando el catálogo falla', async () => {
-    const catalogo: CatalogoProductosPublico = {
-      listarProductosPublicos: vi.fn().mockRejectedValue(new Error('cms offline')),
+    const catalogo: PublicProductCatalog = {
+      listPublicProducts: vi.fn().mockRejectedValue(new Error('cms offline')),
     }
 
-    const estado = await obtenerEstadoGridProductos(catalogo, CADENAS_GRID_PRODUCTOS_ES)
+    const estado = await getProductGridState(catalogo, CADENAS_GRID_PRODUCTOS_ES)
 
     expect(estado).toEqual({
       tipo: 'error',
@@ -111,8 +111,8 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
   })
 
   it('renderiza el grid con accesibilidad, escape de contenido y URL de imagen sanitizada', async () => {
-    const catalogo: CatalogoProductosPublico = {
-      listarProductosPublicos: vi.fn().mockResolvedValue([
+    const catalogo: PublicProductCatalog = {
+      listPublicProducts: vi.fn().mockResolvedValue([
         {
           id: '1',
           nombre: '<script>alert(1)</script>',
@@ -122,7 +122,7 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
         },
       ]),
     }
-    const estado = await obtenerEstadoGridProductos(catalogo, CADENAS_GRID_PRODUCTOS_ES)
+    const estado = await getProductGridState(catalogo, CADENAS_GRID_PRODUCTOS_ES)
     const html = renderToStaticMarkup(<GridProductosPublicos estado={estado} />)
 
     expect(html).toContain('aria-label="Catálogo de productos de mantenimiento"')
@@ -131,8 +131,8 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
   })
 
   it('el grid es responsivo: una columna en móvil, dos desde sm y tres desde lg', async () => {
-    const catalogo: CatalogoProductosPublico = {
-      listarProductosPublicos: vi.fn().mockResolvedValue(mockDbRows.map((fila) => ({
+    const catalogo: PublicProductCatalog = {
+      listPublicProducts: vi.fn().mockResolvedValue(mockDbRows.map((fila) => ({
         id: fila.id,
         nombre: fila.nombre,
         urlImagen: fila.url_imagen,
@@ -140,7 +140,7 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
         activo: fila.activo,
       }))),
     }
-    const estado = await obtenerEstadoGridProductos(catalogo, CADENAS_GRID_PRODUCTOS_ES)
+    const estado = await getProductGridState(catalogo, CADENAS_GRID_PRODUCTOS_ES)
     const html = renderToStaticMarkup(<GridProductosPublicos estado={estado} />)
 
     expect(html).toMatch(/class="[^"]*\bgrid-cols-1\b[^"]*\bsm:grid-cols-2\b[^"]*\blg:grid-cols-3\b/)
@@ -189,8 +189,8 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
   })
 
   it('lee los productos desde la base de datos para la ruta pública', async () => {
-    const catalogo = catalogoProductosDb()
-    const productos = await catalogo.listarProductosPublicos()
+    const catalogo = publicProductsDb()
+    const productos = await catalogo.listPublicProducts()
 
     expect(productos).toHaveLength(2)
     expect(productos[0].nombre).toBe('Serum nutritivo Lashary')

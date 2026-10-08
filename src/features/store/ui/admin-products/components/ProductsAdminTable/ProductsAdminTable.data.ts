@@ -1,4 +1,4 @@
-import { formatearPrecioCrc, type ProductoAdminVista } from '../../../../domain/product'
+import { formatPriceCrc, type ProductoAdminVista } from '../../../../domain/product'
 import { mensajesAdminProductos } from '../../constants/product-strings'
 import { rutasAdminProductos } from '../../constants/product-routes'
 import { tablaProductosAdminStyles as STYLES } from './ProductsAdminTable.styles'
@@ -11,7 +11,7 @@ export function aFilasProductoAdmin(items: ProductoAdminVista[]): FilaProductoAd
     id: producto.id,
     nombre: producto.nombre,
     slug: producto.slug,
-    precioFormateado: formatearPrecioCrc(producto.precioCrc),
+    precioFormateado: formatPriceCrc(producto.precioCrc),
     orden: producto.ordenPresentacion,
     estadoTexto: producto.activo ? m.status.active : m.status.inactive,
     estadoClase: producto.activo ? STYLES.badgeActive : STYLES.badgeInactive,

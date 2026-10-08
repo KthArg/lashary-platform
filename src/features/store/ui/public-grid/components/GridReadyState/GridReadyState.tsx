@@ -1,9 +1,9 @@
-import type { EstadoGridProductos } from '../../../../domain/product'
+import type { ProductGridState } from '../../../../domain/product'
 import { CADENAS_GRID_PRODUCTOS_ES } from '../../constants/public-grid-strings'
 import { gridProductosPublicosStyles as STYLES } from '../PublicProductsGrid/PublicProductsGrid.styles'
 import { TarjetaProducto } from '../ProductCard/ProductCard'
 
-type Props = { estado: Extract<EstadoGridProductos, { tipo: 'listo' }> }
+type Props = { estado: Extract<ProductGridState, { tipo: 'listo' }> }
 
 export function EstadoListo({ estado }: Props) {
   return (
