@@ -1,4 +1,4 @@
-export const RUTA_ADMIN_PRODUCTOS = '/admin/store'
+export const RUTA_ADMIN_PRODUCTOS = '/admin/catalog/products'
 
 export const rutasAdminProductos = {
   admin: RUTA_ADMIN_PRODUCTOS,
