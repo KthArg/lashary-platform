@@ -80,8 +80,8 @@
 - US-NOT-08 — no_iniciada
 - US-CLI-06 — no_iniciada
 
-### payments (actualizado: 2026-10-03)
-- US-AGE-13 — en_progreso — falta: definir y demostrar el anticipo por paquete del criterio original 1 (US-PROD-01); el anticipo por tecnica ya lo satisface catalog_techniques.deposit (US-AGE-08) y el criterio original 5 lo cubren ExemptClientForm, exemptClientAction y exemptClient con audit.record(); el PO aprobo el traslado de los criterios originales 2 y 3 a US-AGE-05 y del 4 a US-AGE-12, comunicado por Bayron el 2026-10-03 (DEPENDENCIES.md)
+### payments (actualizado: 2026-10-05)
+- US-AGE-13 — en_progreso — falta: integrar el anticipo por paquete implementado y probado en #178–#181, con #173–#175 ya integrados en main; completar aprobaciones pendientes y resolver la conservación de exoneraciones de #118 mediante ADR-0009 y migración; traslado de criterios 2 y 3 a US-AGE-05 y 4 a US-AGE-12 aprobado por el PO
 
 ### platform (actualizado: 2026-09-16)
 
