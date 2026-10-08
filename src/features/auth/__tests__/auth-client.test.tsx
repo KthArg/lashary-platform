@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { GoogleSignInButton } from '@/features/auth/components/GoogleSignInButton'
-import { PhoneRegistrationModal } from '@/features/auth/components/PhoneRegistrationModal'
-import { ClientSidebar } from '@/features/auth/components/ClientSidebar'
-import { updateClientPhoneAction } from '@/features/auth/actions/phone-actions'
-import { signInWithGoogleAction } from '@/features/auth/actions/auth-actions'
+import { GoogleSignInButton } from '@/features/auth/ui/client-login/components/GoogleSignInButton'
+import { PhoneRegistrationModal } from '@/features/auth/ui/client-login/components/PhoneRegistrationModal'
+import { ClientSidebar } from '@/features/auth/ui/navigation/components/ClientSidebar'
+import { updateClientPhoneAction } from '@/features/auth/ui/actions/phone-actions'
+import { signInWithGoogleAction } from '@/features/auth/ui/actions/auth-actions'
 import PortalLayout from '@/app/portal/layout'
 
 const mockRedirect = vi.fn()

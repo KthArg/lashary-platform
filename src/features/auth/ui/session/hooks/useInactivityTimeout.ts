@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { signOutAction } from '../actions/auth-actions'
+import { signOutAction } from '../../actions/auth-actions'
 
 export interface UseInactivityTimeoutOptions {
   timeoutMs?: number

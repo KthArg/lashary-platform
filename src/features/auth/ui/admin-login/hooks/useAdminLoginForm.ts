@@ -1,6 +1,6 @@
 'use client'
 import { useState, useTransition } from 'react'
-import { signInAdminAction } from '../actions/auth-actions'
+import { signInAdminAction } from '../../actions/auth-actions'
 
 export function useAdminLoginForm() {
   const [error, setError] = useState<string | null>(null)

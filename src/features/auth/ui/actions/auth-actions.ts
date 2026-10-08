@@ -4,9 +4,9 @@ import { createClient } from '@/shared/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { AUTH_ERROR_MESSAGES } from '../constants/auth-strings'
-import { isStaffRole } from '../domain/roles'
-import { loadAuthSession } from '../application/session'
-import { createSupabaseAuthRepository } from '../db/auth-repository'
+import { isStaffRole } from '../../domain/roles'
+import { loadAuthSession } from '../../application/session'
+import { createSupabaseAuthRepository } from '../../db/auth-repository'
 
 export async function signInWithGoogleAction() {
   const supabase = await createClient()
