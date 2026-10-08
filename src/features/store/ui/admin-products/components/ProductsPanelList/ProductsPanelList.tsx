@@ -1,16 +1,14 @@
-import { TablaProductosAdmin } from '../ProductsAdminTable'
-import { EncabezadoPanelProductos } from '../ProductsPanelHeader/ProductsPanelHeader'
-import { EnlaceNuevoProducto } from '../NewProductLink/NewProductLink'
-import { panelAdminProductosStyles as STYLES } from '../ProductsAdminPanel/ProductsAdminPanel.styles'
-import type { VistaPanelAdminProductos } from '../ProductsAdminPanel/ProductsAdminPanel.data'
+import { ProductsAdminTable } from '../ProductsAdminTable'
+import { ProductsPanelHeader } from '../ProductsPanelHeader'
+import { NewProductLink } from '../NewProductLink'
+import { productsAdminPanelStyles as STYLES } from '../ProductsAdminPanel/ProductsAdminPanel.styles'
+import type { ProductsPanelListProps } from './ProductsPanelList.types'
 
-type Props = { vista: Extract<VistaPanelAdminProductos, { modo: 'listado' }> }
-
-export function PanelProductosListado({ vista }: Props) {
+export function ProductsPanelList({ view }: ProductsPanelListProps) {
   return (
     <main className={STYLES.main}>
-      <EncabezadoPanelProductos accion={<EnlaceNuevoProducto />} />
-      <TablaProductosAdmin filas={vista.filas} />
+      <ProductsPanelHeader action={<NewProductLink />} />
+      <ProductsAdminTable rows={view.rows} />
     </main>
   )
 }

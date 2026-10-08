@@ -2,18 +2,16 @@ import Link from 'next/link'
 import { productStrings } from '../../constants/product-strings'
 import { productRoutes } from '../../constants/product-routes'
 import { ProductForm } from '../ProductForm'
-import { EncabezadoPanelProductos } from '../ProductsPanelHeader/ProductsPanelHeader'
-import { panelAdminProductosStyles as STYLES } from '../ProductsAdminPanel/ProductsAdminPanel.styles'
-import type { VistaPanelAdminProductos } from '../ProductsAdminPanel/ProductsAdminPanel.data'
+import { ProductsPanelHeader } from '../ProductsPanelHeader'
+import { productsAdminPanelStyles as STYLES } from '../ProductsAdminPanel/ProductsAdminPanel.styles'
+import type { ProductsPanelFormProps } from './ProductsPanelForm.types'
 
-type Props = { vista: Extract<VistaPanelAdminProductos, { modo: 'formulario' }> }
-
-export function PanelProductosFormulario({ vista }: Props) {
+export function ProductsPanelForm({ view }: ProductsPanelFormProps) {
   return (
     <main className={STYLES.main}>
-      <EncabezadoPanelProductos />
+      <ProductsPanelHeader />
       <div className={STYLES.formWrapper}>
-        <ProductForm product={vista.productoEnEdicion} />
+        <ProductForm product={view.editingProduct} />
         <Link href={productRoutes.admin} className={STYLES.cancelLink}>
           {productStrings.form.cancel}
         </Link>

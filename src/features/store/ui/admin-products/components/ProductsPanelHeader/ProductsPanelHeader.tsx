@@ -1,17 +1,17 @@
-import type { ReactNode } from 'react'
 import { productStrings } from '../../constants/product-strings'
-import { panelAdminProductosStyles as STYLES } from '../ProductsAdminPanel/ProductsAdminPanel.styles'
+import { productsAdminPanelStyles as STYLES } from '../ProductsAdminPanel/ProductsAdminPanel.styles'
+import type { ProductsPanelHeaderProps } from './ProductsPanelHeader.types'
 
-const m = productStrings.admin
+const adminMessages = productStrings.admin
 
-export function EncabezadoPanelProductos({ accion }: { accion?: ReactNode }) {
+export function ProductsPanelHeader({ action }: ProductsPanelHeaderProps) {
   return (
     <header className={STYLES.header}>
       <div>
-        <h1 className={STYLES.title}>{m.title}</h1>
-        <p className={STYLES.subtitle}>{m.subtitle}</p>
+        <h1 className={STYLES.title}>{adminMessages.title}</h1>
+        <p className={STYLES.subtitle}>{adminMessages.subtitle}</p>
       </div>
-      {accion}
+      {action}
     </header>
   )
 }

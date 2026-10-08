@@ -5,30 +5,30 @@ import {
 } from '../../../../application/admin-products/queries'
 import { adminProductRepository } from '../../../../db/admin-product-repository'
 import type { AdminProduct } from '../../../../domain/product'
-import { aFilasProductoAdmin } from '../ProductsAdminTable/ProductsAdminTable.data'
-import type { FilaProductoAdmin } from '../ProductsAdminTable/ProductsAdminTable.types'
-import type { PanelAdminProductosSearchParams } from './ProductsAdminPanel.types'
+import { toAdminProductRows } from '../ProductsAdminTable/ProductsAdminTable.data'
+import type { AdminProductRow } from '../ProductsAdminTable/ProductsAdminTable.types'
+import type { ProductsAdminPanelSearchParams } from './ProductsAdminPanel.types'
 
-export type VistaPanelAdminProductos =
-  | { modo: 'formulario'; productoEnEdicion?: AdminProduct }
-  | { modo: 'vacio' }
-  | { modo: 'listado'; filas: FilaProductoAdmin[] }
+export type ProductsAdminPanelView =
+  | { mode: 'form'; editingProduct?: AdminProduct }
+  | { mode: 'empty' }
+  | { mode: 'list'; rows: AdminProductRow[] }
 
-export async function obtenerVistaPanelAdminProductos(
-  searchParams?: Promise<PanelAdminProductosSearchParams>,
-): Promise<VistaPanelAdminProductos> {
+export async function getProductsAdminPanelView(
+  searchParams?: Promise<ProductsAdminPanelSearchParams>,
+): Promise<ProductsAdminPanelView> {
   const params = (await searchParams) ?? {}
   const repo = await adminProductRepository()
 
   const page = await listAdminProducts(repo)({ activeOnly: false, pageSize: 100 })
 
   const editResult = params.edit ? await getAdminProduct(repo)(params.edit) : null
-  const productoEnEdicion = editResult && isOk(editResult) ? editResult.value : undefined
-  const mostrarFormulario = params.new !== undefined || productoEnEdicion !== undefined
+  const editingProduct = editResult && isOk(editResult) ? editResult.value : undefined
+  const showForm = params.new !== undefined || editingProduct !== undefined
 
-  if (mostrarFormulario) return { modo: 'formulario', productoEnEdicion }
+  if (showForm) return { mode: 'form', editingProduct }
 
-  const filas = aFilasProductoAdmin(page.items)
-  if (filas.length === 0) return { modo: 'vacio' }
-  return { modo: 'listado', filas }
+  const rows = toAdminProductRows(page.items)
+  if (rows.length === 0) return { mode: 'empty' }
+  return { mode: 'list', rows }
 }

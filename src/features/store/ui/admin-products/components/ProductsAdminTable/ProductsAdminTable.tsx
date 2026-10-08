@@ -1,39 +1,39 @@
 import Link from 'next/link'
 import { productStrings } from '../../constants/product-strings'
-import { tablaProductosAdminStyles as STYLES } from './ProductsAdminTable.styles'
-import type { TablaProductosAdminProps } from './ProductsAdminTable.types'
+import { productsAdminTableStyles as STYLES } from './ProductsAdminTable.styles'
+import type { ProductsAdminTableProps } from './ProductsAdminTable.types'
 
-const m = productStrings.admin
+const adminMessages = productStrings.admin
 
-export function TablaProductosAdmin({ filas }: TablaProductosAdminProps) {
+export function ProductsAdminTable({ rows }: ProductsAdminTableProps) {
   return (
     <div className={STYLES.wrapper}>
       <table className={STYLES.table}>
         <thead>
           <tr>
-            <th>{m.columns.nombre}</th>
-            <th>{m.columns.slug}</th>
-            <th>{m.columns.precio}</th>
-            <th>{m.columns.orden}</th>
-            <th>{m.columns.status}</th>
+            <th>{adminMessages.columns.name}</th>
+            <th>{adminMessages.columns.slug}</th>
+            <th>{adminMessages.columns.price}</th>
+            <th>{adminMessages.columns.order}</th>
+            <th>{adminMessages.columns.status}</th>
             <th>
-              <span className={STYLES.srOnly}>{m.columns.actions}</span>
+              <span className={STYLES.srOnly}>{adminMessages.columns.actions}</span>
             </th>
           </tr>
         </thead>
         <tbody>
-          {filas.map((fila) => (
-            <tr key={fila.id}>
-              <td className={STYLES.nameCell}>{fila.nombre}</td>
-              <td>{fila.slug}</td>
-              <td>{fila.precioFormateado}</td>
-              <td>{fila.orden}</td>
+          {rows.map((row) => (
+            <tr key={row.id}>
+              <td className={STYLES.nameCell}>{row.name}</td>
+              <td>{row.slug}</td>
+              <td>{row.formattedPrice}</td>
+              <td>{row.order}</td>
               <td>
-                <span className={fila.estadoClase}>{fila.estadoTexto}</span>
+                <span className={row.statusClass}>{row.statusText}</span>
               </td>
               <td className={STYLES.actionsCell}>
-                <Link href={fila.hrefEditar} className={STYLES.editLink}>
-                  {m.rowActions.edit}
+                <Link href={row.editHref} className={STYLES.editLink}>
+                  {adminMessages.rowActions.edit}
                 </Link>
               </td>
             </tr>
