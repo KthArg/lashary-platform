@@ -3,11 +3,13 @@ import { isErr, isOk } from '@/shared/result'
 import {
   listAdminProducts,
   getAdminProduct,
+  DEFAULT_PAGE_SIZE,
+  MAX_PAGE_SIZE,
 } from '@/features/store/application/admin-products/queries'
 import { createFakeAdminProductRepository } from './fake-product-repository'
 import { makeProduct } from './product-fixture'
 
-describe('listarProductosAdmin', () => {
+describe('listAdminProducts', () => {
   it('devuelve solo activos por defecto, como ProductoAdminVista', async () => {
     const repo = createFakeAdminProductRepository([
       makeProduct({ id: 'a', isActive: true }),
@@ -30,15 +32,15 @@ describe('listarProductosAdmin', () => {
 
   it('pagina con tamaño por defecto 50 y tope 100', async () => {
     const repo = createFakeAdminProductRepository(
-      Array.from({ length: 120 }, (_, i) => makeProduct({ id: `p${i}`, displayOrder: i })),
+      Array.from({ length: 120 }, (_, index) => makeProduct({ id: `p${index}`, displayOrder: index })),
     )
     const first = await listAdminProducts(repo)({ page: 1, activeOnly: false })
-    expect(first.items).toHaveLength(50)
-    expect(first.pageSize).toBe(50)
+    expect(first.items).toHaveLength(DEFAULT_PAGE_SIZE)
+    expect(first.pageSize).toBe(DEFAULT_PAGE_SIZE)
 
     const capped = await listAdminProducts(repo)({ pageSize: 999, activeOnly: false })
-    expect(capped.pageSize).toBe(100)
-    expect(capped.items).toHaveLength(100)
+    expect(capped.pageSize).toBe(MAX_PAGE_SIZE)
+    expect(capped.items).toHaveLength(MAX_PAGE_SIZE)
   })
 
   it('normaliza page y pageSize inválidos', async () => {
@@ -49,7 +51,7 @@ describe('listarProductosAdmin', () => {
   })
 })
 
-describe('obtenerProductoAdmin', () => {
+describe('getAdminProduct', () => {
   it('devuelve el producto cuando existe', async () => {
     const repo = createFakeAdminProductRepository([makeProduct({ id: 'x' })])
     const result = await getAdminProduct(repo)('x')
