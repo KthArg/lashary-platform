@@ -76,10 +76,10 @@ export function ProductForm({ product }: ProductFormProps) {
           defaultValue={product?.displayOrder ?? 0}
         />
 
-        <label className={STYLES.descriptionLabel} htmlFor="descripcion">
+        <label className={STYLES.descriptionLabel} htmlFor="description">
           <span className={STYLES.labelText}>{formMessages.fields.description}</span>
           <textarea
-            id="descripcion"
+            id="description"
             name="description"
             rows={3}
             defaultValue={product?.description}
