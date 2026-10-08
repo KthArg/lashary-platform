@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { render, screen, cleanup, fireEvent, within } from '@testing-library/react'
-import { SiteHeader, RESERVE_ROUTE, landingMessages } from '@/features/landing'
+import { SiteHeader, LOGIN_ROUTE, RESERVE_ROUTE, landingMessages } from '@/features/landing'
 
 afterEach(cleanup)
 
@@ -25,6 +25,14 @@ describe('SiteHeader — US-LAND-01: llamado a la acción para agendar', () => {
     expect(reserve.getAttribute('target')).toBeNull()
   })
 
+  it('ofrece "Iniciar sesión" hacia la página de acceso, con y sin secciones', () => {
+    const { unmount } = render(<SiteHeader sections={[]} />)
+    expect(screen.getByRole('link', { name: landingMessages.header.login }).getAttribute('href')).toBe(LOGIN_ROUTE)
+    unmount()
+    render(<SiteHeader sections={sections} />)
+    expect(screen.getByRole('link', { name: landingMessages.header.login }).getAttribute('href')).toBe(LOGIN_ROUTE)
+  })
+
   it('sin secciones no hay navegación ni botón de menú', () => {
     render(<SiteHeader sections={[]} />)
     expect(screen.queryByRole('navigation')).toBeNull()
@@ -46,6 +54,15 @@ describe('SiteMenu — UI-004: operable con teclado', () => {
     expect(dialog.getAttribute('aria-modal')).toBe('true')
     expect(document.activeElement).toBe(within(dialog).getByRole('button', { name: landingMessages.menu.close }))
     expect(trigger.getAttribute('aria-expanded')).toBe('true')
+  })
+
+  it('ofrece iniciar sesión y cierra el menú al elegirlo', () => {
+    openMenu()
+    const dialog = screen.getByRole('dialog')
+    const login = within(dialog).getByRole('link', { name: landingMessages.menu.login })
+    expect(login.getAttribute('href')).toBe(LOGIN_ROUTE)
+    fireEvent.click(login)
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
 
   it('numera las secciones y ofrece reservar', () => {
@@ -74,7 +91,7 @@ describe('SiteMenu — UI-004: operable con teclado', () => {
   it('Tab desde el último control vuelve al primero, sin salir del diálogo', () => {
     openMenu()
     const dialog = screen.getByRole('dialog')
-    within(dialog).getByRole('link', { name: landingMessages.menu.reserve }).focus()
+    within(dialog).getByRole('link', { name: landingMessages.menu.login }).focus()
     fireEvent.keyDown(document, { key: 'Tab' })
     expect(document.activeElement).toBe(within(dialog).getByRole('button', { name: landingMessages.menu.close }))
   })

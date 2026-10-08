@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useCallback, useRef, useState } from 'react'
 import { landingMessages } from './messages'
-import { HOME_ANCHOR, RESERVE_ROUTE } from './routes'
+import { HOME_ANCHOR, LOGIN_ROUTE, RESERVE_ROUTE } from './routes'
 import type { SiteSection } from './sections'
 import { siteHeaderStyles as styles } from './SiteHeader.styles'
 import { SiteMenu } from './SiteMenu'
@@ -43,6 +43,9 @@ export function SiteHeader({ sections }: SiteHeaderProps) {
                 ))}
               </nav>
             )}
+            <Link href={LOGIN_ROUTE} className={hasSections ? styles.loginDesktop : styles.login}>
+              {landingMessages.header.login}
+            </Link>
             <Link href={RESERVE_ROUTE} className={styles.reserve}>
               {landingMessages.header.reserve}
             </Link>

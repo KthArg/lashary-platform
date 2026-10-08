@@ -2,7 +2,7 @@
 feature: landing
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-09-21
+actualizado: 2026-10-08
 historias:
   - id: US-LAND-01
     estado: terminada
@@ -33,7 +33,7 @@ Sitio publico: inicio, tecnicas, contacto, conoceme, galeria, fidelidad informat
 
 ## Qué hace hoy
 
-- `ui/SiteHeader.tsx`: cabecera fija de todas las páginas públicas (la monta `src/app/(site)/layout.tsx`). Marca con ancla a `#inicio`, "Reservar cita" hacia `RESERVE_ROUTE` (`/portal`) y, si hay secciones, la barra de enlaces (desde 860 px, token `site-nav`) y el botón de menú.
+- `ui/SiteHeader.tsx`: cabecera fija de todas las páginas públicas (la monta `src/app/(site)/layout.tsx`). Marca con ancla a `#inicio`, "Iniciar sesión" hacia `LOGIN_ROUTE` (`/login`), "Reservar cita" hacia `RESERVE_ROUTE` (`/portal`) y, si hay secciones, la barra de enlaces (desde 860 px, token `site-nav`) y el botón de menú.
 - `ui/SiteMenu.tsx`: menú a pantalla completa como diálogo modal. Foco en "Cerrar" al abrir, Tab atrapado, Escape cierra y devuelve el foco al botón, scroll de la página bloqueado mientras está abierto.
 - `ui/sections.ts`: `landingSections` lista Servicios, El estudio, Galería, Fidelidad, Preguntas y Ubicación, en el orden de la página; cada historia agrega la suya al montarla. La sección se renderiza siempre, incluso sin técnicas, para que el ancla de la navegación nunca apunte al vacío.
 
