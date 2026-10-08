@@ -20,8 +20,8 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 import {
   createTechniqueAction,
   deactivateTechniqueAction,
-} from '@/features/catalog/ui/actions'
-import { initialActionState } from '@/features/catalog/ui/action-state'
+} from '@/features/catalog/ui/techniques/actions/technique-actions'
+import { initialActionState } from '@/features/catalog/ui/techniques/types/technique-action-state'
 import { TechniqueNameConflict } from '@/features/catalog/domain/techniques/errors'
 
 function form(fields: Record<string, string>): FormData {

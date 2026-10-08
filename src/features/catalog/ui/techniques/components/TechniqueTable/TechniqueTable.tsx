@@ -1,9 +1,10 @@
 import Link from 'next/link'
-import type { TechniqueView } from '../domain/techniques/technique'
-import { catalogMessages, familyLabel } from './messages'
-import { formatColones } from './format'
-import { catalogRoutes } from './routes'
+import type { TechniqueView } from '../../../../domain/techniques/technique'
+import { catalogMessages, familyLabel } from '../../constants/technique-strings'
+import { formatColones } from '../../../format'
+import { catalogRoutes } from '../../../routes'
 import { techniqueTableStyles as s } from './TechniqueTable.styles'
+import type { TechniqueTableProps } from './TechniqueTable.types'
 
 const m = catalogMessages.admin
 
@@ -15,7 +16,7 @@ function durationCell(technique: TechniqueView): string {
   return `${technique.durationFirstTimeMin} / ${retouch} ${m.minutesShort}`
 }
 
-export function TechniqueTable({ items }: { items: TechniqueView[] }) {
+export function TechniqueTable({ items }: TechniqueTableProps) {
   return (
     <div className={s.wrapper}>
       <table className={s.table}>

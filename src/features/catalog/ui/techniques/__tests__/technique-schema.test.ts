@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { techniqueFormSchema } from '@/features/catalog/ui/schema'
+import { techniqueFormSchema } from '@/features/catalog/ui/techniques/validation/technique-schema'
 
 const validForm = {
   name: 'Set volumen',

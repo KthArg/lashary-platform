@@ -1,16 +1,17 @@
 'use client'
 
 import { useActionState } from 'react'
-import type { TechniqueView } from '../domain/techniques/technique'
-import { SERVICE_FAMILIES } from '../domain/techniques/technique'
-import { catalogMessages, familyLabel } from './messages'
+import type { TechniqueView } from '../../../../domain/techniques/technique'
+import { SERVICE_FAMILIES } from '../../../../domain/techniques/technique'
+import { catalogMessages, familyLabel } from '../../constants/technique-strings'
 import {
   createTechniqueAction,
   updateTechniqueAction,
   deactivateTechniqueAction,
-} from './actions'
-import { initialActionState } from './action-state'
-import { techniqueFormStyles as s } from './technique-form.styles'
+} from '../../actions/technique-actions'
+import { initialActionState } from '../../types/technique-action-state'
+import { techniqueFormStyles as s } from './TechniqueForm.styles'
+import type { TechniqueFormProps } from './TechniqueForm.types'
 
 const f = catalogMessages.form
 
@@ -79,7 +80,7 @@ function Feedback({
   )
 }
 
-export function TechniqueForm({ technique }: { technique?: TechniqueView }) {
+export function TechniqueForm({ technique }: TechniqueFormProps) {
   const editing = technique !== undefined
   const [state, formAction, pending] = useActionState(
     editing ? updateTechniqueAction : createTechniqueAction,
