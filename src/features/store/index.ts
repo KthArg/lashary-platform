@@ -22,6 +22,12 @@ export type { CmsClient, CmsProductDto } from './http/products-cms-catalog';
 export { cmsProductCatalog } from './http/products-cms-catalog';
 export { publicProductsDb } from './db/public-products';
 
+export type { PublicProductDetail } from './domain/product-detail';
+export type { PublicProductNotFound } from './domain/product-errors';
+export type { PublicProductDetailReader } from './application/public-detail/get-public-product-detail';
+export { getPublicProductDetail } from './application/public-detail/get-public-product-detail';
+export { publicProductDetailDb } from './db/public-product-detail';
+
 export { ProductsAdminPanel } from './ui/admin-products/components/ProductsAdminPanel';
 export { productStrings } from './ui/admin-products/constants/product-strings';
 export type { AdminProduct } from './domain/product';
