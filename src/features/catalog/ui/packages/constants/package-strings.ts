@@ -55,6 +55,19 @@ export const packageMessages = {
     savedCreate: 'Paquete creado.',
     savedEdit: 'Cambios guardados.',
     deactivated: 'Paquete desactivado.',
+    activated: 'Paquete activado.',
+    status: {
+      label: 'Estado del paquete',
+      active: 'Activo: se ofrece a las clientas',
+      inactive: 'Desactivado: no se ofrece',
+    },
+    remove: {
+      open: 'Eliminar paquete',
+      title: '¿Eliminar este paquete?',
+      body: 'Se borra para siempre junto con sus técnicas asociadas. Si solo querés dejar de ofrecerlo, desactivalo con el interruptor.',
+      confirm: 'Eliminar definitivamente',
+      cancel: 'Cancelar',
+    },
     validation: {
       name: 'El nombre es obligatorio',
       techniqueIds: 'Elegí al menos dos técnicas',
