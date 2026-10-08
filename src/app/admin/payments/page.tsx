@@ -1,6 +1,6 @@
 import { requireAdminSession } from '@/features/auth'
 import { ExemptClientForm } from '@/features/payments'
-import { adminPaymentsStyles as Styles } from './payments.styles'
+import { adminPaymentsStyles as STYLES } from './payments.styles'
 
 export const metadata = {
   title: 'Anticipos | LASHARY Beauty Studio',
@@ -11,7 +11,7 @@ export default async function AdminPaymentsPage() {
   await requireAdminSession()
 
   return (
-    <div className={Styles.main}>
+    <div className={STYLES.main}>
       <ExemptClientForm />
     </div>
   )
