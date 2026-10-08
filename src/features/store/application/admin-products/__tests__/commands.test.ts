@@ -14,9 +14,9 @@ import { makeProduct } from './product-fixture'
 
 const validModel = (): ProductWrite => ({
   slug: 'cepillo-limpiador-lashary',
-  nombre: 'Cepillo limpiador Lashary',
-  descripcion: 'Accesorio para limpieza suave diaria.',
-  urlImagen: '/productos/cepillo-limpiador.jpg',
+  name: 'Cepillo limpiador Lashary',
+  description: 'Accesorio para limpieza suave diaria.',
+  imageUrl: '/productos/cepillo-limpiador.jpg',
   precioCrc: 12000,
   ordenPresentacion: 2,
 })
@@ -69,11 +69,11 @@ describe('updateProduct', () => {
     const repo = createFakeAdminProductRepository([makeProduct({ id: 'e1', activo: true })])
     const result = await updateProduct(deps(repo))('e1', {
       ...validModel(),
-      nombre: 'Renombrado',
+      name: 'Renombrado',
     })
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
-    expect(result.value.nombre).toBe('Renombrado')
+    expect(result.value.name).toBe('Renombrado')
     expect(result.value.activo).toBe(true)
     expect(result.value.id).toBe('e1')
   })
@@ -95,7 +95,7 @@ describe('updateProduct', () => {
   it('rechaza cambios inválidos sin persistir', async () => {
     const repo = createFakeAdminProductRepository([makeProduct({ id: 'e3' })])
     const before = repo.saveCalls
-    const result = await updateProduct(deps(repo))('e3', { ...validModel(), nombre: '   ' })
+    const result = await updateProduct(deps(repo))('e3', { ...validModel(), name: '   ' })
     expect(isErr(result)).toBe(true)
     expect(repo.saveCalls).toBe(before)
   })

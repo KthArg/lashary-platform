@@ -64,9 +64,9 @@ export function toProductCard(product: PublicProduct): PublicProductCard {
 export type AdminProduct = {
   id: string
   slug: string
-  nombre: string
-  descripcion: string
-  urlImagen: string
+  name: string
+  description: string
+  imageUrl: string
   precioCrc: number
   activo: boolean
   ordenPresentacion: number
@@ -75,9 +75,9 @@ export type AdminProduct = {
 export type ProductInput = {
   id: string
   slug: string
-  nombre: string
-  descripcion: string
-  urlImagen: string
+  name: string
+  description: string
+  imageUrl: string
   precioCrc: number
   activo?: boolean
   ordenPresentacion: number
@@ -92,11 +92,11 @@ export function buildProduct(input: ProductInput): Result<AdminProduct, InvalidP
   const slug = input.slug.trim()
   if (slug.length === 0) problems.push('el slug no puede estar vacío')
 
-  const nombre = input.nombre.trim()
-  if (nombre.length === 0) problems.push('el nombre no puede estar vacío')
+  const name = input.name.trim()
+  if (name.length === 0) problems.push('el name no puede estar vacío')
 
-  const urlImagen = input.urlImagen.trim()
-  if (urlImagen.length === 0) problems.push('la URL de la imagen no puede estar vacía')
+  const imageUrl = input.imageUrl.trim()
+  if (imageUrl.length === 0) problems.push('la URL de la imagen no puede estar vacía')
 
   if (!isPositiveInteger(input.precioCrc)) {
     problems.push('el precio debe ser un entero de colones mayor que cero')
@@ -113,9 +113,9 @@ export function buildProduct(input: ProductInput): Result<AdminProduct, InvalidP
   return ok({
     id: input.id,
     slug,
-    nombre,
-    descripcion: input.descripcion.trim(),
-    urlImagen,
+    name,
+    description: input.description.trim(),
+    imageUrl,
     precioCrc: input.precioCrc,
     activo: input.activo ?? true,
     ordenPresentacion: input.ordenPresentacion,

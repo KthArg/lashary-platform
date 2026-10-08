@@ -4,7 +4,7 @@ export const mensajesAdminProductos = {
     subtitle: 'Productos de mantenimiento del catálogo público. El sitio lee de aquí.',
     newProduct: 'Nuevo producto',
     columns: {
-      nombre: 'Producto',
+      name: 'Producto',
       slug: 'Slug',
       precio: 'Precio',
       orden: 'Orden',
@@ -30,9 +30,9 @@ export const mensajesAdminProductos = {
     legendEdit: 'Editar producto',
     fields: {
       slug: 'Slug (identificador único en la URL)',
-      nombre: 'Nombre',
-      descripcion: 'Descripción',
-      urlImagen: 'URL de la imagen',
+      name: 'Nombre',
+      description: 'Descripción',
+      imageUrl: 'URL de la imagen',
       precioCrc: 'Precio (colones)',
       ordenPresentacion: 'Orden de presentación',
     },
@@ -47,8 +47,8 @@ export const mensajesAdminProductos = {
     deactivated: 'Producto desactivado.',
     validation: {
       slug: 'El slug es obligatorio',
-      nombre: 'El nombre es obligatorio',
-      urlImagen: 'La URL de la imagen es obligatoria',
+      name: 'El name es obligatorio',
+      imageUrl: 'La URL de la imagen es obligatoria',
       precioCrc: 'El precio debe ser mayor que cero',
       ordenPresentacion: 'El orden de presentación no puede ser negativo',
     },

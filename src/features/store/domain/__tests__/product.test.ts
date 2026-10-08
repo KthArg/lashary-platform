@@ -10,9 +10,9 @@ import {
 const validInput = () => ({
   id: '11111111-1111-1111-1111-111111111111',
   slug: 'serum-nutritivo-lashary',
-  nombre: 'Serum nutritivo Lashary',
-  descripcion: 'Tratamiento nutritivo para mantenimiento de pestañas.',
-  urlImagen: '/productos/serum-nutritivo.jpg',
+  name: 'Serum nutritivo Lashary',
+  description: 'Tratamiento nutritivo para mantenimiento de pestañas.',
+  imageUrl: '/productos/serum-nutritivo.jpg',
   precioCrc: 18000,
   ordenPresentacion: 1,
 })
@@ -22,29 +22,29 @@ describe('buildProduct — invariantes de dominio (DOM-007)', () => {
     const r = buildProduct(validInput())
     expect(isOk(r)).toBe(true)
     if (!isOk(r)) return
-    expect(r.value.nombre).toBe('Serum nutritivo Lashary')
+    expect(r.value.name).toBe('Serum nutritivo Lashary')
     expect(r.value.slug).toBe('serum-nutritivo-lashary')
     expect(r.value.precioCrc).toBe(18000)
     expect(r.value.activo).toBe(true)
   })
 
-  it('recorta espacios de slug, nombre, descripción y urlImagen', () => {
+  it('recorta espacios de slug, name, descripción y imageUrl', () => {
     const r = buildProduct({
       ...validInput(),
       slug: '  serum-nutritivo-lashary  ',
-      nombre: '  Serum nutritivo Lashary  ',
-      descripcion: '  cuidados  ',
-      urlImagen: '  /productos/serum-nutritivo.jpg  ',
+      name: '  Serum nutritivo Lashary  ',
+      description: '  cuidados  ',
+      imageUrl: '  /productos/serum-nutritivo.jpg  ',
     })
     if (!isOk(r)) throw new Error('esperaba ok')
     expect(r.value.slug).toBe('serum-nutritivo-lashary')
-    expect(r.value.nombre).toBe('Serum nutritivo Lashary')
-    expect(r.value.descripcion).toBe('cuidados')
-    expect(r.value.urlImagen).toBe('/productos/serum-nutritivo.jpg')
+    expect(r.value.name).toBe('Serum nutritivo Lashary')
+    expect(r.value.description).toBe('cuidados')
+    expect(r.value.imageUrl).toBe('/productos/serum-nutritivo.jpg')
   })
 
   it('acepta descripción vacía', () => {
-    const r = buildProduct({ ...validInput(), descripcion: '' })
+    const r = buildProduct({ ...validInput(), description: '' })
     expect(isOk(r)).toBe(true)
   })
 
@@ -56,13 +56,13 @@ describe('buildProduct — invariantes de dominio (DOM-007)', () => {
     expect(r.error.problems.join(' ')).toMatch(/slug/i)
   })
 
-  it('rechaza nombre vacío', () => {
-    const r = buildProduct({ ...validInput(), nombre: '   ' })
+  it('rechaza name vacío', () => {
+    const r = buildProduct({ ...validInput(), name: '   ' })
     expect(isErr(r)).toBe(true)
   })
 
-  it('rechaza urlImagen vacía', () => {
-    const r = buildProduct({ ...validInput(), urlImagen: '   ' })
+  it('rechaza imageUrl vacía', () => {
+    const r = buildProduct({ ...validInput(), imageUrl: '   ' })
     expect(isErr(r)).toBe(true)
   })
 
@@ -88,7 +88,7 @@ describe('buildProduct — invariantes de dominio (DOM-007)', () => {
     const r = buildProduct({
       ...validInput(),
       slug: '',
-      nombre: '',
+      name: '',
       ordenPresentacion: -5,
     })
     expect(isErr(r)).toBe(true)

@@ -35,9 +35,9 @@ function buildFromWrite(
   return buildProduct({
     id,
     slug: model.slug,
-    nombre: model.nombre,
-    descripcion: model.descripcion,
-    urlImagen: model.urlImagen,
+    name: model.name,
+    description: model.description,
+    imageUrl: model.imageUrl,
     precioCrc: model.precioCrc,
     ordenPresentacion: model.ordenPresentacion,
     activo,

@@ -42,11 +42,11 @@ export function FormularioProductoAdmin({ producto }: FormularioProductoAdminPro
         <input type="hidden" name="id" value={producto?.id ?? ''} />
 
         <Field name="slug" label={f.fields.slug} defaultValue={producto?.slug} required />
-        <Field name="nombre" label={f.fields.nombre} defaultValue={producto?.nombre} required />
+        <Field name="name" label={f.fields.name} defaultValue={producto?.name} required />
         <Field
-          name="urlImagen"
-          label={f.fields.urlImagen}
-          defaultValue={producto?.urlImagen}
+          name="imageUrl"
+          label={f.fields.imageUrl}
+          defaultValue={producto?.imageUrl}
           required
         />
         <Field
@@ -66,13 +66,13 @@ export function FormularioProductoAdmin({ producto }: FormularioProductoAdminPro
           defaultValue={producto?.ordenPresentacion ?? 0}
         />
 
-        <label className={STYLES.descripcionLabel} htmlFor="descripcion">
-          <span className={STYLES.labelText}>{f.fields.descripcion}</span>
+        <label className={STYLES.descripcionLabel} htmlFor="description">
+          <span className={STYLES.labelText}>{f.fields.description}</span>
           <textarea
-            id="descripcion"
-            name="descripcion"
+            id="description"
+            name="description"
             rows={3}
-            defaultValue={producto?.descripcion}
+            defaultValue={producto?.description}
             className={STYLES.textarea}
           />
         </label>

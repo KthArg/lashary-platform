@@ -9,7 +9,7 @@ export function aFilasProductoAdmin(items: AdminProduct[]): FilaProductoAdmin[] 
 
   return items.map((producto) => ({
     id: producto.id,
-    nombre: producto.nombre,
+    name: producto.name,
     slug: producto.slug,
     precioFormateado: formatPriceCrc(producto.precioCrc),
     orden: producto.ordenPresentacion,
