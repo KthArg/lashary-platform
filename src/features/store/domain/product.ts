@@ -1,5 +1,5 @@
 import { ok, err, type Result } from '@/shared/result'
-import { crearProductoInvalido, type ProductoInvalido } from './product-errors'
+import { createInvalidProduct, type InvalidProduct } from './product-errors'
 
 export type PublicProduct = {
   id: string;
@@ -61,7 +61,7 @@ export function toProductCard(product: PublicProduct): PublicProductCard {
   };
 }
 
-export type ProductoAdminVista = {
+export type AdminProduct = {
   id: string
   slug: string
   nombre: string
@@ -72,7 +72,7 @@ export type ProductoAdminVista = {
   ordenPresentacion: number
 }
 
-export type ProductoEntrada = {
+export type ProductInput = {
   id: string
   slug: string
   nombre: string
@@ -83,10 +83,10 @@ export type ProductoEntrada = {
   ordenPresentacion: number
 }
 
-const esEnteroNoNegativo = (n: number): boolean => Number.isInteger(n) && n >= 0
-const esEnteroPositivo = (n: number): boolean => Number.isInteger(n) && n > 0
+const isNonNegativeInteger = (n: number): boolean => Number.isInteger(n) && n >= 0
+const isPositiveInteger = (n: number): boolean => Number.isInteger(n) && n > 0
 
-export function construirProducto(input: ProductoEntrada): Result<ProductoAdminVista, ProductoInvalido> {
+export function buildProduct(input: ProductInput): Result<AdminProduct, InvalidProduct> {
   const problems: string[] = []
 
   const slug = input.slug.trim()
@@ -98,16 +98,16 @@ export function construirProducto(input: ProductoEntrada): Result<ProductoAdminV
   const urlImagen = input.urlImagen.trim()
   if (urlImagen.length === 0) problems.push('la URL de la imagen no puede estar vacía')
 
-  if (!esEnteroPositivo(input.precioCrc)) {
+  if (!isPositiveInteger(input.precioCrc)) {
     problems.push('el precio debe ser un entero de colones mayor que cero')
   }
 
-  if (!esEnteroNoNegativo(input.ordenPresentacion)) {
+  if (!isNonNegativeInteger(input.ordenPresentacion)) {
     problems.push('el orden de presentación debe ser un entero no negativo')
   }
 
   if (problems.length > 0) {
-    return err(crearProductoInvalido(problems))
+    return err(createInvalidProduct(problems))
   }
 
   return ok({
@@ -122,6 +122,6 @@ export function construirProducto(input: ProductoEntrada): Result<ProductoAdminV
   })
 }
 
-export function marcarProductoInactivo(producto: ProductoAdminVista): ProductoAdminVista {
+export function markProductInactive(producto: AdminProduct): AdminProduct {
   return { ...producto, activo: false }
 }

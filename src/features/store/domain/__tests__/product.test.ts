@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { isErr, isOk } from '@/shared/result'
 import {
-  construirProducto,
-  marcarProductoInactivo,
+  buildProduct,
+  markProductInactive,
   toProductCard,
   sanitizeUrl,
 } from '@/features/store/domain/product'
@@ -17,9 +17,9 @@ const validInput = () => ({
   ordenPresentacion: 1,
 })
 
-describe('construirProducto — invariantes de dominio (DOM-007)', () => {
+describe('buildProduct — invariantes de dominio (DOM-007)', () => {
   it('crea un producto válido con todos los campos', () => {
-    const r = construirProducto(validInput())
+    const r = buildProduct(validInput())
     expect(isOk(r)).toBe(true)
     if (!isOk(r)) return
     expect(r.value.nombre).toBe('Serum nutritivo Lashary')
@@ -29,7 +29,7 @@ describe('construirProducto — invariantes de dominio (DOM-007)', () => {
   })
 
   it('recorta espacios de slug, nombre, descripción y urlImagen', () => {
-    const r = construirProducto({
+    const r = buildProduct({
       ...validInput(),
       slug: '  serum-nutritivo-lashary  ',
       nombre: '  Serum nutritivo Lashary  ',
@@ -44,48 +44,48 @@ describe('construirProducto — invariantes de dominio (DOM-007)', () => {
   })
 
   it('acepta descripción vacía', () => {
-    const r = construirProducto({ ...validInput(), descripcion: '' })
+    const r = buildProduct({ ...validInput(), descripcion: '' })
     expect(isOk(r)).toBe(true)
   })
 
   it('rechaza slug vacío', () => {
-    const r = construirProducto({ ...validInput(), slug: '   ' })
+    const r = buildProduct({ ...validInput(), slug: '   ' })
     expect(isErr(r)).toBe(true)
     if (!isErr(r)) return
-    expect(r.error.tipo).toBe('ProductoInvalido')
+    expect(r.error.tipo).toBe('InvalidProduct')
     expect(r.error.problems.join(' ')).toMatch(/slug/i)
   })
 
   it('rechaza nombre vacío', () => {
-    const r = construirProducto({ ...validInput(), nombre: '   ' })
+    const r = buildProduct({ ...validInput(), nombre: '   ' })
     expect(isErr(r)).toBe(true)
   })
 
   it('rechaza urlImagen vacía', () => {
-    const r = construirProducto({ ...validInput(), urlImagen: '   ' })
+    const r = buildProduct({ ...validInput(), urlImagen: '   ' })
     expect(isErr(r)).toBe(true)
   })
 
   it('rechaza precio no positivo', () => {
-    expect(isErr(construirProducto({ ...validInput(), precioCrc: 0 }))).toBe(true)
-    expect(isErr(construirProducto({ ...validInput(), precioCrc: -1 }))).toBe(true)
+    expect(isErr(buildProduct({ ...validInput(), precioCrc: 0 }))).toBe(true)
+    expect(isErr(buildProduct({ ...validInput(), precioCrc: -1 }))).toBe(true)
   })
 
   it('rechaza precio no entero', () => {
-    expect(isErr(construirProducto({ ...validInput(), precioCrc: 18000.5 }))).toBe(true)
+    expect(isErr(buildProduct({ ...validInput(), precioCrc: 18000.5 }))).toBe(true)
   })
 
   it('acepta orden de presentación cero, rechaza negativo', () => {
-    expect(isOk(construirProducto({ ...validInput(), ordenPresentacion: 0 }))).toBe(true)
-    expect(isErr(construirProducto({ ...validInput(), ordenPresentacion: -1 }))).toBe(true)
+    expect(isOk(buildProduct({ ...validInput(), ordenPresentacion: 0 }))).toBe(true)
+    expect(isErr(buildProduct({ ...validInput(), ordenPresentacion: -1 }))).toBe(true)
   })
 
   it('rechaza orden de presentación no entero', () => {
-    expect(isErr(construirProducto({ ...validInput(), ordenPresentacion: 1.5 }))).toBe(true)
+    expect(isErr(buildProduct({ ...validInput(), ordenPresentacion: 1.5 }))).toBe(true)
   })
 
   it('acumula varios problemas en un solo error', () => {
-    const r = construirProducto({
+    const r = buildProduct({
       ...validInput(),
       slug: '',
       nombre: '',
@@ -97,12 +97,12 @@ describe('construirProducto — invariantes de dominio (DOM-007)', () => {
   })
 })
 
-describe('marcarProductoInactivo', () => {
+describe('markProductInactive', () => {
   it('devuelve una copia inactiva sin mutar la original', () => {
-    const r = construirProducto(validInput())
+    const r = buildProduct(validInput())
     if (!isOk(r)) throw new Error('esperaba ok')
     const original = r.value
-    const inactivo = marcarProductoInactivo(original)
+    const inactivo = markProductInactive(original)
     expect(inactivo.activo).toBe(false)
     expect(original.activo).toBe(true)
     expect(inactivo.id).toBe(original.id)

@@ -1,10 +1,10 @@
-import { formatPriceCrc, type ProductoAdminVista } from '../../../../domain/product'
+import { formatPriceCrc, type AdminProduct } from '../../../../domain/product'
 import { mensajesAdminProductos } from '../../constants/product-strings'
 import { rutasAdminProductos } from '../../constants/product-routes'
 import { tablaProductosAdminStyles as STYLES } from './ProductsAdminTable.styles'
 import type { FilaProductoAdmin } from './ProductsAdminTable.types'
 
-export function aFilasProductoAdmin(items: ProductoAdminVista[]): FilaProductoAdmin[] {
+export function aFilasProductoAdmin(items: AdminProduct[]): FilaProductoAdmin[] {
   const m = mensajesAdminProductos.admin
 
   return items.map((producto) => ({

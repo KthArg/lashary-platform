@@ -1,5 +1,5 @@
-import type { ProductoAdminVista } from '../../../../domain/product'
+import type { AdminProduct } from '../../../../domain/product'
 
 export type FormularioProductoAdminProps = {
-  producto?: ProductoAdminVista
+  producto?: AdminProduct
 }

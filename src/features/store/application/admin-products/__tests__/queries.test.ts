@@ -8,7 +8,7 @@ import { crearFakeProductoRepositorioAdmin } from './fake-product-repository'
 import { makeProducto } from './product-fixture'
 
 describe('listarProductosAdmin', () => {
-  it('devuelve solo activos por defecto, como ProductoAdminVista', async () => {
+  it('devuelve solo activos por defecto, como AdminProduct', async () => {
     const repo = crearFakeProductoRepositorioAdmin([
       makeProducto({ id: 'a', activo: true }),
       makeProducto({ id: 'b', activo: false }),
@@ -57,12 +57,12 @@ describe('obtenerProductoAdmin', () => {
     if (isOk(result)) expect(result.value.id).toBe('x')
   })
 
-  it('devuelve ProductoNoEncontrado cuando no existe', async () => {
+  it('devuelve ProductNotFound cuando no existe', async () => {
     const repo = crearFakeProductoRepositorioAdmin([])
     const result = await obtenerProductoAdmin(repo)('nope')
     expect(isErr(result)).toBe(true)
     if (isErr(result)) {
-      expect(result.error.tipo).toBe('ProductoNoEncontrado')
+      expect(result.error.tipo).toBe('ProductNotFound')
       expect(result.error.productoId).toBe('nope')
     }
   })

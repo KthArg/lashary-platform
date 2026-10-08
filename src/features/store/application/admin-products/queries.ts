@@ -1,6 +1,6 @@
 import { ok, err, type Result } from '@/shared/result'
-import type { ProductoAdminVista } from '../../domain/product'
-import { crearProductoNoEncontrado, type ProductoNoEncontrado } from '../../domain/product-errors'
+import type { AdminProduct } from '../../domain/product'
+import { createProductNotFound, type ProductNotFound } from '../../domain/product-errors'
 import type {
   ListaProductosAdminQuery,
   PaginaProductos,
@@ -21,7 +21,7 @@ const acotarTamanoPagina = (value: number | undefined): number =>
 
 export const listarProductosAdmin =
   (repo: ProductoRepositorioAdmin) =>
-  async (query: ListaProductosAdminQuery = {}): Promise<PaginaProductos<ProductoAdminVista>> => {
+  async (query: ListaProductosAdminQuery = {}): Promise<PaginaProductos<AdminProduct>> => {
     const page = acotarPagina(query.page)
     const pageSize = acotarTamanoPagina(query.pageSize)
     const activeOnly = query.activeOnly ?? true
@@ -42,8 +42,8 @@ export const listarProductosAdmin =
 
 export const obtenerProductoAdmin =
   (repo: ProductoRepositorioAdmin) =>
-  async (id: string): Promise<Result<ProductoAdminVista, ProductoNoEncontrado>> => {
+  async (id: string): Promise<Result<AdminProduct, ProductNotFound>> => {
     const producto = await repo.findById(id)
-    if (producto === null) return err(crearProductoNoEncontrado(id))
+    if (producto === null) return err(createProductNotFound(id))
     return ok(producto)
   }

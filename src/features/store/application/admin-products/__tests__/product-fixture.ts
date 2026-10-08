@@ -1,5 +1,5 @@
 import { isOk } from '@/shared/result'
-import { construirProducto, type ProductoAdminVista } from '@/features/store/domain/product'
+import { buildProduct, type AdminProduct } from '@/features/store/domain/product'
 
 let counter = 0
 
@@ -12,9 +12,9 @@ export function makeProducto(
     ordenPresentacion: number
     activo: boolean
   }> = {},
-): ProductoAdminVista {
+): AdminProduct {
   counter += 1
-  const result = construirProducto({
+  const result = buildProduct({
     id: overrides.id ?? `p-${counter}`,
     slug: overrides.slug ?? `producto-${counter}`,
     nombre: overrides.nombre ?? `Producto ${counter}`,
