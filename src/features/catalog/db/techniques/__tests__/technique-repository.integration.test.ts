@@ -38,9 +38,9 @@ describe.skipIf(!reachable)('SupabaseTechniqueRepository (Supabase local)', () =
     })
     expect(total).toBe(8)
     expect(items).toHaveLength(8)
-    for (const t of items) {
-      expect(t.priceFirstTime.colones).toBeGreaterThan(0)
-      expect(t.isActive).toBe(true)
+    for (const technique of items) {
+      expect(technique.priceFirstTime.colones).toBeGreaterThan(0)
+      expect(technique.isActive).toBe(true)
     }
   })
 
@@ -49,8 +49,8 @@ describe.skipIf(!reachable)('SupabaseTechniqueRepository (Supabase local)', () =
     const second = await repo.list({ activeOnly: true, offset: 3, limit: 3 })
     expect(first.items).toHaveLength(3)
     expect(second.items).toHaveLength(3)
-    expect(first.items.map((t) => t.id)).not.toEqual(
-      second.items.map((t) => t.id),
+    expect(first.items.map((technique) => technique.id)).not.toEqual(
+      second.items.map((technique) => technique.id),
     )
   })
 

@@ -27,7 +27,7 @@ describe('listPackages', () => {
       () => DURACION_DOS_TECNICAS,
     )
     const page = await listPackages(repo)()
-    expect(page.items.map((p) => p.id)).toEqual(['a'])
+    expect(page.items.map((packageItem) => packageItem.id)).toEqual(['a'])
     expect(page.total).toBe(1)
     expect(page.items[0].durationTotalMin).toBe(DURACION_DOS_TECNICAS)
     expect(typeof page.items[0].price).toBe('number')
@@ -103,7 +103,7 @@ describe('listPackageTechniques', () => {
 
     expect(findByIds).toHaveBeenCalledTimes(1)
     expect(findByIds).toHaveBeenCalledWith(['t1', 't2', 't3'])
-    expect(techniques.map((t) => [t.name, t.isActive])).toEqual([
+    expect(techniques.map((technique) => [technique.name, technique.isActive])).toEqual([
       ['Set clásico', true],
       ['Henna', false],
       ['Laminado', true],

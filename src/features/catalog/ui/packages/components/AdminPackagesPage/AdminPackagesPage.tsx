@@ -34,13 +34,13 @@ export async function AdminPackagesPage({ searchParams }: AdminPackagesPageProps
   const memberTechniques = await listPackageTechniquesUseCase(techRepo)(
     editing ? [...page.items, editing] : page.items,
   )
-  const techniqueNameById = new Map(memberTechniques.map((t) => [t.id, t.name]))
+  const techniqueNameById = new Map(memberTechniques.map((technique) => [technique.id, technique.name]))
   const inactiveTechniqueIds = new Set(
-    memberTechniques.filter((t) => !t.isActive).map((t) => t.id),
+    memberTechniques.filter((technique) => !technique.isActive).map((technique) => technique.id),
   )
   const formTechniques = [
     ...activeTechniques.items,
-    ...memberTechniques.filter((t) => !t.isActive && editing?.techniqueIds.includes(t.id)),
+    ...memberTechniques.filter((technique) => !technique.isActive && editing?.techniqueIds.includes(technique.id)),
   ]
 
   return (

@@ -31,7 +31,7 @@ export function PackageForm({ pkg, techniques }: PackageFormProps) {
   )
 
   const durationById = useMemo(
-    () => new Map(techniques.map((t) => [t.id, t.durationFirstTimeMin + t.bufferMin])),
+    () => new Map(techniques.map((technique) => [technique.id, technique.durationFirstTimeMin + technique.bufferMin])),
     [techniques],
   )
   const totalDuration = useMemo(
@@ -41,7 +41,7 @@ export function PackageForm({ pkg, techniques }: PackageFormProps) {
   )
 
   const hasInactiveSelected = techniques.some(
-    (t) => !t.isActive && selectedIds.has(t.id),
+    (technique) => !technique.isActive && selectedIds.has(technique.id),
   )
 
   function toggle(id: string) {

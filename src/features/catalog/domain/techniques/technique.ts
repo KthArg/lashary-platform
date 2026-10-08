@@ -77,8 +77,8 @@ type TechniqueProps = {
   isActive: boolean
 }
 
-const isPositiveInt = (n: number): boolean => Number.isInteger(n) && n > 0
-const isNonNegativeInt = (n: number): boolean => Number.isInteger(n) && n >= 0
+const isPositiveInt = (value: number): boolean => Number.isInteger(value) && value > 0
+const isNonNegativeInt = (value: number): boolean => Number.isInteger(value) && value >= 0
 
 export class Technique {
   private constructor(private readonly props: TechniqueProps) {}

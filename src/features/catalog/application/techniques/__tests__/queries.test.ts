@@ -12,7 +12,7 @@ describe('listTechniques', () => {
       makeTechnique({ id: 'b', name: 'B', isActive: false }),
     ])
     const page = await listTechniques(repo)()
-    expect(page.items.map((t) => t.id)).toEqual(['a'])
+    expect(page.items.map((technique) => technique.id)).toEqual(['a'])
     expect(page.total).toBe(1)
     expect(typeof page.items[0].priceFirstTime).toBe('number')
   })
