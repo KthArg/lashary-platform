@@ -1,8 +1,8 @@
 ---
 feature: audit
 dri: pendiente
-estado: no_iniciada
-actualizado: 2026-08-29
+estado: en_progreso
+actualizado: 2026-09-23
 historias:
   []
 flags: []
@@ -16,7 +16,15 @@ Bitacora de auditoria append-only. Sin historia propia (ADR-0007): se construye 
 
 ## Qué hace hoy
 
-Hoy: no existe. Se detiene antes de todo.
+Migración `supabase/migrations/20260923000000_audit_events.sql`: tabla `audit_events` (prefijo `audit_`, ARCH-006) — `actor_id` (FK a `auth.users`), `action` (texto libre, sin enum a propósito), `entity_type` + `entity_id` (sin FK, mismo principio que `catalog_techniques`: esta tabla la escriben features distintas y no debe acoplarse al esquema de ninguna), `payload` jsonb, `created_at` UTC (DOM-003). Índices en `(entity_type, entity_id)`, `actor_id` y `created_at` (PERF-003).
+
+RLS (SEC-001): `SELECT` e `INSERT` solo para staff (`public.auth_is_staff()`); **sin políticas de `UPDATE` ni `DELETE`** — con RLS activo y ninguna política que las cubra, la base las deniega a cualquier rol, staff incluida. Append-only garantizado en la base, no solo en la aplicación.
+
+Pruebas: `supabase/tests/database/audit_staff_access.test.sql` (pgTAP, control positivo: staff lee/inserta, nadie — ni staff — puede `UPDATE`/`DELETE`); `src/features/audit/__tests__/rls-isolation.test.ts` (SEC-002, control negativo: anon y una clienta autenticada real no leen ni escriben).
+
+## Qué no hace todavía
+
+Sin capa `domain/`, `application/`, `db/` ni `index.ts` — nadie puede escribir un evento desde código todavía, solo existe el esquema y su RLS. Próxima pieza de US-AGE-13.
 
 ## Contrato público
 
