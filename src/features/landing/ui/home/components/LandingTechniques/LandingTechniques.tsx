@@ -1,12 +1,8 @@
 import { landingMessages } from '../../../constants/landing-strings'
 import { landingTechniquesStyles as styles } from './LandingTechniques.styles'
-import { TechniqueList } from '../TechniqueList/TechniqueList'
+import { TechniqueList } from '../TechniqueList'
 import { TECHNIQUES_SECTION } from '../../../sections'
-import type { LandingTechnique } from '../../../technique-view'
-
-type LandingTechniquesProps = {
-  techniques: readonly LandingTechnique[]
-}
+import type { LandingTechniquesProps } from './LandingTechniques.types'
 
 // Sección "Servicios" (US-LAND-02): las técnicas del catálogo que administra la dueña, con su
 // precio y su duración. La sección se renderiza siempre —el ancla de la navegación tiene que

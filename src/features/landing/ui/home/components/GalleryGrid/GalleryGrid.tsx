@@ -6,10 +6,7 @@ import type { GalleryPair } from '@/features/content'
 import { landingGalleryStyles as styles } from '../LandingGallery/LandingGallery.styles'
 import { galleryFamilyLabels, landingMessages } from '../../../constants/landing-strings'
 import { useFocusTrap } from '../../../site-shell/hooks/use-focus-trap'
-
-type GalleryGridProps = {
-  pairs: readonly GalleryPair[]
-}
+import type { GalleryGridProps } from './GalleryGrid.types'
 
 const ALL = 'todas'
 

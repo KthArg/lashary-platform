@@ -1,12 +1,8 @@
-import type { Faq } from '@/features/content'
-import { FaqList } from '../FaqList/FaqList'
+import { FaqList } from '../FaqList'
 import { landingFaqStyles as styles } from './LandingFaq.styles'
 import { landingMessages } from '../../../constants/landing-strings'
 import { FAQ_SECTION } from '../../../sections'
-
-type LandingFaqProps = {
-  faqs: readonly Faq[]
-}
+import type { LandingFaqProps } from './LandingFaq.types'
 
 // Sección "Preguntas" (plegada a US-LAND-07 por decisión del PO): resuelve dudas antes de
 // contactar. Nunca llega vacía: sin preguntas publicadas, `content` entrega las del diseño.

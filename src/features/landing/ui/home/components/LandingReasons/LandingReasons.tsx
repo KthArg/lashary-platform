@@ -1,10 +1,6 @@
-import type { Reason } from '@/features/content'
 import { landingReasonsStyles as styles } from './LandingReasons.styles'
 import { landingMessages } from '../../../constants/landing-strings'
-
-type LandingReasonsProps = {
-  reasons: readonly Reason[]
-}
+import type { LandingReasonsProps } from './LandingReasons.types'
 
 // Sección "Por qué acá" (US-LAND-04, plegada a la historia por decisión del PO): qué distingue
 // al estudio. Nunca llega vacía: sin razones publicadas, `content` entrega las del diseño.

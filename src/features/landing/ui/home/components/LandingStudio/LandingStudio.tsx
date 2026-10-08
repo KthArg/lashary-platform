@@ -1,12 +1,9 @@
 import Image from 'next/image'
-import type { Credential, StudioContent } from '@/features/content'
+import type { Credential } from '@/features/content'
 import { landingStudioStyles as styles } from './LandingStudio.styles'
 import { landingMessages } from '../../../constants/landing-strings'
 import { STUDIO_SECTION } from '../../../sections'
-
-type LandingStudioProps = {
-  studio: Pick<StudioContent, 'profile' | 'credentials'>
-}
+import type { LandingStudioProps } from './LandingStudio.types'
 
 // Sección "El estudio" (US-LAND-04): quién es la dueña, con su retrato, su texto, sus años de
 // experiencia y su trayectoria. Todo viene del CMS por `content`; sin publicar, el respaldo no

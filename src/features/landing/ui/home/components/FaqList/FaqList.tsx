@@ -1,12 +1,8 @@
 'use client'
 
 import { useId, useState } from 'react'
-import type { Faq } from '@/features/content'
 import { landingFaqStyles as styles } from '../LandingFaq/LandingFaq.styles'
-
-type FaqListProps = {
-  faqs: readonly Faq[]
-}
+import type { FaqListProps } from './FaqList.types'
 
 // Acordeón de preguntas, como el diseño: cada una se abre y se cierra por su cuenta, y la
 // primera empieza abierta. Es el único trozo de cliente de la sección.

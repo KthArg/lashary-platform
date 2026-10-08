@@ -1,15 +1,10 @@
 import Link from 'next/link'
-import type { ContactContent } from '@/features/content'
-import { ExternalLink } from '../ExternalLink/ExternalLink'
+import { ExternalLink } from '../ExternalLink'
 import { landingMessages } from '../../../constants/landing-strings'
 import { RESERVE_ROUTE } from '../../../routes'
 import { LOCATION_SECTION } from '../../../sections'
 import { siteFooterStyles as styles } from './SiteFooter.styles'
-
-type SiteFooterProps = {
-  contact: Pick<ContactContent, 'contact' | 'hours'>
-  year: number
-}
+import type { SiteFooterProps } from './SiteFooter.types'
 
 // Pie de página de todas las páginas públicas (lo monta src/app/(site)/layout.tsx). Repite el
 // contacto, el horario y la dirección, y enlaza a Ubicación (criterio 5 de US-LAND-07). Sin

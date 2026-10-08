@@ -1,13 +1,9 @@
-import type { ContactInfo, OpeningHours } from '@/features/content'
-import { ExternalLink } from '../../../site-shell/components/ExternalLink/ExternalLink'
+import type { ContactInfo } from '@/features/content'
+import { ExternalLink } from '../../../site-shell/components/ExternalLink'
 import { landingLocationStyles as styles } from './LandingLocation.styles'
 import { landingMessages } from '../../../constants/landing-strings'
 import { LOCATION_SECTION } from '../../../sections'
-
-type LandingLocationProps = {
-  contact: ContactInfo | null
-  hours: readonly OpeningHours[]
-}
+import type { LandingLocationProps } from './LandingLocation.types'
 
 // Sección "Ubicación" (US-LAND-07): dónde está el estudio, en qué horario atiende y cómo
 // contactarlo, con WhatsApp y las redes. Todo sale del CMS; sin contacto ni horario publicados
