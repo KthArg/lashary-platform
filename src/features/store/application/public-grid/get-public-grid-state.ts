@@ -10,35 +10,35 @@ export type PublicProductCatalog = {
 };
 
 export function initialProductGridState(): ProductGridState {
-  return { tipo: 'cargando' };
+  return { kind: 'loading' };
 }
 
 export async function getProductGridState(
-  catalogo: PublicProductCatalog,
-  cadenas: ProductGridStrings,
+  catalog: PublicProductCatalog,
+  strings: ProductGridStrings,
 ): Promise<ProductGridState> {
   try {
-    const productos = await catalogo.listPublicProducts();
-    const productosActivos = productos.filter((p) => p.activo);
+    const products = await catalog.listPublicProducts();
+    const activeProducts = products.filter((product) => product.isActive);
 
-    if (productosActivos.length === 0) {
+    if (activeProducts.length === 0) {
       return {
-        tipo: 'vacio',
-        titulo: cadenas.tituloVacio,
-        descripcion: cadenas.descripcionVacio,
+        kind: 'empty',
+        title: strings.emptyTitle,
+        description: strings.emptyDescription,
       };
     }
 
     return {
-      tipo: 'listo',
-      tarjetas: productosActivos.map(toProductCard),
+      kind: 'ready',
+      cards: activeProducts.map(toProductCard),
     };
   } catch {
     return {
-      tipo: 'error',
-      titulo: cadenas.tituloError,
-      descripcion: cadenas.descripcionError,
-      etiquetaReintentar: cadenas.etiquetaReintentar,
+      kind: 'error',
+      title: strings.errorTitle,
+      description: strings.errorDescription,
+      retryLabel: strings.retryLabel,
     };
   }
 }

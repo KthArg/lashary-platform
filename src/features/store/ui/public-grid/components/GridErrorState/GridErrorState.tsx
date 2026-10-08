@@ -6,7 +6,7 @@ import { BotonReintentoInactivo } from '../RetryButtonInactive/RetryButtonInacti
 import { gridProductosPublicosStyles as STYLES } from '../PublicProductsGrid/PublicProductsGrid.styles'
 
 type Props = {
-  estado: Extract<ProductGridState, { tipo: 'error' }>
+  estado: Extract<ProductGridState, { kind: 'error' }>
   urlReintento?: string
 }
 
@@ -22,9 +22,9 @@ export function EstadoError({ estado, urlReintento }: Props) {
   return (
     <section className={STYLES.alertError} role="alert">
       <div>
-        <h2 className={STYLES.alertTitle}>{estado.titulo}</h2>
-        <p>{estado.descripcion}</p>
-        <BotonReintento boton={boton} etiqueta={estado.etiquetaReintentar} />
+        <h2 className={STYLES.alertTitle}>{estado.title}</h2>
+        <p>{estado.description}</p>
+        <BotonReintento boton={boton} etiqueta={estado.retryLabel} />
       </div>
     </section>
   )

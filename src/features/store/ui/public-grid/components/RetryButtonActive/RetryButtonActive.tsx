@@ -9,7 +9,7 @@ export function BotonReintentoActivo({ boton, etiqueta }: Props) {
     <a
       href={boton.href}
       className={STYLES.retryButton}
-      aria-label={CADENAS_GRID_PRODUCTOS_ES.ariaBotonReintentar}
+      aria-label={CADENAS_GRID_PRODUCTOS_ES.retryButtonAriaLabel}
     >
       {etiqueta}
     </a>

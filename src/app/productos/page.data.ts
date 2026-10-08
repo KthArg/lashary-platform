@@ -6,6 +6,6 @@ import {
 } from '@/features/store'
 
 export async function obtenerVistaProductos(): Promise<ProductGridState> {
-  const catalogo = publicProductsDb()
-  return getProductGridState(catalogo, CADENAS_GRID_PRODUCTOS_ES)
+  const catalog = publicProductsDb()
+  return getProductGridState(catalog, CADENAS_GRID_PRODUCTOS_ES)
 }

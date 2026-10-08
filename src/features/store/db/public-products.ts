@@ -25,12 +25,12 @@ export function publicProductsDb(): PublicProductCatalog {
         throw new Error('No se pudo leer el catálogo de productos desde la base de datos')
       }
 
-      return (data ?? []).map((producto: PublicProductRow) => ({
-        id: producto.id,
-        nombre: producto.nombre,
-        urlImagen: producto.url_imagen,
-        precioCrc: producto.precio_crc,
-        activo: producto.activo,
+      return (data ?? []).map((product: PublicProductRow) => ({
+        id: product.id,
+        name: product.nombre,
+        imageUrl: product.url_imagen,
+        priceCrc: product.precio_crc,
+        isActive: product.activo,
       }))
     },
   }
