@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
-import type { ProductoAdminVista } from '../domain/producto'
+import type { ProductoAdminVista } from '../domain/product'
 import { mensajesAdminProductos } from '../constants/mensajes-admin-productos'
 import {
   crearProductoAction,

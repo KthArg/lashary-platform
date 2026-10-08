@@ -1,9 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isOk } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
-import { construirProducto, type ProductoAdminVista } from '../domain/producto'
-import { crearProductoSlugDuplicado } from '../domain/errores-producto'
-import type { ProductoRepositorioAdmin } from '../application/productos-admin-puertos'
+import { construirProducto, type ProductoAdminVista } from '../domain/product'
+import { crearProductoSlugDuplicado } from '../domain/product-errors'
+import type { ProductoRepositorioAdmin } from '../application/admin-products/ports'
 
 const TABLE = 'store_products'
 const COLUMNS = 'id, slug, nombre, descripcion, url_imagen, precio_crc, activo, sort_order'

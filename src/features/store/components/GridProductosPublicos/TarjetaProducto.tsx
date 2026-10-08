@@ -1,4 +1,4 @@
-import type { TarjetaProductoPublico } from '../../domain/producto'
+import type { TarjetaProductoPublico } from '../../domain/product'
 import { CADENAS_GRID_PRODUCTOS_ES } from '../../constants/grid-productos-publicos-cadenas-es'
 import { gridProductosPublicosStyles as STYLES } from './GridProductosPublicos.styles'
 

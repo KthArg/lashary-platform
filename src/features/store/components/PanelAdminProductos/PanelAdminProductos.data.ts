@@ -2,9 +2,9 @@ import { isOk } from '@/shared/result'
 import {
   listarProductosAdmin,
   obtenerProductoAdmin,
-} from '../../application/productos-admin-consultas'
-import { productoRepositorioAdmin } from '../../db/productos-admin-repositorio'
-import type { ProductoAdminVista } from '../../domain/producto'
+} from '../../application/admin-products/queries'
+import { productoRepositorioAdmin } from '../../db/admin-product-repository'
+import type { ProductoAdminVista } from '../../domain/product'
 import { aFilasProductoAdmin } from '../TablaProductosAdmin/TablaProductosAdmin.data'
 import type { FilaProductoAdmin } from '../TablaProductosAdmin/TablaProductosAdmin.types'
 import type { PanelAdminProductosSearchParams } from './PanelAdminProductos.types'

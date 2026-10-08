@@ -4,13 +4,13 @@ import {
   crearProducto,
   actualizarProducto,
   desactivarProducto,
-} from '@/features/store/application/productos-admin-comandos'
-import type { ProductoEscritura } from '@/features/store/application/productos-admin-puertos'
+} from '@/features/store/application/admin-products/commands'
+import type { ProductoEscritura } from '@/features/store/application/admin-products/ports'
 import {
   crearFakeProductoRepositorioAdmin,
   type FakeProductoRepositorioAdmin,
-} from './fake-repositorio-productos'
-import { makeProducto } from './producto-fixture'
+} from './fake-product-repository'
+import { makeProducto } from './product-fixture'
 
 const validModel = (): ProductoEscritura => ({
   slug: 'cepillo-limpiador-lashary',

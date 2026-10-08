@@ -3,9 +3,9 @@ import { isErr, isOk } from '@/shared/result'
 import {
   listarProductosAdmin,
   obtenerProductoAdmin,
-} from '@/features/store/application/productos-admin-consultas'
-import { crearFakeProductoRepositorioAdmin } from './fake-repositorio-productos'
-import { makeProducto } from './producto-fixture'
+} from '@/features/store/application/admin-products/queries'
+import { crearFakeProductoRepositorioAdmin } from './fake-product-repository'
+import { makeProducto } from './product-fixture'
 
 describe('listarProductosAdmin', () => {
   it('devuelve solo activos por defecto, como ProductoAdminVista', async () => {

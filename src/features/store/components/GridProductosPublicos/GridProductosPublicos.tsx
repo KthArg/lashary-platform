@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react'
-import type { EstadoGridProductos } from '../../domain/producto'
+import type { EstadoGridProductos } from '../../domain/product'
 import { EstadoCargando } from './EstadoCargando'
 import { EstadoVacio } from './EstadoVacio'
 import { EstadoError } from './EstadoError'

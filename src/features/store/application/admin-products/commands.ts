@@ -1,13 +1,13 @@
 import { ok, err, isErr, type Result } from '@/shared/result'
-import { construirProducto, marcarProductoInactivo, type ProductoAdminVista } from '../domain/producto'
+import { construirProducto, marcarProductoInactivo, type ProductoAdminVista } from '../../domain/product'
 import {
   crearProductoNoEncontrado,
   esProductoSlugDuplicado,
   type ProductoInvalido,
   type ProductoNoEncontrado,
   type ProductoSlugDuplicado,
-} from '../domain/errores-producto'
-import type { ProductoEscritura, ProductoRepositorioAdmin } from './productos-admin-puertos'
+} from '../../domain/product-errors'
+import type { ProductoEscritura, ProductoRepositorioAdmin } from './ports'
 
 async function guardarOConflicto(
   repo: ProductoRepositorioAdmin,

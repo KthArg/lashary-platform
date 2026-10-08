@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { ProductoEscritura } from '../application/productos-admin-puertos'
+import type { ProductoEscritura } from '../application/admin-products/ports'
 import { mensajesAdminProductos } from '../constants/mensajes-admin-productos'
 
 const v = mensajesAdminProductos.form.validation

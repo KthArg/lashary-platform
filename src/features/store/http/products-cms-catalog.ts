@@ -1,5 +1,5 @@
-import { ProductoPublico } from '../domain/producto';
-import { CatalogoProductosPublico } from '../application/obtener-grid-productos-publicos';
+import { ProductoPublico } from '../domain/product';
+import { CatalogoProductosPublico } from '../application/public-grid/get-public-grid-state';
 
 export type DtoProductoCms = {
   id: string;
