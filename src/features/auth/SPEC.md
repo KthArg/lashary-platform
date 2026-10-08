@@ -46,6 +46,7 @@ Punto de entrada exportado (ARCH-003):
 - Acciones y helpers: `getAuthSession()`, `requireAdminSession()`, `signInWithGoogleAction()`, `signInAdminAction()`, `signOutAction()`, `updateClientPhoneAction()`.
 - Componentes UI: `GoogleSignInButton`, `PhoneRegistrationModal`, `AdminLoginForm`, `InactivityTimeout`, `AdminSidebar`, `ClientSidebar`.
 - Hooks: `useGoogleSignIn`, `usePhoneRegistration`, `useAdminLoginForm`, `useInactivityTimeout`.
+- Capas (plantilla de feature): `domain/roles.ts` (`AUTH_ROLES`, `isStaffRole`) y `domain/phone.ts` (`validateClientPhone`); `application/ports.ts` (puerto `AuthRepository`, `ClientProfile`) y `application/session.ts` (`loadAuthSession`, `clientDisplayName`); `db/auth-repository.ts` (`createSupabaseAuthRepository`: rol, perfil y guardado del teléfono); `http/` vacío (el callback de OAuth vive en `src/app/auth/callback`). Las server actions de `actions/` quedan delgadas sobre estas capas, sin cambiar lo que devuelven.
 - Constantes: `AUTH_ROLES`, `AUTH_BUTTON_TEXTS`, `AUTH_LABELS`, `AUTH_ERROR_MESSAGES`, `CLIENT_PORTAL_ROUTES`, `ADMIN_PORTAL_ROUTES`.
 
 ## Invariantes de seguridad

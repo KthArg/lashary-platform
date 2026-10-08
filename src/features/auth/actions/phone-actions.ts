@@ -3,25 +3,27 @@
 import { createClient } from '@/shared/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { AUTH_ERROR_MESSAGES } from '../constants/auth-strings'
+import { validateClientPhone } from '../domain/phone'
+import { clientDisplayName } from '../application/session'
+import { createSupabaseAuthRepository } from '../db/auth-repository'
 
 export async function updateClientPhoneAction(formData: FormData) {
   const phone = (formData.get('phone') as string)?.trim()
-  if (!phone || phone.length < 8) return { error: AUTH_ERROR_MESSAGES.phoneMinLength }
-  if (!/^[0-9+ ]{8,20}$/.test(phone)) return { error: AUTH_ERROR_MESSAGES.phoneInvalidFormat }
+  const invalid = validateClientPhone(phone)
+  if (invalid) return { error: AUTH_ERROR_MESSAGES[invalid] }
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: AUTH_ERROR_MESSAGES.unauthenticated }
 
-  const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Cliente'
-  const email = user.email || ''
+  const saved = await createSupabaseAuthRepository(supabase).saveClientPhone({
+    userId: user.id,
+    fullName: clientDisplayName(user),
+    email: user.email || '',
+    phone,
+  })
 
-  const { error } = await supabase.from('clients_profiles').upsert({
-    user_id: user.id, full_name: fullName, email: email,
-    phone: phone.trim(), updated_at: new Date().toISOString(),
-  }, { onConflict: 'user_id' })
-
-  if (error) return { error: AUTH_ERROR_MESSAGES.phoneSaveError }
+  if (!saved.ok) return { error: AUTH_ERROR_MESSAGES.phoneSaveError }
   revalidatePath('/', 'layout')
   return { success: true }
 }
