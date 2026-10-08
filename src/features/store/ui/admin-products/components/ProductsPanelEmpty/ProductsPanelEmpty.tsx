@@ -1,21 +1,21 @@
 import Link from 'next/link'
 import { productStrings } from '../../constants/product-strings'
 import { productRoutes } from '../../constants/product-routes'
-import { EncabezadoPanelProductos } from '../ProductsPanelHeader/ProductsPanelHeader'
-import { EnlaceNuevoProducto } from '../NewProductLink/NewProductLink'
-import { panelAdminProductosStyles as STYLES } from '../ProductsAdminPanel/ProductsAdminPanel.styles'
+import { ProductsPanelHeader } from '../ProductsPanelHeader'
+import { NewProductLink } from '../NewProductLink'
+import { productsAdminPanelStyles as STYLES } from '../ProductsAdminPanel/ProductsAdminPanel.styles'
 
-const m = productStrings.admin
+const adminMessages = productStrings.admin
 
-export function PanelProductosVacio() {
+export function ProductsPanelEmpty() {
   return (
     <main className={STYLES.main}>
-      <EncabezadoPanelProductos accion={<EnlaceNuevoProducto />} />
+      <ProductsPanelHeader action={<NewProductLink />} />
       <div className={STYLES.emptyBox}>
-        <h2 className={STYLES.emptyTitle}>{m.empty.title}</h2>
-        <p className={STYLES.emptyBody}>{m.empty.body}</p>
+        <h2 className={STYLES.emptyTitle}>{adminMessages.empty.title}</h2>
+        <p className={STYLES.emptyBody}>{adminMessages.empty.body}</p>
         <Link href={productRoutes.newProduct} className={STYLES.emptyCta}>
-          {m.empty.cta}
+          {adminMessages.empty.cta}
         </Link>
       </div>
     </main>

@@ -1,20 +1,20 @@
 import { formatPriceCrc, type AdminProduct } from '../../../../domain/product'
 import { productStrings } from '../../constants/product-strings'
 import { productRoutes } from '../../constants/product-routes'
-import { tablaProductosAdminStyles as STYLES } from './ProductsAdminTable.styles'
-import type { FilaProductoAdmin } from './ProductsAdminTable.types'
+import { productsAdminTableStyles as STYLES } from './ProductsAdminTable.styles'
+import type { AdminProductRow } from './ProductsAdminTable.types'
 
-export function aFilasProductoAdmin(items: AdminProduct[]): FilaProductoAdmin[] {
-  const m = productStrings.admin
+export function toAdminProductRows(items: AdminProduct[]): AdminProductRow[] {
+  const adminMessages = productStrings.admin
 
-  return items.map((producto) => ({
-    id: producto.id,
-    nombre: producto.name,
-    slug: producto.slug,
-    precioFormateado: formatPriceCrc(producto.priceCrc),
-    orden: producto.displayOrder,
-    estadoTexto: producto.isActive ? m.status.active : m.status.inactive,
-    estadoClase: producto.isActive ? STYLES.badgeActive : STYLES.badgeInactive,
-    hrefEditar: productRoutes.editProduct(producto.id),
+  return items.map((product) => ({
+    id: product.id,
+    name: product.name,
+    slug: product.slug,
+    formattedPrice: formatPriceCrc(product.priceCrc),
+    order: product.displayOrder,
+    statusText: product.isActive ? adminMessages.status.active : adminMessages.status.inactive,
+    statusClass: product.isActive ? STYLES.badgeActive : STYLES.badgeInactive,
+    editHref: productRoutes.editProduct(product.id),
   }))
 }

@@ -1,5 +1,5 @@
 export { ProductsAdminPanel } from './ProductsAdminPanel'
 export type {
-  PanelAdminProductosProps,
-  PanelAdminProductosSearchParams,
+  ProductsAdminPanelProps,
+  ProductsAdminPanelSearchParams,
 } from './ProductsAdminPanel.types'

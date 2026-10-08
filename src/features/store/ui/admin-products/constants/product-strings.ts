@@ -4,10 +4,10 @@ export const productStrings = {
     subtitle: 'Productos de mantenimiento del catálogo público. El sitio lee de aquí.',
     newProduct: 'Nuevo producto',
     columns: {
-      nombre: 'Producto',
+      name: 'Producto',
       slug: 'Slug',
-      precio: 'Precio',
-      orden: 'Orden',
+      price: 'Precio',
+      order: 'Orden',
       status: 'Estado',
       actions: 'Acciones',
     },
