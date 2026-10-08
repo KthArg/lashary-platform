@@ -131,7 +131,7 @@ describe('sanitizeUrl', () => {
 })
 
 describe('toProductCard', () => {
-  it('sanitiza la URL de imagen de un ProductoPublico no confiable (CMS/DB)', () => {
+  it('sanitiza la URL de imagen de un PublicProduct no confiable (CMS/DB)', () => {
     const card = toProductCard({
       id: '1',
       name: 'Producto',

@@ -4,7 +4,7 @@ import type { ProductCardProps } from './ProductCard.types'
 
 export function ProductCard({ card }: ProductCardProps) {
   return (
-    <article className={STYLES.card} data-producto-id={card.id}>
+    <article className={STYLES.card} data-product-id={card.id}>
       <figure>
         <img
           src={card.imageUrl}
