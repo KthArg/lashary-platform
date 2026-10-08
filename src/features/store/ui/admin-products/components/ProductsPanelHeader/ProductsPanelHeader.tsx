@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
-import { mensajesAdminProductos } from '../../constants/product-strings'
+import { productStrings } from '../../constants/product-strings'
 import { panelAdminProductosStyles as STYLES } from '../ProductsAdminPanel/ProductsAdminPanel.styles'
 
-const m = mensajesAdminProductos.admin
+const m = productStrings.admin
 
 export function EncabezadoPanelProductos({ accion }: { accion?: ReactNode }) {
   return (

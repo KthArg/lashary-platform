@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
-  esStaff: vi.fn(),
+  isStaff: vi.fn(),
   save: vi.fn(),
   findById: vi.fn(),
 }))
 
 vi.mock('@/features/store/ui/admin-products/actions/staff-permission', () => ({
-  esStaff: mocks.esStaff,
+  isStaff: mocks.isStaff,
 }))
 vi.mock('@/features/store/db/admin-product-repository', () => ({
   adminProductRepository: vi.fn(async () => ({
@@ -18,10 +18,10 @@ vi.mock('@/features/store/db/admin-product-repository', () => ({
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 
 import {
-  crearProductoAction,
-  desactivarProductoAction,
+  createProductAction,
+  deactivateProductAction,
 } from '@/features/store/ui/admin-products/actions/product-actions'
-import { estadoAccionInicial } from '@/features/store/ui/admin-products/types/product-action-state'
+import { initialProductActionState } from '@/features/store/ui/admin-products/types/product-action-state'
 import { createDuplicateProductSlug } from '@/features/store/domain/product-errors'
 
 function form(fields: Record<string, string>): FormData {
@@ -42,14 +42,14 @@ const validFields = {
 describe('acciones administrativas de productos', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.esStaff.mockResolvedValue(true)
+    mocks.isStaff.mockResolvedValue(true)
     mocks.save.mockResolvedValue(undefined)
   })
 
   it('rechaza una llamada directa sin sesión staff antes de tocar el repositorio', async () => {
-    mocks.esStaff.mockResolvedValueOnce(false)
+    mocks.isStaff.mockResolvedValueOnce(false)
 
-    const state = await crearProductoAction(estadoAccionInicial, form(validFields))
+    const state = await createProductAction(initialProductActionState, form(validFields))
 
     expect(state.status).toBe('forbidden')
     expect(state.message).toContain('permisos')
@@ -57,8 +57,8 @@ describe('acciones administrativas de productos', () => {
   })
 
   it('valida los datos de una administradora antes de guardar', async () => {
-    const state = await crearProductoAction(
-      estadoAccionInicial,
+    const state = await createProductAction(
+      initialProductActionState,
       form({ ...validFields, slug: '', priceCrc: '-1' }),
     )
 
@@ -68,7 +68,7 @@ describe('acciones administrativas de productos', () => {
   })
 
   it('permite crear un producto a una administradora', async () => {
-    const state = await crearProductoAction(estadoAccionInicial, form(validFields))
+    const state = await createProductAction(initialProductActionState, form(validFields))
 
     expect(state).toMatchObject({ status: 'ok', message: 'Producto creado.' })
     expect(mocks.save).toHaveBeenCalledTimes(1)
@@ -77,7 +77,7 @@ describe('acciones administrativas de productos', () => {
   it('DOM-006: un slug duplicado vuelve como estado "invalid" con mensaje, no como excepción', async () => {
     mocks.save.mockRejectedValueOnce(createDuplicateProductSlug('serum-nutritivo-lashary'))
 
-    const state = await crearProductoAction(estadoAccionInicial, form(validFields))
+    const state = await createProductAction(initialProductActionState, form(validFields))
 
     expect(state.status).toBe('invalid')
     expect(state.problems).toEqual([
@@ -86,9 +86,9 @@ describe('acciones administrativas de productos', () => {
   })
 
   it('rechaza desactivar mediante una llamada directa sin sesión staff', async () => {
-    mocks.esStaff.mockResolvedValueOnce(false)
+    mocks.isStaff.mockResolvedValueOnce(false)
 
-    const state = await desactivarProductoAction(estadoAccionInicial, form({ id: 'algo' }))
+    const state = await deactivateProductAction(initialProductActionState, form({ id: 'algo' }))
 
     expect(state.status).toBe('forbidden')
     expect(mocks.findById).not.toHaveBeenCalled()

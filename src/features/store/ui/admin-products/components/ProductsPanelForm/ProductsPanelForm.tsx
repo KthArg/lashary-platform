@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import { mensajesAdminProductos } from '../../constants/product-strings'
-import { rutasAdminProductos } from '../../constants/product-routes'
+import { productStrings } from '../../constants/product-strings'
+import { productRoutes } from '../../constants/product-routes'
 import { FormularioProductoAdmin } from '../ProductForm'
 import { EncabezadoPanelProductos } from '../ProductsPanelHeader/ProductsPanelHeader'
 import { panelAdminProductosStyles as STYLES } from '../ProductsAdminPanel/ProductsAdminPanel.styles'
@@ -14,8 +14,8 @@ export function PanelProductosFormulario({ vista }: Props) {
       <EncabezadoPanelProductos />
       <div className={STYLES.formWrapper}>
         <FormularioProductoAdmin producto={vista.productoEnEdicion} />
-        <Link href={rutasAdminProductos.admin} className={STYLES.cancelLink}>
-          {mensajesAdminProductos.form.cancel}
+        <Link href={productRoutes.admin} className={STYLES.cancelLink}>
+          {productStrings.form.cancel}
         </Link>
       </div>
     </main>

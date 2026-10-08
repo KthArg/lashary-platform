@@ -2,30 +2,30 @@
 
 import { useActionState } from 'react'
 import type { AdminProduct } from '../../../domain/product'
-import { mensajesAdminProductos } from '../constants/product-strings'
+import { productStrings } from '../constants/product-strings'
 import {
-  crearProductoAction,
-  actualizarProductoAction,
-  desactivarProductoAction,
+  createProductAction,
+  updateProductAction,
+  deactivateProductAction,
 } from '../actions/product-actions'
-import { estadoAccionInicial } from '../types/product-action-state'
+import { initialProductActionState } from '../types/product-action-state'
 
-export type ModoFormularioProducto = 'crear' | 'editar'
+export type ProductFormMode = 'crear' | 'editar'
 
-export function useFormularioProductoAdmin(producto?: AdminProduct) {
-  const modo: ModoFormularioProducto = producto !== undefined ? 'editar' : 'crear'
-  const f = mensajesAdminProductos.form
+export function useProductForm(producto?: AdminProduct) {
+  const modo: ProductFormMode = producto !== undefined ? 'editar' : 'crear'
+  const f = productStrings.form
 
   const [state, formAction, pending] = useActionState(
-    modo === 'editar' ? actualizarProductoAction : crearProductoAction,
-    estadoAccionInicial,
+    modo === 'editar' ? updateProductAction : createProductAction,
+    initialProductActionState,
   )
   const [deactivateState, deactivateAction, deactivating] = useActionState(
-    desactivarProductoAction,
-    estadoAccionInicial,
+    deactivateProductAction,
+    initialProductActionState,
   )
 
-  const textosPorModo: Record<ModoFormularioProducto, { heading: string; submitLabel: string }> = {
+  const textosPorModo: Record<ProductFormMode, { heading: string; submitLabel: string }> = {
     crear: { heading: f.legendCreate, submitLabel: f.submitCreate },
     editar: { heading: f.legendEdit, submitLabel: f.submitEdit },
   }

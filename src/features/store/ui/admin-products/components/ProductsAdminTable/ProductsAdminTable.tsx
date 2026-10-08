@@ -1,9 +1,9 @@
 import Link from 'next/link'
-import { mensajesAdminProductos } from '../../constants/product-strings'
+import { productStrings } from '../../constants/product-strings'
 import { tablaProductosAdminStyles as STYLES } from './ProductsAdminTable.styles'
 import type { TablaProductosAdminProps } from './ProductsAdminTable.types'
 
-const m = mensajesAdminProductos.admin
+const m = productStrings.admin
 
 export function TablaProductosAdmin({ filas }: TablaProductosAdminProps) {
   return (
