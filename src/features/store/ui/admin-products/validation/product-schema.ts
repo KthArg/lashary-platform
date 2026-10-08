@@ -1,10 +1,10 @@
 import { z } from 'zod'
 import type { ProductWrite } from '../../../application/admin-products/ports'
-import { mensajesAdminProductos } from '../constants/product-strings'
+import { productStrings } from '../constants/product-strings'
 
-const v = mensajesAdminProductos.form.validation
+const v = productStrings.form.validation
 
-export const esquemaProductoAdmin = z
+export const productSchema = z
   .object({
     slug: z.string().trim().min(1, v.slug),
     name: z.string().trim().min(1, v.nombre),
@@ -24,4 +24,4 @@ export const esquemaProductoAdmin = z
     }),
   )
 
-export type EntradaFormularioProducto = z.input<typeof esquemaProductoAdmin>
+export type ProductFormInput = z.input<typeof productSchema>

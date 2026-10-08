@@ -11,7 +11,7 @@ const VISTAS_PANEL: Record<VistaPanelAdminProductos['modo'], ComponentType<any>>
   listado: PanelProductosListado,
 }
 
-export async function PanelAdminProductos({ searchParams }: PanelAdminProductosProps) {
+export async function ProductsAdminPanel({ searchParams }: PanelAdminProductosProps) {
   const vista = await obtenerVistaPanelAdminProductos(searchParams)
   const Vista = VISTAS_PANEL[vista.modo]
   return <Vista vista={vista} />

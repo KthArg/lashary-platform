@@ -1,4 +1,4 @@
-export const mensajesAdminProductos = {
+export const productStrings = {
   admin: {
     title: 'Productos de la tienda',
     subtitle: 'Productos de mantenimiento del catálogo público. El sitio lee de aquí.',

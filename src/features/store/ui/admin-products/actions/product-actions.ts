@@ -3,7 +3,7 @@
 import { randomUUID } from 'node:crypto'
 import { revalidatePath } from 'next/cache'
 import { isErr } from '@/shared/result'
-import { esStaff } from './staff-permission'
+import { isStaff } from './staff-permission'
 import {
   createProduct,
   updateProduct,
@@ -11,26 +11,26 @@ import {
   type ProductCommandDeps,
 } from '../../../application/admin-products/commands'
 import { adminProductRepository } from '../../../db/admin-product-repository'
-import { esquemaProductoAdmin } from '../validation/product-schema'
-import { mensajesAdminProductos } from '../constants/product-strings'
-import { rutasAdminProductos } from '../constants/product-routes'
-import type { EstadoAccionProducto } from '../types/product-action-state'
+import { productSchema } from '../validation/product-schema'
+import { productStrings } from '../constants/product-strings'
+import { productRoutes } from '../constants/product-routes'
+import type { ProductActionState } from '../types/product-action-state'
 
 async function deps(): Promise<ProductCommandDeps> {
   return { repo: await adminProductRepository(), newId: () => randomUUID() }
 }
 
-function prohibido(): EstadoAccionProducto {
-  return { status: 'forbidden', message: mensajesAdminProductos.form.accessDenied }
+function prohibido(): ProductActionState {
+  return { status: 'forbidden', message: productStrings.form.accessDenied }
 }
 
-export async function crearProductoAction(
-  _prev: EstadoAccionProducto,
+export async function createProductAction(
+  _prev: ProductActionState,
   formData: FormData,
-): Promise<EstadoAccionProducto> {
-  if (!(await esStaff())) return prohibido()
+): Promise<ProductActionState> {
+  if (!(await isStaff())) return prohibido()
 
-  const parsed = esquemaProductoAdmin.safeParse(Object.fromEntries(formData))
+  const parsed = productSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     return {
       status: 'invalid',
@@ -44,18 +44,18 @@ export async function crearProductoAction(
       problems: 'problems' in result.error ? result.error.problems : [result.error.message],
     }
   }
-  revalidatePath(rutasAdminProductos.admin)
-  return { status: 'ok', message: mensajesAdminProductos.form.savedCreate }
+  revalidatePath(productRoutes.admin)
+  return { status: 'ok', message: productStrings.form.savedCreate }
 }
 
-export async function actualizarProductoAction(
-  _prev: EstadoAccionProducto,
+export async function updateProductAction(
+  _prev: ProductActionState,
   formData: FormData,
-): Promise<EstadoAccionProducto> {
-  if (!(await esStaff())) return prohibido()
+): Promise<ProductActionState> {
+  if (!(await isStaff())) return prohibido()
 
   const id = String(formData.get('id') ?? '')
-  const parsed = esquemaProductoAdmin.safeParse(Object.fromEntries(formData))
+  const parsed = productSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     return {
       status: 'invalid',
@@ -69,15 +69,15 @@ export async function actualizarProductoAction(
       problems: 'problems' in result.error ? result.error.problems : [result.error.message],
     }
   }
-  revalidatePath(rutasAdminProductos.admin)
-  return { status: 'ok', message: mensajesAdminProductos.form.savedEdit }
+  revalidatePath(productRoutes.admin)
+  return { status: 'ok', message: productStrings.form.savedEdit }
 }
 
-export async function desactivarProductoAction(
-  _prev: EstadoAccionProducto,
+export async function deactivateProductAction(
+  _prev: ProductActionState,
   formData: FormData,
-): Promise<EstadoAccionProducto> {
-  if (!(await esStaff())) return prohibido()
+): Promise<ProductActionState> {
+  if (!(await isStaff())) return prohibido()
 
   const id = String(formData.get('id') ?? '')
 
@@ -85,6 +85,6 @@ export async function desactivarProductoAction(
   if (isErr(result)) {
     return { status: 'invalid', problems: [result.error.message] }
   }
-  revalidatePath(rutasAdminProductos.admin)
-  return { status: 'ok', message: mensajesAdminProductos.form.deactivated }
+  revalidatePath(productRoutes.admin)
+  return { status: 'ok', message: productStrings.form.deactivated }
 }

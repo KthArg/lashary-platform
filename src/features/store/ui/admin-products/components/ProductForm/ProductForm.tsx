@@ -1,8 +1,8 @@
 'use client'
 
 import type { ComponentType } from 'react'
-import { mensajesAdminProductos } from '../../constants/product-strings'
-import { useFormularioProductoAdmin, type ModoFormularioProducto } from '../../hooks/useProductForm'
+import { productStrings } from '../../constants/product-strings'
+import { useProductForm, type ProductFormMode } from '../../hooks/useProductForm'
 import { Field } from '../ProductFormField/ProductFormField'
 import { Feedback } from '../ProductFormFeedback/ProductFormFeedback'
 import { SeccionDesactivar } from '../DeactivateSection/DeactivateSection'
@@ -10,9 +10,9 @@ import { SinSeccionDesactivar } from '../NoDeactivateSection/NoDeactivateSection
 import { formularioProductoAdminStyles as STYLES } from './ProductForm.styles'
 import type { FormularioProductoAdminProps } from './ProductForm.types'
 
-const f = mensajesAdminProductos.form
+const f = productStrings.form
 
-const SECCIONES_DESACTIVAR: Record<ModoFormularioProducto, ComponentType<any>> = {
+const SECCIONES_DESACTIVAR: Record<ProductFormMode, ComponentType<any>> = {
   crear: SinSeccionDesactivar,
   editar: SeccionDesactivar,
 }
@@ -28,7 +28,7 @@ export function FormularioProductoAdmin({ producto }: FormularioProductoAdminPro
     deactivateState,
     deactivateAction,
     deactivating,
-  } = useFormularioProductoAdmin(producto)
+  } = useProductForm(producto)
 
   const SeccionDesactivarDelModo = SECCIONES_DESACTIVAR[modo]
 

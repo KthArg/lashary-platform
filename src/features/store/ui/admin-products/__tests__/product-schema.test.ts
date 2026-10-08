@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { esquemaProductoAdmin } from '@/features/store/ui/admin-products/validation/product-schema'
+import { productSchema } from '@/features/store/ui/admin-products/validation/product-schema'
 
 const validForm = {
   slug: 'serum-nutritivo-lashary',
@@ -10,9 +10,9 @@ const validForm = {
   displayOrder: '1',
 }
 
-describe('esquemaProductoAdmin (DOM-007 — validación en el borde)', () => {
+describe('productSchema (DOM-007 — validación en el borde)', () => {
   it('convierte los strings del formulario en el ProductoEscritura', () => {
-    const parsed = esquemaProductoAdmin.safeParse(validForm)
+    const parsed = productSchema.safeParse(validForm)
     expect(parsed.success).toBe(true)
     if (!parsed.success) return
     expect(parsed.data).toEqual({
@@ -27,14 +27,14 @@ describe('esquemaProductoAdmin (DOM-007 — validación en el borde)', () => {
 
   it('mapea la descripción ausente a cadena vacía', () => {
     const { description, ...sinDescripcion } = validForm
-    const parsed = esquemaProductoAdmin.safeParse(sinDescripcion)
+    const parsed = productSchema.safeParse(sinDescripcion)
     expect(parsed.success).toBe(true)
     if (!parsed.success) return
     expect(parsed.data.description).toBe('')
   })
 
   it('recorta slug, nombre y descripción', () => {
-    const parsed = esquemaProductoAdmin.safeParse({
+    const parsed = productSchema.safeParse({
       ...validForm,
       slug: '  serum-nutritivo-lashary  ',
       name: '  Serum nutritivo Lashary  ',
@@ -47,7 +47,7 @@ describe('esquemaProductoAdmin (DOM-007 — validación en el borde)', () => {
   })
 
   it('rechaza slug vacío, nombre vacío y precio no positivo', () => {
-    const parsed = esquemaProductoAdmin.safeParse({
+    const parsed = productSchema.safeParse({
       ...validForm,
       slug: '   ',
       name: '   ',
@@ -59,17 +59,17 @@ describe('esquemaProductoAdmin (DOM-007 — validación en el borde)', () => {
   })
 
   it('acepta orden de presentación en cero', () => {
-    const parsed = esquemaProductoAdmin.safeParse({ ...validForm, displayOrder: '0' })
+    const parsed = productSchema.safeParse({ ...validForm, displayOrder: '0' })
     expect(parsed.success).toBe(true)
   })
 
   it('rechaza un precio no entero', () => {
-    const parsed = esquemaProductoAdmin.safeParse({ ...validForm, priceCrc: '18000.5' })
+    const parsed = productSchema.safeParse({ ...validForm, priceCrc: '18000.5' })
     expect(parsed.success).toBe(false)
   })
 
   it('rechaza un orden de presentación negativo', () => {
-    const parsed = esquemaProductoAdmin.safeParse({ ...validForm, displayOrder: '-1' })
+    const parsed = productSchema.safeParse({ ...validForm, displayOrder: '-1' })
     expect(parsed.success).toBe(false)
   })
 })

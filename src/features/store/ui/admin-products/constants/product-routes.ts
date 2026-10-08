@@ -1,7 +1,7 @@
-export const RUTA_ADMIN_PRODUCTOS = '/admin/catalog/products'
+export const ADMIN_PRODUCTS_ROUTE = '/admin/catalog/products'
 
-export const rutasAdminProductos = {
-  admin: RUTA_ADMIN_PRODUCTOS,
-  nuevoProducto: `${RUTA_ADMIN_PRODUCTOS}?new`,
-  editarProducto: (id: string) => `${RUTA_ADMIN_PRODUCTOS}?edit=${id}`,
+export const productRoutes = {
+  admin: ADMIN_PRODUCTS_ROUTE,
+  newProduct: `${ADMIN_PRODUCTS_ROUTE}?new`,
+  editProduct: (id: string) => `${ADMIN_PRODUCTS_ROUTE}?edit=${id}`,
 }
