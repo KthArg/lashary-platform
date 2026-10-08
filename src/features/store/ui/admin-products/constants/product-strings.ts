@@ -30,7 +30,6 @@ export const productStrings = {
     legendCreate: 'Nuevo producto',
     legendEdit: 'Editar producto',
     fields: {
-      slug: 'Slug (identificador único en la URL)',
       name: 'Nombre',
       description: 'Descripción',
       imageUrl: 'URL de la imagen',
@@ -48,8 +47,8 @@ export const productStrings = {
     savedEdit: 'Cambios guardados.',
     deactivated: 'Producto desactivado.',
     validation: {
-      slug: 'El slug es obligatorio',
       name: 'El nombre es obligatorio',
+      nameWithoutLetters: 'El nombre necesita al menos una letra o un número',
       imageUrl: 'La URL de la imagen es obligatoria',
       priceCrc: 'El precio debe ser mayor que cero',
       displayOrder: 'El orden de presentación no puede ser negativo',
