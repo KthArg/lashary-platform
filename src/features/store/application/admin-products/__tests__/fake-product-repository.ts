@@ -16,7 +16,7 @@ export function createFakeAdminProductRepository(
     async list(params: { activeOnly: boolean; offset: number; limit: number }) {
       let all = [...store.values()]
       if (params.activeOnly) all = all.filter((p) => p.activo)
-      all.sort((a, b) => a.ordenPresentacion - b.ordenPresentacion)
+      all.sort((a, b) => a.displayOrder - b.displayOrder)
       return {
         items: all.slice(params.offset, params.offset + params.limit),
         total: all.length,

@@ -18,8 +18,8 @@ export type ProductWrite = {
   name: string
   description: string
   imageUrl: string
-  precioCrc: number
-  ordenPresentacion: number
+  priceCrc: number
+  displayOrder: number
 }
 
 export interface AdminProductRepository {

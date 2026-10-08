@@ -10,8 +10,8 @@ export const esquemaProductoAdmin = z
     name: z.string().trim().min(1, v.name),
     description: z.string().trim().optional().default(''),
     imageUrl: z.string().trim().min(1, v.imageUrl),
-    precioCrc: z.coerce.number().int().positive(v.precioCrc),
-    ordenPresentacion: z.coerce.number().int().min(0, v.ordenPresentacion),
+    priceCrc: z.coerce.number().int().positive(v.priceCrc),
+    displayOrder: z.coerce.number().int().min(0, v.displayOrder),
   })
   .transform(
     (data): ProductWrite => ({
@@ -19,8 +19,8 @@ export const esquemaProductoAdmin = z
       name: data.name,
       description: data.description,
       imageUrl: data.imageUrl,
-      precioCrc: data.precioCrc,
-      ordenPresentacion: data.ordenPresentacion,
+      priceCrc: data.priceCrc,
+      displayOrder: data.displayOrder,
     }),
   )
 

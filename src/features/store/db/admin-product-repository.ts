@@ -26,8 +26,8 @@ function rowToDomain(fila: ProductRow): AdminProduct {
     name: fila.nombre,
     description: fila.descripcion,
     imageUrl: fila.url_imagen,
-    precioCrc: Number(fila.precio_crc),
-    ordenPresentacion: fila.sort_order,
+    priceCrc: Number(fila.precio_crc),
+    displayOrder: fila.sort_order,
     activo: fila.activo,
   })
   if (!isOk(construido)) {
@@ -43,9 +43,9 @@ function domainToRow(producto: AdminProduct): ProductRow {
     nombre: producto.name,
     descripcion: producto.description,
     url_imagen: producto.imageUrl,
-    precio_crc: producto.precioCrc,
+    precio_crc: producto.priceCrc,
     activo: producto.activo,
-    sort_order: producto.ordenPresentacion,
+    sort_order: producto.displayOrder,
   }
 }
 

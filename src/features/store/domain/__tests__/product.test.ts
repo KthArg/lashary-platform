@@ -13,8 +13,8 @@ const validInput = () => ({
   name: 'Serum nutritivo Lashary',
   description: 'Tratamiento nutritivo para mantenimiento de pestañas.',
   imageUrl: '/productos/serum-nutritivo.jpg',
-  precioCrc: 18000,
-  ordenPresentacion: 1,
+  priceCrc: 18000,
+  displayOrder: 1,
 })
 
 describe('buildProduct — invariantes de dominio (DOM-007)', () => {
@@ -24,7 +24,7 @@ describe('buildProduct — invariantes de dominio (DOM-007)', () => {
     if (!isOk(r)) return
     expect(r.value.name).toBe('Serum nutritivo Lashary')
     expect(r.value.slug).toBe('serum-nutritivo-lashary')
-    expect(r.value.precioCrc).toBe(18000)
+    expect(r.value.priceCrc).toBe(18000)
     expect(r.value.activo).toBe(true)
   })
 
@@ -67,21 +67,21 @@ describe('buildProduct — invariantes de dominio (DOM-007)', () => {
   })
 
   it('rechaza precio no positivo', () => {
-    expect(isErr(buildProduct({ ...validInput(), precioCrc: 0 }))).toBe(true)
-    expect(isErr(buildProduct({ ...validInput(), precioCrc: -1 }))).toBe(true)
+    expect(isErr(buildProduct({ ...validInput(), priceCrc: 0 }))).toBe(true)
+    expect(isErr(buildProduct({ ...validInput(), priceCrc: -1 }))).toBe(true)
   })
 
   it('rechaza precio no entero', () => {
-    expect(isErr(buildProduct({ ...validInput(), precioCrc: 18000.5 }))).toBe(true)
+    expect(isErr(buildProduct({ ...validInput(), priceCrc: 18000.5 }))).toBe(true)
   })
 
   it('acepta orden de presentación cero, rechaza negativo', () => {
-    expect(isOk(buildProduct({ ...validInput(), ordenPresentacion: 0 }))).toBe(true)
-    expect(isErr(buildProduct({ ...validInput(), ordenPresentacion: -1 }))).toBe(true)
+    expect(isOk(buildProduct({ ...validInput(), displayOrder: 0 }))).toBe(true)
+    expect(isErr(buildProduct({ ...validInput(), displayOrder: -1 }))).toBe(true)
   })
 
   it('rechaza orden de presentación no entero', () => {
-    expect(isErr(buildProduct({ ...validInput(), ordenPresentacion: 1.5 }))).toBe(true)
+    expect(isErr(buildProduct({ ...validInput(), displayOrder: 1.5 }))).toBe(true)
   })
 
   it('acumula varios problemas en un solo error', () => {
@@ -89,7 +89,7 @@ describe('buildProduct — invariantes de dominio (DOM-007)', () => {
       ...validInput(),
       slug: '',
       name: '',
-      ordenPresentacion: -5,
+      displayOrder: -5,
     })
     expect(isErr(r)).toBe(true)
     if (!isErr(r)) return

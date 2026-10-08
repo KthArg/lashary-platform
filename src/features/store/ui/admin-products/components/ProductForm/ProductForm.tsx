@@ -50,20 +50,20 @@ export function FormularioProductoAdmin({ producto }: FormularioProductoAdminPro
           required
         />
         <Field
-          name="precioCrc"
-          label={f.fields.precioCrc}
+          name="priceCrc"
+          label={f.fields.priceCrc}
           type="number"
           min={1}
           required
-          defaultValue={producto?.precioCrc}
+          defaultValue={producto?.priceCrc}
         />
         <Field
-          name="ordenPresentacion"
-          label={f.fields.ordenPresentacion}
+          name="displayOrder"
+          label={f.fields.displayOrder}
           type="number"
           min={0}
           required
-          defaultValue={producto?.ordenPresentacion ?? 0}
+          defaultValue={producto?.displayOrder ?? 0}
         />
 
         <label className={STYLES.descripcionLabel} htmlFor="description">

@@ -17,8 +17,8 @@ const validModel = (): ProductWrite => ({
   name: 'Cepillo limpiador Lashary',
   description: 'Accesorio para limpieza suave diaria.',
   imageUrl: '/productos/cepillo-limpiador.jpg',
-  precioCrc: 12000,
-  ordenPresentacion: 2,
+  priceCrc: 12000,
+  displayOrder: 2,
 })
 
 const deps = (repo: FakeAdminProductRepository, id = 'nuevo-id') => ({
@@ -33,7 +33,7 @@ describe('createProduct', () => {
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
     expect(result.value.id).toBe('abc')
-    expect(result.value.precioCrc).toBe(12000)
+    expect(result.value.priceCrc).toBe(12000)
     expect(repo.saveCalls).toBe(1)
     expect(await repo.findById('abc')).not.toBeNull()
   })
@@ -48,7 +48,7 @@ describe('createProduct', () => {
 
   it('rechaza montos no enteros', async () => {
     const repo = createFakeAdminProductRepository()
-    const result = await createProduct(deps(repo))({ ...validModel(), precioCrc: 12000.5 })
+    const result = await createProduct(deps(repo))({ ...validModel(), priceCrc: 12000.5 })
     expect(isErr(result)).toBe(true)
     expect(repo.saveCalls).toBe(0)
   })

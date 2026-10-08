@@ -8,8 +8,8 @@ export function makeProduct(
     id: string
     slug: string
     name: string
-    precioCrc: number
-    ordenPresentacion: number
+    priceCrc: number
+    displayOrder: number
     activo: boolean
   }> = {},
 ): AdminProduct {
@@ -20,8 +20,8 @@ export function makeProduct(
     name: overrides.name ?? `Producto ${counter}`,
     description: 'Descripción de prueba.',
     imageUrl: '/productos/prueba.jpg',
-    precioCrc: overrides.precioCrc ?? 18000,
-    ordenPresentacion: overrides.ordenPresentacion ?? 0,
+    priceCrc: overrides.priceCrc ?? 18000,
+    displayOrder: overrides.displayOrder ?? 0,
     activo: overrides.activo ?? true,
   })
   if (!isOk(result)) {
