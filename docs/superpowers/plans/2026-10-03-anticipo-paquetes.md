@@ -28,7 +28,7 @@ Anticipo 0; rechazo de negativos y decimales; edición sin perder el anticipo al
 - [x] 16/20: contrato deposit, especificaciones y plan.
 - [x] 17/20: columna y RPC nuevo con pruebas pgTAP; comprobar fallo antes de la migración y éxito después.
 - [x] 18/20: dominio, comandos y repositorio; pruebas de creación, edición, desactivación y lectura.
-- [ ] 19/20: formulario, validación y actions; pruebas de ingreso, edición y envío.
+- [x] 19/20: formulario, validación y actions; pruebas de ingreso, edición y envío.
 - [x] 20/20: evidencia y faltantes en la pila original de payments, sin declarar integración o aprobación inexistentes.
 
 Ejecutar verify.sh y pruebas pertinentes antes de cada commit/PR. Actualizar títulos de las 15 piezas existentes a N=20, respetando sus posiciones.

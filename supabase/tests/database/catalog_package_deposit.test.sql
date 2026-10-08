@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(13);
+SELECT plan(17);
 
 INSERT INTO auth.users (id, email) VALUES
  ('00000000-0000-0000-0000-0000000000c1', 'anticipo-admin@test.local'),
@@ -39,6 +39,16 @@ SELECT lives_ok($$SELECT public.catalog_save_package(
 SELECT is((SELECT deposit FROM public.catalog_packages WHERE id = '00000000-0000-0000-0000-00000000d011'),
  11000::bigint, 'el RPC previo y la desactivación conservan el anticipo');
 SELECT lives_ok('SELECT pg_temp.guardar_anticipo(0)', 'staff puede configurar sin anticipo');
+
+SELECT lives_ok('SELECT pg_temp.guardar_anticipo(9007199254740991)', 'acepta el máximo entero seguro');
+UPDATE public.catalog_packages SET name = 'zz-anticipo conservado' WHERE id = '00000000-0000-0000-0000-00000000d011';
+SELECT throws_ok('SELECT pg_temp.guardar_anticipo(9007199254740992)', '23514', NULL,
+ 'rechaza montos fuera del rango seguro después de ejecutar el RPC previo');
+SELECT is((SELECT deposit FROM public.catalog_packages WHERE id = '00000000-0000-0000-0000-00000000d011'),
+ 9007199254740991::bigint, 'el fallo revierte el anticipo');
+SELECT is((SELECT name FROM public.catalog_packages WHERE id = '00000000-0000-0000-0000-00000000d011'),
+ 'zz-anticipo conservado'::text, 'el paquete conserva su nombre tras el fallo');
+SELECT pg_temp.guardar_anticipo(0);
 
 SELECT set_config('request.jwt.claims',
  '{"sub":"00000000-0000-0000-0000-0000000000c2","role":"authenticated"}', true);

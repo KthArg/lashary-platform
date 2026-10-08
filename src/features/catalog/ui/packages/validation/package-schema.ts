@@ -11,12 +11,17 @@ export const packageFormSchema = z
     name: z.string().trim().min(1, v.name),
     techniqueIds: z.array(z.string().trim().min(1)).min(2, v.techniqueIds),
     price: requiredInt.positive(v.price),
+    deposit: z.union([
+      z.string().trim().regex(/^\d+$/, v.deposit).transform(Number),
+      z.number(),
+    ]).refine((value) => Number.isSafeInteger(value) && value >= 0, v.deposit),
   })
   .transform(
     (data): PackageWriteModel => ({
       name: data.name,
       techniqueIds: data.techniqueIds,
       price: data.price,
+      deposit: data.deposit,
     }),
   )
 

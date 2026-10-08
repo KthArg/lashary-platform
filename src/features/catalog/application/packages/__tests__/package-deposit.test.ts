@@ -46,7 +46,7 @@ describe('anticipo propio del paquete (US-AGE-13)', () => {
     expect(await createPackage(deps)(model)).toMatchObject({ ok: true, value: { deposit: 0 } })
   })
 
-  it.each([-1, 1.5, NaN])('rechaza el anticipo inválido %s antes de guardar', async (deposit) => {
+  it.each([-1, 1.5, NaN, Number.MAX_SAFE_INTEGER + 1])('rechaza el anticipo inválido %s antes de guardar', async (deposit) => {
     const repo = createFakePackageRepository()
     const deps = { packageRepo: repo, techniqueRepo: techniques, newId: () => 'p1' }
     expect(isErr(await createPackage(deps)({ ...model, deposit }))).toBe(true)
