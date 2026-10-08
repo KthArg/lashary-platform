@@ -5,17 +5,23 @@ const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 const TABLE = 'audit_events'
 
+const configured = Boolean(URL && ANON_KEY)
 let reachable = false
-if (URL && ANON_KEY) {
+
+async function probeSupabase(): Promise<boolean> {
   try {
     const res = await fetch(`${URL}/rest/v1/`, { headers: { apikey: ANON_KEY } })
-    reachable = res.status < 500
+    return res.status < 500
   } catch {
-    reachable = false
+    return false
   }
 }
-if (!reachable) {
-  console.warn('[audit/rls] Supabase local no disponible — suite omitida.')
+
+function itLive(name: string, fn: () => Promise<void>) {
+  it(name, async (ctx) => {
+    ctx.skip(!reachable)
+    await fn()
+  })
 }
 
 async function signUpClienta(): Promise<{ client: SupabaseClient; userId: string }> {
@@ -38,25 +44,30 @@ async function signUpClienta(): Promise<{ client: SupabaseClient; userId: string
   return { client, userId: data.user.id }
 }
 
-describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de audit_events', () => {
+describe.skipIf(!configured)('SEC-002 — aislamiento RLS de audit_events', () => {
   let anon: SupabaseClient
   let clienta: SupabaseClient
   let clientaId: string
 
   beforeAll(async () => {
+    reachable = await probeSupabase()
+    if (!reachable) {
+      console.warn('[audit/rls] Supabase local no disponible — suite omitida.')
+      return
+    }
     anon = createClient(URL, ANON_KEY)
     const signedUp = await signUpClienta()
     clienta = signedUp.client
     clientaId = signedUp.userId
   })
 
-  it('token anónimo no ve ninguna fila (sin política de SELECT)', async () => {
+  itLive('token anónimo no ve ninguna fila (sin política de SELECT)', async () => {
     const { data, error } = await anon.from(TABLE).select('id')
     expect(error).toBeNull()
     expect(data ?? []).toHaveLength(0)
   })
 
-  it('clienta autenticada sin rol de staff no ve ninguna fila', async () => {
+  itLive('clienta autenticada sin rol de staff no ve ninguna fila', async () => {
     const staffCheck = await clienta.rpc('auth_is_staff')
     expect(staffCheck.error).toBeNull()
     expect(staffCheck.data).toBe(false)
@@ -66,7 +77,7 @@ describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de audit_events', () =>
     expect(data ?? []).toHaveLength(0)
   })
 
-  it('token anónimo no puede INSERT', async () => {
+  itLive('token anónimo no puede INSERT', async () => {
     const { error } = await anon
       .from(TABLE)
       .insert({
@@ -79,7 +90,7 @@ describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de audit_events', () =>
     expect(error).not.toBeNull()
   })
 
-  it('clienta autenticada sin rol de staff no puede INSERT', async () => {
+  itLive('clienta autenticada sin rol de staff no puede INSERT', async () => {
     const { error } = await clienta
       .from(TABLE)
       .insert({
@@ -92,7 +103,7 @@ describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de audit_events', () =>
     expect(error).not.toBeNull()
   })
 
-  it('tras los intentos, la tabla sigue vacía para quien no es staff', async () => {
+  itLive('tras los intentos, la tabla sigue vacía para quien no es staff', async () => {
     const { data } = await anon.from(TABLE).select('id')
     expect(data ?? []).toHaveLength(0)
   })
