@@ -9,9 +9,9 @@ export { toProductCard, formatPriceCrc } from './domain/product';
 
 export type { PublicProductCatalog } from './application/public-grid/get-public-grid-state';
 
-export { CADENAS_GRID_PRODUCTOS_ES } from './ui/public-grid/constants/public-grid-strings';
-export type { GridProductosPublicosProps } from './ui/public-grid/components/PublicProductsGrid';
-export { GridProductosPublicos } from './ui/public-grid/components/PublicProductsGrid';
+export { PUBLIC_GRID_STRINGS } from './ui/public-grid/constants/public-grid-strings';
+export type { PublicProductsGridProps } from './ui/public-grid/components/PublicProductsGrid';
+export { PublicProductsGrid } from './ui/public-grid/components/PublicProductsGrid';
 
 export {
   initialProductGridState,

@@ -1,6 +1,6 @@
 import type { ProductGridState } from '../../../../domain/product'
 
-export type GridProductosPublicosProps = {
-  estado: ProductGridState
-  urlReintento?: string
+export interface PublicProductsGridProps {
+  state: ProductGridState
+  retryUrl?: string
 }

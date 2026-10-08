@@ -1,14 +1,12 @@
-import type { ProductGridState } from '../../../../domain/product'
-import { gridProductosPublicosStyles as STYLES } from '../PublicProductsGrid/PublicProductsGrid.styles'
+import { publicProductsGridStyles as STYLES } from '../PublicProductsGrid/PublicProductsGrid.styles'
+import type { GridEmptyStateProps } from './GridEmptyState.types'
 
-type Props = { estado: Extract<ProductGridState, { kind: 'empty' }> }
-
-export function EstadoVacio({ estado }: Props) {
+export function GridEmptyState({ state }: GridEmptyStateProps) {
   return (
     <section className={STYLES.alert} role="status">
       <div>
-        <h2 className={STYLES.alertTitle}>{estado.title}</h2>
-        <p>{estado.description}</p>
+        <h2 className={STYLES.alertTitle}>{state.title}</h2>
+        <p>{state.description}</p>
       </div>
     </section>
   )

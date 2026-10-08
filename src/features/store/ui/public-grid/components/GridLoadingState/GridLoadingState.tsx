@@ -1,10 +1,10 @@
-import { CADENAS_GRID_PRODUCTOS_ES } from '../../constants/public-grid-strings'
-import { gridProductosPublicosStyles as STYLES } from '../PublicProductsGrid/PublicProductsGrid.styles'
+import { PUBLIC_GRID_STRINGS } from '../../constants/public-grid-strings'
+import { publicProductsGridStyles as STYLES } from '../PublicProductsGrid/PublicProductsGrid.styles'
 
-export function EstadoCargando() {
+export function GridLoadingState() {
   return (
     <div className={STYLES.alert} role="status">
-      <span>{CADENAS_GRID_PRODUCTOS_ES.loadingMessage}</span>
+      <span>{PUBLIC_GRID_STRINGS.loadingMessage}</span>
     </div>
   )
 }
