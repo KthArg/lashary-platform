@@ -63,6 +63,14 @@ describe('US-PROD-03: detalle de un producto', () => {
     expect(html).toContain('₡18 000')
   })
 
+  it('ofrece volver al catálogo con un enlace que no depende de la flecha', () => {
+    const html = renderDetail()
+
+    expect(html).toContain('href="/productos"')
+    expect(html).toContain(PUBLIC_DETAIL_STRINGS.backToCatalog)
+    expect(html).toContain('aria-hidden="true"')
+  })
+
   it('criterio 2: existe el botón para agregar al carrito, habilitado si hay existencias', () => {
     const html = renderDetail()
 

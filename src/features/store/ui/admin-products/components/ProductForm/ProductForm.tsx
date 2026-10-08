@@ -5,16 +5,16 @@ import { productStrings } from '../../constants/product-strings'
 import { useProductForm, type ProductFormMode } from '../../hooks/useProductForm'
 import { ProductFormField } from '../ProductFormField'
 import { ProductFormFeedback } from '../ProductFormFeedback'
-import { DeactivateSection } from '../DeactivateSection'
-import { NoDeactivateSection } from '../NoDeactivateSection'
+import { ProductStatusSection } from '../ProductStatusSection'
+import { NoStatusSection } from '../NoStatusSection'
 import { productFormStyles as STYLES } from './ProductForm.styles'
 import type { ProductFormProps } from './ProductForm.types'
 
 const formMessages = productStrings.form
 
-const DEACTIVATE_SECTIONS: Record<ProductFormMode, ComponentType<any>> = {
-  create: NoDeactivateSection,
-  edit: DeactivateSection,
+const STATUS_SECTIONS: Record<ProductFormMode, ComponentType<any>> = {
+  create: NoStatusSection,
+  edit: ProductStatusSection,
 }
 
 export function ProductForm({ product }: ProductFormProps) {
@@ -25,12 +25,13 @@ export function ProductForm({ product }: ProductFormProps) {
     state,
     formAction,
     pending,
-    deactivateState,
-    deactivateAction,
-    deactivating,
+    statusControl,
+    statusState,
+    statusAction,
+    statusPending,
   } = useProductForm(product)
 
-  const DeactivateSectionForMode = DEACTIVATE_SECTIONS[mode]
+  const StatusSectionForMode = STATUS_SECTIONS[mode]
 
   return (
     <section className={STYLES.section}>
@@ -96,11 +97,12 @@ export function ProductForm({ product }: ProductFormProps) {
         </div>
       </form>
 
-      <DeactivateSectionForMode
+      <StatusSectionForMode
         productId={product?.id ?? ''}
-        deactivateAction={deactivateAction}
-        deactivateState={deactivateState}
-        deactivating={deactivating}
+        statusControl={statusControl}
+        statusAction={statusAction}
+        statusState={statusState}
+        statusPending={statusPending}
       />
     </section>
   )

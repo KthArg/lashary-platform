@@ -10,4 +10,5 @@ export const PUBLIC_GRID_STRINGS: ProductGridStrings = {
   catalogAriaLabel: 'Catálogo de productos de mantenimiento',
   productAltPrefix: 'Producto:',
   retryButtonAriaLabel: 'Reintentar carga de productos',
+  viewMoreLabel: 'Ver más',
 };

@@ -34,6 +34,7 @@ export type ProductGridStrings = {
   catalogAriaLabel: string;
   productAltPrefix: string;
   retryButtonAriaLabel: string;
+  viewMoreLabel: string;
 };
 
 export function formatPriceCrc(priceCrc: number): string {
@@ -134,4 +135,8 @@ export function buildProduct(input: ProductInput): Result<AdminProduct, InvalidP
 
 export function markProductInactive(product: AdminProduct): AdminProduct {
   return { ...product, isActive: false }
+}
+
+export function markProductActive(product: AdminProduct): AdminProduct {
+  return { ...product, isActive: true }
 }

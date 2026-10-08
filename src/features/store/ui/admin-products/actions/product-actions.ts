@@ -8,6 +8,7 @@ import {
   createProduct,
   updateProduct,
   deactivateProduct,
+  activateProduct,
   type ProductCommandDeps,
 } from '../../../application/admin-products/commands'
 import { adminProductRepository } from '../../../db/admin-product-repository'
@@ -73,18 +74,33 @@ export async function updateProductAction(
   return { status: 'ok', message: productStrings.form.savedEdit }
 }
 
-export async function deactivateProductAction(
-  _prev: ProductActionState,
+async function changeProductStatus(
+  command: typeof deactivateProduct | typeof activateProduct,
   formData: FormData,
+  successMessage: string,
 ): Promise<ProductActionState> {
   if (!(await isStaff())) return forbidden()
 
   const id = String(formData.get('id') ?? '')
 
-  const result = await deactivateProduct(await deps())(id)
+  const result = await command(await deps())(id)
   if (isErr(result)) {
     return { status: 'invalid', problems: [result.error.message] }
   }
   revalidatePath(productRoutes.admin)
-  return { status: 'ok', message: productStrings.form.deactivated }
+  return { status: 'ok', message: successMessage }
+}
+
+export async function deactivateProductAction(
+  _prev: ProductActionState,
+  formData: FormData,
+): Promise<ProductActionState> {
+  return changeProductStatus(deactivateProduct, formData, productStrings.form.deactivated)
+}
+
+export async function activateProductAction(
+  _prev: ProductActionState,
+  formData: FormData,
+): Promise<ProductActionState> {
+  return changeProductStatus(activateProduct, formData, productStrings.form.activated)
 }
