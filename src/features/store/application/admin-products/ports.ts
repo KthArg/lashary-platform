@@ -22,6 +22,12 @@ export type ProductWrite = {
   stock: number
 }
 
+export interface ProductImageStorage {
+  upload(path: string, bytes: Uint8Array, contentType: string): Promise<string>
+  remove(path: string): Promise<void>
+  pathFromUrl(url: string): string | null
+}
+
 export interface AdminProductRepository {
   list(params: {
     activeOnly: boolean

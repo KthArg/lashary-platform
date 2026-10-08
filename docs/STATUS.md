@@ -99,7 +99,7 @@
 
 ### store (actualizado: 2026-10-08)
 - US-PROD-02 — terminada — PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), product.test.ts, commands.test.ts, queries.test.ts, product-schema.test.ts, product-actions.test.ts, layout.test.tsx, products-admin-rls.test.ts (omitida sin Supabase local, ver deuda)
-- US-PROD-03 — en_progreso — falta: los criterios 1, 2 y 3 tienen prueba en product-detail-page.test.tsx (ruta /productos/[slug] con imagen, nombre, descripcion, precio, boton de agregar al carrito y aviso Agotado con la compra deshabilitada; enlace desde el grid en store.test.tsx); falta el PR de cierre us/US-PROD-03 a main para marcarla terminada (EST-005)
+- US-PROD-03 — en_progreso — falta: los criterios 1, 2 y 3 tienen prueba en product-detail-page.test.tsx (ruta /productos/[slug] con imagen, nombre, descripcion, precio, boton de agregar al carrito y aviso Agotado con la compra deshabilitada; enlace desde el grid en store.test.tsx); la validacion por contenido y el adaptador de Storage existen (uploadProductImage), pero el formulario del panel todavia pide la imagen como URL de texto; falta conectarlo (pieza 8/8) y el PR de cierre us/US-PROD-03 a main (EST-005)
 - US-SHOP-01 — no_iniciada
 - US-SHOP-02 — no_iniciada
 
