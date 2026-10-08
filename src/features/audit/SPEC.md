@@ -22,9 +22,13 @@ RLS (SEC-001): `SELECT` e `INSERT` solo para staff (`public.auth_is_staff()`); *
 
 Pruebas: `supabase/tests/database/audit_staff_access.test.sql` (pgTAP, control positivo: staff lee/inserta, nadie — ni staff — puede `UPDATE`/`DELETE`); `src/features/audit/__tests__/rls-isolation.test.ts` (SEC-002, control negativo: anon y una clienta autenticada real no leen ni escriben).
 
+Capa `domain/`: entidad `AuditEvent` con constructor validado (`AuditEvent.create` → `Result`), invariantes DOM-007 (actor, acción, tipo y recurso no vacíos); `payload` opcional, por defecto `{}`. Error `AuditEventValidationError` (DOM-006). Reloj inyectado (`Clock` de `shared/clock.ts`, DOM-004) — `createdAt` llega desde afuera, la entidad no llama `new Date()`. Pruebas con fixtures fijas de `shared/testing/fixed-clock.ts` (única forma de fijar una fecha en tests sin violar DOM-004, que `check-domain-purity.sh` escanea literalmente).
+
+Capa `application/`: puerto `AuditEventRepository` (`insert` únicamente — nadie necesita consultar la bitácora desde código todavía) y el use-case `record(deps)(input)` (`record.ts`), que arma el `AuditEvent`, lo persiste y devuelve su vista. Pruebas con repositorio en memoria (`__tests__/record.test.ts`).
+
 ## Qué no hace todavía
 
-Sin capa `domain/`, `application/`, `db/` ni `index.ts` — nadie puede escribir un evento desde código todavía, solo existe el esquema y su RLS. Próxima pieza de US-AGE-13.
+Sin capa `db/` ni `index.ts` — el use-case `record()` existe pero nadie puede invocarlo desde otra feature todavía (no hay entry point público, ARCH-003). Próxima pieza de US-AGE-13. Sin capacidad de listar/consultar eventos: se agrega cuando una historia futura (p.ej. US-CLI-04) lo exija.
 
 ## Contrato público
 
