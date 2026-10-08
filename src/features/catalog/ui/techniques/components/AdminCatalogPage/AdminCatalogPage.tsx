@@ -7,12 +7,12 @@ import {
 import { techniqueRepository } from '../../../../db/techniques/technique-repository'
 import { catalogMessages } from '../../constants/technique-strings'
 import { catalogRoutes } from '../../../routes'
-import { adminCatalogPageStyles as s } from './AdminCatalogPage.styles'
+import { adminCatalogPageStyles as STYLES } from './AdminCatalogPage.styles'
 import { TechniqueTable } from '../TechniqueTable'
 import { TechniqueForm } from '../TechniqueForm'
 import type { AdminCatalogPageProps } from './AdminCatalogPage.types'
 
-const m = catalogMessages.admin
+const adminMessages = catalogMessages.admin
 
 export async function AdminCatalogPage({
   searchParams,
@@ -32,34 +32,34 @@ export async function AdminCatalogPage({
   const showForm = params.new !== undefined || editing !== undefined
 
   return (
-    <main className={s.main}>
-      <header className={s.header}>
+    <main className={STYLES.main}>
+      <header className={STYLES.header}>
         <div>
-          <h1 className={s.title}>{m.title}</h1>
-          <p className={s.subtitle}>{m.subtitle}</p>
+          <h1 className={STYLES.title}>{adminMessages.title}</h1>
+          <p className={STYLES.subtitle}>{adminMessages.subtitle}</p>
         </div>
         {!showForm && (
-          <Link href={catalogRoutes.newTechnique} className={s.newTechniqueLink}>
-            {m.newTechnique}
+          <Link href={catalogRoutes.newTechnique} className={STYLES.newTechniqueLink}>
+            {adminMessages.newTechnique}
           </Link>
         )}
       </header>
 
       {showForm && (
-        <div className={s.formWrapper}>
+        <div className={STYLES.formWrapper}>
           <TechniqueForm technique={editing} />
-          <Link href={catalogRoutes.admin} className={s.cancelLink}>
+          <Link href={catalogRoutes.admin} className={STYLES.cancelLink}>
             {catalogMessages.form.cancel}
           </Link>
         </div>
       )}
 
       {page.items.length === 0 ? (
-        <div className={s.emptyBox}>
-          <h2 className={s.emptyTitle}>{m.empty.title}</h2>
-          <p className={s.emptyBody}>{m.empty.body}</p>
-          <Link href={catalogRoutes.newTechnique} className={s.emptyCta}>
-            {m.empty.cta}
+        <div className={STYLES.emptyBox}>
+          <h2 className={STYLES.emptyTitle}>{adminMessages.empty.title}</h2>
+          <p className={STYLES.emptyBody}>{adminMessages.empty.body}</p>
+          <Link href={catalogRoutes.newTechnique} className={STYLES.emptyCta}>
+            {adminMessages.empty.cta}
           </Link>
         </div>
       ) : (

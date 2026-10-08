@@ -12,7 +12,7 @@ import { packageFormStyles as STYLES } from './PackageForm.styles'
 import { PackageFormFeedback } from '../PackageFormFeedback'
 import type { PackageFormProps } from './PackageForm.types'
 
-const f = packageMessages.form
+const formMessages = packageMessages.form
 const admin = packageMessages.admin
 
 export function PackageForm({ pkg, techniques }: PackageFormProps) {
@@ -55,7 +55,7 @@ export function PackageForm({ pkg, techniques }: PackageFormProps) {
 
   return (
     <section className={STYLES.section}>
-      <h2 className={STYLES.heading}>{editing ? f.legendEdit : f.legendCreate}</h2>
+      <h2 className={STYLES.heading}>{editing ? formMessages.legendEdit : formMessages.legendCreate}</h2>
 
       <PackageFormFeedback {...state} />
 
@@ -63,7 +63,7 @@ export function PackageForm({ pkg, techniques }: PackageFormProps) {
         {editing && <input type="hidden" name="id" value={pkg.id} />}
 
         <label className={STYLES.fieldLabel} htmlFor="name">
-          <span className={STYLES.labelText}>{f.fields.name}</span>
+          <span className={STYLES.labelText}>{formMessages.fields.name}</span>
           <input
             id="name"
             name="name"
@@ -75,7 +75,7 @@ export function PackageForm({ pkg, techniques }: PackageFormProps) {
         </label>
 
         <fieldset className={STYLES.techniquesFieldset}>
-          <legend className={STYLES.labelText}>{f.fields.techniques}</legend>
+          <legend className={STYLES.labelText}>{formMessages.fields.techniques}</legend>
           <div className={STYLES.techniquesList}>
             {techniques.map((technique) => (
               <label key={technique.id} className={STYLES.techniqueOption}>
@@ -92,21 +92,21 @@ export function PackageForm({ pkg, techniques }: PackageFormProps) {
                   {admin.minutesShort})
                 </span>
                 {!technique.isActive && (
-                  <span className={STYLES.inactiveBadge}>{f.inactiveTechnique}</span>
+                  <span className={STYLES.inactiveBadge}>{formMessages.inactiveTechnique}</span>
                 )}
               </label>
             ))}
           </div>
         </fieldset>
 
-        {hasInactiveSelected && <p className={STYLES.alertWarning}>{f.inactiveHint}</p>}
+        {hasInactiveSelected && <p className={STYLES.alertWarning}>{formMessages.inactiveHint}</p>}
 
         <p className={STYLES.durationTotal}>
-          {f.durationTotal}: {totalDuration} {admin.minutesShort}
+          {formMessages.durationTotal}: {totalDuration} {admin.minutesShort}
         </p>
 
         <label className={STYLES.fieldLabel} htmlFor="price">
-          <span className={STYLES.labelText}>{f.fields.price}</span>
+          <span className={STYLES.labelText}>{formMessages.fields.price}</span>
           <input
             id="price"
             name="price"
@@ -121,7 +121,7 @@ export function PackageForm({ pkg, techniques }: PackageFormProps) {
 
         <div className={STYLES.submitWrapper}>
           <button type="submit" className={STYLES.submitButton} disabled={pending}>
-            {editing ? f.submitEdit : f.submitCreate}
+            {editing ? formMessages.submitEdit : formMessages.submitCreate}
           </button>
         </div>
       </form>

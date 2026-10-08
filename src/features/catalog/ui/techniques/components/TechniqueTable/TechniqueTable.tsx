@@ -3,68 +3,68 @@ import type { TechniqueView } from '../../../../domain/techniques/technique'
 import { catalogMessages, familyLabel } from '../../constants/technique-strings'
 import { formatColones } from '../../../format'
 import { catalogRoutes } from '../../../routes'
-import { techniqueTableStyles as s } from './TechniqueTable.styles'
+import { techniqueTableStyles as STYLES } from './TechniqueTable.styles'
 import type { TechniqueTableProps } from './TechniqueTable.types'
 
-const m = catalogMessages.admin
+const adminMessages = catalogMessages.admin
 
 function durationCell(technique: TechniqueView): string {
   const retouch =
     technique.durationRetouchMin === null
-      ? m.notApplicable
+      ? adminMessages.notApplicable
       : `${technique.durationRetouchMin}`
-  return `${technique.durationFirstTimeMin} / ${retouch} ${m.minutesShort}`
+  return `${technique.durationFirstTimeMin} / ${retouch} ${adminMessages.minutesShort}`
 }
 
 export function TechniqueTable({ items }: TechniqueTableProps) {
   return (
-    <div className={s.wrapper}>
-      <table className={s.table}>
+    <div className={STYLES.wrapper}>
+      <table className={STYLES.table}>
         <thead>
           <tr>
-            <th>{m.columns.name}</th>
-            <th>{m.columns.family}</th>
-            <th>{m.columns.priceFirstTime}</th>
-            <th>{m.columns.priceRetouch}</th>
-            <th>{m.columns.durations}</th>
-            <th>{m.columns.buffer}</th>
-            <th>{m.columns.reapplication}</th>
-            <th>{m.columns.deposit}</th>
-            <th>{m.columns.status}</th>
+            <th>{adminMessages.columns.name}</th>
+            <th>{adminMessages.columns.family}</th>
+            <th>{adminMessages.columns.priceFirstTime}</th>
+            <th>{adminMessages.columns.priceRetouch}</th>
+            <th>{adminMessages.columns.durations}</th>
+            <th>{adminMessages.columns.buffer}</th>
+            <th>{adminMessages.columns.reapplication}</th>
+            <th>{adminMessages.columns.deposit}</th>
+            <th>{adminMessages.columns.status}</th>
             <th>
-              <span className={s.srOnly}>{m.columns.actions}</span>
+              <span className={STYLES.srOnly}>{adminMessages.columns.actions}</span>
             </th>
           </tr>
         </thead>
         <tbody>
           {items.map((technique) => (
             <tr key={technique.id}>
-              <td className={s.nameCell}>{technique.name}</td>
+              <td className={STYLES.nameCell}>{technique.name}</td>
               <td>{familyLabel(technique.family)}</td>
               <td>{formatColones(technique.priceFirstTime)}</td>
               <td>
                 {technique.priceRetouch === null
-                  ? m.notApplicable
+                  ? adminMessages.notApplicable
                   : formatColones(technique.priceRetouch)}
               </td>
               <td>{durationCell(technique)}</td>
               <td>
-                {technique.bufferMin} {m.minutesShort}
+                {technique.bufferMin} {adminMessages.minutesShort}
               </td>
               <td>
                 {technique.reapplicationIntervalDays === null
-                  ? m.notApplicable
-                  : `${technique.reapplicationIntervalDays} ${m.daysShort}`}
+                  ? adminMessages.notApplicable
+                  : `${technique.reapplicationIntervalDays} ${adminMessages.daysShort}`}
               </td>
               <td>{formatColones(technique.deposit)}</td>
               <td>
-                <span className={technique.isActive ? s.badgeActive : s.badgeInactive}>
-                  {technique.isActive ? m.status.active : m.status.inactive}
+                <span className={technique.isActive ? STYLES.badgeActive : STYLES.badgeInactive}>
+                  {technique.isActive ? adminMessages.status.active : adminMessages.status.inactive}
                 </span>
               </td>
-              <td className={s.actionsCell}>
-                <Link href={catalogRoutes.editTechnique(technique.id)} className={s.editLink}>
-                  {m.rowActions.edit}
+              <td className={STYLES.actionsCell}>
+                <Link href={catalogRoutes.editTechnique(technique.id)} className={STYLES.editLink}>
+                  {adminMessages.rowActions.edit}
                 </Link>
               </td>
             </tr>

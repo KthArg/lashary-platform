@@ -16,7 +16,7 @@ import { PackageForm } from '../PackageForm'
 import { PackagePagination } from '../PackagePagination'
 import type { AdminPackagesPageProps } from './AdminPackagesPage.types'
 
-const m = packageMessages.admin
+const adminMessages = packageMessages.admin
 
 export async function AdminPackagesPage({ searchParams }: AdminPackagesPageProps) {
   const params = (await searchParams) ?? {}
@@ -47,12 +47,12 @@ export async function AdminPackagesPage({ searchParams }: AdminPackagesPageProps
     <main className={STYLES.main}>
       <header className={STYLES.header}>
         <div>
-          <h1 className={STYLES.title}>{m.title}</h1>
-          <p className={STYLES.subtitle}>{m.subtitle}</p>
+          <h1 className={STYLES.title}>{adminMessages.title}</h1>
+          <p className={STYLES.subtitle}>{adminMessages.subtitle}</p>
         </div>
         {!showForm && (
           <Link href={catalogRoutes.newPackage} className={STYLES.newPackageLink}>
-            {m.newPackage}
+            {adminMessages.newPackage}
           </Link>
         )}
       </header>
@@ -68,10 +68,10 @@ export async function AdminPackagesPage({ searchParams }: AdminPackagesPageProps
 
       {page.items.length === 0 ? (
         <div className={STYLES.emptyBox}>
-          <h2 className={STYLES.emptyTitle}>{m.empty.title}</h2>
-          <p className={STYLES.emptyBody}>{m.empty.body}</p>
+          <h2 className={STYLES.emptyTitle}>{adminMessages.empty.title}</h2>
+          <p className={STYLES.emptyBody}>{adminMessages.empty.body}</p>
           <Link href={catalogRoutes.newPackage} className={STYLES.emptyCta}>
-            {m.empty.cta}
+            {adminMessages.empty.cta}
           </Link>
         </div>
       ) : (
