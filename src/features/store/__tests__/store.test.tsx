@@ -19,6 +19,7 @@ const mockCreateClient = vi.fn()
 const mockDbRows = [
   {
     id: 'producto-01',
+    slug: 'serum-nutritivo-lashary',
     nombre: 'Serum nutritivo Lashary',
     url_imagen: '/productos/serum-nutritivo.jpg',
     precio_crc: 18000,
@@ -26,6 +27,7 @@ const mockDbRows = [
   },
   {
     id: 'producto-02',
+    slug: 'cepillo-limpiador-lashary',
     nombre: 'Cepillo limpiador Lashary',
     url_imagen: '/productos/cepillo-limpiador.jpg',
     precio_crc: 12000,
@@ -60,8 +62,8 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
   it('filtra productos inactivos y convierte los activos en tarjetas', async () => {
     const catalog: PublicProductCatalog = {
       listPublicProducts: vi.fn().mockResolvedValue([
-        { id: '1', name: 'Activo', imageUrl: '/a.jpg', priceCrc: 1000, isActive: true },
-        { id: '2', name: 'Inactivo', imageUrl: '/b.jpg', priceCrc: 2000, isActive: false },
+        { id: '1', slug: 'activo', name: 'Activo', imageUrl: '/a.jpg', priceCrc: 1000, isActive: true },
+        { id: '2', slug: 'inactivo', name: 'Inactivo', imageUrl: '/b.jpg', priceCrc: 2000, isActive: false },
       ]),
     }
 
@@ -82,7 +84,7 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
   it('devuelve estado vacío cuando no hay productos activos', async () => {
     const catalog: PublicProductCatalog = {
       listPublicProducts: vi.fn().mockResolvedValue([
-        { id: '1', name: 'Uno', imageUrl: '/a.jpg', priceCrc: 1000, isActive: false },
+        { id: '1', slug: 'uno', name: 'Uno', imageUrl: '/a.jpg', priceCrc: 1000, isActive: false },
       ]),
     }
 
@@ -115,6 +117,7 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
       listPublicProducts: vi.fn().mockResolvedValue([
         {
           id: '1',
+          slug: 'script',
           name: '<script>alert(1)</script>',
           imageUrl: 'javascript:alert(1)',
           priceCrc: 18000,
@@ -134,6 +137,7 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
     const catalog: PublicProductCatalog = {
       listPublicProducts: vi.fn().mockResolvedValue(mockDbRows.map((row) => ({
         id: row.id,
+        slug: row.slug,
         name: row.nombre,
         imageUrl: row.url_imagen,
         priceCrc: row.precio_crc,
@@ -195,6 +199,14 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
     expect(products).toHaveLength(2)
     expect(products[0].name).toBe('Serum nutritivo Lashary')
     expect(products[1].name).toBe('Cepillo limpiador Lashary')
+  })
+
+  it('US-PROD-03: cada tarjeta del grid enlaza al detalle de su producto', async () => {
+    const page = await ProductsPage()
+    const html = renderToStaticMarkup(page)
+
+    expect(html).toContain('href="/productos/serum-nutritivo-lashary"')
+    expect(html).toContain('href="/productos/cepillo-limpiador-lashary"')
   })
 
   it('la ruta /productos renderiza múltiples productos provenientes de la base', async () => {

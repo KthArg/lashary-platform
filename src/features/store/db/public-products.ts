@@ -4,6 +4,7 @@ import type { PublicProductCatalog } from '../application/public-grid/get-public
 
 type PublicProductRow = {
   id: string
+  slug: string
   nombre: string
   url_imagen: string
   precio_crc: number
@@ -16,7 +17,7 @@ export function publicProductsDb(): PublicProductCatalog {
       const supabase = await createClient()
       const { data, error } = await supabase
         .from('store_products')
-        .select('id, nombre, url_imagen, precio_crc, activo')
+        .select('id, slug, nombre, url_imagen, precio_crc, activo')
         .eq('activo', true)
         .order('sort_order', { ascending: true })
         .order('created_at', { ascending: false })
@@ -27,6 +28,7 @@ export function publicProductsDb(): PublicProductCatalog {
 
       return (data ?? []).map((product: PublicProductRow) => ({
         id: product.id,
+        slug: product.slug,
         name: product.nombre,
         imageUrl: product.url_imagen,
         priceCrc: product.precio_crc,
