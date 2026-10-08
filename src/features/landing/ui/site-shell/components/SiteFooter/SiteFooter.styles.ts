@@ -1,5 +1,3 @@
-// Estilos del pie de página del sitio (US-LAND-07), tomados del diseño "LASHARY Beauty Studio".
-// Solo tokens del tema `lashary-site` (UI-002).
 export const siteFooterStyles = {
   footer: 'bg-site-night text-site-paper',
   columns:

@@ -1,5 +1,3 @@
-// Entry point público de la feature landing (ARCH-003): el sitio público.
-
 export { SiteHeader } from './ui/site-shell/components/SiteHeader'
 export { SiteFooter } from './ui/site-shell/components/SiteFooter'
 export { LandingHome } from './ui/home/components/LandingHome'

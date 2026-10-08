@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useEffect } from 'react'
 import { landingMessages } from '../../../constants/landing-strings'
 import { LOGIN_ROUTE, RESERVE_ROUTE } from '../../../routes'
-import { siteMenuStyles as styles } from './SiteMenu.styles'
+import { siteMenuStyles as STYLES } from './SiteMenu.styles'
 import { useFocusTrap } from '../../hooks/use-focus-trap'
 import type { SiteMenuProps } from './SiteMenu.types'
 
@@ -30,28 +30,28 @@ export function SiteMenu({ sections, onClose }: SiteMenuProps) {
       role="dialog"
       aria-modal="true"
       aria-label={landingMessages.menu.dialogLabel}
-      className={styles.overlay}
+      className={STYLES.overlay}
     >
-      <div className={styles.top}>
-        <button type="button" onClick={onClose} className={styles.close}>
+      <div className={STYLES.top}>
+        <button type="button" onClick={onClose} className={STYLES.close}>
           {landingMessages.menu.close}
         </button>
       </div>
-      <nav aria-label={landingMessages.header.sectionsNav} className={styles.nav}>
+      <nav aria-label={landingMessages.header.sectionsNav} className={STYLES.nav}>
         {sections.map((section, index) => (
-          <a key={section.id} href={`#${section.id}`} onClick={onClose} className={styles.link}>
-            <span aria-hidden="true" className={styles.number}>
+          <a key={section.id} href={`#${section.id}`} onClick={onClose} className={STYLES.link}>
+            <span aria-hidden="true" className={STYLES.number}>
               {String(index + 1).padStart(2, '0')}
             </span>
             {section.label}
           </a>
         ))}
       </nav>
-      <div className={styles.footer}>
-        <Link href={RESERVE_ROUTE} onClick={onClose} className={styles.reserve}>
+      <div className={STYLES.footer}>
+        <Link href={RESERVE_ROUTE} onClick={onClose} className={STYLES.reserve}>
           {landingMessages.menu.reserve}
         </Link>
-        <Link href={LOGIN_ROUTE} onClick={onClose} className={styles.login}>
+        <Link href={LOGIN_ROUTE} onClick={onClose} className={STYLES.login}>
           {landingMessages.menu.login}
         </Link>
       </div>

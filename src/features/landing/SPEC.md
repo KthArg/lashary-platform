@@ -113,6 +113,26 @@ US-LAND-01 cerrada: el PO aprobó la parte "atractivo" del criterio 2 el 2026-09
    - *Atractivo* (aprobacion humana, no automatizable): el PO compara capturas en esos anchos contra el diseño de referencia. Las capturas y la aprobacion quedan en el PR que cierra la historia.
 3. **Contenido editable desde el CMS.** Prueba del gateway con respuestas simuladas de uno-cms: el hero muestra lo publicado en `hero`, `intro` y `closingCta`; con el CMS caido, vacio o con una respuesta que no encaja con [cms-api.md](../../../docs/contracts/cms-api.md), muestra el contenido de respaldo y la pagina no falla.
 
+## Notas de implementación (movidas desde comentarios del código, 2026-10-08)
+
+- `ui/routes.ts`: `RESERVE_ROUTE` (`/portal`) es el destino fijo de todo "Reservar cita"; decisión del PO, no se edita en el CMS. Hasta US-AGE-05 es la entrada al portal, que manda a `/login` a quien no tiene sesión. `reserveRouteFor(id)` agrega la técnica en la query para que el enlace no cambie cuando US-AGE-05 la lea.
+- `ui/technique-view.ts`: `toLandingTechnique` se ejecuta en el servidor para que `TechniqueList` (cliente) no incluya `catalog` ni el cliente de Supabase en el bundle. Las fotos vienen de `docs/contracts/cms-api.md` (`tecnicas`), cruzadas por familia; una técnica sin fila en el CMS se muestra sin fotos. `formatColones` formatea colones enteros (ADR-0004).
+- `ui/sections.ts`: el `id` de cada sección es el ancla de la cabecera y el menú. Servicios (US-LAND-02) y Galería (US-LAND-03) se renderizan aunque no tengan datos. "Por qué acá" no tiene enlace en la navegación (igual que el diseño). Fidelidad (US-LAND-05) no está en el diseño y va después de Galería. Preguntas y Ubicación son de US-LAND-07.
+- `ui/site-shell/components/SiteHeader/SiteHeader.tsx`: usa `mix-blend-difference` para que el texto blanco se invierta sobre fondo claro o foto. Sin secciones no se renderizan ni el menú ni la barra de enlaces.
+- `ui/site-shell/components/SiteFooter/SiteFooter.tsx`: sin contacto publicado muestra solo "Cómo llegar" y "Reservar cita".
+- `ui/site-shell/hooks/use-focus-trap.ts`: enfoca el primer control al montar; Tab y Shift+Tab ciclan dentro del contenedor (UI-004). Devolver el foco al cerrar lo hace quien abrió (`SiteHeader`, `GalleryGrid`).
+- `ui/home/hooks/opening-frame.ts`: función pura de la geometría de la apertura del hero para un progreso de scroll de 0 a 1, en tres tiempos (la foto asoma, se abre, termina a sangre) mientras el título se desvanece. En progreso 0 la foto queda fuera de cuadro. `ui/home/hooks/use-opening-animation.ts` quita los eventos de puntero al título cuando su opacidad es casi 0.
+- `ui/home/components/LandingHero/LandingHero.styles.ts`: `motion-reduce:` desactiva la apertura (sin pista de scroll ni capas superpuestas; título y foto quedan uno debajo del otro).
+- Paneles de `TechniqueList` y `FaqList`: no se desmontan al cerrar (se ocultan con `hidden`) para que `aria-controls` resuelva siempre (UI-004); la animación de apertura corre al abrir y no al cargar la página.
+- `TechniqueList`: solo las técnicas con retoque muestran segundo precio (criterio 3 de US-LAND-02).
+- `GalleryGrid`: el filtro solo ofrece familias con algún par, en el orden de aparición; la clave de cada par incluye el filtro para que la entrada se anime; al cerrar la galería ampliada el foco vuelve al par que se miraba; el botón "Cerrar" va primero para que la trampa de foco lo enfoque al abrir; el `alt` de cada foto lo escribe la dueña en el CMS.
+- `LandingStudio`: el rol solo se muestra junto a un nombre.
+- `LandingLocation`: WhatsApp es el botón principal (criterio 2), Instagram va primero entre las redes (criterio 3) y el correo se muestra si existe. Sin contacto ni horario publicados, estado vacío (UI-003).
+- `LandingHome`: `getStudio()` y `getContact()` no fallan, por lo que la ruta siempre entrega `studio` y `contact`; sin fidelidad publicada, `LandingLoyalty` recibe `NO_LOYALTY` y muestra su estado vacío.
+- `LandingReasons` y `LandingFaq`: nunca llegan vacías; sin datos publicados, `content` entrega los del diseño.
+- Archivos `*.styles.ts`: usan solo tokens del tema `lashary-site` (UI-002); los valores del diseño "LASHARY Beauty Studio" viven en `tailwind.config.js`. `LandingLoyalty.styles.ts` reutiliza el lenguaje del diseño porque la sección no figura en él.
+- `ui/constants/landing-strings.ts`: texto visible de la estructura de la página (DOM-009); `galleryFamilyLabels` son las etiquetas de los filtros de la galería y `techniqueDescriptions` la prosa por familia de servicio, porque el catálogo (US-AGE-08) guarda nombre, precios y tiempos, no descripciones. Una familia sin texto se muestra sin descripción.
+
 ## Contrato público (`index.ts`)
 
 - `SiteHeader`, `LandingHome`, `LandingHero`, `LandingIntro`, `LandingClosingCta`, `LandingTechniques`, `LandingStudio`, `LandingReasons`, `LandingGallery`, `LandingLoyalty`, `LandingFaq`, `LandingLocation`, `SiteFooter`, `landingSections`, `TECHNIQUES_SECTION`, `STUDIO_SECTION`, `GALLERY_SECTION`, `LOYALTY_SECTION` y el tipo `SiteSection`.

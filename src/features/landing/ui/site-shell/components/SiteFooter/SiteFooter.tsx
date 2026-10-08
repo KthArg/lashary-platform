@@ -3,30 +3,27 @@ import { ExternalLink } from '../ExternalLink'
 import { landingMessages } from '../../../constants/landing-strings'
 import { RESERVE_ROUTE } from '../../../routes'
 import { LOCATION_SECTION } from '../../../sections'
-import { siteFooterStyles as styles } from './SiteFooter.styles'
+import { siteFooterStyles as STYLES } from './SiteFooter.styles'
 import type { SiteFooterProps } from './SiteFooter.types'
 
-// Pie de página de todas las páginas públicas (lo monta src/app/(site)/layout.tsx). Repite el
-// contacto, el horario y la dirección, y enlaza a Ubicación (criterio 5 de US-LAND-07). Sin
-// contacto publicado muestra solo lo que no depende del CMS: Cómo llegar y Reservas.
 export function SiteFooter({ contact: { contact, hours }, year }: SiteFooterProps) {
   const copy = landingMessages.footer
   const hasContactLinks = contact !== null && (contact.whatsapp !== null || contact.instagram !== null)
 
   return (
-    <footer aria-label={copy.label} className={styles.footer}>
-      <div className={styles.columns}>
+    <footer aria-label={copy.label} className={STYLES.footer}>
+      <div className={STYLES.columns}>
         {hasContactLinks && (
           <div>
-            <p className={styles.columnTitle}>{copy.contact}</p>
-            <div className={styles.lines}>
+            <p className={STYLES.columnTitle}>{copy.contact}</p>
+            <div className={STYLES.lines}>
               {contact.whatsapp && (
-                <ExternalLink href={contact.whatsapp.href} className={styles.link}>
+                <ExternalLink href={contact.whatsapp.href} className={STYLES.link}>
                   {copy.whatsapp}
                 </ExternalLink>
               )}
               {contact.instagram && (
-                <ExternalLink href={contact.instagram} className={styles.link}>
+                <ExternalLink href={contact.instagram} className={STYLES.link}>
                   {copy.instagram}
                 </ExternalLink>
               )}
@@ -36,10 +33,10 @@ export function SiteFooter({ contact: { contact, hours }, year }: SiteFooterProp
 
         {hours.length > 0 && (
           <div>
-            <p className={styles.columnTitle}>{copy.hours}</p>
-            <div className={styles.lines}>
+            <p className={STYLES.columnTitle}>{copy.hours}</p>
+            <div className={STYLES.lines}>
               {hours.map((row) => (
-                <p key={row.days} className={styles.hoursRow}>
+                <p key={row.days} className={STYLES.hoursRow}>
                   {row.days}: {row.hours}
                 </p>
               ))}
@@ -48,27 +45,27 @@ export function SiteFooter({ contact: { contact, hours }, year }: SiteFooterProp
         )}
 
         <div>
-          <p className={styles.columnTitle}>{copy.studio}</p>
-          <div className={styles.lines}>
+          <p className={STYLES.columnTitle}>{copy.studio}</p>
+          <div className={STYLES.lines}>
             {contact?.address && <span>{contact.address}</span>}
             {contact?.city && <span>{contact.city}</span>}
-            <a href={`/#${LOCATION_SECTION.id}`} className={styles.link}>
+            <a href={`/#${LOCATION_SECTION.id}`} className={STYLES.link}>
               {copy.directions}
             </a>
           </div>
         </div>
 
         <div>
-          <p className={styles.columnTitle}>{copy.reservations}</p>
-          <Link href={RESERVE_ROUTE} className={styles.reserve}>
+          <p className={STYLES.columnTitle}>{copy.reservations}</p>
+          <Link href={RESERVE_ROUTE} className={STYLES.reserve}>
             {copy.reserve}
           </Link>
         </div>
       </div>
 
-      <div className={styles.bottom}>
-        <p className={styles.brand}>{landingMessages.brand.name}</p>
-        <p className={styles.rights}>{copy.rights(year)}</p>
+      <div className={STYLES.bottom}>
+        <p className={STYLES.brand}>{landingMessages.brand.name}</p>
+        <p className={STYLES.rights}>{copy.rights(year)}</p>
       </div>
     </footer>
   )

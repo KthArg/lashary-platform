@@ -2,8 +2,6 @@ import { landingReasonsStyles as STYLES } from './LandingReasons.styles'
 import { landingMessages } from '../../../constants/landing-strings'
 import type { LandingReasonsProps } from './LandingReasons.types'
 
-// Sección "Por qué acá" (US-LAND-04, plegada a la historia por decisión del PO): qué distingue
-// al estudio. Nunca llega vacía: sin razones publicadas, `content` entrega las del diseño.
 export function LandingReasons({ reasons }: LandingReasonsProps) {
   const copy = landingMessages.reasons
 

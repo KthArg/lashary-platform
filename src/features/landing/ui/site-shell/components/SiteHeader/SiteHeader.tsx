@@ -4,13 +4,10 @@ import Link from 'next/link'
 import { useCallback, useRef, useState } from 'react'
 import { landingMessages } from '../../../constants/landing-strings'
 import { HOME_ANCHOR, LOGIN_ROUTE, RESERVE_ROUTE } from '../../../routes'
-import { siteHeaderStyles as styles } from './SiteHeader.styles'
+import { siteHeaderStyles as STYLES } from './SiteHeader.styles'
 import { SiteMenu } from '../SiteMenu'
 import type { SiteHeaderProps } from './SiteHeader.types'
 
-// Cabecera fija del sitio. Con `mix-blend-difference` el texto blanco se invierte sobre el
-// fondo claro o la foto, así que se lee en las dos. Sin secciones no hay nada que navegar: ni
-// menú ni barra de enlaces.
 export function SiteHeader({ sections }: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
@@ -23,26 +20,26 @@ export function SiteHeader({ sections }: SiteHeaderProps) {
 
   return (
     <>
-      <header className={styles.header}>
-        <div className={styles.inner}>
-          <a href={HOME_ANCHOR} className={styles.brand}>
-            <span className={styles.brandName}>{landingMessages.brand.name}</span>
-            <span className={styles.brandTagline}>{landingMessages.brand.tagline}</span>
+      <header className={STYLES.header}>
+        <div className={STYLES.inner}>
+          <a href={HOME_ANCHOR} className={STYLES.brand}>
+            <span className={STYLES.brandName}>{landingMessages.brand.name}</span>
+            <span className={STYLES.brandTagline}>{landingMessages.brand.tagline}</span>
           </a>
-          <div className={styles.actions}>
+          <div className={STYLES.actions}>
             {hasSections && (
-              <nav aria-label={landingMessages.header.sectionsNav} className={styles.desktopNav}>
+              <nav aria-label={landingMessages.header.sectionsNav} className={STYLES.desktopNav}>
                 {sections.map((section) => (
-                  <a key={section.id} href={`#${section.id}`} className={styles.navLink}>
+                  <a key={section.id} href={`#${section.id}`} className={STYLES.navLink}>
                     {section.label}
                   </a>
                 ))}
               </nav>
             )}
-            <Link href={LOGIN_ROUTE} className={hasSections ? styles.loginDesktop : styles.login}>
+            <Link href={LOGIN_ROUTE} className={hasSections ? STYLES.loginDesktop : STYLES.login}>
               {landingMessages.header.login}
             </Link>
-            <Link href={RESERVE_ROUTE} className={styles.reserve}>
+            <Link href={RESERVE_ROUTE} className={STYLES.reserve}>
               {landingMessages.header.reserve}
             </Link>
             {hasSections && (
@@ -53,10 +50,10 @@ export function SiteHeader({ sections }: SiteHeaderProps) {
                 aria-haspopup="dialog"
                 aria-expanded={menuOpen}
                 onClick={() => setMenuOpen(true)}
-                className={styles.menuButton}
+                className={STYLES.menuButton}
               >
-                <span aria-hidden="true" className={styles.menuBar} />
-                <span aria-hidden="true" className={styles.menuBar} />
+                <span aria-hidden="true" className={STYLES.menuBar} />
+                <span aria-hidden="true" className={STYLES.menuBar} />
               </button>
             )}
           </div>

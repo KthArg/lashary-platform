@@ -3,8 +3,6 @@
 import { useEffect, useRef } from 'react'
 import { openingFrame } from './opening-frame'
 
-// Conecta el scroll con `openingFrame`. Con `prefers-reduced-motion: reduce` no se registra nada:
-// el CSS del hero muestra texto y foto quietos, uno debajo del otro.
 export function useOpeningAnimation() {
   const trackRef = useRef<HTMLDivElement>(null)
   const photoRef = useRef<HTMLDivElement>(null)
@@ -29,7 +27,6 @@ export function useOpeningAnimation() {
       photo.style.borderRadius = `${f.radiusX}% / ${f.radiusY}%`
       type.style.opacity = String(f.typeOpacity)
       type.style.transform = `translateY(${f.typeTranslateY}px)`
-      // Un título casi transparente no debe seguir recibiendo clics ni foco visual.
       type.style.pointerEvents = f.typeOpacity < 0.6 ? 'none' : 'auto'
     }
     const schedule = () => {

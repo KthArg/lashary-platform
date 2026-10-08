@@ -11,7 +11,6 @@ afterEach(cleanup)
 
 const copy = landingMessages.gallery
 
-// Un par tal como lo entrega `getGallery()`: ya resuelto contra CMS_URL y con consentimiento.
 const par = (family: GalleryPair['family'], name: string): GalleryPair => ({
   family,
   before: { url: `https://cms.test/${name}-antes.jpg`, alt: `${name}, antes` },
@@ -64,7 +63,6 @@ describe('LandingGallery — US-LAND-03', () => {
     fireEvent.click(within(dialogo()).getByRole('button', { name: copy.next }))
     expect(within(dialogo()).getByAltText('Caro, después')).toBeTruthy()
 
-    // Da la vuelta: después del último viene el primero.
     fireEvent.keyDown(document, { key: 'ArrowRight' })
     expect(within(dialogo()).getByText('1 / 3')).toBeTruthy()
 

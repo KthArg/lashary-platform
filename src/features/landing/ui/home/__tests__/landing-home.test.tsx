@@ -74,9 +74,6 @@ describe('LandingHome — la página de inicio compone las secciones con el cont
     const main = container.querySelector('main#inicio') as HTMLElement
     expect(within(main).getByRole('heading', { level: 1 }).textContent).toBe('extensiones de pestañasuna por una.')
     expect(within(main).getByText('Tiempo, luz y criterio.')).toBeTruthy()
-    // En el orden del diseño: Servicios (US-LAND-02), El estudio y Por qué acá (US-LAND-04),
-    // Galería (US-LAND-03), Fidelidad (US-LAND-05, fuera del diseño), Preguntas y Ubicación
-    // (US-LAND-07) y la llamada final.
     const encabezados = within(main).getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
     expect(encabezados).toEqual([
       'Servicios',

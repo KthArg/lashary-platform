@@ -4,9 +4,6 @@ import { TechniqueList } from '../TechniqueList'
 import { TECHNIQUES_SECTION } from '../../../sections'
 import type { LandingTechniquesProps } from './LandingTechniques.types'
 
-// Sección "Servicios" (US-LAND-02): las técnicas del catálogo que administra la dueña, con su
-// precio y su duración. La sección se renderiza siempre —el ancla de la navegación tiene que
-// existir— y sin técnicas muestra su estado vacío (UI-003).
 export function LandingTechniques({ techniques }: LandingTechniquesProps) {
   const copy = landingMessages.techniques
 

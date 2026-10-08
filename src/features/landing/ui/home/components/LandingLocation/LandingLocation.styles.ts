@@ -1,5 +1,3 @@
-// Estilos de Ubicación (US-LAND-07), tomados del diseño "LASHARY Beauty Studio".
-// Solo tokens del tema `lashary-site` (UI-002).
 export const landingLocationStyles = {
   section: 'scroll-mt-site-anchor px-site-gutter pb-site-section',
   inner: 'mx-auto max-w-site',
@@ -9,7 +7,6 @@ export const landingLocationStyles = {
   rule: 'h-px flex-auto bg-site-line',
   index: 'font-site-display text-site-section-index text-site-clay',
 
-  // Los datos a un lado y el mapa al otro; en angosto, uno debajo del otro.
   layout: 'flex flex-wrap gap-site-columns',
   details: 'max-w-site-text flex-1 basis-site-text',
   address: 'm-0 mb-1 text-site-cta leading-site-loose text-site-ink',
@@ -17,7 +14,6 @@ export const landingLocationStyles = {
 
   groupTitle: 'm-0 mb-3 text-site-meta text-site-ink-muted',
   hours: 'm-0 mb-8 grid grid-cols-site-hours gap-x-7 gap-y-3 text-site-body',
-  // Cada par día y horas: su contenedor no ocupa lugar en la grilla.
   hoursRow: 'contents',
   days: 'text-site-ink-muted',
   range: 'm-0 text-site-ink',

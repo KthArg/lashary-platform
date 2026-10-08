@@ -13,7 +13,6 @@ afterEach(cleanup)
 
 const copy = landingMessages.loyalty
 
-// La fidelidad tal como la entrega `getLoyalty()`, ya validada y con los niveles ordenados.
 const publicada: LoyaltyContent = {
   paragraphs: ['Cada cita completada suma una visita.', 'Los beneficios se aplican solos.'],
   note: 'Los beneficios no son acumulables.',

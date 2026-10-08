@@ -1,5 +1,3 @@
-// Estilos de Preguntas (US-LAND-07), tomados del diseño "LASHARY Beauty Studio".
-// Solo tokens del tema `lashary-site` (UI-002).
 export const landingFaqStyles = {
   section: 'scroll-mt-site-anchor px-site-gutter pb-site-section',
   inner: 'mx-auto max-w-site',
@@ -10,7 +8,6 @@ export const landingFaqStyles = {
   index: 'font-site-display text-site-section-index text-site-clay',
 
   list: 'm-0 max-w-site-faq list-none p-0',
-  // El filete va arriba de cada pregunta; la última cierra la lista por abajo.
   item: 'border-t border-site-line last:border-b',
   question: 'm-0',
   trigger:
@@ -18,7 +15,6 @@ export const landingFaqStyles = {
   sign: 'flex-none text-site-sign text-site-ink-muted transition-transform duration-300 ease-site-out motion-reduce:transition-none',
   signOpen: 'rotate-site-sign text-site-rose',
 
-  // El panel está siempre en el DOM: la animación corre al abrir, no al cargar la página.
   answer: 'max-w-site-faq-answer pb-6',
   answerOpen: 'animate-site-in-quick motion-reduce:animate-none',
   paragraph: 'm-0 mb-3 text-site-body leading-site-loose text-site-ink-soft last:mb-0',

@@ -7,8 +7,6 @@ import { RESERVE_ROUTE } from '../../../routes'
 import { useOpeningAnimation } from '../../hooks/use-opening-animation'
 import type { LandingHeroProps } from './LandingHero.types'
 
-// Hero de la landing (US-LAND-01). El texto viene del CMS vía `content`; el destino de
-// "Reservar cita" es fijo. Al bajar, la foto se abre sobre el título (use-opening-animation).
 export function LandingHero({ hero }: LandingHeroProps) {
   const { trackRef, photoRef, typeRef } = useOpeningAnimation()
   const showSecondary = hero.secondaryLabel !== null && hero.secondaryHref !== null

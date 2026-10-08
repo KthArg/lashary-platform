@@ -1,5 +1,3 @@
-// Estilos de Por qué acá (US-LAND-04), tomados del diseño "LASHARY Beauty Studio".
-// Solo tokens del tema `lashary-site` (UI-002).
 export const landingReasonsStyles = {
   section: 'px-site-gutter py-site-section',
   inner: 'mx-auto max-w-site',
