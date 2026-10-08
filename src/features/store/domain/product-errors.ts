@@ -19,7 +19,18 @@ export type DuplicateProductSlug = {
   slug: string
 }
 
-export type ProductError = InvalidProduct | ProductNotFound | DuplicateProductSlug
+export type PublicProductNotFound = {
+  kind: 'PublicProductNotFound'
+  code: 'STORE_PRODUCTO_PUBLICO_NO_ENCONTRADO'
+  message: string
+  slug: string
+}
+
+export type ProductError =
+  | InvalidProduct
+  | ProductNotFound
+  | DuplicateProductSlug
+  | PublicProductNotFound
 
 export function createInvalidProduct(problems: string[]): InvalidProduct {
   return {
@@ -44,6 +55,15 @@ export function createDuplicateProductSlug(slug: string): DuplicateProductSlug {
     kind: 'DuplicateProductSlug',
     code: 'STORE_PRODUCTO_SLUG_DUPLICADO',
     message: `ya existe un producto con el slug "${slug}"`,
+    slug,
+  }
+}
+
+export function createPublicProductNotFound(slug: string): PublicProductNotFound {
+  return {
+    kind: 'PublicProductNotFound',
+    code: 'STORE_PRODUCTO_PUBLICO_NO_ENCONTRADO',
+    message: `no hay un producto disponible en la tienda con el slug "${slug}"`,
     slug,
   }
 }
