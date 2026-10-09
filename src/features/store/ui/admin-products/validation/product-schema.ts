@@ -5,6 +5,8 @@ import { productStrings } from '../constants/product-strings'
 
 const validationMessages = productStrings.form.validation
 
+export type ProductFormFields = Omit<ProductWrite, 'imageUrl'>
+
 export const productSchema = z
   .object({
     name: z
@@ -13,7 +15,6 @@ export const productSchema = z
       .min(1, validationMessages.name)
       .refine((name) => slugFromName(name).length > 0, validationMessages.nameWithoutLetters),
     description: z.string().trim().optional().default(''),
-    imageUrl: z.string().trim().min(1, validationMessages.imageUrl),
     priceCrc: z.coerce.number().int().positive(validationMessages.priceCrc),
     displayOrder: z.coerce.number().int().min(0, validationMessages.displayOrder),
     stock: z
@@ -23,10 +24,9 @@ export const productSchema = z
       .pipe(z.coerce.number().int(validationMessages.stock).min(0, validationMessages.stock)),
   })
   .transform(
-    (data): ProductWrite => ({
+    (data): ProductFormFields => ({
       name: data.name,
       description: data.description,
-      imageUrl: data.imageUrl,
       priceCrc: data.priceCrc,
       displayOrder: data.displayOrder,
       stock: data.stock,

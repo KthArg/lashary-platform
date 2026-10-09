@@ -11,18 +11,47 @@ import {
   activateProduct,
   type ProductCommandDeps,
 } from '../../../application/admin-products/commands'
+import {
+  uploadProductImage,
+  removeStoredProductImage,
+  type ProductImageDeps,
+} from '../../../application/admin-products/product-images'
+import { createProductNotFound } from '../../../domain/product-errors'
 import { adminProductRepository } from '../../../db/admin-product-repository'
+import { productImageStorage } from '../../../db/product-image-storage'
 import { productSchema } from '../validation/product-schema'
 import { productStrings } from '../constants/product-strings'
 import { productRoutes } from '../constants/product-routes'
 import type { ProductActionState } from '../types/product-action-state'
 
-async function deps(): Promise<ProductCommandDeps> {
-  return { repo: await adminProductRepository(), newId: () => randomUUID() }
+type ActionDeps = {
+  products: ProductCommandDeps
+  images: ProductImageDeps
+}
+
+async function deps(productId: string = randomUUID()): Promise<ActionDeps> {
+  return {
+    products: { repo: await adminProductRepository(), newId: () => productId },
+    images: { storage: await productImageStorage(), newFileId: () => randomUUID() },
+  }
 }
 
 function forbidden(): ProductActionState {
   return { status: 'forbidden', message: productStrings.form.accessDenied }
+}
+
+function invalid(problems: string[]): ProductActionState {
+  return { status: 'invalid', problems }
+}
+
+function problemsOf(error: { message: string; problems?: string[] }): string[] {
+  return error.problems ?? [error.message]
+}
+
+async function readImage(formData: FormData): Promise<Uint8Array | null> {
+  const file = formData.get('image')
+  if (!(file instanceof File) || file.size === 0) return null
+  return new Uint8Array(await file.arrayBuffer())
 }
 
 export async function createProductAction(
@@ -32,18 +61,20 @@ export async function createProductAction(
   if (!(await isStaff())) return forbidden()
 
   const parsed = productSchema.safeParse(Object.fromEntries(formData))
-  if (!parsed.success) {
-    return {
-      status: 'invalid',
-      problems: parsed.error.issues.map((issue) => issue.message),
-    }
-  }
-  const result = await createProduct(await deps())(parsed.data)
+  if (!parsed.success) return invalid(parsed.error.issues.map((issue) => issue.message))
+
+  const image = await readImage(formData)
+  if (image === null) return invalid([productStrings.form.validation.imageRequired])
+
+  const productId = randomUUID()
+  const { products, images } = await deps(productId)
+  const uploaded = await uploadProductImage(images)(productId, image)
+  if (isErr(uploaded)) return invalid(uploaded.error.problems)
+
+  const result = await createProduct(products)({ ...parsed.data, imageUrl: uploaded.value })
   if (isErr(result)) {
-    return {
-      status: 'invalid',
-      problems: 'problems' in result.error ? result.error.problems : [result.error.message],
-    }
+    await removeStoredProductImage(images)(uploaded.value)
+    return invalid(problemsOf(result.error))
   }
   revalidatePath(productRoutes.admin)
   return { status: 'ok', message: productStrings.form.savedCreate }
@@ -57,19 +88,27 @@ export async function updateProductAction(
 
   const id = String(formData.get('id') ?? '')
   const parsed = productSchema.safeParse(Object.fromEntries(formData))
-  if (!parsed.success) {
-    return {
-      status: 'invalid',
-      problems: parsed.error.issues.map((issue) => issue.message),
-    }
+  if (!parsed.success) return invalid(parsed.error.issues.map((issue) => issue.message))
+
+  const { products, images } = await deps()
+  const existing = await products.repo.findById(id)
+  if (existing === null) return invalid([createProductNotFound(id).message])
+
+  let imageUrl = existing.imageUrl
+  const image = await readImage(formData)
+  if (image !== null) {
+    const uploaded = await uploadProductImage(images)(id, image)
+    if (isErr(uploaded)) return invalid(uploaded.error.problems)
+    imageUrl = uploaded.value
   }
-  const result = await updateProduct(await deps())(id, parsed.data)
+  const replacedImage = imageUrl !== existing.imageUrl
+
+  const result = await updateProduct(products)(id, { ...parsed.data, imageUrl })
   if (isErr(result)) {
-    return {
-      status: 'invalid',
-      problems: 'problems' in result.error ? result.error.problems : [result.error.message],
-    }
+    if (replacedImage) await removeStoredProductImage(images)(imageUrl)
+    return invalid(problemsOf(result.error))
   }
+  if (replacedImage) await removeStoredProductImage(images)(existing.imageUrl)
   revalidatePath(productRoutes.admin)
   return { status: 'ok', message: productStrings.form.savedEdit }
 }
@@ -83,7 +122,7 @@ async function changeProductStatus(
 
   const id = String(formData.get('id') ?? '')
 
-  const result = await command(await deps())(id)
+  const result = await command((await deps()).products)(id)
   if (isErr(result)) {
     return { status: 'invalid', problems: [result.error.message] }
   }
