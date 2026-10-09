@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { makeTechnique } from '@/features/catalog/application/__tests__/technique-fixture'
+import { makeTechnique } from '@/features/catalog/application/techniques/__tests__/technique-fixture'
 import { PackageForm } from '../components/PackageForm'
 import { PackageTable } from '../components/PackageTable'
 

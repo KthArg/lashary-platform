@@ -1,0 +1,60 @@
+export const productStrings = {
+  admin: {
+    title: 'Productos de la tienda',
+    subtitle: 'Productos de mantenimiento del catálogo público. El sitio lee de aquí.',
+    newProduct: 'Nuevo producto',
+    columns: {
+      name: 'Producto',
+      slug: 'Slug',
+      price: 'Precio',
+      order: 'Orden',
+      status: 'Estado',
+      actions: 'Acciones',
+    },
+    status: { active: 'Activo', inactive: 'Desactivado' },
+    rowActions: { edit: 'Editar', deactivate: 'Desactivar' },
+    empty: {
+      title: 'Todavía no hay productos',
+      body: 'Creá el primer producto para que aparezca en el catálogo público.',
+      cta: 'Crear el primer producto',
+    },
+    loading: 'Cargando los productos…',
+    error: {
+      title: 'No se pudo cargar el catálogo',
+      body: 'Ocurrió un error al leer los productos.',
+      retry: 'Reintentar',
+    },
+  },
+  form: {
+    legendCreate: 'Nuevo producto',
+    legendEdit: 'Editar producto',
+    fields: {
+      slug: 'Slug (identificador único en la URL)',
+      name: 'Nombre',
+      description: 'Descripción',
+      imageUrl: 'URL de la imagen',
+      priceCrc: 'Precio (colones)',
+      displayOrder: 'Orden de presentación',
+    },
+    submitCreate: 'Crear producto',
+    submitEdit: 'Guardar cambios',
+    cancel: 'Cancelar',
+    accessDenied:
+      'Tu sesión no tiene permisos para modificar el catálogo. Iniciá sesión como administradora.',
+    validationTitle: 'Revisá estos campos:',
+    savedCreate: 'Producto creado.',
+    savedEdit: 'Cambios guardados.',
+    deactivated: 'Producto desactivado.',
+    validation: {
+      slug: 'El slug es obligatorio',
+      name: 'El nombre es obligatorio',
+      imageUrl: 'La URL de la imagen es obligatoria',
+      priceCrc: 'El precio debe ser mayor que cero',
+      displayOrder: 'El orden de presentación no puede ser negativo',
+    },
+  },
+  shell: {
+    brand: 'LASHARY',
+    signOut: 'Cerrar sesión',
+  },
+} as const

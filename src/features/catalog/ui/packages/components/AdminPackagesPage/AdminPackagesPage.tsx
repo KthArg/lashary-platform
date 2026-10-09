@@ -1,13 +1,13 @@
 import Link from 'next/link'
 import { isOk } from '@/shared/result'
-import { listTechniques as listTechniquesUseCase } from '../../../../application/queries'
+import { listTechniques as listTechniquesUseCase } from '../../../../application/techniques/queries'
 import {
   listPackages as listPackagesUseCase,
   getPackage as getPackageUseCase,
   listPackageTechniques as listPackageTechniquesUseCase,
 } from '../../../../application/packages/queries'
 import { packageRepository } from '../../../../db/packages/package-repository'
-import { techniqueRepository } from '../../../../db/technique-repository'
+import { techniqueRepository } from '../../../../db/techniques/technique-repository'
 import { packageMessages } from '../../constants/package-strings'
 import { catalogRoutes } from '../../../routes'
 import { adminPackagesPageStyles as STYLES } from './AdminPackagesPage.styles'
@@ -16,7 +16,7 @@ import { PackageForm } from '../PackageForm'
 import { PackagePagination } from '../PackagePagination'
 import type { AdminPackagesPageProps } from './AdminPackagesPage.types'
 
-const m = packageMessages.admin
+const adminMessages = packageMessages.admin
 
 export async function AdminPackagesPage({ searchParams }: AdminPackagesPageProps) {
   const params = (await searchParams) ?? {}
@@ -34,25 +34,25 @@ export async function AdminPackagesPage({ searchParams }: AdminPackagesPageProps
   const memberTechniques = await listPackageTechniquesUseCase(techRepo)(
     editing ? [...page.items, editing] : page.items,
   )
-  const techniqueNameById = new Map(memberTechniques.map((t) => [t.id, t.name]))
+  const techniqueNameById = new Map(memberTechniques.map((technique) => [technique.id, technique.name]))
   const inactiveTechniqueIds = new Set(
-    memberTechniques.filter((t) => !t.isActive).map((t) => t.id),
+    memberTechniques.filter((technique) => !technique.isActive).map((technique) => technique.id),
   )
   const formTechniques = [
     ...activeTechniques.items,
-    ...memberTechniques.filter((t) => !t.isActive && editing?.techniqueIds.includes(t.id)),
+    ...memberTechniques.filter((technique) => !technique.isActive && editing?.techniqueIds.includes(technique.id)),
   ]
 
   return (
     <main className={STYLES.main}>
       <header className={STYLES.header}>
         <div>
-          <h1 className={STYLES.title}>{m.title}</h1>
-          <p className={STYLES.subtitle}>{m.subtitle}</p>
+          <h1 className={STYLES.title}>{adminMessages.title}</h1>
+          <p className={STYLES.subtitle}>{adminMessages.subtitle}</p>
         </div>
         {!showForm && (
           <Link href={catalogRoutes.newPackage} className={STYLES.newPackageLink}>
-            {m.newPackage}
+            {adminMessages.newPackage}
           </Link>
         )}
       </header>
@@ -68,10 +68,10 @@ export async function AdminPackagesPage({ searchParams }: AdminPackagesPageProps
 
       {page.items.length === 0 ? (
         <div className={STYLES.emptyBox}>
-          <h2 className={STYLES.emptyTitle}>{m.empty.title}</h2>
-          <p className={STYLES.emptyBody}>{m.empty.body}</p>
+          <h2 className={STYLES.emptyTitle}>{adminMessages.empty.title}</h2>
+          <p className={STYLES.emptyBody}>{adminMessages.empty.body}</p>
           <Link href={catalogRoutes.newPackage} className={STYLES.emptyCta}>
-            {m.empty.cta}
+            {adminMessages.empty.cta}
           </Link>
         </div>
       ) : (

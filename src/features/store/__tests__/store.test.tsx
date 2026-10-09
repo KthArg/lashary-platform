@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import {
-  CADENAS_GRID_PRODUCTOS_ES,
-  catalogoProductosDb,
-  GridProductosPublicos,
-  estadoGridProductosInicial,
-  obtenerEstadoGridProductos,
-  type CatalogoProductosPublico,
+  PUBLIC_GRID_STRINGS,
+  publicProductsDb,
+  PublicProductsGrid,
+  initialProductGridState,
+  getProductGridState,
+  type PublicProductCatalog,
 } from '@/features/store'
-import ProductosPage from '@/app/productos/page'
+import ProductsPage from '@/app/productos/page'
 
 const mockSelect = vi.fn()
 const mockEq = vi.fn()
@@ -58,72 +58,72 @@ beforeEach(() => {
 
 describe('US-PROD-02: productos públicos en cuadricula', () => {
   it('filtra productos inactivos y convierte los activos en tarjetas', async () => {
-    const catalogo: CatalogoProductosPublico = {
-      listarProductosPublicos: vi.fn().mockResolvedValue([
-        { id: '1', nombre: 'Activo', urlImagen: '/a.jpg', precioCrc: 1000, activo: true },
-        { id: '2', nombre: 'Inactivo', urlImagen: '/b.jpg', precioCrc: 2000, activo: false },
+    const catalog: PublicProductCatalog = {
+      listPublicProducts: vi.fn().mockResolvedValue([
+        { id: '1', name: 'Activo', imageUrl: '/a.jpg', priceCrc: 1000, isActive: true },
+        { id: '2', name: 'Inactivo', imageUrl: '/b.jpg', priceCrc: 2000, isActive: false },
       ]),
     }
 
-    const estado = await obtenerEstadoGridProductos(catalogo, CADENAS_GRID_PRODUCTOS_ES)
+    const state = await getProductGridState(catalog, PUBLIC_GRID_STRINGS)
 
-    expect(estado.tipo).toBe('listo')
-    if (estado.tipo === 'listo') {
-      expect(estado.tarjetas).toHaveLength(1)
-      expect(estado.tarjetas[0]).toMatchObject({
+    expect(state.kind).toBe('ready')
+    if (state.kind === 'ready') {
+      expect(state.cards).toHaveLength(1)
+      expect(state.cards[0]).toMatchObject({
         id: '1',
-        nombre: 'Activo',
-        urlImagen: '/a.jpg',
+        name: 'Activo',
+        imageUrl: '/a.jpg',
       })
-      expect(estado.tarjetas[0].etiquetaPrecio).toContain('₡')
+      expect(state.cards[0].priceLabel).toContain('₡')
     }
   })
 
   it('devuelve estado vacío cuando no hay productos activos', async () => {
-    const catalogo: CatalogoProductosPublico = {
-      listarProductosPublicos: vi.fn().mockResolvedValue([
-        { id: '1', nombre: 'Uno', urlImagen: '/a.jpg', precioCrc: 1000, activo: false },
+    const catalog: PublicProductCatalog = {
+      listPublicProducts: vi.fn().mockResolvedValue([
+        { id: '1', name: 'Uno', imageUrl: '/a.jpg', priceCrc: 1000, isActive: false },
       ]),
     }
 
-    const estado = await obtenerEstadoGridProductos(catalogo, CADENAS_GRID_PRODUCTOS_ES)
+    const state = await getProductGridState(catalog, PUBLIC_GRID_STRINGS)
 
-    expect(estado).toEqual({
-      tipo: 'vacio',
-      titulo: CADENAS_GRID_PRODUCTOS_ES.tituloVacio,
-      descripcion: CADENAS_GRID_PRODUCTOS_ES.descripcionVacio,
+    expect(state).toEqual({
+      kind: 'empty',
+      title: PUBLIC_GRID_STRINGS.emptyTitle,
+      description: PUBLIC_GRID_STRINGS.emptyDescription,
     })
   })
 
   it('devuelve estado de error cuando el catálogo falla', async () => {
-    const catalogo: CatalogoProductosPublico = {
-      listarProductosPublicos: vi.fn().mockRejectedValue(new Error('cms offline')),
+    const catalog: PublicProductCatalog = {
+      listPublicProducts: vi.fn().mockRejectedValue(new Error('cms offline')),
     }
 
-    const estado = await obtenerEstadoGridProductos(catalogo, CADENAS_GRID_PRODUCTOS_ES)
+    const state = await getProductGridState(catalog, PUBLIC_GRID_STRINGS)
 
-    expect(estado).toEqual({
-      tipo: 'error',
-      titulo: CADENAS_GRID_PRODUCTOS_ES.tituloError,
-      descripcion: CADENAS_GRID_PRODUCTOS_ES.descripcionError,
-      etiquetaReintentar: CADENAS_GRID_PRODUCTOS_ES.etiquetaReintentar,
+    expect(state).toEqual({
+      kind: 'error',
+      title: PUBLIC_GRID_STRINGS.errorTitle,
+      description: PUBLIC_GRID_STRINGS.errorDescription,
+      retryLabel: PUBLIC_GRID_STRINGS.retryLabel,
     })
   })
 
   it('renderiza el grid con accesibilidad, escape de contenido y URL de imagen sanitizada', async () => {
-    const catalogo: CatalogoProductosPublico = {
-      listarProductosPublicos: vi.fn().mockResolvedValue([
+    const catalog: PublicProductCatalog = {
+      listPublicProducts: vi.fn().mockResolvedValue([
         {
           id: '1',
-          nombre: '<script>alert(1)</script>',
-          urlImagen: 'javascript:alert(1)',
-          precioCrc: 18000,
-          activo: true,
+          name: '<script>alert(1)</script>',
+          imageUrl: 'javascript:alert(1)',
+          priceCrc: 18000,
+          isActive: true,
         },
       ]),
     }
-    const estado = await obtenerEstadoGridProductos(catalogo, CADENAS_GRID_PRODUCTOS_ES)
-    const html = renderToStaticMarkup(<GridProductosPublicos estado={estado} />)
+    const state = await getProductGridState(catalog, PUBLIC_GRID_STRINGS)
+    const html = renderToStaticMarkup(<PublicProductsGrid state={state} />)
 
     expect(html).toContain('aria-label="Catálogo de productos de mantenimiento"')
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
@@ -131,31 +131,31 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
   })
 
   it('el grid es responsivo: una columna en móvil, dos desde sm y tres desde lg', async () => {
-    const catalogo: CatalogoProductosPublico = {
-      listarProductosPublicos: vi.fn().mockResolvedValue(mockDbRows.map((fila) => ({
-        id: fila.id,
-        nombre: fila.nombre,
-        urlImagen: fila.url_imagen,
-        precioCrc: fila.precio_crc,
-        activo: fila.activo,
+    const catalog: PublicProductCatalog = {
+      listPublicProducts: vi.fn().mockResolvedValue(mockDbRows.map((row) => ({
+        id: row.id,
+        name: row.nombre,
+        imageUrl: row.url_imagen,
+        priceCrc: row.precio_crc,
+        isActive: row.activo,
       }))),
     }
-    const estado = await obtenerEstadoGridProductos(catalogo, CADENAS_GRID_PRODUCTOS_ES)
-    const html = renderToStaticMarkup(<GridProductosPublicos estado={estado} />)
+    const state = await getProductGridState(catalog, PUBLIC_GRID_STRINGS)
+    const html = renderToStaticMarkup(<PublicProductsGrid state={state} />)
 
     expect(html).toMatch(/class="[^"]*\bgrid-cols-1\b[^"]*\bsm:grid-cols-2\b[^"]*\blg:grid-cols-3\b/)
   })
 
   it('sanitiza una URL de reintento insegura y no la usa como href del botón', () => {
     const html = renderToStaticMarkup(
-      <GridProductosPublicos
-        estado={{
-          tipo: 'error',
-          titulo: 'No se pudo cargar el catálogo',
-          descripcion: 'Inténtalo de nuevo en unos minutos.',
-          etiquetaReintentar: 'Reintentar',
+      <PublicProductsGrid
+        state={{
+          kind: 'error',
+          title: 'No se pudo cargar el catálogo',
+          description: 'Inténtalo de nuevo en unos minutos.',
+          retryLabel: 'Reintentar',
         }}
-        urlReintento="javascript:alert(1)"
+        retryUrl="javascript:alert(1)"
       />
     )
 
@@ -165,14 +165,14 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
 
   it('usa una URL de reintento segura como href del botón de reintento', () => {
     const html = renderToStaticMarkup(
-      <GridProductosPublicos
-        estado={{
-          tipo: 'error',
-          titulo: 'No se pudo cargar el catálogo',
-          descripcion: 'Inténtalo de nuevo en unos minutos.',
-          etiquetaReintentar: 'Reintentar',
+      <PublicProductsGrid
+        state={{
+          kind: 'error',
+          title: 'No se pudo cargar el catálogo',
+          description: 'Inténtalo de nuevo en unos minutos.',
+          retryLabel: 'Reintentar',
         }}
-        urlReintento="/productos"
+        retryUrl="/productos"
       />
     )
 
@@ -180,7 +180,7 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
   })
 
   it('integra la ruta pública /productos con el feature store', async () => {
-    const page = await ProductosPage()
+    const page = await ProductsPage()
     const html = renderToStaticMarkup(page)
 
     expect(html).toContain('aria-label="Catálogo de productos de mantenimiento"')
@@ -189,16 +189,16 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
   })
 
   it('lee los productos desde la base de datos para la ruta pública', async () => {
-    const catalogo = catalogoProductosDb()
-    const productos = await catalogo.listarProductosPublicos()
+    const catalog = publicProductsDb()
+    const products = await catalog.listPublicProducts()
 
-    expect(productos).toHaveLength(2)
-    expect(productos[0].nombre).toBe('Serum nutritivo Lashary')
-    expect(productos[1].nombre).toBe('Cepillo limpiador Lashary')
+    expect(products).toHaveLength(2)
+    expect(products[0].name).toBe('Serum nutritivo Lashary')
+    expect(products[1].name).toBe('Cepillo limpiador Lashary')
   })
 
   it('la ruta /productos renderiza múltiples productos provenientes de la base', async () => {
-    const page = await ProductosPage()
+    const page = await ProductsPage()
     const html = renderToStaticMarkup(page)
 
     expect(html).toContain('Serum nutritivo Lashary')

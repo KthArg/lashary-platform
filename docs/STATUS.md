@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-06.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-08.
 
 ## Features
 
@@ -32,14 +32,13 @@
 - US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
 - US-AUTH-02 — terminada — PR #3, PR #18, tests: auth-client.test.tsx, rls-isolation.test.ts
 
-### catalog (actualizado: 2026-10-04)
+### catalog (actualizado: 2026-10-08)
 - US-AGE-08 — terminada — PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx
 - US-PROD-01 — terminada — PRs #98 a #107, #134, #157 a #168 (pila) y el cierre us/US-PROD-01 a main; tests: package.test.ts, package-commands.test.ts, package-queries.test.ts, package-actions.test.ts, package-schema.test.ts, package-inactive-techniques.test.tsx, package-pagination.test.tsx, package-repository.integration.test.ts, package-rls-isolation.test.ts, catalog_package_staff_write.test.sql; UI probada a mano contra lashary-pruebas (2026-10-03)
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
-### clients (actualizado: 2026-10-04
-2026-10-03)
+### clients (actualizado: 2026-10-08)
 - US-CLI-01 — en_progreso — falta: las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
@@ -98,8 +97,8 @@
 - US-AGE-11 — no_iniciada
 - US-AGE-12 — no_iniciada
 
-### store (actualizado: 2026-10-06)
-- US-PROD-02 — terminada — PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), producto.test.ts, productos-admin-comandos.test.ts, productos-admin-consultas.test.ts, esquema-producto-admin.test.ts, productos-admin-actions.test.ts, layout.test.tsx, rls-productos-admin.test.ts (omitida sin Supabase local, ver deuda)
+### store (actualizado: 2026-10-08)
+- US-PROD-02 — terminada — PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), product.test.ts, commands.test.ts, queries.test.ts, product-schema.test.ts, product-actions.test.ts, layout.test.tsx, products-admin-rls.test.ts (omitida sin Supabase local, ver deuda)
 - US-PROD-03 — no_iniciada
 - US-SHOP-01 — no_iniciada
 - US-SHOP-02 — no_iniciada
@@ -115,7 +114,7 @@ Ninguno registrado.
 ## Deuda aceptada
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
 - clients: Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras — aceptada en PR #32, etiqueta excepcion-proceso — costo: 3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)
-- store: Prueba de aislamiento RLS (SEC-002) de las politicas store_products_*_admin (supabase/migrations/20260912000000_store_products.sql): src/features/store/__tests__/rls-productos-admin.test.ts se omite con describe.skipIf cuando no hay Supabase local, y CI no lo levanta, asi que no demuestra que anon y una clienta sin rol de staff no puedan INSERT, UPDATE ni DELETE — aceptada en PR de cierre us/US-PROD-02 a main — costo: 1h si ya existe el arnes de Supabase local en CI de la deuda de auth (PR #3); 3h si no: arnes mas correr la suite existente en CI
+- store: Prueba de aislamiento RLS (SEC-002) de las politicas store_products_*_admin (supabase/migrations/20260912000000_store_products.sql): src/features/store/__tests__/products-admin-rls.test.ts se omite con describe.skipIf cuando no hay Supabase local, y CI no lo levanta, asi que no demuestra que anon y una clienta sin rol de staff no puedan INSERT, UPDATE ni DELETE — aceptada en PR de cierre us/US-PROD-02 a main — costo: 1h si ya existe el arnes de Supabase local en CI de la deuda de auth (PR #3); 3h si no: arnes mas correr la suite existente en CI
 
 ## Flags vivos
 

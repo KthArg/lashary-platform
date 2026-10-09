@@ -6,7 +6,7 @@ import { catalogRoutes } from '../../../routes'
 import { packageTableStyles as STYLES } from './PackageTable.styles'
 import type { PackageTableProps } from './PackageTable.types'
 
-const m = packageMessages.admin
+const adminMessages = packageMessages.admin
 
 function techniquesCell(
   pkg: PackageListItem,
@@ -16,7 +16,7 @@ function techniquesCell(
   return pkg.techniqueIds
     .map((id) => {
       const name = techniqueNameById.get(id) ?? id
-      return inactiveTechniqueIds.has(id) ? `${name} ${m.inactiveTechnique}` : name
+      return inactiveTechniqueIds.has(id) ? `${name} ${adminMessages.inactiveTechnique}` : name
     })
     .join(', ')
 }
@@ -31,14 +31,14 @@ export function PackageTable({
       <table className={STYLES.table}>
         <thead>
           <tr>
-            <th>{m.columns.name}</th>
-            <th>{m.columns.techniques}</th>
-            <th>{m.columns.duration}</th>
-            <th>{m.columns.price}</th>
-            <th>{m.columns.deposit}</th>
-            <th>{m.columns.status}</th>
+            <th>{adminMessages.columns.name}</th>
+            <th>{adminMessages.columns.techniques}</th>
+            <th>{adminMessages.columns.duration}</th>
+            <th>{adminMessages.columns.price}</th>
+            <th>{adminMessages.columns.deposit}</th>
+            <th>{adminMessages.columns.status}</th>
             <th>
-              <span className={STYLES.srOnly}>{m.columns.actions}</span>
+              <span className={STYLES.srOnly}>{adminMessages.columns.actions}</span>
             </th>
           </tr>
         </thead>
@@ -48,18 +48,18 @@ export function PackageTable({
               <td className={STYLES.nameCell}>{pkg.name}</td>
               <td>{techniquesCell(pkg, techniqueNameById, inactiveTechniqueIds)}</td>
               <td>
-                {pkg.durationTotalMin} {m.minutesShort}
+                {pkg.durationTotalMin} {adminMessages.minutesShort}
               </td>
               <td>{formatColones(pkg.price)}</td>
               <td>{formatColones(pkg.deposit)}</td>
               <td>
                 <span className={pkg.isActive ? STYLES.badgeActive : STYLES.badgeInactive}>
-                  {pkg.isActive ? m.status.active : m.status.inactive}
+                  {pkg.isActive ? adminMessages.status.active : adminMessages.status.inactive}
                 </span>
               </td>
               <td className={STYLES.actionsCell}>
                 <Link href={catalogRoutes.editPackage(pkg.id)} className={STYLES.editLink}>
-                  {m.rowActions.edit}
+                  {adminMessages.rowActions.edit}
                 </Link>
               </td>
             </tr>

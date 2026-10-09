@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, renderHook, act, fireEvent } from '@testing-library/react'
 import { AdminLoginForm, AdminSidebar, InactivityTimeout, useInactivityTimeout } from '@/features/auth'
-import { signInAdminAction, signOutAction, getAuthSession, requireAdminSession } from '@/features/auth/actions/auth-actions'
+import { signInAdminAction, signOutAction, getAuthSession, requireAdminSession } from '@/features/auth/ui/actions/auth-actions'
 import AdminLayout from '@/app/admin/layout'
 import { middleware } from '@/middleware'
 import { NextRequest, NextResponse } from 'next/server'

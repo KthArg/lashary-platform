@@ -1,2 +1,2 @@
-export { mensajesAdminProductos } from './constants/mensajes-admin-productos'
-export { rutasAdminProductos } from './constants/rutas-admin-productos'
+export { productStrings } from './ui/admin-products/constants/product-strings'
+export { productRoutes } from './ui/admin-products/constants/product-routes'

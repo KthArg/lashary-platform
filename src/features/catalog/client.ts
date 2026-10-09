@@ -2,6 +2,6 @@
 // superficie es intencionalmente mínima: solo reexporta lo que no depende de next/headers
 // (index.ts sí, vía techniqueRepository). Los boundaries de ruta que corren en el cliente
 // (loading.tsx, error.tsx) importan de aquí para no arrastrar código de servidor al bundle.
-export { catalogMessages } from './ui/messages'
+export { catalogMessages } from './ui/techniques/constants/technique-strings'
 export { packageMessages } from './ui/packages/constants/package-strings'
 export { catalogRoutes } from './ui/routes'
