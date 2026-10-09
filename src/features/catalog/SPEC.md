@@ -12,7 +12,8 @@ historias:
     evidencia: "PRs #98 a #107, #134, #157 a #168 (pila) y el cierre us/US-PROD-01 a main; tests: package.test.ts, package-commands.test.ts, package-queries.test.ts, package-actions.test.ts, package-schema.test.ts, package-inactive-techniques.test.tsx, package-pagination.test.tsx, package-repository.integration.test.ts, package-rls-isolation.test.ts, catalog_package_staff_write.test.sql; UI probada a mano contra lashary-pruebas (2026-10-03)"
   - id: US-PROM-01
     estado: en_progreso
-    falta: "toda la implementación. Historia recién abierta — ver PRs de pieza apilados contra us/US-PROM-01."
+    evidencia: "criterio 1 (servicio aplicable, descuento, vigencia) y criterio 3 (vencida deja de aplicarse sola) demostrados en dominio; tests: promotion.test.ts"
+    falta: "capas application/db/ui. Criterio 2 (mostrar en el flujo de agendamiento) y criterio 4 (precio con promoción congelado en la cita) diferidos: requieren scheduling_appointments, que trae US-AGE-05 (no_iniciada). Punto de extensión: listActivePromotions ya expone las vigentes; el consumo desde agendamiento y el congelamiento llegan con US-AGE-05. Ver docs/process/DEPENDENCIES.md, Criterios diferidos."
   - id: US-PROM-02
     estado: no_iniciada
 flags: []
@@ -55,7 +56,20 @@ Dónde se detiene US-PROD-01: el código está completo y probado. Las pruebas u
 - **Criterio 7b / 8** (una técnica desactivada o con precio cambiado no altera citas ya agendadas): trasladados a US-AGE-05, que trae la tabla de citas. El catálogo cumple su parte — no borra técnicas (solo `is_active = false`) y expone `TechniqueSnapshot` — y el congelamiento se prueba en US-AGE-05 con el test obligatorio de DOM-002.
 - Consumo de `buffer_min` en el calendario: US-AGE-02.
 - Consumo de `reapplication_interval_days` en recordatorios: US-NOT-05.
-- Paquetes (US-PROD-01) y promociones (US-PROM-01/02).
+- Promociones (US-PROM-02, ver "ver paquetes/promos" en loyalty/landing).
+- **US-PROM-01 — criterios 2 (agendamiento) y 4 (precio congelado)**: diferidos a US-AGE-05 (ver historias arriba y Decisiones).
+
+## US-PROM-01 — promociones (en_progreso)
+
+Descuento por tiempo limitado sobre exactamente una técnica o un paquete existente (criterio 1). `catalog_promotions` (migraciones `20261009000000_catalog_promotions.sql` y `20261009000001_catalog_promotions_write_policies.sql`): `technique_id`/`package_id` nulleables con `CHECK` xor (D-PROM-2), `discount_percent` entero 1-100, `starts_at`/`ends_at` (`CHECK ends_at > starts_at`), `is_active` para pausa manual. RLS igual que técnicas/paquetes: lectura pública, escritura solo `auth_is_staff()`.
+
+- `domain/promotions/promotion.ts` (D-SIN-CLASE: `interface` + `buildPromotion()`, sin `class`): valida el xor de servicio aplicable, el rango del descuento y que `endsAt > startsAt`. `isPromotionCurrentlyActive(promotion, now)` es pura — recibe `now` en vez de llamar `new Date()` (DOM-004, criterio 3): una promoción vencida deja de aparecer en cuanto pasa su `ends_at`, sin que nadie la desactive a mano. El reloj inyectable (`Clock`, `systemClock`) vive en `src/shared/clock.ts` — primera vez que esta rama necesita tiempo real en vez de solo snapshots (ARCH-007, sin regla de negocio).
+- `application/promotions/`: `listPromotions(repo)(now)(query)` para el panel (incluye vencidas y pausadas, con `isCurrentlyActive` calculado) y `listActivePromotions(repo)(now)(query)` para landing/agendamiento (criterios 2 y 3 — solo lo vigente ahora). `createPromotion`/`updatePromotion` resuelven el servicio aplicable contra `TechniqueRepository`/`PackageRepository` de las otras dos ramas de catalog (misma feature, no cruza frontera — ARCH-003/004 siguen aplicando entre features) y rechazan si no existe o no está activo.
+- `db/promotions/promotion-repository.ts`: `createSupabasePromotionRepository` (función fábrica, sin `class`); `listActive` filtra `is_active = true AND starts_at <= now AND ends_at >= now` en la base, no en memoria (PERF-005).
+- `ui/promotions/`: mismo patrón que paquetes — `AdminPromotionsPage`/`PromotionTable`/`PromotionForm`/`PromotionFormFeedback`/`PromotionPagination`, server actions con `isStaff()` + Zod en el borde (DOM-007) + `revalidatePath`. Ruta `src/app/admin/catalog/promotions/`, pestaña "Promociones" en `catalog-tabs.tsx`.
+- Pruebas: `promotion.test.ts` (dominio), `promotion-commands.test.ts`/`promotion-queries.test.ts` (application, repos en memoria), `promotion-schema.test.ts`/`promotion-actions.test.ts` (ui), `promotion-repository.integration.test.ts` (db, Supabase local), `promotion-rls-isolation.test.ts` (SEC-002) y `catalog_promotion_staff_write.test.sql` (pgTAP, control positivo). Las tres últimas requieren Supabase local — se saltan sin Docker, igual que sus equivalentes de técnicas y paquetes.
+
+Dónde se detiene: criterios 2 y 4 diferidos a US-AGE-05 (arriba). El resto —crear, editar, pausar una promoción sobre técnica o paquete, que deje de aplicarse sola al vencer— está completo y probado.
 
 ## Modelo de datos
 
@@ -101,6 +115,8 @@ Detalle y garantías: [docs/contracts/catalog-api.md](../../../docs/contracts/ca
 - **D10 — `price_retouch` y `duration_retouch_min` van juntas o ninguna.** Un retoque necesita precio y duración; lo valida el constructor de `Technique`.
 - **Auth es canónica en su propia rama** (US-AUTH-01/02). Esta rama consume su contrato (`getAuthSession`, `requireAdminSession`, `auth_user_roles`) y aporta `public.auth_is_staff()` de forma provisional en su migración forward, hasta que `auth` la exponga.
 - **D-SIN-CLASE — el código nuevo de paquetes evita `class`.** `Package` (`domain/packages/package.ts`) es una `interface`, construida solo por `buildPackage()` (DOM-007); `markPackageInactive()`/`packageToView()` son funciones puras en vez de métodos. Los errores de paquete (`domain/packages/errors.ts`) son interfaces con función fábrica y guardas de tipo (`isPackageValidationError`, etc., sobre las constantes `PACKAGE_ERROR_CODES` y una guarda genérica `hasCode`), no extienden `CatalogError`/`DomainError` — ya no comparten esa jerarquía con los errores de `Technique`. `db/packages/package-repository.ts` y el fake de tests son funciones fábrica (`createSupabasePackageRepository`, `createFakePackageRepository`) que devuelven un objeto que implementa `PackageRepository`, no clases con `implements`. `save()` devuelve `Result<void, PackageNameConflict>` (el 23505 de Postgres se mapea a `err`, sin `throw` de objetos planos; solo las fallas de infra lanzan `Error`). `Package` lleva una marca (`unique symbol` no exportado) que solo `buildPackage()` pone, así que un literal con la misma forma no pasa como `Package` (revisión de BayronAQ99 en #134). Alcance: solo el código de esta historia; `Technique`, `Money`, `DomainError` y los repositorios de `content`/`store` siguen siendo clases, pendientes de una regla de equipo aún no escrita en `rules.yaml`.
+- **D-PROM-1 — descuento como porcentaje entero (1-100), no un monto.** "Promociones por tiempo limitado" (criterio 1) encaja mejor como porcentaje: aplica igual sobre una técnica o un paquete sin tener que recalcular un monto distinto para cada precio. No es dinero — `Money` no aplica.
+- **D-PROM-2 — el servicio aplicable es una unión discriminada (técnica xor paquete), no dos columnas nulleables sueltas en el dominio.** El `CHECK` de la base (`catalog_promotions_target_xor`) es la garantía real; el tipo `PromotionTarget` en dominio hace que el caso "ninguno" o "ambos" ni se pueda construir en TypeScript.
 - Sin ADR: el congelamiento de precio ya lo fija DOM-002; el resto son decisiones locales de la feature.
 
 ## Flags
