@@ -32,7 +32,8 @@ export const productStrings = {
     fields: {
       name: 'Nombre',
       description: 'Descripción',
-      imageUrl: 'URL de la imagen',
+      image: 'Imagen (JPEG, PNG o WebP, hasta 1 MB)',
+      currentImage: 'Imagen actual. Si no eliges otra, se conserva.',
       priceCrc: 'Precio (colones)',
       displayOrder: 'Orden de presentación',
       stock: 'Existencias (unidades disponibles)',
@@ -50,7 +51,7 @@ export const productStrings = {
     validation: {
       name: 'El nombre es obligatorio',
       nameWithoutLetters: 'El nombre necesita al menos una letra o un número',
-      imageUrl: 'La URL de la imagen es obligatoria',
+      imageRequired: 'La imagen es obligatoria',
       priceCrc: 'El precio debe ser mayor que cero',
       displayOrder: 'El orden de presentación no puede ser negativo',
       stockRequired: 'Las existencias son obligatorias',
