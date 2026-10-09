@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # check-domain-purity.sh — DOM-004: new Date() / Date.now() prohibidos en domain/ y application/.
 # El reloj se inyecta (Clock en shared/). Escanea todo el árbol, no el diff.
+# Excluye __tests__/: un fixture o un test SÍ puede construir fechas concretas para inyectar
+# `now` en una función pura o para armar datos de negocio (p.ej. la vigencia de una promoción,
+# US-PROM-01) — es exactamente el patrón DOM-004 correcto, no la violación que esto busca.
 
 . "$(dirname "$0")/lib.sh"
 
@@ -12,6 +15,7 @@ fi
 
 grep -rn --include='*.ts' --include='*.tsx' -E "new Date\(|Date\.now\(" "$SRC" 2>/dev/null | \
   grep -E "^[^:]*/(domain|application)/" | \
+  grep -v "/__tests__/" | \
 while IFS=: read -r file line content; do
   rel="${file#"$REPO_ROOT"/}"
   echo "$rel:$line — $(echo "$content" | sed 's/^[[:space:]]*//')"
