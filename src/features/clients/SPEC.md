@@ -2,11 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-<<<<<<< HEAD
-actualizado: "2026-10-04"
-=======
-actualizado: "2026-10-03"
->>>>>>> d435bba (docs(clients): proponer archivado y conservacion de exoneraciones (ADR-0009))
+actualizado: 2026-10-08
 historias:
   - id: US-CLI-01
     estado: en_progreso
@@ -90,10 +86,10 @@ La estructura de carpetas sigue las capas de `docs/spec/ARCHITECTURE.md`, como `
 `catalog`: `domain/` (la clienta, sus límites, `normalizePhone` y `validateClientForm`),
 `application/` (los casos de uso `addClient`, `editClient` y `listClients`, el puerto
 `ClientRepository` y `CLIENTS_LIST_LIMITS`), `db/` (`clientRepository()`, lo único que conoce
-Supabase y `clients_profiles`) y `ui/` (las server actions en `ui/actions.ts`, los textos en
-`ui/messages.ts`, los hooks en `ui/hooks/` y un subdirectorio por componente). No hay `http/`: la feature no tiene route handlers. `ui/clients-list-url.ts` guarda la
-construcción pura de URLs del listado, separada de `ui/hooks/` porque no usa React: así se prueba sin
-renderizar. Las pruebas siguen en `__tests__/`.
+Supabase y `clients_profiles`) y `ui/` (todo en el área `ui/admin-clients/`: las server actions en `ui/admin-clients/actions/client-actions.ts`, los textos en
+`ui/admin-clients/constants/client-strings.ts`, los hooks en `ui/admin-clients/hooks/` y un subdirectorio por componente en `ui/admin-clients/components/`). No hay `http/`: la feature no tiene route handlers. `ui/admin-clients/clients-list-url.ts` guarda la
+construcción pura de URLs del listado, separada de `ui/admin-clients/hooks/` porque no usa React: así se prueba sin
+renderizar. Las pruebas de la interfaz están en `ui/admin-clients/__tests__/` y las de los casos de uso en `application/__tests__/`.
 
 ## Qué no hace todavía
 

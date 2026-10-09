@@ -27,10 +27,10 @@ type Row = {
 }
 
 function rowToDomain(row: Row): PackageWithDuration {
-  const techniqueIds = row.catalog_package_techniques.map((r) => r.technique_id)
-  const durationTotalMin = row.catalog_package_techniques.reduce((total, r) => {
-    const t = r.catalog_techniques
-    return total + (t ? t.duration_first_time_min + t.buffer_min : 0)
+  const techniqueIds = row.catalog_package_techniques.map((bridgeRow) => bridgeRow.technique_id)
+  const durationTotalMin = row.catalog_package_techniques.reduce((total, bridgeRow) => {
+    const technique = bridgeRow.catalog_techniques
+    return total + (technique ? technique.duration_first_time_min + technique.buffer_min : 0)
   }, 0)
 
   const built = buildPackage({

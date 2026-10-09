@@ -12,7 +12,7 @@ export function createFakePackageRepository(
   durationLookup: (techniqueIds: readonly string[]) => number = () => 0,
 ): PackageRepository & { readonly saveCalls: number } {
   const store = new Map<string, Package>()
-  for (const p of initial) store.set(p.id, p)
+  for (const storedPackage of initial) store.set(storedPackage.id, storedPackage)
   let saveCalls = 0
 
   const toRow = (pkg: Package): PackageWithDuration => ({
@@ -27,8 +27,8 @@ export function createFakePackageRepository(
 
     async list(params: { activeOnly: boolean; offset: number; limit: number }) {
       let all = [...store.values()]
-      if (params.activeOnly) all = all.filter((p) => p.isActive)
-      all.sort((a, b) => a.name.localeCompare(b.name))
+      if (params.activeOnly) all = all.filter((storedPackage) => storedPackage.isActive)
+      all.sort((first, second) => first.name.localeCompare(second.name))
       return {
         items: all.slice(params.offset, params.offset + params.limit).map(toRow),
         total: all.length,

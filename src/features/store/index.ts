@@ -1,27 +1,27 @@
 export type {
-  ProductoPublico,
-  TarjetaProductoPublico,
-  EstadoGridProductos,
-  CadenaProductos,
-} from './domain/producto';
+  PublicProduct,
+  PublicProductCard,
+  ProductGridState,
+  ProductGridStrings,
+} from './domain/product';
 
-export { aProductoEnTarjeta, formatearPrecioCrc } from './domain/producto';
+export { toProductCard, formatPriceCrc } from './domain/product';
 
-export type { CatalogoProductosPublico } from './application/obtener-grid-productos-publicos';
+export type { PublicProductCatalog } from './application/public-grid/get-public-grid-state';
 
-export { CADENAS_GRID_PRODUCTOS_ES } from './constants/grid-productos-publicos-cadenas-es';
-export type { GridProductosPublicosProps } from './components/GridProductosPublicos';
-export { GridProductosPublicos } from './components/GridProductosPublicos';
+export { PUBLIC_GRID_STRINGS } from './ui/public-grid/constants/public-grid-strings';
+export type { PublicProductsGridProps } from './ui/public-grid/components/PublicProductsGrid';
+export { PublicProductsGrid } from './ui/public-grid/components/PublicProductsGrid';
 
 export {
-  estadoGridProductosInicial,
-  obtenerEstadoGridProductos,
-} from './application/obtener-grid-productos-publicos';
+  initialProductGridState,
+  getProductGridState,
+} from './application/public-grid/get-public-grid-state';
 
-export type { ClienteCms, DtoProductoCms } from './http/catalogo-productos-cms';
-export { catalogoProductosCms } from './http/catalogo-productos-cms';
-export { catalogoProductosDb } from './db/productos-db';
+export type { CmsClient, CmsProductDto } from './http/products-cms-catalog';
+export { cmsProductCatalog } from './http/products-cms-catalog';
+export { publicProductsDb } from './db/public-products';
 
-export { PanelAdminProductos } from './components/PanelAdminProductos';
-export { mensajesAdminProductos } from './constants/mensajes-admin-productos';
-export type { ProductoAdminVista } from './domain/producto';
+export { ProductsAdminPanel } from './ui/admin-products/components/ProductsAdminPanel';
+export { productStrings } from './ui/admin-products/constants/product-strings';
+export type { AdminProduct } from './domain/product';

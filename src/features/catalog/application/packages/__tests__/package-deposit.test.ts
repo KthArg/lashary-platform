@@ -5,8 +5,8 @@ import { buildPackage, packageToView } from '../../../domain/packages/package'
 import { createPackage, updatePackage, deactivatePackage } from '../commands'
 import { getPackage, listPackages } from '../queries'
 import { createFakePackageRepository } from './fake-package-repository'
-import { FakeTechniqueRepository } from '../../__tests__/fake-repository'
-import { makeTechnique } from '../../__tests__/technique-fixture'
+import { FakeTechniqueRepository } from '../../techniques/__tests__/fake-repository'
+import { makeTechnique } from '../../techniques/__tests__/technique-fixture'
 
 const model = { name: 'Paquete con anticipo', techniqueIds: ['t1', 't2'], price: 30000 }
 const techniques = new FakeTechniqueRepository([
