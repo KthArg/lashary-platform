@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { Money } from '@/shared/money'
 import { isErr, isOk } from '@/shared/result'
 import { Technique } from '@/features/catalog/domain/techniques/technique'
-import { TechniqueValidationError } from '@/features/catalog/domain/techniques/errors'
+import { isTechniqueValidationError } from '@/features/catalog/domain/techniques/errors'
 
 const validInput = () => ({
   id: '11111111-1111-1111-1111-111111111111',
@@ -62,7 +62,7 @@ describe('Technique.create — invariantes de dominio (DOM-007)', () => {
     const result = Technique.create({ ...validInput(), name: '   ' })
     expect(isErr(result)).toBe(true)
     if (!isErr(result)) return
-    expect(result.error).toBeInstanceOf(TechniqueValidationError)
+    expect(isTechniqueValidationError(result.error)).toBe(true)
     expect(result.error.problems.join(' ')).toMatch(/nombre/i)
   })
 

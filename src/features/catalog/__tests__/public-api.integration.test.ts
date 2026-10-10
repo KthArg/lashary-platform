@@ -9,7 +9,7 @@ vi.mock('next/headers', () => ({
 import {
   listTechniques,
   getTechnique,
-  TechniqueNotFound,
+  isTechniqueNotFound,
 } from '@/features/catalog'
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
@@ -44,7 +44,7 @@ describe.skipIf(!reachable)('API pública de catalog (index.ts)', () => {
     const missing = await getTechnique('00000000-0000-0000-0000-000000000000')
     expect(missing.ok).toBe(false)
     if (!missing.ok) {
-      expect(missing.error).toBeInstanceOf(TechniqueNotFound)
+      expect(isTechniqueNotFound(missing.error)).toBe(true)
     }
   })
 })
