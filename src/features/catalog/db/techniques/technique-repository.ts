@@ -44,7 +44,6 @@ function rowToDomain(row: Row): Technique {
     isActive: row.is_active,
   })
   if (!isOk(built)) {
-    // Una fila que no pasa los invariantes es corrupción de datos, no un caso de negocio.
     throw new Error(`fila inválida en ${TABLE} (${row.id}): ${built.error.message}`)
   }
   return built.value
@@ -68,61 +67,50 @@ function domainToRow(technique: Technique): Row {
   }
 }
 
-export class SupabaseTechniqueRepository implements TechniqueRepository {
-  constructor(private readonly db: SupabaseClient) {}
+export function createSupabaseTechniqueRepository(db: SupabaseClient): TechniqueRepository {
+  return {
+    async list(params: { activeOnly: boolean; offset: number; limit: number }) {
+      let query = db
+        .from(TABLE)
+        .select(COLUMNS, { count: 'exact' })
+        .order('family', { ascending: true })
+        .order('name', { ascending: true })
+        .range(params.offset, params.offset + params.limit - 1)
 
-  async list(params: { activeOnly: boolean; offset: number; limit: number }) {
-    let query = this.db
-      .from(TABLE)
-      .select(COLUMNS, { count: 'exact' })
-      .order('family', { ascending: true })
-      .order('name', { ascending: true })
-      .range(params.offset, params.offset + params.limit - 1)
+      if (params.activeOnly) query = query.eq('is_active', true)
 
-    if (params.activeOnly) query = query.eq('is_active', true)
-
-    const { data, error, count } = await query
-    if (error) throw new Error(`${TABLE}.list: ${error.message}`)
-    return {
-      items: (data ?? []).map((row) => rowToDomain(row as Row)),
-      total: count ?? 0,
-    }
-  }
-
-  async findById(id: string): Promise<Technique | null> {
-    const { data, error } = await this.db
-      .from(TABLE)
-      .select(COLUMNS)
-      .eq('id', id)
-      .maybeSingle()
-    if (error) throw new Error(`${TABLE}.findById: ${error.message}`)
-    return data ? rowToDomain(data as Row) : null
-  }
-
-  async findByIds(ids: string[]): Promise<Technique[]> {
-    if (ids.length === 0) return []
-    const { data, error } = await this.db.from(TABLE).select(COLUMNS).in('id', ids)
-    if (error) throw new Error(`${TABLE}.findByIds: ${error.message}`)
-    return (data ?? []).map((row) => rowToDomain(row as Row))
-  }
-
-  async save(technique: Technique): Promise<Result<void, TechniqueNameConflict>> {
-    const { error } = await this.db
-      .from(TABLE)
-      .upsert(domainToRow(technique), { onConflict: 'id' })
-    if (error) {
-      // 23505 = unique_violation (Postgres). La única constraint de unicidad de esta tabla es
-      // catalog_techniques_name_unique — un caso de negocio esperable, no una falla de infra.
-      if (error.code === '23505') {
-        return err(techniqueNameConflict(technique.name))
+      const { data, error, count } = await query
+      if (error) throw new Error(`${TABLE}.list: ${error.message}`)
+      return {
+        items: (data ?? []).map((row) => rowToDomain(row as Row)),
+        total: count ?? 0,
       }
-      throw new Error(`${TABLE}.save: ${error.message}`)
-    }
-    return ok(undefined)
+    },
+
+    async findById(id: string): Promise<Technique | null> {
+      const { data, error } = await db.from(TABLE).select(COLUMNS).eq('id', id).maybeSingle()
+      if (error) throw new Error(`${TABLE}.findById: ${error.message}`)
+      return data ? rowToDomain(data as Row) : null
+    },
+
+    async findByIds(ids: string[]): Promise<Technique[]> {
+      if (ids.length === 0) return []
+      const { data, error } = await db.from(TABLE).select(COLUMNS).in('id', ids)
+      if (error) throw new Error(`${TABLE}.findByIds: ${error.message}`)
+      return (data ?? []).map((row) => rowToDomain(row as Row))
+    },
+
+    async save(technique: Technique): Promise<Result<void, TechniqueNameConflict>> {
+      const { error } = await db.from(TABLE).upsert(domainToRow(technique), { onConflict: 'id' })
+      if (error) {
+        if (error.code === '23505') return err(techniqueNameConflict(technique.name))
+        throw new Error(`${TABLE}.save: ${error.message}`)
+      }
+      return ok(undefined)
+    },
   }
 }
 
-// Fábrica para el contexto de servidor de Next (server components / actions).
-export async function techniqueRepository(): Promise<SupabaseTechniqueRepository> {
-  return new SupabaseTechniqueRepository(await createClient())
+export async function techniqueRepository(): Promise<TechniqueRepository> {
+  return createSupabaseTechniqueRepository(await createClient())
 }
