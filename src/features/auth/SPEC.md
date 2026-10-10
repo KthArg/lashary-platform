@@ -15,6 +15,9 @@ deuda:
   - que: "Test de aislamiento RLS contra instancia local de Supabase en CI"
     aceptada_en: "PR #3"
     costo: "2h"
+  - que: "La política clients_profiles_select_own deja a la clienta leer su fila completa, notes incluido, llamando a PostgREST directo; findClientProfile ya no las pide pero la base no lo impide"
+    aceptada_en: "PR #273"
+    costo: "migración de privilegios por columna o vista para la clienta, más decisión del PO sobre si notes debe ser legible por ella"
 defectos: []
 ---
 
