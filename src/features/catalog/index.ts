@@ -42,7 +42,8 @@ export type {
   TechniqueView,
   TechniqueSnapshot,
 } from './domain/techniques/technique'
-export { TechniqueNotFound } from './domain/techniques/errors'
+export { isTechniqueNotFound, techniqueNotFound } from './domain/techniques/errors'
+export type { TechniqueNotFound } from './domain/techniques/errors'
 export type { PackageNotFound } from './domain/packages/errors'
 export type { ListTechniquesQuery } from './application/techniques/ports'
 export type { Page } from './application/pagination'

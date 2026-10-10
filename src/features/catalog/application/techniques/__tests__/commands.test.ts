@@ -6,9 +6,9 @@ import {
   deactivateTechnique,
 } from '@/features/catalog/application/techniques/commands'
 import {
-  TechniqueNameConflict,
-  TechniqueNotFound,
-  TechniqueValidationError,
+  isTechniqueNameConflict,
+  isTechniqueNotFound,
+  isTechniqueValidationError,
 } from '@/features/catalog/domain/techniques/errors'
 import type { TechniqueWriteModel } from '@/features/catalog/application/techniques/ports'
 import { FakeTechniqueRepository } from './fake-repository'
@@ -52,7 +52,7 @@ describe('createTechnique', () => {
       durationRetouchMin: null,
     })
     expect(isErr(result)).toBe(true)
-    if (isErr(result)) expect(result.error).toBeInstanceOf(TechniqueValidationError)
+    if (isErr(result)) expect(isTechniqueValidationError(result.error)).toBe(true)
     expect(repo.saveCalls).toBe(0)
   })
 
@@ -75,7 +75,7 @@ describe('createTechnique', () => {
       name: 'Set clásico',
     })
     expect(isErr(result)).toBe(true)
-    if (isErr(result)) expect(result.error).toBeInstanceOf(TechniqueNameConflict)
+    if (isErr(result)) expect(isTechniqueNameConflict(result.error)).toBe(true)
     expect(repo.saveCalls).toBe(0)
   })
 })
@@ -109,7 +109,7 @@ describe('updateTechnique', () => {
     const repo = new FakeTechniqueRepository()
     const result = await updateTechnique(deps(repo))('nope', validModel())
     expect(isErr(result)).toBe(true)
-    if (isErr(result)) expect(result.error).toBeInstanceOf(TechniqueNotFound)
+    if (isErr(result)) expect(isTechniqueNotFound(result.error)).toBe(true)
   })
 
   it('rechaza cambios inválidos sin persistir', async () => {
@@ -133,7 +133,7 @@ describe('updateTechnique', () => {
       name: 'Set clásico',
     })
     expect(isErr(result)).toBe(true)
-    if (isErr(result)) expect(result.error).toBeInstanceOf(TechniqueNameConflict)
+    if (isErr(result)) expect(isTechniqueNameConflict(result.error)).toBe(true)
   })
 })
 
