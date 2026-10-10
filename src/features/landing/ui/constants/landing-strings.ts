@@ -1,5 +1,3 @@
-// Texto visible del sitio público (DOM-009). El contenido editable viene del CMS por `content`;
-// aquí vive solo lo que es estructura de la página.
 export const landingMessages = {
   metadata: {
     title: 'LASHARY Beauty Studio — Extensiones de pestañas en Ciudad Quesada',
@@ -97,8 +95,6 @@ export const landingMessages = {
   },
 }
 
-// Nombre corto de cada familia para los filtros de la galería. El nombre completo de cada
-// técnica es del catálogo; aquí solo va la etiqueta del filtro (DOM-009).
 export const galleryFamilyLabels: Record<string, string> = {
   lash_classic: 'Clásicas',
   lash_volume: 'Volumen',
@@ -110,9 +106,6 @@ export const galleryFamilyLabels: Record<string, string> = {
   lips: 'Labios',
 }
 
-// Descripción de cada familia de servicio. El catálogo (US-AGE-08) guarda nombre, precios y
-// tiempos, no prosa: el texto que explica en qué consiste cada técnica es del sitio, y por eso
-// vive aquí (DOM-009). Una familia sin texto no rompe la fila — se muestra sin descripción.
 export const techniqueDescriptions: Record<string, string> = {
   lash_classic:
     'Una extensión por cada pestaña natural. El efecto es definido y discreto, como una máscara bien aplicada que no se corre.',

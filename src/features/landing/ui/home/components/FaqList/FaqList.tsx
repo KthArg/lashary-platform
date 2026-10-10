@@ -4,8 +4,6 @@ import { useId, useState } from 'react'
 import { landingFaqStyles as STYLES } from '../LandingFaq/LandingFaq.styles'
 import type { FaqListProps } from './FaqList.types'
 
-// Acordeón de preguntas, como el diseño: cada una se abre y se cierra por su cuenta, y la
-// primera empieza abierta. Es el único trozo de cliente de la sección.
 export function FaqList({ faqs }: FaqListProps) {
   const [open, setOpen] = useState<ReadonlySet<number>>(() => new Set([0]))
   const baseId = useId()
@@ -40,8 +38,6 @@ export function FaqList({ faqs }: FaqListProps) {
                 </span>
               </button>
             </h3>
-            {/* El panel no se desmonta al cerrar: `aria-controls` tiene que resolver siempre a
-                un nodo real (UI-004). */}
             <div
               id={answerId}
               hidden={!isOpen}

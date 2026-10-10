@@ -1,5 +1,3 @@
-// `motion-reduce:` deshace la apertura: sin pista de scroll ni capas superpuestas, el título y la
-// foto quedan quietos, uno debajo del otro.
 export const landingHeroStyles = {
   section: 'relative',
   track: 'relative h-site-opening motion-reduce:h-auto',

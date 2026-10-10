@@ -4,8 +4,6 @@ import { landingMessages } from '../../../constants/landing-strings'
 import { FAQ_SECTION } from '../../../sections'
 import type { LandingFaqProps } from './LandingFaq.types'
 
-// Sección "Preguntas" (plegada a US-LAND-07 por decisión del PO): resuelve dudas antes de
-// contactar. Nunca llega vacía: sin preguntas publicadas, `content` entrega las del diseño.
 export function LandingFaq({ faqs }: LandingFaqProps) {
   const copy = landingMessages.faq
 

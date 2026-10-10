@@ -10,20 +10,16 @@ import type { GalleryGridProps } from './GalleryGrid.types'
 
 const ALL = 'todas'
 
-// Cuadrícula de pares con filtro por técnica y galería ampliada (criterio 3). Es el único trozo
-// de cliente de la sección; los pares ya llegan resueltos y con consentimiento.
 export function GalleryGrid({ pairs }: GalleryGridProps) {
   const copy = landingMessages.gallery
   const [filter, setFilter] = useState<string>(ALL)
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const tileRefs = useRef<(HTMLButtonElement | null)[]>([])
 
-  // Solo se ofrecen las técnicas que tienen algún par, en el orden en que aparecen.
   const families = [...new Set(pairs.map((pair) => pair.family))]
   const visible = filter === ALL ? pairs : pairs.filter((pair) => pair.family === filter)
 
   const close = useCallback(() => {
-    // Quien abrió devuelve el foco (use-focus-trap): vuelve al par que se estaba mirando.
     if (openIndex !== null) tileRefs.current[openIndex]?.focus()
     setOpenIndex(null)
   }, [openIndex])
@@ -53,7 +49,6 @@ export function GalleryGrid({ pairs }: GalleryGridProps) {
 
       <ul className={STYLES.grid}>
         {visible.map((pair, index) => (
-          // El filtro rehace la lista: la clave incluye el filtro para que la entrada se anime.
           <li key={`${filter}-${pair.after.url}`} className={STYLES.tileIn}>
             <button
               ref={(node) => {
@@ -90,8 +85,6 @@ type GalleryLightboxProps = {
   onClose: () => void
 }
 
-// Galería ampliada como diálogo modal (UI-004): foco atrapado, Escape cierra, las flechas
-// recorren los pares y el scroll de la página queda bloqueado mientras está abierta.
 function GalleryLightbox({ pairs, index, onNavigate, onClose }: GalleryLightboxProps) {
   const copy = landingMessages.gallery
   const containerRef = useFocusTrap<HTMLDivElement>()
@@ -125,7 +118,6 @@ function GalleryLightbox({ pairs, index, onNavigate, onClose }: GalleryLightboxP
       aria-label={copy.dialogLabel}
       className={STYLES.overlay}
     >
-      {/* "Cerrar" va primero: es lo que enfoca la trampa de foco al abrir, como en el menú. */}
       <div className={STYLES.top}>
         <button type="button" onClick={onClose} className={STYLES.close}>
           {copy.close}
@@ -151,7 +143,6 @@ function GalleryLightbox({ pairs, index, onNavigate, onClose }: GalleryLightboxP
   )
 }
 
-// Las dos fotos de un par, con su etiqueta. El `alt` de cada foto lo escribió la dueña en el CMS.
 function PairPhotos({ pair, sizes }: { pair: GalleryPair; sizes: string }) {
   const copy = landingMessages.gallery
 

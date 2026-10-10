@@ -7,7 +7,6 @@ afterEach(cleanup)
 
 const copy = landingMessages.location
 
-// El contacto tal como lo entrega `getContact()`, ya validado.
 const contacto: ContactInfo = {
   address: '200 m norte de la iglesia',
   city: 'Ciudad Quesada, Alajuela, Costa Rica',
@@ -30,7 +29,6 @@ const horario: OpeningHours[] = [
   { days: 'Domingo', hours: 'Cerrado' },
 ]
 
-// El nombre accesible de un enlace externo termina con el aviso de pestaña nueva.
 const externo = (name: string) => screen.getByRole('link', { name: `${name} ${copy.newTab}` })
 
 describe('LandingLocation — US-LAND-07', () => {

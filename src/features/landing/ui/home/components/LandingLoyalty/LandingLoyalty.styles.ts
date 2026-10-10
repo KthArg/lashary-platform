@@ -1,6 +1,3 @@
-// Estilos de Fidelidad (US-LAND-05). El diseño "LASHARY Beauty Studio" no trae esta sección:
-// usa su mismo lenguaje (encabezado con filete y numeral, filetes entre filas) y solo tokens del
-// tema `lashary-site` (UI-002).
 export const landingLoyaltyStyles = {
   section: 'scroll-mt-site-anchor px-site-gutter pb-site-section',
   inner: 'mx-auto max-w-site',
@@ -10,7 +7,6 @@ export const landingLoyaltyStyles = {
   rule: 'h-px flex-auto bg-site-line',
   index: 'font-site-display text-site-section-index text-site-clay',
 
-  // El texto a un lado y los niveles al otro; en angosto, uno debajo del otro.
   layout: 'flex flex-wrap items-start justify-between gap-site-columns',
   text: 'max-w-site-text flex-1 basis-site-text',
   paragraph: 'm-0 mb-4 text-site-body leading-site-loose text-site-ink-soft last:mb-0',

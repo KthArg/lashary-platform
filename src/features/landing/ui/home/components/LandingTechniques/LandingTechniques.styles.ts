@@ -1,17 +1,13 @@
-// Estilos de la sección de técnicas (US-LAND-02), tomados del diseño "LASHARY Beauty Studio".
-// Solo tokens del tema `lashary-site` (UI-002): los valores del diseño viven en tailwind.config.js.
 export const landingTechniquesStyles = {
   section: 'scroll-mt-site-anchor px-site-gutter pb-site-section',
   inner: 'mx-auto max-w-site',
 
-  // Encabezado: título, filete que ocupa el resto del ancho y numeral de la sección.
   heading: 'mb-site-heading-gap flex items-baseline gap-site-row-gap',
   title: 'm-0 whitespace-nowrap font-site-display text-site-section-title',
   rule: 'h-px flex-auto bg-site-line',
   index: 'font-site-display text-site-section-index text-site-clay',
 
   list: 'm-0 list-none p-0',
-  // El filete va arriba de cada fila; la última cierra la lista por abajo.
   row: 'border-t border-site-line last:border-b',
 
   trigger:
@@ -21,11 +17,9 @@ export const landingTechniquesStyles = {
   sign: 'ml-auto flex-none text-site-sign text-site-ink-muted transition-transform duration-300 ease-site-out motion-reduce:transition-none',
   signOpen: 'rotate-site-sign text-site-rose',
 
-  // La apertura se anima al abrir, no al cargar la página: el panel está siempre en el DOM.
   body: 'pb-site-row-body',
   bodyOpen: 'animate-site-in-quick motion-reduce:animate-none',
 
-  // Abierta: la foto a un lado y el texto al otro; en angosto, la foto primero y el texto debajo.
   layout: 'flex flex-wrap items-start gap-site-row-gap',
   figure: 'relative m-0 aspect-site-photo w-full max-w-site-photo flex-none overflow-hidden bg-site-taupe',
   photo: 'object-cover',

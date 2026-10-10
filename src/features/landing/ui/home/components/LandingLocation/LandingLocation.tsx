@@ -5,9 +5,6 @@ import { landingMessages } from '../../../constants/landing-strings'
 import { LOCATION_SECTION } from '../../../sections'
 import type { LandingLocationProps } from './LandingLocation.types'
 
-// Sección "Ubicación" (US-LAND-07): dónde está el estudio, en qué horario atiende y cómo
-// contactarlo, con WhatsApp y las redes. Todo sale del CMS; sin contacto ni horario publicados
-// muestra su estado vacío (UI-003), porque no se inventa a dónde ir.
 export function LandingLocation({ contact, hours }: LandingLocationProps) {
   const copy = landingMessages.location
 
@@ -71,8 +68,6 @@ export function LandingLocation({ contact, hours }: LandingLocationProps) {
   )
 }
 
-// Medios de contacto: WhatsApp como botón principal (criterio 2), Instagram primero entre las
-// redes (criterio 3) y el correo si existe.
 function ContactLinks({ contact }: { contact: ContactInfo }) {
   const copy = landingMessages.location
   const socials = [

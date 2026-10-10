@@ -1,7 +1,3 @@
-// Geometría de la "apertura" del hero para un progreso de scroll `p` (0 a 1), tal como la define
-// el diseño: la foto asoma desde abajo como una píldora, se abre y termina a sangre, mientras el
-// título se desvanece. Pura, para poder probarla sin navegador.
-
 export type OpeningFrame = {
   width: number
   height: number
@@ -20,7 +16,6 @@ const ease = (x: number) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) /
 export function openingFrame(progress: number, viewportWidth: number, viewportHeight: number): OpeningFrame {
   const p = clamp01(progress)
   const narrow = viewportWidth < NARROW_VIEWPORT
-  // Tres tiempos: asoma, se abre, se va a sangre.
   const peek = ease(clamp01(p / 0.36))
   const open = ease(clamp01((p - 0.3) / 0.4))
   const bleed = ease(clamp01((p - 0.74) / 0.26))
@@ -30,7 +25,6 @@ export function openingFrame(progress: number, viewportWidth: number, viewportHe
   const openHeight = narrow ? 0.52 : 0.64
   const baseHeight = startHeight + (openHeight - startHeight) * open
   const height = (baseHeight + (1 - baseHeight) * bleed) * viewportHeight
-  // En p = 0 queda fuera de cuadro: entra recién al bajar.
   const peekOffset = viewportHeight / 2 + height * 0.62
 
   return {

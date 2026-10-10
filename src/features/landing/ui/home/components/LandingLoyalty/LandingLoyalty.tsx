@@ -3,9 +3,6 @@ import { landingMessages } from '../../../constants/landing-strings'
 import { LOYALTY_SECTION } from '../../../sections'
 import type { LandingLoyaltyProps } from './LandingLoyalty.types'
 
-// Sección "Fidelidad" (US-LAND-05): cómo funciona el programa y qué beneficio da cada visita.
-// Es solo informativa: el conteo de visitas de cada clienta es el motor de US-LAND-06. Todo sale
-// del CMS; sin nada publicado muestra su estado vacío (UI-003) en vez de inventar beneficios.
 export function LandingLoyalty({ loyalty }: LandingLoyaltyProps) {
   const copy = landingMessages.loyalty
   const isEmpty = loyalty.paragraphs.length === 0 && loyalty.levels.length === 0

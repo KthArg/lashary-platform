@@ -3,7 +3,6 @@ import { render, screen, cleanup, within } from '@testing-library/react'
 import type { HeroContent } from '@/features/content'
 import { LandingHero, RESERVE_ROUTE } from '@/features/landing'
 
-// next/image necesita el runtime de Next; aquí basta con saber qué imagen y qué alt pide.
 vi.mock('next/image', () => ({
   default: ({ src, alt }: { src: string; alt: string }) => <img src={src} alt={alt} />,
 }))

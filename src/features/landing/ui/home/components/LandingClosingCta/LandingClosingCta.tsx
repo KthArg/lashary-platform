@@ -3,7 +3,6 @@ import { landingClosingCtaStyles as STYLES } from './LandingClosingCta.styles'
 import { RESERVE_ROUTE } from '../../../routes'
 import type { LandingClosingCtaProps } from './LandingClosingCta.types'
 
-// Llamada final a reservar (US-LAND-01). Mismo destino fijo que el hero y la cabecera.
 export function LandingClosingCta({ closingCta }: LandingClosingCtaProps) {
   return (
     <section aria-labelledby="closing-title" className={STYLES.section}>

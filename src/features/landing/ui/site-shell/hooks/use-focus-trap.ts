@@ -4,9 +4,6 @@ import { useEffect, useRef } from 'react'
 
 const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
-// Confina el foco dentro del contenedor mientras está montado (UI-004): al abrir, enfoca el
-// primer control; Tab y Shift+Tab dan la vuelta sin salir. Devolver el foco al cerrar le toca a
-// quien abrió.
 export function useFocusTrap<T extends HTMLElement>() {
   const containerRef = useRef<T>(null)
 

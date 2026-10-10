@@ -12,7 +12,6 @@ import {
 
 afterEach(cleanup)
 
-// Una técnica tal como la entrega el entry point de `catalog` (docs/contracts/catalog-api.md).
 const catalogo = (overrides: Partial<TechniqueView> = {}): TechniqueView => ({
   id: '11111111-1111-4111-8111-111111111111',
   name: 'Set clásico',
@@ -34,7 +33,6 @@ const seccion = (techniques: TechniqueView[], media: TechniqueMediaByFamily = {}
     <LandingTechniques techniques={techniques.map((t) => toLandingTechnique(t, media))} />,
   )
 
-// Fotos tal como las entrega el gateway del CMS, ya resueltas contra CMS_URL.
 const fotos: TechniqueMediaByFamily = {
   lash_classic: {
     image: { url: 'https://cms.test/clasico.jpg', alt: 'Mirada con set clásico' },
@@ -51,7 +49,6 @@ describe('LandingTechniques — US-LAND-02', () => {
 
     const fila = screen.getByRole('button', { name: /Set clásico/ })
     expect(within(fila).getByText('120 min')).toBeTruthy()
-    // Intl da el formato de es-CR; lo que importa es que el monto del catálogo esté.
     expect(fila.textContent).toContain('25')
     expect(fila.textContent).not.toContain('25000')
   })
@@ -132,7 +129,6 @@ describe('LandingTechniques — US-LAND-02', () => {
     const panelId = fila.getAttribute('aria-controls') ?? ''
     expect(panelId).not.toBe('')
 
-    // Cerrada: el panel sigue en el documento —si no, la referencia queda colgando— pero oculto.
     const cerrado = document.getElementById(panelId)
     expect(cerrado).toBeTruthy()
     expect(cerrado?.hasAttribute('hidden')).toBe(true)
@@ -155,7 +151,6 @@ describe('LandingTechniques — US-LAND-02', () => {
   })
 
   it('criterio 1: una técnica sin fotos en el CMS se muestra igual, sin imágenes', () => {
-    // El catálogo manda qué técnicas existen; el CMS solo las ilustra.
     seccion([catalogo({ name: 'Set volumen', family: 'lash_volume' })], fotos)
 
     fireEvent.click(screen.getByRole('button', { name: /Set volumen/ }))

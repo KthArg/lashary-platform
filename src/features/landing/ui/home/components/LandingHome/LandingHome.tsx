@@ -11,12 +11,8 @@ import { LandingStudio } from '../LandingStudio'
 import { LandingTechniques } from '../LandingTechniques'
 import type { LandingHomeProps } from './LandingHome.types'
 
-// Sin fidelidad publicada la sección muestra su estado vacío, igual que con el CMS caído.
 const NO_LOYALTY: LoyaltyContent = { paragraphs: [], note: null, levels: [] }
 
-// Página de inicio del sitio público. Recibe el contenido ya resuelto (CMS o respaldo), las
-// técnicas del catálogo, El estudio, los pares de la galería, la fidelidad y el contacto desde la
-// ruta; cada sección de la landing se agrega aquí cuando su historia la entrega.
 export function LandingHome({
   content,
   techniques = [],

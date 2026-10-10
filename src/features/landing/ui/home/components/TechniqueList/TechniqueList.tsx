@@ -11,8 +11,6 @@ import type { TechniqueListProps } from './TechniqueList.types'
 
 const NONE_OPEN = -1
 
-// Lista de técnicas en acordeón, como el diseño: una fila abierta a la vez, y volver a pulsar la
-// abierta la cierra. Es el único trozo de cliente de la sección; los datos ya llegan resueltos.
 export function TechniqueList({ techniques }: TechniqueListProps) {
   const [openIndex, setOpenIndex] = useState(NONE_OPEN)
   const copy = landingMessages.techniques
@@ -46,8 +44,6 @@ export function TechniqueList({ techniques }: TechniqueListProps) {
               </span>
             </button>
 
-            {/* El panel no se desmonta al cerrar: `aria-controls` del botón debe resolver
-                siempre a un nodo real, aunque la fila esté cerrada (UI-004). */}
             <div
               id={bodyId}
               hidden={!isOpen}
@@ -94,7 +90,6 @@ export function TechniqueList({ techniques }: TechniqueListProps) {
                     {copy.firstTime}: {formatColones(technique.priceFirstTime)} ·{' '}
                     {technique.durationFirstTimeMin} {copy.minutes}
                   </span>
-                  {/* Solo las técnicas que se retocan tienen segundo precio (criterio 3). */}
                   {technique.priceRetouch !== null && (
                     <span className={STYLES.detailItem}>
                       {copy.retouch}: {formatColones(technique.priceRetouch)}

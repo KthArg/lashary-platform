@@ -5,9 +5,6 @@ import { landingMessages } from '../../../constants/landing-strings'
 import { STUDIO_SECTION } from '../../../sections'
 import type { LandingStudioProps } from './LandingStudio.types'
 
-// Sección "El estudio" (US-LAND-04): quién es la dueña, con su retrato, su texto, sus años de
-// experiencia y su trayectoria. Todo viene del CMS por `content`; sin publicar, el respaldo no
-// trae ni nombre ni retrato, y la sección se muestra sin ellos.
 export function LandingStudio({ studio }: LandingStudioProps) {
   const copy = landingMessages.studio
   const { profile, credentials } = studio
@@ -46,7 +43,6 @@ export function LandingStudio({ studio }: LandingStudioProps) {
               </p>
             ))}
 
-            {/* El rol solo acompaña a un nombre: suelto no dice de quién es. */}
             {profile.name && (
               <>
                 <p className={STYLES.name}>{profile.name}</p>

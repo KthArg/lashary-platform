@@ -68,7 +68,6 @@ describe('SiteMenu — UI-004: operable con teclado', () => {
   it('numera las secciones y ofrece reservar', () => {
     openMenu()
     const dialog = screen.getByRole('dialog')
-    // El número es decorativo (aria-hidden): se ve, pero el nombre accesible es solo la sección.
     const servicios = within(dialog).getByRole('link', { name: 'Servicios' })
     expect(servicios.getAttribute('href')).toBe('#servicios')
     expect(servicios.textContent).toBe('01Servicios')

@@ -5,7 +5,6 @@ import { FAQ_SECTION, LandingFaq, landingMessages } from '@/features/landing'
 
 afterEach(cleanup)
 
-// Las preguntas tal como las entrega `getContact()`, con la respuesta en párrafos.
 const preguntas: Faq[] = [
   { question: '¿Cuánto duran las extensiones?', paragraphs: ['Entre tres y cuatro semanas.'] },
   { question: '¿Dañan la pestaña natural?', paragraphs: ['No, si el peso es el correcto.', 'Por eso reviso antes.'] },
@@ -36,7 +35,6 @@ describe('LandingFaq — Preguntas (plegada a US-LAND-07)', () => {
     expect(segunda.getAttribute('aria-expanded')).toBe('true')
     expect(panelDe(segunda).hidden).toBe(false)
     expect(panelDe(segunda).querySelectorAll('p')).toHaveLength(2)
-    // Abrir la segunda no cierra la primera.
     expect(boton('¿Cuánto duran las extensiones?').getAttribute('aria-expanded')).toBe('true')
 
     fireEvent.click(segunda)

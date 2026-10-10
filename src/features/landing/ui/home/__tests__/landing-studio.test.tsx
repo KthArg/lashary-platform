@@ -18,7 +18,6 @@ afterEach(cleanup)
 
 const copy = landingMessages.studio
 
-// El estudio tal como lo entrega `getStudio()`, ya validado.
 const publicado: Pick<StudioContent, 'profile' | 'credentials'> = {
   profile: {
     name: 'Ana Rojas',
@@ -88,7 +87,6 @@ describe('LandingStudio — US-LAND-04', () => {
 
     expect(screen.getByText('Texto del diseño.')).toBeTruthy()
     expect(container.querySelector('img')).toBeNull()
-    // El rol suelto no dice de quién es: sin nombre, tampoco se muestra.
     expect(screen.queryByText('Lash artist y fundadora')).toBeNull()
   })
 
