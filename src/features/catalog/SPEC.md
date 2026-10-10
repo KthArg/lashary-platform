@@ -2,7 +2,7 @@
 feature: catalog
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-08
+actualizado: "2026-10-09"
 historias:
   - id: US-AGE-08
     estado: terminada
@@ -11,7 +11,8 @@ historias:
     estado: terminada
     evidencia: "PRs #98 a #107, #134, #157 a #168 (pila) y el cierre us/US-PROD-01 a main; tests: package.test.ts, package-commands.test.ts, package-queries.test.ts, package-actions.test.ts, package-schema.test.ts, package-inactive-techniques.test.tsx, package-pagination.test.tsx, package-repository.integration.test.ts, package-rls-isolation.test.ts, catalog_package_staff_write.test.sql; UI probada a mano contra lashary-pruebas (2026-10-03)"
   - id: US-PROM-01
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "toda la implementación. Historia recién abierta — ver PRs de pieza apilados contra us/US-PROM-01."
   - id: US-PROM-02
     estado: no_iniciada
 flags: []
