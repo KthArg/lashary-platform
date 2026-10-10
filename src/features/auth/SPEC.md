@@ -2,7 +2,7 @@
 feature: auth
 dri: pendiente
 estado: terminada
-actualizado: "2026-10-06"
+actualizado: "2026-10-09"
 historias:
   - id: US-AUTH-01
     estado: terminada
@@ -46,7 +46,7 @@ Punto de entrada exportado (ARCH-003):
 - Acciones y helpers: `getAuthSession()`, `requireAdminSession()`, `signInWithGoogleAction()`, `signInAdminAction()`, `signOutAction()`, `updateClientPhoneAction()`.
 - Componentes UI: `GoogleSignInButton`, `PhoneRegistrationModal`, `AdminLoginForm`, `InactivityTimeout`, `AdminSidebar`, `ClientSidebar`.
 - Hooks: `useGoogleSignIn`, `usePhoneRegistration`, `useAdminLoginForm`, `useInactivityTimeout`.
-- Capas (plantilla de feature): `domain/roles.ts` (`AUTH_ROLES`, `isStaffRole`) y `domain/phone.ts` (`validateClientPhone`); `application/ports.ts` (puerto `AuthRepository`, `ClientProfile`) y `application/session.ts` (`loadAuthSession`, `clientDisplayName`); `db/auth-repository.ts` (`createSupabaseAuthRepository`: rol, perfil y guardado del teléfono); `http/` vacío (el callback de OAuth vive en `src/app/auth/callback`). Las server actions de `ui/actions/` quedan delgadas sobre estas capas, sin cambiar lo que devuelven. La UI se ordena por área, como `catalog/ui/packages`: `ui/admin-login/` (`AdminLoginForm`, `useAdminLoginForm`), `ui/client-login/` (`GoogleSignInButton`, `PhoneRegistrationModal`, `useGoogleSignIn`, `usePhoneRegistration`), `ui/navigation/` (`AdminSidebar`, `ClientSidebar`) y `ui/session/` (`InactivityTimeout`, `useInactivityTimeout`), cada una con `components/<Componente>/` (`.tsx`, `.styles.ts` importado como `STYLES`, `.types.ts`, `index.ts`) y `hooks/`; textos en `ui/constants/auth-strings.ts`.
+- Capas (plantilla de feature): `domain/roles.ts` (`AUTH_ROLES`, `isStaffRole`) y `domain/phone.ts` (`validateClientPhone`); `application/ports.ts` (puerto `AuthRepository`, `ClientProfile`), `application/session.ts` (`loadAuthSession`, `clientDisplayName`), `application/sign-in.ts` (`signInStaff`, `startGoogleSignIn`, `signOutUser`) y `application/phone.ts` (`saveClientPhone`); `db/auth-repository.ts` (`createSupabaseAuthRepository`: rol, perfil, guardado del teléfono y operaciones de `supabase.auth`); `ui/session/server-session.ts` (`getAuthSession`, `requireAdminSession`, fuera del archivo `'use server'`); `http/` vacío (el callback de OAuth vive en `src/app/auth/callback`). Las server actions de `ui/actions/` quedan delgadas sobre estas capas, sin cambiar lo que devuelven. La UI se ordena por área, como `catalog/ui/packages`: `ui/admin-login/` (`AdminLoginForm`, `useAdminLoginForm`), `ui/client-login/` (`GoogleSignInButton`, `PhoneRegistrationModal`, `useGoogleSignIn`, `usePhoneRegistration`), `ui/navigation/` (`AdminSidebar`, `ClientSidebar`) y `ui/session/` (`InactivityTimeout`, `useInactivityTimeout`), cada una con `components/<Componente>/` (`.tsx`, `.styles.ts` importado como `STYLES`, `.types.ts`, `index.ts`) y `hooks/`; textos en `ui/constants/auth-strings.ts`.
 - Constantes: `AUTH_ROLES`, `AUTH_BUTTON_TEXTS`, `AUTH_LABELS`, `AUTH_ERROR_MESSAGES`, `CLIENT_PORTAL_ROUTES`, `ADMIN_PORTAL_ROUTES`.
 
 ## Invariantes de seguridad

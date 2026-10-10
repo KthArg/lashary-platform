@@ -3,27 +3,28 @@
 import { createClient } from '@/shared/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { AUTH_ERROR_MESSAGES } from '../constants/auth-strings'
-import { isStaffRole } from '../../domain/roles'
-import { loadAuthSession } from '../../application/session'
+import { AUTH_ERROR_MESSAGES, ADMIN_PORTAL_ROUTES, CLIENT_PORTAL_ROUTES } from '../constants/auth-strings'
+import { signInStaff, signOutUser, startGoogleSignIn } from '../../application/sign-in'
 import { createSupabaseAuthRepository } from '../../db/auth-repository'
 
+const DEFAULT_SITE_URL = 'http://localhost:3000'
+const OAUTH_CALLBACK_PATH = '/auth/callback'
+
+function buildGoogleRedirectUrl(): string {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || DEFAULT_SITE_URL
+  return `${siteUrl}${OAUTH_CALLBACK_PATH}?next=${CLIENT_PORTAL_ROUTES.citas}`
+}
+
 export async function signInWithGoogleAction() {
-  const supabase = await createClient()
+  const repository = createSupabaseAuthRepository(await createClient())
+  const start = await startGoogleSignIn(repository, buildGoogleRedirectUrl())
 
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback?next=/portal/citas`,
-    },
-  })
-
-  if (error) {
+  if (start.failed) {
     throw new Error(AUTH_ERROR_MESSAGES.googleOAuthError)
   }
 
-  if (data.url) {
-    redirect(data.url)
+  if (start.url) {
+    redirect(start.url)
   }
 }
 
@@ -45,46 +46,21 @@ export async function signInAdminAction(
     return { error: AUTH_ERROR_MESSAGES.invalidCredentials }
   }
 
-  const supabase = await createClient()
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: email.trim(),
-    password: password,
-  })
+  const repository = createSupabaseAuthRepository(await createClient())
+  const result = await signInStaff(repository, { email: email.trim(), password })
 
-  if (error || !data?.user) {
+  if (result.kind === 'invalid-credentials') {
     return { error: AUTH_ERROR_MESSAGES.invalidCredentials }
   }
-
-  const role = await createSupabaseAuthRepository(supabase).findRole(data.user.id)
-
-  if (!isStaffRole(role)) {
-    await supabase.auth.signOut()
+  if (result.kind === 'access-denied') {
     return { error: AUTH_ERROR_MESSAGES.accessDenied }
   }
 
   revalidatePath('/', 'layout')
-  redirect('/admin/dashboard')
+  redirect(ADMIN_PORTAL_ROUTES.dashboard)
 }
 
 export async function signOutAction() {
-  const supabase = await createClient()
-  await supabase.auth.signOut()
+  await signOutUser(createSupabaseAuthRepository(await createClient()))
   redirect('/')
-}
-
-export async function getAuthSession() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) return null
-
-  return loadAuthSession(createSupabaseAuthRepository(supabase), user)
-}
-
-export async function requireAdminSession() {
-  const session = await getAuthSession()
-  if (!session?.user || !isStaffRole(session.role)) {
-    redirect('/admin')
-  }
-  return session
 }

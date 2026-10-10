@@ -12,6 +12,10 @@ function repositoryReturning(role: AuthRole | null, profile: ClientProfile | nul
     findRole: vi.fn(async () => role),
     findClientProfile: vi.fn(async () => profile),
     saveClientPhone: vi.fn(async () => ({ ok: true })),
+    getCurrentUser: vi.fn(async () => null),
+    signInWithPassword: vi.fn(async () => null),
+    signInWithGoogle: vi.fn(async () => ({ failed: false, url: null })),
+    signOut: vi.fn(async () => undefined),
   }
 }
 
