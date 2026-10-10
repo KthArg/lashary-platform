@@ -1,6 +1,12 @@
 import { Money } from '@/shared/money'
 import { ok, err, isErr, type Result } from '@/shared/result'
-import { Technique, type TechniqueView } from '../../domain/techniques/technique'
+import {
+  buildTechnique,
+  markTechniqueInactive,
+  techniqueToView,
+  type Technique,
+  type TechniqueView,
+} from '../../domain/techniques/technique'
 import {
   techniqueNotFound,
   techniqueValidationError,
@@ -26,7 +32,7 @@ const toMoney = (value: number): Money | null => {
 
 // Construye la entidad desde el modelo del borde: envuelve los montos en Money (rechazando
 // no-enteros) y delega el resto de invariantes al constructor de Technique (DOM-007).
-function buildTechnique(
+function buildFromModel(
   id: string,
   model: TechniqueWriteModel,
   isActive: boolean,
@@ -56,7 +62,7 @@ function buildTechnique(
     return err(techniqueValidationError(moneyProblems))
   }
 
-  return Technique.create({
+  return buildTechnique({
     id,
     name: model.name,
     family: model.family,
@@ -79,11 +85,11 @@ export const createTechnique =
   ): Promise<
     Result<TechniqueView, TechniqueValidationError | TechniqueNameConflict>
   > => {
-    const built = buildTechnique(deps.newId(), model, true)
+    const built = buildFromModel(deps.newId(), model, true)
     if (isErr(built)) return built
     const saved = await deps.repo.save(built.value)
     if (isErr(saved)) return saved
-    return ok(built.value.toView())
+    return ok(techniqueToView(built.value))
   }
 
 export const updateTechnique =
@@ -100,11 +106,11 @@ export const updateTechnique =
     const existing = await deps.repo.findById(id)
     if (existing === null) return err(techniqueNotFound(id))
 
-    const built = buildTechnique(id, model, existing.isActive)
+    const built = buildFromModel(id, model, existing.isActive)
     if (isErr(built)) return built
     const saved = await deps.repo.save(built.value)
     if (isErr(saved)) return saved
-    return ok(built.value.toView())
+    return ok(techniqueToView(built.value))
   }
 
 export const deactivateTechnique =
@@ -115,8 +121,8 @@ export const deactivateTechnique =
     const existing = await deps.repo.findById(id)
     if (existing === null) return err(techniqueNotFound(id))
 
-    const deactivated = existing.deactivate()
+    const deactivated = markTechniqueInactive(existing)
     const saved = await deps.repo.save(deactivated)
     if (isErr(saved)) return saved
-    return ok(deactivated.toView())
+    return ok(techniqueToView(deactivated))
   }

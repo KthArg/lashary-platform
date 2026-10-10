@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { Money } from '@/shared/money'
 import { ok, err, isOk, type Result } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
-import { Technique, type ServiceFamily } from '../../domain/techniques/technique'
+import { buildTechnique, techniqueToView, type Technique, type ServiceFamily } from '../../domain/techniques/technique'
 import { techniqueNameConflict, type TechniqueNameConflict } from '../../domain/techniques/errors'
 import type { TechniqueRepository } from '../../application/techniques/ports'
 
@@ -26,7 +26,7 @@ type Row = {
 }
 
 function rowToDomain(row: Row): Technique {
-  const built = Technique.create({
+  const built = buildTechnique({
     id: row.id,
     name: row.name,
     family: row.family,
@@ -51,7 +51,7 @@ function rowToDomain(row: Row): Technique {
 }
 
 function domainToRow(technique: Technique): Row {
-  const view = technique.toView()
+  const view = techniqueToView(technique)
   return {
     id: view.id,
     name: view.name,
@@ -114,7 +114,7 @@ export class SupabaseTechniqueRepository implements TechniqueRepository {
       // 23505 = unique_violation (Postgres). La única constraint de unicidad de esta tabla es
       // catalog_techniques_name_unique — un caso de negocio esperable, no una falla de infra.
       if (error.code === '23505') {
-        return err(techniqueNameConflict(technique.toView().name))
+        return err(techniqueNameConflict(technique.name))
       }
       throw new Error(`${TABLE}.save: ${error.message}`)
     }
