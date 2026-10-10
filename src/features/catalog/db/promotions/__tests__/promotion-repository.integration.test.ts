@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { createSupabasePromotionRepository } from '@/features/catalog/db/promotions/promotion-repository'
 import type { PromotionRepository } from '@/features/catalog/application/promotions/ports'
@@ -36,9 +36,10 @@ describe.skipIf(!reachable)('createSupabasePromotionRepository (Supabase local)'
     if (!techniqueId) throw new Error('setup: el seed de catalog_techniques no está cargado')
   })
 
-  afterAll(async () => {
-    await db.from('catalog_promotions').delete().eq('technique_id', techniqueId)
-  })
+  // Sin afterAll de limpieza: save() con token anónimo siempre es denegado por RLS más abajo,
+  // así que esta suite nunca persiste nada — no hay nada que borrar, y borrar por technique_id
+  // arriesgaba eliminar la promoción del seed si coincidía con la primera técnica (dependencia
+  // de orden entre archivos de test que otras suites, como la de aislamiento RLS, necesitan).
 
   it('save() está denegado por RLS con token anónimo (B1, fail-closed)', async () => {
     const built = await import('@/features/catalog/domain/promotions/promotion').then((m) =>
@@ -54,11 +55,23 @@ describe.skipIf(!reachable)('createSupabasePromotionRepository (Supabase local)'
     await expect(repo.save(built.value)).rejects.toThrow()
   })
 
-  it('list y listActive devuelven página vacía cuando no hay filas (sin seed de promociones)', async () => {
+  it('list devuelve al menos la promoción del seed (US-PROM-01)', async () => {
     const page = await repo.list({ offset: 0, limit: 10 })
-    expect(page.total).toBe(0)
-    const active = await repo.listActive(new Date(), { offset: 0, limit: 10 })
-    expect(active.total).toBe(0)
+    expect(page.total).toBeGreaterThanOrEqual(1)
+  })
+
+  it('listActive solo devuelve lo vigente en `now`: la del seed dentro de su ventana, nada fuera de ella', async () => {
+    const withinSeedWindow = await repo.listActive(new Date('2026-06-01T00:00:00Z'), {
+      offset: 0,
+      limit: 10,
+    })
+    expect(withinSeedWindow.total).toBeGreaterThanOrEqual(1)
+
+    const beforeAnyPromotion = await repo.listActive(new Date('2020-01-01T00:00:00Z'), {
+      offset: 0,
+      limit: 10,
+    })
+    expect(beforeAnyPromotion.total).toBe(0)
   })
 
   it('findById devuelve null para un id inexistente', async () => {
