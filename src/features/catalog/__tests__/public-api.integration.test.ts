@@ -1,7 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
 
-// El entry point usa el cliente Supabase de servidor (next/headers). Lo sustituimos por un
-// almacén de cookies vacío -> cliente anónimo, y probamos contra Supabase local con el seed.
 vi.mock('next/headers', () => ({
   cookies: async () => ({ getAll: () => [], set: () => {} }),
 }))

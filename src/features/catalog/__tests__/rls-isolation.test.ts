@@ -1,16 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-// SEC-002 — Test de aislamiento RLS para catalog_techniques.
-//
-// catalog_techniques es catálogo compartido del estudio (no dato por-clienta): la LECTURA
-// pública es intencional. Lo que RLS debe garantizar es que nadie sin rol de staff pueda
-// ESCRIBIR. Se verifica con token anónimo y con el token de una clienta autenticada real
-// (creada por sign-up, sin service-role key — SEC-003).
-//
-// Harness de aislamiento portado por US-AGE-08 (primera tabla con RLS en esta rama, ADR-0007).
-// Se salta si Supabase local no está disponible; en CI (job-tests-reales) sí lo está.
-
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 const TABLE = 'catalog_techniques'
@@ -28,7 +18,7 @@ if (!reachable) {
   console.warn('[catalog/rls] Supabase local no disponible — suite omitida.')
 }
 
-async function signUpClienta(): Promise<SupabaseClient> {
+async function signUpClient(): Promise<SupabaseClient> {
   const anon = createClient(URL, ANON_KEY)
   const email = `rls-test-${Date.now()}-${Math.random().toString(36).slice(2)}@lashary.test`
   const { data, error } = await anon.auth.signUp({
@@ -59,14 +49,14 @@ const writeAttempt = {
 
 describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de catalog_techniques', () => {
   let anon: SupabaseClient
-  let clienta: SupabaseClient
+  let client: SupabaseClient
   let sampleId = ''
   let sampleName = ''
   let initialCount = 0
 
   beforeAll(async () => {
     anon = createClient(URL, ANON_KEY)
-    clienta = await signUpClienta()
+    client = await signUpClient()
 
     const { data } = await anon.from(TABLE).select('id, name').limit(1)
     sampleId = data?.[0]?.id ?? ''
@@ -77,24 +67,18 @@ describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de catalog_techniques',
       .select('*', { count: 'exact', head: true })
     initialCount = count ?? 0
 
-    // Falla ruidosamente si el setup no encontró datos: sin esto, un `.eq('id', '')` haría
-    // pasar los asserts de "no puede escribir" sin haber ejercido RLS de verdad.
     if (!sampleId || initialCount === 0) {
       throw new Error('setup: el seed de catalog_techniques no está cargado')
     }
   })
 
-  // Nota: el control positivo (una sesión con rol admin SÍ puede escribir) requiere sembrar
-  // un rol en auth_user_roles, lo que RLS no permite desde el cliente. Se cubre en la
-  // integración de auth / US-AGE-05, no acá.
-
   it('lectura pública intencional: anón y clienta autenticada pueden SELECT', async () => {
     const asAnon = await anon.from(TABLE).select('id')
-    const asClienta = await clienta.from(TABLE).select('id')
+    const asClient = await client.from(TABLE).select('id')
     expect(asAnon.error).toBeNull()
-    expect(asClienta.error).toBeNull()
+    expect(asClient.error).toBeNull()
     expect((asAnon.data ?? []).length).toBeGreaterThan(0)
-    expect((asClienta.data ?? []).length).toBeGreaterThan(0)
+    expect((asClient.data ?? []).length).toBeGreaterThan(0)
   })
 
   it('token anónimo NO puede INSERT / UPDATE / DELETE', async () => {
@@ -113,21 +97,21 @@ describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de catalog_techniques',
   })
 
   it('clienta autenticada sin rol de staff NO puede INSERT / UPDATE / DELETE', async () => {
-    const staffCheck = await clienta.rpc('auth_is_staff')
+    const staffCheck = await client.rpc('auth_is_staff')
     expect(staffCheck.error).toBeNull()
     expect(staffCheck.data).toBe(false)
 
-    const insert = await clienta.from(TABLE).insert(writeAttempt).select()
+    const insert = await client.from(TABLE).insert(writeAttempt).select()
     expect(insert.error).not.toBeNull()
 
-    const update = await clienta
+    const update = await client
       .from(TABLE)
       .update({ price_first_time: 999_999 })
       .eq('id', sampleId)
       .select()
     expect(update.data ?? []).toHaveLength(0)
 
-    const remove = await clienta.from(TABLE).delete().eq('id', sampleId).select()
+    const remove = await client.from(TABLE).delete().eq('id', sampleId).select()
     expect(remove.data ?? []).toHaveLength(0)
   })
 

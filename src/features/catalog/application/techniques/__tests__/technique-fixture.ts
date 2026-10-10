@@ -4,7 +4,6 @@ import { buildTechnique, type Technique, type ServiceFamily } from '@/features/c
 
 let counter = 0
 
-// Construye una Technique válida para los tests; los overrides ajustan lo que importe al caso.
 export function makeTechnique(overrides: Partial<{
   id: string
   name: string

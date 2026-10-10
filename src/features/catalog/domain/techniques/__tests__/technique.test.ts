@@ -5,6 +5,7 @@ import {
   buildTechnique,
   markTechniqueInactive,
   techniqueToSnapshot,
+  type ServiceFamily,
 } from '@/features/catalog/domain/techniques/technique'
 import { isTechniqueValidationError } from '@/features/catalog/domain/techniques/errors'
 
@@ -31,7 +32,7 @@ describe('buildTechnique — invariantes de dominio (DOM-007)', () => {
     expect(result.value.family).toBe('lash_classic')
     expect(result.value.priceFirstTime.colones).toBe(25000)
     expect(result.value.offersRetouch).toBe(true)
-    expect(result.value.isActive).toBe(true) // default
+    expect(result.value.isActive).toBe(true)
   })
 
   it('crea una técnica sin retoque (precio y duración de retoque ausentes)', () => {
@@ -78,8 +79,7 @@ describe('buildTechnique — invariantes de dominio (DOM-007)', () => {
   it('rechaza familia inválida', () => {
     const result = buildTechnique({
       ...validInput(),
-      // @ts-expect-error — familia fuera del catálogo
-      family: 'tattoo',
+      family: 'tattoo' as unknown as ServiceFamily,
     })
     expect(isErr(result)).toBe(true)
   })
