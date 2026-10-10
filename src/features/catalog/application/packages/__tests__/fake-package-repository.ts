@@ -51,5 +51,9 @@ export function createFakePackageRepository(
       store.set(pkg.id, pkg)
       return ok(undefined)
     },
+
+    async delete(id: string) {
+      store.delete(id)
+    },
   }
 }

@@ -29,4 +29,6 @@ export interface PackageRepository {
   findById(id: string): Promise<PackageWithDuration | null>
 
   save(pkg: Package): Promise<Result<void, PackageNameConflict>>
+
+  delete(id: string): Promise<void>
 }
