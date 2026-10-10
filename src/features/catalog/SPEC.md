@@ -12,8 +12,8 @@ historias:
     evidencia: "PRs #98 a #107, #134, #157 a #168 (pila) y el cierre us/US-PROD-01 a main; tests: package.test.ts, package-commands.test.ts, package-queries.test.ts, package-actions.test.ts, package-schema.test.ts, package-inactive-techniques.test.tsx, package-pagination.test.tsx, package-repository.integration.test.ts, package-rls-isolation.test.ts, catalog_package_staff_write.test.sql; UI probada a mano contra lashary-pruebas (2026-10-03)"
   - id: US-PROM-01
     estado: en_progreso
-    evidencia: "criterios 1 y 3 demostrados: dominio, aplicación y createSupabasePromotionRepository (listActive filtra is_active + ventana en la base, PERF-005); tests: promotion.test.ts, promotion-queries.test.ts, promotion-commands.test.ts, promotion-repository.integration.test.ts"
-    falta: "PromotionForm y AdminPromotionsPage. Criterio 2 (agendamiento) y 4 (precio congelado) diferidos a US-AGE-05 (no_iniciada). Ver DEPENDENCIES.md, Criterios diferidos."
+    evidencia: "criterios 1 y 3 completos — crear/editar/pausar una promoción sobre técnica o paquete, que deje de aplicarse sola al vencer sin intervención manual; tests: promotion.test.ts, promotion-queries.test.ts, promotion-commands.test.ts, promotion-repository.integration.test.ts, promotion-schema.test.ts, promotion-actions.test.ts. UI en /admin/catalog/promotions (falta cablear la pestaña del panel y la ruta de la app)."
+    falta: "cablear en index.ts/client.ts, la ruta de la app y la pestaña del panel. Criterio 2 (agendamiento) y 4 (precio congelado) diferidos a US-AGE-05 (no_iniciada). Ver DEPENDENCIES.md, Criterios diferidos."
   - id: US-PROM-02
     estado: no_iniciada
 flags: []
