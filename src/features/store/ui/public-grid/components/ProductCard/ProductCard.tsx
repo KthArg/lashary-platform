@@ -7,7 +7,7 @@ import type { ProductCardProps } from './ProductCard.types'
 export function ProductCard({ card }: ProductCardProps) {
   return (
     <article className={STYLES.card} data-product-id={card.id}>
-      <figure>
+      <figure className={STYLES.figure}>
         <img
           src={card.imageUrl}
           alt={`${PUBLIC_GRID_STRINGS.productAltPrefix} ${card.name}`}
@@ -16,12 +16,14 @@ export function ProductCard({ card }: ProductCardProps) {
         />
       </figure>
       <div className={STYLES.cardBody}>
-        <h3 className={STYLES.cardTitle}>
-          <Link href={publicDetailRoutes.product(card.slug)} className={STYLES.cardLink}>
-            {card.name}
-          </Link>
-        </h3>
+        <h3 className={STYLES.cardTitle}>{card.name}</h3>
         <p className={STYLES.price}>{card.priceLabel}</p>
+        <div className={STYLES.cardActions}>
+          <Link href={publicDetailRoutes.product(card.slug)} className={STYLES.viewMoreButton}>
+            {PUBLIC_GRID_STRINGS.viewMoreLabel}
+            <span className={STYLES.srOnly}>: {card.name}</span>
+          </Link>
+        </div>
       </div>
     </article>
   )

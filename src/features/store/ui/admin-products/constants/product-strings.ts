@@ -13,7 +13,7 @@ export const productStrings = {
       actions: 'Acciones',
     },
     status: { active: 'Activo', inactive: 'Desactivado' },
-    rowActions: { edit: 'Editar', deactivate: 'Desactivar' },
+    rowActions: { edit: 'Editar', deactivate: 'Desactivar', activate: 'Activar' },
     empty: {
       title: 'Todavía no hay productos',
       body: 'Creá el primer producto para que aparezca en el catálogo público.',
@@ -46,6 +46,7 @@ export const productStrings = {
     savedCreate: 'Producto creado.',
     savedEdit: 'Cambios guardados.',
     deactivated: 'Producto desactivado.',
+    activated: 'Producto activado: vuelve a verse en la tienda.',
     validation: {
       name: 'El nombre es obligatorio',
       nameWithoutLetters: 'El nombre necesita al menos una letra o un número',
