@@ -2,18 +2,33 @@
 # check-migrations.sh — INT-008: máx. 1 migración nueva por PR, forward-only (las existentes no
 # se editan) · DOM-001: columnas de dinero con tipo no entero · DOM-003: timestamp sin zona ·
 # PERF-003: FK sin índice en la misma migración · ARCH-006: prefijo de feature en tablas nuevas.
+# El PR de una rama de historia (us/<ID>) hacia main junta piezas que ya pasaron el tope de 1
+# migración una por una: queda exento de ese conteo, igual que check-pr-size.sh (INT-002). El
+# forward-only (nunca editar una migración existente) sigue aplicando siempre — no es un tope
+# de tamaño de pieza, es una garantía real de que el historial de la base nunca se reescribe.
 
 . "$(dirname "$0")/lib.sh"
 
 MIG_DIR="supabase/migrations"
 
 # ── Parte 1: contra el diff (si hay) ─────────────────────────────
+HEAD_REF="${PR_HEAD_REF:-$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null)}"
+BASE_REF="${PR_BASE_REF:-${DIFF_RANGE%%...*}}"
+IS_HISTORY_CLOSE=0
+if [ -n "$DIFF_RANGE" ] && echo "$HEAD_REF" | grep -qE '^us/' && echo "$BASE_REF" | grep -qE '^(origin/)?main$'; then
+  IS_HISTORY_CLOSE=1
+fi
+
 STATUS=$(all_touched_files | grep "	$MIG_DIR/" || true)
 if [ -n "$STATUS" ]; then
   N_NEW=$(echo "$STATUS" | grep -c '^A' || true)
   N_EDITED=$(echo "$STATUS" | grep -cE '^[MDR]' || true)
   if [ "$N_NEW" -gt 1 ]; then
-    fail_rule INT-008 "el diff agrega $N_NEW migraciones (máximo 1 por PR): $(echo "$STATUS" | grep '^A' | cut -f2 | tr '\n' ' ')"
+    if [ "$IS_HISTORY_CLOSE" = "1" ]; then
+      echo "PR de historia ($HEAD_REF → main): exento del tope de 1 migración por PR (INT-008, igual que INT-002 en check-pr-size.sh)."
+    else
+      fail_rule INT-008 "el diff agrega $N_NEW migraciones (máximo 1 por PR): $(echo "$STATUS" | grep '^A' | cut -f2 | tr '\n' ' ')"
+    fi
   fi
   if [ "$N_EDITED" -gt 0 ]; then
     fail_rule INT-008 "el diff modifica o borra migraciones existentes (forward-only): $(echo "$STATUS" | grep -E '^[MDR]' | cut -f2 | tr '\n' ' ')"
