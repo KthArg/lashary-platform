@@ -12,10 +12,10 @@ import { isPackageNotFound } from '@/features/catalog/domain/packages/errors'
 import { createFakePackageRepository } from './fake-package-repository'
 import { makePackage } from './package-fixture'
 
-const SET_CLASICO_MIN = 120
-const DISENO_CEJAS_MIN = 75
-const DURACION_DOS_TECNICAS = SET_CLASICO_MIN + DISENO_CEJAS_MIN
-const DURACION_PAQUETE = 90
+const CLASSIC_SET_MIN = 120
+const BROW_DESIGN_MIN = 75
+const TWO_TECHNIQUES_DURATION = CLASSIC_SET_MIN + BROW_DESIGN_MIN
+const PACKAGE_DURATION = 90
 
 describe('listPackages', () => {
   it('devuelve solo activos por defecto, con duración total calculada (criterio 2)', async () => {
@@ -24,12 +24,12 @@ describe('listPackages', () => {
         makePackage({ id: 'a', name: 'A', isActive: true }),
         makePackage({ id: 'b', name: 'B', isActive: false }),
       ],
-      () => DURACION_DOS_TECNICAS,
+      () => TWO_TECHNIQUES_DURATION,
     )
     const page = await listPackages(repo)()
     expect(page.items.map((packageItem) => packageItem.id)).toEqual(['a'])
     expect(page.total).toBe(1)
-    expect(page.items[0].durationTotalMin).toBe(DURACION_DOS_TECNICAS)
+    expect(page.items[0].durationTotalMin).toBe(TWO_TECHNIQUES_DURATION)
     expect(typeof page.items[0].price).toBe('number')
   })
 
@@ -67,12 +67,12 @@ describe('listPackages', () => {
 
 describe('getPackage', () => {
   it('devuelve el paquete con su duración cuando existe', async () => {
-    const repo = createFakePackageRepository([makePackage({ id: 'x' })], () => DURACION_PAQUETE)
+    const repo = createFakePackageRepository([makePackage({ id: 'x' })], () => PACKAGE_DURATION)
     const result = await getPackage(repo)('x')
     expect(isOk(result)).toBe(true)
     if (isOk(result)) {
       expect(result.value.id).toBe('x')
-      expect(result.value.durationTotalMin).toBe(DURACION_PAQUETE)
+      expect(result.value.durationTotalMin).toBe(PACKAGE_DURATION)
     }
   })
 
