@@ -2,6 +2,9 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AuthRole } from '../domain/roles'
 import type { AuthRepository, ClientPhoneProfile, ClientProfile } from '../application/ports'
 
+export const CLIENT_PROFILE_COLUMNS =
+  'id, user_id, full_name, email, phone, phone_verified, created_at, updated_at'
+
 export function createSupabaseAuthRepository(supabase: SupabaseClient): AuthRepository {
   return {
     async findRole(userId: string) {
@@ -16,7 +19,7 @@ export function createSupabaseAuthRepository(supabase: SupabaseClient): AuthRepo
     async findClientProfile(userId: string) {
       const { data } = await supabase
         .from('clients_profiles')
-        .select('*')
+        .select(CLIENT_PROFILE_COLUMNS)
         .eq('user_id', userId)
         .single()
       return (data as ClientProfile | null) ?? null
