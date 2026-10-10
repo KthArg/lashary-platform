@@ -3,7 +3,6 @@ import { productSchema } from '@/features/store/ui/admin-products/validation/pro
 import { productStrings } from '@/features/store/ui/admin-products/constants/product-strings'
 
 const validForm = {
-  slug: 'serum-nutritivo-lashary',
   name: 'Serum nutritivo Lashary',
   description: 'Tratamiento nutritivo para mantenimiento de pestañas.',
   imageUrl: '/productos/serum-nutritivo.jpg',
@@ -18,7 +17,6 @@ describe('productSchema (DOM-007 — validación en el borde)', () => {
     expect(parsed.success).toBe(true)
     if (!parsed.success) return
     expect(parsed.data).toEqual({
-      slug: 'serum-nutritivo-lashary',
       name: 'Serum nutritivo Lashary',
       description: 'Tratamiento nutritivo para mantenimiento de pestañas.',
       imageUrl: '/productos/serum-nutritivo.jpg',
@@ -36,29 +34,41 @@ describe('productSchema (DOM-007 — validación en el borde)', () => {
     expect(parsed.data.description).toBe('')
   })
 
-  it('recorta slug, nombre y descripción', () => {
+  it('recorta nombre y descripción', () => {
     const parsed = productSchema.safeParse({
       ...validForm,
-      slug: '  serum-nutritivo-lashary  ',
       name: '  Serum nutritivo Lashary  ',
       description: '  cuidados  ',
     })
     if (!parsed.success) throw new Error('esperaba éxito')
-    expect(parsed.data.slug).toBe('serum-nutritivo-lashary')
     expect(parsed.data.name).toBe('Serum nutritivo Lashary')
     expect(parsed.data.description).toBe('cuidados')
   })
 
-  it('rechaza slug vacío, nombre vacío y precio no positivo', () => {
+  it('rechaza nombre vacío y precio no positivo', () => {
     const parsed = productSchema.safeParse({
       ...validForm,
-      slug: '   ',
       name: '   ',
       priceCrc: '0',
     })
     expect(parsed.success).toBe(false)
     if (parsed.success) return
-    expect(parsed.error.issues.length).toBeGreaterThanOrEqual(3)
+    expect(parsed.error.issues.length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('rechaza un nombre sin letras ni números, porque no daría un slug', () => {
+    const parsed = productSchema.safeParse({ ...validForm, name: '¡¡!!' })
+    expect(parsed.success).toBe(false)
+    if (parsed.success) return
+    expect(parsed.error.issues.map((issue) => issue.message)).toContain(
+      productStrings.form.validation.nameWithoutLetters,
+    )
+  })
+
+  it('descarta un slug enviado en el formulario: lo decide el sistema', () => {
+    const parsed = productSchema.safeParse({ ...validForm, slug: 'slug-inyectado' })
+    if (!parsed.success) throw new Error('esperaba éxito')
+    expect(parsed.data).not.toHaveProperty('slug')
   })
 
   it('acepta orden de presentación en cero', () => {
