@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ok, err } from '@/shared/result'
 
 const mocks = vi.hoisted(() => ({
   isStaff: vi.fn(),
@@ -22,7 +23,7 @@ import {
   deactivateTechniqueAction,
 } from '@/features/catalog/ui/techniques/actions/technique-actions'
 import { initialActionState } from '@/features/catalog/ui/techniques/types/technique-action-state'
-import { TechniqueNameConflict } from '@/features/catalog/domain/techniques/errors'
+import { techniqueNameConflict } from '@/features/catalog/domain/techniques/errors'
 
 function form(fields: Record<string, string>): FormData {
   const formData = new FormData()
@@ -47,7 +48,7 @@ describe('acciones administrativas del catálogo', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.isStaff.mockResolvedValue(true)
-    mocks.save.mockResolvedValue(undefined)
+    mocks.save.mockResolvedValue(ok(undefined))
   })
 
   it('rechaza una llamada directa sin sesión staff antes de tocar el repositorio', async () => {
@@ -85,7 +86,7 @@ describe('acciones administrativas del catálogo', () => {
   })
 
   it('DOM-006: un nombre duplicado vuelve como estado "invalid" con mensaje, no como excepción', async () => {
-    mocks.save.mockRejectedValueOnce(new TechniqueNameConflict('Set volumen'))
+    mocks.save.mockResolvedValueOnce(err(techniqueNameConflict('Set volumen')))
 
     const state = await createTechniqueAction(
       initialActionState,

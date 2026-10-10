@@ -1,4 +1,6 @@
+import type { Result } from '@/shared/result'
 import type { Technique, ServiceFamily } from '../../domain/techniques/technique'
+import type { TechniqueNameConflict } from '../../domain/techniques/errors'
 
 export type ListTechniquesQuery = {
   activeOnly?: boolean
@@ -34,5 +36,5 @@ export interface TechniqueRepository {
 
   findByIds(ids: string[]): Promise<Technique[]>
 
-  save(technique: Technique): Promise<void>
+  save(technique: Technique): Promise<Result<void, TechniqueNameConflict>>
 }
