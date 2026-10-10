@@ -1,9 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-// Test de integración: requiere Supabase local corriendo y NEXT_PUBLIC_SUPABASE_* en .env.local
-// (o en el entorno del job de CI). Sin conexión, la suite se salta con aviso.
-
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 

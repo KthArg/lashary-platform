@@ -8,8 +8,6 @@ export type ListTechniquesQuery = {
   pageSize?: number
 }
 
-// Datos de una técnica tal como llegan del borde (ya validados de formato por Zod, DOM-007).
-// Montos en colones enteros; los use-cases los envuelven en Money.
 export type TechniqueWriteModel = {
   name: string
   family: ServiceFamily
@@ -23,8 +21,6 @@ export type TechniqueWriteModel = {
   aftercareText: string
 }
 
-// Puerto de persistencia. La implementación Supabase vive en db/ (ARCH: application orquesta
-// domain + puertos; db/ consulta las tablas de la feature).
 export interface TechniqueRepository {
   list(params: {
     activeOnly: boolean

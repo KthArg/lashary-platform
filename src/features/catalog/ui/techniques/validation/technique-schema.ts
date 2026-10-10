@@ -3,14 +3,10 @@ import { SERVICE_FAMILIES } from '../../../domain/techniques/technique'
 import type { TechniqueWriteModel } from '../../../application/techniques/ports'
 import { catalogMessages } from '../constants/technique-strings'
 
-// Validación de formato en el borde, una sola vez, con Zod (DOM-007). Hacia adentro los datos
-// se asumen válidos de formato; los invariantes de negocio (D10, etc.) los aplica Technique.
-
 const validationMessages = catalogMessages.form.validation
 
 const requiredInt = z.coerce.number().int()
 
-// Campo numérico opcional: '' (o ausente) -> null; si viene, entero positivo.
 const optionalPositiveInt = z
   .union([z.literal(''), z.coerce.number().int().positive()])
   .transform((value) => (value === '' ? null : value))

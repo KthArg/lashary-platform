@@ -1,6 +1,3 @@
-// Estado de los server actions del formulario. En un módulo aparte porque actions.ts es
-// 'use server' y solo puede exportar funciones async.
-
 export type TechniqueActionState = {
   status: 'idle' | 'ok' | 'invalid' | 'forbidden'
   message?: string

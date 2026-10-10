@@ -1,8 +1,3 @@
-// Entry point público de la feature catalog (ARCH-003). Superficie de solo lectura y de
-// servidor — el repositorio usa el cliente Supabase de servidor. Para Client Components
-// (loading.tsx, error.tsx) que no pueden arrastrar next/headers al bundle, ver ./client.ts.
-// Contrato y garantías: docs/contracts/catalog-api.md.
-
 import {
   listTechniques as listTechniquesUseCase,
   getTechnique as getTechniqueUseCase,
@@ -50,7 +45,6 @@ export type { Page } from './application/pagination'
 export type { ListPackagesQuery } from './application/packages/ports'
 export type { PackageListItem } from './application/packages/queries'
 
-// UI de administración (US-AGE-08). La compone la ruta src/app/admin/catalog/.
 export { AdminCatalogPage } from './ui/techniques/components/AdminCatalogPage'
 export { catalogMessages } from './ui/techniques/constants/technique-strings'
 

@@ -1,6 +1,5 @@
 import type { ServiceFamily } from '../../../domain/techniques/technique'
 
-// Texto visible externalizado (DOM-009). Un solo idioma por ahora.
 export const catalogMessages = {
   admin: {
     title: 'Catálogo de técnicas',
