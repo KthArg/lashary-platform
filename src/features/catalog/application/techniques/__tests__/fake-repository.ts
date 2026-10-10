@@ -1,4 +1,4 @@
-import { Technique } from '@/features/catalog/domain/techniques/technique'
+import type { Technique } from '@/features/catalog/domain/techniques/technique'
 import { ok, err } from '@/shared/result'
 import { techniqueNameConflict } from '@/features/catalog/domain/techniques/errors'
 import type { TechniqueRepository } from '@/features/catalog/application/techniques/ports'
@@ -35,9 +35,9 @@ export class FakeTechniqueRepository implements TechniqueRepository {
   }
 
   async save(technique: Technique) {
-    const name = technique.toView().name
+    const name = technique.name
     for (const other of this.store.values()) {
-      if (other.id !== technique.id && other.toView().name === name) {
+      if (other.id !== technique.id && other.name === name) {
         return err(techniqueNameConflict(name))
       }
     }
