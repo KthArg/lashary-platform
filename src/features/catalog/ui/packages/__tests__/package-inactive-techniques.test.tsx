@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import { techniqueToView } from '@/features/catalog/domain/techniques/technique'
 import { makeTechnique } from '@/features/catalog/application/techniques/__tests__/technique-fixture'
 
 vi.mock('@/features/catalog/ui/packages/actions/package-actions', () => ({
@@ -13,8 +14,8 @@ import { PackageTable } from '@/features/catalog/ui/packages/components/PackageT
 import { packageMessages } from '@/features/catalog/ui/packages/constants/package-strings'
 import type { PackageListItem } from '@/features/catalog/application/packages/queries'
 
-const active = makeTechnique({ id: 't1', name: 'Set clásico', isActive: true }).toView()
-const inactive = makeTechnique({ id: 't2', name: 'Henna', isActive: false }).toView()
+const active = techniqueToView(makeTechnique({ id: 't1', name: 'Set clásico', isActive: true }))
+const inactive = techniqueToView(makeTechnique({ id: 't2', name: 'Henna', isActive: false }))
 
 const pkg: PackageListItem = {
   id: 'p1',

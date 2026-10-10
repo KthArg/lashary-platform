@@ -236,3 +236,11 @@ export class Technique {
     }
   }
 }
+
+export const buildTechnique = (input: TechniqueInput) => Technique.create(input)
+
+export const markTechniqueInactive = (technique: Technique): Technique => technique.deactivate()
+
+export const techniqueToView = (technique: Technique): TechniqueView => technique.toView()
+
+export const techniqueToSnapshot = (technique: Technique): TechniqueSnapshot => technique.snapshot()
