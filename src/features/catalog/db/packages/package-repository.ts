@@ -7,11 +7,11 @@ import { packageNameConflict, type PackageNameConflict } from '../../domain/pack
 import type { PackageRepository, PackageWithDuration } from '../../application/packages/ports'
 
 const TABLE = 'catalog_packages'
-const SAVE_FN = 'catalog_save_package'
+const SAVE_FN = 'catalog_save_package_with_deposit'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 const COLUMNS = `
-  id, name, price, is_active,
+  id, name, price, deposit, is_active,
   catalog_package_techniques ( technique_id, catalog_techniques ( duration_first_time_min, buffer_min ) )
 `
 
@@ -21,6 +21,7 @@ type Row = {
   id: string
   name: string
   price: number | string
+  deposit: number | string
   is_active: boolean
   catalog_package_techniques: { technique_id: string; catalog_techniques: TechniqueRef }[]
 }
@@ -37,6 +38,7 @@ function rowToDomain(row: Row): PackageWithDuration {
     name: row.name,
     techniqueIds,
     price: Money.fromColones(Number(row.price)),
+    deposit: Money.fromColones(Number(row.deposit)),
     isActive: row.is_active,
   })
   if (!isOk(built)) {
@@ -77,6 +79,7 @@ export function createSupabasePackageRepository(db: SupabaseClient): PackageRepo
         p_id: view.id,
         p_name: view.name,
         p_price: view.price,
+        p_deposit: view.deposit,
         p_is_active: view.isActive,
         p_technique_ids: view.techniqueIds,
       })

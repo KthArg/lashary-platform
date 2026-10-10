@@ -111,10 +111,9 @@ Como administradora del negocio, quiero definir el anticipo que se cobra para co
 
 Acceptance Criteria:
 • Puedo definir el anticipo por tecnica y por paquete.
-• El monto del anticipo se muestra al cliente antes de confirmar la cita, junto con la advertencia de que se pierde si cancela fuera de la ventana permitida o si no asiste.
-• El anticipo requerido y el efectivamente registrado quedan almacenados en la cita, no recalculados a partir del catalogo actual.
-• El anticipo se descuenta del saldo pendiente al cerrar la cita, de modo que el pago final sea la diferencia.
-• La administradora puede exonerar el anticipo a un cliente especifico, y la exoneracion queda en la bitacora de auditoria.","6","US-AGE-13","Administración","Administrador","High","5","To Do","","","Administracion"
+• La administradora puede exonerar el anticipo a un cliente especifico, y la exoneracion queda en la bitacora de auditoria.
+
+Decision de alcance aprobada por el PO, comunicada por Bayron el 2026-10-03: se conservan los criterios originales 1 y 5. Los criterios originales 2 y 3 se trasladan a US-AGE-05 y el 4 a US-AGE-12; siguen obligatorios en esas historias (docs/process/DEPENDENCIES.md).","6","US-AGE-13","Administración","Administrador","High","5","To Do","","","Administracion"
 "27","Story","Configurar espacios y horarios disponibles para citas","User Story:
 Como administradora del negocio, quiero configurar los espacios y horarios disponibles para citas, para controlar cuando los clientes pueden agendar.
 
@@ -159,7 +158,11 @@ Acceptance Criteria:
 • Al confirmar, el espacio queda ocupado de forma automatica.
 • Si el espacio fue tomado entre la seleccion y la confirmacion, el cliente recibe un mensaje claro y vuelve a la seleccion de horario sin perder el resto de sus datos.
 • El cliente recibe una confirmacion visual con el detalle de la cita.
-• El precio de la tecnica queda congelado en la cita al momento de confirmarla.","7","US-AGE-05","Cliente Registrado","Cliente Registrado","High","8","To Do","","","Cliente-Registrado"
+• El precio de la tecnica queda congelado en la cita al momento de confirmarla.
+• El monto del anticipo se muestra al cliente antes de confirmar la cita, junto con la advertencia de que se pierde si cancela fuera de la ventana permitida o si no asiste.
+• El anticipo requerido y el efectivamente registrado quedan almacenados en la cita, no recalculados a partir del catalogo actual.
+
+Criterios originales 2 y 3 recibidos de US-AGE-13, traslado aprobado por el PO y comunicado por Bayron el 2026-10-03; pendientes de implementacion y pruebas (docs/process/DEPENDENCIES.md).","7","US-AGE-05","Cliente Registrado","Cliente Registrado","High","8","To Do","","","Cliente-Registrado"
 "32","Story","Reagendar una cita existente","User Story:
 Como cliente, quiero mover mi cita a otra fecha u hora, para no tener que cancelarla y perder el anticipo cuando solo necesito cambiarla.
 
@@ -211,7 +214,10 @@ Acceptance Criteria:
 • Una cita completada genera el cargo correspondiente al cliente.
 • Una ausencia sin aviso aplica la politica definida por el negocio respecto del anticipo.
 • Las citas pasadas sin cerrar aparecen destacadas en el panel hasta que la administradora las resuelva.
-• Ningun estado se revierte silenciosamente: todo cambio queda en la bitacora de auditoria.","6","US-AGE-12","Administración","Administrador","High","5","To Do","","","Administracion"
+• Ningun estado se revierte silenciosamente: todo cambio queda en la bitacora de auditoria.
+• El anticipo se descuenta del saldo pendiente al cerrar la cita, de modo que el pago final sea la diferencia.
+
+Criterio original 4 recibido de US-AGE-13, traslado aprobado por el PO y comunicado por Bayron el 2026-10-03; pendientes de implementacion y pruebas (docs/process/DEPENDENCIES.md).","6","US-AGE-12","Administración","Administrador","High","5","To Do","","","Administracion"
 "38","Story","Bloquear manualmente espacios del calendario","User Story:
 Como administradora del negocio, quiero bloquear manualmente espacios del calendario, para reservar tiempo personal sin que los clientes puedan agendar.
 

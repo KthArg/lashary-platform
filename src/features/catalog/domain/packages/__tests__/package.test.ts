@@ -125,6 +125,7 @@ describe('Package — comportamiento (criterio 3)', () => {
         '33333333-3333-3333-3333-333333333333',
       ],
       price: 30000,
+      deposit: 0,
       isActive: true,
     })
   })

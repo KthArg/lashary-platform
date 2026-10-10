@@ -7,6 +7,7 @@ export type PackageView = {
   name: string
   techniqueIds: string[]
   price: number
+  deposit: number
   isActive: boolean
 }
 
@@ -15,6 +16,7 @@ export type PackageInput = {
   name: string
   techniqueIds: string[]
   price: Money
+  deposit?: Money
   isActive?: boolean
 }
 
@@ -26,6 +28,7 @@ export interface Package {
   readonly name: string
   readonly techniqueIds: readonly string[]
   readonly price: Money
+  readonly deposit: Money
   readonly isActive: boolean
 }
 
@@ -46,6 +49,10 @@ export function buildPackage(input: PackageInput): Result<Package, PackageValida
   if (!input.price.isPositive()) {
     problems.push('el precio del paquete debe ser mayor que cero')
   }
+  const deposit = input.deposit ?? Money.zero()
+  if (deposit.isNegative() || !Number.isSafeInteger(deposit.colones)) {
+    problems.push('el anticipo debe ser un entero no negativo dentro del rango seguro')
+  }
 
   if (problems.length > 0) {
     return err(packageValidationError(problems))
@@ -57,6 +64,7 @@ export function buildPackage(input: PackageInput): Result<Package, PackageValida
     name,
     techniqueIds: uniqueTechniqueIds,
     price: input.price,
+    deposit,
     isActive: input.isActive ?? true,
   })
 }
@@ -71,6 +79,7 @@ export function packageToView(pkg: Package): PackageView {
     name: pkg.name,
     techniqueIds: [...pkg.techniqueIds],
     price: pkg.price.colones,
+    deposit: pkg.deposit.colones,
     isActive: pkg.isActive,
   }
 }
