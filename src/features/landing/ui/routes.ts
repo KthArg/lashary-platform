@@ -3,6 +3,8 @@
 // manda a /login a quien no tiene sesión.
 export const RESERVE_ROUTE = '/portal'
 
+export const LOGIN_ROUTE = '/login'
+
 export const HOME_ANCHOR = '#inicio'
 
 // "Reservar esta técnica" (criterio 5 de US-LAND-02): el mismo destino fijo, con la técnica

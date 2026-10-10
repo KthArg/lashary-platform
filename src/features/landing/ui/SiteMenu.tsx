@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect } from 'react'
 import { landingMessages } from './messages'
-import { RESERVE_ROUTE } from './routes'
+import { LOGIN_ROUTE, RESERVE_ROUTE } from './routes'
 import type { SiteSection } from './sections'
 import { siteMenuStyles as styles } from './SiteMenu.styles'
 import { useFocusTrap } from './use-focus-trap'
@@ -55,6 +55,9 @@ export function SiteMenu({ sections, onClose }: SiteMenuProps) {
       <div className={styles.footer}>
         <Link href={RESERVE_ROUTE} onClick={onClose} className={styles.reserve}>
           {landingMessages.menu.reserve}
+        </Link>
+        <Link href={LOGIN_ROUTE} onClick={onClose} className={styles.login}>
+          {landingMessages.menu.login}
         </Link>
       </div>
     </div>

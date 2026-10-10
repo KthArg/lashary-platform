@@ -7,6 +7,8 @@ export const siteHeaderStyles = {
   actions: 'pointer-events-auto flex items-center gap-4',
   desktopNav: 'hidden items-center gap-6 text-site-nav site-nav:flex',
   navLink: 'no-underline',
+  login: 'inline-flex min-h-11 items-center text-site-nav no-underline',
+  loginDesktop: 'hidden min-h-11 items-center text-site-nav no-underline site-nav:inline-flex',
   reserve:
     'inline-flex min-h-11 items-center border border-white/70 px-5 text-site-nav font-medium no-underline',
   menuButton: 'flex min-h-11 cursor-pointer flex-col justify-center gap-1.5 bg-transparent py-2.5 pl-1.5',

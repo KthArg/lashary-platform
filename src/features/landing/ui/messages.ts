@@ -13,12 +13,14 @@ export const landingMessages = {
   header: {
     sectionsNav: 'Secciones',
     reserve: 'Reservar cita',
+    login: 'Iniciar sesión',
     openMenu: 'Abrir menú',
   },
   menu: {
     dialogLabel: 'Menú',
     close: 'Cerrar',
     reserve: 'Reservar cita',
+    login: 'Iniciar sesión',
   },
   techniques: {
     title: 'Servicios',
