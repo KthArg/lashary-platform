@@ -13,7 +13,7 @@ historias:
   - id: US-PROM-01
     estado: en_progreso
     evidencia: "criterios 1 y 3 demostrados: dominio, aplicación y createSupabasePromotionRepository (listActive filtra is_active + ventana en la base, PERF-005); tests: promotion.test.ts, promotion-queries.test.ts, promotion-commands.test.ts, promotion-repository.integration.test.ts"
-    falta: "capa ui. Criterio 2 (mostrar en el flujo de agendamiento) y criterio 4 (precio con promoción congelado en la cita) diferidos: requieren scheduling_appointments, que trae US-AGE-05 (no_iniciada). Punto de extensión: listActivePromotions ya expone las vigentes; el consumo desde agendamiento y el congelamiento llegan con US-AGE-05. Ver docs/process/DEPENDENCIES.md, Criterios diferidos."
+    falta: "componentes ui/ (tabla, formulario, página admin). Criterio 2 (agendamiento) y 4 (precio congelado) diferidos a US-AGE-05 (no_iniciada). Ver DEPENDENCIES.md, Criterios diferidos."
   - id: US-PROM-02
     estado: no_iniciada
 flags: []
