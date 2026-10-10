@@ -19,6 +19,7 @@ const validModel = (): ProductWrite => ({
   imageUrl: '/productos/cepillo-limpiador.jpg',
   priceCrc: 12000,
   displayOrder: 2,
+  stock: 7,
 })
 
 const deps = (repo: FakeAdminProductRepository, id = 'nuevo-id') => ({
@@ -36,6 +37,12 @@ describe('createProduct', () => {
     expect(result.value.priceCrc).toBe(12000)
     expect(repo.saveCalls).toBe(1)
     expect(await repo.findById('abc')).not.toBeNull()
+  })
+
+  it('persiste las existencias que indicó la administradora', async () => {
+    const repo = createFakeAdminProductRepository()
+    await createProduct(deps(repo, 'con-existencias'))(validModel())
+    expect((await repo.findById('con-existencias'))?.stock).toBe(7)
   })
 
   it('rechaza y no persiste un producto inválido', async () => {
@@ -76,6 +83,14 @@ describe('updateProduct', () => {
     expect(result.value.name).toBe('Renombrado')
     expect(result.value.isActive).toBe(true)
     expect(result.value.id).toBe('e1')
+  })
+
+  it('cambia las existencias de un producto existente sin tocar el resto', async () => {
+    const repo = createFakeAdminProductRepository([makeProduct({ id: 'e6', stock: 10 })])
+    const result = await updateProduct(deps(repo))('e6', { ...validModel(), stock: 0 })
+    if (!isOk(result)) throw new Error('esperaba ok')
+    expect(result.value.stock).toBe(0)
+    expect((await repo.findById('e6'))?.stock).toBe(0)
   })
 
   it('preserva activo=false al actualizar un producto desactivado', async () => {

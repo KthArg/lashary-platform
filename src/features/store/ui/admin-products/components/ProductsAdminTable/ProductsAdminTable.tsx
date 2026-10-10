@@ -15,6 +15,7 @@ export function ProductsAdminTable({ rows }: ProductsAdminTableProps) {
             <th>{adminMessages.columns.slug}</th>
             <th>{adminMessages.columns.price}</th>
             <th>{adminMessages.columns.order}</th>
+            <th>{adminMessages.columns.stock}</th>
             <th>{adminMessages.columns.status}</th>
             <th>
               <span className={STYLES.srOnly}>{adminMessages.columns.actions}</span>
@@ -28,6 +29,7 @@ export function ProductsAdminTable({ rows }: ProductsAdminTableProps) {
               <td>{row.slug}</td>
               <td>{row.formattedPrice}</td>
               <td>{row.order}</td>
+              <td>{row.stock}</td>
               <td>
                 <span className={row.statusClass}>{row.statusText}</span>
               </td>

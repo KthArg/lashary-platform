@@ -99,7 +99,7 @@
 
 ### store (actualizado: 2026-10-08)
 - US-PROD-02 — terminada — PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), product.test.ts, commands.test.ts, queries.test.ts, product-schema.test.ts, product-actions.test.ts, layout.test.tsx, products-admin-rls.test.ts (omitida sin Supabase local, ver deuda)
-- US-PROD-03 — en_progreso — falta: la columna store_products.existencias existe (supabase/migrations/20261006000000_store_products_existencias_e_imagenes.sql, que tambien crea el bucket store-product-images) pero el panel admin no la edita ni sube imagenes; faltan la lectura del detalle por slug, la ruta /productos/[slug] con imagen, nombre, descripcion, precio y boton de agregar al carrito deshabilitado sin existencias, y el enlace desde el grid
+- US-PROD-03 — en_progreso — falta: la columna store_products.existencias existe y la administradora la edita en /admin/catalog/products; faltan la lectura del detalle por slug, la ruta /productos/[slug] con imagen, nombre, descripcion, precio y boton de agregar al carrito deshabilitado sin existencias, y el enlace desde el grid
 - US-SHOP-01 — no_iniciada
 - US-SHOP-02 — no_iniciada
 
