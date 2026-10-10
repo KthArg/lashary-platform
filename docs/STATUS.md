@@ -35,7 +35,7 @@
 ### catalog (actualizado: 2026-10-09)
 - US-AGE-08 — terminada — PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx
 - US-PROD-01 — terminada — PRs #98 a #107, #134, #157 a #168 (pila) y el cierre us/US-PROD-01 a main; tests: package.test.ts, package-commands.test.ts, package-queries.test.ts, package-actions.test.ts, package-schema.test.ts, package-inactive-techniques.test.tsx, package-pagination.test.tsx, package-repository.integration.test.ts, package-rls-isolation.test.ts, catalog_package_staff_write.test.sql; UI probada a mano contra lashary-pruebas (2026-10-03)
-- US-PROM-01 — en_progreso — falta: PromotionForm y AdminPromotionsPage. Criterio 2 (agendamiento) y 4 (precio congelado) diferidos a US-AGE-05 (no_iniciada). Ver DEPENDENCIES.md, Criterios diferidos.
+- US-PROM-01 — en_progreso — falta: cablear en index.ts/client.ts, la ruta de la app y la pestaña del panel. Criterio 2 (agendamiento) y 4 (precio congelado) diferidos a US-AGE-05 (no_iniciada). Ver DEPENDENCIES.md, Criterios diferidos.
 - US-PROM-02 — no_iniciada
 
 ### clients (actualizado: 2026-10-08)
