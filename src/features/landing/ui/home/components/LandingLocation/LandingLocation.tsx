@@ -1,6 +1,6 @@
 import type { ContactInfo } from '@/features/content'
 import { ExternalLink } from '../../../site-shell/components/ExternalLink'
-import { landingLocationStyles as styles } from './LandingLocation.styles'
+import { landingLocationStyles as STYLES } from './LandingLocation.styles'
 import { landingMessages } from '../../../constants/landing-strings'
 import { LOCATION_SECTION } from '../../../sections'
 import type { LandingLocationProps } from './LandingLocation.types'
@@ -12,39 +12,39 @@ export function LandingLocation({ contact, hours }: LandingLocationProps) {
   const copy = landingMessages.location
 
   return (
-    <section id={LOCATION_SECTION.id} className={styles.section}>
-      <div className={styles.inner}>
-        <div className={styles.heading}>
-          <h2 className={styles.title}>{copy.title}</h2>
-          <span aria-hidden="true" className={styles.rule} />
-          <span aria-hidden="true" className={styles.index}>
+    <section id={LOCATION_SECTION.id} className={STYLES.section}>
+      <div className={STYLES.inner}>
+        <div className={STYLES.heading}>
+          <h2 className={STYLES.title}>{copy.title}</h2>
+          <span aria-hidden="true" className={STYLES.rule} />
+          <span aria-hidden="true" className={STYLES.index}>
             {copy.index}
           </span>
         </div>
 
         {contact === null && hours.length === 0 ? (
-          <p className={styles.empty}>{copy.empty}</p>
+          <p className={STYLES.empty}>{copy.empty}</p>
         ) : (
-          <div className={styles.layout}>
-            <div className={styles.details}>
-              {contact?.address && <p className={styles.address}>{contact.address}</p>}
-              {contact?.city && <p className={styles.city}>{contact.city}</p>}
+          <div className={STYLES.layout}>
+            <div className={STYLES.details}>
+              {contact?.address && <p className={STYLES.address}>{contact.address}</p>}
+              {contact?.city && <p className={STYLES.city}>{contact.city}</p>}
 
               {hours.length > 0 && (
                 <>
-                  <h3 className={styles.groupTitle}>{copy.hours}</h3>
-                  <dl className={styles.hours}>
+                  <h3 className={STYLES.groupTitle}>{copy.hours}</h3>
+                  <dl className={STYLES.hours}>
                     {hours.map((row) => (
-                      <div key={row.days} className={styles.hoursRow}>
-                        <dt className={styles.days}>{row.days}</dt>
-                        <dd className={styles.range}>{row.hours}</dd>
+                      <div key={row.days} className={STYLES.hoursRow}>
+                        <dt className={STYLES.days}>{row.days}</dt>
+                        <dd className={STYLES.range}>{row.hours}</dd>
                       </div>
                     ))}
                   </dl>
                 </>
               )}
 
-              {contact?.note && <p className={styles.note}>{contact.note}</p>}
+              {contact?.note && <p className={STYLES.note}>{contact.note}</p>}
 
               {contact && <ContactLinks contact={contact} />}
             </div>
@@ -55,11 +55,11 @@ export function LandingLocation({ contact, hours }: LandingLocationProps) {
                 title={copy.mapTitle}
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                className={styles.map}
+                className={STYLES.map}
               />
             ) : (
               contact?.mapLink && (
-                <ExternalLink href={contact.mapLink} className={styles.mapLink}>
+                <ExternalLink href={contact.mapLink} className={STYLES.mapLink}>
                   {copy.openMap}
                 </ExternalLink>
               )
@@ -83,21 +83,21 @@ function ContactLinks({ contact }: { contact: ContactInfo }) {
 
   return (
     <>
-      <h3 className={styles.groupTitle}>{copy.contact}</h3>
-      <div className={styles.actions}>
+      <h3 className={STYLES.groupTitle}>{copy.contact}</h3>
+      <div className={STYLES.actions}>
         {contact.whatsapp && (
-          <ExternalLink href={contact.whatsapp.href} className={styles.whatsapp}>
+          <ExternalLink href={contact.whatsapp.href} className={STYLES.whatsapp}>
             {copy.whatsapp}
           </ExternalLink>
         )}
         {socials.map((social) => (
-          <ExternalLink key={social.label} href={social.href} className={styles.social}>
+          <ExternalLink key={social.label} href={social.href} className={STYLES.social}>
             {social.label}
           </ExternalLink>
         ))}
       </div>
       {contact.email && (
-        <a href={`mailto:${contact.email}`} className={styles.email}>
+        <a href={`mailto:${contact.email}`} className={STYLES.email}>
           {contact.email}
         </a>
       )}

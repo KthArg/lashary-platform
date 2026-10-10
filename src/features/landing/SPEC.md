@@ -33,7 +33,7 @@ Sitio publico: inicio, tecnicas, contacto, conoceme, galeria, fidelidad informat
 
 ## Qué hace hoy
 
-- Estructura de `ui/`: áreas `site-shell/` (cabecera, menú, pie, enlace externo) y `home/` (secciones de la inicio); cada componente vive en `components/<Nombre>/` con `<Nombre>.tsx`, `<Nombre>.styles.ts`, `<Nombre>.types.ts` (props) e `index.ts`. `routes.ts`, `sections.ts` y `technique-view.ts` quedan en la raíz de `ui/` porque las usan las dos áreas.
+- Estructura de `ui/`: áreas `site-shell/` (cabecera, menú, pie, enlace externo) y `home/` (secciones de la inicio); cada componente vive en `components/<Nombre>/` con `<Nombre>.tsx`, `<Nombre>.styles.ts`, `<Nombre>.types.ts` (props) e `index.ts`. `routes.ts`, `sections.ts` y `technique-view.ts` quedan en la raíz de `ui/` porque las usan las dos áreas. Los estilos se importan como `STYLES`.
 - `ui/site-shell/components/SiteHeader/SiteHeader.tsx`: cabecera fija de todas las páginas públicas (la monta `src/app/(site)/layout.tsx`). Marca con ancla a `#inicio`, "Iniciar sesión" hacia `LOGIN_ROUTE` (`/login`), "Reservar cita" hacia `RESERVE_ROUTE` (`/portal`) y, si hay secciones, la barra de enlaces (desde 860 px, token `site-nav`) y el botón de menú.
 - `ui/site-shell/components/SiteMenu/SiteMenu.tsx`: menú a pantalla completa como diálogo modal. Foco en "Cerrar" al abrir, Tab atrapado, Escape cierra y devuelve el foco al botón, scroll de la página bloqueado mientras está abierto.
 - `ui/sections.ts`: `landingSections` lista Servicios, El estudio, Galería, Fidelidad, Preguntas y Ubicación, en el orden de la página; cada historia agrega la suya al montarla. La sección se renderiza siempre, incluso sin técnicas, para que el ancla de la navegación nunca apunte al vacío.

@@ -1,25 +1,25 @@
 import Link from 'next/link'
-import { landingClosingCtaStyles as styles } from './LandingClosingCta.styles'
+import { landingClosingCtaStyles as STYLES } from './LandingClosingCta.styles'
 import { RESERVE_ROUTE } from '../../../routes'
 import type { LandingClosingCtaProps } from './LandingClosingCta.types'
 
 // Llamada final a reservar (US-LAND-01). Mismo destino fijo que el hero y la cabecera.
 export function LandingClosingCta({ closingCta }: LandingClosingCtaProps) {
   return (
-    <section aria-labelledby="closing-title" className={styles.section}>
-      <div className={styles.inner}>
-        <h2 id="closing-title" className={styles.heading}>
+    <section aria-labelledby="closing-title" className={STYLES.section}>
+      <div className={STYLES.inner}>
+        <h2 id="closing-title" className={STYLES.heading}>
           {closingCta.heading}
           {closingCta.headingEmphasis && (
             <>
               {' '}
-              <span className={styles.emphasis}>{closingCta.headingEmphasis}</span>
+              <span className={STYLES.emphasis}>{closingCta.headingEmphasis}</span>
             </>
           )}
         </h2>
-        <div className={styles.aside}>
-          {closingCta.body && <p className={styles.body}>{closingCta.body}</p>}
-          <Link href={RESERVE_ROUTE} className={styles.cta}>
+        <div className={STYLES.aside}>
+          {closingCta.body && <p className={STYLES.body}>{closingCta.body}</p>}
+          <Link href={RESERVE_ROUTE} className={STYLES.cta}>
             {closingCta.ctaLabel}
           </Link>
         </div>

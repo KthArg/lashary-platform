@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useId, useState } from 'react'
 import { landingMessages } from '../../../constants/landing-strings'
-import { landingTechniquesStyles as styles } from '../LandingTechniques/LandingTechniques.styles'
+import { landingTechniquesStyles as STYLES } from '../LandingTechniques/LandingTechniques.styles'
 import { reserveRouteFor } from '../../../routes'
 import { formatColones } from '../../../technique-view'
 import type { TechniqueListProps } from './TechniqueList.types'
@@ -19,28 +19,28 @@ export function TechniqueList({ techniques }: TechniqueListProps) {
   const baseId = useId()
 
   return (
-    <ul className={styles.list}>
+    <ul className={STYLES.list}>
       {techniques.map((technique, index) => {
         const isOpen = openIndex === index
         const bodyId = `${baseId}-${technique.id}`
 
         return (
-          <li key={technique.id} className={styles.row}>
+          <li key={technique.id} className={STYLES.row}>
             <button
               type="button"
-              className={styles.trigger}
+              className={STYLES.trigger}
               aria-expanded={isOpen}
               aria-controls={bodyId}
               onClick={() => setOpenIndex(isOpen ? NONE_OPEN : index)}
             >
-              <span className={styles.name}>{technique.name}</span>
-              <span className={styles.meta}>
+              <span className={STYLES.name}>{technique.name}</span>
+              <span className={STYLES.meta}>
                 {technique.durationFirstTimeMin} {copy.minutes}
               </span>
-              <span className={styles.meta}>{formatColones(technique.priceFirstTime)}</span>
+              <span className={STYLES.meta}>{formatColones(technique.priceFirstTime)}</span>
               <span
                 aria-hidden="true"
-                className={`${styles.sign} ${isOpen ? styles.signOpen : ''}`}
+                className={`${STYLES.sign} ${isOpen ? STYLES.signOpen : ''}`}
               >
                 +
               </span>
@@ -51,35 +51,35 @@ export function TechniqueList({ techniques }: TechniqueListProps) {
             <div
               id={bodyId}
               hidden={!isOpen}
-              className={`${styles.body} ${isOpen ? styles.bodyOpen : ''}`}
+              className={`${STYLES.body} ${isOpen ? STYLES.bodyOpen : ''}`}
             >
-                <div className={styles.layout}>
+                <div className={STYLES.layout}>
                   {technique.image && (
-                    <figure className={styles.figure}>
+                    <figure className={STYLES.figure}>
                       <Image
                         src={technique.image.url}
                         alt={technique.image.alt}
                         fill
-                        className={styles.photo}
+                        className={STYLES.photo}
                         sizes="(max-width: 768px) 100vw, 22rem"
                       />
                     </figure>
                   )}
 
-                  <div className={styles.column}>
+                  <div className={STYLES.column}>
                     {technique.description && (
-                      <p className={styles.description}>{technique.description}</p>
+                      <p className={STYLES.description}>{technique.description}</p>
                     )}
 
                     {technique.examples.length > 0 && (
-                      <ul className={styles.examples}>
+                      <ul className={STYLES.examples}>
                         {technique.examples.map((example) => (
-                          <li key={example.url} className={styles.example}>
+                          <li key={example.url} className={STYLES.example}>
                             <Image
                               src={example.url}
                               alt={example.alt}
                               fill
-                              className={styles.photo}
+                              className={STYLES.photo}
                               sizes="5.5rem"
                             />
                           </li>
@@ -89,14 +89,14 @@ export function TechniqueList({ techniques }: TechniqueListProps) {
                   </div>
                 </div>
 
-                <div className={styles.detail}>
-                  <span className={styles.detailItem}>
+                <div className={STYLES.detail}>
+                  <span className={STYLES.detailItem}>
                     {copy.firstTime}: {formatColones(technique.priceFirstTime)} ·{' '}
                     {technique.durationFirstTimeMin} {copy.minutes}
                   </span>
                   {/* Solo las técnicas que se retocan tienen segundo precio (criterio 3). */}
                   {technique.priceRetouch !== null && (
-                    <span className={styles.detailItem}>
+                    <span className={STYLES.detailItem}>
                       {copy.retouch}: {formatColones(technique.priceRetouch)}
                       {technique.durationRetouchMin !== null &&
                         ` · ${technique.durationRetouchMin} ${copy.minutes}`}
@@ -104,8 +104,8 @@ export function TechniqueList({ techniques }: TechniqueListProps) {
                   )}
                 </div>
 
-                <div className={styles.detail}>
-                  <Link href={reserveRouteFor(technique.id)} className={styles.reserve}>
+                <div className={STYLES.detail}>
+                  <Link href={reserveRouteFor(technique.id)} className={STYLES.reserve}>
                     {copy.reserve}
                   </Link>
                 </div>
