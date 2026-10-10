@@ -2,14 +2,10 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import type { HeroContent } from '@/features/content'
 import { landingHeroStyles as styles } from './LandingHero.styles'
 import { RESERVE_ROUTE } from '../../../routes'
 import { useOpeningAnimation } from '../../hooks/use-opening-animation'
-
-type LandingHeroProps = {
-  hero: HeroContent
-}
+import type { LandingHeroProps } from './LandingHero.types'
 
 // Hero de la landing (US-LAND-01). El texto viene del CMS vía `content`; el destino de
 // "Reservar cita" es fijo. Al bajar, la foto se abre sobre el título (use-opening-animation).

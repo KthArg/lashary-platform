@@ -1,11 +1,7 @@
-import type { LoyaltyContent } from '@/features/content'
 import { landingLoyaltyStyles as styles } from './LandingLoyalty.styles'
 import { landingMessages } from '../../../constants/landing-strings'
 import { LOYALTY_SECTION } from '../../../sections'
-
-type LandingLoyaltyProps = {
-  loyalty: LoyaltyContent
-}
+import type { LandingLoyaltyProps } from './LandingLoyalty.types'
 
 // Sección "Fidelidad" (US-LAND-05): cómo funciona el programa y qué beneficio da cada visita.
 // Es solo informativa: el conteo de visitas de cada clienta es el motor de US-LAND-06. Todo sale

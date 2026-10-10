@@ -6,11 +6,8 @@ import { useId, useState } from 'react'
 import { landingMessages } from '../../../constants/landing-strings'
 import { landingTechniquesStyles as styles } from '../LandingTechniques/LandingTechniques.styles'
 import { reserveRouteFor } from '../../../routes'
-import { formatColones, type LandingTechnique } from '../../../technique-view'
-
-type TechniqueListProps = {
-  techniques: readonly LandingTechnique[]
-}
+import { formatColones } from '../../../technique-view'
+import type { TechniqueListProps } from './TechniqueList.types'
 
 const NONE_OPEN = -1
 

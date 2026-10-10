@@ -1,12 +1,8 @@
-import type { GalleryPair } from '@/features/content'
-import { GalleryGrid } from '../GalleryGrid/GalleryGrid'
+import { GalleryGrid } from '../GalleryGrid'
 import { landingGalleryStyles as styles } from './LandingGallery.styles'
 import { landingMessages } from '../../../constants/landing-strings'
 import { GALLERY_SECTION } from '../../../sections'
-
-type LandingGalleryProps = {
-  pairs: readonly GalleryPair[]
-}
+import type { LandingGalleryProps } from './LandingGallery.types'
 
 // Sección "Galería" (US-LAND-03): pares antes y después que la dueña publica en el CMS. Llegan
 // ya filtrados por consentimiento desde `content`. La sección se renderiza siempre —el ancla de

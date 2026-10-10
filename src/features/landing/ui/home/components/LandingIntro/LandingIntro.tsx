@@ -1,9 +1,5 @@
-import type { IntroContent } from '@/features/content'
 import { landingIntroStyles as styles } from './LandingIntro.styles'
-
-type LandingIntroProps = {
-  intro: IntroContent
-}
+import type { LandingIntroProps } from './LandingIntro.types'
 
 // Bienvenida bajo el hero (US-LAND-01): una frase destacada y el párrafo que la acompaña.
 export function LandingIntro({ intro }: LandingIntroProps) {

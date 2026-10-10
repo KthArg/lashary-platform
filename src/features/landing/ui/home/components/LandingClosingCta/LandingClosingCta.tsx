@@ -1,11 +1,7 @@
 import Link from 'next/link'
-import type { ClosingCtaContent } from '@/features/content'
 import { landingClosingCtaStyles as styles } from './LandingClosingCta.styles'
 import { RESERVE_ROUTE } from '../../../routes'
-
-type LandingClosingCtaProps = {
-  closingCta: ClosingCtaContent
-}
+import type { LandingClosingCtaProps } from './LandingClosingCta.types'
 
 // Llamada final a reservar (US-LAND-01). Mismo destino fijo que el hero y la cabecera.
 export function LandingClosingCta({ closingCta }: LandingClosingCtaProps) {

@@ -1,10 +1,5 @@
 import { landingMessages } from '../../../constants/landing-strings'
-
-type ExternalLinkProps = {
-  href: string
-  className: string
-  children: React.ReactNode
-}
+import type { ExternalLinkProps } from './ExternalLink.types'
 
 // Enlace a otro sitio (WhatsApp, redes, mapa): pestaña nueva, sin `opener` ni referente, y
 // avisado al lector de pantalla. Lo usan Ubicación y el pie de página.

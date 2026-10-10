@@ -4,14 +4,9 @@ import Link from 'next/link'
 import { useEffect } from 'react'
 import { landingMessages } from '../../../constants/landing-strings'
 import { LOGIN_ROUTE, RESERVE_ROUTE } from '../../../routes'
-import type { SiteSection } from '../../../sections'
 import { siteMenuStyles as styles } from './SiteMenu.styles'
 import { useFocusTrap } from '../../hooks/use-focus-trap'
-
-type SiteMenuProps = {
-  sections: readonly SiteSection[]
-  onClose: () => void
-}
+import type { SiteMenuProps } from './SiteMenu.types'
 
 export function SiteMenu({ sections, onClose }: SiteMenuProps) {
   const containerRef = useFocusTrap<HTMLDivElement>()
