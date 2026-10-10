@@ -5,7 +5,6 @@ import { productStrings } from '@/features/store/ui/admin-products/constants/pro
 const validForm = {
   name: 'Serum nutritivo Lashary',
   description: 'Tratamiento nutritivo para mantenimiento de pestañas.',
-  imageUrl: '/productos/serum-nutritivo.jpg',
   priceCrc: '18000',
   displayOrder: '1',
   stock: '5',
@@ -19,7 +18,6 @@ describe('productSchema (DOM-007 — validación en el borde)', () => {
     expect(parsed.data).toEqual({
       name: 'Serum nutritivo Lashary',
       description: 'Tratamiento nutritivo para mantenimiento de pestañas.',
-      imageUrl: '/productos/serum-nutritivo.jpg',
       priceCrc: 18000,
       displayOrder: 1,
       stock: 5,

@@ -49,6 +49,11 @@ export function useProductForm(product?: AdminProduct) {
     state,
     formAction,
     pending,
+    imageField: {
+      required: mode === 'create',
+      previewUrl: product?.imageUrl,
+      hidePreview: mode === 'create',
+    },
     statusControl: STATUS_CONTROLS[statusKind],
     statusState,
     statusAction,

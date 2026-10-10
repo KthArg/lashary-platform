@@ -4,6 +4,7 @@ import type { ComponentType } from 'react'
 import { productStrings } from '../../constants/product-strings'
 import { useProductForm, type ProductFormMode } from '../../hooks/useProductForm'
 import { ProductFormField } from '../ProductFormField'
+import { ProductImageField } from '../ProductImageField'
 import { ProductFormFeedback } from '../ProductFormFeedback'
 import { ProductStatusSection } from '../ProductStatusSection'
 import { NoStatusSection } from '../NoStatusSection'
@@ -25,6 +26,7 @@ export function ProductForm({ product }: ProductFormProps) {
     state,
     formAction,
     pending,
+    imageField,
     statusControl,
     statusState,
     statusAction,
@@ -48,12 +50,7 @@ export function ProductForm({ product }: ProductFormProps) {
           defaultValue={product?.name}
           required
         />
-        <ProductFormField
-          name="imageUrl"
-          label={formMessages.fields.imageUrl}
-          defaultValue={product?.imageUrl}
-          required
-        />
+        <ProductImageField {...imageField} />
         <ProductFormField
           name="priceCrc"
           label={formMessages.fields.priceCrc}

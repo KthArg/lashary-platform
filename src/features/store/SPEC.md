@@ -9,7 +9,7 @@ historias:
     evidencia: "PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), product.test.ts, commands.test.ts, queries.test.ts, product-schema.test.ts, product-actions.test.ts, layout.test.tsx, products-admin-rls.test.ts (omitida sin Supabase local, ver deuda)"
   - id: US-PROD-03
     estado: en_progreso
-    falta: "los criterios 1, 2 y 3 tienen prueba en product-detail-page.test.tsx (ruta /productos/[slug] con imagen, nombre, descripcion, precio, boton de agregar al carrito y aviso Agotado con la compra deshabilitada; enlace desde el grid en store.test.tsx); la validacion por contenido y el adaptador de Storage existen (uploadProductImage), pero el formulario del panel todavia pide la imagen como URL de texto; falta conectarlo (pieza 8/8) y el PR de cierre us/US-PROD-03 a main (EST-005)"
+    falta: "los criterios 1, 2 y 3 tienen prueba en product-detail-page.test.tsx (ruta /productos/[slug] con imagen, nombre, descripcion, precio, boton de agregar al carrito y aviso Agotado con la compra deshabilitada; enlace desde el grid en store.test.tsx); la administradora sube la imagen como archivo validado por contenido (product-actions.test.ts); falta el PR de cierre us/US-PROD-03 a main para marcarla terminada (EST-005)"
   - id: US-SHOP-01
     estado: no_iniciada
   - id: US-SHOP-02
@@ -22,6 +22,9 @@ deuda:
   - que: "Prueba de aislamiento (SEC-002) del bucket store-product-images: src/features/store/__tests__/product-images-storage-rls.test.ts se omite sin Supabase local y CI no lo levanta, asi que no demuestra que anon y una clienta no puedan subir, listar ni borrar"
     aceptada_en: "PR de la pieza US-PROD-03 1/8"
     costo: "el mismo arnes de la deuda anterior; con el arnes, 0h extra"
+  - que: "Las server actions de Next aceptan 1 MB por defecto y next.config.js no lo cambia: una imagen de entre ~1 MB y 2 MB pasa validateProductImage pero Next corta la peticion antes con un error generico; el formulario dice 'hasta 1 MB'"
+    aceptada_en: "PR de la pieza US-PROD-03 8/8"
+    costo: "1 linea en next.config.js (experimental.serverActions.bodySizeLimit '3mb') y cambiar el texto del campo; decision pendiente de investigar"
 defectos: []
 ---
 
@@ -68,6 +71,8 @@ Página de detalle (US-PROD-03, criterios 1, 2 y 3): la ruta `/productos/[slug]`
 Pieza 6 (US-PROD-03): tarjeta con hover (`motion-safe:`, UI-004), nombre por encima del precio y un único enlace "Ver más" con el nombre en `sr-only`; detalle con botón "Volver al catálogo" con flecha (`aria-hidden`). Panel: un producto desactivado no se podía reactivar; ahora `activateProduct` y `ProductStatusSection` (antes `DeactivateSection`) muestran "Activar" o "Desactivar" según su estado. `catalog` tiene el mismo hueco (técnicas y paquetes), fuera de esta pieza.
 
 Pieza 7 (US-PROD-03): `validateProductImage` (`domain/product-image.ts`) reconoce JPEG, PNG y WebP por sus primeros bytes y rechaza vacíos o de más de 2 MB (DOM-008); SVG no pasa porque puede traer scripts. `uploadProductImage` y `removeStoredProductImage` (`application/admin-products/product-images.ts`) usan el puerto `ProductImageStorage`; el adaptador (`db/product-image-storage.ts`) sube con la sesión de la administradora (SEC-003), sin pisar archivos (`upsert: false`), a `<productId>/<uuid>.<extensión detectada>`, y solo borra URLs de su propio bucket: los links cargados a mano antes del bucket no se tocan.
+
+Pieza 8 (US-PROD-03): el formulario pide un archivo (`ProductImageField`) en vez de una URL: obligatorio al crear, opcional al editar (sin archivo se conserva la imagen). `createProductAction` y `updateProductAction` validan, suben a `<productId>/…`, guardan la URL pública en `url_imagen` y, si guardar falla, borran lo subido; al reemplazar borran la imagen anterior si era del bucket. Los productos con links viejos siguen funcionando.
 
 La capa de presentación se organiza por área en `ui/<area>/` (`admin-products`, `public-grid`, `public-detail`), cada una con `components/<Componente>/` (`.tsx`, `.styles.ts`, `.types.ts`, `index.ts`), `hooks/`, `actions/`, `constants/`, `types/`, `validation/` y `__tests__/`; `domain/`, `application/`, `db/`, `http/` son la arquitectura DDD (ARCH-002/DOM-006/007) y no se solapan con esta convención.
 
