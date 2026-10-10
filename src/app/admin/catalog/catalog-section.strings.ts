@@ -5,5 +5,6 @@ export const CATALOG_SECTION = {
     products: 'Productos',
     techniques: 'Técnicas',
     packages: 'Paquetes',
+    promotions: 'Promociones',
   },
 } as const
