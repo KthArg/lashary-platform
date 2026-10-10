@@ -12,8 +12,8 @@ historias:
     evidencia: "PRs #98 a #107, #134, #157 a #168 (pila) y el cierre us/US-PROD-01 a main; tests: package.test.ts, package-commands.test.ts, package-queries.test.ts, package-actions.test.ts, package-schema.test.ts, package-inactive-techniques.test.tsx, package-pagination.test.tsx, package-repository.integration.test.ts, package-rls-isolation.test.ts, catalog_package_staff_write.test.sql; UI probada a mano contra lashary-pruebas (2026-10-03)"
   - id: US-PROM-01
     estado: en_progreso
-    evidencia: "criterio 3 demostrado en dominio y en listPromotions/listActivePromotions (vigencia filtrada contra `now` inyectado); tests: promotion.test.ts, promotion-queries.test.ts"
-    falta: "comandos de escritura, capas db/ui. Criterio 2 (mostrar en el flujo de agendamiento) y criterio 4 (precio con promoción congelado en la cita) diferidos: requieren scheduling_appointments, que trae US-AGE-05 (no_iniciada). Punto de extensión: listActivePromotions ya expone las vigentes; el consumo desde agendamiento y el congelamiento llegan con US-AGE-05. Ver docs/process/DEPENDENCIES.md, Criterios diferidos."
+    evidencia: "criterios 1 y 3 demostrados: dominio, listPromotions/listActivePromotions (vigencia filtrada contra `now` inyectado) y createPromotion/updatePromotion/deactivatePromotion (resuelven el servicio aplicable); tests: promotion.test.ts, promotion-queries.test.ts, promotion-commands.test.ts"
+    falta: "capas db/ui. Criterio 2 (mostrar en el flujo de agendamiento) y criterio 4 (precio con promoción congelado en la cita) diferidos: requieren scheduling_appointments, que trae US-AGE-05 (no_iniciada). Punto de extensión: listActivePromotions ya expone las vigentes; el consumo desde agendamiento y el congelamiento llegan con US-AGE-05. Ver docs/process/DEPENDENCIES.md, Criterios diferidos."
   - id: US-PROM-02
     estado: no_iniciada
 flags: []
