@@ -5,17 +5,17 @@ import type {
   LoyaltyContent,
   StudioContent,
 } from '@/features/content'
-import { LandingClosingCta } from './LandingClosingCta'
-import { LandingFaq } from './LandingFaq'
-import { LandingGallery } from './LandingGallery'
-import { LandingHero } from './LandingHero'
-import { LandingIntro } from './LandingIntro'
-import { LandingLocation } from './LandingLocation'
-import { LandingLoyalty } from './LandingLoyalty'
-import { LandingReasons } from './LandingReasons'
-import { LandingStudio } from './LandingStudio'
-import { LandingTechniques } from './LandingTechniques'
-import type { LandingTechnique } from './technique-view'
+import { LandingClosingCta } from '../LandingClosingCta/LandingClosingCta'
+import { LandingFaq } from '../LandingFaq/LandingFaq'
+import { LandingGallery } from '../LandingGallery/LandingGallery'
+import { LandingHero } from '../LandingHero/LandingHero'
+import { LandingIntro } from '../LandingIntro/LandingIntro'
+import { LandingLocation } from '../LandingLocation/LandingLocation'
+import { LandingLoyalty } from '../LandingLoyalty/LandingLoyalty'
+import { LandingReasons } from '../LandingReasons/LandingReasons'
+import { LandingStudio } from '../LandingStudio/LandingStudio'
+import { LandingTechniques } from '../LandingTechniques/LandingTechniques'
+import type { LandingTechnique } from '../../../technique-view'
 
 type LandingHomeProps = {
   content: LandingContent

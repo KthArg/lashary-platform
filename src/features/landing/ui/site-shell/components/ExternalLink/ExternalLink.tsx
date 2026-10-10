@@ -1,4 +1,4 @@
-import { landingMessages } from './messages'
+import { landingMessages } from '../../../constants/landing-strings'
 
 type ExternalLinkProps = {
   href: string

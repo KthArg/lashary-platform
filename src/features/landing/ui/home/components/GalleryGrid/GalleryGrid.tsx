@@ -3,9 +3,9 @@
 import Image from 'next/image'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { GalleryPair } from '@/features/content'
-import { landingGalleryStyles as styles } from './LandingGallery.styles'
-import { galleryFamilyLabels, landingMessages } from './messages'
-import { useFocusTrap } from './use-focus-trap'
+import { landingGalleryStyles as styles } from '../LandingGallery/LandingGallery.styles'
+import { galleryFamilyLabels, landingMessages } from '../../../constants/landing-strings'
+import { useFocusTrap } from '../../../site-shell/hooks/use-focus-trap'
 
 type GalleryGridProps = {
   pairs: readonly GalleryPair[]

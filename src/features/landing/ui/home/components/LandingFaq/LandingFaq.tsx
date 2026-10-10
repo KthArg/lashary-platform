@@ -1,8 +1,8 @@
 import type { Faq } from '@/features/content'
-import { FaqList } from './FaqList'
+import { FaqList } from '../FaqList/FaqList'
 import { landingFaqStyles as styles } from './LandingFaq.styles'
-import { landingMessages } from './messages'
-import { FAQ_SECTION } from './sections'
+import { landingMessages } from '../../../constants/landing-strings'
+import { FAQ_SECTION } from '../../../sections'
 
 type LandingFaqProps = {
   faqs: readonly Faq[]

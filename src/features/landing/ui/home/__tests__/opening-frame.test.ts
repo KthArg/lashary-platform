@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { openingFrame } from '../opening-frame'
+import { openingFrame } from '../hooks/opening-frame'
 
 describe('openingFrame — apertura de la foto del hero', () => {
   it('arriba de todo: la foto está fuera de cuadro y el título se ve entero', () => {

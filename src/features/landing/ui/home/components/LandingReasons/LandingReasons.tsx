@@ -1,6 +1,6 @@
 import type { Reason } from '@/features/content'
 import { landingReasonsStyles as styles } from './LandingReasons.styles'
-import { landingMessages } from './messages'
+import { landingMessages } from '../../../constants/landing-strings'
 
 type LandingReasonsProps = {
   reasons: readonly Reason[]

@@ -3,10 +3,10 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useId, useState } from 'react'
-import { landingMessages } from './messages'
-import { landingTechniquesStyles as styles } from './LandingTechniques.styles'
-import { reserveRouteFor } from './routes'
-import { formatColones, type LandingTechnique } from './technique-view'
+import { landingMessages } from '../../../constants/landing-strings'
+import { landingTechniquesStyles as styles } from '../LandingTechniques/LandingTechniques.styles'
+import { reserveRouteFor } from '../../../routes'
+import { formatColones, type LandingTechnique } from '../../../technique-view'
 
 type TechniqueListProps = {
   techniques: readonly LandingTechnique[]

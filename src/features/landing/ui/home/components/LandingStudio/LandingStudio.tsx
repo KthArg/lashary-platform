@@ -1,8 +1,8 @@
 import Image from 'next/image'
 import type { Credential, StudioContent } from '@/features/content'
 import { landingStudioStyles as styles } from './LandingStudio.styles'
-import { landingMessages } from './messages'
-import { STUDIO_SECTION } from './sections'
+import { landingMessages } from '../../../constants/landing-strings'
+import { STUDIO_SECTION } from '../../../sections'
 
 type LandingStudioProps = {
   studio: Pick<StudioContent, 'profile' | 'credentials'>

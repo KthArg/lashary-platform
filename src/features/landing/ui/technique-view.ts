@@ -1,6 +1,6 @@
 import type { TechniqueView } from '@/features/catalog'
 import type { CmsImage, TechniqueMediaByFamily } from '@/features/content'
-import { techniqueDescriptions } from './messages'
+import { techniqueDescriptions } from './constants/landing-strings'
 
 // Lo que la sección de técnicas necesita para pintarse: la vista pública del catálogo
 // (ARCH-003, entry point de `catalog`) reducida a lo que se ve, más la descripción del sitio.

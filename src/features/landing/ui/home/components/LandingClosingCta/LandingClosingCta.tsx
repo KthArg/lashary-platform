@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import type { ClosingCtaContent } from '@/features/content'
 import { landingClosingCtaStyles as styles } from './LandingClosingCta.styles'
-import { RESERVE_ROUTE } from './routes'
+import { RESERVE_ROUTE } from '../../../routes'
 
 type LandingClosingCtaProps = {
   closingCta: ClosingCtaContent
