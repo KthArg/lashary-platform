@@ -12,8 +12,8 @@ historias:
     evidencia: "PRs #98 a #107, #134, #157 a #168 (pila) y el cierre us/US-PROD-01 a main; tests: package.test.ts, package-commands.test.ts, package-queries.test.ts, package-actions.test.ts, package-schema.test.ts, package-inactive-techniques.test.tsx, package-pagination.test.tsx, package-repository.integration.test.ts, package-rls-isolation.test.ts, catalog_package_staff_write.test.sql; UI probada a mano contra lashary-pruebas (2026-10-03)"
   - id: US-PROM-01
     estado: en_progreso
-    evidencia: "criterios 1 y 3 completos — crear/editar/pausar una promoción sobre técnica o paquete, que deje de aplicarse sola al vencer sin intervención manual; tests: promotion.test.ts, promotion-queries.test.ts, promotion-commands.test.ts, promotion-repository.integration.test.ts, promotion-schema.test.ts, promotion-actions.test.ts. UI en /admin/catalog/promotions (falta cablear la pestaña del panel y la ruta de la app)."
-    falta: "cablear en index.ts/client.ts, la ruta de la app y la pestaña del panel. Criterio 2 (agendamiento) y 4 (precio congelado) diferidos a US-AGE-05 (no_iniciada). Ver DEPENDENCIES.md, Criterios diferidos."
+    evidencia: "criterios 1 y 3 completos — crear/editar/pausar una promoción sobre técnica o paquete, que deje de aplicarse sola al vencer sin intervención manual; tests: promotion.test.ts, promotion-queries.test.ts, promotion-commands.test.ts, promotion-repository.integration.test.ts, promotion-schema.test.ts, promotion-actions.test.ts, promotion-rls-isolation.test.ts (SEC-002), catalog_promotion_staff_write.test.sql (pgTAP, control positivo). UI en /admin/catalog/promotions, pestaña del panel."
+    falta: "criterio 2 (mostrar en el flujo de agendamiento) y criterio 4 (precio con promoción congelado en la cita) diferidos: requieren scheduling_appointments, que trae US-AGE-05 (no_iniciada). listActivePromotions ya expone las vigentes; el consumo desde agendamiento y el congelamiento llegan con US-AGE-05. Ver DEPENDENCIES.md, Criterios diferidos. Pendiente probar la UI a mano en un navegador (igual que US-PROD-01)."
   - id: US-PROM-02
     estado: no_iniciada
 flags: []
