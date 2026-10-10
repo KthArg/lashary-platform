@@ -18,7 +18,7 @@ afterEach(cleanup)
 
 const copy = landingMessages.studio
 
-const publicado: Pick<StudioContent, 'profile' | 'credentials'> = {
+const published: Pick<StudioContent, 'profile' | 'credentials'> = {
   profile: {
     name: 'Ana Rojas',
     role: 'Lash artist y fundadora',
@@ -35,7 +35,7 @@ const publicado: Pick<StudioContent, 'profile' | 'credentials'> = {
 
 describe('LandingStudio — US-LAND-04', () => {
   it('criterio 1: foto, texto descriptivo y experiencia', () => {
-    render(<LandingStudio studio={publicado} />)
+    render(<LandingStudio studio={published} />)
 
     expect(screen.getByAltText('Ana en su cabina').getAttribute('src')).toBe('https://cms.test/ana.jpg')
     expect(screen.getByText('Abrí el estudio en 2019.')).toBeTruthy()
@@ -46,7 +46,7 @@ describe('LandingStudio — US-LAND-04', () => {
   })
 
   it('criterio 2: la trayectoria separa formación y certificaciones, con entidad y año', () => {
-    render(<LandingStudio studio={publicado} />)
+    render(<LandingStudio studio={published} />)
 
     expect(screen.getByRole('heading', { level: 3, name: copy.trajectory })).toBeTruthy()
     const [formacion, certificaciones] = screen.getAllByRole('list')
@@ -61,7 +61,7 @@ describe('LandingStudio — US-LAND-04', () => {
 
   it('un año de experiencia se dice en singular', () => {
     render(
-      <LandingStudio studio={{ ...publicado, profile: { ...publicado.profile, yearsOfExperience: 1 } }} />,
+      <LandingStudio studio={{ ...published, profile: { ...published.profile, yearsOfExperience: 1 } }} />,
     )
     expect(screen.getByText('1 año de experiencia')).toBeTruthy()
   })
@@ -69,7 +69,7 @@ describe('LandingStudio — US-LAND-04', () => {
   it('sin años ni credenciales no deja un bloque de trayectoria vacío', () => {
     render(
       <LandingStudio
-        studio={{ profile: { ...publicado.profile, yearsOfExperience: null }, credentials: [] }}
+        studio={{ profile: { ...published.profile, yearsOfExperience: null }, credentials: [] }}
       />,
     )
     expect(screen.queryByRole('heading', { level: 3 })).toBeNull()
@@ -91,7 +91,7 @@ describe('LandingStudio — US-LAND-04', () => {
   })
 
   it('la sección lleva el ancla que usa la navegación', () => {
-    const { container } = render(<LandingStudio studio={publicado} />)
+    const { container } = render(<LandingStudio studio={published} />)
     expect(container.querySelector(`section#${STUDIO_SECTION.id}`)).toBeTruthy()
     expect(screen.getByRole('heading', { level: 2, name: copy.title })).toBeTruthy()
   })

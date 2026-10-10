@@ -20,14 +20,14 @@ export function useOpeningAnimation() {
       frame = 0
       const scrollable = track.offsetHeight - window.innerHeight
       const progress = scrollable > 0 ? -track.getBoundingClientRect().top / scrollable : 0
-      const f = openingFrame(progress, window.innerWidth, window.innerHeight)
-      photo.style.width = `${f.width}px`
-      photo.style.height = `${f.height}px`
-      photo.style.transform = `translate(-50%, calc(-50% + ${f.translateY}px))`
-      photo.style.borderRadius = `${f.radiusX}% / ${f.radiusY}%`
-      type.style.opacity = String(f.typeOpacity)
-      type.style.transform = `translateY(${f.typeTranslateY}px)`
-      type.style.pointerEvents = f.typeOpacity < 0.6 ? 'none' : 'auto'
+      const currentFrame = openingFrame(progress, window.innerWidth, window.innerHeight)
+      photo.style.width = `${currentFrame.width}px`
+      photo.style.height = `${currentFrame.height}px`
+      photo.style.transform = `translate(-50%, calc(-50% + ${currentFrame.translateY}px))`
+      photo.style.borderRadius = `${currentFrame.radiusX}% / ${currentFrame.radiusY}%`
+      type.style.opacity = String(currentFrame.typeOpacity)
+      type.style.transform = `translateY(${currentFrame.typeTranslateY}px)`
+      type.style.pointerEvents = currentFrame.typeOpacity < 0.6 ? 'none' : 'auto'
     }
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(paint)

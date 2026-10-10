@@ -74,8 +74,8 @@ describe('LandingHome — la página de inicio compone las secciones con el cont
     const main = container.querySelector('main#inicio') as HTMLElement
     expect(within(main).getByRole('heading', { level: 1 }).textContent).toBe('extensiones de pestañasuna por una.')
     expect(within(main).getByText('Tiempo, luz y criterio.')).toBeTruthy()
-    const encabezados = within(main).getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
-    expect(encabezados).toEqual([
+    const headings = within(main).getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent)
+    expect(headings).toEqual([
       'Servicios',
       'El estudio',
       'Por qué acá',
