@@ -30,8 +30,6 @@ const toMoney = (value: number): Money | null => {
   }
 }
 
-// Construye la entidad desde el modelo del borde: envuelve los montos en Money (rechazando
-// no-enteros) y delega el resto de invariantes al constructor de Technique (DOM-007).
 function buildFromModel(
   id: string,
   model: TechniqueWriteModel,
