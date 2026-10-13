@@ -25,7 +25,14 @@ export { BLOG_PAGE_SIZE, type BlogArticle, type BlogPage, type BlogPost } from '
 export type { RichTextBlock, RichTextInline, RichTextListItem } from './domain/rich-text'
 // La página pública del listado del blog. La monta src/app/(site)/blog/page.tsx.
 export { BlogList } from './ui/blog/components/BlogList'
-export { BLOG_PAGE_PARAM, BLOG_ROUTE, blogMessages } from './ui/constants/blog-strings'
+// La página de una publicación. La monta src/app/(site)/blog/[slug]/page.tsx.
+export { BlogArticleNotice, BlogArticleView } from './ui/blog/components/BlogArticleView'
+export {
+  BLOG_PAGE_PARAM,
+  BLOG_ROUTE,
+  blogArticleRoute,
+  blogMessages,
+} from './ui/constants/blog-strings'
 export type { LoyaltyContent, LoyaltyLevel } from './domain/loyalty'
 export type {
   ContactContent,

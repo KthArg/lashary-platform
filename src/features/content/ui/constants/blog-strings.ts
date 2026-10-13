@@ -34,6 +34,7 @@ export const blogMessages = {
   article: {
     back: 'Volver al blog',
     backNav: 'Regreso al listado',
+    backNavEnd: 'Regreso al listado, al final',
     newTab: '(se abre en una pestaña nueva)',
     unavailable: 'No pudimos cargar esta publicación en este momento.',
     retry: 'Volver a intentar',
