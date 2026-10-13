@@ -2,10 +2,11 @@
 feature: content
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-09-21
+actualizado: 2026-10-13
 historias:
   - id: US-BLOG-01
-    estado: no_iniciada
+    estado: terminada
+    evidencia: "PR de cierre us/US-BLOG-01 a main (contrato v1.6 de docs/contracts/cms-api.md). La historia la cumple el CMS (ADR-0001): la coleccion posts esta declarada en el main de lashary-cms (f3f8e26) y sus tres criterios estan demostrados alli, contra ese tipo y por la ruta publica GET /api/content/posts, en tests/integration/blog-posts.test.ts. Criterio 1: crea una publicacion con titulo, cuerpo enriquecido e imagen destacada, y sin imagen destacada no se puede publicar. Criterio 2: editar una publicacion cambia lo que se ve al volver a publicarla, y eliminar una publicacion la quita de lo publico y deja las demas. Criterio 3: una publicacion en borrador no es visible publicamente, y los cambios sin publicar de una ya publicada tampoco se ven. Los seis casos caen al mutar lo que protegen. Desplegado: GET https://lashary-cms.vercel.app/api/content/posts responde 200 desde el 2026-10-13. El PR #113, que traia un contrato anterior, se cerro sin fusionar el 2026-10-13"
   - id: US-BLOG-02
     estado: no_iniciada
   - id: US-BLOG-03
@@ -47,7 +48,7 @@ Se detiene antes de la UI: ninguna página de `landing` llama todavía a `getLan
 - Valida cada respuesta contra las formas del contrato; lo que no encaja se degrada a la ultima copia en cache o al contenido de respaldo en codigo.
 - Recibe el aviso firmado en `POST /api/cms/webhook` e invalida por tag; TTL de respaldo de 10 minutos.
 
-US-BLOG-01: los borradores separados de lo publicado estan verificados en uno-cms (columnas `draft` y `published`; la ruta publica lee `published`). El tipo `posts` sigue en borrador en el contrato.
+US-BLOG-01, terminada: la administradora crea, edita y elimina las publicaciones del blog en el panel de `lashary-cms`, en la coleccion `posts` (contrato v1.6, 2026-10-13). Esta feature no tiene codigo para esa historia: la cumple el CMS (ADR-0001) y la evidencia son las pruebas de `lashary-cms` citadas en el front-matter. Se detiene ahi: `content` todavia no lee `posts`; el gateway de lectura, el `slug` derivado de `titulo`, el orden por `fecha` y la paginacion los construye US-BLOG-02.
 
 ## Contrato público (`index.ts`)
 
