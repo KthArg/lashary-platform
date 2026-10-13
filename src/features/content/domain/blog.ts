@@ -10,22 +10,22 @@ export const BLOG_SLUG_MAX = 80
 
 // Lo que el listado muestra de una publicación. `publishedOn` es `AAAA-MM-DD`, o `null` cuando
 // el CMS trae una fecha que no se puede leer: esa publicación va al final.
-export type BlogPost = {
-  slug: string
-  title: string
-  excerpt: string
-  image: CmsImage
-  publishedOn: string | null
+export interface BlogPost {
+  readonly slug: string
+  readonly title: string
+  readonly excerpt: string
+  readonly image: CmsImage
+  readonly publishedOn: string | null
 }
 
-export type BlogPage = {
-  posts: BlogPost[]
-  page: number
-  pageCount: number
-  total: number
+export interface BlogPage {
+  readonly posts: readonly BlogPost[]
+  readonly page: number
+  readonly pageCount: number
+  readonly total: number
 }
 
-const DIACRITICS = /[̀-ͯ]/g
+const DIACRITICS = /[\u0300-\u036f]/g
 
 // La identidad de ruta de una publicación: minúsculas, sin diacríticos, cada tramo fuera de
 // `a-z0-9` pasa a un guion, sin guiones en los extremos, recortado a 80. Puede quedar vacía.

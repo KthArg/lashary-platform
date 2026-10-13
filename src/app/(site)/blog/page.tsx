@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   },
 }
 
-type BlogPageProps = {
+interface BlogPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 

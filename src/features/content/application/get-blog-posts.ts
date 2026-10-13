@@ -17,7 +17,9 @@ export async function readRawBlogPosts(
   return reader.readCollection(BLOG_POSTS_KEY)
 }
 
-type Warn = (message: string) => void
+interface Warn {
+  (message: string): void
+}
 
 // Las publicaciones que el listado puede mostrar, ya ordenadas por fecha descendente
 // (docs/contracts/cms-api.md § `posts`). Nunca lanza. Una publicación entra con `titulo`,
