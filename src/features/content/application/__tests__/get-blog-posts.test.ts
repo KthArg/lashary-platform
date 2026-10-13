@@ -17,7 +17,7 @@ const CMS = 'https://cms.test'
 
 describe('toBlogPosts — las publicaciones que el listado puede mostrar', () => {
   it('criterio 2: cada publicación trae su imagen, su título y su extracto', () => {
-    expect(toBlogPosts([publicacion()], CMS)).toEqual([
+    expect(toBlogPosts([publicacion()], CMS)).toMatchObject([
       {
         slug: 'como-cuidar-tus-extensiones',
         title: 'Cómo cuidar tus extensiones',
@@ -99,6 +99,44 @@ describe('toBlogPosts — las publicaciones que el listado puede mostrar', () =>
       CMS,
     )
     expect(post.image.url).toBe('https://cms.test/api/media/local/a.webp')
+  })
+
+  it('US-BLOG-03: cada publicación trae su cuerpo ya validado', () => {
+    const cuerpo = {
+      type: 'doc',
+      content: [
+        { type: 'paragraph', content: [{ type: 'text', text: 'Primer párrafo.' }] },
+        { type: 'image', attrs: { src: 'https://cdn.test/x.jpg' } },
+      ],
+    }
+    const [post] = toBlogPosts([publicacion({ cuerpo })], CMS)
+    expect(post.body.map((block) => block.kind)).toEqual(['paragraph'])
+    expect(post.body[0].inlines[0].text).toBe('Primer párrafo.')
+  })
+
+  it('US-BLOG-03: sin cuerpo utilizable la publicación entra igual, sin texto', () => {
+    expect(toBlogPosts([publicacion({ cuerpo: undefined })], CMS)[0].body).toEqual([])
+  })
+
+  it('US-BLOG-03, criterio 2: el SEO sale de sus campos, y sin ellos del título y el extracto', () => {
+    const [propio, heredado, largo] = toBlogPosts(
+      [
+        publicacion({ titulo: 'Con SEO', seoTitulo: 'Título para buscadores', seoDescripcion: 'Descripción propia.' }),
+        publicacion({ titulo: 'Sin SEO' }),
+        publicacion({ titulo: 'SEO de más', seoTitulo: 'x'.repeat(61), seoDescripcion: 'y'.repeat(161) }),
+      ],
+      CMS,
+    )
+    expect([propio.seoTitle, propio.seoDescription]).toEqual(['Título para buscadores', 'Descripción propia.'])
+    expect([heredado.seoTitle, heredado.seoDescription]).toEqual([
+      'Sin SEO',
+      'Lo que conviene hacer la primera semana.',
+    ])
+    // Más largo que su máximo del contrato cuenta como ausente.
+    expect([largo.seoTitle, largo.seoDescription]).toEqual([
+      'SEO de más',
+      'Lo que conviene hacer la primera semana.',
+    ])
   })
 
   it('una fila que no es un objeto no rompe la lectura, y sin filas no hay publicaciones', () => {

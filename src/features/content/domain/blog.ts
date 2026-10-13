@@ -1,4 +1,5 @@
 import type { CmsImage } from './landing-content'
+import type { RichTextBlock } from './rich-text'
 
 // Las publicaciones del blog (docs/contracts/cms-api.md v1.6, colección `posts`).
 export const BLOG_POSTS_KEY = 'posts'
@@ -16,6 +17,14 @@ export interface BlogPost {
   readonly excerpt: string
   readonly image: CmsImage
   readonly publishedOn: string | null
+}
+
+// La publicación completa, para su página de detalle (US-BLOG-03). `seoTitle` y
+// `seoDescription` ya traen el título y el extracto cuando el CMS no los llenó.
+export interface BlogArticle extends BlogPost {
+  readonly body: readonly RichTextBlock[]
+  readonly seoTitle: string
+  readonly seoDescription: string
 }
 
 export interface BlogPage {
@@ -52,13 +61,19 @@ export function calendarDate(value: string): string | null {
 
 // Fecha descendente; las que no tienen fecha, al final. `sort` es estable, así que dos
 // publicaciones con la misma fecha conservan el orden del editor.
-export function newestFirst(posts: readonly BlogPost[]): BlogPost[] {
+export function newestFirst<P extends BlogPost>(posts: readonly P[]): P[] {
   return [...posts].sort((a, b) => {
     if (a.publishedOn === b.publishedOn) return 0
     if (a.publishedOn === null) return 1
     if (b.publishedOn === null) return -1
     return a.publishedOn < b.publishedOn ? 1 : -1
   })
+}
+
+// La publicación de ese slug, o `null`. El slug llega de la dirección: se compara tal cual,
+// sin normalizarlo, para que cada publicación tenga una sola dirección.
+export function articleBySlug<A extends BlogPost>(articles: readonly A[], slug: string): A | null {
+  return articles.find((article) => article.slug === slug) ?? null
 }
 
 // Una página del listado. Un número de página que no existe cae en la más cercana que sí: la
