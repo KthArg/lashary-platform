@@ -42,6 +42,15 @@ describe('SiteFooter — US-LAND-07', () => {
     )
   })
 
+  it('enlaza al blog cuando la app le da su ruta, y sin ella no lo muestra', () => {
+    const { unmount } = render(<SiteFooter contact={contactContent} year={2026} blogHref="/blog" />)
+    expect(within(footer()).getByRole('link', { name: copy.blog }).getAttribute('href')).toBe('/blog')
+    unmount()
+
+    render(<SiteFooter contact={contactContent} year={2026} />)
+    expect(within(footer()).queryByRole('link', { name: copy.blog })).toBeNull()
+  })
+
   it('repite contacto, horario y dirección', () => {
     render(<SiteFooter contact={contactContent} year={2026} />)
 

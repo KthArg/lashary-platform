@@ -9,9 +9,11 @@ export const blogCacheTag = `content:${BLOG_POSTS_KEY}`
 
 // `available: false` distingue "no se pudo leer el CMS" de "todavía no hay publicaciones": el
 // listado muestra un estado distinto para cada uno (UI-003).
-export type BlogListing = BlogPage & { available: boolean }
+export interface BlogListing extends BlogPage {
+  readonly available: boolean
+}
 
-type BlogSourceDeps = {
+interface BlogSourceDeps {
   env?: Record<string, string | undefined>
   cache?: typeof unstable_cache
   createReader?: typeof createCmsReader
