@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useCallback, useRef, useState } from 'react'
 import { landingMessages } from '../../../constants/landing-strings'
-import { HOME_ANCHOR, LOGIN_ROUTE, RESERVE_ROUTE } from '../../../routes'
+import { HOME_ANCHOR, LOGIN_ROUTE, RESERVE_ROUTE, anchorBaseFor } from '../../../routes'
 import { siteHeaderStyles as STYLES } from './SiteHeader.styles'
 import { SiteMenu } from '../SiteMenu'
 import type { SiteHeaderProps } from './SiteHeader.types'
@@ -12,6 +13,7 @@ export function SiteHeader({ sections }: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const hasSections = sections.length > 0
+  const anchorBase = anchorBaseFor(usePathname())
 
   const closeMenu = useCallback(() => {
     setMenuOpen(false)
@@ -22,7 +24,7 @@ export function SiteHeader({ sections }: SiteHeaderProps) {
     <>
       <header className={STYLES.header}>
         <div className={STYLES.inner}>
-          <a href={HOME_ANCHOR} className={STYLES.brand}>
+          <a href={`${anchorBase}${HOME_ANCHOR}`} className={STYLES.brand}>
             <span className={STYLES.brandName}>{landingMessages.brand.name}</span>
             <span className={STYLES.brandTagline}>{landingMessages.brand.tagline}</span>
           </a>
@@ -30,7 +32,7 @@ export function SiteHeader({ sections }: SiteHeaderProps) {
             {hasSections && (
               <nav aria-label={landingMessages.header.sectionsNav} className={STYLES.desktopNav}>
                 {sections.map((section) => (
-                  <a key={section.id} href={`#${section.id}`} className={STYLES.navLink}>
+                  <a key={section.id} href={`${anchorBase}#${section.id}`} className={STYLES.navLink}>
                     {section.label}
                   </a>
                 ))}
@@ -59,7 +61,7 @@ export function SiteHeader({ sections }: SiteHeaderProps) {
           </div>
         </div>
       </header>
-      {menuOpen && <SiteMenu sections={sections} onClose={closeMenu} />}
+      {menuOpen && <SiteMenu sections={sections} anchorBase={anchorBase} onClose={closeMenu} />}
     </>
   )
 }

@@ -74,8 +74,14 @@ describe('evaluateCmsWebhook — aviso al publicar (docs/contracts/cms-api.md §
     })
   })
 
+  it('acepta el tag del blog: publicar, editar o eliminar una publicación renueva el listado', () => {
+    const rawBody = JSON.stringify({ tags: ['content:posts'] })
+    const input = aviso({ rawBody, signature: sign(SECRET, String(NOW), rawBody) })
+    expect(evaluateCmsWebhook(input)).toEqual({ status: 200, tags: ['content:posts'] })
+  })
+
   it('ignora tags desconocidos, repetidos o que no son texto', () => {
-    const rawBody = JSON.stringify({ tags: ['content:hero', 'content:hero', 'settings', 'content:posts', 7] })
+    const rawBody = JSON.stringify({ tags: ['content:hero', 'content:hero', 'settings', 'content:testimonials', 7] })
     const input = aviso({ rawBody, signature: sign(SECRET, String(NOW), rawBody) })
     expect(evaluateCmsWebhook(input)).toEqual({ status: 200, tags: ['content:hero'] })
   })

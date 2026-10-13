@@ -1,8 +1,16 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup, fireEvent, within } from '@testing-library/react'
 import { SiteHeader, LOGIN_ROUTE, RESERVE_ROUTE, landingMessages } from '@/features/landing'
 
-afterEach(cleanup)
+// Fuera del router `usePathname` devuelve null, que la cabecera trata como la portada. Las
+// pruebas que necesitan otra página lo fijan aquí.
+const pathname = vi.hoisted(() => ({ current: null as string | null }))
+vi.mock('next/navigation', () => ({ usePathname: () => pathname.current }))
+
+afterEach(() => {
+  cleanup()
+  pathname.current = null
+})
 
 const sections = [
   { id: 'servicios', label: 'Servicios' },
@@ -100,5 +108,32 @@ describe('SiteMenu — UI-004: operable con teclado', () => {
     expect(document.body.style.overflow).toBe('hidden')
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(document.body.style.overflow).toBe('')
+  })
+})
+
+describe('SiteHeader — fuera de la portada (US-BLOG-02)', () => {
+  it('en /blog la marca y las secciones vuelven a la portada, no a un ancla que no existe', () => {
+    pathname.current = '/blog'
+    render(<SiteHeader sections={sections} />)
+
+    const nav = screen.getByRole('navigation', { name: landingMessages.header.sectionsNav })
+    expect(within(nav).getByRole('link', { name: 'Servicios' }).getAttribute('href')).toBe('/#servicios')
+    expect(screen.getByRole('link', { name: /LASHARY/ }).getAttribute('href')).toBe('/#inicio')
+  })
+
+  it('en /blog el menú del teléfono también vuelve a la portada', () => {
+    pathname.current = '/blog'
+    openMenu()
+
+    const dialog = screen.getByRole('dialog', { name: landingMessages.menu.dialogLabel })
+    expect(within(dialog).getByRole('link', { name: /El estudio/ }).getAttribute('href')).toBe('/#estudio')
+  })
+
+  it('en la portada las secciones siguen siendo anclas de la misma página', () => {
+    pathname.current = '/'
+    render(<SiteHeader sections={sections} />)
+
+    const nav = screen.getByRole('navigation', { name: landingMessages.header.sectionsNav })
+    expect(within(nav).getByRole('link', { name: 'Servicios' }).getAttribute('href')).toBe('#servicios')
   })
 })
