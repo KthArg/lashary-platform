@@ -8,6 +8,7 @@ export const packageMessages = {
       techniques: 'Técnicas incluidas',
       duration: 'Duración total',
       price: 'Precio',
+      deposit: 'Anticipo',
       status: 'Estado',
       actions: 'Acciones',
     },
@@ -41,8 +42,10 @@ export const packageMessages = {
       name: 'Nombre',
       techniques: 'Técnicas incluidas (mínimo dos)',
       price: 'Precio del paquete (colones)',
+      deposit: 'Anticipo requerido (colones)',
     },
     durationTotal: 'Duración total',
+    depositHint: '0 significa que el paquete no requiere anticipo.',
     inactiveTechnique: 'desactivada',
     inactiveHint:
       'Este paquete incluye técnicas desactivadas. Quitalas o reactivalas en Técnicas antes de guardar.',
@@ -59,6 +62,7 @@ export const packageMessages = {
       name: 'El nombre es obligatorio',
       techniqueIds: 'Elegí al menos dos técnicas',
       price: 'El precio debe ser mayor que cero',
+      deposit: 'El anticipo debe ser un entero de colones igual o mayor que cero',
     },
   },
 }

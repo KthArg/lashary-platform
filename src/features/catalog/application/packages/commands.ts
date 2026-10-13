@@ -57,12 +57,19 @@ function buildFromModel(
   } catch {
     return err(packageValidationError([packageCommandMessages.invalidPrice]))
   }
+  let deposit: Money
+  try {
+    deposit = Money.fromColones(model.deposit === undefined ? 0 : model.deposit)
+  } catch {
+    return err(packageValidationError([packageCommandMessages.invalidDeposit]))
+  }
 
   return buildPackage({
     id,
     name: model.name,
     techniqueIds: model.techniqueIds,
     price,
+    deposit,
     isActive,
   })
 }
@@ -101,7 +108,10 @@ export const updatePackage =
     const resolved = await resolveTechniques(deps.techniqueRepo, model.techniqueIds)
     if (isErr(resolved)) return resolved
 
-    const built = buildFromModel(id, model, existing.pkg.isActive)
+    const built = buildFromModel(id, {
+      ...model,
+      deposit: model.deposit === undefined ? existing.pkg.deposit.colones : model.deposit,
+    }, existing.pkg.isActive)
     if (isErr(built)) return built
     const saved = await deps.packageRepo.save(built.value)
     if (isErr(saved)) return saved

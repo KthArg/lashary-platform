@@ -8,7 +8,7 @@
 | Feature | DRI | Estado | terminada / en_progreso / bloqueada / en_revision / no_iniciada |
 |---|---|---|---|
 | account | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
-| audit | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
+| audit | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | en_progreso | 2 / 0 / 0 / 0 / 2 |
 | clients | pendiente | en_progreso | 1 / 1 / 0 / 0 / 3 |
@@ -17,7 +17,7 @@
 | landing | pendiente | en_progreso | 6 / 0 / 0 / 0 / 0 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
-| payments | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
+| payments | pendiente | en_progreso | 0 / 1 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | scheduling | pendiente | en_progreso | 0 / 1 / 0 / 0 / 10 |
 | store | pendiente | en_progreso | 1 / 1 / 0 / 0 / 2 |
@@ -26,7 +26,7 @@
 
 ### account (actualizado: 2026-08-29)
 
-### audit (actualizado: 2026-08-29)
+### audit (actualizado: 2026-09-30)
 
 ### auth (actualizado: 2026-10-06)
 - US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
@@ -79,8 +79,8 @@
 - US-NOT-08 — no_iniciada
 - US-CLI-06 — no_iniciada
 
-### payments (actualizado: 2026-08-29)
-- US-AGE-13 — no_iniciada
+### payments (actualizado: 2026-10-05)
+- US-AGE-13 — en_progreso — falta: integrar el anticipo por paquete implementado y probado en #178–#181, con #173–#175 ya integrados en main; completar aprobaciones pendientes y integrar la protección del historial de exoneraciones de #118 implementada y probada en la pieza 21 (ADR-0009); traslado de criterios 2 y 3 a US-AGE-05 y 4 a US-AGE-12 aprobado por el PO
 
 ### platform (actualizado: 2026-09-16)
 

@@ -119,6 +119,22 @@ export function PackageForm({ pkg, techniques }: PackageFormProps) {
           />
         </label>
 
+        <label className={STYLES.fieldLabel} htmlFor="deposit">
+          <span className={STYLES.labelText}>{formMessages.fields.deposit}</span>
+          <input
+            id="deposit"
+            name="deposit"
+            type="number"
+            min={0}
+            step={1}
+            required
+            defaultValue={pkg?.deposit ?? 0}
+            aria-describedby="deposit-hint"
+            className={STYLES.fieldInput}
+          />
+        </label>
+        <p id="deposit-hint">{formMessages.depositHint}</p>
+
         <div className={STYLES.submitWrapper}>
           <button type="submit" className={STYLES.submitButton} disabled={pending}>
             {editing ? formMessages.submitEdit : formMessages.submitCreate}

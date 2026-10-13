@@ -21,6 +21,7 @@ const pkg: PackageListItem = {
   name: 'Cejas express',
   techniqueIds: ['t1', 't2'],
   price: 17000,
+  deposit: 0,
   isActive: true,
   durationTotalMin: 90,
 }

@@ -33,6 +33,7 @@ function parseForm(formData: FormData) {
   return packageFormSchema.safeParse({
     name: formData.get('name'),
     price: formData.get('price'),
+    deposit: formData.get('deposit'),
     techniqueIds: formData.getAll('techniqueIds'),
   })
 }

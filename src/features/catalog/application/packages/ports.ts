@@ -12,6 +12,7 @@ export type PackageWriteModel = {
   name: string
   techniqueIds: string[]
   price: number
+  deposit?: number
 }
 
 export type PackageWithDuration = {

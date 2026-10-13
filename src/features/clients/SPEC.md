@@ -93,6 +93,8 @@ renderizar. Las pruebas de la interfaz están en `ui/admin-clients/__tests__/` y
 
 ## Qué no hace todavía
 
+No existe un flujo de archivado o borrado de clientas en esta rama. `docs/adr/ADR-0009-client-archival-and-exemptions.md` recoge el acuerdo de archivar sin eliminar el perfil ni sus referencias, comunicado por Bayron el 2026-10-05. Antes de implementarlo deben acordarse permisos, búsquedas y reservas, citas existentes y restauración. La pieza 21 de US-AGE-13 implementa y prueba la migración de `payments` a `ON DELETE RESTRICT`; bloquea el borrado de perfiles con exoneraciones activas o históricas, incluso desde `auth.users`. Su integración sigue pendiente. Reactivar un perfil deberá revisar la vigencia de su exoneración antes de aplicarla. Este cambio de documentación no implementa archivado ni completa una historia de `clients`.
+
 **No hay prueba de aislamiento RLS (SEC-002)**; está registrada como deuda. Las pruebas de las
 actions simulan Supabase: demuestran qué se envía y se lee, no qué permite RLS.
 

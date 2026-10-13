@@ -1,8 +1,8 @@
 ---
 feature: audit
 dri: pendiente
-estado: no_iniciada
-actualizado: 2026-08-29
+estado: terminada
+actualizado: 2026-09-30
 historias:
   []
 flags: []
@@ -16,8 +16,31 @@ Bitacora de auditoria append-only. Sin historia propia (ADR-0007): se construye 
 
 ## Qué hace hoy
 
-Hoy: no existe. Se detiene antes de todo.
+Migración `supabase/migrations/20260923000000_audit_events.sql`: tabla `audit_events` (prefijo `audit_`, ARCH-006) — `actor_id` (FK a `auth.users`), `action` (texto libre, sin enum a propósito), `entity_type` + `entity_id` (sin FK, mismo principio que `catalog_techniques`: esta tabla la escriben features distintas y no debe acoplarse al esquema de ninguna), `payload` jsonb, `created_at` UTC (DOM-003). Índices en `(entity_type, entity_id)`, `actor_id` y `created_at` (PERF-003).
 
-## Contrato público
+RLS (SEC-001): `SELECT` e `INSERT` solo para staff (`public.auth_is_staff()`); **sin políticas de `UPDATE` ni `DELETE`** — con RLS activo y ninguna política que las cubra, la base las deniega a cualquier rol, staff incluida. Append-only garantizado en la base, no solo en la aplicación.
 
-Sin contrato todavía. Al crearse, entra por `index.ts` (ARCH-003).
+Pruebas: `supabase/tests/database/audit_staff_access.test.sql` (pgTAP, control positivo: staff lee/inserta, nadie — ni staff — puede `UPDATE`/`DELETE`); `src/features/audit/__tests__/rls-isolation.test.ts` (SEC-002, control negativo: anon y una clienta autenticada real no leen ni escriben). Las suites que hablan con Supabase (esta y `db/__tests__/audit-event-repository.integration.test.ts`) sondean la conexión en un `beforeAll`, no al cargar el módulo: sin variables de entorno se omiten completas; con variables pero sin Supabase respondiendo, cada prueba se omite con `skip`; con Supabase arriba corren todas.
+
+Capa `domain/`: entidad `AuditEvent` con constructor validado (`AuditEvent.create` → `Result`), invariantes DOM-007 (actor, acción, tipo y recurso no vacíos); `payload` opcional, por defecto `{}`. Error `AuditEventValidationError` (DOM-006). Reloj inyectado (`Clock` de `shared/clock.ts`, DOM-004) — `createdAt` llega desde afuera, la entidad no llama `new Date()`. Pruebas con fixtures fijas de `shared/testing/fixed-clock.ts` (única forma de fijar una fecha en tests sin violar DOM-004, que `check-domain-purity.sh` escanea literalmente).
+
+Capa `application/`: puerto `AuditEventRepository` (`insert` únicamente — nadie necesita consultar la bitácora desde código todavía) y el use-case `record(deps)(input)` (`record.ts`), que arma el `AuditEvent`, lo persiste y devuelve su vista. Pruebas con repositorio en memoria (`__tests__/record.test.ts`).
+
+Capa `db/`: `SupabaseAuditEventRepository` (`toRow` mapea dominio → fila; sin `rowToDomain` porque el puerto no lee). Prueba unitaria del mapeo (`toRow`) y de integración (`insert()` denegado por RLS con token anónimo — no hay forma de ejercer el camino de éxito desde JS sin una sesión de staff real, igual que `catalog`; el camino de éxito lo prueba `audit_staff_access.test.sql`, pgTAP).
+
+`index.ts` (ARCH-003): un solo verbo — `record(input)` — cablea el repositorio de servidor, `randomUUID()` y `systemClock`. Quien llama no conoce nada de la persistencia interna. Exporta también `RecordAuditEventInput`, `AuditEventView`, `AuditEventPayload`, `AuditEventValidationError`.
+
+## Decisiones que conviene conocer
+
+- **`actor_id` sin `ON DELETE`** (`NO ACTION`): borrar una fila de `auth.users` que ya generó eventos falla por la FK. Es coherente con una bitácora append-only, pero hoy no hay flujo de borrado de usuarios; si aparece, se decide en una migración forward (p.ej. anonimizar el actor) y no con `CASCADE`, que borraría evidencia.
+- **Fallo al registrar: `record()` no lo absorbe.** Si Supabase rechaza el `insert` (RLS, red), `record()` lanza `Error` genérico; si el evento es inválido, devuelve `err(AuditEventValidationError)`. Qué hacer ante el fallo lo decide quien llama. Hoy el único consumidor, `payments.exemptClient`, lo propaga: la exoneración ya quedó guardada y el error avisa que falta su evento (fail-closed hacia quien llama, no best-effort silencioso).
+
+## Fuera de alcance por ahora
+
+Sin capacidad de listar/consultar eventos (solo `insert`): se agrega cuando una historia futura (p.ej. US-CLI-04, que audita accesos al expediente) lo exija — no antes.
+
+## Contrato público (`index.ts`, ARCH-003)
+
+- `record(input: RecordAuditEventInput): Promise<Result<AuditEventView, AuditEventValidationError>>` — registra un evento. `input`: `{ actorId, action, entityType, entityId, payload? }`.
+- Tipos: `RecordAuditEventInput`, `AuditEventView`, `AuditEventPayload`.
+- Error: `AuditEventValidationError` (actor, acción, tipo o recurso vacíos).
