@@ -9,6 +9,7 @@ import {
   type PublicProductCatalog,
 } from '@/features/store'
 import ProductsPage from '@/app/(site)/productos/page'
+import ProductsLoading from '@/app/(site)/productos/loading'
 
 const mockSelect = vi.fn()
 const mockEq = vi.fn()
@@ -222,5 +223,12 @@ describe('US-PROD-02: productos públicos en cuadricula', () => {
 
     expect(html).toContain('Serum nutritivo Lashary')
     expect(html).toContain('Cepillo limpiador Lashary')
+  })
+
+  it('mientras la ruta /productos carga, anuncia que se están cargando los productos', () => {
+    const html = renderToStaticMarkup(<ProductsLoading />)
+
+    expect(html).toContain('role="status"')
+    expect(html).toContain(PUBLIC_GRID_STRINGS.loadingMessage)
   })
 })
