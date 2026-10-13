@@ -251,7 +251,8 @@ Las publicaciones del blog. La administradora las crea, las edita y las elimina 
 - **`slug` opcional:** `content` normaliza el valor que venga, o `titulo` si no viene: minúsculas, sin diacríticos, cada tramo fuera de `a-z0-9` pasa a un guion, sin guiones en los extremos, recortado a 80. Con `slug` vacío, editar `titulo` cambia la URL. Si la normalización deja la cadena vacía, la publicación se descarta con una advertencia.
 - **`slug` no único:** el CMS no lo garantiza. Si dos publicaciones lo comparten, `content` conserva la primera en el orden del editor y registra una advertencia (§ Degradación).
 - **`fecha` es texto:** `content` la parsea para ordenar. Si no encaja en `AAAA-MM-DD`, la publicación va al final del listado, en el orden del editor.
-- **Orden y paginación:** ocurren en `content`, no en el CMS (US-BLOG-02).
+- **Orden y paginación:** ocurren en `content`, no en el CMS (US-BLOG-02). El listado va por `fecha` descendente; dos publicaciones con la misma fecha conservan el orden del editor. Se pagina de 9 en 9.
+- **Una publicación incompleta se ignora:** sin `titulo`, sin `extracto` o sin `imagen` válida (con su `alt`) no entra al listado. El CMS exige los tres al publicar, así que solo pasa con contenido anterior a un cambio de esquema.
 
 La lectura de `posts` desde `content` todavía no existe: la construye US-BLOG-02.
 
