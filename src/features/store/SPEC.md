@@ -2,14 +2,14 @@
 feature: store
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-08
+actualizado: 2026-10-13
 historias:
   - id: US-PROD-02
     estado: terminada
     evidencia: "PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), product.test.ts, commands.test.ts, queries.test.ts, product-schema.test.ts, product-actions.test.ts, layout.test.tsx, products-admin-rls.test.ts (omitida sin Supabase local, ver deuda)"
   - id: US-PROD-03
-    estado: en_progreso
-    falta: "los criterios 1, 2 y 3 tienen prueba en product-detail-page.test.tsx (ruta /productos/[slug] con imagen, nombre, descripcion, precio, boton de agregar al carrito y aviso Agotado con la compra deshabilitada; enlace desde el grid en store.test.tsx); la administradora sube la imagen como archivo validado por contenido (product-actions.test.ts); falta el PR de cierre us/US-PROD-03 a main para marcarla terminada (EST-005)"
+    estado: terminada
+    evidencia: "PR #271 (pieza 8/8, cierra la historia) y las piezas #198, #200, #265, #266, #267, #269 y #270; tests: product-detail-page.test.tsx (criterios 1, 2 y 3: imagen, nombre, descripcion, precio, boton de agregar al carrito y aviso Agotado con la compra deshabilitada), store.test.tsx (enlace desde el grid), product-detail.test.ts, get-public-product-detail.test.ts, public-product-detail-db.test.ts, product-image.test.ts, product-images.test.ts, product-actions.test.ts, product-images-storage-rls.test.ts (omitida sin Supabase local, ver deuda)"
   - id: US-SHOP-01
     estado: no_iniciada
   - id: US-SHOP-02
@@ -58,7 +58,7 @@ Panel admin (criterio 3, "administrables desde el panel") en `/admin/catalog/pro
 - Pruebas automatizadas: dominio, casos de uso (repositorio fake), esquema, server actions, protección de layout, y aislamiento RLS (`__tests__/products-admin-rls.test.ts`, se salta sin Supabase local)
 
 
-`US-PROD-03` en progreso (2026-10-08). Existencias: la columna `store_products.existencias` (entero, `DEFAULT 0`, `CHECK >= 0`) la crea US-PROD-03 en `supabase/migrations/20261006000000_store_products_existencias_e_imagenes.sql`, para que el detalle indique "agotado" y deshabilite la compra (criterio 3). La columna queda en español como las demás de `store_products` (`nombre`, `precio_crc`, `activo`); el código la lee como `stock`, igual que `precio_crc` se lee como `priceCrc`. El descuento al vender y el impedir vender más unidades de las disponibles son de US-SHOP-02. Las filas que ya existían quedan en 0 hasta que se carguen sus existencias. La administradora las carga en `/admin/catalog/products`: `buildProduct` exige un entero no negativo (DOM-007) y `productSchema` rechaza el campo vacío en vez de convertirlo en 0, porque `z.coerce.number()` convierte `""` en 0 y un descuido quedaría guardado como "agotado"; el 0 escrito a propósito sí se acepta. Sin índice: ninguna consulta filtra por esa columna (PERF-003). Sin política nueva: las políticas `store_products_*` cubren la fila completa.
+`US-PROD-03` terminada (2026-10-13, PR #271). Existencias: la columna `store_products.existencias` (entero, `DEFAULT 0`, `CHECK >= 0`) la crea US-PROD-03 en `supabase/migrations/20261006000000_store_products_existencias_e_imagenes.sql`, para que el detalle indique "agotado" y deshabilite la compra (criterio 3). La columna queda en español como las demás de `store_products` (`nombre`, `precio_crc`, `activo`); el código la lee como `stock`, igual que `precio_crc` se lee como `priceCrc`. El descuento al vender y el impedir vender más unidades de las disponibles son de US-SHOP-02. Las filas que ya existían quedan en 0 hasta que se carguen sus existencias. La administradora las carga en `/admin/catalog/products`: `buildProduct` exige un entero no negativo (DOM-007) y `productSchema` rechaza el campo vacío en vez de convertirlo en 0, porque `z.coerce.number()` convierte `""` en 0 y un descuido quedaría guardado como "agotado"; el 0 escrito a propósito sí se acepta. Sin índice: ninguna consulta filtra por esa columna (PERF-003). Sin política nueva: las políticas `store_products_*` cubren la fila completa.
 
 Imágenes (US-PROD-03): la misma migración crea el bucket público `store-product-images` (2 MB, `image/jpeg`, `image/png`, `image/webp`) y cuatro políticas en `storage.objects` (`store_product_images_{select,insert,update,delete}_admin`, solo staff, SEC-001). Va en la misma migración porque INT-008 permite una por PR y el cierre de la historia es un PR. Es público porque las fotos del catálogo las ve cualquiera, a diferencia del expediente (SECURITY.md); no hay SELECT público, así que nadie fuera del staff puede listar el bucket. El tamaño y el tipo del bucket son defensa extra: la validación por contenido (DOM-008) va en el servidor.
 
