@@ -6,7 +6,9 @@ import { blogMessages } from '../../constants/blog-strings'
 import { BlogList } from '../components/BlogList'
 
 vi.mock('next/image', () => ({
-  default: ({ src, alt }: { src: string; alt: string }) => <img src={src} alt={alt} />,
+  default: ({ src, alt, preload }: { src: string; alt: string; preload?: boolean }) => (
+    <img src={src} alt={alt} data-preload={preload ? 'si' : 'no'} />
+  ),
 }))
 
 afterEach(cleanup)
@@ -52,6 +54,16 @@ describe('BlogList — US-BLOG-02', () => {
     expect(cards().map((card) => within(card).getByRole('heading').textContent)).toEqual([
       'Reciente',
       'Vieja',
+    ])
+  })
+
+  it('PERF-004: solo la primera imagen se precarga; las demás esperan al lazy-load', () => {
+    render(<BlogList listing={listing({ posts: [post('Uno'), post('Dos'), post('Tres')], total: 3 })} />)
+
+    expect(cards().map((card) => within(card).getByRole('img').getAttribute('data-preload'))).toEqual([
+      'si',
+      'no',
+      'no',
     ])
   })
 
