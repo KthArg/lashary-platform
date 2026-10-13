@@ -9,7 +9,7 @@ import { siteHeaderStyles as STYLES } from './SiteHeader.styles'
 import { SiteMenu } from '../SiteMenu'
 import type { SiteHeaderProps } from './SiteHeader.types'
 
-export function SiteHeader({ sections }: SiteHeaderProps) {
+export function SiteHeader({ sections, productsHref }: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const hasSections = sections.length > 0
@@ -38,6 +38,11 @@ export function SiteHeader({ sections }: SiteHeaderProps) {
                 ))}
               </nav>
             )}
+            {productsHref && (
+              <Link href={productsHref} className={hasSections ? STYLES.productsDesktop : STYLES.products}>
+                {landingMessages.header.products}
+              </Link>
+            )}
             <Link href={LOGIN_ROUTE} className={hasSections ? STYLES.loginDesktop : STYLES.login}>
               {landingMessages.header.login}
             </Link>
@@ -61,7 +66,9 @@ export function SiteHeader({ sections }: SiteHeaderProps) {
           </div>
         </div>
       </header>
-      {menuOpen && <SiteMenu sections={sections} anchorBase={anchorBase} onClose={closeMenu} />}
+      {menuOpen && (
+        <SiteMenu sections={sections} anchorBase={anchorBase} productsHref={productsHref} onClose={closeMenu} />
+      )}
     </>
   )
 }

@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { ProductDetail, PUBLIC_DETAIL_STRINGS, type PublicProductDetail } from '@/features/store'
-import ProductDetailPage, { generateMetadata } from '@/app/productos/[slug]/page'
-import Loading from '@/app/productos/[slug]/loading'
-import ErrorView from '@/app/productos/[slug]/error'
-import NotFound from '@/app/productos/[slug]/not-found'
+import ProductDetailPage, { generateMetadata } from '@/app/(site)/productos/[slug]/page'
+import Loading from '@/app/(site)/productos/[slug]/loading'
+import ErrorView from '@/app/(site)/productos/[slug]/error'
+import NotFound from '@/app/(site)/productos/[slug]/not-found'
 
 const mocks = vi.hoisted(() => ({
   maybeSingle: vi.fn(),

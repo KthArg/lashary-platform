@@ -8,7 +8,7 @@ import {
   getProductGridState,
   type PublicProductCatalog,
 } from '@/features/store'
-import ProductsPage from '@/app/productos/page'
+import ProductsPage from '@/app/(site)/productos/page'
 
 const mockSelect = vi.fn()
 const mockEq = vi.fn()
