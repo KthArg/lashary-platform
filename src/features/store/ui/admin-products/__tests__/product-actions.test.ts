@@ -5,6 +5,18 @@ const mocks = vi.hoisted(() => ({
   save: vi.fn(),
   findById: vi.fn(),
   listSlugsStartingWith: vi.fn(),
+  upload: vi.fn(),
+  remove: vi.fn(),
+}))
+
+const BUCKET_URL = 'http://localhost:54321/storage/v1/object/public/store-product-images/'
+
+vi.mock('@/features/store/db/product-image-storage', () => ({
+  productImageStorage: vi.fn(async () => ({
+    upload: mocks.upload,
+    remove: mocks.remove,
+    pathFromUrl: (url: string) => (url.startsWith(BUCKET_URL) ? url.slice(BUCKET_URL.length) : null),
+  })),
 }))
 
 vi.mock('@/features/store/ui/admin-products/actions/staff-permission', () => ({
@@ -21,6 +33,7 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 
 import {
   createProductAction,
+  updateProductAction,
   deactivateProductAction,
   activateProductAction,
 } from '@/features/store/ui/admin-products/actions/product-actions'
@@ -29,16 +42,19 @@ import { initialProductActionState } from '@/features/store/ui/admin-products/ty
 import { createDuplicateProductSlug } from '@/features/store/domain/product-errors'
 import { productStrings } from '@/features/store/ui/admin-products/constants/product-strings'
 
-function form(fields: Record<string, string>): FormData {
+const PNG_BYTES = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00])
+const pngFile = () => new File([PNG_BYTES], 'serum.png', { type: 'image/png' })
+
+function form(fields: Record<string, string>, image?: File): FormData {
   const formData = new FormData()
   for (const [key, value] of Object.entries(fields)) formData.set(key, value)
+  if (image) formData.set('image', image)
   return formData
 }
 
 const validFields = {
   name: 'Serum nutritivo Lashary',
   description: 'Tratamiento nutritivo.',
-  imageUrl: '/productos/serum-nutritivo.jpg',
   priceCrc: '18000',
   displayOrder: '1',
   stock: '4',
@@ -50,6 +66,8 @@ describe('acciones administrativas de productos', () => {
     mocks.isStaff.mockResolvedValue(true)
     mocks.save.mockResolvedValue(undefined)
     mocks.listSlugsStartingWith.mockResolvedValue([])
+    mocks.upload.mockImplementation(async (path: string) => `${BUCKET_URL}${path}`)
+    mocks.remove.mockResolvedValue(undefined)
   })
 
   it('rechaza una llamada directa sin sesión staff antes de tocar el repositorio', async () => {
@@ -84,22 +102,84 @@ describe('acciones administrativas de productos', () => {
     expect(mocks.save).not.toHaveBeenCalled()
   })
 
-  it('permite crear un producto a una administradora', async () => {
-    const state = await createProductAction(initialProductActionState, form(validFields))
+  it('permite crear un producto a una administradora, con la imagen subida al bucket', async () => {
+    const state = await createProductAction(initialProductActionState, form(validFields, pngFile()))
 
     expect(state).toMatchObject({ status: 'ok', message: 'Producto creado.' })
-    expect(mocks.save).toHaveBeenCalledTimes(1)
+    expect(mocks.upload).toHaveBeenCalledWith(expect.stringMatching(/\.png$/), PNG_BYTES, 'image/png')
+    const saved = mocks.save.mock.calls[0][0]
+    expect(saved.imageUrl).toBe(`${BUCKET_URL}${mocks.upload.mock.calls[0][0]}`)
+    expect(mocks.upload.mock.calls[0][0].startsWith(`${saved.id}/`)).toBe(true)
   })
 
-  it('DOM-006: un slug duplicado vuelve como estado "invalid" con mensaje, no como excepción', async () => {
+  it('crear exige una imagen', async () => {
+    const state = await createProductAction(initialProductActionState, form(validFields))
+
+    expect(state.problems).toContain(productStrings.form.validation.imageRequired)
+    expect(mocks.upload).not.toHaveBeenCalled()
+    expect(mocks.save).not.toHaveBeenCalled()
+  })
+
+  it('DOM-008: un archivo que no es imagen no se sube aunque se llame .jpg', async () => {
+    const fake = new File([new TextEncoder().encode('no soy foto')], 'foto.jpg', { type: 'image/jpeg' })
+
+    const state = await createProductAction(initialProductActionState, form(validFields, fake))
+
+    expect(state.status).toBe('invalid')
+    expect(mocks.upload).not.toHaveBeenCalled()
+    expect(mocks.save).not.toHaveBeenCalled()
+  })
+
+  it('DOM-006: un slug duplicado vuelve como "invalid" y borra la imagen recién subida', async () => {
     mocks.save.mockRejectedValueOnce(createDuplicateProductSlug('serum-nutritivo-lashary'))
 
-    const state = await createProductAction(initialProductActionState, form(validFields))
+    const state = await createProductAction(initialProductActionState, form(validFields, pngFile()))
 
     expect(state.status).toBe('invalid')
     expect(state.problems).toEqual([
       'ya existe un producto con el slug "serum-nutritivo-lashary"',
     ])
+    expect(mocks.remove).toHaveBeenCalledWith(mocks.upload.mock.calls[0][0])
+  })
+
+  it('editar sin elegir imagen conserva la actual y no sube nada', async () => {
+    const existing = makeProduct({ id: 'e1' })
+    mocks.findById.mockResolvedValue(existing)
+
+    const state = await updateProductAction(initialProductActionState, form({ ...validFields, id: 'e1' }))
+
+    expect(state.status).toBe('ok')
+    expect(mocks.upload).not.toHaveBeenCalled()
+    expect(mocks.save).toHaveBeenCalledWith(expect.objectContaining({ imageUrl: existing.imageUrl }))
+    expect(mocks.remove).not.toHaveBeenCalled()
+  })
+
+  it('editar con una imagen nueva la sube y borra la anterior del bucket', async () => {
+    mocks.findById.mockResolvedValue({
+      ...makeProduct({ id: 'e2' }),
+      imageUrl: `${BUCKET_URL}e2/vieja.png`,
+    })
+
+    const state = await updateProductAction(
+      initialProductActionState,
+      form({ ...validFields, id: 'e2' }, pngFile()),
+    )
+
+    expect(state.status).toBe('ok')
+    expect(mocks.upload).toHaveBeenCalledWith(expect.stringMatching(/^e2\/.+\.png$/), PNG_BYTES, 'image/png')
+    expect(mocks.remove).toHaveBeenCalledWith('e2/vieja.png')
+  })
+
+  it('editar un producto que no existe no sube nada', async () => {
+    mocks.findById.mockResolvedValue(null)
+
+    const state = await updateProductAction(
+      initialProductActionState,
+      form({ ...validFields, id: 'nope' }, pngFile()),
+    )
+
+    expect(state.status).toBe('invalid')
+    expect(mocks.upload).not.toHaveBeenCalled()
   })
 
   it('permite a una administradora volver a activar un producto desactivado', async () => {
