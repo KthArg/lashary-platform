@@ -10,10 +10,12 @@ export { loadGallery as getGallery, galleryCacheTag } from './cms/gallery-source
 export { loadStudio as getStudio, studioCacheTags } from './cms/studio-source'
 export { loadLoyalty as getLoyalty, loyaltyCacheTags } from './cms/loyalty-source'
 export { loadContact as getContact, contactCacheTags } from './cms/contact-source'
+export { loadBlogPage as getBlogPage, blogCacheTag, type BlogListing } from './cms/blog-source'
 // Borde de POST /api/cms/webhook (aviso al publicar). Lo monta src/app/api/cms/webhook/route.ts.
 export { receiveCmsWebhook } from './cms/webhook'
 export type { TechniqueMedia, TechniqueMediaByFamily } from './domain/technique-media'
 export type { GalleryFamily, GalleryPair } from './domain/gallery'
+export { BLOG_PAGE_SIZE, type BlogPage, type BlogPost } from './domain/blog'
 export type { LoyaltyContent, LoyaltyLevel } from './domain/loyalty'
 export type {
   ContactContent,
