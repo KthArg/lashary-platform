@@ -6,7 +6,7 @@ import { LOCATION_SECTION } from '../../../sections'
 import { siteFooterStyles as STYLES } from './SiteFooter.styles'
 import type { SiteFooterProps } from './SiteFooter.types'
 
-export function SiteFooter({ contact: { contact, hours }, year }: SiteFooterProps) {
+export function SiteFooter({ contact: { contact, hours }, year, blogHref }: SiteFooterProps) {
   const copy = landingMessages.footer
   const hasContactLinks = contact !== null && (contact.whatsapp !== null || contact.instagram !== null)
 
@@ -52,6 +52,11 @@ export function SiteFooter({ contact: { contact, hours }, year }: SiteFooterProp
             <a href={`/#${LOCATION_SECTION.id}`} className={STYLES.link}>
               {copy.directions}
             </a>
+            {blogHref && (
+              <Link href={blogHref} className={STYLES.link}>
+                {copy.blog}
+              </Link>
+            )}
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-import { getContact } from '@/features/content'
+import { BLOG_ROUTE, getContact } from '@/features/content'
 import { SiteFooter, SiteHeader, landingSections } from '@/features/landing'
 import { siteDisplay, siteSans } from './fonts'
 
@@ -16,7 +16,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     >
       <SiteHeader sections={landingSections} />
       {children}
-      <SiteFooter contact={contact} year={new Date().getFullYear()} />
+      <SiteFooter contact={contact} year={new Date().getFullYear()} blogHref={BLOG_ROUTE} />
     </div>
   )
 }

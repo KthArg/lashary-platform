@@ -93,6 +93,7 @@ Medición PERF-004 con Fidelidad (2026-09-21, mismo método): LCP 1444–1476 ms
 - `ui/site-shell/components/SiteFooter/SiteFooter.tsx` (servidor, lo monta `src/app/(site)/layout.tsx`): contacto, horario, dirección, "Cómo llegar" hacia `/#ubicacion` (criterio 5) y "Reservar cita". El layout lee `getContact()`, que comparte la entrada de caché con la página.
 - `ui/site-shell/components/ExternalLink/ExternalLink.tsx`: enlace a otro sitio con `target="_blank"`, `rel="noopener noreferrer"` y el aviso "(se abre en otra pestaña)" solo para lectores de pantalla.
 - Navegación: Servicios, El estudio, Galería, Fidelidad, Preguntas y Ubicación (`FAQ_SECTION`, `LOCATION_SECTION`). Numerales: Preguntas 06, Ubicación 07.
+- Fuera de la portada (US-BLOG-02, 2026-10-13): la cabecera y el menú anteponen `/` a sus anclas cuando la ruta no es `/` (`anchorBaseFor` en `ui/routes.ts`, con `usePathname`), así que desde `/blog` las secciones y la marca vuelven a la portada. El pie muestra un enlace "Blog" cuando la app le pasa `blogHref`; `landing` no conoce las rutas de `content`. Pruebas: `site-header.test.tsx` y `site-footer.test.tsx`.
 
 Medición PERF-004 con Preguntas, Ubicación y el pie (2026-09-21, mismo método): LCP 1424–1436 ms en 3 corridas, elemento LCP el título del hero; JS inicial propio 151.6 KB (9 scripts). El mapa no se pide en la carga (`loading="lazy"`, 0 pedidos a Google Maps con la sección fuera de pantalla).
 

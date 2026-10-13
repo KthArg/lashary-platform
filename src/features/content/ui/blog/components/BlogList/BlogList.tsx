@@ -44,7 +44,7 @@ export function BlogList({ listing }: BlogListProps) {
           </div>
         ) : (
           <ol aria-label={copy.listLabel} className={STYLES.list}>
-            {posts.map((post) => (
+            {posts.map((post, index) => (
               <li key={post.slug}>
                 <article className={STYLES.card}>
                   <figure className={STYLES.figure}>
@@ -53,6 +53,9 @@ export function BlogList({ listing }: BlogListProps) {
                       alt={post.image.alt}
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 24rem"
+                      // La primera imagen es el elemento LCP en un teléfono (medición PERF-004 en
+                      // el SPEC): se precarga en vez de esperar al lazy-load.
+                      preload={index === 0}
                       className={STYLES.photo}
                     />
                   </figure>

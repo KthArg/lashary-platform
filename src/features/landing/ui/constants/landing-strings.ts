@@ -57,6 +57,7 @@ export const landingMessages = {
     hours: 'Horario',
     studio: 'Estudio',
     directions: 'Cómo llegar',
+    blog: 'Blog',
     reservations: 'Reservas',
     reserve: 'Reservar cita',
     rights: (year: number) => `© ${year} LASHARY Beauty Studio. Todos los derechos reservados.`,
