@@ -8,7 +8,7 @@ import { siteMenuStyles as STYLES } from './SiteMenu.styles'
 import { useFocusTrap } from '../../hooks/use-focus-trap'
 import type { SiteMenuProps } from './SiteMenu.types'
 
-export function SiteMenu({ sections, onClose }: SiteMenuProps) {
+export function SiteMenu({ sections, anchorBase = '', onClose }: SiteMenuProps) {
   const containerRef = useFocusTrap<HTMLDivElement>()
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export function SiteMenu({ sections, onClose }: SiteMenuProps) {
       </div>
       <nav aria-label={landingMessages.header.sectionsNav} className={STYLES.nav}>
         {sections.map((section, index) => (
-          <a key={section.id} href={`#${section.id}`} onClick={onClose} className={STYLES.link}>
+          <a key={section.id} href={`${anchorBase}#${section.id}`} onClick={onClose} className={STYLES.link}>
             <span aria-hidden="true" className={STYLES.number}>
               {String(index + 1).padStart(2, '0')}
             </span>
