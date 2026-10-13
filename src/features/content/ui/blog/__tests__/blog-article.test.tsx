@@ -46,8 +46,8 @@ describe('BlogArticleView — US-BLOG-03', () => {
   it('criterio 3: hay navegación de regreso al listado, arriba y abajo', () => {
     render(<BlogArticleView article={article()} />)
 
-    const navs = screen.getAllByRole('navigation', { name: copy.backNav })
-    expect(navs).toHaveLength(2)
+    // Cada uno con su nombre: dos regiones iguales no se distinguen con lector de pantalla.
+    const navs = [copy.backNav, copy.backNavEnd].map((name) => screen.getByRole('navigation', { name }))
     for (const nav of navs) {
       expect(within(nav).getByRole('link', { name: copy.back }).getAttribute('href')).toBe('/blog')
     }

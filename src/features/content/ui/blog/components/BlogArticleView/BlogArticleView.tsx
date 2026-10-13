@@ -9,10 +9,10 @@ const longDate = new Intl.DateTimeFormat('es-CR', { dateStyle: 'long', timeZone:
 
 const formatDate = (isoDate: string): string => longDate.format(new Date(`${isoDate}T00:00:00Z`))
 
-function BackLink({ className }: { className: string }) {
+function BackLink({ label, className }: { label: string; className: string }) {
   const copy = blogMessages.article
   return (
-    <nav aria-label={copy.backNav} className={className}>
+    <nav aria-label={label} className={className}>
       <Link href={BLOG_ROUTE} className={STYLES.back}>
         {copy.back}
       </Link>
@@ -24,7 +24,7 @@ export function BlogArticleView({ article }: BlogArticleViewProps) {
   return (
     <main className={STYLES.main}>
       <article className={STYLES.inner}>
-        <BackLink className={STYLES.backTop} />
+        <BackLink label={blogMessages.article.backNav} className={STYLES.backTop} />
 
         {article.publishedOn !== null && (
           <p className={STYLES.date}>
@@ -40,7 +40,8 @@ export function BlogArticleView({ article }: BlogArticleViewProps) {
             alt={article.image.alt}
             fill
             sizes="(max-width: 928px) 100vw, 55rem"
-            // La imagen destacada es el elemento más grande de la primera pantalla.
+            // La imagen destacada es el elemento más grande de la primera pantalla. `preload` es
+            // el prop de next/image desde Next 16; `priority` quedó obsoleto a su favor.
             preload
             className={STYLES.photo}
           />
@@ -48,7 +49,7 @@ export function BlogArticleView({ article }: BlogArticleViewProps) {
 
         <RichText blocks={article.body} />
 
-        <BackLink className={STYLES.backBottom} />
+        <BackLink label={blogMessages.article.backNavEnd} className={STYLES.backBottom} />
       </article>
     </main>
   )

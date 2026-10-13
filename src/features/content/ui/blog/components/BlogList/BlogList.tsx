@@ -55,7 +55,8 @@ export function BlogList({ listing }: BlogListProps) {
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 24rem"
                       // La primera imagen es el elemento LCP en un teléfono (medición PERF-004 en
-                      // el SPEC): se precarga en vez de esperar al lazy-load.
+                      // el SPEC): se precarga en vez de esperar al lazy-load. `preload` es el prop
+                      // de next/image desde Next 16; `priority` quedó obsoleto a su favor.
                       preload={index === 0}
                       className={STYLES.photo}
                     />
