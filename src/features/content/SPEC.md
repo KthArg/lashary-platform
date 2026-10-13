@@ -11,7 +11,8 @@ historias:
     estado: terminada
     evidencia: "PR #294 (us/US-BLOG-02 a main); piezas PRs #295 (validacion, orden y pagina), #296 (getBlogPage con cache y aviso), #297 (BlogList) y #298 (la ruta /blog), apiladas hacia us/US-BLOG-02. Criterio 1 (fecha descendente): domain/__tests__/blog.test.ts (newestFirst), application/__tests__/get-blog-posts.test.ts y cms/__tests__/blog-source.test.ts. Criterio 2 (imagen, titulo y extracto en cada tarjeta): ui/blog/__tests__/blog-list.test.tsx y get-blog-posts.test.ts. Criterio 3 (paginacion sobre el limite configurado, 9): blog.test.ts (pageOf), blog-source.test.ts, blog-list.test.tsx y src/app/(site)/blog/page.data.test.ts. La ruta, sin scroll horizontal en los 8 anchos y con la cabecera volviendo a la portada: e2e/blog.spec.ts. Verificado ademas con un CMS simulado en next dev: 12 publicaciones, 9 en la primera pagina y 3 en la segunda, por fecha descendente, con sus imagenes cargadas, sin scroll horizontal en 375 y 1280. PERF-004 medido el 2026-10-13: LCP 1684 a 1732 ms y 148.8 KB de JS inicial, dentro del presupuesto (detalle en el cuerpo)"
   - id: US-BLOG-03
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "todo el codigo: content no lee el cuerpo ni el SEO de una publicacion, no existe la ruta /blog/<slug> y las tarjetas del listado no enlazan a ningun detalle"
 flags: []
 deuda: []
 defectos: []
