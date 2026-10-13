@@ -4,6 +4,7 @@ export interface AdminProductRow {
   slug: string
   formattedPrice: string
   order: number
+  stock: number
   statusText: string
   statusClass: string
   editHref: string

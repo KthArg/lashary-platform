@@ -75,6 +75,14 @@ export function ProductForm({ product }: ProductFormProps) {
           required
           defaultValue={product?.displayOrder ?? 0}
         />
+        <ProductFormField
+          name="stock"
+          label={formMessages.fields.stock}
+          type="number"
+          min={0}
+          required
+          defaultValue={product?.stock ?? 0}
+        />
 
         <label className={STYLES.descriptionLabel} htmlFor="description">
           <span className={STYLES.labelText}>{formMessages.fields.description}</span>

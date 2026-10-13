@@ -1,0 +1,1 @@
+export { LandingLoyalty } from './LandingLoyalty'

@@ -15,6 +15,7 @@ const validInput = () => ({
   imageUrl: '/productos/serum-nutritivo.jpg',
   priceCrc: 18000,
   displayOrder: 1,
+  stock: 3,
 })
 
 describe('buildProduct — invariantes de dominio (DOM-007)', () => {
@@ -82,6 +83,27 @@ describe('buildProduct — invariantes de dominio (DOM-007)', () => {
 
   it('rechaza orden de presentación no entero', () => {
     expect(isErr(buildProduct({ ...validInput(), displayOrder: 1.5 }))).toBe(true)
+  })
+
+  it('conserva las existencias del producto', () => {
+    const result = buildProduct(validInput())
+    if (!isOk(result)) throw new Error('esperaba ok')
+    expect(result.value.stock).toBe(3)
+  })
+
+  it('acepta cero existencias: el producto queda agotado, no inválido', () => {
+    expect(isOk(buildProduct({ ...validInput(), stock: 0 }))).toBe(true)
+  })
+
+  it('rechaza existencias negativas', () => {
+    const result = buildProduct({ ...validInput(), stock: -1 })
+    expect(isErr(result)).toBe(true)
+    if (!isErr(result)) return
+    expect(result.error.problems.join(' ')).toMatch(/existencias/i)
+  })
+
+  it('rechaza existencias no enteras', () => {
+    expect(isErr(buildProduct({ ...validInput(), stock: 2.5 }))).toBe(true)
   })
 
   it('acumula varios problemas en un solo error', () => {

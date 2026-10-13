@@ -12,6 +12,11 @@ export const productSchema = z
     imageUrl: z.string().trim().min(1, validationMessages.imageUrl),
     priceCrc: z.coerce.number().int().positive(validationMessages.priceCrc),
     displayOrder: z.coerce.number().int().min(0, validationMessages.displayOrder),
+    stock: z
+      .string({ required_error: validationMessages.stockRequired })
+      .trim()
+      .min(1, validationMessages.stockRequired)
+      .pipe(z.coerce.number().int(validationMessages.stock).min(0, validationMessages.stock)),
   })
   .transform(
     (data): ProductWrite => ({
@@ -21,6 +26,7 @@ export const productSchema = z
       imageUrl: data.imageUrl,
       priceCrc: data.priceCrc,
       displayOrder: data.displayOrder,
+      stock: data.stock,
     }),
   )
 

@@ -70,6 +70,7 @@ export type AdminProduct = {
   priceCrc: number
   isActive: boolean
   displayOrder: number
+  stock: number
 }
 
 export type ProductInput = {
@@ -81,6 +82,7 @@ export type ProductInput = {
   priceCrc: number
   isActive?: boolean
   displayOrder: number
+  stock: number
 }
 
 const isNonNegativeInteger = (value: number): boolean => Number.isInteger(value) && value >= 0
@@ -106,6 +108,10 @@ export function buildProduct(input: ProductInput): Result<AdminProduct, InvalidP
     problems.push('el orden de presentación debe ser un entero no negativo')
   }
 
+  if (!isNonNegativeInteger(input.stock)) {
+    problems.push('las existencias deben ser un entero no negativo')
+  }
+
   if (problems.length > 0) {
     return err(createInvalidProduct(problems))
   }
@@ -119,6 +125,7 @@ export function buildProduct(input: ProductInput): Result<AdminProduct, InvalidP
     priceCrc: input.priceCrc,
     isActive: input.isActive ?? true,
     displayOrder: input.displayOrder,
+    stock: input.stock,
   })
 }
 
