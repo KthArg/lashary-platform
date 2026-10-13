@@ -44,6 +44,7 @@ check-frontmatter.sh
 check-status-fresh.sh
 check-spec-updated.sh
 check-pr-size.sh
+check-pr-title.sh
 check-imports.sh
 check-domain-purity.sh
 check-migrations.sh

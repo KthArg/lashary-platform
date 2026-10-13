@@ -49,9 +49,9 @@ describe.skipIf(!reachable)('seed del catálogo — criterio 2 de US-AGE-08', ()
       .select('family')
 
     expect(error).toBeNull()
-    const families = new Set((data ?? []).map((r) => r.family))
-    for (const f of EXPECTED_FAMILIES) {
-      expect(families).toContain(f)
+    const families = new Set((data ?? []).map((row) => row.family))
+    for (const family of EXPECTED_FAMILIES) {
+      expect(families).toContain(family)
     }
     expect(families.size).toBe(EXPECTED_FAMILIES.length)
   })

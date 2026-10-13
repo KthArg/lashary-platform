@@ -38,6 +38,8 @@ module.exports = {
         'modal-top': '60',
         'site-header': '120',
         'site-menu': '150',
+        // La galería ampliada (US-LAND-03) queda sobre la cabecera y el menú.
+        'site-lightbox': '160',
       },
       screens: {
         // Ancho desde el que la cabecera del sitio muestra la navegación completa.
@@ -66,6 +68,8 @@ module.exports = {
         'site-technique': ['clamp(1.35rem, 3vw, 2.3rem)', { lineHeight: '1.08', letterSpacing: '-0.02em' }],
         'site-meta': ['0.875rem', { lineHeight: '1.4' }],
         'site-sign': ['1.375rem', { lineHeight: '1' }],
+        // Pregunta del acordeón de Preguntas (US-LAND-07).
+        'site-faq': ['clamp(1rem, 1.4vw, 1.25rem)', { lineHeight: '1.4' }],
       },
       letterSpacing: {
         'widest-plus': '0.2em',
@@ -96,6 +100,8 @@ module.exports = {
         'site-row-gap': 'clamp(0.875rem, 2.6vw, 2.5rem)',
         'site-row-body': 'clamp(1.5rem, 3.5vw, 2.5rem)',
         'site-heading-gap': 'clamp(1.375rem, 4vh, 2.75rem)',
+        // Aire bajo las columnas del pie de página (US-LAND-07).
+        'site-footer-y': 'clamp(1.875rem, 5vh, 3.25rem)',
       },
       flexBasis: {
         'site-statement': '25rem',
@@ -111,6 +117,8 @@ module.exports = {
         'site-cta-lg': '3.75rem',
         // Área pulsable mínima de UI-004.
         'site-tap': '2.75rem',
+        // Mapa embebido de Ubicación (US-LAND-07), como el recuadro del diseño.
+        'site-map': '20rem',
       },
       lineHeight: {
         'site-loose': '1.75',
@@ -137,6 +145,20 @@ module.exports = {
       aspectRatio: {
         // Retrato de la foto de técnica, como las fotos del diseño.
         'site-photo': '4 / 5',
+        // Cada foto de un par antes y después (US-LAND-03), vertical como en el diseño.
+        'site-gallery': '3 / 4',
+      },
+      gridTemplateColumns: {
+        // Cuadrícula de la galería: tantas columnas como quepan, cada par de al menos 17rem.
+        'site-gallery': 'repeat(auto-fill, minmax(min(100%, 17rem), 1fr))',
+        // Por qué acá (US-LAND-04): celdas de al menos 16.25rem, que se reparten el ancho.
+        'site-reasons': 'repeat(auto-fit, minmax(min(100%, 16.25rem), 1fr))',
+        // Niveles de fidelidad (US-LAND-05): una fila de hitos que se parte en angosto.
+        'site-milestones': 'repeat(auto-fit, minmax(min(100%, 11rem), 1fr))',
+        // Horario de Ubicación (US-LAND-07): días a un lado, horas al otro.
+        'site-hours': 'auto 1fr',
+        // Pie de página (US-LAND-07): columnas de al menos 11.875rem.
+        'site-footer': 'repeat(auto-fit, minmax(min(100%, 11.875rem), 1fr))',
       },
       borderRadius: {
         'site-pill': '50% / 100%',
@@ -150,6 +172,15 @@ module.exports = {
         'site-technique-desc': '52ch',
         // Foto de la técnica dentro de la fila abierta (US-LAND-02).
         'site-photo': '22rem',
+        // Retrato de la dueña en El estudio (US-LAND-04).
+        'site-portrait': '20.625rem',
+        // Preguntas (US-LAND-07): la lista y cada respuesta, como el diseño.
+        'site-faq': '55rem',
+        'site-faq-answer': '62ch',
+        // El par ampliado de la galería (US-LAND-03). Lo acota también el alto de la pantalla:
+        // dos fotos 3:4 lado a lado miden de alto 2/3 de su ancho, y tienen que caber junto a
+        // los controles incluso con el móvil en horizontal.
+        'site-lightbox': 'min(56rem, 88svh)',
       },
       transitionTimingFunction: {
         'site-out': 'cubic-bezier(0.16, 1, 0.3, 1)',

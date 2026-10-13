@@ -10,13 +10,13 @@ Este bucle corre **siempre**, sin que nadie lo pida. No es ceremonia: cada paso 
 
 **2. Confirmar que se puede empezar.** Verificar en [DEPENDENCIES.md](DEPENDENCIES.md) que las dependencias de la historia están `terminada`. Si una no lo está, **detenerse y decirlo** — no se construye sobre cimientos ausentes. Verificar que los criterios de aceptación son objetivamente verificables; si uno no lo es, decirlo antes de implementarlo.
 
-**3. Implementar en incrementos pequeños**, respetando la frontera de la feature (ARCH-003/004) y las reglas de dominio.
+**3. Implementar en incrementos pequeños**, respetando la frontera de la feature (ARCH-003/004) y las reglas de dominio. Si la historia recién arranca, su PR `us/<ID>` → `main` se abre en draft con `In-Progress` ([INTEGRATION.md](../spec/INTEGRATION.md#int-009)).
 
 **4. Verificar.** Correr `scripts/verify.sh` (mismo que CI) y las pruebas. Mapear **cada criterio de aceptación a la prueba que lo demuestra**. Un criterio sin prueba no está cumplido, punto.
 
 **5. Actualizar estado.** Editar el front-matter del `SPEC.md` y regenerar `STATUS.md` (`scripts/status-gen.sh`). Si algo quedó incompleto, registrar exactamente dónde se detiene. Si se tomó deuda, registrarla con su costo (EST-006).
 
-**6. Reportar.** Qué cambió, qué reglas aplicaron, qué criterios quedaron demostrados y por cuál prueba, qué falta, qué deuda se creó.
+**6. Reportar.** Qué cambió, qué reglas aplicaron, qué criterios quedaron demostrados y por cuál prueba, qué falta, qué deuda se creó. Si el PR quedó listo para revisión: se marca listo y `Waiting-QA` reemplaza a `In-Progress`. `QA-Approved` la pone solo un revisor humano.
 
 ## Camino corto
 
@@ -38,3 +38,5 @@ Para cambios que **no tocan código fuente** (documentación, comentarios, confi
 3. Pieza contra `us/<ID>`: diff ≤ ~400 líneas, ≤ 2 features (INT-002); rama ≤ 3 días (INT-001). El PR `us/<ID>` → `main` está exento de ambos topes.
 4. Migración: máximo una, forward-only (INT-008).
 5. Reglas citadas por ID donde el PR las toca.
+6. Título y commits en Conventional Commits en español, con `(US-XXX-NN, i/N)` en el título si es pieza (INT-009); ninguna `class` nueva (ADR-0008).
+7. Estado del PR al día: draft + `In-Progress` mientras se trabaja; listo + `Waiting-QA` para revisar; `QA-Approved` solo la pone un revisor humano.

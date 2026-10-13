@@ -1,0 +1,89 @@
+import Link from 'next/link'
+import { isOk } from '@/shared/result'
+import { listTechniques as listTechniquesUseCase } from '../../../../application/techniques/queries'
+import {
+  listPackages as listPackagesUseCase,
+  getPackage as getPackageUseCase,
+  listPackageTechniques as listPackageTechniquesUseCase,
+} from '../../../../application/packages/queries'
+import { packageRepository } from '../../../../db/packages/package-repository'
+import { techniqueRepository } from '../../../../db/techniques/technique-repository'
+import { packageMessages } from '../../constants/package-strings'
+import { catalogRoutes } from '../../../routes'
+import { adminPackagesPageStyles as STYLES } from './AdminPackagesPage.styles'
+import { PackageTable } from '../PackageTable'
+import { PackageForm } from '../PackageForm'
+import { PackagePagination } from '../PackagePagination'
+import type { AdminPackagesPageProps } from './AdminPackagesPage.types'
+
+const adminMessages = packageMessages.admin
+
+export async function AdminPackagesPage({ searchParams }: AdminPackagesPageProps) {
+  const params = (await searchParams) ?? {}
+  const [pkgRepo, techRepo] = await Promise.all([packageRepository(), techniqueRepository()])
+
+  const [page, activeTechniques] = await Promise.all([
+    listPackagesUseCase(pkgRepo)({ activeOnly: false, page: Number(params.page) || 1 }),
+    listTechniquesUseCase(techRepo)({ activeOnly: true, pageSize: 100 }),
+  ])
+
+  const editResult = params.edit ? await getPackageUseCase(pkgRepo)(params.edit) : null
+  const editing = editResult && isOk(editResult) ? editResult.value : undefined
+  const showForm = params.new !== undefined || editing !== undefined
+
+  const memberTechniques = await listPackageTechniquesUseCase(techRepo)(
+    editing ? [...page.items, editing] : page.items,
+  )
+  const techniqueNameById = new Map(memberTechniques.map((technique) => [technique.id, technique.name]))
+  const inactiveTechniqueIds = new Set(
+    memberTechniques.filter((technique) => !technique.isActive).map((technique) => technique.id),
+  )
+  const formTechniques = [
+    ...activeTechniques.items,
+    ...memberTechniques.filter((technique) => !technique.isActive && editing?.techniqueIds.includes(technique.id)),
+  ]
+
+  return (
+    <main className={STYLES.main}>
+      <header className={STYLES.header}>
+        <div>
+          <h1 className={STYLES.title}>{adminMessages.title}</h1>
+          <p className={STYLES.subtitle}>{adminMessages.subtitle}</p>
+        </div>
+        {!showForm && (
+          <Link href={catalogRoutes.newPackage} className={STYLES.newPackageLink}>
+            {adminMessages.newPackage}
+          </Link>
+        )}
+      </header>
+
+      {showForm && (
+        <div className={STYLES.formWrapper}>
+          <PackageForm pkg={editing} techniques={formTechniques} />
+          <Link href={catalogRoutes.packagesAdmin} className={STYLES.cancelLink}>
+            {packageMessages.form.cancel}
+          </Link>
+        </div>
+      )}
+
+      {page.items.length === 0 ? (
+        <div className={STYLES.emptyBox}>
+          <h2 className={STYLES.emptyTitle}>{adminMessages.empty.title}</h2>
+          <p className={STYLES.emptyBody}>{adminMessages.empty.body}</p>
+          <Link href={catalogRoutes.newPackage} className={STYLES.emptyCta}>
+            {adminMessages.empty.cta}
+          </Link>
+        </div>
+      ) : (
+        <>
+          <PackageTable
+            items={page.items}
+            techniqueNameById={techniqueNameById}
+            inactiveTechniqueIds={inactiveTechniqueIds}
+          />
+          <PackagePagination page={page.page} pageSize={page.pageSize} total={page.total} />
+        </>
+      )}
+    </main>
+  )
+}

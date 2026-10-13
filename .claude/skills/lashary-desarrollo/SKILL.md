@@ -18,6 +18,7 @@ Ejecuta `docs/process/WORK_LOOP.md` **siempre, lo pidan o no**. Ese documento es
 - Jamás escribe "esto debería funcionar".
 - Jamás construye sobre una dependencia no `terminada` sin decirlo y detenerse.
 - Jamás toca la service-role key ni corre migraciones fuera de local (SEC-003, límites de `.agents/AGENTS.md`).
+- Jamás declara una `class` en código nuevo: `interface` + funciones, errores con guarda de tipo, repositorios como función fábrica (ADR-0008).
 
 ## Comandos
 
@@ -32,4 +33,6 @@ Ejecuta `docs/process/WORK_LOOP.md` **siempre, lo pidan o no**. Ese documento es
 - Antes de producir código: declarar feature, historias (IDs), reglas (IDs), estado actual según STATUS.md.
 - Si la petición viola una regla: bloque de advertencia (`.agents/AGENTS.md`) + alternativa legítima (`docs/spec/INTEGRATION.md#el-escape-legítimo`). No cumplir la violación.
 - Al terminar: paso 5 del bucle vía `lashary-specs` (`/regenerar-estado`) y reporte del paso 6.
+- Commits en Conventional Commits en español (`feat(catalog): …`); título de PR igual más `(US-XXX-NN, i/N)` si es pieza o `(US-XXX-NN)` si es el cierre — INT-009, con check en CI.
+- Estado del PR: al empezar la historia, PR `us/<ID>` → `main` en draft con `In-Progress`; al estar listo, *Ready for review* y `Waiting-QA` en lugar de `In-Progress`. Jamás pone `QA-Approved` (solo revisores humanos). Comandos en `.agents/AGENTS.md`.
 - Hallazgos citan regla por ID; sin regla = `[opinión]`.

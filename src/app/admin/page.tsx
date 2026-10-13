@@ -1,6 +1,6 @@
 import { getAuthSession, AdminLoginForm, AUTH_ROLES, AUTH_LABELS } from '@/features/auth'
 import { redirect } from 'next/navigation'
-import { adminStyles as s } from './admin.styles'
+import { adminStyles as STYLES } from './admin.styles'
 import type { AdminLoginPageProps } from './admin.types'
 
 export const metadata = {
@@ -17,21 +17,21 @@ export default async function AdminLoginPage(_props: AdminLoginPageProps) {
   }
 
   return (
-    <main className={s.main}>
-      <div className={s.card}>
-        <div className={s.header}>
-          <h1 className={s.brand}>LASHARY</h1>
-          <p className={s.tagline}>PORTAL ADMINISTRATIVO</p>
+    <main className={STYLES.main}>
+      <div className={STYLES.card}>
+        <div className={STYLES.header}>
+          <h1 className={STYLES.brand}>LASHARY</h1>
+          <p className={STYLES.tagline}>PORTAL ADMINISTRATIVO</p>
         </div>
 
-        <div className={s.content}>
+        <div className={STYLES.content}>
           <div className="space-y-1">
-            <h2 className={s.title}>{AUTH_LABELS.adminAccessTitle}</h2>
-            <p className={s.subtitle}>{AUTH_LABELS.adminAccessSubtitle}</p>
+            <h2 className={STYLES.title}>{AUTH_LABELS.adminAccessTitle}</h2>
+            <p className={STYLES.subtitle}>{AUTH_LABELS.adminAccessSubtitle}</p>
           </div>
           <AdminLoginForm />
-          <div className={s.footer}>
-            <p className={s.noticeText}>{AUTH_LABELS.adminRestrictedNotice}</p>
+          <div className={STYLES.footer}>
+            <p className={STYLES.noticeText}>{AUTH_LABELS.adminRestrictedNotice}</p>
           </div>
         </div>
       </div>

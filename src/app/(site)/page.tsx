@@ -1,4 +1,11 @@
-import { getLandingContent, getTechniqueMedia } from '@/features/content'
+import {
+  getContact,
+  getGallery,
+  getLandingContent,
+  getLoyalty,
+  getStudio,
+  getTechniqueMedia,
+} from '@/features/content'
 import { listTechniques } from '@/features/catalog'
 import type { Metadata } from 'next'
 import { LandingHome, landingMessages, toLandingTechnique } from '@/features/landing'
@@ -36,6 +43,24 @@ async function readTechniques() {
 }
 
 export default async function HomePage() {
-  const [content, techniques] = await Promise.all([getLandingContent(), readTechniques()])
-  return <LandingHome content={content} techniques={techniques} />
+  // Las lecturas del CMS nunca lanzan: con el CMS caído, El estudio y Preguntas sirven su
+  // respaldo, y la galería, la fidelidad y Ubicación muestran su estado vacío.
+  const [content, techniques, studio, gallery, loyalty, contact] = await Promise.all([
+    getLandingContent(),
+    readTechniques(),
+    getStudio(),
+    getGallery(),
+    getLoyalty(),
+    getContact(),
+  ])
+  return (
+    <LandingHome
+      content={content}
+      techniques={techniques}
+      studio={studio}
+      gallery={gallery}
+      loyalty={loyalty}
+      contact={contact}
+    />
+  )
 }

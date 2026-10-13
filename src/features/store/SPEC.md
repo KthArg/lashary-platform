@@ -1,19 +1,27 @@
 ---
 feature: store
 dri: pendiente
-estado: no_iniciada
-actualizado: 2026-08-29
+estado: en_progreso
+actualizado: 2026-10-08
 historias:
   - id: US-PROD-02
-    estado: no_iniciada
+    estado: terminada
+    evidencia: "PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), product.test.ts, commands.test.ts, queries.test.ts, product-schema.test.ts, product-actions.test.ts, layout.test.tsx, products-admin-rls.test.ts (omitida sin Supabase local, ver deuda)"
   - id: US-PROD-03
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "la columna store_products.existencias existe y la administradora la edita en /admin/catalog/products; faltan la lectura del detalle por slug, la ruta /productos/[slug] con imagen, nombre, descripcion, precio y boton de agregar al carrito deshabilitado sin existencias, y el enlace desde el grid"
   - id: US-SHOP-01
     estado: no_iniciada
   - id: US-SHOP-02
     estado: no_iniciada
 flags: []
-deuda: []
+deuda:
+  - que: "Prueba de aislamiento RLS (SEC-002) de las politicas store_products_*_admin (supabase/migrations/20260912000000_store_products.sql): src/features/store/__tests__/products-admin-rls.test.ts se omite con describe.skipIf cuando no hay Supabase local, y CI no lo levanta, asi que no demuestra que anon y una clienta sin rol de staff no puedan INSERT, UPDATE ni DELETE"
+    aceptada_en: "PR de cierre us/US-PROD-02 a main"
+    costo: "1h si ya existe el arnes de Supabase local en CI de la deuda de auth (PR #3); 3h si no: arnes mas correr la suite existente en CI"
+  - que: "Prueba de aislamiento (SEC-002) del bucket store-product-images: src/features/store/__tests__/product-images-storage-rls.test.ts se omite sin Supabase local y CI no lo levanta, asi que no demuestra que anon y una clienta no puedan subir, listar ni borrar"
+    aceptada_en: "PR de la pieza US-PROD-03 1/8"
+    costo: "el mismo arnes de la deuda anterior; con el arnes, 0h extra"
 defectos: []
 ---
 
@@ -23,8 +31,37 @@ Tienda (F4): productos, carrito, checkout con comprobante. Stock y pedidos admin
 
 ## Qué hace hoy
 
-Hoy: no existe. Se detiene antes de todo.
+`US-PROD-02` terminada (2026-10-06): PRs #92, #93 y #123 a #133; el criterio 2 (grid responsivo) lo demuestra `store.test.tsx`, que comprueba `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`. Implementado con:
+- Modelo de dominio (`domain/product.ts`): tipos puros sin dependencias; `PublicProduct` tiene `id`, `name`, `imageUrl`, `priceCrc` e `isActive`
+- Caso de uso (`application/public-grid/get-public-grid-state.ts`): orquestación de listado
+- Adaptador CMS (`http/products-cms-catalog.ts`): lectura desde API externa
+- Adaptador base de datos (`db/public-products.ts`): lectura pública desde Supabase
+- Componente React (`ui/public-grid/components/PublicProductsGrid/`): grid responsivo con estados de UI, JSX real (no HTML a mano) — React escapa contenido y atributos; sanitización de esquema de URL (`javascript:`/`data:`) aislada en `sanitizeUrl` (`domain/product.ts`)
+- Strings externalizados (`ui/public-grid/constants/public-grid-strings.ts` (`PUBLIC_GRID_STRINGS`)): i18n base
+- Integración en ruta pública `/productos` con catálogo desde la base de datos
+- Pruebas automatizadas de UI/integración para el grid, el adaptador CMS y la ruta pública
+- Etiquetas ARIA y mensaje de carga externalizados en cadenas de UI
+- Acción de reintento configurable por URL (`retryUrl`) en el componente
+
+Panel admin (criterio 3, "administrables desde el panel") en `/admin/catalog/products`, como pestaña Productos de la sección Catálogo (los componentes importan sus estilos como `STYLES`, igual que catalog y clients) junto a Técnicas y Paquetes (`/admin/store` redirige ahí; `productRoutes` se expone en `client.ts` para las pestañas), protegido por `requireAdminSession` del layout de `/admin/catalog` (redirect si no hay sesión staff) y por las políticas RLS `store_products_*_admin` (SEC-001):
+- Constructor validado (`domain/product.ts`, `buildProduct`): invariantes de negocio (DOM-007) — slug, nombre (`name`) y URL de imagen (`imageUrl`) no vacíos, precio entero positivo (`priceCrc`), orden de presentación entero no negativo (`displayOrder`); sin clases, `AdminProduct` es un objeto plano
+- Errores tipados (`domain/product-errors.ts`): `InvalidProduct`, `ProductNotFound`, `DuplicateProductSlug` (DOM-006), objetos discriminados por `kind` con su type guard en vez de `instanceof`
+- Casos de uso (`application/admin-products/queries.ts`, `application/admin-products/commands.ts`): listar paginado, obtener, crear, actualizar, desactivar — sobre el puerto `AdminProductRepository` (`application/admin-products/ports.ts`), probados con repositorio fake (`application/admin-products/__tests__/`)
+- Adaptador de escritura (`db/admin-product-repository.ts`): CRUD contra `store_products` vía Supabase, mapea `23505` (slug duplicado) a error de dominio; sin clase, función factory con closures — `db/public-products.ts` y `http/products-cms-catalog.ts` (lectura pública) siguen el mismo patrón
+- Server actions (`ui/admin-products/actions/product-actions.ts`) con validación de formato en el borde (`ui/admin-products/validation/product-schema.ts`, `productSchema`, Zod) y chequeo de rol amable (`ui/admin-products/actions/staff-permission.ts`, `isStaff`) — la autorización real la hace RLS
+- Lógica de formulario separada del render en `ui/admin-products/hooks/useProductForm.ts` (mismo patrón que `auth/hooks/useAdminLoginForm`)
+- Textos y rutas del panel externalizados en `ui/admin-products/constants/product-strings.ts` (`productStrings`) y `product-routes.ts` (`productRoutes`) (DOM-009)
+- Componentes (`ProductForm`, `ProductsAdminTable` y `ProductsAdminPanel` en `ui/admin-products/components/`): listado, alta, edición y desactivación (no hay borrado físico) con estados vacío/carga/error (UI-003) y feedback accesible por rol `alert`/`status` (UI-004) — cada decisión de qué pintar sale precalculada de un `.data.ts` o un hook; los `.tsx` solo despachan por tabla o pintan, sin `if`/`?:`/`&&`
+- Pruebas automatizadas: dominio, casos de uso (repositorio fake), esquema, server actions, protección de layout, y aislamiento RLS (`__tests__/products-admin-rls.test.ts`, se salta sin Supabase local)
+
+
+`US-PROD-03` en progreso (2026-10-08). Existencias: la columna `store_products.existencias` (entero, `DEFAULT 0`, `CHECK >= 0`) la crea US-PROD-03 en `supabase/migrations/20261006000000_store_products_existencias_e_imagenes.sql`, para que el detalle indique "agotado" y deshabilite la compra (criterio 3). La columna queda en español como las demás de `store_products` (`nombre`, `precio_crc`, `activo`); el código la lee como `stock`, igual que `precio_crc` se lee como `priceCrc`. El descuento al vender y el impedir vender más unidades de las disponibles son de US-SHOP-02. Las filas que ya existían quedan en 0 hasta que se carguen sus existencias. La administradora las carga en `/admin/catalog/products`: `buildProduct` exige un entero no negativo (DOM-007) y `productSchema` rechaza el campo vacío en vez de convertirlo en 0, porque `z.coerce.number()` convierte `""` en 0 y un descuido quedaría guardado como "agotado"; el 0 escrito a propósito sí se acepta. Sin índice: ninguna consulta filtra por esa columna (PERF-003). Sin política nueva: las políticas `store_products_*` cubren la fila completa.
+
+Imágenes (US-PROD-03): la misma migración crea el bucket público `store-product-images` (2 MB, `image/jpeg`, `image/png`, `image/webp`) y cuatro políticas en `storage.objects` (`store_product_images_{select,insert,update,delete}_admin`, solo staff, SEC-001). Va en la misma migración porque INT-008 permite una por PR y el cierre de la historia es un PR. Es público porque las fotos del catálogo las ve cualquiera, a diferencia del expediente (SECURITY.md); no hay SELECT público, así que nadie fuera del staff puede listar el bucket. El tamaño y el tipo del bucket son defensa extra: la validación por contenido (DOM-008) va en el servidor.
+
+La capa de presentación se organiza por área en `ui/<area>/` (`admin-products`, `public-grid`), cada una con `components/<Componente>/` (`.tsx`, `.styles.ts`, `.types.ts`, `index.ts`), `hooks/`, `actions/`, `constants/`, `types/`, `validation/` y `__tests__/`; `domain/`, `application/`, `db/`, `http/` son la arquitectura DDD (ARCH-002/DOM-006/007) y no se solapan con esta convención.
 
 ## Contrato público
 
-Sin contrato todavía. Al crearse, entra por `index.ts` (ARCH-003).
+`index.ts` exporta el contrato completo para listar productos, renderizar grid, consultar catálogos y administrar productos (ARCH-003). `client.ts` expone solo los textos, para los boundaries de ruta que corren en el cliente.
+

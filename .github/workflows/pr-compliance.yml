@@ -9,7 +9,8 @@
 name: pr-compliance
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    # ready_for_review: el draft que se marca listo recibe su primera revisión en ese momento.
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: read
@@ -20,6 +21,10 @@ permissions:
 
 jobs:
   review:
+    # Un draft (etiqueta In-Progress) todavía no está listo: revisarlo en cada push gasta la cuota de
+    # la suscripción en código que va a cambiar. Se revisa al abrirlo listo o al marcarlo listo
+    # (Waiting-QA), y en cada push posterior. Convención en docs/spec/INTEGRATION.md.
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     # sin secretos de Supabase en este job: el agente no los necesita y no debe tenerlos (SEC-003)
     steps:

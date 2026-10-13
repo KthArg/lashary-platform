@@ -38,6 +38,42 @@ describe('evaluateCmsWebhook — aviso al publicar (docs/contracts/cms-api.md §
     expect(evaluateCmsWebhook(input)).toEqual({ status: 200, tags: ['content:tecnicas'] })
   })
 
+  it('acepta el tag de la galeria: desmarcar un consentimiento y publicar retira el par', () => {
+    const rawBody = JSON.stringify({ tags: ['content:galeria'] })
+    const input = aviso({ rawBody, signature: sign(SECRET, String(NOW), rawBody) })
+    expect(evaluateCmsWebhook(input)).toEqual({ status: 200, tags: ['content:galeria'] })
+  })
+
+  it('acepta los tags de El estudio y Por qué acá', () => {
+    const rawBody = JSON.stringify({ tags: ['content:estudio', 'content:credenciales', 'content:razones', 'content:about'] })
+    const input = aviso({ rawBody, signature: sign(SECRET, String(NOW), rawBody) })
+    // `about` es el de ejemplo de uno-cms: la plataforma no lo lee, así que no lo invalida.
+    expect(evaluateCmsWebhook(input)).toEqual({
+      status: 200,
+      tags: ['content:estudio', 'content:credenciales', 'content:razones'],
+    })
+  })
+
+  it('acepta los tags de la fidelidad', () => {
+    const rawBody = JSON.stringify({ tags: ['content:fidelidad', 'content:niveles-fidelidad'] })
+    const input = aviso({ rawBody, signature: sign(SECRET, String(NOW), rawBody) })
+    expect(evaluateCmsWebhook(input)).toEqual({
+      status: 200,
+      tags: ['content:fidelidad', 'content:niveles-fidelidad'],
+    })
+  })
+
+  it('acepta los tags de contacto, horario y preguntas; no el de faqs de ejemplo', () => {
+    const rawBody = JSON.stringify({
+      tags: ['content:contacto', 'content:horarios', 'content:preguntas', 'content:faqs'],
+    })
+    const input = aviso({ rawBody, signature: sign(SECRET, String(NOW), rawBody) })
+    expect(evaluateCmsWebhook(input)).toEqual({
+      status: 200,
+      tags: ['content:contacto', 'content:horarios', 'content:preguntas'],
+    })
+  })
+
   it('ignora tags desconocidos, repetidos o que no son texto', () => {
     const rawBody = JSON.stringify({ tags: ['content:hero', 'content:hero', 'settings', 'content:posts', 7] })
     const input = aviso({ rawBody, signature: sign(SECRET, String(NOW), rawBody) })

@@ -6,10 +6,17 @@
 import {
   listTechniques as listTechniquesUseCase,
   getTechnique as getTechniqueUseCase,
-} from './application/queries'
-import { techniqueRepository } from './db/technique-repository'
-import type { ListTechniquesQuery, Page } from './application/ports'
-import type { TechniqueView } from './domain/technique'
+} from './application/techniques/queries'
+import {
+  listPackages as listPackagesUseCase,
+  getPackage as getPackageUseCase,
+} from './application/packages/queries'
+import { techniqueRepository } from './db/techniques/technique-repository'
+import { packageRepository } from './db/packages/package-repository'
+import type { ListTechniquesQuery } from './application/techniques/ports'
+import type { Page } from './application/pagination'
+import type { ListPackagesQuery } from './application/packages/ports'
+import type { TechniqueView } from './domain/techniques/technique'
 
 export async function listTechniques(
   query?: ListTechniquesQuery,
@@ -21,15 +28,29 @@ export async function getTechnique(id: string) {
   return getTechniqueUseCase(await techniqueRepository())(id)
 }
 
-export { SERVICE_FAMILIES } from './domain/technique'
+export async function listPackages(query?: ListPackagesQuery) {
+  return listPackagesUseCase(await packageRepository())(query)
+}
+
+export async function getPackage(id: string) {
+  return getPackageUseCase(await packageRepository())(id)
+}
+
+export { SERVICE_FAMILIES } from './domain/techniques/technique'
 export type {
   ServiceFamily,
   TechniqueView,
   TechniqueSnapshot,
-} from './domain/technique'
-export { TechniqueNotFound } from './domain/errors'
-export type { ListTechniquesQuery, Page } from './application/ports'
+} from './domain/techniques/technique'
+export { TechniqueNotFound } from './domain/techniques/errors'
+export type { PackageNotFound } from './domain/packages/errors'
+export type { ListTechniquesQuery } from './application/techniques/ports'
+export type { Page } from './application/pagination'
+export type { ListPackagesQuery } from './application/packages/ports'
+export type { PackageListItem } from './application/packages/queries'
 
 // UI de administración (US-AGE-08). La compone la ruta src/app/admin/catalog/.
-export { AdminCatalogPage } from './ui/AdminCatalogPage'
-export { catalogMessages } from './ui/messages'
+export { AdminCatalogPage } from './ui/techniques/components/AdminCatalogPage'
+export { catalogMessages } from './ui/techniques/constants/technique-strings'
+
+export { AdminPackagesPage } from './ui/packages/components/AdminPackagesPage'

@@ -1,0 +1,98 @@
+import { describe, it, expect, afterEach } from 'vitest'
+import { render, screen, cleanup, within } from '@testing-library/react'
+import type { ContactInfo, OpeningHours } from '@/features/content'
+import { LandingLocation, LOCATION_SECTION, landingMessages } from '@/features/landing'
+
+afterEach(cleanup)
+
+const copy = landingMessages.location
+
+const contactInfo: ContactInfo = {
+  address: '200 m norte de la iglesia',
+  city: 'Ciudad Quesada, Alajuela, Costa Rica',
+  note: 'Atención solo con cita reservada.',
+  whatsapp: {
+    number: '50688887777',
+    message: 'Hola, quiero agendar una cita.',
+    href: 'https://wa.me/50688887777?text=Hola%2C%20quiero%20agendar%20una%20cita.',
+  },
+  instagram: 'https://instagram.com/lashary',
+  facebook: null,
+  tiktok: 'https://tiktok.com/@lashary',
+  email: 'hola@lashary.cr',
+  mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18',
+  mapLink: 'https://maps.app.goo.gl/abc',
+}
+
+const openingHours: OpeningHours[] = [
+  { days: 'Lunes a viernes', hours: '9:00 a 18:00' },
+  { days: 'Domingo', hours: 'Cerrado' },
+]
+
+const externalLink = (name: string) => screen.getByRole('link', { name: `${name} ${copy.newTab}` })
+
+describe('LandingLocation — US-LAND-07', () => {
+  it('criterio 1: ubicación, horario y medios de contacto', () => {
+    render(<LandingLocation contact={contactInfo} hours={openingHours} />)
+
+    expect(screen.getByText('200 m norte de la iglesia')).toBeTruthy()
+    expect(screen.getByText('Ciudad Quesada, Alajuela, Costa Rica')).toBeTruthy()
+    expect(screen.getByText('Atención solo con cita reservada.')).toBeTruthy()
+
+    const dl = screen.getByRole('heading', { level: 3, name: copy.hours }).nextElementSibling as HTMLElement
+    expect(within(dl).getAllByRole('term').map((term) => term.textContent)).toEqual(['Lunes a viernes', 'Domingo'])
+    expect(within(dl).getAllByRole('definition').map((def) => def.textContent)).toEqual(['9:00 a 18:00', 'Cerrado'])
+
+    expect(screen.getByRole('link', { name: 'hola@lashary.cr' }).getAttribute('href')).toBe('mailto:hola@lashary.cr')
+  })
+
+  it('criterio 2: el botón de WhatsApp abre la conversación con el mensaje inicial', () => {
+    render(<LandingLocation contact={contactInfo} hours={openingHours} />)
+
+    const whatsapp = externalLink(copy.whatsapp)
+    expect(whatsapp.getAttribute('href')).toBe(contactInfo.whatsapp?.href)
+    expect(whatsapp.getAttribute('target')).toBe('_blank')
+    expect(whatsapp.getAttribute('rel')).toBe('noopener noreferrer')
+  })
+
+  it('criterio 3: las redes, con Instagram primero, y solo las que existen', () => {
+    render(<LandingLocation contact={contactInfo} hours={openingHours} />)
+
+    expect(externalLink(copy.instagram).getAttribute('href')).toBe('https://instagram.com/lashary')
+    expect(externalLink(copy.tiktok).getAttribute('href')).toBe('https://tiktok.com/@lashary')
+    expect(screen.queryByRole('link', { name: new RegExp(copy.facebook) })).toBeNull()
+
+    const socials = screen.getAllByRole('link').map((link) => link.textContent ?? '')
+    expect(socials.findIndex((name) => name.startsWith(copy.instagram))).toBeLessThan(
+      socials.findIndex((name) => name.startsWith(copy.tiktok)),
+    )
+  })
+
+  it('el mapa embebido lleva título y carga diferida; sin él, un enlace para abrirlo', () => {
+    const { rerender } = render(<LandingLocation contact={contactInfo} hours={openingHours} />)
+
+    const map = screen.getByTitle(copy.mapTitle)
+    expect(map.tagName).toBe('IFRAME')
+    expect(map.getAttribute('src')).toBe(contactInfo.mapEmbed)
+    expect(map.getAttribute('loading')).toBe('lazy')
+
+    rerender(<LandingLocation contact={{ ...contactInfo, mapEmbed: null }} hours={openingHours} />)
+    expect(screen.queryByTitle(copy.mapTitle)).toBeNull()
+    expect(externalLink(copy.openMap).getAttribute('href')).toBe(contactInfo.mapLink)
+  })
+
+  it('sin WhatsApp válido no hay botón, y el resto se muestra igual', () => {
+    render(<LandingLocation contact={{ ...contactInfo, whatsapp: null }} hours={openingHours} />)
+
+    expect(screen.queryByRole('link', { name: new RegExp(copy.whatsapp) })).toBeNull()
+    expect(externalLink(copy.instagram)).toBeTruthy()
+  })
+
+  it('UI-003: sin contacto ni horario la sección sigue existiendo y no inventa a dónde ir', () => {
+    const { container } = render(<LandingLocation contact={null} hours={[]} />)
+
+    expect(container.querySelector(`section#${LOCATION_SECTION.id}`)).toBeTruthy()
+    expect(screen.getByText(copy.empty)).toBeTruthy()
+    expect(screen.queryByRole('link')).toBeNull()
+  })
+})

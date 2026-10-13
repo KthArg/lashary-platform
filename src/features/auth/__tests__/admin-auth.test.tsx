@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, renderHook, act, fireEvent } from '@testing-library/react'
 import { AdminLoginForm, AdminSidebar, InactivityTimeout, useInactivityTimeout } from '@/features/auth'
-import { signInAdminAction, signOutAction, getAuthSession, requireAdminSession } from '@/features/auth/actions/auth-actions'
+import { signInAdminAction, signOutAction, getAuthSession, requireAdminSession } from '@/features/auth/ui/actions/auth-actions'
 import AdminLayout from '@/app/admin/layout'
 import { middleware } from '@/middleware'
 import { NextRequest, NextResponse } from 'next/server'
@@ -182,6 +182,7 @@ describe('US-AUTH-01: Autenticación de Administradores (/admin)', () => {
     expect(screen.getByText('Dashboard')).toBeDefined()
     expect(screen.getByText('Citas')).toBeDefined()
     expect(screen.getByText('Clientas')).toBeDefined()
+    expect(screen.getByRole('link', { name: /catálogo/i }).getAttribute('href')).toBe('/admin/catalog')
     expect(screen.getByText('admin@lashary.com')).toBeDefined()
     expect(screen.getByText('admin')).toBeDefined()
     expect(screen.getByRole('button', { name: /cerrar sesión/i })).toBeDefined()
