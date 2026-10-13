@@ -7,10 +7,21 @@ import {
   createProductAction,
   updateProductAction,
   deactivateProductAction,
+  activateProductAction,
 } from '../actions/product-actions'
 import { initialProductActionState } from '../types/product-action-state'
+import {
+  STATUS_CONTROLS,
+  productStatusKind,
+  type ProductStatusKind,
+} from '../components/ProductStatusSection/ProductStatusSection.data'
 
 export type ProductFormMode = 'create' | 'edit'
+
+const STATUS_ACTIONS: Record<ProductStatusKind, typeof deactivateProductAction> = {
+  active: deactivateProductAction,
+  inactive: activateProductAction,
+}
 
 export function useProductForm(product?: AdminProduct) {
   const mode: ProductFormMode = product !== undefined ? 'edit' : 'create'
@@ -20,8 +31,9 @@ export function useProductForm(product?: AdminProduct) {
     mode === 'edit' ? updateProductAction : createProductAction,
     initialProductActionState,
   )
-  const [deactivateState, deactivateAction, deactivating] = useActionState(
-    deactivateProductAction,
+  const statusKind = productStatusKind(product)
+  const [statusState, statusAction, statusPending] = useActionState(
+    STATUS_ACTIONS[statusKind],
     initialProductActionState,
   )
 
@@ -37,8 +49,9 @@ export function useProductForm(product?: AdminProduct) {
     state,
     formAction,
     pending,
-    deactivateState,
-    deactivateAction,
-    deactivating,
+    statusControl: STATUS_CONTROLS[statusKind],
+    statusState,
+    statusAction,
+    statusPending,
   }
 }
