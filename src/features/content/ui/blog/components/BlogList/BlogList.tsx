@@ -3,6 +3,7 @@ import Link from 'next/link'
 import {
   BLOG_ROUTE,
   HOME_ROUTE,
+  blogArticleRoute,
   blogMessages,
   blogPageRoute,
 } from '../../../constants/blog-strings'
@@ -64,7 +65,11 @@ export function BlogList({ listing }: BlogListProps) {
                       <time dateTime={post.publishedOn}>{formatDate(post.publishedOn)}</time>
                     </p>
                   )}
-                  <h2 className={STYLES.cardTitle}>{post.title}</h2>
+                  <h2 className={STYLES.cardTitle}>
+                    <Link href={blogArticleRoute(post.slug)} className={STYLES.cardLink}>
+                      {post.title}
+                    </Link>
+                  </h2>
                   <p className={STYLES.excerpt}>{post.excerpt}</p>
                 </article>
               </li>

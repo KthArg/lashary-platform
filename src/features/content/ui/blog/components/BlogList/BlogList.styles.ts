@@ -16,6 +16,8 @@ export const blogListStyles = {
   photo: 'object-cover',
   date: 'm-0 text-site-meta text-site-ink-soft',
   cardTitle: 'm-0 font-site-display text-site-technique text-site-ink',
+  cardLink:
+    'text-site-ink underline-offset-4 outline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-site-focus',
   excerpt: 'm-0 text-site-body leading-site-loose text-site-ink-soft',
 
   notice: 'm-0 mb-2 max-w-site-technique-desc text-site-body leading-site-loose text-site-ink-soft',
