@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   isStaff: vi.fn(),
   save: vi.fn(),
   findById: vi.fn(),
+  listSlugsStartingWith: vi.fn(),
 }))
 
 vi.mock('@/features/store/ui/admin-products/actions/staff-permission', () => ({
@@ -13,6 +14,7 @@ vi.mock('@/features/store/db/admin-product-repository', () => ({
   adminProductRepository: vi.fn(async () => ({
     save: mocks.save,
     findById: mocks.findById,
+    listSlugsStartingWith: mocks.listSlugsStartingWith,
   })),
 }))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
@@ -32,7 +34,6 @@ function form(fields: Record<string, string>): FormData {
 }
 
 const validFields = {
-  slug: 'serum-nutritivo-lashary',
   name: 'Serum nutritivo Lashary',
   description: 'Tratamiento nutritivo.',
   imageUrl: '/productos/serum-nutritivo.jpg',
@@ -46,6 +47,7 @@ describe('acciones administrativas de productos', () => {
     vi.clearAllMocks()
     mocks.isStaff.mockResolvedValue(true)
     mocks.save.mockResolvedValue(undefined)
+    mocks.listSlugsStartingWith.mockResolvedValue([])
   })
 
   it('rechaza una llamada directa sin sesión staff antes de tocar el repositorio', async () => {
@@ -61,7 +63,7 @@ describe('acciones administrativas de productos', () => {
   it('valida los datos de una administradora antes de guardar', async () => {
     const state = await createProductAction(
       initialProductActionState,
-      form({ ...validFields, slug: '', priceCrc: '-1' }),
+      form({ ...validFields, name: '', priceCrc: '-1' }),
     )
 
     expect(state.status).toBe('invalid')

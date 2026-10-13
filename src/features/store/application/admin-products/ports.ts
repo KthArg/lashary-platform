@@ -14,7 +14,6 @@ export type AdminProductListQuery = {
 }
 
 export type ProductWrite = {
-  slug: string
   name: string
   description: string
   imageUrl: string
@@ -31,6 +30,8 @@ export interface AdminProductRepository {
   }): Promise<{ items: AdminProduct[]; total: number }>
 
   findById(id: string): Promise<AdminProduct | null>
+
+  listSlugsStartingWith(prefix: string): Promise<string[]>
 
   save(product: AdminProduct): Promise<void>
 }
