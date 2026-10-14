@@ -17,7 +17,7 @@
 | landing | pendiente | terminada | 6 / 0 / 0 / 0 / 0 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
-| payments | pendiente | en_progreso | 0 / 1 / 0 / 0 / 0 |
+| payments | pendiente | terminada | 1 / 0 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | scheduling | pendiente | en_progreso | 0 / 1 / 0 / 0 / 10 |
 | store | pendiente | en_progreso | 2 / 0 / 0 / 0 / 2 |
@@ -79,8 +79,8 @@
 - US-NOT-08 — no_iniciada
 - US-CLI-06 — no_iniciada
 
-### payments (actualizado: 2026-10-05)
-- US-AGE-13 — en_progreso — falta: integrar el anticipo por paquete implementado y probado en #178–#181, con #173–#175 ya integrados en main; completar aprobaciones pendientes y integrar la protección del historial de exoneraciones de #118 implementada y probada en la pieza 21 (ADR-0009); traslado de criterios 2 y 3 a US-AGE-05 y 4 a US-AGE-12 aprobado por el PO
+### payments (actualizado: 2026-10-14)
+- US-AGE-13 — terminada — PR #240 (us/US-AGE-13 a main, 2026-10-13, aprobado); piezas #219 a #239 y #241 hacia us/US-AGE-13. Criterio 1, anticipo por tecnica: columna deposit de catalog_techniques (US-AGE-08), formulario y tabla del panel; pruebas catalog/domain/techniques/__tests__/technique.test.ts, ui/techniques/__tests__/technique-schema.test.ts y catalog_staff_write.test.sql. Criterio 1, anticipo por paquete: migraciones 20261004000001 y 20261004000002, RPC de guardado, dominio, formulario y listado; pruebas application/packages/__tests__/package-deposit.test.ts, ui/packages/__tests__/package-deposit-form.test.tsx, db/packages/__tests__/package-deposit-repository.test.ts y catalog_package_deposit.test.sql. Criterio 5, exoneracion con bitacora: exemptClient registra payments.deposit_exemption.granted en audit_events; pruebas payments/application/__tests__/exempt-client.test.ts, rls-isolation.test.ts, payments_staff_access.test.sql y payments_exemption_history.test.sql (la FK a clients_profiles es RESTRICT, ADR-0009). Verificado en el CI de main del 2026-10-14: las 6 suites pgTAP (87 aserciones) y las 113 de vitest en verde. Los criterios originales 2 y 3 son de US-AGE-05 y el 4 de US-AGE-12 (PO, 2026-10-03). #240 se fusiono con el check reglas en rojo por INT-008 (5 migraciones en un PR) y sin la etiqueta excepcion-proceso. Confirmada terminada por el PO el 2026-10-14
 
 ### platform (actualizado: 2026-09-16)
 

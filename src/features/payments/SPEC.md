@@ -1,12 +1,12 @@
 ---
 feature: payments
 dri: pendiente
-estado: en_progreso
-actualizado: 2026-10-05
+estado: terminada
+actualizado: 2026-10-14
 historias:
   - id: US-AGE-13
-    estado: en_progreso
-    falta: "integrar el anticipo por paquete implementado y probado en #178–#181, con #173–#175 ya integrados en main; completar aprobaciones pendientes y integrar la protección del historial de exoneraciones de #118 implementada y probada en la pieza 21 (ADR-0009); traslado de criterios 2 y 3 a US-AGE-05 y 4 a US-AGE-12 aprobado por el PO"
+    estado: terminada
+    evidencia: "PR #240 (us/US-AGE-13 a main, 2026-10-13, aprobado); piezas #219 a #239 y #241 hacia us/US-AGE-13. Criterio 1, anticipo por tecnica: columna deposit de catalog_techniques (US-AGE-08), formulario y tabla del panel; pruebas catalog/domain/techniques/__tests__/technique.test.ts, ui/techniques/__tests__/technique-schema.test.ts y catalog_staff_write.test.sql. Criterio 1, anticipo por paquete: migraciones 20261004000001 y 20261004000002, RPC de guardado, dominio, formulario y listado; pruebas application/packages/__tests__/package-deposit.test.ts, ui/packages/__tests__/package-deposit-form.test.tsx, db/packages/__tests__/package-deposit-repository.test.ts y catalog_package_deposit.test.sql. Criterio 5, exoneracion con bitacora: exemptClient registra payments.deposit_exemption.granted en audit_events; pruebas payments/application/__tests__/exempt-client.test.ts, rls-isolation.test.ts, payments_staff_access.test.sql y payments_exemption_history.test.sql (la FK a clients_profiles es RESTRICT, ADR-0009). Verificado en el CI de main del 2026-10-14: las 6 suites pgTAP (87 aserciones) y las 113 de vitest en verde. Los criterios originales 2 y 3 son de US-AGE-05 y el 4 de US-AGE-12 (PO, 2026-10-03). #240 se fusiono con el check reglas en rojo por INT-008 (5 migraciones en un PR) y sin la etiqueta excepcion-proceso. Confirmada terminada por el PO el 2026-10-14"
 flags: []
 deuda: []
 defectos: []
@@ -44,7 +44,7 @@ Con esto el **criterio 5 de US-AGE-13 queda completo**: la administradora puede 
 
 El contrato de conservación de exoneraciones al archivar clientas está documentado en `docs/adr/ADR-0009-client-archival-and-exemptions.md`, aceptado por el equipo, según el acuerdo comunicado por Bayron el 2026-10-05. Mantiene la FK específica a `clients_profiles` y requiere una migración nueva de `ON DELETE CASCADE` a `RESTRICT`. La migración `20261005000000_payments_exemption_history.sql` implementa esa protección. `payments_exemption_history.test.sql` demuestra en PostgreSQL local el bloqueo del borrado directo e indirecto, la conservación de perfiles y exoneraciones activas e históricas y la integridad de la FK. Su integración y aplicación en producción siguen pendientes. El archivado y la revisión de exoneraciones al reactivar clientas aún no están implementados.
 
-US-AGE-13 conserva los criterios originales 1 (anticipo por técnica y paquete) y 5 (exoneración con bitácora). Falta definir y demostrar el anticipo por paquete del criterio 1, dependiente de US-PROD-01; la historia sigue `en_progreso`.
+US-AGE-13 conserva los criterios originales 1 (anticipo por técnica y paquete) y 5 (exoneración con bitácora). Los dos están en `main` desde #240 (2026-10-13) y la historia está `terminada` desde el 2026-10-14: la evidencia criterio por criterio está en el front-matter.
 
 El PO aprobó trasladar los criterios originales 2 y 3 a US-AGE-05 (mostrar el anticipo y la advertencia antes de confirmar, y guardar los montos en la cita) y el 4 a US-AGE-12 (descontar el anticipo al cerrar). Bayron comunicó la aprobación el 2026-10-03; el registro está en `docs/process/DEPENDENCIES.md`. Son requisitos obligatorios de las historias de destino, pendientes de implementación y pruebas allí.
 
@@ -62,10 +62,10 @@ El criterio original 1 está implementado en la pila #178–#181, basada en los 
 
 Verificación: 72 pruebas unitarias y de interfaz, 17 aserciones pgTAP en una base temporal aislada y tipado de src correcto. Incluye valores inválidos, límite entero seguro, RLS y rollback completo. Las tres pruebas HTTP existentes no pudieron pasar en el Supabase de desarrollo porque todavía no contiene las tablas de paquetes. La revisión independiente no dejó hallazgos pendientes; las aprobaciones de GitHub son un paso separado.
 
-Esta pieza documental continúa después de #181 y hereda el código de la pila unificada; su diff solo añade evidencia. US-AGE-13 permanece en progreso hasta integrar las piezas, obtener las aprobaciones necesarias y resolver el hallazgo de conservación de exoneraciones. Detalle y orden en `docs/process/US-AGE-13-EVIDENCE.md`.
+Esta pieza documental continúa después de #181 y hereda el código de la pila unificada; su diff solo añade evidencia. Las piezas se integraron con #240 el 2026-10-13, y la conservación de exoneraciones quedó resuelta con la pieza 21 (abajo). Detalle y orden en `docs/process/US-AGE-13-EVIDENCE.md`.
 
 La pila se actualizó con main después del squash de #175: 20 piezas en una sola cadena, conservando el historial mediante merge commits, sin push forzado. Pasaron 117 pruebas unitarias/UI combinadas, 58 aserciones SQL (21 de invariantes, 17 de anticipo, 10 de audit y 10 de payments) y el tipado de src.
 
 ## Protección del historial de exoneraciones (pieza 21/21)
 
-Una migración nueva cambia únicamente la acción de borrado de la FK de clientas a RESTRICT, dentro de una transacción. Conserva las filas existentes, índices y políticas RLS. No cambia la API ni implementa archivado. Las 16 aserciones de payments_exemption_history.test.sql pasan en una base PostgreSQL local temporal; las pruebas detectaron la pérdida de historial con CASCADE antes del cambio. US-AGE-13 permanece en progreso hasta completar integración, CI y aprobaciones.
+Una migración nueva cambia únicamente la acción de borrado de la FK de clientas a RESTRICT, dentro de una transacción. Conserva las filas existentes, índices y políticas RLS. No cambia la API ni implementa archivado. Las 16 aserciones de payments_exemption_history.test.sql pasan en una base PostgreSQL local temporal; las pruebas detectaron la pérdida de historial con CASCADE antes del cambio. Integrada con #240; `payments_exemption_history.test.sql` pasa en el CI de `main`.

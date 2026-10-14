@@ -112,4 +112,4 @@ Contrato ampliado en `docs/contracts/catalog-api.md`: `PackageListItem.deposit`,
 
 La validación del anticipo rechaza decimales antes de convertirlos y montos fuera del rango entero seguro; una restricción SQL mantiene esa precisión y las pruebas cubren el rollback posterior al guardado del paquete.
 
-La dueña de US-AGE-13 sigue siendo `payments`; este incremento de `catalog` aporta el anticipo por paquete. El estado en progreso y el registro del PO se conservan desde #176 en esta pila unificada. La integración de las dependencias no declara terminada US-AGE-13.
+La dueña de US-AGE-13 sigue siendo `payments`; este incremento de `catalog` aporta el anticipo por paquete. El registro del PO se conserva desde #176. US-AGE-13 entró a `main` con #240 y está `terminada` (evidencia en `src/features/payments/SPEC.md`).
