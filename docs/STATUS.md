@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-13.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-14.
 
 ## Features
 
@@ -84,7 +84,7 @@
 
 ### platform (actualizado: 2026-09-16)
 
-### scheduling (actualizado: 2026-10-13)
+### scheduling (actualizado: 2026-10-14)
 - US-AGE-01 — en_progreso — falta: Criterio 5 ('reducir disponibilidad no elimina citas ya agendadas: advierte y pide confirmación') diferido: depende de scheduling_appointments, que no existe hasta US-AGE-05. Criterio 4 ('los cambios se reflejan inmediatamente en el calendario público') parcial: los datos ya son de lectura pública vía RLS, pero el calendario público en sí es US-AGE-02, no iniciada — nada renderiza ese reflejo todavía. Criterios 1 a 3 implementados y verificados (ver 'Qué hace hoy').
 - US-AGE-02 — no_iniciada
 - US-AGE-03 — no_iniciada
@@ -117,7 +117,7 @@ Ninguno registrado.
 - scheduling: Ningún bloque semanal de disponibilidad valida que no se superponga con otro del mismo día — ni en el constructor de WeeklyAvailabilityBlock, ni en defineWeeklyAvailability, ni en la migración (sin EXCLUDE). Es posible definir lunes 09:00-13:00 y lunes 12:00-18:00 a la vez. — aceptada en US-AGE-01, pieza 1/3 (disponibilidad semanal) — costo: 1h
 - scheduling: ClosedDate valida el formato YYYY-MM-DD por regex, no el calendario real: acepta fechas inexistentes como 2026-02-30 o 2026-13-01. — aceptada en US-AGE-01, pieza 2/3 (días no laborables) — costo: 30m
 - scheduling: Las entradas del panel no se pueden editar ni eliminar: los criterios del backlog solo piden 'definir'. Un bloque, feriado o bloqueo cargado por error no se corrige desde el panel. — aceptada en US-AGE-01, panel administrativo — costo: 3h
-- scheduling: La verificación del panel en navegador (guardar, listar, error de dominio, feriado repetido, hora de Costa Rica) se corrió a mano con Playwright contra Supabase local; no hay prueba e2e ni de componentes commiteada para los Server Actions y formularios. — aceptada en US-AGE-01, panel administrativo — costo: 3h
+- scheduling: La verificación del panel en navegador (guardar, listar, error de dominio, feriado repetido, hora de Costa Rica) se corrió a mano con Playwright contra Supabase local; no hay prueba e2e ni de componentes commiteada para los formularios y tablas (las Server Actions sí tienen prueba unitaria, actions.test.ts). — aceptada en US-AGE-01, panel administrativo — costo: 2h
 
 ## Flags vivos
 
