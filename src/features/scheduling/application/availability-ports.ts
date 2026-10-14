@@ -1,7 +1,12 @@
 import type { Result } from '@/shared/result'
 import type { WeeklyBlock } from '../domain/weekly-availability'
 import type { ClosedDate } from '../domain/closed-dates'
-import type { ClosedDateAlreadyExists, WeeklyBlockOverlap } from '../domain/availability-errors'
+import type { ManualBlock } from '../domain/manual-blocks'
+import type {
+  ClosedDateAlreadyExists,
+  ManualBlockOverlap,
+  WeeklyBlockOverlap,
+} from '../domain/availability-errors'
 
 // Recurso por defecto mientras exista uno solo (ADR-0005). Sembrado por la migración
 // 20261014000000_scheduling_weekly_availability.sql; la UI no muestra selector de recurso.
@@ -25,4 +30,13 @@ export interface ClosedDateRepository {
   listFrom(resourceId: string, fromDate: string, limit: number): Promise<ClosedDate[]>
   insert(closedDate: ClosedDate): Promise<Result<void, ClosedDateAlreadyExists>>
   remove(id: string): Promise<boolean>
+}
+
+// Tope de bloqueos próximos que lista el panel (PERF-002).
+export const MAX_MANUAL_BLOCKS = 100
+
+export interface ManualBlockRepository {
+  // Bloqueos que terminan después de `after`, por inicio ascendente.
+  listEndingAfter(resourceId: string, after: Date, limit: number): Promise<ManualBlock[]>
+  insert(block: ManualBlock): Promise<Result<void, ManualBlockOverlap>>
 }
