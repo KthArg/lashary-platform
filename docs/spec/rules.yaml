@@ -332,6 +332,15 @@ rules:
     ci_status: no_aplica
     doc: docs/spec/STATE.md
     anchor: "#est-006"
+  - id: EST-007
+    title: El PR de la historia trae su estado final
+    statement: "El PR us/<ID> → main deja a <ID> en terminada, con su evidencia, en el SPEC.md dueño. Si entra con un criterio diferido queda en_progreso con su falta, y el PR lleva la etiqueta excepcion-proceso con la justificación."
+    rationale: Un spec que sigue en en_progreso después de que la historia entró a main bloquea en falso a las historias que dependen de ella, y nadie lo nota hasta que alguien pregunta por qué no se pueden empezar.
+    severity: alta
+    layers: [ci]
+    ci_status: implementado
+    doc: docs/spec/STATE.md
+    anchor: "#est-007"
 
   # ── Seguridad ─────────────────────────────────────────────────
   - id: SEC-001
