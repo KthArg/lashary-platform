@@ -69,6 +69,8 @@ Mismos tres secretos. Corre en cada push a una rama que **lleve el ID de histori
 
 Solo avanza: un `fix/us-auth-01-…` sobre una historia en *Done* la deja en *Done* (`va adelante en Jira … no se retrocede`). Los PRs de pieza hacia `us/<ID>` no mueven nada. Una rama **sin** `us-xxx-nn` en el nombre (`fix/ci-…`, `refactor/…`, o `feat/prod-02-…` sin el `us-`) es invisible para Jira: el run termina en verde con un aviso y la tarjeta no se toca. Por eso el ID en el nombre de la rama no es cosmético — es lo que evita que dos personas tomen la misma historia sin verlo en el tablero.
 
+Dos pushes seguidos a la misma rama cancelan la corrida anterior: solo importa el último. Un push y el PR que se marca listo, en cambio, corren cada uno por su lado (el evento es parte del grupo de concurrencia), así que el PR no muestra un `sync` cancelado por el push que lo precedió.
+
 Probar a mano una historia sin esperar un push: `bash scripts/sync-jira.sh --issue US-BLOG-01 --to "In Progress"` (con `JIRA_DRY_RUN=1` para solo mirar).
 
 ## Supabase Migrations

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { err, ok } from '@/shared/result'
 import { CmsUnavailable } from '../../domain/errors'
 import type { CmsReader } from '../../application/ports'
-import { blogCacheTag, loadBlogPage } from '../blog-source'
+import { blogCacheTag, loadBlogArticle, loadBlogPage } from '../blog-source'
 import { LANDING_CACHE_SECONDS } from '../landing-source'
 
 // unstable_cache real necesita el runtime de Next; aquí se sustituye por uno que ejecuta.
@@ -112,5 +112,54 @@ describe('loadBlogPage — el listado sale del CMS, y su falla no tumba la pági
     )
     expect(listing.total).toBe(1)
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('repetido'))
+  })
+})
+
+describe('loadBlogArticle — US-BLOG-03: una publicación por su slug', () => {
+  const conCuerpo = {
+    ...publicacion('Cuidados básicos', '2026-10-13'),
+    cuerpo: { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Texto completo.' }] }] },
+    seoTitulo: 'Cuidados | LASHARY',
+  }
+
+  it('criterios 1 y 2: la encuentra con su cuerpo y sus metadatos', async () => {
+    const lookup = await loadBlogArticle('cuidados-basicos', withCms([...doce, conCuerpo]))
+
+    expect(lookup.status).toBe('found')
+    expect(lookup.article).toMatchObject({
+      slug: 'cuidados-basicos',
+      title: 'Cuidados básicos',
+      seoTitle: 'Cuidados | LASHARY',
+      seoDescription: 'Extracto de Cuidados básicos',
+    })
+    expect(lookup.article?.body[0].inlines[0].text).toBe('Texto completo.')
+  })
+
+  it('un slug que el CMS no tiene es not-found, no un error', async () => {
+    expect(await loadBlogArticle('no-existe', withCms(doce))).toEqual({ status: 'not-found', article: null })
+  })
+
+  it('con el CMS caído es unavailable: no se puede afirmar que la publicación no existe', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(await loadBlogArticle('cuidados-basicos', withCms('falla'))).toEqual({
+      status: 'unavailable',
+      article: null,
+    })
+  })
+
+  it('sin CMS_URL es unavailable y no llama al CMS', async () => {
+    const createReader = vi.fn()
+    const lookup = await loadBlogArticle('x', { env: {}, cache: passthroughCache, createReader })
+    expect(lookup.status).toBe('unavailable')
+    expect(createReader).not.toHaveBeenCalled()
+  })
+
+  it('usa la misma entrada de caché que el listado', async () => {
+    const cache = vi.fn((fn: () => Promise<unknown>) => fn)
+    await loadBlogArticle('x', { ...withCms(doce), cache: cache as never })
+    expect(cache).toHaveBeenCalledWith(expect.any(Function), ['content', 'posts', 'https://cms.test'], {
+      revalidate: LANDING_CACHE_SECONDS,
+      tags: [blogCacheTag],
+    })
   })
 })

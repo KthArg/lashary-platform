@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { BLOG_PAGE_SIZE, calendarDate, newestFirst, pageOf, slugify, type BlogPost } from '../blog'
+import {
+  BLOG_PAGE_SIZE,
+  articleBySlug,
+  calendarDate,
+  newestFirst,
+  pageOf,
+  slugify,
+  type BlogPost,
+} from '../blog'
 
 const post = (slug: string, publishedOn: string | null): BlogPost => ({
   slug,
@@ -75,6 +83,20 @@ describe('newestFirst — criterio 1: fecha de publicación descendente', () => 
       post('nueva', '2026-01-01'),
     ])
     expect(slugs(ordered)).toEqual(['nueva', 'vieja', 'sin-fecha-a', 'sin-fecha-b'])
+  })
+})
+
+describe('articleBySlug — US-BLOG-03: una publicación por su dirección', () => {
+  const posts = [post('cuidados', '2026-01-01'), post('retoques', '2026-02-01')]
+
+  it('devuelve la publicación de ese slug', () => {
+    expect(articleBySlug(posts, 'retoques')?.slug).toBe('retoques')
+  })
+
+  it('un slug que no existe, o escrito de otra forma, no encuentra nada', () => {
+    expect(articleBySlug(posts, 'no-existe')).toBeNull()
+    expect(articleBySlug(posts, 'Cuidados')).toBeNull()
+    expect(articleBySlug(posts, '')).toBeNull()
   })
 })
 
