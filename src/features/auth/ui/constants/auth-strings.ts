@@ -14,7 +14,7 @@ export const AUTH_LABELS = {
   adminAccessTitle: 'Acceso de Gestión', adminAccessSubtitle: 'Ingresa tus credenciales autorizadas',
   adminRestrictedNotice: 'Acceso restringido a personal autorizado.',
   adminActiveSession: 'Sesión Administrativa Activa', adminRoleBadge: 'Rol:',
-  dashboardNav: 'Dashboard', citasNav: 'Citas', clientsNav: 'Clientas', catalogNav: 'Catálogo',
+  dashboardNav: 'Dashboard', citasNav: 'Citas', clientsNav: 'Clientas', catalogNav: 'Catálogo', paymentsNav: 'Pagos',
   collapseSidebar: 'Colapsar barra', expandSidebar: 'Expandir barra',
   adminNavAriaLabel: 'Panel de navegación administrativa',
   clientCitasNav: 'Mis Citas', clientCartNav: 'Carrito',
@@ -41,6 +41,7 @@ export const ADMIN_PORTAL_ROUTES = {
   citas: '/admin/citas',
   clients: '/admin/clients',
   catalog: '/admin/catalog',
+  payments: '/admin/payments',
 } as const
 
 export const AUTH_ERROR_MESSAGES = {

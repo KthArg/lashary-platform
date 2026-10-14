@@ -3,6 +3,7 @@ import { createInvalidProduct, type InvalidProduct } from './product-errors'
 
 export type PublicProduct = {
   id: string;
+  slug: string;
   name: string;
   imageUrl: string;
   priceCrc: number;
@@ -11,6 +12,7 @@ export type PublicProduct = {
 
 export type PublicProductCard = {
   id: string;
+  slug: string;
   name: string;
   imageUrl: string;
   priceLabel: string;
@@ -32,6 +34,7 @@ export type ProductGridStrings = {
   catalogAriaLabel: string;
   productAltPrefix: string;
   retryButtonAriaLabel: string;
+  viewMoreLabel: string;
 };
 
 export function formatPriceCrc(priceCrc: number): string {
@@ -55,6 +58,7 @@ export function sanitizeUrl(url: string): string {
 export function toProductCard(product: PublicProduct): PublicProductCard {
   return {
     id: product.id,
+    slug: product.slug,
     name: product.name,
     imageUrl: sanitizeUrl(product.imageUrl),
     priceLabel: formatPriceCrc(product.priceCrc),
@@ -131,4 +135,8 @@ export function buildProduct(input: ProductInput): Result<AdminProduct, InvalidP
 
 export function markProductInactive(product: AdminProduct): AdminProduct {
   return { ...product, isActive: false }
+}
+
+export function markProductActive(product: AdminProduct): AdminProduct {
+  return { ...product, isActive: true }
 }

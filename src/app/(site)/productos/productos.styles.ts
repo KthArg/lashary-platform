@@ -1,4 +1,4 @@
 export const productsPageStyles = {
-  main: 'min-h-screen bg-brand-cream px-4 py-12',
+  main: 'px-site-gutter pb-site-section pt-site-hero-top',
   container: 'mx-auto w-full max-w-6xl',
 }

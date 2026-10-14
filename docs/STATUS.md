@@ -20,7 +20,7 @@
 | payments | pendiente | en_progreso | 0 / 1 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | scheduling | pendiente | en_progreso | 0 / 1 / 0 / 0 / 10 |
-| store | pendiente | en_progreso | 1 / 1 / 0 / 0 / 2 |
+| store | pendiente | en_progreso | 2 / 0 / 0 / 0 / 2 |
 
 ## Detalle por feature
 
@@ -28,7 +28,7 @@
 
 ### audit (actualizado: 2026-09-30)
 
-### auth (actualizado: 2026-10-06)
+### auth (actualizado: 2026-10-13)
 - US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
 - US-AUTH-02 — terminada — PR #3, PR #18, tests: auth-client.test.tsx, rls-isolation.test.ts
 
@@ -97,9 +97,9 @@
 - US-AGE-11 — no_iniciada
 - US-AGE-12 — no_iniciada
 
-### store (actualizado: 2026-10-08)
+### store (actualizado: 2026-10-13)
 - US-PROD-02 — terminada — PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), product.test.ts, commands.test.ts, queries.test.ts, product-schema.test.ts, product-actions.test.ts, layout.test.tsx, products-admin-rls.test.ts (omitida sin Supabase local, ver deuda)
-- US-PROD-03 — en_progreso — falta: la columna store_products.existencias existe y la administradora la edita en /admin/catalog/products; faltan la lectura del detalle por slug, la ruta /productos/[slug] con imagen, nombre, descripcion, precio y boton de agregar al carrito deshabilitado sin existencias, y el enlace desde el grid
+- US-PROD-03 — terminada — PR #271 (pieza 8/8, cierra la historia) y las piezas #198, #200, #265, #266, #267, #269 y #270; tests: product-detail-page.test.tsx (criterios 1, 2 y 3: imagen, nombre, descripcion, precio, boton de agregar al carrito y aviso Agotado con la compra deshabilitada), store.test.tsx (enlace desde el grid), product-detail.test.ts, get-public-product-detail.test.ts, public-product-detail-db.test.ts, product-image.test.ts, product-images.test.ts, product-actions.test.ts, product-images-storage-rls.test.ts (omitida sin Supabase local, ver deuda)
 - US-SHOP-01 — no_iniciada
 - US-SHOP-02 — no_iniciada
 
@@ -116,6 +116,7 @@ Ninguno registrado.
 - clients: Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras — aceptada en PR #32, etiqueta excepcion-proceso — costo: 3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)
 - store: Prueba de aislamiento RLS (SEC-002) de las politicas store_products_*_admin (supabase/migrations/20260912000000_store_products.sql): src/features/store/__tests__/products-admin-rls.test.ts se omite con describe.skipIf cuando no hay Supabase local, y CI no lo levanta, asi que no demuestra que anon y una clienta sin rol de staff no puedan INSERT, UPDATE ni DELETE — aceptada en PR de cierre us/US-PROD-02 a main — costo: 1h si ya existe el arnes de Supabase local en CI de la deuda de auth (PR #3); 3h si no: arnes mas correr la suite existente en CI
 - store: Prueba de aislamiento (SEC-002) del bucket store-product-images: src/features/store/__tests__/product-images-storage-rls.test.ts se omite sin Supabase local y CI no lo levanta, asi que no demuestra que anon y una clienta no puedan subir, listar ni borrar — aceptada en PR de la pieza US-PROD-03 1/8 — costo: el mismo arnes de la deuda anterior; con el arnes, 0h extra
+- store: Las server actions de Next aceptan 1 MB por defecto y next.config.js no lo cambia: una imagen de entre ~1 MB y 2 MB pasa validateProductImage pero Next corta la peticion antes con un error generico; el formulario dice 'hasta 1 MB' — aceptada en PR de la pieza US-PROD-03 8/8 — costo: 1 linea en next.config.js (experimental.serverActions.bodySizeLimit '3mb') y cambiar el texto del campo; decision pendiente de investigar
 
 ## Flags vivos
 
