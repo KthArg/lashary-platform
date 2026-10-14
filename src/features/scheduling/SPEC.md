@@ -5,8 +5,8 @@ estado: en_progreso
 actualizado: "2026-10-14"
 historias:
   - id: US-AGE-01
-    estado: en_progreso
-    falta: "piezas 1 a 11 hechas (criterio 1 sin UI: migración 20261014000000, domain/weekly-availability.ts, application/weekly-availability.ts, db/weekly-availability-repository.ts; criterio 2 sin UI: migración 20261014000000, domain/closed-dates.ts, shared/studio-time.ts, application/closed-dates.ts, db/closed-date-repository.ts; criterio 3 sin UI: migración 20261014000000, domain/manual-blocks.ts, application/manual-blocks.ts, db/manual-block-repository.ts; pruebas pgTAP scheduling_*.test.sql y __tests__/rls-isolation.test.ts). Acciones del panel con validación en el borde: ui/availability/availability-actions.ts, availability-schema.ts y availability-service.ts. Panel en /admin/citas: ui/availability/AdminAvailabilityPage.tsx, AdminAvailabilityView.tsx y AvailabilityForms.tsx, con estados vacío, carga y error. Criterios 4 y 5 con traslado propuesto al PO (US-AGE-02 y US-AGE-05), pendiente de aprobación"
+    estado: terminada
+    evidencia: "PR de cierre us/US-AGE-01 a main, con las piezas 1 a 12 apiladas hacia la rama de la historia. Criterios 1, 2 y 3 demostrados en /admin/citas; los criterios 4 y 5 se trasladaron a US-AGE-02 y US-AGE-05 con aprobación del PO el 2026-10-14 (docs/process/DEPENDENCIES.md); tests: weekly-availability.test.ts (domain y application), closed-dates.test.ts (domain y application), manual-blocks.test.ts (domain y application), los tres *-repository.test.ts, studio-time.test.ts, availability-schema.test.ts, availability-actions.test.ts, availability-format.test.ts, AdminAvailabilityView.test.tsx, __tests__/rls-isolation.test.ts (SEC-002) y pgTAP scheduling_weekly_availability.test.sql y scheduling_closed_dates_and_manual_blocks.test.sql"
   - id: US-AGE-02
     estado: no_iniciada
   - id: US-AGE-03
@@ -50,6 +50,33 @@ Agenda completa. US-AGE-09 cubre el flujo de aprobacion manual (su texto origina
 
 Dónde se detiene: criterio 2 no se puede demostrar completo hasta que `US-AGE-05` aporte el historial real de citas — no se marca `terminada` hasta cerrarlo.
 
+### US-AGE-01 — disponibilidad
+
+Criterios 1 a 3 en `/admin/citas`, solo para staff. Todo sobre el recurso por defecto `DEFAULT_RESOURCE_ID` (`application/availability-ports.ts`), sembrado por la migración; la UI no muestra selector (ADR-0005).
+
+- Base: `scheduling_resources`, `scheduling_weekly_availability`, `scheduling_closed_dates` y `scheduling_manual_blocks`, en una sola migración (`20261014000000_scheduling_availability.sql`). RLS solo staff en lectura y escritura (SEC-001). No-solape garantizado por exclusion constraint en bloques semanales y bloqueos; un cierre por día por UNIQUE. Pruebas: pgTAP `scheduling_weekly_availability.test.sql` y `scheduling_closed_dates_and_manual_blocks.test.sql` (control positivo de staff), `__tests__/rls-isolation.test.ts` (SEC-002).
+- Criterio 1, bloques semanales: horas de pared del estudio en minutos desde la medianoche, día ISO 1–7 (`domain/weekly-availability.ts`). `application/weekly-availability.ts` rechaza el solape nombrando el bloque en conflicto antes de escribir.
+- Criterio 2, días cerrados: fecha de calendario del estudio, no laborable o feriado, con nombre opcional (`domain/closed-dates.ts`, `application/closed-dates.ts`). El panel lista desde hoy.
+- Criterio 3, bloqueos manuales: instantes en UTC (DOM-003), motivo opcional que solo ve staff (`domain/manual-blocks.ts`, `application/manual-blocks.ts`). Desbloquear, elegir varios espacios y el conflicto con citas quedan para US-AGE-07.
+- `shared/studio-time.ts` convierte entre la hora de pared de `America/Costa_Rica` y UTC sin leer el reloj (DOM-004).
+- UI: `ui/availability/`. Validación de formato una vez en el borde con zod (`availability-schema.ts`, DOM-007); acciones del servidor en `availability-actions.ts`, que revisan el rol para dar un mensaje amable; composición en `availability-service.ts`; fechas formateadas en el servidor en la zona del estudio (`availability-format.ts`). `loading.tsx` y `error.tsx` de la ruta cubren carga y error; cada lista tiene su vacío (UI-003).
+
+Alcance: los criterios 4 y 5 se trasladaron con aprobación del PO el 2026-10-14 (ver la sección siguiente y `docs/process/DEPENDENCIES.md`, Criterios trasladados). US-AGE-01 queda `terminada` con los criterios 1 a 3.
+
+## Criterios recibidos de US-AGE-01
+
+Traslado aprobado por el PO el 2026-10-14 y registrado en `docs/process/DEPENDENCIES.md`. Ambas historias de destino siguen `no_iniciada`.
+
+### US-AGE-02 — calendario de la clienta
+
+- Criterio 4 de US-AGE-01: los cambios de disponibilidad se reflejan inmediatamente en el calendario. La lectura no se cachea y nunca expone el motivo de un bloqueo: hoy las cuatro tablas de disponibilidad son solo de staff (SEC-001), así que US-AGE-02 agrega su vía de lectura.
+- Evidencia pendiente: prueba de que un cambio en `/admin/citas` se ve en la siguiente lectura del calendario, y de que el motivo de un bloqueo no llega a la clienta.
+
+### US-AGE-05 — reservar
+
+- Criterio 5 de US-AGE-01: reducir la disponibilidad no elimina citas ya agendadas. Al quitar un bloque semanal, cerrar un día o bloquear un espacio que afecte citas existentes, el panel advierte y pide confirmación.
+- Evidencia pendiente: pruebas de las tres acciones de `ui/availability/availability-actions.ts` con una cita afectada, que verifican la advertencia y que la cita sigue existiendo.
+
 ## Criterios recibidos de US-AGE-13
 
 Traslado aprobado por el PO, comunicado por Bayron el 2026-10-03 y registrado en `docs/process/DEPENDENCIES.md`. Estos requisitos se añaden al alcance de las historias de destino; ambas conservan su estado `no_iniciada` en esta rama.
@@ -68,5 +95,6 @@ Traslado aprobado por el PO, comunicado por Bayron el 2026-10-03 y registrado en
 ## Contrato público (`index.ts`, ARCH-003)
 
 - `ClientTechniqueSelectionPage` — compone la ruta `/portal/citas`. Consumidor: `src/app/portal/citas/page.tsx`.
+- `AdminAvailabilityPage` — compone la ruta `/admin/citas`. Consumidor: `src/app/admin/citas/page.tsx`.
 - `schedulingMessages` — también en `client.ts` para `loading.tsx`/`error.tsx`.
 - Dominio y aplicación (`selectTechnique`, puertos) son superficie interna: ninguna otra feature los consume todavía.

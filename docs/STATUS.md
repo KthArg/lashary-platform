@@ -19,7 +19,7 @@
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
 | payments | pendiente | terminada | 1 / 0 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
-| scheduling | pendiente | en_progreso | 0 / 2 / 0 / 0 / 9 |
+| scheduling | pendiente | en_progreso | 1 / 1 / 0 / 0 / 9 |
 | store | pendiente | en_progreso | 2 / 0 / 0 / 0 / 2 |
 
 ## Detalle por feature
@@ -85,7 +85,7 @@
 ### platform (actualizado: 2026-09-16)
 
 ### scheduling (actualizado: 2026-10-14)
-- US-AGE-01 — en_progreso — falta: piezas 1 a 11 hechas (criterio 1 sin UI: migración 20261014000000, domain/weekly-availability.ts, application/weekly-availability.ts, db/weekly-availability-repository.ts; criterio 2 sin UI: migración 20261014000000, domain/closed-dates.ts, shared/studio-time.ts, application/closed-dates.ts, db/closed-date-repository.ts; criterio 3 sin UI: migración 20261014000000, domain/manual-blocks.ts, application/manual-blocks.ts, db/manual-block-repository.ts; pruebas pgTAP scheduling_*.test.sql y __tests__/rls-isolation.test.ts). Acciones del panel con validación en el borde: ui/availability/availability-actions.ts, availability-schema.ts y availability-service.ts. Panel en /admin/citas: ui/availability/AdminAvailabilityPage.tsx, AdminAvailabilityView.tsx y AvailabilityForms.tsx, con estados vacío, carga y error. Criterios 4 y 5 con traslado propuesto al PO (US-AGE-02 y US-AGE-05), pendiente de aprobación
+- US-AGE-01 — terminada — PR de cierre us/US-AGE-01 a main, con las piezas 1 a 12 apiladas hacia la rama de la historia. Criterios 1, 2 y 3 demostrados en /admin/citas; los criterios 4 y 5 se trasladaron a US-AGE-02 y US-AGE-05 con aprobación del PO el 2026-10-14 (docs/process/DEPENDENCIES.md); tests: weekly-availability.test.ts (domain y application), closed-dates.test.ts (domain y application), manual-blocks.test.ts (domain y application), los tres *-repository.test.ts, studio-time.test.ts, availability-schema.test.ts, availability-actions.test.ts, availability-format.test.ts, AdminAvailabilityView.test.tsx, __tests__/rls-isolation.test.ts (SEC-002) y pgTAP scheduling_weekly_availability.test.sql y scheduling_closed_dates_and_manual_blocks.test.sql
 - US-AGE-02 — no_iniciada
 - US-AGE-03 — en_progreso — falta: criterio 2 (detectar primera vez/re-aplicación por historial de citas) diferido: no existe scheduling_appointments todavía (la trae US-AGE-05, que depende de esta historia). Punto de extensión: application/no-appointment-history.ts (ClientHistoryPort), hoy siempre reporta sin historial; la corrección manual ya está resuelta en el use-case (isFirstTimeOverride). Ver docs/process/DEPENDENCIES.md, Criterios diferidos.
 - US-AGE-04 — no_iniciada
