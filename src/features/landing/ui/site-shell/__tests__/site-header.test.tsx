@@ -137,3 +137,31 @@ describe('SiteHeader — fuera de la portada (US-BLOG-02)', () => {
     expect(within(nav).getByRole('link', { name: 'Servicios' }).getAttribute('href')).toBe('#servicios')
   })
 })
+
+describe('SiteHeader — enlace a la página de productos', () => {
+  const productsHref = '/productos'
+
+  it('con la ruta de productos, la cabecera enlaza a ella', () => {
+    render(<SiteHeader sections={sections} productsHref={productsHref} />)
+
+    const products = screen.getByRole('link', { name: landingMessages.header.products })
+    expect(products.getAttribute('href')).toBe(productsHref)
+  })
+
+  it('sin la ruta de productos, la cabecera no muestra el enlace', () => {
+    render(<SiteHeader sections={sections} />)
+
+    expect(screen.queryByRole('link', { name: landingMessages.header.products })).toBeNull()
+  })
+
+  it('el menú del teléfono ofrece los productos y se cierra al elegirlos', () => {
+    render(<SiteHeader sections={sections} productsHref={productsHref} />)
+    fireEvent.click(screen.getByRole('button', { name: landingMessages.header.openMenu }))
+
+    const dialog = screen.getByRole('dialog', { name: landingMessages.menu.dialogLabel })
+    const products = within(dialog).getByRole('link', { name: landingMessages.menu.products })
+    expect(products.getAttribute('href')).toBe(productsHref)
+    fireEvent.click(products)
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+})

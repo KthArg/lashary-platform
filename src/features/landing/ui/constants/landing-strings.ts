@@ -12,6 +12,7 @@ export const landingMessages = {
     sectionsNav: 'Secciones',
     reserve: 'Reservar cita',
     login: 'Iniciar sesión',
+    products: 'Productos',
     openMenu: 'Abrir menú',
   },
   menu: {
@@ -19,6 +20,7 @@ export const landingMessages = {
     close: 'Cerrar',
     reserve: 'Reservar cita',
     login: 'Iniciar sesión',
+    products: 'Productos',
   },
   techniques: {
     title: 'Servicios',

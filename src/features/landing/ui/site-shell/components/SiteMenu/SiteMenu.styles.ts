@@ -8,5 +8,6 @@ export const siteMenuStyles = {
   number: 'w-7 shrink-0 font-site-sans text-site-nav text-site-taupe',
   footer: 'flex flex-wrap items-center gap-x-8 gap-y-3 text-sm',
   reserve: 'inline-flex min-h-11 items-center text-site-rose',
+  products: 'inline-flex min-h-11 items-center text-site-paper',
   login: 'inline-flex min-h-11 items-center text-site-paper',
 }
