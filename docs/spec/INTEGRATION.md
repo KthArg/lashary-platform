@@ -1,6 +1,6 @@
 # Integración — reglas INT
 
-> **Autoridad:** cómo el código de seis personas está junto y funcionando cada día: ramas, PRs, contratos, flags, migraciones. **Lectores:** todo el equipo, cada día. **Estado:** vigente. **Actualizado:** 2026-09-28.
+> **Autoridad:** cómo el código de seis personas está junto y funcionando cada día: ramas, PRs, contratos, flags, migraciones. **Lectores:** todo el equipo, cada día. **Estado:** vigente. **Actualizado:** 2026-10-14.
 > Índice máquina: [rules.yaml](rules.yaml). El bucle de trabajo: [../process/WORK_LOOP.md](../process/WORK_LOOP.md).
 
 ## El punto
@@ -77,6 +77,24 @@ Seis personas integrando **a diario**: cada historia en su rama `us/<ID>`, hecha
 - Una sola etiqueta de estado por PR: al pasar a `Waiting-QA` se quita `In-Progress`.
 - `QA-Approved` la pone **solo un revisor humano**. La IA nunca la pone.
 - No hay check: lo verifica el revisor, y la IA lo sigue por [.agents/AGENTS.md](../../.agents/AGENTS.md).
+
+### INT-010 — Capturas de Playwright que muestran lo que hace el PR
+**Regla.** Antes de abrir un PR (o de marcarlo listo), se toman con **Playwright** una o más capturas del cambio funcionando y van en la sección *Capturas* de la descripción, cada una con una línea que dice qué muestra. Cuántas, según el cambio:
+
+| El PR cambia… | Capturas |
+|---|---|
+| Una pantalla o componente | La pantalla con el cambio; si es responsive, móvil y escritorio |
+| Un flujo (formulario, reserva, pago) | Un paso por captura, incluido el resultado final y el error que el PR maneja |
+| Estados (vacío, carga, error — UI-003) | Uno por estado que el PR toca |
+| Lógica sin pantalla propia (use-case, endpoint, RLS) | La pantalla donde se ve el efecto; si todavía no existe, la salida de la prueba que lo demuestra |
+
+- Las capturas salen de la app local con datos de seed o de prueba. **Nunca** datos reales de clientas ni secretos: el repositorio es público (SEC-*).
+- Se toman con el MCP de Playwright o con un spec de `e2e/` (`page.screenshot()`), y se guardan en `.capturas-pr/` (ignorada por git).
+- `bash scripts/pr-capturas.sh .capturas-pr` las sube a la rama huérfana `capturas-pr` (nunca a `main`, para no engordar el historial con binarios) y devuelve el markdown listo para pegar.
+- **Exentos** los PRs sin efecto observable: reglas, docs, CI, dependencias, refactor sin cambio visible. Llevan en la sección la línea `Capturas: no aplica — <motivo>`. El PR `us/<ID>` → `main` reúne las capturas de sus piezas (o las enlaza).
+
+**Racional.** El revisor externo (INT-005) no conoce la feature: el diff le dice qué cambió, no qué hace. Una captura del resultado le deja ver en segundos si el código hace lo que el PR dice y si la pantalla respeta el sistema visual, antes de bajar la rama.
+**Cumplimiento.** L4 el revisor de PRs señala la sección vacía o una exención que no se sostiene. L5 el revisor humano juzga si las capturas muestran lo que el PR promete.
 
 ## Dueños y propiedad colectiva
 
