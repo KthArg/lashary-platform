@@ -2,10 +2,11 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-09-28"
+actualizado: "2026-10-14"
 historias:
   - id: US-AGE-01
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "recién empieza: criterios 1 a 3 (horario semanal, días no laborables y feriados, bloqueo manual) y el panel en /admin/citas, en piezas apiladas hacia us/US-AGE-01"
   - id: US-AGE-02
     estado: no_iniciada
   - id: US-AGE-03

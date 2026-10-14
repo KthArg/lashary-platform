@@ -19,7 +19,7 @@
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
 | payments | pendiente | terminada | 1 / 0 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
-| scheduling | pendiente | en_progreso | 0 / 1 / 0 / 0 / 10 |
+| scheduling | pendiente | en_progreso | 0 / 2 / 0 / 0 / 9 |
 | store | pendiente | en_progreso | 2 / 0 / 0 / 0 / 2 |
 
 ## Detalle por feature
@@ -84,8 +84,8 @@
 
 ### platform (actualizado: 2026-09-16)
 
-### scheduling (actualizado: 2026-09-28)
-- US-AGE-01 — no_iniciada
+### scheduling (actualizado: 2026-10-14)
+- US-AGE-01 — en_progreso — falta: recién empieza: criterios 1 a 3 (horario semanal, días no laborables y feriados, bloqueo manual) y el panel en /admin/citas, en piezas apiladas hacia us/US-AGE-01
 - US-AGE-02 — no_iniciada
 - US-AGE-03 — en_progreso — falta: criterio 2 (detectar primera vez/re-aplicación por historial de citas) diferido: no existe scheduling_appointments todavía (la trae US-AGE-05, que depende de esta historia). Punto de extensión: application/no-appointment-history.ts (ClientHistoryPort), hoy siempre reporta sin historial; la corrección manual ya está resuelta en el use-case (isFirstTimeOverride). Ver docs/process/DEPENDENCIES.md, Criterios diferidos.
 - US-AGE-04 — no_iniciada
