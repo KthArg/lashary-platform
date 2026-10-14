@@ -25,7 +25,9 @@ const resourceId = requiredText(v.resourceId)
 
 export const weeklyAvailabilityFormSchema = z.object({
   resourceId,
-  dayOfWeek: z.coerce.number({ invalid_type_error: v.dayOfWeek }).int(v.dayOfWeek).refine(isDayOfWeek, v.dayOfWeek),
+  dayOfWeek: requiredText(v.dayOfWeek).pipe(
+    z.coerce.number({ invalid_type_error: v.dayOfWeek }).int(v.dayOfWeek).refine(isDayOfWeek, v.dayOfWeek)
+  ),
   startTime: requiredText(v.startTime),
   endTime: requiredText(v.endTime),
 })

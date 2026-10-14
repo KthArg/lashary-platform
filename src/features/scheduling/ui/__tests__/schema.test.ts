@@ -27,6 +27,16 @@ describe('esquemas del panel', () => {
     expect(problemsOf(result)).toEqual([v.dayOfWeek])
   })
 
+  it('un día vacío no se guarda como domingo', () => {
+    const result = weeklyAvailabilityFormSchema.safeParse({
+      resourceId: 'r1',
+      dayOfWeek: '',
+      startTime: '09:00',
+      endTime: '10:00',
+    })
+    expect(problemsOf(result)).toEqual([v.dayOfWeek])
+  })
+
   it('convierte el motivo vacío en undefined', () => {
     const result = closedDateFormSchema.safeParse({ resourceId: 'r1', closedDate: '2026-12-25', reason: '  ' })
     expect(result.success && result.data.reason).toBeUndefined()
