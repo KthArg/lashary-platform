@@ -48,6 +48,13 @@ describe('BlogList — US-BLOG-02', () => {
     expect(within(card).getByText('Extracto de Cuidados')).toBeTruthy()
   })
 
+  it('US-BLOG-03: el título de cada tarjeta lleva al detalle de esa publicación', () => {
+    render(<BlogList listing={listing({ posts: [post('Cuidados')], total: 1 })} />)
+
+    const [card] = cards()
+    expect(within(card).getByRole('link', { name: 'Cuidados' }).getAttribute('href')).toBe('/blog/cuidados')
+  })
+
   it('criterio 1: las tarjetas salen en el orden en que llega la página', () => {
     render(<BlogList listing={listing({ posts: [post('Reciente'), post('Vieja')] })} />)
 
