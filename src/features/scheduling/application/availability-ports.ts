@@ -1,6 +1,7 @@
 import type { Result } from '@/shared/result'
 import type { WeeklyBlock } from '../domain/weekly-availability'
-import type { WeeklyBlockOverlap } from '../domain/availability-errors'
+import type { ClosedDate } from '../domain/closed-dates'
+import type { ClosedDateAlreadyExists, WeeklyBlockOverlap } from '../domain/availability-errors'
 
 // Recurso por defecto mientras exista uno solo (ADR-0005). Sembrado por la migración
 // 20261014000000_scheduling_weekly_availability.sql; la UI no muestra selector de recurso.
@@ -13,5 +14,15 @@ export const MAX_WEEKLY_BLOCKS = 100
 export interface WeeklyAvailabilityRepository {
   listByResource(resourceId: string, limit: number): Promise<WeeklyBlock[]>
   insert(block: WeeklyBlock): Promise<Result<void, WeeklyBlockOverlap>>
+  remove(id: string): Promise<boolean>
+}
+
+// Tope de días cerrados próximos que lista el panel (PERF-002).
+export const MAX_CLOSED_DATES = 100
+
+export interface ClosedDateRepository {
+  // Días cerrados desde fromDate (AAAA-MM-DD, inclusive), por fecha ascendente.
+  listFrom(resourceId: string, fromDate: string, limit: number): Promise<ClosedDate[]>
+  insert(closedDate: ClosedDate): Promise<Result<void, ClosedDateAlreadyExists>>
   remove(id: string): Promise<boolean>
 }
