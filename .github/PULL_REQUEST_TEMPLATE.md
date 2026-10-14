@@ -21,6 +21,14 @@
 |---|---|
 | | |
 
+## Capturas (INT-010)
+
+<!-- Tomadas con Playwright en la app local, con datos de seed. `bash scripts/pr-capturas.sh` las sube y devuelve este bloque.
+     Sin efecto observable (reglas, docs, CI, dependencias, refactor sin cambio visible): "Capturas: no aplica — <motivo>". -->
+
+![nombre](url)
+_Qué muestra:_
+
 ## Revisión
 
 - [ ] Pieza: base `us/<ID>` (o la pieza anterior), rama ≤ 3 días, merge commit. PR a `main`: `us/<ID>` al día con `main`, historia completa, squash (INT-001/005).
