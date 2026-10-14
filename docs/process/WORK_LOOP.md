@@ -14,7 +14,7 @@ Este bucle corre **siempre**, sin que nadie lo pida. No es ceremonia: cada paso 
 
 **4. Verificar.** Correr `scripts/verify.sh` (mismo que CI) y las pruebas. Mapear **cada criterio de aceptación a la prueba que lo demuestra**. Un criterio sin prueba no está cumplido, punto. Si el cambio tiene efecto observable, tomar con Playwright las capturas que lo muestran funcionando (INT-010).
 
-**5. Actualizar estado.** Editar el front-matter del `SPEC.md` y regenerar `STATUS.md` (`scripts/status-gen.sh`). Si algo quedó incompleto, registrar exactamente dónde se detiene. Si se tomó deuda, registrarla con su costo (EST-006).
+**5. Actualizar estado.** Editar el front-matter del `SPEC.md` y regenerar `STATUS.md` (`scripts/status-gen.sh`). Si algo quedó incompleto, registrar exactamente dónde se detiene. En el PR de la historia (`us/<ID>` → `main`), la historia sale `terminada` con su evidencia en ese mismo PR (EST-007). Si se tomó deuda, registrarla con su costo (EST-006).
 
 **6. Reportar.** Qué cambió, qué reglas aplicaron, qué criterios quedaron demostrados y por cuál prueba, qué falta, qué deuda se creó. Si el PR quedó listo para revisión: se marca listo y `Waiting-QA` reemplaza a `In-Progress`. `QA-Approved` la pone solo un revisor humano.
 

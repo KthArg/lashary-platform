@@ -1,0 +1,29 @@
+# Estado de la historia — EST-007 (docs/spec/STATE.md). Mismo script que verify.sh: una implementación.
+# Va aparte de ci.yml porque tiene que re-correr cuando el PR se marca listo o cambian sus
+# etiquetas (la excepción de un criterio diferido es la etiqueta excepcion-proceso), y ci.yml no
+# escucha esos eventos a propósito. Solo juzga el PR de cierre us/<ID> → main; en los demás pasa.
+# Para que bloquee el merge, este job tiene que estar marcado como requerido en el ruleset de main.
+name: pr-story-state
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review, converted_to_draft, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  state:
+    name: estado de la historia (EST-007)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: La historia queda terminada, o en_progreso con excepción registrada
+        env:
+          # Por env, nunca interpolados en el script: la rama y las etiquetas las pone quien abre el PR.
+          PR_HEAD_REF: ${{ github.head_ref }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: bash scripts/rules/check-story-state.sh
