@@ -1,8 +1,8 @@
 ---
 feature: content
 dri: pendiente
-estado: en_progreso
-actualizado: 2026-10-13
+estado: terminada
+actualizado: 2026-10-14
 historias:
   - id: US-BLOG-01
     estado: terminada
@@ -44,7 +44,7 @@ Lectura del CMS para US-LAND-01 (tipos `hero`, `intro` y `closing-cta`, que en e
 
 Medición PERF-004 de `/blog` (2026-10-13, mismo método que la de US-LAND-01: `next build` + `next start`, Playwright con emulación de Chrome a 375 px, 4G lento a 1.6 Mbps y 150 ms, CPU x4; no es Lighthouse; con un CMS simulado de 12 publicaciones con imágenes de 1600x900 y un Supabase simulado que responde 401 al instante): el elemento LCP es la imagen de la primera tarjeta. Con todas las imágenes en lazy-load, LCP 2220–2276 ms en 6 corridas, a 250 ms del presupuesto de 2.5 s; precargando solo esa primera imagen (`preload` en `BlogList`), LCP 1684–1732 ms en 6 corridas. `preload` es el prop de `next/image` en Next 16.3.4, la versión instalada (`get-img-props.d.ts` lo declara y marca `priority` como obsoleto a su favor); no es un prop propio. JS inicial 148.8 KB comprimido (8 scripts), contra 200 KB; la página es de servidor y no suma JS de cliente. En la misma tanda la portada dio 1380–1396 ms, igual que su medición registrada. Medición PERF-004 de `/blog/<slug>` (2026-10-13, mismo método y mismo CMS simulado, con un cuerpo de 7 bloques): el elemento LCP es la imagen destacada, precargada; LCP 1676–1700 ms en 6 corridas y JS inicial 150.8 KB comprimido (9 scripts). El listado, ya con sus tarjetas enlazadas, dio 1664–1688 ms en la misma tanda. Límite de la medición: Next bloquea en producción las imágenes de una IP local, así que el build de medición las permitió con un cambio de `next.config.js` que no se commiteó; no hay todavía publicaciones reales en el CMS desplegado para medir contra Vercel Blob.
 
-Se detiene antes de la UI: ninguna página de `landing` llama todavía a `getLandingContent`.
+Las tres historias de la feature están terminadas (US-BLOG-01, US-BLOG-02 y US-BLOG-03), y la landing ya consume todas las lecturas de arriba desde `src/app/(site)/`. Lo que no hace: no escribe en el CMS (la administradora edita en `lashary-cms`), no muestra imágenes dentro del cuerpo de una publicación (el contrato no las admite) y, por el streaming de la ruta, un slug inexistente responde 200 con `noindex` en vez de un 404 de HTTP.
 
 ## Contrato con el CMS
 

@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-13.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-14.
 
 ## Features
 
@@ -12,12 +12,12 @@
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | en_progreso | 2 / 0 / 0 / 0 / 2 |
 | clients | pendiente | en_progreso | 1 / 1 / 0 / 0 / 3 |
-| content | pendiente | en_progreso | 3 / 0 / 0 / 0 / 0 |
+| content | pendiente | terminada | 3 / 0 / 0 / 0 / 0 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | landing | pendiente | terminada | 6 / 0 / 0 / 0 / 0 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
-| payments | pendiente | en_progreso | 0 / 1 / 0 / 0 / 0 |
+| payments | pendiente | terminada | 1 / 0 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | scheduling | pendiente | en_progreso | 0 / 1 / 0 / 0 / 10 |
 | store | pendiente | en_progreso | 2 / 0 / 0 / 0 / 2 |
@@ -45,7 +45,7 @@
 - US-CLI-04 — no_iniciada
 - US-CLI-05 — terminada — PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx
 
-### content (actualizado: 2026-10-13)
+### content (actualizado: 2026-10-14)
 - US-BLOG-01 — terminada — PR de cierre us/US-BLOG-01 a main (contrato v1.6 de docs/contracts/cms-api.md). La historia la cumple el CMS (ADR-0001): la coleccion posts esta declarada en el main de lashary-cms (f3f8e26) y sus tres criterios estan demostrados alli, contra ese tipo y por la ruta publica GET /api/content/posts, en tests/integration/blog-posts.test.ts. Criterio 1: crea una publicacion con titulo, cuerpo enriquecido e imagen destacada, y sin imagen destacada no se puede publicar. Criterio 2: editar una publicacion cambia lo que se ve al volver a publicarla, y eliminar una publicacion la quita de lo publico y deja las demas. Criterio 3: una publicacion en borrador no es visible publicamente, y los cambios sin publicar de una ya publicada tampoco se ven. Los seis casos caen al mutar lo que protegen. Desplegado: GET https://lashary-cms.vercel.app/api/content/posts responde 200 desde el 2026-10-13. El PR #113, que traia un contrato anterior, se cerro sin fusionar el 2026-10-13
 - US-BLOG-02 — terminada — PR #294 (us/US-BLOG-02 a main); piezas PRs #295 (validacion, orden y pagina), #296 (getBlogPage con cache y aviso), #297 (BlogList) y #298 (la ruta /blog), apiladas hacia us/US-BLOG-02. Criterio 1 (fecha descendente): domain/__tests__/blog.test.ts (newestFirst), application/__tests__/get-blog-posts.test.ts y cms/__tests__/blog-source.test.ts. Criterio 2 (imagen, titulo y extracto en cada tarjeta): ui/blog/__tests__/blog-list.test.tsx y get-blog-posts.test.ts. Criterio 3 (paginacion sobre el limite configurado, 9): blog.test.ts (pageOf), blog-source.test.ts, blog-list.test.tsx y src/app/(site)/blog/page.data.test.ts. La ruta, sin scroll horizontal en los 8 anchos y con la cabecera volviendo a la portada: e2e/blog.spec.ts. Verificado ademas con un CMS simulado en next dev: 12 publicaciones, 9 en la primera pagina y 3 en la segunda, por fecha descendente, con sus imagenes cargadas, sin scroll horizontal en 375 y 1280. PERF-004 medido el 2026-10-13: LCP 1684 a 1732 ms y 148.8 KB de JS inicial, dentro del presupuesto (detalle en el cuerpo)
 - US-BLOG-03 — terminada — PR #299 (us/US-BLOG-03 a main); piezas PRs #300 (cuerpo, SEO y busqueda por slug), #301 (getBlogArticle), #302 (RichText), #303 (BlogArticleView) y #304 (la ruta /blog/<slug>), apiladas hacia us/US-BLOG-03. Criterio 1 (titulo, imagen y texto completo): ui/blog/__tests__/blog-article.test.tsx y rich-text.test.tsx, application/__tests__/rich-text.test.ts y get-blog-posts.test.ts; el contrato da una sola imagen por publicacion, la destacada. Criterio 2 (metadatos basicos de SEO): src/app/(site)/blog/[slug]/page.data.test.ts y get-blog-posts.test.ts. Criterio 3 (regreso al listado): blog-article.test.tsx y e2e/blog.spec.ts. El enlace de cada tarjeta al detalle: blog-list.test.tsx. Verificado ademas con un CMS simulado en un build de produccion: el detalle muestra titulo, imagen, encabezados, listas, cita y enlaces, sin scroll horizontal en 375 y 1280; el head trae title, description, og:title, og:description, og:image, og:type article y article:published_time; un slug inexistente sirve la pagina de no encontrada con noindex. PERF-004 medido el 2026-10-13: LCP 1676 a 1700 ms y 150.8 KB de JS inicial
@@ -79,8 +79,8 @@
 - US-NOT-08 — no_iniciada
 - US-CLI-06 — no_iniciada
 
-### payments (actualizado: 2026-10-05)
-- US-AGE-13 — en_progreso — falta: integrar el anticipo por paquete implementado y probado en #178–#181, con #173–#175 ya integrados en main; completar aprobaciones pendientes y integrar la protección del historial de exoneraciones de #118 implementada y probada en la pieza 21 (ADR-0009); traslado de criterios 2 y 3 a US-AGE-05 y 4 a US-AGE-12 aprobado por el PO
+### payments (actualizado: 2026-10-14)
+- US-AGE-13 — terminada — PR #240 (us/US-AGE-13 a main, 2026-10-13, aprobado); piezas #219 a #239 y #241 hacia us/US-AGE-13. Criterio 1, anticipo por tecnica: columna deposit de catalog_techniques (US-AGE-08), formulario y tabla del panel; pruebas catalog/domain/techniques/__tests__/technique.test.ts, ui/techniques/__tests__/technique-schema.test.ts y catalog_staff_write.test.sql. Criterio 1, anticipo por paquete: migraciones 20261004000001 y 20261004000002, RPC de guardado, dominio, formulario y listado; pruebas application/packages/__tests__/package-deposit.test.ts, ui/packages/__tests__/package-deposit-form.test.tsx, db/packages/__tests__/package-deposit-repository.test.ts y catalog_package_deposit.test.sql. Criterio 5, exoneracion con bitacora: exemptClient registra payments.deposit_exemption.granted en audit_events; pruebas payments/application/__tests__/exempt-client.test.ts, rls-isolation.test.ts, payments_staff_access.test.sql y payments_exemption_history.test.sql (la FK a clients_profiles es RESTRICT, ADR-0009). Verificado en el CI de main del 2026-10-14: las 6 suites pgTAP (87 aserciones) y las 113 de vitest en verde. Los criterios originales 2 y 3 son de US-AGE-05 y el 4 de US-AGE-12 (PO, 2026-10-03). #240 se fusiono con el check reglas en rojo por INT-008 (5 migraciones en un PR) y sin la etiqueta excepcion-proceso. Confirmada terminada por el PO el 2026-10-14
 
 ### platform (actualizado: 2026-09-16)
 
