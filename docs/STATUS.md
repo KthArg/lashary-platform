@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-13.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-14.
 
 ## Features
 
@@ -12,7 +12,7 @@
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | en_progreso | 2 / 0 / 0 / 0 / 2 |
 | clients | pendiente | en_progreso | 1 / 1 / 0 / 0 / 3 |
-| content | pendiente | en_progreso | 3 / 0 / 0 / 0 / 0 |
+| content | pendiente | terminada | 3 / 0 / 0 / 0 / 0 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | landing | pendiente | terminada | 6 / 0 / 0 / 0 / 0 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
@@ -45,7 +45,7 @@
 - US-CLI-04 — no_iniciada
 - US-CLI-05 — terminada — PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx
 
-### content (actualizado: 2026-10-13)
+### content (actualizado: 2026-10-14)
 - US-BLOG-01 — terminada — PR de cierre us/US-BLOG-01 a main (contrato v1.6 de docs/contracts/cms-api.md). La historia la cumple el CMS (ADR-0001): la coleccion posts esta declarada en el main de lashary-cms (f3f8e26) y sus tres criterios estan demostrados alli, contra ese tipo y por la ruta publica GET /api/content/posts, en tests/integration/blog-posts.test.ts. Criterio 1: crea una publicacion con titulo, cuerpo enriquecido e imagen destacada, y sin imagen destacada no se puede publicar. Criterio 2: editar una publicacion cambia lo que se ve al volver a publicarla, y eliminar una publicacion la quita de lo publico y deja las demas. Criterio 3: una publicacion en borrador no es visible publicamente, y los cambios sin publicar de una ya publicada tampoco se ven. Los seis casos caen al mutar lo que protegen. Desplegado: GET https://lashary-cms.vercel.app/api/content/posts responde 200 desde el 2026-10-13. El PR #113, que traia un contrato anterior, se cerro sin fusionar el 2026-10-13
 - US-BLOG-02 — terminada — PR #294 (us/US-BLOG-02 a main); piezas PRs #295 (validacion, orden y pagina), #296 (getBlogPage con cache y aviso), #297 (BlogList) y #298 (la ruta /blog), apiladas hacia us/US-BLOG-02. Criterio 1 (fecha descendente): domain/__tests__/blog.test.ts (newestFirst), application/__tests__/get-blog-posts.test.ts y cms/__tests__/blog-source.test.ts. Criterio 2 (imagen, titulo y extracto en cada tarjeta): ui/blog/__tests__/blog-list.test.tsx y get-blog-posts.test.ts. Criterio 3 (paginacion sobre el limite configurado, 9): blog.test.ts (pageOf), blog-source.test.ts, blog-list.test.tsx y src/app/(site)/blog/page.data.test.ts. La ruta, sin scroll horizontal en los 8 anchos y con la cabecera volviendo a la portada: e2e/blog.spec.ts. Verificado ademas con un CMS simulado en next dev: 12 publicaciones, 9 en la primera pagina y 3 en la segunda, por fecha descendente, con sus imagenes cargadas, sin scroll horizontal en 375 y 1280. PERF-004 medido el 2026-10-13: LCP 1684 a 1732 ms y 148.8 KB de JS inicial, dentro del presupuesto (detalle en el cuerpo)
 - US-BLOG-03 — terminada — PR #299 (us/US-BLOG-03 a main); piezas PRs #300 (cuerpo, SEO y busqueda por slug), #301 (getBlogArticle), #302 (RichText), #303 (BlogArticleView) y #304 (la ruta /blog/<slug>), apiladas hacia us/US-BLOG-03. Criterio 1 (titulo, imagen y texto completo): ui/blog/__tests__/blog-article.test.tsx y rich-text.test.tsx, application/__tests__/rich-text.test.ts y get-blog-posts.test.ts; el contrato da una sola imagen por publicacion, la destacada. Criterio 2 (metadatos basicos de SEO): src/app/(site)/blog/[slug]/page.data.test.ts y get-blog-posts.test.ts. Criterio 3 (regreso al listado): blog-article.test.tsx y e2e/blog.spec.ts. El enlace de cada tarjeta al detalle: blog-list.test.tsx. Verificado ademas con un CMS simulado en un build de produccion: el detalle muestra titulo, imagen, encabezados, listas, cita y enlaces, sin scroll horizontal en 375 y 1280; el head trae title, description, og:title, og:description, og:image, og:type article y article:published_time; un slug inexistente sirve la pagina de no encontrada con noindex. PERF-004 medido el 2026-10-13: LCP 1676 a 1700 ms y 150.8 KB de JS inicial
