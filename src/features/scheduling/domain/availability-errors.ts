@@ -19,7 +19,31 @@ export interface AvailabilityEntryNotFound {
   readonly message: string
 }
 
-export const weeklyBlockInvalid = (problems: readonly string[]): WeeklyBlockInvalid => ({
+export interface ClosedDateInvalid {
+  readonly code: 'SCHEDULING_CLOSED_DATE_INVALID'
+  readonly problems: readonly string[]
+  readonly message: string
+}
+
+export interface ClosedDateAlreadyExists {
+  readonly code: 'SCHEDULING_CLOSED_DATE_ALREADY_EXISTS'
+  readonly date: string
+  readonly message: string
+}
+
+export const closedDateInvalid = (problems: readonly string[]): ClosedDateInvalid => ({
+  code: 'SCHEDULING_CLOSED_DATE_INVALID',
+  problems,
+  message: `día cerrado inválido: ${problems.join('; ')}`,
+})
+
+export const closedDateAlreadyExists = (date: string): ClosedDateAlreadyExists => ({
+  code: 'SCHEDULING_CLOSED_DATE_ALREADY_EXISTS',
+  date,
+  message: `el día ${date} ya está cerrado`,
+})
+
+export const weeklyBlockInvalid =(problems: readonly string[]): WeeklyBlockInvalid => ({
   code: 'SCHEDULING_WEEKLY_BLOCK_INVALID',
   problems,
   message: `bloque semanal inválido: ${problems.join('; ')}`,
@@ -50,3 +74,9 @@ export const isWeeklyBlockOverlap = (error: unknown): error is WeeklyBlockOverla
 
 export const isAvailabilityEntryNotFound = (error: unknown): error is AvailabilityEntryNotFound =>
   hasCode(error, 'SCHEDULING_AVAILABILITY_ENTRY_NOT_FOUND')
+
+export const isClosedDateInvalid = (error: unknown): error is ClosedDateInvalid =>
+  hasCode(error, 'SCHEDULING_CLOSED_DATE_INVALID')
+
+export const isClosedDateAlreadyExists = (error: unknown): error is ClosedDateAlreadyExists =>
+  hasCode(error, 'SCHEDULING_CLOSED_DATE_ALREADY_EXISTS')
