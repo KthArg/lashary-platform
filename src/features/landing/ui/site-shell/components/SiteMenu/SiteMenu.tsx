@@ -8,7 +8,7 @@ import { siteMenuStyles as STYLES } from './SiteMenu.styles'
 import { useFocusTrap } from '../../hooks/use-focus-trap'
 import type { SiteMenuProps } from './SiteMenu.types'
 
-export function SiteMenu({ sections, anchorBase = '', onClose }: SiteMenuProps) {
+export function SiteMenu({ sections, anchorBase = '', productsHref, onClose }: SiteMenuProps) {
   const containerRef = useFocusTrap<HTMLDivElement>()
 
   useEffect(() => {
@@ -51,6 +51,11 @@ export function SiteMenu({ sections, anchorBase = '', onClose }: SiteMenuProps) 
         <Link href={RESERVE_ROUTE} onClick={onClose} className={STYLES.reserve}>
           {landingMessages.menu.reserve}
         </Link>
+        {productsHref && (
+          <Link href={productsHref} onClick={onClose} className={STYLES.products}>
+            {landingMessages.menu.products}
+          </Link>
+        )}
         <Link href={LOGIN_ROUTE} onClick={onClose} className={STYLES.login}>
           {landingMessages.menu.login}
         </Link>
