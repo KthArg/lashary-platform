@@ -27,6 +27,7 @@ test-results/
 playwright-report/
 blob-report/
 .playwright-mcp/
+.capturas-pr/
 /*.png
 
 # scratch de Supabase Studio
