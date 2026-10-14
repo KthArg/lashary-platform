@@ -1,6 +1,6 @@
 # Evidencia de US-AGE-13
 
-Fecha: 2026-10-05. Estado: en progreso; implementación publicada, pendiente de integración y revisión.
+Fecha: 2026-10-05; cierre: 2026-10-14. Estado: **terminada**. Las piezas entraron a `main` con #240 (2026-10-13), y lo de "Pendientes para cerrar" ya ocurrió; la evidencia final está en el front-matter de `src/features/payments/SPEC.md`. Lo de abajo es el registro de cómo se llegó.
 
 ## Piezas del anticipo por paquete
 
