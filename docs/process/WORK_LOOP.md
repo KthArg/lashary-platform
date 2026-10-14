@@ -12,7 +12,7 @@ Este bucle corre **siempre**, sin que nadie lo pida. No es ceremonia: cada paso 
 
 **3. Implementar en incrementos pequeños**, respetando la frontera de la feature (ARCH-003/004) y las reglas de dominio. Si la historia recién arranca, su PR `us/<ID>` → `main` se abre en draft con `In-Progress` ([INTEGRATION.md](../spec/INTEGRATION.md#int-009)).
 
-**4. Verificar.** Correr `scripts/verify.sh` (mismo que CI) y las pruebas. Mapear **cada criterio de aceptación a la prueba que lo demuestra**. Un criterio sin prueba no está cumplido, punto.
+**4. Verificar.** Correr `scripts/verify.sh` (mismo que CI) y las pruebas. Mapear **cada criterio de aceptación a la prueba que lo demuestra**. Un criterio sin prueba no está cumplido, punto. Si el cambio tiene efecto observable, tomar con Playwright las capturas que lo muestran funcionando (INT-010).
 
 **5. Actualizar estado.** Editar el front-matter del `SPEC.md` y regenerar `STATUS.md` (`scripts/status-gen.sh`). Si algo quedó incompleto, registrar exactamente dónde se detiene. Si se tomó deuda, registrarla con su costo (EST-006).
 
@@ -40,3 +40,4 @@ Para cambios que **no tocan código fuente** (documentación, comentarios, confi
 5. Reglas citadas por ID donde el PR las toca.
 6. Título y commits en Conventional Commits en español, con `(US-XXX-NN, i/N)` en el título si es pieza (INT-009); ninguna `class` nueva (ADR-0008).
 7. Estado del PR al día: draft + `In-Progress` mientras se trabaja; listo + `Waiting-QA` para revisar; `QA-Approved` solo la pone un revisor humano.
+8. Capturas de Playwright del cambio funcionando, o `Capturas: no aplica — <motivo>` si no tiene efecto observable (INT-010).

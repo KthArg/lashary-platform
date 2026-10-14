@@ -3,6 +3,7 @@ import Link from 'next/link'
 import {
   BLOG_ROUTE,
   HOME_ROUTE,
+  blogArticleRoute,
   blogMessages,
   blogPageRoute,
 } from '../../../constants/blog-strings'
@@ -54,7 +55,8 @@ export function BlogList({ listing }: BlogListProps) {
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 24rem"
                       // La primera imagen es el elemento LCP en un teléfono (medición PERF-004 en
-                      // el SPEC): se precarga en vez de esperar al lazy-load.
+                      // el SPEC): se precarga en vez de esperar al lazy-load. `preload` es el prop
+                      // de next/image desde Next 16; `priority` quedó obsoleto a su favor.
                       preload={index === 0}
                       className={STYLES.photo}
                     />
@@ -64,7 +66,11 @@ export function BlogList({ listing }: BlogListProps) {
                       <time dateTime={post.publishedOn}>{formatDate(post.publishedOn)}</time>
                     </p>
                   )}
-                  <h2 className={STYLES.cardTitle}>{post.title}</h2>
+                  <h2 className={STYLES.cardTitle}>
+                    <Link href={blogArticleRoute(post.slug)} className={STYLES.cardLink}>
+                      {post.title}
+                    </Link>
+                  </h2>
                   <p className={STYLES.excerpt}>{post.excerpt}</p>
                 </article>
               </li>

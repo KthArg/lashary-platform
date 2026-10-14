@@ -5,11 +5,12 @@ import {
   calendarDate,
   newestFirst,
   slugify,
-  type BlogPost,
+  type BlogArticle,
 } from '../domain/blog'
 import type { CmsUnavailable } from '../domain/errors'
 import { field, image, text } from './cms-values'
 import type { CmsReader } from './ports'
+import { toRichText } from './rich-text'
 
 export async function readRawBlogPosts(
   reader: CmsReader,
@@ -24,15 +25,16 @@ interface Warn {
 // Las publicaciones que el listado puede mostrar, ya ordenadas por fecha descendente
 // (docs/contracts/cms-api.md § `posts`). Nunca lanza. Una publicación entra con `titulo`,
 // `extracto` e `imagen` válidos; su `slug` sale del campo o, vacío, del título. La que queda
-// sin slug y la que repite el de una anterior se descartan con una advertencia.
+// sin slug y la que repite el de una anterior se descartan con una advertencia. Cada una
+// trae además su cuerpo ya validado y sus metadatos, que usa la página de detalle.
 export function toBlogPosts(
   items: unknown[] | null,
   mediaBaseUrl: string,
   warn: Warn = () => {},
-): BlogPost[] {
+): BlogArticle[] {
   if (items === null) return []
 
-  const posts: BlogPost[] = []
+  const posts: BlogArticle[] = []
   const seen = new Set<string>()
   for (const item of items) {
     const title = text(field(item, 'titulo'), 100)
@@ -58,6 +60,9 @@ export function toBlogPosts(
       excerpt,
       image: featured,
       publishedOn: date === null ? null : calendarDate(date),
+      body: toRichText(field(item, 'cuerpo')),
+      seoTitle: text(field(item, 'seoTitulo'), 60) ?? title,
+      seoDescription: text(field(item, 'seoDescripcion'), 160) ?? excerpt,
     })
   }
   return newestFirst(posts)

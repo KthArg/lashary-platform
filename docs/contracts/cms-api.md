@@ -254,7 +254,9 @@ Las publicaciones del blog. La administradora las crea, las edita y las elimina 
 - **Orden y paginación:** ocurren en `content`, no en el CMS (US-BLOG-02). El listado va por `fecha` descendente; dos publicaciones con la misma fecha conservan el orden del editor. Se pagina de 9 en 9.
 - **Una publicación incompleta se ignora:** sin `titulo`, sin `extracto` o sin `imagen` válida (con su `alt`) no entra al listado. El CMS exige los tres al publicar, así que solo pasa con contenido anterior a un cambio de esquema.
 
-La lectura de `posts` desde `content` todavía no existe: la construye US-BLOG-02.
+- **Detalle de una publicación (US-BLOG-03):** `content` la busca por `slug` dentro de la misma colección; no hay ruta por elemento en el CMS. Un `slug` que no corresponde a ninguna publicación sirve la página de "no encontrada" de la plataforma, que los buscadores no indexan.
+- **`cuerpo` se valida nodo a nodo:** solo entran los nodos y marcas de § Formas de valor; un nodo desconocido se descarta junto con su contenido, una marca desconocida se ignora y el texto se conserva. Un `link` entra solo con un `href` de los que acepta `s.link`; con otro, queda el texto sin enlace. Un `heading` fuera de los niveles 2 a 4 pasa a nivel 2. Si no queda ningún bloque, la publicación se muestra sin texto.
+- **SEO:** `seoTitulo` y `seoDescripcion` son opcionales; sin valor, `content` usa `titulo` y `extracto`. La imagen para redes es la destacada.
 
 ## Lo que no vive en el CMS
 
