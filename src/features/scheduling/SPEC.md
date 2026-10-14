@@ -6,7 +6,7 @@ actualizado: "2026-10-14"
 historias:
   - id: US-AGE-01
     estado: en_progreso
-    falta: "piezas 1 a 3 hechas (criterio 1 sin UI: migración 20261014000000, domain/weekly-availability.ts, application/weekly-availability.ts, db/weekly-availability-repository.ts y sus pruebas). Faltan días no laborables y feriados, bloqueos manuales y el panel en /admin/citas. Criterios 4 y 5 con traslado propuesto al PO (US-AGE-02 y US-AGE-05), pendiente de aprobación"
+    falta: "piezas 1 a 4 hechas (criterio 1 sin UI: migración 20261014000000, domain/weekly-availability.ts, application/weekly-availability.ts, db/weekly-availability-repository.ts; criterios 2 y 3 probados en la base: migración 20261014000000; pruebas pgTAP scheduling_*.test.sql y __tests__/rls-isolation.test.ts). Faltan el dominio, la aplicación y el repositorio de días cerrados y bloqueos manuales, y el panel en /admin/citas. Criterios 4 y 5 con traslado propuesto al PO (US-AGE-02 y US-AGE-05), pendiente de aprobación"
   - id: US-AGE-02
     estado: no_iniciada
   - id: US-AGE-03

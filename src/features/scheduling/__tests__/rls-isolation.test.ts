@@ -50,6 +50,16 @@ const TABLES: Record<string, Record<string, unknown>> = {
     start_min: 60,
     end_min: 120,
   },
+  scheduling_closed_dates: {
+    resource_id: RESOURCE_ID,
+    closed_on: '2030-01-01',
+    kind: 'holiday',
+  },
+  scheduling_manual_blocks: {
+    resource_id: RESOURCE_ID,
+    starts_at: '2030-01-02T15:00:00Z',
+    ends_at: '2030-01-02T16:00:00Z',
+  },
 }
 
 describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de la disponibilidad de scheduling', () => {
