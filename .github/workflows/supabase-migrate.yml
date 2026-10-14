@@ -48,10 +48,12 @@ jobs:
       - name: Historial de migraciones (local vs remoto)
         run: supabase migration list
 
+      # --include-all: aplica también las migraciones con fecha anterior a la última del remoto
+      # (varias PR de historias distintas entran a main en orden distinto al de sus fechas).
       - name: Aplicar migraciones
         if: ${{ !inputs.dry_run }}
-        run: supabase db push --yes
+        run: supabase db push --yes --include-all
 
       - name: Simulación (workflow_dispatch con dry_run)
         if: ${{ inputs.dry_run }}
-        run: supabase db push --dry-run
+        run: supabase db push --dry-run --include-all
