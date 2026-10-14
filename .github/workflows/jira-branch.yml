@@ -17,7 +17,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: jira-branch-${{ github.head_ref || github.ref_name }}
+  # El evento va en el grupo: un push y el PR que se marca listo segundos después son dos
+  # corridas que no se reemplazan entre sí. Si compartieran grupo, la segunda cancelaría a la
+  # primera y el PR mostraría un `sync` cancelado. Corriendo en paralelo no se pisan, porque
+  # sync-jira.sh solo avanza la tarjeta: el orden en que terminen no cambia el resultado.
+  group: jira-branch-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true # pushes seguidos a la misma rama: solo importa el último
 
 jobs:
