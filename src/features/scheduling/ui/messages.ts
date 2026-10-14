@@ -47,6 +47,7 @@ export const schedulingMessages = {
       endLabel: 'Hasta',
       submit: 'Agregar bloque',
       empty: 'Todavía no hay horario. Agregá el primer bloque para que se pueda agendar.',
+      noBlocks: 'Sin atención',
       savedOk: 'Bloque agregado.',
       removedOk: 'Bloque quitado.',
       overlap: 'Ese bloque se cruza con otro del mismo día.',
