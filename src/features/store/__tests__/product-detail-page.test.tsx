@@ -6,14 +6,23 @@ import Loading from '@/app/(site)/productos/[slug]/loading'
 import ErrorView from '@/app/(site)/productos/[slug]/error'
 import NotFound from '@/app/(site)/productos/[slug]/not-found'
 
+const SERUM_ID = '2d4f6a8c-1b3e-4d5f-8a7c-9e0b1c2d3e4f'
+
 const mocks = vi.hoisted(() => ({
   maybeSingle: vi.fn(),
+  getAuthSession: vi.fn(),
   notFound: vi.fn(() => {
     throw new Error('NEXT_NOT_FOUND')
   }),
 }))
 
 vi.mock('next/navigation', () => ({ notFound: mocks.notFound }))
+
+vi.mock('@/features/auth', () => ({
+  getAuthSession: mocks.getAuthSession,
+  AUTH_ROLES: { CLIENTE: 'cliente' },
+  CLIENT_PORTAL_ROUTES: { carrito: '/portal/carrito' },
+}))
 
 vi.mock('@/shared/lib/supabase/server', () => ({
   createClient: async () => {
@@ -23,6 +32,7 @@ vi.mock('@/shared/lib/supabase/server', () => ({
 }))
 
 const serumRow = {
+  id: SERUM_ID,
   slug: 'serum-nutritivo-lashary',
   nombre: 'Serum nutritivo Lashary',
   descripcion: 'Tratamiento nutritivo para pestañas.',
@@ -33,6 +43,7 @@ const serumRow = {
 }
 
 const available: PublicProductDetail = {
+  id: SERUM_ID,
   slug: 'serum-nutritivo-lashary',
   name: 'Serum nutritivo Lashary',
   description: 'Tratamiento nutritivo para pestañas.',
@@ -44,11 +55,12 @@ const available: PublicProductDetail = {
 const params = (slug: string) => ({ params: Promise.resolve({ slug }) })
 
 const renderDetail = (overrides: Partial<PublicProductDetail> = {}) =>
-  renderToStaticMarkup(<ProductDetail detail={{ ...available, ...overrides }} />)
+  renderToStaticMarkup(<ProductDetail detail={{ ...available, ...overrides }} purchaseAccess="guest" />)
 
 beforeEach(() => {
   vi.clearAllMocks()
   mocks.maybeSingle.mockResolvedValue({ data: serumRow, error: null })
+  mocks.getAuthSession.mockResolvedValue(null)
 })
 
 describe('US-PROD-03: detalle de un producto', () => {

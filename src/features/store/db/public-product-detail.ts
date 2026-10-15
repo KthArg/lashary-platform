@@ -3,9 +3,10 @@ import type { PublicProductDetailSource } from '../domain/product-detail'
 import type { PublicProductDetailReader } from '../application/public-detail/get-public-product-detail'
 
 const TABLE = 'store_products'
-const COLUMNS = 'slug, nombre, descripcion, url_imagen, precio_crc, existencias, activo'
+const COLUMNS = 'id, slug, nombre, descripcion, url_imagen, precio_crc, existencias, activo'
 
 type PublicProductDetailRow = {
+  id: string
   slug: string
   nombre: string
   descripcion: string
@@ -17,6 +18,7 @@ type PublicProductDetailRow = {
 
 function rowToSource(row: PublicProductDetailRow): PublicProductDetailSource {
   return {
+    id: row.id,
     slug: row.slug,
     name: row.nombre,
     description: row.descripcion,
