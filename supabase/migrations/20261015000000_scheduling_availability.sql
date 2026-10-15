@@ -1,29 +1,13 @@
--- 20261014000000_scheduling_availability.sql
--- US-AGE-01 · feature scheduling — recurso de agenda, bloques semanales (criterio 1), días no
--- laborables y feriados (criterio 2) y bloqueos manuales puntuales (criterio 3), todo por recurso.
--- Cumplimiento: ARCH-006 (prefijo scheduling_), ADR-0005 (recurso explícito desde el día uno),
---   DOM-003 (instantes en timestamptz), SEC-001 (RLS es la frontera real), SEC-002 (test de
---   aislamiento en __tests__/ y pgTAP), PERF-003 (FK indexadas), INT-008 (una migración por
---   historia, forward-only).
+-- 20261015000000_scheduling_availability.sql
+-- US-AGE-01 · feature scheduling — bloques semanales (criterio 1), días no laborables y feriados
+-- (criterio 2) y bloqueos manuales puntuales (criterio 3), todo por recurso (ADR-0005).
+-- Se apoya en 20261014000000_scheduling_model_and_no_overlap.sql (US-AGE-09): esa migración crea
+-- btree_gist, public.scheduling_resources con el recurso único del estudio y su RLS de lectura.
+-- Cumplimiento: ARCH-006 (prefijo scheduling_), DOM-003 (instantes en timestamptz), SEC-001 (RLS
+--   es la frontera real), SEC-002 (test de aislamiento en __tests__/ y pgTAP), PERF-003 (FK
+--   indexadas), INT-008 (una migración por historia, forward-only).
 
--- btree_gist permite combinar igualdad (resource_id, weekday) con solape de rangos en un mismo
--- exclusion constraint. ADR-0002 lo necesitará también para el no-solape de citas.
-CREATE EXTENSION IF NOT EXISTS btree_gist WITH SCHEMA extensions;
-
--- 1. Recurso de agenda (ADR-0005). Hoy existe uno solo, la dueña; la UI no muestra selector
---    mientras sea así. Las tablas de disponibilidad, bloqueos y citas se definen por recurso.
-CREATE TABLE public.scheduling_resources (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name        text NOT NULL CHECK (length(btrim(name)) > 0),
-  is_active   boolean NOT NULL DEFAULT true,
-  created_at  timestamptz NOT NULL DEFAULT now()
-);
-
--- UUID fijo: la aplicación lo conoce como el recurso por defecto mientras exista uno solo.
-INSERT INTO public.scheduling_resources (id, name)
-VALUES ('00000000-0000-4000-8000-000000000001', 'Estudio LASHARY');
-
--- 2. Bloques semanales de disponibilidad (criterio 1). Son horas de pared recurrentes en la
+-- 1. Bloques semanales de disponibilidad (criterio 1). Son horas de pared recurrentes en la
 --    zona del estudio (America/Costa_Rica), no instantes: por eso minutos desde la medianoche y
 --    no timestamptz (DOM-003 aplica a instantes; los bloqueos puntuales sí van en UTC).
 --    weekday sigue ISO 8601: 1 = lunes … 7 = domingo.
@@ -50,19 +34,9 @@ CREATE TABLE public.scheduling_weekly_availability (
 -- pero la consulta común (bloques de un recurso ordenados por día y hora) usa este (PERF-003).
 CREATE INDEX idx_scheduling_weekly_availability_resource ON public.scheduling_weekly_availability (resource_id, weekday, start_min);
 
--- 3. RLS (SEC-001). Solo staff lee y escribe. El calendario público (US-AGE-02) agregará su
+-- 2. RLS (SEC-001). Solo staff lee y escribe. El calendario público (US-AGE-02) agregará su
 --    propia vía de lectura cuando exista; hasta entonces nada de esto es visible fuera del panel.
-ALTER TABLE public.scheduling_resources ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.scheduling_weekly_availability ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "scheduling_resources_select_staff"
-  ON public.scheduling_resources
-  FOR SELECT
-  TO authenticated
-  USING (public.auth_is_staff());
-
--- scheduling_resources no tiene política de escritura: el alta de un segundo recurso es una
--- historia futura (ADR-0005). Fail-closed.
 
 CREATE POLICY "scheduling_weekly_availability_select_staff"
   ON public.scheduling_weekly_availability
@@ -84,7 +58,7 @@ CREATE POLICY "scheduling_weekly_availability_delete_staff"
 
 -- Sin UPDATE: cambiar un bloque es borrarlo y crear otro, así el no-solape se revalida entero.
 
--- 4. Días cerrados. closed_on es una fecha de calendario en la zona del estudio, no un
+-- 3. Días cerrados. closed_on es una fecha de calendario en la zona del estudio, no un
 --    instante: el día entero queda sin disponibilidad. kind distingue el día no laborable
 --    (decisión del estudio) del feriado; label es el nombre opcional ("Navidad").
 CREATE TABLE public.scheduling_closed_dates (
@@ -101,7 +75,7 @@ CREATE TABLE public.scheduling_closed_dates (
 -- El UNIQUE ya indexa (resource_id, closed_on); este índice explícito lo deja visible (PERF-003).
 CREATE INDEX idx_scheduling_closed_dates_resource ON public.scheduling_closed_dates (resource_id, closed_on);
 
--- 5. Bloqueos manuales puntuales. Son instantes: UTC en timestamptz (DOM-003). Dos bloqueos del
+-- 4. Bloqueos manuales puntuales. Son instantes: UTC en timestamptz (DOM-003). Dos bloqueos del
 --    mismo recurso no se solapan (rango semiabierto, como los bloques semanales).
 CREATE TABLE public.scheduling_manual_blocks (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -121,7 +95,7 @@ CREATE TABLE public.scheduling_manual_blocks (
 
 CREATE INDEX idx_scheduling_manual_blocks_resource ON public.scheduling_manual_blocks (resource_id, starts_at);
 
--- 6. RLS (SEC-001) de días cerrados y bloqueos: solo staff. El motivo de un bloqueo es personal;
+-- 5. RLS (SEC-001) de días cerrados y bloqueos: solo staff. El motivo de un bloqueo es personal;
 --    el calendario público (US-AGE-02) solo deberá ver que el espacio no está disponible.
 ALTER TABLE public.scheduling_closed_dates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.scheduling_manual_blocks ENABLE ROW LEVEL SECURITY;
