@@ -100,7 +100,7 @@
 ### store (actualizado: 2026-10-14)
 - US-PROD-02 — terminada — PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), product.test.ts, commands.test.ts, queries.test.ts, product-schema.test.ts, product-actions.test.ts, layout.test.tsx, products-admin-rls.test.ts (omitida sin Supabase local, ver deuda)
 - US-PROD-03 — terminada — PR #271 (pieza 8/8, cierra la historia) y las piezas #198, #200, #265, #266, #267, #269 y #270; tests: product-detail-page.test.tsx (criterios 1, 2 y 3: imagen, nombre, descripcion, precio, boton de agregar al carrito y aviso Agotado con la compra deshabilitada), store.test.tsx (enlace desde el grid), product-detail.test.ts, get-public-product-detail.test.ts, public-product-detail-db.test.ts, product-image.test.ts, product-images.test.ts, product-actions.test.ts, product-images-storage-rls.test.ts (omitida sin Supabase local, ver deuda)
-- US-SHOP-01 — en_progreso — falta: Piezas 7/8 y 8/8: los botones para sumar, restar y quitar con el subtotal en tiempo real, y el botón Agregar al carrito del detalle; sin ellas la clienta no puede cambiar su carrito y los criterios 1 y 2 no están demostrados
+- US-SHOP-01 — en_progreso — falta: Pieza 8/8: el botón Agregar al carrito del detalle del producto; sin ella la clienta no puede agregar desde la tienda y la parte de agregar del criterio 1 no está demostrada
 - US-SHOP-02 — no_iniciada
 
 ## Bloqueos
