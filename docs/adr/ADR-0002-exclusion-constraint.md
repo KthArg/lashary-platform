@@ -42,3 +42,13 @@ alter table scheduling_appointments
 - La garantía es estructural: ningún endpoint nuevo, script o bug puede duplicar una cita.
 - Toda inserción/movimiento de cita debe poblar `occupied_range` correctamente — se centraliza en el dominio de `scheduling`, único lugar que calcula el rango (preparación + duración + limpieza).
 - El constraint no sabe de reglas de negocio (ventanas, morosidad): esas siguen en la aplicación. Aquí solo vive el invariante físico: un recurso, un instante, una cita.
+
+## Addendum 2026-10-14 — serializar con un lock por recurso (US-AGE-09)
+
+La prueba de N reservas concurrentes mostró que el `INSERT` directo contra el constraint **deadlockea** cuando varias citas solapadas están en vuelo a la vez: cada inserción espera a la otra al validar el índice GiST y Postgres aborta una tras `deadlock_timeout` (1 s), con `40P01` en lugar de `23P01`. Medido en Postgres local con N inserciones simultáneas al mismo espacio: N=2 → 1 s y un `40P01` la mitad de las veces; N=5 → 4 s; N=10 → 8 s, más que el `statement_timeout` de Supabase (PERF-001: medido antes de actuar). Siempre ganó exactamente una cita: el problema era de latencia y estabilidad, no de integridad.
+
+Decisión: las citas se crean con la función `scheduling_create_appointment`, que toma `pg_advisory_xact_lock` por recurso y recién entonces inserta. Con ella, N=10 tarda ~27 ms, sin ningún `40P01`: un ganador y nueve `23P01` limpios.
+
+- **La garantía no cambia.** Sigue siendo el exclusion constraint (DOM-010); el lock solo ordena a quienes compiten. Una inserción por otro camino, sin pasar por la función, se protege igual.
+- **Lo que este ADR descartó se mantiene descartado:** los advisory locks *como garantía* (dependen de que nadie olvide tomarlos). Aquí son una optimización de orden sobre una garantía que no depende de ellos.
+- La función es `SECURITY INVOKER`: la RLS de la tabla aplica a quien llama (SEC-001).
