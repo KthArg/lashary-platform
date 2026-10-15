@@ -12,7 +12,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
-const RESOURCE_ID = '00000000-0000-4000-8000-000000000001'
+const RESOURCE_ID = '00000000-0000-0000-0000-000000000a01'
 
 let reachable = false
 if (URL && ANON_KEY) {
