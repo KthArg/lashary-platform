@@ -92,7 +92,7 @@
 - US-AGE-05 — no_iniciada
 - US-AGE-06 — no_iniciada
 - US-AGE-07 — no_iniciada
-- US-AGE-09 — en_progreso — falta: toda la historia: modelo mínimo (scheduling_resources, scheduling_appointments y el constraint de no-solape, ADR-0002), rango ocupado en dominio, prueba de N reservas concurrentes, aprobar/rechazar con bitácora (ADR-0003) y la cola de aprobación en el panel. Criterio 5 (alerta en producción): solo se entrega el error tipado y el registro estructurado; la alerta real no tiene herramienta en el repo y queda como falta nombrada.
+- US-AGE-09 — en_progreso — falta: rango ocupado en dominio (el modelo y el constraint de no-solape ya existen en la migración 20261014000000, probados en supabase/tests/database/scheduling_no_overlap.test.sql y src/features/scheduling/__tests__/rls-isolation.test.ts), prueba de N reservas concurrentes, aprobar/rechazar con bitácora (ADR-0003) y la cola de aprobación en el panel. Criterio 5 (alerta en producción): solo se entrega el error tipado y el registro estructurado; la alerta real no tiene herramienta en el repo y queda como falta nombrada.
 - US-AGE-10 — no_iniciada
 - US-AGE-11 — no_iniciada
 - US-AGE-12 — no_iniciada

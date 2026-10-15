@@ -19,7 +19,7 @@ El backlog se mantiene en sus 51 historias; estas capacidades se construyen **de
 | Gateway del CMS (ADR-0001) | **US-LAND-01** y **US-BLOG-02** | LAND-*, BLOG-03 |
 | Vista de cuenta de la clienta | **US-MOR-03** y **US-CLI-06** | LAND-06 (progreso visible) |
 | Aprobación manual + constraint | **US-AGE-09** — su texto (aprobación, ADR-0003) y sus criterios (constraint, ADR-0002) son dos entregables de la misma historia | AGE-05 |
-| Modelo de citas y recursos (`scheduling_resources`, `scheduling_appointments`) | **US-AGE-09** — el constraint necesita su tabla y US-AGE-05 depende de US-AGE-09 (decisión del 2026-10-14, pendiente del visto bueno del PO) | AGE-05, AGE-06, AGE-10, AGE-11, AGE-12 |
+| Modelo de citas y recursos (`scheduling_resources`, `scheduling_appointments`) | **US-AGE-09** — el constraint necesita su tabla y US-AGE-05 depende de US-AGE-09 (decisión del 2026-10-14, con visto bueno del PO) | AGE-05, AGE-06, AGE-10, AGE-11, AGE-12 |
 | Agendar en nombre de una clienta | cláusula de **US-MOR-02** | — |
 | Backups | tarea operativa de `platform`, sin historia | — |
 
