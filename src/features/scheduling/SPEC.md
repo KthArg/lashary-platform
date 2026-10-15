@@ -11,7 +11,7 @@ historias:
   - id: US-AGE-03
     estado: en_progreso
     evidencia: "criterios 1, 3 y 4 demostrados; tests: technique-selection.test.ts, select-technique.test.ts, no-appointment-history.test.ts, load-technique-selection-page.test.ts, TechniqueSelectionPageView.test.tsx"
-    falta: "aprobar/rechazar con bitácora (ADR-0003) y la cola de aprobación en el panel. Criterio 5: la alerta real no existe porque no hay herramienta de alertas en el repo; solo se entrega el error tipado y el evento estructurado scheduling.appointment_overlap_rejected (db/appointment-repository.ts). Ya existen el modelo y el constraint (migración 20261014000000), el cálculo del rango ocupado (domain/appointment-window.ts), la función de creación serializada (migración 20261014000001), la creación de cita y la prueba de concurrencia (criterio 4)."
+    falta: "criterio 2 (detectar primera vez/re-aplicación por historial de citas) diferido: no existe scheduling_appointments todavía (la trae US-AGE-05, que depende de esta historia). Punto de extensión: application/no-appointment-history.ts (ClientHistoryPort), hoy siempre reporta sin historial; la corrección manual ya está resuelta en el use-case (isFirstTimeOverride). Ver docs/process/DEPENDENCIES.md, Criterios diferidos."
   - id: US-AGE-04
     estado: no_iniciada
   - id: US-AGE-05
@@ -22,7 +22,7 @@ historias:
     estado: no_iniciada
   - id: US-AGE-09
     estado: en_progreso
-    falta: "prueba de N reservas concurrentes (criterio 4), mapeo del constraint a error tipado y registro estructurado (criterio 5, sin alerta real: no hay herramienta en el repo), aprobar/rechazar con bitácora (ADR-0003) y la cola de aprobación en el panel. Ya existen el modelo y el constraint (migración 20261014000000) y el cálculo del rango ocupado (domain/appointment-window.ts)."
+    falta: "aprobar/rechazar con bitácora (ADR-0003) y la cola de aprobación en el panel. Criterio 5: la alerta real no existe porque no hay herramienta de alertas en el repo; solo se entrega el error tipado y el evento estructurado scheduling.appointment_overlap_rejected (db/appointment-repository.ts). Ya existen el modelo y el constraint (migración 20261014000000), el cálculo del rango ocupado (domain/appointment-window.ts), la función de creación serializada (migración 20261014000001), la creación de cita y la prueba de concurrencia (criterio 4)."
   - id: US-AGE-10
     estado: no_iniciada
   - id: US-AGE-11

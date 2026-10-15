@@ -1,14 +1,5 @@
--- scheduling_no_overlap.test.sql
--- US-AGE-09 · feature scheduling — criterios 1 a 3: la base impide que dos citas activas se
--- pisen (DOM-010, ADR-0002), el rango ocupado incluye preparación y limpieza, y solo cuentan los
--- estados activos. Además el control positivo de acceso de staff y que nadie — ni staff — puede
--- UPDATE o DELETE una cita sin política (SEC-001).
---
--- Complementa src/features/scheduling/__tests__/rls-isolation.test.ts (SEC-002), que prueba el
--- control negativo (anon y clienta). El rol se siembra como superusuario local dentro de la
--- transacción; no se usa la service-role key (SEC-003) y todo se deshace con ROLLBACK.
---
--- Correr con: npx supabase test db   (requiere `supabase start`)
+-- US-AGE-09 · scheduling — criterios 1 a 3: no-solape por constraint, rango con preparación y limpieza, solo estados activos.
+-- Correr con: npx supabase test db
 
 BEGIN;
 SELECT plan(19);
