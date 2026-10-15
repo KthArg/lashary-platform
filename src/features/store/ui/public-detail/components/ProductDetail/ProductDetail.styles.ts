@@ -16,4 +16,7 @@ export const productDetailStyles = {
     'inline-flex items-center rounded-full bg-error/30 px-3 py-1 text-sm font-medium text-base-content',
   actions: 'card-actions mt-auto justify-end pt-4',
   addToCart: 'btn btn-primary w-full sm:w-auto',
+  purchaseForm: 'flex w-full flex-col gap-2 sm:w-auto sm:items-end',
+  purchaseNote: 'text-sm text-base-content/80',
+  viewCart: 'link link-hover text-sm',
 }

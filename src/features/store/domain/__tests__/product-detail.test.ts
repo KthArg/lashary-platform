@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { toProductDetail, type PublicProductDetailSource } from '@/features/store/domain/product-detail'
 
+const SERUM_ID = '2d4f6a8c-1b3e-4d5f-8a7c-9e0b1c2d3e4f'
+
 const source = (overrides: Partial<PublicProductDetailSource> = {}): PublicProductDetailSource => ({
+  id: SERUM_ID,
   slug: 'serum-nutritivo-lashary',
   name: 'Serum nutritivo Lashary',
   description: 'Tratamiento nutritivo para pestañas.',
