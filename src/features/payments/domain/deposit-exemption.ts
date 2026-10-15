@@ -1,5 +1,5 @@
 import { ok, err, type Result } from '@/shared/result'
-import { DepositExemptionValidationError } from './errors'
+import { depositExemptionValidationError, type DepositExemptionValidationError } from './errors'
 
 export type DepositExemptionInput = {
   clientId: string
@@ -38,7 +38,7 @@ export class DepositExemption {
     if (reason.length === 0) problems.push('la razón no puede estar vacía')
 
     if (problems.length > 0) {
-      return err(new DepositExemptionValidationError(problems))
+      return err(depositExemptionValidationError(problems))
     }
 
     return ok(

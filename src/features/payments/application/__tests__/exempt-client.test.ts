@@ -1,21 +1,26 @@
 import { describe, it, expect } from 'vitest'
-import { ok, err, isOk, isErr } from '@/shared/result'
+import { ok, err, isOk, isErr, type Result } from '@/shared/result'
 import { fixedClock, fixedDate } from '@/shared/testing/fixed-clock'
 import type { DepositExemption } from '../../domain/deposit-exemption'
-import { ClientAlreadyExempt } from '../../domain/errors'
+import { clientAlreadyExempt, isClientAlreadyExempt, type ClientAlreadyExempt } from '../../domain/errors'
 import type { DepositExemptionRepository, RecordAuditEvent } from '../ports'
+import {
+  DEPOSIT_EXEMPTION_ENTITY_TYPE,
+  DEPOSIT_EXEMPTION_GRANTED_ACTION,
+} from '../exempt-client.constants'
 import { exemptClient } from '../exempt-client'
 
 class InMemoryDepositExemptionRepository implements DepositExemptionRepository {
   readonly saved: DepositExemption[] = []
   private readonly activeClients = new Set<string>()
 
-  async save(exemption: DepositExemption): Promise<void> {
+  async save(exemption: DepositExemption): Promise<Result<void, ClientAlreadyExempt>> {
     if (exemption.active && this.activeClients.has(exemption.clientId)) {
-      throw new ClientAlreadyExempt(exemption.clientId)
+      return err(clientAlreadyExempt(exemption.clientId))
     }
     this.activeClients.add(exemption.clientId)
     this.saved.push(exemption)
+    return ok(undefined)
   }
 }
 
@@ -59,8 +64,8 @@ describe('exemptClient', () => {
     expect(auditCalls).toEqual([
       {
         actorId: '00000000-0000-0000-0000-0000000000a1',
-        action: 'payments.deposit_exemption.granted',
-        entityType: 'clients_profile',
+        action: DEPOSIT_EXEMPTION_GRANTED_ACTION,
+        entityType: DEPOSIT_EXEMPTION_ENTITY_TYPE,
         entityId: '00000000-0000-0000-0000-0000000000c1',
         payload: { reason: 'caso especial', exemptionId: 'exm-1' },
       },
@@ -106,7 +111,7 @@ describe('exemptClient', () => {
 
     expect(isErr(second)).toBe(true)
     if (isOk(second)) return
-    expect(second.error).toBeInstanceOf(ClientAlreadyExempt)
+    expect(isClientAlreadyExempt(second.error)).toBe(true)
     expect(repo.saved).toHaveLength(1)
   })
 

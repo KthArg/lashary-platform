@@ -1,8 +1,9 @@
 import type { Result } from '@/shared/result'
 import type { DepositExemption } from '../domain/deposit-exemption'
+import type { ClientAlreadyExempt } from '../domain/errors'
 
 export interface DepositExemptionRepository {
-  save(exemption: DepositExemption): Promise<void>
+  save(exemption: DepositExemption): Promise<Result<void, ClientAlreadyExempt>>
 }
 
 export type RecordAuditEvent = (input: {
