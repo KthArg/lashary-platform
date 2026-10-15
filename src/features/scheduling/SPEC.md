@@ -68,7 +68,7 @@ Decisión comunicada por Bayron el 2026-10-14, con visto bueno del PO. `DEPENDEN
 
 ## Criterio trasladado a US-AGE-05
 
-Propuesto por el revisor (Kenny) el 2026-10-15; confirmación del PO pendiente. Se registra en `docs/process/DEPENDENCIES.md`, Criterios trasladados, ítem 4.
+Propuesto por el revisor (Kenny) y aprobado por el PO el 2026-10-15, comunicado por Bayron. Se registra en `docs/process/DEPENDENCIES.md`, Criterios trasladados, ítem 4.
 
 - Criterio 5 de US-AGE-09 («alerta si el constraint se activa en producción»): la alerta real no se implementó aquí. No hay herramienta de alertas en el repo y, hasta que US-AGE-05 agregue el check de disponibilidad previo a la reserva, un rechazo del constraint es lo esperado y no un bug. US-AGE-09 entrega el error tipado `SpaceNotAvailable` y el evento estructurado `scheduling.appointment_overlap_rejected` (`db/appointment-repository.ts`); US-AGE-05 debe demostrar la alerta sobre ese evento y elegir el canal.
 
