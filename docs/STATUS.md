@@ -92,7 +92,7 @@
 - US-AGE-05 — no_iniciada
 - US-AGE-06 — no_iniciada
 - US-AGE-07 — no_iniciada
-- US-AGE-09 — en_progreso — falta: prueba de N reservas concurrentes (criterio 4), mapeo del constraint a error tipado y registro estructurado (criterio 5, sin alerta real: no hay herramienta en el repo), aprobar/rechazar con bitácora (ADR-0003) y la cola de aprobación en el panel. Ya existen el modelo y el constraint (migración 20261014000000) y el cálculo del rango ocupado (domain/appointment-window.ts).
+- US-AGE-09 — en_progreso — falta: aprobar/rechazar con bitácora (ADR-0003) y la cola de aprobación en el panel. Criterio 5: la alerta real no existe porque no hay herramienta de alertas en el repo; solo se entrega el error tipado y el evento estructurado scheduling.appointment_overlap_rejected (db/appointment-repository.ts). Ya existen el modelo y el constraint (migración 20261014000000), el cálculo del rango ocupado (domain/appointment-window.ts), la función de creación serializada (migración 20261014000001) y la creación de cita (caso de uso y repositorio). Falta la prueba de N reservas concurrentes (criterio 4).
 - US-AGE-10 — no_iniciada
 - US-AGE-11 — no_iniciada
 - US-AGE-12 — no_iniciada
