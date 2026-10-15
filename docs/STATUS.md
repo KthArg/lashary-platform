@@ -92,7 +92,7 @@
 - US-AGE-05 — no_iniciada
 - US-AGE-06 — no_iniciada
 - US-AGE-07 — no_iniciada
-- US-AGE-09 — en_progreso — falta: la cola de aprobación en el panel (la UI y la página; las server actions ya existen); notificar a la clienta al rechazar depende de US-NOT-*. Criterio 5: la alerta real no existe porque no hay herramienta de alertas en el repo; solo se entrega el error tipado y el evento estructurado scheduling.appointment_overlap_rejected (db/appointment-repository.ts). Ya existen el modelo y el constraint (migración 20261014000000), el cálculo del rango ocupado (domain/appointment-window.ts), la función de creación serializada (migración 20261014000001), la creación de cita, la prueba de concurrencia (criterio 4), la decisión de aprobar o rechazar en la base (migración 20261014000002), sus casos de uso con bitácora y las server actions de la cola.
+- US-AGE-09 — en_progreso — falta: notificar a la clienta al rechazar (depende de US-NOT-*) y el cierre de la historia. Criterio 5: la alerta real no existe porque no hay herramienta de alertas en el repo; solo se entrega el error tipado y el evento estructurado scheduling.appointment_overlap_rejected (db/appointment-repository.ts). Ya existen el modelo y el constraint (migración 20261014000000), el cálculo del rango ocupado (domain/appointment-window.ts), la función de creación serializada (migración 20261014000001), la creación de cita, la prueba de concurrencia (criterio 4), la decisión de aprobar o rechazar en la base (migración 20261014000002), sus casos de uso con bitácora, las server actions de la cola y la cola de aprobación en `/admin/citas`.
 - US-AGE-10 — no_iniciada
 - US-AGE-11 — no_iniciada
 - US-AGE-12 — no_iniciada
