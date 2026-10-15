@@ -1,13 +1,17 @@
-import { ok, err, isErr, type Result } from '@/shared/result'
+import { ok, isErr, type Result } from '@/shared/result'
 import type { Clock } from '@/shared/clock'
 import {
   DepositExemption,
   type DepositExemptionView,
 } from '../domain/deposit-exemption'
-import {
+import type {
   ClientAlreadyExempt,
-  type DepositExemptionValidationError,
+  DepositExemptionValidationError,
 } from '../domain/errors'
+import {
+  DEPOSIT_EXEMPTION_ENTITY_TYPE,
+  DEPOSIT_EXEMPTION_GRANTED_ACTION,
+} from './exempt-client.constants'
 import type { DepositExemptionRepository, RecordAuditEvent } from './ports'
 
 export type ExemptClientInput = {
@@ -21,19 +25,6 @@ export type ExemptClientDeps = {
   newId: () => string
   clock: Clock
   recordAuditEvent: RecordAuditEvent
-}
-
-async function saveOrConflict(
-  repo: DepositExemptionRepository,
-  exemption: DepositExemption,
-): Promise<Result<void, ClientAlreadyExempt>> {
-  try {
-    await repo.save(exemption)
-    return ok(undefined)
-  } catch (error) {
-    if (error instanceof ClientAlreadyExempt) return err(error)
-    throw error
-  }
 }
 
 export const exemptClient =
@@ -51,13 +42,13 @@ export const exemptClient =
     })
     if (isErr(built)) return built
 
-    const saved = await saveOrConflict(deps.repo, built.value)
+    const saved = await deps.repo.save(built.value)
     if (isErr(saved)) return saved
 
     const audited = await deps.recordAuditEvent({
       actorId: input.exemptedBy,
-      action: 'payments.deposit_exemption.granted',
-      entityType: 'clients_profile',
+      action: DEPOSIT_EXEMPTION_GRANTED_ACTION,
+      entityType: DEPOSIT_EXEMPTION_ENTITY_TYPE,
       entityId: input.clientId,
       payload: { reason: input.reason, exemptionId: built.value.id },
     })
