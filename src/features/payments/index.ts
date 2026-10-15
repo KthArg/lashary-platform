@@ -23,4 +23,4 @@ export async function exemptClient(
 
 export type { ExemptClientInput, DepositExemptionView, ClientAlreadyExempt, DepositExemptionValidationError }
 export { isClientAlreadyExempt, isDepositExemptionValidationError } from './domain/errors'
-export { ExemptClientForm } from './ui/ExemptClientForm'
+export { ExemptClientForm } from './ui/admin-exemptions/components/ExemptClientForm'

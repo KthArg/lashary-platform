@@ -2,50 +2,11 @@
 
 import { useActionState, useState, useTransition } from 'react'
 import type { ClientRecord } from '@/features/clients'
-import { paymentsMessages } from './messages'
-import { exemptClientAction, searchClientsAction } from './actions'
-import { initialExemptClientActionState } from './action-state'
-import { exemptClientFormStyles as STYLES } from './exempt-client-form.styles'
-
-const m = paymentsMessages.exemption
-
-function Feedback({
-  status,
-  message,
-  problems,
-}: {
-  status: string
-  message?: string
-  problems?: string[]
-}) {
-  if (status === 'idle') return null
-  if (status === 'ok') {
-    return (
-      <div role="status" className={STYLES.alertSuccess}>
-        <span>{message}</span>
-      </div>
-    )
-  }
-  if (status === 'forbidden' || status === 'conflict') {
-    return (
-      <div role="alert" className={STYLES.alertWarning}>
-        <span>{message}</span>
-      </div>
-    )
-  }
-  return (
-    <div role="alert" className={STYLES.alertError}>
-      <div>
-        <p className={STYLES.feedbackTitle}>{m.validationTitle}</p>
-        <ul className={STYLES.feedbackList}>
-          {(problems ?? []).map((problem) => (
-            <li key={problem}>{problem}</li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  )
-}
+import { exemptionMessages } from '../../constants/exemption-strings'
+import { exemptClientAction, searchClientsAction } from '../../actions/exemption-actions'
+import { initialExemptClientActionState } from '../../types/exempt-client-action-state'
+import { ExemptClientFeedback } from '../ExemptClientFeedback'
+import { exemptClientFormStyles as STYLES } from './ExemptClientForm.styles'
 
 export function ExemptClientForm() {
   const [state, formAction, pending] = useActionState(
@@ -76,20 +37,20 @@ export function ExemptClientForm() {
 
   return (
     <section className={STYLES.section}>
-      <h2 className={STYLES.heading}>{m.title}</h2>
-      <p className={STYLES.subtitle}>{m.subtitle}</p>
+      <h2 className={STYLES.heading}>{exemptionMessages.title}</h2>
+      <p className={STYLES.subtitle}>{exemptionMessages.subtitle}</p>
 
-      {showFeedback && <Feedback {...state} />}
+      {showFeedback && <ExemptClientFeedback {...state} />}
 
       <div className={STYLES.searchRow}>
         <label className={STYLES.fieldLabel} htmlFor="client-search">
-          <span className={STYLES.labelText}>{m.searchLabel}</span>
+          <span className={STYLES.labelText}>{exemptionMessages.searchLabel}</span>
           <input
             id="client-search"
             type="text"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder={m.searchPlaceholder}
+            placeholder={exemptionMessages.searchPlaceholder}
             className={STYLES.fieldInput}
           />
         </label>
@@ -99,7 +60,7 @@ export function ExemptClientForm() {
           disabled={searching || query.trim().length === 0}
           className={STYLES.searchButton}
         >
-          {searching ? m.searching : m.searchLabel}
+          {searching ? exemptionMessages.searching : exemptionMessages.searchLabel}
         </button>
       </div>
 
@@ -107,11 +68,11 @@ export function ExemptClientForm() {
         <div aria-live="polite">
           {searched && !searching && searchFailed && (
             <p role="alert" className={STYLES.alertError}>
-              {m.searchFailed}
+              {exemptionMessages.searchFailed}
             </p>
           )}
           {searched && !searching && !searchFailed && results.length === 0 && (
-            <p className={STYLES.statusText}>{m.noResults}</p>
+            <p className={STYLES.statusText}>{exemptionMessages.noResults}</p>
           )}
         </div>
       )}
@@ -137,16 +98,16 @@ export function ExemptClientForm() {
         <form action={formAction} className={STYLES.form}>
           <input type="hidden" name="clientId" value={selected.id} />
           <p className={STYLES.selectedLine}>
-            {m.selected}: <strong>{selected.fullName}</strong>
+            {exemptionMessages.selected}: <strong>{selected.fullName}</strong>
           </p>
 
           <label className={STYLES.fieldLabel} htmlFor="reason">
-            <span className={STYLES.labelText}>{m.reasonLabel}</span>
+            <span className={STYLES.labelText}>{exemptionMessages.reasonLabel}</span>
             <textarea id="reason" name="reason" required rows={2} className={STYLES.textarea} />
           </label>
 
           <button type="submit" disabled={pending} className={STYLES.submitButton}>
-            {m.submit}
+            {exemptionMessages.submit}
           </button>
         </form>
       )}
