@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { publicProductDetailDb } from '@/features/store'
 
+const SERUM_ID = '2d4f6a8c-1b3e-4d5f-8a7c-9e0b1c2d3e4f'
+
 const mocks = vi.hoisted(() => ({
   from: vi.fn(),
   select: vi.fn(),
@@ -13,6 +15,7 @@ vi.mock('@/shared/lib/supabase/server', () => ({
 }))
 
 const serumRow = {
+  id: SERUM_ID,
   slug: 'serum-nutritivo-lashary',
   nombre: 'Serum nutritivo Lashary',
   descripcion: 'Tratamiento nutritivo para pestañas.',
@@ -42,6 +45,7 @@ describe('publicProductDetailDb', () => {
   it('traduce la fila de la base a los nombres del dominio', async () => {
     const source = await publicProductDetailDb().findBySlug('serum-nutritivo-lashary')
     expect(source).toEqual({
+      id: SERUM_ID,
       slug: 'serum-nutritivo-lashary',
       name: 'Serum nutritivo Lashary',
       description: 'Tratamiento nutritivo para pestañas.',

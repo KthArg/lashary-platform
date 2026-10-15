@@ -28,6 +28,7 @@ export type { PublicProductDetailReader } from './application/public-detail/get-
 export { getPublicProductDetail } from './application/public-detail/get-public-product-detail';
 export { publicProductDetailDb } from './db/public-product-detail';
 export { ProductDetail } from './ui/public-detail/components/ProductDetail';
+export { getPurchaseAccess } from './ui/public-detail/purchase-access';
 export { PUBLIC_DETAIL_STRINGS } from './ui/public-detail/constants/public-detail-strings';
 
 export { ProductsAdminPanel } from './ui/admin-products/components/ProductsAdminPanel';
