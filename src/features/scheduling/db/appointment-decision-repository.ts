@@ -16,10 +16,9 @@ export function createSupabaseAppointmentDecisionRepository(
         p_reason: input.reason,
       })
 
-      // Cualquier fallo de la base es inesperado: no se disfraza de resultado de negocio (DOM-006).
       if (error) throw new Error(`no se pudo decidir la cita: ${error.message}`)
 
-      // Sin fila: la cita no existe, no es visible para quien llama o ya no estaba pendiente.
+      // Sin fila: la cita no existe, no es visible o ya no estaba pendiente.
       const decided = (data as Array<{ id: string; status: AppointmentDecision }> | null)?.[0]
       if (!decided) return err(appointmentNotPending(input.appointmentId))
 

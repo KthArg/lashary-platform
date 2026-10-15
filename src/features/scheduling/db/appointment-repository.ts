@@ -19,7 +19,6 @@ export type OverlapRejectedEvent = {
 
 export type OverlapReporter = (event: OverlapRejectedEvent) => void
 
-// Registro estructurado por defecto: una línea JSON con el nombre fijo del evento.
 export const logOverlapRejected: OverlapReporter = (event) => {
   console.error(JSON.stringify(event))
 }
@@ -36,7 +35,6 @@ export function createSupabaseAppointmentRepository(
 ): AppointmentRepository {
   return {
     async create(appointment: NewAppointment) {
-      // Sin consulta de disponibilidad previa: la base decide (DOM-010).
       const { data, error } = await db.rpc(CREATE_APPOINTMENT_FUNCTION, {
         p_resource_id: appointment.resourceId,
         p_starts_at: toIso(appointment.startsAtMs),
@@ -53,7 +51,6 @@ export function createSupabaseAppointmentRepository(
         })
         return err(spaceNotAvailable(appointment.resourceId))
       }
-      // Cualquier otro fallo es inesperado: no se disfraza de resultado de negocio (DOM-006).
       if (error || !data) {
         throw new Error(`no se pudo crear la cita: ${error?.message ?? 'sin fila'}`)
       }
