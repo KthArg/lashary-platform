@@ -1,27 +1,26 @@
 import { requireAdminSession } from '@/features/auth'
+import { ApprovalQueue, APPROVAL_QUEUE_LABELS, listPendingAppointmentsAction } from '@/features/scheduling'
+import { adminCitasStyles as STYLES } from './citas.styles'
 
 export const metadata = {
-  title: 'Citas | Panel Administrativo LASHARY',
+  title: 'Citas | LASHARY Beauty Studio',
+  description: 'Cola de aprobación de citas del estudio',
 }
 
 export default async function AdminCitasPage() {
   await requireAdminSession()
+  const result = await listPendingAppointmentsAction()
 
   return (
-    <div className="space-y-4">
-      <div className="border-b border-brand-border pb-4">
-        <h1 className="font-serif text-2xl md:text-3xl font-bold text-brand-dark">
-          Gestión de Citas
-        </h1>
-        <p className="text-sm text-brand-muted mt-1">
-          Módulo de agenda y catálogo de citas (US-AGE-08 / US-AGE-01).
-        </p>
-      </div>
-      <div className="rounded-xl border border-brand-border bg-brand-surface p-6 shadow-sm">
-        <p className="text-sm text-brand-muted">
-          Espacio reservado para el catálogo de servicios y disponibilidad de agenda.
-        </p>
-      </div>
+    <div className={STYLES.page}>
+      <header className={STYLES.header}>
+        <h1 className={STYLES.title}>{APPROVAL_QUEUE_LABELS.sectionTitle}</h1>
+        <p className={STYLES.subtitle}>{APPROVAL_QUEUE_LABELS.sectionSubtitle}</p>
+      </header>
+      <ApprovalQueue
+        appointments={result.ok ? result.appointments : []}
+        loadError={result.ok ? null : result.error}
+      />
     </div>
   )
 }
