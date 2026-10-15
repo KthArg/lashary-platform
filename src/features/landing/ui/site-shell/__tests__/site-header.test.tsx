@@ -165,3 +165,31 @@ describe('SiteHeader — enlace a la página de productos', () => {
     expect(screen.queryByRole('dialog')).toBeNull()
   })
 })
+
+describe('SiteHeader — enlace al carrito', () => {
+  const cartHref = '/portal/carrito'
+
+  it('con la ruta del carrito, la cabecera enlaza a ella', () => {
+    render(<SiteHeader sections={sections} cartHref={cartHref} />)
+
+    const cart = screen.getByRole('link', { name: landingMessages.header.cart })
+    expect(cart.getAttribute('href')).toBe(cartHref)
+  })
+
+  it('sin la ruta del carrito, la cabecera no muestra el enlace', () => {
+    render(<SiteHeader sections={sections} />)
+
+    expect(screen.queryByRole('link', { name: landingMessages.header.cart })).toBeNull()
+  })
+
+  it('el menú del teléfono ofrece el carrito y se cierra al elegirlo', () => {
+    render(<SiteHeader sections={sections} cartHref={cartHref} />)
+    fireEvent.click(screen.getByRole('button', { name: landingMessages.header.openMenu }))
+
+    const dialog = screen.getByRole('dialog', { name: landingMessages.menu.dialogLabel })
+    const cart = within(dialog).getByRole('link', { name: landingMessages.menu.cart })
+    expect(cart.getAttribute('href')).toBe(cartHref)
+    fireEvent.click(cart)
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+})

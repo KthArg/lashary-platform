@@ -9,5 +9,6 @@ export const siteMenuStyles = {
   footer: 'flex flex-wrap items-center gap-x-8 gap-y-3 text-sm',
   reserve: 'inline-flex min-h-11 items-center text-site-rose',
   products: 'inline-flex min-h-11 items-center text-site-paper',
+  cart: 'inline-flex min-h-11 items-center text-site-paper',
   login: 'inline-flex min-h-11 items-center text-site-paper',
 }

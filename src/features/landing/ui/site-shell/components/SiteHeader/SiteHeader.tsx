@@ -9,7 +9,7 @@ import { siteHeaderStyles as STYLES } from './SiteHeader.styles'
 import { SiteMenu } from '../SiteMenu'
 import type { SiteHeaderProps } from './SiteHeader.types'
 
-export function SiteHeader({ sections, productsHref }: SiteHeaderProps) {
+export function SiteHeader({ sections, productsHref, cartHref }: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const hasSections = sections.length > 0
@@ -43,6 +43,11 @@ export function SiteHeader({ sections, productsHref }: SiteHeaderProps) {
                 {landingMessages.header.products}
               </Link>
             )}
+            {cartHref && (
+              <Link href={cartHref} className={hasSections ? STYLES.cartDesktop : STYLES.cart}>
+                {landingMessages.header.cart}
+              </Link>
+            )}
             <Link href={LOGIN_ROUTE} className={hasSections ? STYLES.loginDesktop : STYLES.login}>
               {landingMessages.header.login}
             </Link>
@@ -67,7 +72,13 @@ export function SiteHeader({ sections, productsHref }: SiteHeaderProps) {
         </div>
       </header>
       {menuOpen && (
-        <SiteMenu sections={sections} anchorBase={anchorBase} productsHref={productsHref} onClose={closeMenu} />
+        <SiteMenu
+          sections={sections}
+          anchorBase={anchorBase}
+          productsHref={productsHref}
+          cartHref={cartHref}
+          onClose={closeMenu}
+        />
       )}
     </>
   )

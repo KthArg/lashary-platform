@@ -9,6 +9,8 @@ export const siteHeaderStyles = {
   navLink: 'no-underline',
   products: 'inline-flex min-h-11 items-center text-site-nav no-underline',
   productsDesktop: 'hidden min-h-11 items-center text-site-nav no-underline site-nav:inline-flex',
+  cart: 'inline-flex min-h-11 items-center text-site-nav no-underline',
+  cartDesktop: 'hidden min-h-11 items-center text-site-nav no-underline site-nav:inline-flex',
   login: 'inline-flex min-h-11 items-center text-site-nav no-underline',
   loginDesktop: 'hidden min-h-11 items-center text-site-nav no-underline site-nav:inline-flex',
   reserve:
