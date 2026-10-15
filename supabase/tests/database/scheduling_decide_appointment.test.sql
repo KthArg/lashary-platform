@@ -2,7 +2,7 @@
 -- Correr con: npx supabase test db
 
 BEGIN;
-SELECT plan(12);
+SELECT plan(14);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -92,6 +92,22 @@ SELECT is(
     WHERE id = '00000000-0000-0000-0000-00000000d903'),
   '00000000-0000-0000-0000-0000000000d1'::uuid,
   'admin: aun con un UPDATE directo del estado, quien decide lo fija la base');
+
+SELECT throws_ok(
+  $$INSERT INTO public.scheduling_appointments (resource_id, status, starts_at, ends_at, occupied_range)
+    VALUES ('00000000-0000-0000-0000-000000000a01', 'approved',
+            '2027-08-01 10:00+00', '2027-08-01 11:00+00',
+            tstzrange('2027-08-01 09:45+00', '2027-08-01 11:15+00', '[)'))$$,
+  '42501', NULL,
+  'admin: no puede insertar una cita ya aprobada, nace pendiente');
+
+SELECT throws_ok(
+  $$INSERT INTO public.scheduling_appointments (resource_id, decided_by, starts_at, ends_at, occupied_range)
+    VALUES ('00000000-0000-0000-0000-000000000a01', '00000000-0000-0000-0000-0000000000d2',
+            '2027-08-02 10:00+00', '2027-08-02 11:00+00',
+            tstzrange('2027-08-02 09:45+00', '2027-08-02 11:15+00', '[)'))$$,
+  '42501', NULL,
+  'admin: no puede insertar una cita con una decisión falsificada');
 
 -- ── Anon ─────────────────────────────────────────────────────────────────────
 SET LOCAL ROLE anon;

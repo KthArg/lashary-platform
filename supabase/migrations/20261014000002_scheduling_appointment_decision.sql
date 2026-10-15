@@ -17,6 +17,15 @@ CREATE POLICY "scheduling_appointments_decide_staff"
   USING (public.auth_is_staff() AND status = 'pending_approval')
   WITH CHECK (public.auth_is_staff() AND status IN ('approved', 'rejected'));
 
+-- Una cita nueva siempre nace pendiente y sin decisión: aprobar y rechazar pasan solo por el UPDATE.
+ALTER POLICY "scheduling_appointments_insert_staff"
+  ON public.scheduling_appointments
+  WITH CHECK (
+    public.auth_is_staff()
+    AND status = 'pending_approval'
+    AND decided_by IS NULL AND decided_at IS NULL AND decision_reason IS NULL
+  );
+
 -- Solo estado y motivo son editables: el horario, el rango ocupado y quién decidió no se tocan.
 REVOKE UPDATE ON public.scheduling_appointments FROM authenticated;
 GRANT UPDATE (status, decision_reason) ON public.scheduling_appointments TO authenticated;
