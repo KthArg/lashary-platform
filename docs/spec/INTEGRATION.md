@@ -45,7 +45,7 @@ Seis personas integrando **a diario**: cada historia en su rama `us/<ID>`, hecha
 ### INT-008 — Migraciones versionadas forward-only
 **Regla.** Migraciones versionadas en `supabase/migrations/`, solo hacia adelante, **máximo una por PR**, patrón expand/contract para cualquier cambio destructivo (renombrar/borrar columna = expandir, migrar datos, contraer en PR posterior).
 **Racional.** Una migración destructiva de un solo paso deja base y código desincronizados durante el deploy — con seis personas mergeando a diario, eso es una interrupción garantizada.
-**Cumplimiento.** L1 conteo y lint de migraciones en CI (F4).
+**Cumplimiento.** L1 conteo y lint de migraciones en CI (F4). El PR `us/<ID>` → `main` y el push a `main` que lo sigue quedan exentos del tope de una migración: juntan piezas que ya lo cumplieron una por una. Editar o borrar una migración existente sigue siendo violación en todos los casos.
 
 ### INT-009 — Título de PR en Conventional Commits con historia y posición
 **Regla.** El título de todo PR sigue [Conventional Commits](https://www.conventionalcommits.org/es/v1.0.0/) y se escribe **en español**: `<tipo>(<ámbito>): <descripción>`, más un sufijo que depende de la rama:
