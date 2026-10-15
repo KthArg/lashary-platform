@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-14.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-15.
 
 ## Features
 
@@ -19,7 +19,7 @@
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
 | payments | pendiente | terminada | 1 / 0 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
-| scheduling | pendiente | en_progreso | 0 / 2 / 0 / 0 / 9 |
+| scheduling | pendiente | en_progreso | 1 / 2 / 0 / 0 / 8 |
 | store | pendiente | en_progreso | 3 / 0 / 0 / 0 / 1 |
 
 ## Detalle por feature
@@ -84,15 +84,15 @@
 
 ### platform (actualizado: 2026-09-16)
 
-### scheduling (actualizado: 2026-10-14)
-- US-AGE-01 — en_progreso — falta: piezas 1 a 8 hechas (criterio 1 sin UI: migración 20261015000000, domain/weekly-availability.ts, application/weekly-availability.ts, db/weekly-availability-repository.ts; criterio 2 sin UI: migración 20261015000000, domain/closed-dates.ts, shared/studio-time.ts, application/closed-dates.ts, db/closed-date-repository.ts; criterio 3 sin UI: migración 20261015000000, domain/manual-blocks.ts, application/manual-blocks.ts, db/manual-block-repository.ts; pruebas pgTAP scheduling_*.test.sql y __tests__/rls-isolation.test.ts). Validación en el borde y composición del panel: ui/availability/availability-schema.ts y availability-service.ts. Faltan las acciones, los componentes y la página /admin/citas. Criterios 4 y 5 con traslado propuesto al PO (US-AGE-02 y US-AGE-05), pendiente de aprobación
+### scheduling (actualizado: 2026-10-15)
+- US-AGE-01 — en_progreso — falta: piezas 1 a 8 hechas (criterio 1 sin UI: migración 20261015000000, domain/weekly-availability.ts, application/weekly-availability.ts, db/weekly-availability-repository.ts; criterio 2 sin UI: migración 20261015000000, domain/closed-dates.ts, shared/studio-time.ts, application/closed-dates.ts, db/closed-date-repository.ts; criterio 3 sin UI: migración 20261015000000, domain/manual-blocks.ts, application/manual-blocks.ts, db/manual-block-repository.ts; pruebas pgTAP scheduling_*.test.sql y __tests__/availability-rls-isolation.test.ts). Validación en el borde y composición del panel: ui/availability/availability-schema.ts y availability-service.ts. Faltan las acciones, los componentes y la página /admin/citas. Criterios 4 y 5 con traslado propuesto al PO (US-AGE-02 y US-AGE-05), pendiente de aprobación
 - US-AGE-02 — no_iniciada
 - US-AGE-03 — en_progreso — falta: criterio 2 (detectar primera vez/re-aplicación por historial de citas) diferido: no existe scheduling_appointments todavía (la trae US-AGE-05, que depende de esta historia). Punto de extensión: application/no-appointment-history.ts (ClientHistoryPort), hoy siempre reporta sin historial; la corrección manual ya está resuelta en el use-case (isFirstTimeOverride). Ver docs/process/DEPENDENCIES.md, Criterios diferidos.
 - US-AGE-04 — no_iniciada
 - US-AGE-05 — no_iniciada
 - US-AGE-06 — no_iniciada
 - US-AGE-07 — no_iniciada
-- US-AGE-09 — no_iniciada
+- US-AGE-09 — terminada — criterios 1 a 4 y el flujo de aprobación (ADR-0003) demostrados; tests: supabase/tests/database/scheduling_no_overlap.test.sql (criterios 1 a 3), db/__tests__/appointment-concurrency.integration.test.ts (criterio 4, 10 reservas simultáneas por ronda, 3 rondas), supabase/tests/database/scheduling_create_appointment.test.sql, supabase/tests/database/scheduling_decide_appointment.test.sql, application/__tests__/create-appointment.test.ts, application/__tests__/decide-appointment.test.ts, db/__tests__/appointment-repository.test.ts, db/__tests__/appointment-decision-repository.test.ts, ui/approval-queue/__tests__/approval-queue-actions.test.ts, ui/approval-queue/__tests__/ApprovalQueue.test.tsx, __tests__/rls-isolation.test.ts. Criterio 5, parte de código: error tipado SpaceNotAvailable y evento scheduling.appointment_overlap_rejected (db/appointment-repository.ts). La alerta real se traslada a US-AGE-05 (docs/process/DEPENDENCIES.md, Criterios trasladados, ítem 4)
 - US-AGE-10 — no_iniciada
 - US-AGE-11 — no_iniciada
 - US-AGE-12 — no_iniciada
