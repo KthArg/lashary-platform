@@ -17,3 +17,5 @@ export const RANGE_UPPER_BOUND = ')'
 
 // Función SQL que aprueba o rechaza una cita pendiente (migración 20261014000002).
 export const DECIDE_APPOINTMENT_FUNCTION = 'scheduling_decide_appointment'
+
+export const APPOINTMENTS_TABLE = 'scheduling_appointments'

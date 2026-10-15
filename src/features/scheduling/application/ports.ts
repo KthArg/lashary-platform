@@ -59,3 +59,13 @@ export type RecordAuditEvent = (input: {
   entityId: string
   payload?: Record<string, unknown>
 }) => Promise<Result<unknown, unknown>>
+
+export type PendingAppointment = {
+  id: string
+  startsAtMs: number
+  endsAtMs: number
+}
+
+export interface PendingAppointmentsRepository {
+  listPending(): Promise<PendingAppointment[]>
+}
