@@ -20,7 +20,7 @@
 | payments | pendiente | terminada | 1 / 0 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | scheduling | pendiente | en_progreso | 0 / 1 / 0 / 0 / 10 |
-| store | pendiente | en_progreso | 2 / 1 / 0 / 0 / 1 |
+| store | pendiente | en_progreso | 3 / 0 / 0 / 0 / 1 |
 
 ## Detalle por feature
 
@@ -100,7 +100,7 @@
 ### store (actualizado: 2026-10-14)
 - US-PROD-02 — terminada — PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), product.test.ts, commands.test.ts, queries.test.ts, product-schema.test.ts, product-actions.test.ts, layout.test.tsx, products-admin-rls.test.ts (omitida sin Supabase local, ver deuda)
 - US-PROD-03 — terminada — PR #271 (pieza 8/8, cierra la historia) y las piezas #198, #200, #265, #266, #267, #269 y #270; tests: product-detail-page.test.tsx (criterios 1, 2 y 3: imagen, nombre, descripcion, precio, boton de agregar al carrito y aviso Agotado con la compra deshabilitada), store.test.tsx (enlace desde el grid), product-detail.test.ts, get-public-product-detail.test.ts, public-product-detail-db.test.ts, product-image.test.ts, product-images.test.ts, product-actions.test.ts, product-images-storage-rls.test.ts (omitida sin Supabase local, ver deuda)
-- US-SHOP-01 — en_progreso — falta: Pieza 8/8: el botón Agregar al carrito del detalle del producto; sin ella la clienta no puede agregar desde la tienda y la parte de agregar del criterio 1 no está demostrada
+- US-SHOP-01 — terminada — PR de la pieza 8/8 (cierra la historia) y las piezas #306, #308, #310, #323, #324, #339 y #340; tests: add-to-cart-from-detail.test.tsx y cart-contents.test.tsx (criterio 1: agregar desde el detalle, sumar, restar y quitar), cart-contents.test.tsx (criterio 2: cantidad, total y subtotal cambian antes de que responda el servidor), cart-repository-db.test.ts (criterio 3: el carrito persiste entre conexiones de la misma clienta), cart-page.test.tsx, cart-actions.test.ts, cart-use-cases.test.ts, cart.test.ts, cart-items-rls.test.ts y store_cart_items_active_product.test.sql (SEC-002)
 - US-SHOP-02 — no_iniciada
 
 ## Bloqueos
