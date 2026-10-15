@@ -2,7 +2,7 @@
 -- Correr con: npx supabase test db
 
 BEGIN;
-SELECT plan(19);
+SELECT plan(20);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -119,9 +119,11 @@ SELECT throws_ok(
   '23514', NULL,
   'un estado fuera del vocabulario se rechaza');
 
--- Sin política de UPDATE/DELETE, RLS no lanza error: el WHERE no encuentra filas.
-UPDATE public.scheduling_appointments SET status = 'cancelled'
- WHERE id = '00000000-0000-0000-0000-00000000a901';
+SELECT throws_ok(
+  $$UPDATE public.scheduling_appointments SET status = 'cancelled'
+     WHERE id = '00000000-0000-0000-0000-00000000a901'$$,
+  '42501', NULL,
+  'admin: UPDATE a un estado distinto de aprobada o rechazada lo bloquea la política');
 
 DELETE FROM public.scheduling_appointments
  WHERE id = '00000000-0000-0000-0000-00000000a901';
@@ -129,7 +131,7 @@ DELETE FROM public.scheduling_appointments
 SELECT is(
   (SELECT status FROM public.scheduling_appointments WHERE id = '00000000-0000-0000-0000-00000000a901'),
   'pending_approval',
-  'admin: UPDATE y DELETE no tuvieron efecto — sin política todavía');
+  'admin: la cita sigue ahí, DELETE no tiene política');
 
 -- ── Como clienta (contraste: las mismas tablas, sin rol de staff) ───────────
 SELECT set_config('request.jwt.claims',
