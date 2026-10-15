@@ -176,6 +176,16 @@ describe('SiteHeader — enlace al carrito', () => {
     expect(cart.getAttribute('href')).toBe(cartHref)
   })
 
+  it('en la cabecera el carrito es un ícono con nombre accesible, a la derecha de "Reservar cita"', () => {
+    render(<SiteHeader sections={sections} cartHref={cartHref} />)
+
+    const cart = screen.getByRole('link', { name: landingMessages.header.cart })
+    const reserve = screen.getByRole('link', { name: landingMessages.header.reserve })
+    expect(cart.textContent).toBe('')
+    expect(cart.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true')
+    expect(reserve.compareDocumentPosition(cart) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
   it('sin la ruta del carrito, la cabecera no muestra el enlace', () => {
     render(<SiteHeader sections={sections} />)
 
