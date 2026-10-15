@@ -25,7 +25,6 @@ export interface InvalidAppointmentWindow {
   readonly message: string
 }
 
-// El espacio ya está ocupado: lo produce el mapeo del constraint (DOM-010).
 export interface SpaceNotAvailable {
   readonly code: 'SCHEDULING_SPACE_NOT_AVAILABLE'
   readonly resourceId: string
@@ -43,6 +42,16 @@ export interface InvalidDecisionReason {
   readonly message: string
 }
 
+export interface StorageFailed {
+  readonly code: 'SCHEDULING_STORAGE_FAILED'
+  readonly message: string
+}
+
+export interface AuditNotRecorded {
+  readonly code: 'SCHEDULING_AUDIT_NOT_RECORDED'
+  readonly message: string
+}
+
 export type SchedulingError =
   | TechniqueNotSelectable
   | TechniqueNotAvailable
@@ -50,6 +59,8 @@ export type SchedulingError =
   | SpaceNotAvailable
   | AppointmentNotPending
   | InvalidDecisionReason
+  | StorageFailed
+  | AuditNotRecorded
 
 export const techniqueNotSelectable = (
   techniqueId: string,
@@ -98,4 +109,14 @@ export const appointmentNotPending = (appointmentId: string): AppointmentNotPend
 export const invalidDecisionReason = (): InvalidDecisionReason => ({
   code: 'SCHEDULING_INVALID_DECISION_REASON',
   message: 'el motivo de la decisión es demasiado largo',
+})
+
+export const storageFailed = (detail: string): StorageFailed => ({
+  code: 'SCHEDULING_STORAGE_FAILED',
+  message: `no se pudo acceder al almacenamiento de citas: ${detail}`,
+})
+
+export const auditNotRecorded = (): AuditNotRecorded => ({
+  code: 'SCHEDULING_AUDIT_NOT_RECORDED',
+  message: 'la decisión quedó guardada pero no se pudo registrar en la bitácora',
 })

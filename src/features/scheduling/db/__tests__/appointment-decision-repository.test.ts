@@ -62,15 +62,15 @@ describe('createSupabaseAppointmentDecisionRepository', () => {
     expect(isErr(result) && result.error.code).toBe('SCHEDULING_APPOINTMENT_NOT_PENDING')
   })
 
-  it('un error de la base se lanza, no se disfraza de resultado de negocio', async () => {
+  it('un error de la base devuelve StorageFailed, no AppointmentNotPending', async () => {
     const { db } = createFakeDb({ data: null, error: { message: 'conexión perdida' } })
 
-    await expect(
-      createSupabaseAppointmentDecisionRepository(db).decide({
-        appointmentId: APPOINTMENT_ID,
-        decision: APPOINTMENT_DECISION.APPROVED,
-        reason: null,
-      }),
-    ).rejects.toThrow('conexión perdida')
+    const result = await createSupabaseAppointmentDecisionRepository(db).decide({
+      appointmentId: APPOINTMENT_ID,
+      decision: APPOINTMENT_DECISION.APPROVED,
+      reason: null,
+    })
+
+    expect(isErr(result) && result.error.code).toBe('SCHEDULING_STORAGE_FAILED')
   })
 })

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { err, ok } from '@/shared/result'
-import { appointmentNotPending } from '../domain/errors'
+import { appointmentNotPending, storageFailed } from '../domain/errors'
 import type { AppointmentDecisionRepository } from '../application/ports'
 import type { AppointmentDecision } from '../domain/appointment-decision.constants'
 import { DECIDE_APPOINTMENT_FUNCTION } from './appointment-repository.constants'
@@ -16,9 +16,8 @@ export function createSupabaseAppointmentDecisionRepository(
         p_reason: input.reason,
       })
 
-      if (error) throw new Error(`no se pudo decidir la cita: ${error.message}`)
+      if (error) return err(storageFailed(error.message))
 
-      // Sin fila: la cita no existe, no es visible o ya no estaba pendiente.
       const decided = (data as Array<{ id: string; status: AppointmentDecision }> | null)?.[0]
       if (!decided) return err(appointmentNotPending(input.appointmentId))
 

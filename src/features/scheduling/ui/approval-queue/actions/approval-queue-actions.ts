@@ -9,76 +9,45 @@ import { approveAppointment, rejectAppointment } from '../../../application/deci
 import { listPendingAppointments } from '../../../application/list-pending-appointments'
 import { createSupabaseAppointmentDecisionRepository } from '../../../db/appointment-decision-repository'
 import { createSupabasePendingAppointmentsRepository } from '../../../db/pending-appointments-repository'
-import { APPROVAL_QUEUE_ERRORS } from '../constants/approval-queue.constants'
-import type { RecordAuditEvent } from '../../../application/ports'
-import type { DecideAppointmentError } from '../../../application/decide-appointment'
+import { APPROVAL_QUEUE_ERRORS, DECISION_SAVED_ERROR_CODE } from '../constants/approval-queue.constants'
+import { getDecisionErrorMessage } from '../utils/decision-error-message'
 import type {
   DecideAppointmentResult,
   ListPendingAppointmentsResult,
 } from '../types/approval-queue-action-results'
 
-const DECISION_ERROR_MESSAGES: Record<(DecideAppointmentError | { code: 'unexpected' })['code'], string> = {
-  SCHEDULING_APPOINTMENT_NOT_PENDING: APPROVAL_QUEUE_ERRORS.notPending,
-  SCHEDULING_INVALID_DECISION_REASON: APPROVAL_QUEUE_ERRORS.reasonTooLong,
-  unexpected: APPROVAL_QUEUE_ERRORS.decisionFailed,
-}
-
 export async function listPendingAppointmentsAction(): Promise<ListPendingAppointmentsResult> {
   await requireAdminSession()
-  try {
-    const repository = createSupabasePendingAppointmentsRepository(await createClient())
-    return { ok: true, appointments: await listPendingAppointments(repository) }
-  } catch {
-    return { ok: false, error: APPROVAL_QUEUE_ERRORS.loadFailed }
-  }
+  const repository = createSupabasePendingAppointmentsRepository(await createClient())
+  const pending = await listPendingAppointments(repository)
+  if (isErr(pending)) return { ok: false, error: APPROVAL_QUEUE_ERRORS.loadFailed }
+
+  return { ok: true, appointments: pending.value }
 }
 
 export async function approveAppointmentAction(appointmentId: string): Promise<DecideAppointmentResult> {
   await requireAdminSession()
-  try {
-    const appointments = createSupabaseAppointmentDecisionRepository(await createClient())
-    const result = await approveAppointment({ appointments, recordAuditEvent: record }, { appointmentId })
-    if (isErr(result)) return { ok: false, error: DECISION_ERROR_MESSAGES[result.error.code] }
-  } catch {
-    return { ok: false, error: DECISION_ERROR_MESSAGES.unexpected }
-  }
+  const appointments = createSupabaseAppointmentDecisionRepository(await createClient())
+  const result = await approveAppointment({ appointments, recordAuditEvent: record }, { appointmentId })
+  if (isErr(result)) return { ok: false, error: getDecisionErrorMessage(result.error) }
 
   revalidatePath(ADMIN_PORTAL_ROUTES.citas)
   return { ok: true }
 }
 
-// El actor sale de la sesión del servidor, nunca de lo que mande el cliente (SEC-005).
 export async function rejectAppointmentAction(
   appointmentId: string,
   reason?: string,
 ): Promise<DecideAppointmentResult> {
   const session = await requireAdminSession()
-  let auditFailed = false
-  const recordAuditEvent: RecordAuditEvent = async (event) => {
-    try {
-      const recorded = await record(event)
-      if (isErr(recorded)) auditFailed = true
-      return recorded
-    } catch (error) {
-      auditFailed = true
-      throw error
-    }
-  }
-
-  try {
-    const appointments = createSupabaseAppointmentDecisionRepository(await createClient())
-    const result = await rejectAppointment(
-      { appointments, recordAuditEvent },
-      { appointmentId, actorId: session.user.id, reason },
-    )
-    if (isErr(result)) return { ok: false, error: DECISION_ERROR_MESSAGES[result.error.code] }
-  } catch {
-    // Si solo falló la bitácora la cita ya quedó rechazada: la cola debe dejar de mostrarla.
-    if (auditFailed) revalidatePath(ADMIN_PORTAL_ROUTES.citas)
-    return {
-      ok: false,
-      error: auditFailed ? APPROVAL_QUEUE_ERRORS.auditFailed : DECISION_ERROR_MESSAGES.unexpected,
-    }
+  const appointments = createSupabaseAppointmentDecisionRepository(await createClient())
+  const result = await rejectAppointment(
+    { appointments, recordAuditEvent: record },
+    { appointmentId, actorId: session.user.id, reason },
+  )
+  if (isErr(result)) {
+    if (result.error.code === DECISION_SAVED_ERROR_CODE) revalidatePath(ADMIN_PORTAL_ROUTES.citas)
+    return { ok: false, error: getDecisionErrorMessage(result.error) }
   }
 
   revalidatePath(ADMIN_PORTAL_ROUTES.citas)

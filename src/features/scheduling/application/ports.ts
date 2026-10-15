@@ -4,6 +4,7 @@ import type { AppointmentDecision } from '../domain/appointment-decision.constan
 import type {
   AppointmentNotPending,
   SpaceNotAvailable,
+  StorageFailed,
   TechniqueNotAvailable,
 } from '../domain/errors'
 
@@ -30,9 +31,8 @@ export type CreatedAppointment = {
   resourceId: string
 }
 
-// Inserta sin consultar disponibilidad: la base decide (DOM-010).
 export interface AppointmentRepository {
-  create(appointment: NewAppointment): Promise<Result<CreatedAppointment, SpaceNotAvailable>>
+  create(appointment: NewAppointment): Promise<Result<CreatedAppointment, SpaceNotAvailable | StorageFailed>>
 }
 
 export type DecideAppointmentInput = {
@@ -46,9 +46,10 @@ export type DecidedAppointment = {
   status: AppointmentDecision
 }
 
-// Quién decide lo fija la base desde la sesión (SEC-005).
 export interface AppointmentDecisionRepository {
-  decide(input: DecideAppointmentInput): Promise<Result<DecidedAppointment, AppointmentNotPending>>
+  decide(
+    input: DecideAppointmentInput,
+  ): Promise<Result<DecidedAppointment, AppointmentNotPending | StorageFailed>>
 }
 
 export type RecordAuditEvent = (input: {
@@ -66,5 +67,5 @@ export type PendingAppointment = {
 }
 
 export interface PendingAppointmentsRepository {
-  listPending(): Promise<PendingAppointment[]>
+  listPending(): Promise<Result<PendingAppointment[], StorageFailed>>
 }

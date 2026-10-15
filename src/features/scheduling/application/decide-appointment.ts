@@ -1,7 +1,13 @@
 import { err, isErr, ok, type Result } from '@/shared/result'
 import { APPOINTMENT_DECISION } from '../domain/appointment-decision.constants'
 import { normalizeDecisionReason } from '../domain/appointment-decision'
-import type { AppointmentNotPending, InvalidDecisionReason } from '../domain/errors'
+import {
+  auditNotRecorded,
+  type AppointmentNotPending,
+  type AuditNotRecorded,
+  type InvalidDecisionReason,
+  type StorageFailed,
+} from '../domain/errors'
 import { APPOINTMENT_ENTITY_TYPE, APPOINTMENT_REJECTED_ACTION } from './decide-appointment.constants'
 import type {
   AppointmentDecisionRepository,
@@ -22,12 +28,17 @@ export type RejectAppointmentInput = {
   reason?: string
 }
 
-export type DecideAppointmentError = AppointmentNotPending | InvalidDecisionReason
+export type ApproveAppointmentError = AppointmentNotPending | StorageFailed
+
+export type DecideAppointmentError =
+  | ApproveAppointmentError
+  | InvalidDecisionReason
+  | AuditNotRecorded
 
 export async function approveAppointment(
   deps: DecideAppointmentDeps,
   input: ApproveAppointmentInput,
-): Promise<Result<DecidedAppointment, AppointmentNotPending>> {
+): Promise<Result<DecidedAppointment, ApproveAppointmentError>> {
   return deps.appointments.decide({
     appointmentId: input.appointmentId,
     decision: APPOINTMENT_DECISION.APPROVED,
@@ -35,7 +46,6 @@ export async function approveAppointment(
   })
 }
 
-// Si la bitácora falla el error se propaga: la decisión ya quedó guardada.
 export async function rejectAppointment(
   deps: DecideAppointmentDeps,
   input: RejectAppointmentInput,
@@ -57,8 +67,7 @@ export async function rejectAppointment(
     entityId: input.appointmentId,
     payload: { reason: reason.value },
   })
-  if (isErr(audited)) throw audited.error
+  if (isErr(audited)) return err(auditNotRecorded())
 
   return ok(rejected.value)
 }
-

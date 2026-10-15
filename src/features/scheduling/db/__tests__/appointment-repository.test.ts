@@ -73,8 +73,10 @@ describe('createSupabaseAppointmentRepository', () => {
 
     expect(isErr(result)).toBe(true)
     if (isErr(result)) {
-      expect(result.error.code).toBe('SCHEDULING_SPACE_NOT_AVAILABLE')
-      expect(result.error.resourceId).toBe(RESOURCE_ID)
+      expect(result.error).toMatchObject({
+        code: 'SCHEDULING_SPACE_NOT_AVAILABLE',
+        resourceId: RESOURCE_ID,
+      })
     }
     expect(reported).toEqual([
       {
@@ -86,7 +88,7 @@ describe('createSupabaseAppointmentRepository', () => {
     ])
   })
 
-  it('cualquier otro error de la base lanza y no emite el evento de solape', async () => {
+  it('cualquier otro error de la base devuelve StorageFailed y no emite el evento de solape', async () => {
     const { db } = createFakeDb({
       data: null,
       error: { code: '42501', message: 'permission denied' },
@@ -94,7 +96,9 @@ describe('createSupabaseAppointmentRepository', () => {
     const reported: OverlapRejectedEvent[] = []
     const repository = createSupabaseAppointmentRepository(db, (event) => reported.push(event))
 
-    await expect(repository.create(newAppointment)).rejects.toThrow('permission denied')
+    const result = await repository.create(newAppointment)
+
+    expect(isErr(result) && result.error.code).toBe('SCHEDULING_STORAGE_FAILED')
     expect(reported).toHaveLength(0)
   })
 })
