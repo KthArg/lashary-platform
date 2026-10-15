@@ -17,12 +17,29 @@ CREATE POLICY "scheduling_appointments_decide_staff"
   USING (public.auth_is_staff() AND status = 'pending_approval')
   WITH CHECK (public.auth_is_staff() AND status IN ('approved', 'rejected'));
 
--- Solo las columnas de la decisión son editables: el horario y el rango ocupado no cambian.
+-- Solo estado y motivo son editables: el horario, el rango ocupado y quién decidió no se tocan.
 REVOKE UPDATE ON public.scheduling_appointments FROM authenticated;
-GRANT UPDATE (status, decided_by, decided_at, decision_reason)
-  ON public.scheduling_appointments TO authenticated;
+GRANT UPDATE (status, decision_reason) ON public.scheduling_appointments TO authenticated;
 
--- Quien decide sale de la sesión (auth.uid()), nunca de un parámetro del cliente (SEC-005).
+-- Quién decide y cuándo los fija la base, también ante un UPDATE directo que se salte la función.
+CREATE FUNCTION public.scheduling_stamp_decision()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public, pg_temp
+AS $$
+BEGIN
+  NEW.decided_by := auth.uid();
+  NEW.decided_at := now();
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER scheduling_appointments_stamp_decision
+  BEFORE UPDATE OF status ON public.scheduling_appointments
+  FOR EACH ROW
+  WHEN (OLD.status IS DISTINCT FROM NEW.status)
+  EXECUTE FUNCTION public.scheduling_stamp_decision();
+
 -- Sin fila devuelta: la cita no existe o ya no estaba pendiente.
 CREATE FUNCTION public.scheduling_decide_appointment(
   p_appointment_id uuid,
@@ -36,8 +53,6 @@ SET search_path = public, pg_temp
 AS $$
   UPDATE public.scheduling_appointments
      SET status = p_decision,
-         decided_by = auth.uid(),
-         decided_at = now(),
          decision_reason = p_reason
    WHERE id = p_appointment_id
      AND status = 'pending_approval'

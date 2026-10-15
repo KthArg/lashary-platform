@@ -2,7 +2,7 @@
 -- Correr con: npx supabase test db
 
 BEGIN;
-SELECT plan(10);
+SELECT plan(12);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -76,6 +76,22 @@ SELECT throws_ok(
      WHERE id = '00000000-0000-0000-0000-00000000d903'$$,
   '42501', NULL,
   'admin: el horario no se puede editar, solo las columnas de la decisión');
+
+SELECT throws_ok(
+  $$UPDATE public.scheduling_appointments
+       SET decided_by = '00000000-0000-0000-0000-0000000000d2'
+     WHERE id = '00000000-0000-0000-0000-00000000d903'$$,
+  '42501', NULL,
+  'admin: no puede falsear quién decidió con un UPDATE directo');
+
+UPDATE public.scheduling_appointments SET status = 'approved'
+ WHERE id = '00000000-0000-0000-0000-00000000d903';
+
+SELECT is(
+  (SELECT decided_by FROM public.scheduling_appointments
+    WHERE id = '00000000-0000-0000-0000-00000000d903'),
+  '00000000-0000-0000-0000-0000000000d1'::uuid,
+  'admin: aun con un UPDATE directo del estado, quien decide lo fija la base');
 
 -- ── Anon ─────────────────────────────────────────────────────────────────────
 SET LOCAL ROLE anon;
