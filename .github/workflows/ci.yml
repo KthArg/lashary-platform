@@ -51,6 +51,7 @@ jobs:
           {
             echo "NEXT_PUBLIC_SUPABASE_URL=$(echo "$S" | jq -r .API_URL)"
             echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$(echo "$S" | jq -r .ANON_KEY)"
+            echo "SUPABASE_DB_URL=$(echo "$S" | jq -r .DB_URL)"
           } >> .env.local
       - run: npm test
       - name: Pruebas SQL (pgTAP) — control positivo de escritura staff
