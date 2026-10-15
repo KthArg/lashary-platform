@@ -17,62 +17,55 @@ export type DepositExemptionView = {
   createdAt: Date
 }
 
-type DepositExemptionProps = DepositExemptionView
+const depositExemptionBrand: unique symbol = Symbol('DepositExemption')
 
-export class DepositExemption {
-  private constructor(private readonly props: DepositExemptionProps) {}
+export interface DepositExemption {
+  readonly [depositExemptionBrand]: true
+  readonly id: string
+  readonly clientId: string
+  readonly exemptedBy: string
+  readonly reason: string
+  readonly active: boolean
+  readonly createdAt: Date
+}
 
-  static create(
-    id: string,
-    input: DepositExemptionInput,
-  ): Result<DepositExemption, DepositExemptionValidationError> {
-    const problems: string[] = []
+export function buildDepositExemption(
+  id: string,
+  input: DepositExemptionInput,
+): Result<DepositExemption, DepositExemptionValidationError> {
+  const problems: string[] = []
 
-    const clientId = input.clientId.trim()
-    if (clientId.length === 0) problems.push('el cliente no puede estar vacío')
+  const clientId = input.clientId.trim()
+  if (clientId.length === 0) problems.push('el cliente no puede estar vacío')
 
-    const exemptedBy = input.exemptedBy.trim()
-    if (exemptedBy.length === 0) problems.push('quién otorga la exoneración no puede estar vacío')
+  const exemptedBy = input.exemptedBy.trim()
+  if (exemptedBy.length === 0) problems.push('quién otorga la exoneración no puede estar vacío')
 
-    const reason = input.reason.trim()
-    if (reason.length === 0) problems.push('la razón no puede estar vacía')
+  const reason = input.reason.trim()
+  if (reason.length === 0) problems.push('la razón no puede estar vacía')
 
-    if (problems.length > 0) {
-      return err(depositExemptionValidationError(problems))
-    }
-
-    return ok(
-      new DepositExemption({
-        id,
-        clientId,
-        exemptedBy,
-        reason,
-        active: true,
-        createdAt: input.createdAt,
-      }),
-    )
+  if (problems.length > 0) {
+    return err(depositExemptionValidationError(problems))
   }
 
-  get id(): string {
-    return this.props.id
-  }
-  get clientId(): string {
-    return this.props.clientId
-  }
-  get exemptedBy(): string {
-    return this.props.exemptedBy
-  }
-  get reason(): string {
-    return this.props.reason
-  }
-  get active(): boolean {
-    return this.props.active
-  }
-  get createdAt(): Date {
-    return this.props.createdAt
-  }
+  return ok({
+    [depositExemptionBrand]: true,
+    id,
+    clientId,
+    exemptedBy,
+    reason,
+    active: true,
+    createdAt: input.createdAt,
+  })
+}
 
-  toView(): DepositExemptionView {
-    return { ...this.props }
+export function depositExemptionToView(exemption: DepositExemption): DepositExemptionView {
+  return {
+    id: exemption.id,
+    clientId: exemption.clientId,
+    exemptedBy: exemption.exemptedBy,
+    reason: exemption.reason,
+    active: exemption.active,
+    createdAt: exemption.createdAt,
   }
 }
