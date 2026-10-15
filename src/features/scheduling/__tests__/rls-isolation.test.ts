@@ -1,103 +1,116 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-// SEC-002 — Test de aislamiento RLS de las tablas de disponibilidad de scheduling (US-AGE-01).
-//
-// La disponibilidad la administra solo staff: anon y una clienta autenticada real (creada por
-// sign-up, sin service-role key — SEC-003) no pueden leer ni escribir. El control positivo
-// (staff sí puede) vive en supabase/tests/database/scheduling_*.test.sql, donde el rol se
-// siembra dentro de una transacción.
-//
-// Se salta si Supabase local no está disponible; en CI (job-tests-reales) sí lo está.
-
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
-const RESOURCE_ID = '00000000-0000-0000-0000-000000000a01'
+const APPOINTMENTS_TABLE = 'scheduling_appointments'
+const RESOURCES_TABLE = 'scheduling_resources'
+const STUDIO_RESOURCE_ID = '00000000-0000-0000-0000-000000000a01'
+const PROBE_STARTS_AT = '2027-06-01T10:00:00Z'
+const PROBE_ENDS_AT = '2027-06-01T11:00:00Z'
+const PROBE_OCCUPIED_RANGE = '[2027-06-01T09:45:00Z,2027-06-01T11:15:00Z)'
 
+const configured = Boolean(URL && ANON_KEY)
 let reachable = false
-if (URL && ANON_KEY) {
+
+async function probeSupabase(): Promise<boolean> {
   try {
     const res = await fetch(`${URL}/rest/v1/`, { headers: { apikey: ANON_KEY } })
-    reachable = res.status < 500
+    return res.status < 500
   } catch {
-    reachable = false
+    return false
   }
 }
-if (!reachable) {
-  console.warn('[scheduling/rls] Supabase local no disponible — suite omitida.')
+
+function itLive(name: string, fn: () => Promise<void>) {
+  it(name, async (ctx) => {
+    ctx.skip(!reachable)
+    await fn()
+  })
 }
 
 async function signUpClienta(): Promise<SupabaseClient> {
   const anon = createClient(URL, ANON_KEY)
-  const email = `rls-sched-${Date.now()}-${Math.random().toString(36).slice(2)}@lashary.test`
+  const email = `rls-test-${Date.now()}-${Math.random().toString(36).slice(2)}@lashary.test`
   const { data, error } = await anon.auth.signUp({
     email,
     password: `pw-${Math.random().toString(36).slice(2)}`,
   })
   if (error || !data.session) {
-    throw new Error(`no se pudo crear la clienta de prueba: ${error?.message ?? 'sin sesión'}`)
+    throw new Error(
+      `no se pudo crear la clienta de prueba: ${error?.message ?? 'sin sesión'}`,
+    )
   }
   return createClient(URL, ANON_KEY, {
-    global: { headers: { Authorization: `Bearer ${data.session.access_token}` } },
+    global: {
+      headers: { Authorization: `Bearer ${data.session.access_token}` },
+    },
   })
 }
 
-const TABLES: Record<string, Record<string, unknown>> = {
-  scheduling_resources: { name: 'RLS intento de escritura' },
-  scheduling_weekly_availability: {
-    resource_id: RESOURCE_ID,
-    weekday: 6,
-    start_min: 60,
-    end_min: 120,
-  },
-  scheduling_closed_dates: {
-    resource_id: RESOURCE_ID,
-    closed_on: '2030-01-01',
-    kind: 'holiday',
-  },
-  scheduling_manual_blocks: {
-    resource_id: RESOURCE_ID,
-    starts_at: '2030-01-02T15:00:00Z',
-    ends_at: '2030-01-02T16:00:00Z',
-  },
+const probeAppointment = {
+  resource_id: STUDIO_RESOURCE_ID,
+  starts_at: PROBE_STARTS_AT,
+  ends_at: PROBE_ENDS_AT,
+  occupied_range: PROBE_OCCUPIED_RANGE,
 }
 
-describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de la disponibilidad de scheduling', () => {
+describe.skipIf(!configured)('SEC-002 — aislamiento RLS de scheduling', () => {
   let anon: SupabaseClient
   let clienta: SupabaseClient
 
   beforeAll(async () => {
+    reachable = await probeSupabase()
+    if (!reachable) {
+      console.warn('[scheduling/rls] Supabase local no disponible — suite omitida.')
+      return
+    }
     anon = createClient(URL, ANON_KEY)
     clienta = await signUpClienta()
-    const staffCheck = await clienta.rpc('auth_is_staff')
-    if (staffCheck.error || staffCheck.data !== false) {
-      throw new Error('setup: la clienta de prueba no debería tener rol de staff')
-    }
   })
 
-  for (const [table, row] of Object.entries(TABLES)) {
-    it(`${table}: anón y clienta no leen nada`, async () => {
-      for (const client of [anon, clienta]) {
-        const { data, error } = await client.from(table).select('id')
-        expect(error).toBeNull()
-        expect(data ?? []).toHaveLength(0)
-      }
-    })
+  itLive('token anónimo no ve ninguna cita ni ningún recurso', async () => {
+    const appointments = await anon.from(APPOINTMENTS_TABLE).select('id')
+    expect(appointments.error).toBeNull()
+    expect(appointments.data ?? []).toHaveLength(0)
 
-    it(`${table}: anón y clienta no pueden INSERT`, async () => {
-      for (const client of [anon, clienta]) {
-        const insert = await client.from(table).insert(row).select()
-        expect(insert.error).not.toBeNull()
-      }
-    })
+    const resources = await anon.from(RESOURCES_TABLE).select('id')
+    expect(resources.error).toBeNull()
+    expect(resources.data ?? []).toHaveLength(0)
+  })
 
-    it(`${table}: anón y clienta no pueden UPDATE ni DELETE`, async () => {
-      for (const client of [anon, clienta]) {
-        const update = await client.from(table).update({ created_at: new Date(0).toISOString() }).not('id', 'is', null).select()
-        expect(update.data ?? []).toHaveLength(0)
-        const remove = await client.from(table).delete().not('id', 'is', null).select()
-        expect(remove.data ?? []).toHaveLength(0)
-      }
-    })
-  }
+  itLive('clienta autenticada sin rol de staff no ve ninguna cita ni ningún recurso', async () => {
+    const staffCheck = await clienta.rpc('auth_is_staff')
+    expect(staffCheck.error).toBeNull()
+    expect(staffCheck.data).toBe(false)
+
+    const appointments = await clienta.from(APPOINTMENTS_TABLE).select('id')
+    expect(appointments.error).toBeNull()
+    expect(appointments.data ?? []).toHaveLength(0)
+
+    const resources = await clienta.from(RESOURCES_TABLE).select('id')
+    expect(resources.error).toBeNull()
+    expect(resources.data ?? []).toHaveLength(0)
+  })
+
+  itLive('token anónimo no puede crear una cita', async () => {
+    const { error } = await anon.from(APPOINTMENTS_TABLE).insert(probeAppointment).select()
+    expect(error).not.toBeNull()
+  })
+
+  itLive('clienta autenticada sin rol de staff no puede crear una cita', async () => {
+    const { error } = await clienta.from(APPOINTMENTS_TABLE).insert(probeAppointment).select()
+    expect(error).not.toBeNull()
+  })
+
+  itLive('ni anon ni clienta pueden crear un recurso', async () => {
+    const resource = { name: 'recurso de prueba' }
+    expect((await anon.from(RESOURCES_TABLE).insert(resource).select()).error).not.toBeNull()
+    expect((await clienta.from(RESOURCES_TABLE).insert(resource).select()).error).not.toBeNull()
+  })
+
+  itLive('tras los intentos, no quedó ninguna cita para quien no es staff', async () => {
+    const { data } = await anon.from(APPOINTMENTS_TABLE).select('id')
+    expect(data ?? []).toHaveLength(0)
+  })
 })

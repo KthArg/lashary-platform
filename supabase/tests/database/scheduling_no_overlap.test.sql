@@ -2,7 +2,7 @@
 -- Correr con: npx supabase test db
 
 BEGIN;
-SELECT plan(19);
+SELECT plan(20);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -79,12 +79,15 @@ SELECT lives_ok(
   'otro recurso en el mismo horario no choca (ADR-0005)');
 
 -- Criterio 3: un estado inactivo no ocupa, aunque el horario coincida con una cita activa.
+-- Staff solo inserta citas pendientes, así que esta fila se siembra como superusuario.
+RESET ROLE;
 SELECT lives_ok(
   $$INSERT INTO public.scheduling_appointments (resource_id, status, starts_at, ends_at, occupied_range)
     VALUES ('00000000-0000-0000-0000-000000000a01', 'rejected',
             '2027-03-01 10:00+00', '2027-03-01 11:00+00',
             tstzrange('2027-03-01 09:45+00', '2027-03-01 11:15+00', '[)'))$$,
   'criterio 3: una cita rejected no choca con una activa');
+SET LOCAL ROLE authenticated;
 
 -- Coherencia del rango con el servicio.
 SELECT throws_ok(
@@ -111,6 +114,7 @@ SELECT throws_ok(
   '23514', NULL,
   'un servicio que termina antes de empezar se rechaza');
 
+RESET ROLE;
 SELECT throws_ok(
   $$INSERT INTO public.scheduling_appointments (resource_id, status, starts_at, ends_at, occupied_range)
     VALUES ('00000000-0000-0000-0000-000000000a01', 'inventado',
@@ -118,10 +122,13 @@ SELECT throws_ok(
             tstzrange('2027-03-02 09:45+00', '2027-03-02 11:15+00', '[)'))$$,
   '23514', NULL,
   'un estado fuera del vocabulario se rechaza');
+SET LOCAL ROLE authenticated;
 
--- Sin política de UPDATE/DELETE, RLS no lanza error: el WHERE no encuentra filas.
-UPDATE public.scheduling_appointments SET status = 'cancelled'
- WHERE id = '00000000-0000-0000-0000-00000000a901';
+SELECT throws_ok(
+  $$UPDATE public.scheduling_appointments SET status = 'cancelled'
+     WHERE id = '00000000-0000-0000-0000-00000000a901'$$,
+  '42501', NULL,
+  'admin: UPDATE a un estado distinto de aprobada o rechazada lo bloquea la política');
 
 DELETE FROM public.scheduling_appointments
  WHERE id = '00000000-0000-0000-0000-00000000a901';
@@ -129,7 +136,7 @@ DELETE FROM public.scheduling_appointments
 SELECT is(
   (SELECT status FROM public.scheduling_appointments WHERE id = '00000000-0000-0000-0000-00000000a901'),
   'pending_approval',
-  'admin: UPDATE y DELETE no tuvieron efecto — sin política todavía');
+  'admin: la cita sigue ahí, DELETE no tiene política');
 
 -- ── Como clienta (contraste: las mismas tablas, sin rol de staff) ───────────
 SELECT set_config('request.jwt.claims',
