@@ -14,6 +14,11 @@ export const cartPageStyles = {
   lineBody: 'flex-1 space-y-1',
   lineName: 'link link-hover font-semibold text-brand-dark',
   lineTotal: 'font-semibold text-brand-dark',
+  quantityControls: 'flex flex-wrap items-center gap-2',
+  quantityButton: 'btn btn-outline btn-square btn-sm',
+  quantity: 'text-sm text-brand-dark',
+  removeButton: 'btn btn-ghost btn-sm',
+  feedback: 'text-sm text-brand-muted',
   subtotal: 'mt-4 flex items-center justify-between border-t border-brand-border pt-4 text-brand-dark',
   subtotalAmount: 'text-lg font-bold',
 } as const

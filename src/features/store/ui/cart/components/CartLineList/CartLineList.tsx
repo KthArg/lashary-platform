@@ -15,7 +15,35 @@ export function CartLineList({ view }: CartViewProps) {
                 {line.name}
               </Link>
               <p className={STYLES.muted}>{line.unitPriceLabel}</p>
-              <p className={STYLES.muted}>{line.quantityLabel}</p>
+              <div className={STYLES.quantityControls}>
+                <button
+                  type="button"
+                  className={STYLES.quantityButton}
+                  aria-label={line.decreaseLabel}
+                  disabled={line.isDecreaseDisabled}
+                  onClick={line.decrease}
+                >
+                  {CART_PAGE_STRINGS.decreaseSymbol}
+                </button>
+                <span className={STYLES.quantity}>{line.quantityLabel}</span>
+                <button
+                  type="button"
+                  className={STYLES.quantityButton}
+                  aria-label={line.increaseLabel}
+                  disabled={line.isIncreaseDisabled}
+                  onClick={line.increase}
+                >
+                  {CART_PAGE_STRINGS.increaseSymbol}
+                </button>
+                <button
+                  type="button"
+                  className={STYLES.removeButton}
+                  aria-label={line.removeLabel}
+                  onClick={line.remove}
+                >
+                  {CART_PAGE_STRINGS.remove}
+                </button>
+              </div>
             </div>
             <p className={STYLES.lineTotal}>{line.lineTotalLabel}</p>
           </li>
