@@ -87,7 +87,7 @@
 ### scheduling (actualizado: 2026-10-14)
 - US-AGE-01 — no_iniciada
 - US-AGE-02 — no_iniciada
-- US-AGE-03 — en_progreso — falta: aprobar/rechazar con bitácora (ADR-0003) y la cola de aprobación en el panel. Criterio 5: la alerta real no existe porque no hay herramienta de alertas en el repo; solo se entrega el error tipado y el evento estructurado scheduling.appointment_overlap_rejected (db/appointment-repository.ts). Ya existen el modelo y el constraint (migración 20261014000000), y el cálculo del rango ocupado (domain/appointment-window.ts), más la función de creación serializada (migración 20261014000001). Falta la creación de cita (caso de uso y repositorio) y la prueba de N reservas concurrentes (criterio 4).
+- US-AGE-03 — en_progreso — falta: criterio 2 (detectar primera vez/re-aplicación por historial de citas) diferido: no existe scheduling_appointments todavía (la trae US-AGE-05, que depende de esta historia). Punto de extensión: application/no-appointment-history.ts (ClientHistoryPort), hoy siempre reporta sin historial; la corrección manual ya está resuelta en el use-case (isFirstTimeOverride). Ver docs/process/DEPENDENCIES.md, Criterios diferidos.
 - US-AGE-04 — no_iniciada
 - US-AGE-05 — no_iniciada
 - US-AGE-06 — no_iniciada
