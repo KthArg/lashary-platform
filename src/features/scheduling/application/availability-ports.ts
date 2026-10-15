@@ -2,9 +2,9 @@ import type { Result } from '@/shared/result'
 import type { WeeklyBlock } from '../domain/weekly-availability'
 import type { WeeklyBlockOverlap } from '../domain/availability-errors'
 
-// Recurso por defecto mientras exista uno solo (ADR-0005). Sembrado por la migración
-// 20261014000000_scheduling_weekly_availability.sql; la UI no muestra selector de recurso.
-export const DEFAULT_RESOURCE_ID = '00000000-0000-4000-8000-000000000001'
+// Recurso por defecto mientras exista uno solo (ADR-0005). Lo siembra la migración de US-AGE-09,
+// 20261014000000_scheduling_model_and_no_overlap.sql; la UI no muestra selector de recurso.
+export const DEFAULT_RESOURCE_ID = '00000000-0000-0000-0000-000000000a01'
 
 // Tope de la lista de bloques de un recurso (PERF-002). Una semana real tiene unos pocos
 // bloques por día; el tope solo impide una lectura sin límite.
