@@ -14,3 +14,6 @@ export const OVERLAP_REJECTED_EVENT = 'scheduling.appointment_overlap_rejected'
 // Rango cerrado al inicio y abierto al final, como exige el CHECK de la migración.
 export const RANGE_LOWER_BOUND = '['
 export const RANGE_UPPER_BOUND = ')'
+
+// Función SQL que aprueba o rechaza una cita pendiente (migración 20261014000002).
+export const DECIDE_APPOINTMENT_FUNCTION = 'scheduling_decide_appointment'
