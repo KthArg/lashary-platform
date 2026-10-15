@@ -19,7 +19,7 @@
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
 | payments | pendiente | terminada | 1 / 0 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
-| scheduling | pendiente | en_progreso | 0 / 1 / 0 / 0 / 10 |
+| scheduling | pendiente | en_progreso | 0 / 2 / 0 / 0 / 9 |
 | store | pendiente | en_progreso | 2 / 0 / 0 / 0 / 2 |
 
 ## Detalle por feature
@@ -84,7 +84,7 @@
 
 ### platform (actualizado: 2026-09-16)
 
-### scheduling (actualizado: 2026-09-28)
+### scheduling (actualizado: 2026-10-14)
 - US-AGE-01 — no_iniciada
 - US-AGE-02 — no_iniciada
 - US-AGE-03 — en_progreso — falta: criterio 2 (detectar primera vez/re-aplicación por historial de citas) diferido: no existe scheduling_appointments todavía (la trae US-AGE-05, que depende de esta historia). Punto de extensión: application/no-appointment-history.ts (ClientHistoryPort), hoy siempre reporta sin historial; la corrección manual ya está resuelta en el use-case (isFirstTimeOverride). Ver docs/process/DEPENDENCIES.md, Criterios diferidos.
@@ -92,7 +92,7 @@
 - US-AGE-05 — no_iniciada
 - US-AGE-06 — no_iniciada
 - US-AGE-07 — no_iniciada
-- US-AGE-09 — no_iniciada
+- US-AGE-09 — en_progreso — falta: toda la historia: modelo mínimo (scheduling_resources, scheduling_appointments y el constraint de no-solape, ADR-0002), rango ocupado en dominio, prueba de N reservas concurrentes, aprobar/rechazar con bitácora (ADR-0003) y la cola de aprobación en el panel. Criterio 5 (alerta en producción): solo se entrega el error tipado y el registro estructurado; la alerta real no tiene herramienta en el repo y queda como falta nombrada.
 - US-AGE-10 — no_iniciada
 - US-AGE-11 — no_iniciada
 - US-AGE-12 — no_iniciada

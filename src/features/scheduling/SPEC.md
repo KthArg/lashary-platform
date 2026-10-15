@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-09-28"
+actualizado: "2026-10-14"
 historias:
   - id: US-AGE-01
     estado: no_iniciada
@@ -21,7 +21,8 @@ historias:
   - id: US-AGE-07
     estado: no_iniciada
   - id: US-AGE-09
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "toda la historia: modelo mínimo (scheduling_resources, scheduling_appointments y el constraint de no-solape, ADR-0002), rango ocupado en dominio, prueba de N reservas concurrentes, aprobar/rechazar con bitácora (ADR-0003) y la cola de aprobación en el panel. Criterio 5 (alerta en producción): solo se entrega el error tipado y el registro estructurado; la alerta real no tiene herramienta en el repo y queda como falta nombrada."
   - id: US-AGE-10
     estado: no_iniciada
   - id: US-AGE-11
@@ -48,6 +49,10 @@ Agenda completa. US-AGE-09 cubre el flujo de aprobacion manual (su texto origina
 - Entry points y ruta: `index.ts` expone `ClientTechniqueSelectionPage` y `schedulingMessages`; `client.ts` expone solo `schedulingMessages` para `loading.tsx`/`error.tsx` de la ruta (ARCH-003, sin `next/headers` en el bundle cliente). `src/app/portal/citas/page.tsx` compone la página; `loading.tsx`/`error.tsx` usan estilos de `citas.styles.ts`, con `role="status"`/`role="alert"` (UI-004). Esa ruta era un placeholder de `auth`; ahora la compone `scheduling` (ver nota en `auth/SPEC.md`).
 
 Dónde se detiene: criterio 2 no se puede demostrar completo hasta que `US-AGE-05` aporte el historial real de citas — no se marca `terminada` hasta cerrarlo.
+
+## Modelo de datos: lo porta US-AGE-09
+
+Decisión comunicada por Bayron el 2026-10-14 (pendiente de visto bueno del PO en el PR de la historia). `DEPENDENCIES.md` decía que `scheduling_appointments` la traía US-AGE-05, pero US-AGE-05 depende de US-AGE-09 y el constraint de no-solape no puede vivir sin su tabla. Por eso US-AGE-09 crea el modelo mínimo que fijan ADR-0002 y ADR-0005: `scheduling_resources` con un recurso sembrado, y `scheduling_appointments` con `resource_id`, `occupied_range` y estados. US-AGE-05 lo extiende (anticipo, precio congelado, vínculo con la clienta) sin rehacerlo.
 
 ## Criterios recibidos de US-AGE-13
 
