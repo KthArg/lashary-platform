@@ -1,14 +1,26 @@
+import type { ComponentType } from 'react'
 import Link from 'next/link'
+import { CLIENT_PORTAL_ROUTES } from '@/features/auth'
 import { PUBLIC_DETAIL_STRINGS } from '../../constants/public-detail-strings'
 import { publicDetailRoutes } from '../../constants/public-detail-routes'
+import { AddToCartForm } from '../AddToCartForm'
+import { SignInToBuyForm } from '../SignInToBuyForm'
+import { SoldOutButton } from '../SoldOutButton'
 import { toProductDetailView } from './ProductDetail.data'
 import { productDetailStyles as STYLES } from './ProductDetail.styles'
-import type { ProductDetailProps } from './ProductDetail.types'
+import type { ProductDetailProps, PurchaseActionProps, PurchaseMode } from './ProductDetail.types'
 
 const AVAILABILITY_ID = 'product-availability'
 
-export function ProductDetail({ detail }: ProductDetailProps) {
-  const view = toProductDetailView(detail)
+const PURCHASE_ACTIONS: Record<PurchaseMode, ComponentType<PurchaseActionProps>> = {
+  customer: AddToCartForm,
+  guest: SignInToBuyForm,
+  soldOut: SoldOutButton,
+}
+
+export function ProductDetail({ detail, purchaseAccess }: ProductDetailProps) {
+  const view = toProductDetailView(detail, purchaseAccess)
+  const PurchaseAction = PURCHASE_ACTIONS[view.purchaseMode]
 
   return (
     <div className={STYLES.wrapper}>
@@ -37,14 +49,11 @@ export function ProductDetail({ detail }: ProductDetailProps) {
           </p>
           <p className={STYLES.description}>{view.description}</p>
           <div className={STYLES.actions}>
-            <button
-              type="button"
-              className={STYLES.addToCart}
-              disabled={view.isPurchaseDisabled}
-              aria-describedby={AVAILABILITY_ID}
-            >
-              {PUBLIC_DETAIL_STRINGS.addToCart}
-            </button>
+            <PurchaseAction
+              productId={view.id}
+              describedBy={AVAILABILITY_ID}
+              cartHref={CLIENT_PORTAL_ROUTES.carrito}
+            />
           </div>
         </div>
       </article>

@@ -1,18 +1,33 @@
 #!/usr/bin/env bash
 # check-migrations.sh — INT-008: máx. 1 migración nueva por PR, forward-only (las existentes no
-# se editan) · DOM-001: columnas de dinero con tipo no entero · DOM-003: timestamp sin zona ·
+# se editan). El PR us/<ID> → main y el push a main que lo sigue están exentos del tope de una
+# migración, porque juntan piezas que ya lo cumplieron una por una.
+# DOM-001: columnas de dinero con tipo no entero · DOM-003: timestamp sin zona ·
 # PERF-003: FK sin índice en la misma migración · ARCH-006: prefijo de feature en tablas nuevas.
 
 . "$(dirname "$0")/lib.sh"
 
 MIG_DIR="supabase/migrations"
 
+# El PR de una rama de historia (us/<ID>) hacia main junta piezas ya revisadas, cada una con su
+# única migración; contarlas todas juntas dejaría en rojo el cierre de toda historia con 2+
+# migraciones. El squash llega a main como push (PUSH_TO_MAIN) y se mide contra HEAD~1: mismo caso.
+# La regla de no editar ni borrar migraciones existentes sigue aplicando en ambos.
+HEAD_REF="${PR_HEAD_REF:-$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null)}"
+BASE_REF="${PR_BASE_REF:-${DIFF_RANGE%%...*}}"
+STORY_CLOSE=0
+if [ "${PUSH_TO_MAIN:-}" = "1" ]; then
+  STORY_CLOSE=1
+elif [ -n "$DIFF_RANGE" ] && echo "$HEAD_REF" | grep -qE '^us/' && echo "$BASE_REF" | grep -qE '^(origin/)?main$'; then
+  STORY_CLOSE=1
+fi
+
 # ── Parte 1: contra el diff (si hay) ─────────────────────────────
 STATUS=$(all_touched_files | grep "	$MIG_DIR/" || true)
 if [ -n "$STATUS" ]; then
   N_NEW=$(echo "$STATUS" | grep -c '^A' || true)
   N_EDITED=$(echo "$STATUS" | grep -cE '^[MDR]' || true)
-  if [ "$N_NEW" -gt 1 ]; then
+  if [ "$N_NEW" -gt 1 ] && [ "$STORY_CLOSE" -ne 1 ]; then
     fail_rule INT-008 "el diff agrega $N_NEW migraciones (máximo 1 por PR): $(echo "$STATUS" | grep '^A' | cut -f2 | tr '\n' ' ')"
   fi
   if [ "$N_EDITED" -gt 0 ]; then

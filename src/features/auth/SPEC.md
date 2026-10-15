@@ -2,7 +2,7 @@
 feature: auth
 dri: pendiente
 estado: terminada
-actualizado: "2026-10-13"
+actualizado: "2026-10-14"
 historias:
   - id: US-AUTH-01
     estado: terminada
@@ -31,7 +31,7 @@ Completadas las historias `US-AUTH-01` y `US-AUTH-02`.
 - Guardia de rutas administrativas implementada en middleware de Edge (`src/middleware.ts`) y a nivel de servidor (`requireAdminSession`, CA-4).
 - Cierre automático de sesión tras 15 minutos de inactividad de usuario (`useInactivityTimeout`, `InactivityTimeout`, CA-5).
 - Navegación persistente administrativa mediante `AdminSidebar` y `layout.tsx` con accesos a dashboard, citas, clientas, catálogo (`/admin/catalog`, con pestañas Técnicas y Paquetes) y pagos (`/admin/payments`, la exoneración de anticipos de US-AGE-13), y cierre de sesión desde cualquier vista (`US-AUTH-01`, CA-2).
-- Navegación persistente de clientas mediante `ClientSidebar` (colapsable, responsive) y `src/app/portal/layout.tsx` con accesos a citas, carrito, cuenta y cierre de sesión (`US-AUTH-02`).
+- Navegación persistente de clientas mediante `ClientSidebar` (colapsable, responsive) y `src/app/portal/layout.tsx` con accesos a citas, carrito, cuenta y cierre de sesión (`US-AUTH-02`). La página `/portal/carrito` es de `store` desde US-SHOP-01 (pieza 6/8): sus textos de relleno (`clientCartTitle`, `clientCartSubtitle`, `clientCartPlaceholder`) salieron de `auth-strings.ts`; `auth` conserva `clientCartNav` y la ruta `CLIENT_PORTAL_ROUTES.carrito`.
 - Inicio de sesión de clientas exclusivo vía Google OAuth con redirección a `/portal/citas` y captura modal obligatoria de teléfono post-login (`US-AUTH-02`), protegida en `src/app/portal/layout.tsx`.
 - Aislamiento de datos mediante Row Level Security (RLS) en Supabase (`SEC-001`).
 - Pruebas unitarias de integración automatizadas (`auth-client.test.tsx`, `admin-auth.test.tsx`).
