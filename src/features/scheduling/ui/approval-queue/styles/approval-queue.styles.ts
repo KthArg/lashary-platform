@@ -6,7 +6,7 @@ export const approvalQueueStyles = {
   title: 'font-serif text-lg text-brand-dark font-normal',
   list: 'mt-4 divide-y divide-brand-border/60 border-y border-brand-border/60',
   item: 'flex flex-wrap items-start justify-between gap-4 py-4',
-  slot: 'text-sm text-brand-dark capitalize',
+  slot: 'text-sm text-brand-dark first-letter:uppercase',
   actions: 'flex flex-wrap gap-2',
   primaryButton: `${BUTTON_BASE} bg-brand-dark text-white hover:bg-brand-gold`,
   secondaryButton: `${BUTTON_BASE} bg-white border border-brand-border text-brand-dark hover:border-brand-gold`,
