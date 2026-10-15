@@ -2,7 +2,7 @@
 
 // Ver nota en loading.tsx: el texto viene del entry point cliente-seguro, no del index.ts.
 import { schedulingMessages } from '@/features/scheduling/client'
-import { adminCitasStyles as STYLES } from './citas.styles'
+import { adminCitasStyles as STYLES } from '../citas.styles'
 
 const m = schedulingMessages.availability
 

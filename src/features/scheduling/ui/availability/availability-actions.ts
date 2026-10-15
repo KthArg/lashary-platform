@@ -23,7 +23,7 @@ import type { AvailabilityActionState } from './availability-action-state'
 // Las acciones revisan el rol para dar un mensaje amable; la frontera real es RLS (SEC-001).
 
 const m = schedulingMessages.availability
-const AVAILABILITY_PATH = '/admin/citas'
+const AVAILABILITY_PATH = '/admin/citas/disponibilidad'
 
 type ZodIssues = { issues: Array<{ message: string }> }
 
