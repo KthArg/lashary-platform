@@ -33,11 +33,25 @@ export interface SpaceNotAvailable {
   readonly message: string
 }
 
+// La cita no existe o ya no estaba pendiente: nadie la vuelve a decidir.
+export interface AppointmentNotPending {
+  readonly code: 'SCHEDULING_APPOINTMENT_NOT_PENDING'
+  readonly appointmentId: string
+  readonly message: string
+}
+
+export interface InvalidDecisionReason {
+  readonly code: 'SCHEDULING_INVALID_DECISION_REASON'
+  readonly message: string
+}
+
 export type SchedulingError =
   | TechniqueNotSelectable
   | TechniqueNotAvailable
   | InvalidAppointmentWindow
   | SpaceNotAvailable
+  | AppointmentNotPending
+  | InvalidDecisionReason
 
 export const techniqueNotSelectable = (
   techniqueId: string,
@@ -76,3 +90,14 @@ export const isSpaceNotAvailable = (value: unknown): value is SpaceNotAvailable 
   typeof value === 'object' &&
   value !== null &&
   (value as { code?: unknown }).code === 'SCHEDULING_SPACE_NOT_AVAILABLE'
+
+export const appointmentNotPending = (appointmentId: string): AppointmentNotPending => ({
+  code: 'SCHEDULING_APPOINTMENT_NOT_PENDING',
+  appointmentId,
+  message: `la cita ${appointmentId} no existe o ya no está pendiente de aprobación`,
+})
+
+export const invalidDecisionReason = (): InvalidDecisionReason => ({
+  code: 'SCHEDULING_INVALID_DECISION_REASON',
+  message: 'el motivo de la decisión es demasiado largo',
+})

@@ -1,6 +1,11 @@
 import type { Result } from '@/shared/result'
 import type { SelectableTechnique } from '../domain/technique-selection'
-import type { SpaceNotAvailable, TechniqueNotAvailable } from '../domain/errors'
+import type { AppointmentDecision } from '../domain/appointment-decision.constants'
+import type {
+  AppointmentNotPending,
+  SpaceNotAvailable,
+  TechniqueNotAvailable,
+} from '../domain/errors'
 
 export interface CatalogPort {
   findSelectableTechnique(
@@ -30,3 +35,27 @@ export type CreatedAppointment = {
 export interface AppointmentRepository {
   create(appointment: NewAppointment): Promise<Result<CreatedAppointment, SpaceNotAvailable>>
 }
+
+export type DecideAppointmentInput = {
+  appointmentId: string
+  decision: AppointmentDecision
+  reason: string | null
+}
+
+export type DecidedAppointment = {
+  id: string
+  status: AppointmentDecision
+}
+
+// Quién decide lo fija la base desde la sesión (SEC-005): el puerto no recibe un actor.
+export interface AppointmentDecisionRepository {
+  decide(input: DecideAppointmentInput): Promise<Result<DecidedAppointment, AppointmentNotPending>>
+}
+
+export type RecordAuditEvent = (input: {
+  actorId: string
+  action: string
+  entityType: string
+  entityId: string
+  payload?: Record<string, unknown>
+}) => Promise<Result<unknown, unknown>>
