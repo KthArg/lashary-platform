@@ -1,4 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { err, ok } from '@/shared/result'
+import { storageFailed } from '../domain/errors'
 import { PENDING_APPROVAL_STATUS } from '../domain/appointment-decision.constants'
 import type { PendingAppointmentsRepository } from '../application/ports'
 import { APPOINTMENTS_TABLE } from './appointment-repository.constants'
@@ -20,13 +22,16 @@ export function createSupabasePendingAppointmentsRepository(
         .eq('status', PENDING_APPROVAL_STATUS)
         .order('starts_at', { ascending: true })
 
-      if (error) throw new Error(`no se pudieron leer las citas pendientes: ${error.message}`)
+      if (error) return err(storageFailed(error.message))
 
-      return ((data ?? []) as PendingAppointmentRow[]).map((row) => ({
-        id: row.id,
-        startsAtMs: Date.parse(row.starts_at),
-        endsAtMs: Date.parse(row.ends_at),
-      }))
+      const rows = (data ?? []) as PendingAppointmentRow[]
+      return ok(
+        rows.map((row) => ({
+          id: row.id,
+          startsAtMs: Date.parse(row.starts_at),
+          endsAtMs: Date.parse(row.ends_at),
+        })),
+      )
     },
   }
 }

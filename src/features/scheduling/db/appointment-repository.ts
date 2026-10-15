@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { err, ok } from '@/shared/result'
-import { spaceNotAvailable } from '../domain/errors'
+import { spaceNotAvailable, storageFailed } from '../domain/errors'
 import type { AppointmentRepository, NewAppointment } from '../application/ports'
 import {
   CREATE_APPOINTMENT_FUNCTION,
@@ -23,7 +23,6 @@ export const logOverlapRejected: OverlapReporter = (event) => {
   console.error(JSON.stringify(event))
 }
 
-// La conversión de milisegundos a ISO vive aquí, no en domain/ ni application/ (DOM-004).
 const toIso = (epochMs: number): string => new Date(epochMs).toISOString()
 
 const toRangeLiteral = (fromMs: number, untilMs: number): string =>
@@ -52,7 +51,7 @@ export function createSupabaseAppointmentRepository(
         return err(spaceNotAvailable(appointment.resourceId))
       }
       if (error || !data) {
-        throw new Error(`no se pudo crear la cita: ${error?.message ?? 'sin fila'}`)
+        return err(storageFailed(error?.message ?? 'sin fila'))
       }
 
       return ok({ id: data.id as string, resourceId: data.resource_id as string })

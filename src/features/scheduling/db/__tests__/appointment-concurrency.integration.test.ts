@@ -8,8 +8,6 @@ import {
   type OverlapRejectedEvent,
 } from '../appointment-repository'
 
-// Prueba obligatoria de US-AGE-09 (criterio 4): N reservas simultáneas al mismo espacio; una gana y el resto
-// recibe "espacio no disponible". Va contra un Supabase local real, por la ruta completa.
 
 const API_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
@@ -28,10 +26,8 @@ const STAFF_ROLE = 'admin'
 const FIRST_TEST_DAY_MS = Date.parse('2041-01-01T10:00:00Z')
 const MS_PER_DAY = 86_400_000
 const TEST_DAYS_SPREAD = 300
-// Sin el lock las inserciones solapadas caían en deadlock (1 s cada una) y los 5 s de vitest no alcanzaban.
 const CONCURRENCY_ROUND_TIMEOUT_MS = 10_000
 
-// Escribe con una conexión de administración: solo corre contra una base local (SEC-003).
 const isLocalHost = (rawUrl: string): boolean => {
   try {
     return LOCAL_HOSTS.includes(new URL(rawUrl).hostname)
@@ -83,7 +79,6 @@ describe.skipIf(!reachable)('US-AGE-09 criterio 4 — N reservas simultáneas (S
       global: { headers: { Authorization: `Bearer ${data.session.access_token}` } },
     })
 
-    // Promover a staff exige privilegios que la anon key no tiene: se hace con la conexión directa a la base local.
     await admin.query('UPDATE public.auth_user_roles SET role = $1 WHERE user_id = $2', [
       STAFF_ROLE,
       staffUserId,
@@ -136,7 +131,6 @@ describe.skipIf(!reachable)('US-AGE-09 criterio 4 — N reservas simultáneas (S
         expect(loser.error.code).toBe('SCHEDULING_SPACE_NOT_AVAILABLE')
       }
 
-      // Criterio 5 (parte de código): cada rechazo del constraint deja su evento estructurado.
       expect(reported).toHaveLength(CONCURRENT_BOOKINGS - 1)
 
       const { count, error } = await staffClient

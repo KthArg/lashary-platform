@@ -103,11 +103,11 @@ describe('rejectAppointment', () => {
     expect(auditEvents).toEqual([])
   })
 
-  it('si la bitácora falla el error se propaga', async () => {
+  it('si la bitácora falla devuelve AuditNotRecorded, no lanza', async () => {
     const { deps } = createFakes({ auditFails: true })
 
-    await expect(
-      rejectAppointment(deps, { appointmentId: APPOINTMENT_ID, actorId: ACTOR_ID }),
-    ).rejects.toThrow('bitácora caída')
+    const result = await rejectAppointment(deps, { appointmentId: APPOINTMENT_ID, actorId: ACTOR_ID })
+
+    expect(isErr(result) && result.error.code).toBe('SCHEDULING_AUDIT_NOT_RECORDED')
   })
 })

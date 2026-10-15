@@ -1,6 +1,6 @@
 import { err, type Result } from '@/shared/result'
 import { computeAppointmentWindow } from '../domain/appointment-window'
-import type { InvalidAppointmentWindow, SpaceNotAvailable } from '../domain/errors'
+import type { InvalidAppointmentWindow, SpaceNotAvailable, StorageFailed } from '../domain/errors'
 import type { AppointmentRepository, CreatedAppointment } from './ports'
 
 export type CreateAppointmentInput = {
@@ -11,9 +11,8 @@ export type CreateAppointmentInput = {
   cleanupMin: number
 }
 
-export type CreateAppointmentError = InvalidAppointmentWindow | SpaceNotAvailable
+export type CreateAppointmentError = InvalidAppointmentWindow | SpaceNotAvailable | StorageFailed
 
-// Sin check-then-insert: la garantía de no-solape es el constraint de la base (DOM-010).
 export async function createAppointment(
   appointments: AppointmentRepository,
   input: CreateAppointmentInput,

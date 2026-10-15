@@ -9,7 +9,6 @@ export type AppointmentWindowInput = {
   cleanupMin: number
 }
 
-// Los instantes son milisegundos UTC: el dominio no construye `Date` (DOM-004).
 export type AppointmentWindow = {
   readonly startsAtMs: number
   readonly endsAtMs: number
@@ -46,8 +45,6 @@ export function computeAppointmentWindow(
   })
 }
 
-// El catálogo guarda un solo `buffer_min` sin repartirlo: todo se cuenta como limpieza después del servicio,
-// igual que hace selectTechnique al sumarlo a la duración.
 export function bufferAsCleanup(
   bufferMin: number,
 ): Pick<AppointmentWindowInput, 'prepMin' | 'cleanupMin'> {
