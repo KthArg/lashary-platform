@@ -21,8 +21,8 @@ historias:
   - id: US-AGE-07
     estado: no_iniciada
   - id: US-AGE-09
-    estado: en_progreso
-    falta: "notificar a la clienta al rechazar (depende de US-NOT-*) y el cierre de la historia. Criterio 5: la alerta real no existe porque no hay herramienta de alertas en el repo; solo se entrega el error tipado y el evento estructurado scheduling.appointment_overlap_rejected (db/appointment-repository.ts). Ya existen el modelo y el constraint (migración 20261014000000), el cálculo del rango ocupado (domain/appointment-window.ts), la función de creación serializada (migración 20261014000001), la creación de cita, la prueba de concurrencia (criterio 4), la decisión de aprobar o rechazar en la base (migración 20261014000002), sus casos de uso con bitácora, las server actions de la cola y la cola de aprobación en `/admin/citas`."
+    estado: terminada
+    evidencia: "criterios 1 a 4 y el flujo de aprobación (ADR-0003) demostrados; tests: supabase/tests/database/scheduling_no_overlap.test.sql (criterios 1 a 3), db/__tests__/appointment-concurrency.integration.test.ts (criterio 4, 10 reservas simultáneas por ronda, 3 rondas), supabase/tests/database/scheduling_create_appointment.test.sql, supabase/tests/database/scheduling_decide_appointment.test.sql, application/__tests__/create-appointment.test.ts, application/__tests__/decide-appointment.test.ts, db/__tests__/appointment-repository.test.ts, db/__tests__/appointment-decision-repository.test.ts, ui/approval-queue/__tests__/approval-queue-actions.test.ts, ui/approval-queue/__tests__/ApprovalQueue.test.tsx, __tests__/rls-isolation.test.ts. Criterio 5, parte de código: error tipado SpaceNotAvailable y evento scheduling.appointment_overlap_rejected (db/appointment-repository.ts). La alerta real se traslada a US-AGE-05 (docs/process/DEPENDENCIES.md, Criterios trasladados, ítem 4)"
   - id: US-AGE-10
     estado: no_iniciada
   - id: US-AGE-11
@@ -65,6 +65,12 @@ Dónde se detiene: criterio 2 no se puede demostrar completo hasta que `US-AGE-0
 ## Modelo de datos: lo porta US-AGE-09
 
 Decisión comunicada por Bayron el 2026-10-14, con visto bueno del PO. `DEPENDENCIES.md` decía que `scheduling_appointments` la traía US-AGE-05, pero US-AGE-05 depende de US-AGE-09 y el constraint de no-solape no puede vivir sin su tabla. Por eso US-AGE-09 crea el modelo mínimo que fijan ADR-0002 y ADR-0005: `scheduling_resources` con un recurso sembrado, y `scheduling_appointments` con `resource_id`, `occupied_range` y estados. US-AGE-05 lo extiende (anticipo, precio congelado, vínculo con la clienta) sin rehacerlo.
+
+## Criterio trasladado a US-AGE-05
+
+Propuesto por el revisor (Kenny) el 2026-10-15; confirmación del PO pendiente. Se registra en `docs/process/DEPENDENCIES.md`, Criterios trasladados, ítem 4.
+
+- Criterio 5 de US-AGE-09 («alerta si el constraint se activa en producción»): la alerta real no se implementó aquí. No hay herramienta de alertas en el repo y, hasta que US-AGE-05 agregue el check de disponibilidad previo a la reserva, un rechazo del constraint es lo esperado y no un bug. US-AGE-09 entrega el error tipado `SpaceNotAvailable` y el evento estructurado `scheduling.appointment_overlap_rejected` (`db/appointment-repository.ts`); US-AGE-05 debe demostrar la alerta sobre ese evento y elegir el canal.
 
 ## Criterios recibidos de US-AGE-13
 

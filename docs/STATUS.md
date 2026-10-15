@@ -19,7 +19,7 @@
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
 | payments | pendiente | terminada | 1 / 0 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
-| scheduling | pendiente | en_progreso | 0 / 2 / 0 / 0 / 9 |
+| scheduling | pendiente | en_progreso | 1 / 1 / 0 / 0 / 9 |
 | store | pendiente | en_progreso | 3 / 0 / 0 / 0 / 1 |
 
 ## Detalle por feature
@@ -92,7 +92,7 @@
 - US-AGE-05 — no_iniciada
 - US-AGE-06 — no_iniciada
 - US-AGE-07 — no_iniciada
-- US-AGE-09 — en_progreso — falta: notificar a la clienta al rechazar (depende de US-NOT-*) y el cierre de la historia. Criterio 5: la alerta real no existe porque no hay herramienta de alertas en el repo; solo se entrega el error tipado y el evento estructurado scheduling.appointment_overlap_rejected (db/appointment-repository.ts). Ya existen el modelo y el constraint (migración 20261014000000), el cálculo del rango ocupado (domain/appointment-window.ts), la función de creación serializada (migración 20261014000001), la creación de cita, la prueba de concurrencia (criterio 4), la decisión de aprobar o rechazar en la base (migración 20261014000002), sus casos de uso con bitácora, las server actions de la cola y la cola de aprobación en `/admin/citas`.
+- US-AGE-09 — terminada — criterios 1 a 4 y el flujo de aprobación (ADR-0003) demostrados; tests: supabase/tests/database/scheduling_no_overlap.test.sql (criterios 1 a 3), db/__tests__/appointment-concurrency.integration.test.ts (criterio 4, 10 reservas simultáneas por ronda, 3 rondas), supabase/tests/database/scheduling_create_appointment.test.sql, supabase/tests/database/scheduling_decide_appointment.test.sql, application/__tests__/create-appointment.test.ts, application/__tests__/decide-appointment.test.ts, db/__tests__/appointment-repository.test.ts, db/__tests__/appointment-decision-repository.test.ts, ui/approval-queue/__tests__/approval-queue-actions.test.ts, ui/approval-queue/__tests__/ApprovalQueue.test.tsx, __tests__/rls-isolation.test.ts. Criterio 5, parte de código: error tipado SpaceNotAvailable y evento scheduling.appointment_overlap_rejected (db/appointment-repository.ts). La alerta real se traslada a US-AGE-05 (docs/process/DEPENDENCIES.md, Criterios trasladados, ítem 4)
 - US-AGE-10 — no_iniciada
 - US-AGE-11 — no_iniciada
 - US-AGE-12 — no_iniciada
