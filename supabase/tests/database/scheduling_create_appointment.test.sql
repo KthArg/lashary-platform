@@ -1,12 +1,5 @@
--- scheduling_create_appointment.test.sql
--- US-AGE-09 · feature scheduling — la función que crea citas serializando por recurso. Demuestra que
--- respeta la RLS de quien llama (SECURITY INVOKER, SEC-001), que el constraint sigue siendo la
--- garantía (DOM-010) y que anon no puede ni ejecutarla.
---
--- La prueba de N reservas simultáneas no cabe aquí (pgTAP corre en una sola transacción): es
--- src/features/scheduling/db/__tests__/appointment-concurrency.integration.test.ts.
---
--- Correr con: npx supabase test db   (requiere `supabase start`)
+-- US-AGE-09 · scheduling — la función respeta la RLS de quien llama, el constraint sigue siendo la garantía y anon no la ejecuta.
+-- La prueba de N reservas simultáneas es appointment-concurrency.integration.test.ts (pgTAP corre en una sola transacción).
 
 BEGIN;
 SELECT plan(9);

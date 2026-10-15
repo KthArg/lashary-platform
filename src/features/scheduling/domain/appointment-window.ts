@@ -9,8 +9,7 @@ export type AppointmentWindowInput = {
   cleanupMin: number
 }
 
-// Los instantes son milisegundos desde la época (UTC, DOM-003): el dominio no construye `Date`
-// (DOM-004). Convertir a ISO para la base, o a hora local para mostrar, es de la capa que llama.
+// Los instantes son milisegundos UTC: el dominio no construye `Date` (DOM-004).
 export type AppointmentWindow = {
   readonly startsAtMs: number
   readonly endsAtMs: number
@@ -21,9 +20,6 @@ export type AppointmentWindow = {
 const isPositiveInteger = (value: number): boolean => Number.isInteger(value) && value > 0
 const isNonNegativeInteger = (value: number): boolean => Number.isInteger(value) && value >= 0
 
-// El único lugar que calcula el rango ocupado (ADR-0002): [inicio - preparación, fin + limpieza).
-// `startsAtMs`/`endsAtMs` son el servicio que ve la clienta; `occupiedFromMs`/`occupiedUntilMs` son lo que
-// la agenda bloquea y lo que la base valida contra el exclusion constraint (DOM-010).
 export function computeAppointmentWindow(
   input: AppointmentWindowInput,
 ): Result<AppointmentWindow, InvalidAppointmentWindow> {
@@ -50,10 +46,8 @@ export function computeAppointmentWindow(
   })
 }
 
-// El catálogo guarda un solo `buffer_min` ("preparación + limpieza", catalog/SPEC.md) sin
-// repartirlo. Mientras no exista esa separación, todo el buffer se cuenta después del servicio:
-// es lo que ya asume selectTechnique al sumarlo a la duración. Si el catálogo llega a separar los
-// dos tiempos, solo cambia este helper.
+// El catálogo guarda un solo `buffer_min` sin repartirlo: todo se cuenta como limpieza después del servicio,
+// igual que hace selectTechnique al sumarlo a la duración.
 export function bufferAsCleanup(
   bufferMin: number,
 ): Pick<AppointmentWindowInput, 'prepMin' | 'cleanupMin'> {
