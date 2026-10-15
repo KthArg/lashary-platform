@@ -1,11 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/shared/lib/supabase/server'
-import type { DepositExemption } from '../domain/deposit-exemption'
-import type { DepositExemptionRepository } from '../application/ports'
 import { ok, err, type Result } from '@/shared/result'
+import type { DepositExemption } from '../domain/deposit-exemption'
 import { clientAlreadyExempt, type ClientAlreadyExempt } from '../domain/errors'
+import type { DepositExemptionRepository } from '../application/ports'
 
 const TABLE = 'payments_deposit_exemptions'
+const UNIQUE_VIOLATION = '23505'
 
 type InsertRow = {
   id: string
@@ -17,32 +18,33 @@ type InsertRow = {
 }
 
 export function toRow(exemption: DepositExemption): InsertRow {
-  const view = exemption.toView()
   return {
-    id: view.id,
-    client_id: view.clientId,
-    exempted_by: view.exemptedBy,
-    reason: view.reason,
-    active: view.active,
-    created_at: view.createdAt.toISOString(),
+    id: exemption.id,
+    client_id: exemption.clientId,
+    exempted_by: exemption.exemptedBy,
+    reason: exemption.reason,
+    active: exemption.active,
+    created_at: exemption.createdAt.toISOString(),
   }
 }
 
-export class SupabaseDepositExemptionRepository implements DepositExemptionRepository {
-  constructor(private readonly db: SupabaseClient) {}
-
-  async save(exemption: DepositExemption): Promise<Result<void, ClientAlreadyExempt>> {
-    const { error } = await this.db.from(TABLE).insert(toRow(exemption))
-    if (error) {
-      if (error.code === '23505') {
-        return err(clientAlreadyExempt(exemption.clientId))
+export function createSupabaseDepositExemptionRepository(
+  db: SupabaseClient,
+): DepositExemptionRepository {
+  return {
+    async save(exemption: DepositExemption): Promise<Result<void, ClientAlreadyExempt>> {
+      const { error } = await db.from(TABLE).insert(toRow(exemption))
+      if (error) {
+        if (error.code === UNIQUE_VIOLATION) {
+          return err(clientAlreadyExempt(exemption.clientId))
+        }
+        throw new Error(`${TABLE}.save: ${error.message}`)
       }
-      throw new Error(`${TABLE}.save: ${error.message}`)
-    }
-    return ok(undefined)
+      return ok(undefined)
+    },
   }
 }
 
-export async function depositExemptionRepository(): Promise<SupabaseDepositExemptionRepository> {
-  return new SupabaseDepositExemptionRepository(await createClient())
+export async function depositExemptionRepository(): Promise<DepositExemptionRepository> {
+  return createSupabaseDepositExemptionRepository(await createClient())
 }
