@@ -1,6 +1,7 @@
 import { formatPriceCrc, sanitizeUrl } from './product'
 
 export type PublicProductDetailSource = {
+  id: string
   slug: string
   name: string
   description: string
@@ -11,6 +12,7 @@ export type PublicProductDetailSource = {
 }
 
 export type PublicProductDetail = {
+  id: string
   slug: string
   name: string
   description: string
@@ -21,6 +23,7 @@ export type PublicProductDetail = {
 
 export function toProductDetail(source: PublicProductDetailSource): PublicProductDetail {
   return {
+    id: source.id,
     slug: source.slug,
     name: source.name,
     description: source.description,
