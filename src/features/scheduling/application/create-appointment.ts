@@ -13,9 +13,7 @@ export type CreateAppointmentInput = {
 
 export type CreateAppointmentError = InvalidAppointmentWindow | SpaceNotAvailable
 
-// Calcula el rango ocupado en el dominio y lo entrega al repositorio. No hay "check-then-insert":
-// la garantía de no-solape es el exclusion constraint de la base (DOM-010, ADR-0002), y este caso
-// de uso solo traduce su rechazo en un resultado de negocio.
+// Sin check-then-insert: la garantía de no-solape es el constraint de la base (DOM-010).
 export async function createAppointment(
   appointments: AppointmentRepository,
   input: CreateAppointmentInput,

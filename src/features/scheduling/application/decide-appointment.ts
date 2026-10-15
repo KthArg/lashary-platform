@@ -24,7 +24,6 @@ export type RejectAppointmentInput = {
 
 export type DecideAppointmentError = AppointmentNotPending | InvalidDecisionReason
 
-// Solo una persona decide (DOM-012): nada aprueba ni rechaza por su cuenta.
 export async function approveAppointment(
   deps: DecideAppointmentDeps,
   input: ApproveAppointmentInput,
@@ -36,8 +35,7 @@ export async function approveAppointment(
   })
 }
 
-// Rechazar libera el espacio (la base lo saca del constraint) y deja constancia en la bitácora.
-// Si la bitácora falla el error se propaga: la decisión ya quedó guardada y falta su evento.
+// Si la bitácora falla el error se propaga: la decisión ya quedó guardada.
 export async function rejectAppointment(
   deps: DecideAppointmentDeps,
   input: RejectAppointmentInput,

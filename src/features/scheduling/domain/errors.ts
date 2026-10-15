@@ -25,15 +25,13 @@ export interface InvalidAppointmentWindow {
   readonly message: string
 }
 
-// Resultado esperado de negocio (DOM-006): el espacio ya está ocupado. Lo produce el mapeo del
-// error de exclusion_violation de la base (DOM-010), no una consulta previa.
+// El espacio ya está ocupado: lo produce el mapeo del constraint (DOM-010).
 export interface SpaceNotAvailable {
   readonly code: 'SCHEDULING_SPACE_NOT_AVAILABLE'
   readonly resourceId: string
   readonly message: string
 }
 
-// La cita no existe o ya no estaba pendiente: nadie la vuelve a decidir.
 export interface AppointmentNotPending {
   readonly code: 'SCHEDULING_APPOINTMENT_NOT_PENDING'
   readonly appointmentId: string

@@ -30,8 +30,7 @@ export type CreatedAppointment = {
   resourceId: string
 }
 
-// El puerto no consulta disponibilidad: inserta y deja que la base decida (DOM-010). Si el
-// espacio ya estaba ocupado devuelve SpaceNotAvailable como valor (DOM-006).
+// Inserta sin consultar disponibilidad: la base decide (DOM-010).
 export interface AppointmentRepository {
   create(appointment: NewAppointment): Promise<Result<CreatedAppointment, SpaceNotAvailable>>
 }
@@ -47,7 +46,7 @@ export type DecidedAppointment = {
   status: AppointmentDecision
 }
 
-// Quién decide lo fija la base desde la sesión (SEC-005): el puerto no recibe un actor.
+// Quién decide lo fija la base desde la sesión (SEC-005).
 export interface AppointmentDecisionRepository {
   decide(input: DecideAppointmentInput): Promise<Result<DecidedAppointment, AppointmentNotPending>>
 }
