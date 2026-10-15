@@ -1,6 +1,8 @@
 export const PUBLIC_DETAIL_STRINGS = {
   imageAltPrefix: 'Producto:',
   addToCart: 'Agregar al carrito',
+  signInToBuy: 'Inicia sesión para comprar.',
+  viewCart: 'Ver carrito',
   available: 'Disponible',
   soldOut: 'Agotado',
   backToCatalog: 'Volver al catálogo',
