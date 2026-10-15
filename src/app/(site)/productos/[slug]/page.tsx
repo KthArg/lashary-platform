@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { ProductDetail, PUBLIC_DETAIL_STRINGS } from '@/features/store'
+import { ProductDetail, PUBLIC_DETAIL_STRINGS, getPurchaseAccess } from '@/features/store'
 import { getProductDetail } from './page.data'
 import { productDetailPageStyles as STYLES } from './product-detail-page.styles'
 
@@ -18,12 +18,12 @@ export async function generateMetadata({ params }: ProductDetailPageProps): Prom
 
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { slug } = await params
-  const detail = await getProductDetail(slug)
+  const [detail, purchaseAccess] = await Promise.all([getProductDetail(slug), getPurchaseAccess()])
 
   return (
     <main className={STYLES.main}>
       <div className={STYLES.container}>
-        <ProductDetail detail={detail} />
+        <ProductDetail detail={detail} purchaseAccess={purchaseAccess} />
       </div>
     </main>
   )
