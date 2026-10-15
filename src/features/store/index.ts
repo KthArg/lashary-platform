@@ -33,3 +33,6 @@ export { PUBLIC_DETAIL_STRINGS } from './ui/public-detail/constants/public-detai
 export { ProductsAdminPanel } from './ui/admin-products/components/ProductsAdminPanel';
 export { productStrings } from './ui/admin-products/constants/product-strings';
 export type { AdminProduct } from './domain/product';
+
+export { CartPage } from './ui/cart/components/CartPage';
+export { CART_PAGE_STRINGS } from './ui/cart/constants/cart-page-strings';

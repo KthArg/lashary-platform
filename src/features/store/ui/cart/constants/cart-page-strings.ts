@@ -1,0 +1,16 @@
+export const CART_PAGE_STRINGS = {
+  title: 'Carrito de compras',
+  subtitle: 'Los productos que elegiste en la tienda.',
+  emptyTitle: 'Tu carrito está vacío',
+  emptyDescription: 'Agrega productos desde la tienda y aparecerán aquí.',
+  emptyAction: 'Ver productos',
+  linesAriaLabel: 'Productos en el carrito',
+  productAltPrefix: 'Producto:',
+  quantity: (quantity: number) => `Cantidad: ${quantity}`,
+  unitPrice: (priceLabel: string) => `${priceLabel} c/u`,
+  subtotal: 'Subtotal',
+  loading: 'Cargando tu carrito…',
+  errorTitle: 'No pudimos cargar tu carrito',
+  errorBody: 'Revisa tu conexión e inténtalo de nuevo.',
+  retry: 'Reintentar',
+} as const
