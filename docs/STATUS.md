@@ -85,7 +85,7 @@
 ### platform (actualizado: 2026-09-16)
 
 ### scheduling (actualizado: 2026-10-15)
-- US-AGE-01 — en_progreso — falta: recién empieza: criterios 1 a 3 (horario semanal, días no laborables y feriados, bloqueo manual) y el panel en /admin/citas, en piezas apiladas hacia us/US-AGE-01
+- US-AGE-01 — en_progreso — falta: pieza 1 hecha (las tres tablas de disponibilidad en la base, sobre scheduling_resources de US-AGE-09: migración 20261015000000_scheduling_availability.sql; pruebas de los bloques semanales en scheduling_weekly_availability.test.sql y __tests__/availability-rls-isolation.test.ts). Faltan el dominio y la aplicación de bloques semanales, días no laborables y feriados, bloqueos manuales y el panel en /admin/citas. Criterios 4 y 5 con traslado propuesto al PO (US-AGE-02 y US-AGE-05), pendiente de aprobación
 - US-AGE-02 — no_iniciada
 - US-AGE-03 — en_progreso — falta: criterio 2 (detectar primera vez/re-aplicación por historial de citas) diferido: no existe scheduling_appointments todavía (la trae US-AGE-05, que depende de esta historia). Punto de extensión: application/no-appointment-history.ts (ClientHistoryPort), hoy siempre reporta sin historial; la corrección manual ya está resuelta en el use-case (isFirstTimeOverride). Ver docs/process/DEPENDENCIES.md, Criterios diferidos.
 - US-AGE-04 — no_iniciada
