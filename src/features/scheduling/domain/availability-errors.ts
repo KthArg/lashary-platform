@@ -19,6 +19,52 @@ export interface AvailabilityEntryNotFound {
   readonly message: string
 }
 
+export interface ClosedDateInvalid {
+  readonly code: 'SCHEDULING_CLOSED_DATE_INVALID'
+  readonly problems: readonly string[]
+  readonly message: string
+}
+
+export interface ClosedDateAlreadyExists {
+  readonly code: 'SCHEDULING_CLOSED_DATE_ALREADY_EXISTS'
+  readonly date: string
+  readonly message: string
+}
+
+export interface ManualBlockInvalid {
+  readonly code: 'SCHEDULING_MANUAL_BLOCK_INVALID'
+  readonly problems: readonly string[]
+  readonly message: string
+}
+
+export interface ManualBlockOverlap {
+  readonly code: 'SCHEDULING_MANUAL_BLOCK_OVERLAP'
+  readonly message: string
+}
+
+export const closedDateInvalid = (problems: readonly string[]): ClosedDateInvalid => ({
+  code: 'SCHEDULING_CLOSED_DATE_INVALID',
+  problems,
+  message: `día cerrado inválido: ${problems.join('; ')}`,
+})
+
+export const closedDateAlreadyExists = (date: string): ClosedDateAlreadyExists => ({
+  code: 'SCHEDULING_CLOSED_DATE_ALREADY_EXISTS',
+  date,
+  message: `el día ${date} ya está cerrado`,
+})
+
+export const manualBlockInvalid = (problems: readonly string[]): ManualBlockInvalid => ({
+  code: 'SCHEDULING_MANUAL_BLOCK_INVALID',
+  problems,
+  message: `bloqueo inválido: ${problems.join('; ')}`,
+})
+
+export const manualBlockOverlap = (): ManualBlockOverlap => ({
+  code: 'SCHEDULING_MANUAL_BLOCK_OVERLAP',
+  message: 'el bloqueo se solapa con otro bloqueo',
+})
+
 export const weeklyBlockInvalid = (problems: readonly string[]): WeeklyBlockInvalid => ({
   code: 'SCHEDULING_WEEKLY_BLOCK_INVALID',
   problems,
@@ -50,3 +96,15 @@ export const isWeeklyBlockOverlap = (error: unknown): error is WeeklyBlockOverla
 
 export const isAvailabilityEntryNotFound = (error: unknown): error is AvailabilityEntryNotFound =>
   hasCode(error, 'SCHEDULING_AVAILABILITY_ENTRY_NOT_FOUND')
+
+export const isClosedDateInvalid = (error: unknown): error is ClosedDateInvalid =>
+  hasCode(error, 'SCHEDULING_CLOSED_DATE_INVALID')
+
+export const isClosedDateAlreadyExists = (error: unknown): error is ClosedDateAlreadyExists =>
+  hasCode(error, 'SCHEDULING_CLOSED_DATE_ALREADY_EXISTS')
+
+export const isManualBlockInvalid = (error: unknown): error is ManualBlockInvalid =>
+  hasCode(error, 'SCHEDULING_MANUAL_BLOCK_INVALID')
+
+export const isManualBlockOverlap = (error: unknown): error is ManualBlockOverlap =>
+  hasCode(error, 'SCHEDULING_MANUAL_BLOCK_OVERLAP')

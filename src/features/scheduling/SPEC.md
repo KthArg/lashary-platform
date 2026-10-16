@@ -6,7 +6,7 @@ actualizado: "2026-10-15"
 historias:
   - id: US-AGE-01
     estado: en_progreso
-    falta: "piezas 1 y 2 hechas (criterio 1 en la base y el dominio: migración 20261015000000, domain/weekly-availability.ts y sus pruebas). Faltan la aplicación y el repositorio de bloques semanales. Faltan días no laborables y feriados, bloqueos manuales y el panel en /admin/citas. Criterios 4 y 5 con traslado propuesto al PO (US-AGE-02 y US-AGE-05), pendiente de aprobación"
+    falta: "piezas 1 a 11 hechas (criterio 1 sin UI: migración 20261015000000, domain/weekly-availability.ts, application/weekly-availability.ts, db/weekly-availability-repository.ts; criterio 2 sin UI: migración 20261015000000, domain/closed-dates.ts, shared/studio-time.ts, application/closed-dates.ts, db/closed-date-repository.ts; criterio 3 sin UI: migración 20261015000000, domain/manual-blocks.ts, application/manual-blocks.ts, db/manual-block-repository.ts; pruebas pgTAP scheduling_*.test.sql y __tests__/availability-rls-isolation.test.ts). Acciones del panel con validación en el borde: ui/availability/availability-actions.ts, availability-schema.ts y availability-service.ts. Panel en /admin/citas/disponibilidad, con pestañas junto a la cola de aprobación de US-AGE-09: ui/availability/AdminAvailabilityPage.tsx, AdminAvailabilityView.tsx y AvailabilityForms.tsx, con estados vacío, carga y error. Criterios 4 y 5 con traslado propuesto al PO (US-AGE-02 y US-AGE-05), pendiente de aprobación"
   - id: US-AGE-02
     estado: no_iniciada
   - id: US-AGE-03
