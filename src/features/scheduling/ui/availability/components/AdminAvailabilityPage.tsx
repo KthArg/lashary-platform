@@ -1,6 +1,6 @@
 import { requireAdminSession } from '@/features/auth'
-import { availabilityService } from './availability-service'
-import { toClosedDateViews, toManualBlockViews, toWeeklyDays } from './availability-format'
+import { availabilityService } from '../services/availability-service'
+import { toClosedDateViews, toManualBlockViews, toWeeklyDays } from '../utils/availability-format'
 import { AdminAvailabilityView } from './AdminAvailabilityView'
 
 // Compone /admin/citas: sesión de staff, carga de las tres listas y render de la vista. Un error

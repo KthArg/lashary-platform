@@ -43,4 +43,9 @@ describe('closed-date-repository', () => {
     )
     await expect(repo.insert(closedDate)).rejects.toThrow('permission denied')
   })
+
+  it('remove con un id que no es UUID no consulta la base', async () => {
+    const repo = createSupabaseClosedDateRepository({} as SupabaseClient)
+    expect(await repo.remove('no-es-uuid')).toBe(false)
+  })
 })

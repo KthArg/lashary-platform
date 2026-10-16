@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { isCalendarDate } from '@/shared/studio-time'
-import { CLOSED_DATE_KINDS } from '../../domain/closed-dates'
-import { schedulingMessages } from '../messages'
+import { CLOSED_DATE_KINDS } from '../../../domain/closed-dates'
+import { schedulingMessages } from '../../messages'
 
 // Validación de formato en el borde, una sola vez (DOM-007). Las horas llegan como HH:MM del
 // input type="time" y salen como minutos desde la medianoche; los invariantes de negocio

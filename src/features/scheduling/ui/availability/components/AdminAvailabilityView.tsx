@@ -1,6 +1,6 @@
-import { schedulingMessages } from '../messages'
-import { availabilityStyles as STYLES } from './availability.styles'
-import type { ClosedDateView, ManualBlockView, WeeklyDayView } from './availability-format'
+import { schedulingMessages } from '../../messages'
+import { availabilityStyles as STYLES } from '../styles/availability.styles'
+import type { ClosedDateView, ManualBlockView, WeeklyDayView } from '../utils/availability-format'
 import {
   ClosedDateForm,
   ManualBlockForm,

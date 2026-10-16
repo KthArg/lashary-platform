@@ -1,9 +1,9 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup, within } from '@testing-library/react'
 import { schedulingMessages } from '../../messages'
-import { toWeeklyDays } from '../availability-format'
+import { toWeeklyDays } from '../utils/availability-format'
 
-vi.mock('../availability-actions', () => ({
+vi.mock('../actions/availability-actions', () => ({
   addWeeklyBlockAction: vi.fn(),
   removeWeeklyBlockAction: vi.fn(),
   addClosedDateAction: vi.fn(),
@@ -11,7 +11,7 @@ vi.mock('../availability-actions', () => ({
   addManualBlockAction: vi.fn(),
 }))
 
-import { AdminAvailabilityView } from '../AdminAvailabilityView'
+import { AdminAvailabilityView } from '../components/AdminAvailabilityView'
 
 afterEach(cleanup)
 
@@ -41,9 +41,11 @@ describe('AdminAvailabilityView — US-AGE-01', () => {
     expect(within(weekly).getByText('09:00–12:00')).toBeTruthy()
     expect(within(weekly).getByText('13:00–17:00')).toBeTruthy()
     expect(within(weekly).getAllByText(m.weekly.noBlocks)).toHaveLength(6)
-    expect(
-      within(weekly).getByRole('button', { name: m.weekly.removeLabel('Lunes', '09:00–12:00') }),
-    ).toBeTruthy()
+    const remove = within(weekly).getByRole('button', {
+      name: m.weekly.removeLabel('Lunes', '09:00–12:00'),
+    })
+    expect(remove.textContent).toBe(m.remove)
+    expect(remove.getAttribute('aria-label')).toContain(m.remove)
   })
 
   it('criterio 2: los días cerrados muestran fecha, tipo y nombre, con botón para reabrir', () => {
@@ -57,9 +59,12 @@ describe('AdminAvailabilityView — US-AGE-01', () => {
 
     const closed = screen.getByRole('region', { name: m.closed.title })
     expect(within(closed).getByText('Feriado · Navidad')).toBeTruthy()
-    expect(
-      within(closed).getByRole('button', { name: m.closed.removeLabel('viernes, 25 de diciembre de 2026') }),
-    ).toBeTruthy()
+    const reopen = within(closed).getByRole('button', {
+      name: m.closed.removeLabel('viernes, 25 de diciembre de 2026'),
+    })
+    // WCAG 2.5.3: el texto visible ("Reabrir") está contenido en el nombre accesible.
+    expect(reopen.textContent).toBe(m.closed.reopen)
+    expect(reopen.getAttribute('aria-label')).toContain(m.closed.reopen)
   })
 
   it('criterio 3: los espacios bloqueados muestran fecha, horario y motivo', () => {

@@ -26,7 +26,7 @@ vi.mock('@/features/auth', () => ({
   isStaffRole: (role: string) => role === 'admin' || role === 'superadmin',
 }))
 vi.mock('next/cache', () => ({ revalidatePath: mocks.revalidatePath }))
-vi.mock('../availability-service', () => ({ availabilityService: mocks.service }))
+vi.mock('../services/availability-service', () => ({ availabilityService: mocks.service }))
 
 import {
   addClosedDateAction,
@@ -34,8 +34,8 @@ import {
   addWeeklyBlockAction,
   removeClosedDateAction,
   removeWeeklyBlockAction,
-} from '../availability-actions'
-import { initialAvailabilityActionState as idle } from '../availability-action-state'
+} from '../actions/availability-actions'
+import { initialAvailabilityActionState as idle } from '../types/availability-action-state'
 
 const m = schedulingMessages.availability
 

@@ -1,19 +1,19 @@
 'use client'
 
 import { useActionState } from 'react'
-import { schedulingMessages } from '../messages'
-import { availabilityStyles as STYLES } from './availability.styles'
+import { schedulingMessages } from '../../messages'
+import { availabilityStyles as STYLES } from '../styles/availability.styles'
 import {
   initialAvailabilityActionState,
   type AvailabilityActionState,
-} from './availability-action-state'
+} from '../types/availability-action-state'
 import {
   addClosedDateAction,
   addManualBlockAction,
   addWeeklyBlockAction,
   removeClosedDateAction,
   removeWeeklyBlockAction,
-} from './availability-actions'
+} from '../actions/availability-actions'
 
 const m = schedulingMessages.availability
 
@@ -146,14 +146,15 @@ export function ManualBlockForm() {
   )
 }
 
-// Botón de quitar con su propio estado: si la fila ya no existe, el aviso aparece junto a ella.
-function RemoveButton({ action, id, label }: { action: Action; id: string; label: string }) {
+// Botón de quitar o reabrir con su propio estado: si la fila ya no existe, el aviso aparece junto a
+// ella. El texto visible está contenido en el nombre accesible (WCAG 2.5.3).
+function RemoveButton({ action, id, label, text }: { action: Action; id: string; label: string; text: string }) {
   const [state, formAction, pending] = useFormAction(action)
   return (
     <form action={formAction}>
       <input type="hidden" name="id" value={id} />
       <button type="submit" className={STYLES.removeButton} aria-label={label} disabled={pending}>
-        {m.remove}
+        {text}
       </button>
       {state.status !== 'ok' && <AvailabilityFeedback state={state} />}
     </form>
@@ -161,9 +162,9 @@ function RemoveButton({ action, id, label }: { action: Action; id: string; label
 }
 
 export function RemoveWeeklyBlockButton({ id, label }: { id: string; label: string }) {
-  return <RemoveButton action={removeWeeklyBlockAction} id={id} label={label} />
+  return <RemoveButton action={removeWeeklyBlockAction} id={id} label={label} text={m.remove} />
 }
 
 export function RemoveClosedDateButton({ id, label }: { id: string; label: string }) {
-  return <RemoveButton action={removeClosedDateAction} id={id} label={label} />
+  return <RemoveButton action={removeClosedDateAction} id={id} label={label} text={m.closed.reopen} />
 }

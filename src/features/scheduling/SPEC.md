@@ -6,7 +6,7 @@ actualizado: "2026-10-15"
 historias:
   - id: US-AGE-01
     estado: terminada
-    evidencia: "PR de cierre us/US-AGE-01 a main, con las piezas 1 a 12 apiladas hacia la rama de la historia. Criterios 1, 2 y 3 demostrados en /admin/citas/disponibilidad; los criterios 4 y 5 se trasladaron a US-AGE-02 y US-AGE-05 con aprobación del PO el 2026-10-14 (docs/process/DEPENDENCIES.md); tests: weekly-availability.test.ts (domain y application), closed-dates.test.ts (domain y application), manual-blocks.test.ts (domain y application), los tres *-repository.test.ts, studio-time.test.ts, availability-schema.test.ts, availability-actions.test.ts, availability-format.test.ts, AdminAvailabilityView.test.tsx, __tests__/availability-rls-isolation.test.ts (SEC-002) y pgTAP scheduling_weekly_availability.test.sql y scheduling_closed_dates_and_manual_blocks.test.sql"
+    evidencia: "PR de cierre us/US-AGE-01 a main, con las piezas 1 a 13 apiladas hacia la rama de la historia. Criterios 1, 2 y 3 demostrados en /admin/citas/disponibilidad; los criterios 4 y 5 se trasladaron a US-AGE-02 y US-AGE-05 con aprobación del PO el 2026-10-14 (docs/process/DEPENDENCIES.md); tests: weekly-availability.test.ts (domain y application), closed-dates.test.ts (domain y application), manual-blocks.test.ts (domain y application), los tres *-repository.test.ts, studio-time.test.ts, availability-schema.test.ts, availability-actions.test.ts, availability-format.test.ts, AdminAvailabilityView.test.tsx, __tests__/availability-rls-isolation.test.ts (SEC-002) y pgTAP scheduling_weekly_availability.test.sql y scheduling_closed_dates_and_manual_blocks.test.sql"
   - id: US-AGE-02
     estado: no_iniciada
   - id: US-AGE-03
@@ -72,7 +72,7 @@ Criterios 1 a 3 en `/admin/citas/disponibilidad`, pestaña junto a la cola de ap
 - Criterio 2, días cerrados: fecha de calendario del estudio, no laborable o feriado, con nombre opcional (`domain/closed-dates.ts`, `application/closed-dates.ts`). El panel lista desde hoy.
 - Criterio 3, bloqueos manuales: instantes en UTC (DOM-003), motivo opcional que solo ve staff (`domain/manual-blocks.ts`, `application/manual-blocks.ts`). Desbloquear, elegir varios espacios y el conflicto con citas quedan para US-AGE-07.
 - `shared/studio-time.ts` convierte entre la hora de pared de `America/Costa_Rica` y UTC sin leer el reloj (DOM-004).
-- UI: `ui/availability/`. Validación de formato una vez en el borde con zod (`availability-schema.ts`, DOM-007); acciones del servidor en `availability-actions.ts`, que revisan el rol para dar un mensaje amable; composición en `availability-service.ts`; fechas formateadas en el servidor en la zona del estudio (`availability-format.ts`). `loading.tsx` y `error.tsx` de la ruta cubren carga y error; cada lista tiene su vacío (UI-003).
+- UI: `ui/availability/{actions,components,services,styles,types,utils,validation}`, la misma estructura que `ui/approval-queue/`. Validación de formato una vez en el borde con zod (`validation/availability-schema.ts`, DOM-007); acciones del servidor en `actions/availability-actions.ts`, que revisan el rol para dar un mensaje amable; composición en `services/availability-service.ts`; fechas formateadas en el servidor en la zona del estudio (`utils/availability-format.ts`); componentes en `components/`. `loading.tsx` y `error.tsx` de la ruta cubren carga y error; cada lista tiene su vacío (UI-003).
 
 Alcance: los criterios 4 y 5 se trasladaron con aprobación del PO el 2026-10-14 (ver la sección siguiente y `docs/process/DEPENDENCIES.md`, Criterios trasladados). US-AGE-01 queda `terminada` con los criterios 1 a 3.
 
@@ -88,7 +88,7 @@ Traslado aprobado por el PO el 2026-10-14 y registrado en `docs/process/DEPENDEN
 ### US-AGE-05 — reservar
 
 - Criterio 5 de US-AGE-01: reducir la disponibilidad no elimina citas ya agendadas. Al quitar un bloque semanal, cerrar un día o bloquear un espacio que afecte citas existentes, el panel advierte y pide confirmación.
-- Evidencia pendiente: pruebas de las tres acciones de `ui/availability/availability-actions.ts` con una cita afectada, que verifican la advertencia y que la cita sigue existiendo.
+- Evidencia pendiente: pruebas de las tres acciones de `ui/availability/actions/availability-actions.ts` con una cita afectada, que verifican la advertencia y que la cita sigue existiendo.
 
 ## Criterios recibidos de US-AGE-13
 

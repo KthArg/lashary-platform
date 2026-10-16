@@ -4,7 +4,7 @@ import {
   manualBlockFormSchema,
   timeToMinutes,
   weeklyBlockFormSchema,
-} from '../availability-schema'
+} from '../validation/availability-schema'
 import { schedulingMessages } from '../../messages'
 
 const v = schedulingMessages.availability.validation

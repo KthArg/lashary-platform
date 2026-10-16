@@ -1,12 +1,12 @@
 import { randomUUID } from 'node:crypto'
 import { systemClock } from '@/shared/clock'
-import { DEFAULT_RESOURCE_ID } from '../../application/availability-ports'
-import { addWeeklyBlock, listWeeklyBlocks, removeWeeklyBlock } from '../../application/weekly-availability'
-import { addClosedDate, listUpcomingClosedDates, removeClosedDate } from '../../application/closed-dates'
-import { addManualBlock, listUpcomingManualBlocks } from '../../application/manual-blocks'
-import { weeklyAvailabilityRepository } from '../../db/weekly-availability-repository'
-import { closedDateRepository } from '../../db/closed-date-repository'
-import { manualBlockRepository } from '../../db/manual-block-repository'
+import { DEFAULT_RESOURCE_ID } from '../../../application/availability-ports'
+import { addWeeklyBlock, listWeeklyBlocks, removeWeeklyBlock } from '../../../application/weekly-availability'
+import { addClosedDate, listUpcomingClosedDates, removeClosedDate } from '../../../application/closed-dates'
+import { addManualBlock, listUpcomingManualBlocks } from '../../../application/manual-blocks'
+import { weeklyAvailabilityRepository } from '../../../db/weekly-availability-repository'
+import { closedDateRepository } from '../../../db/closed-date-repository'
+import { manualBlockRepository } from '../../../db/manual-block-repository'
 
 // Composición de los casos de uso de disponibilidad con sus adaptadores reales. Siempre sobre el
 // recurso por defecto: la UI no ofrece selector mientras exista uno solo (ADR-0005).

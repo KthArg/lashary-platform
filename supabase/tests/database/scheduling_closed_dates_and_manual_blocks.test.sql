@@ -9,7 +9,7 @@
 -- Correr con: npx supabase test db   (requiere `supabase start`)
 
 BEGIN;
-SELECT plan(13);
+SELECT plan(15);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -49,6 +49,11 @@ SELECT throws_ok(
     VALUES ('00000000-0000-4000-8000-0000000002f1', '2026-12-26', 'vacaciones')$$,
   '23514', NULL, 'base: kind fuera del vocabulario se rechaza');
 
+SELECT throws_ok(
+  $$INSERT INTO public.scheduling_closed_dates (resource_id, closed_on, kind, label)
+    VALUES ('00000000-0000-4000-8000-0000000002f1', '2026-12-27', 'holiday', '   ')$$,
+  '23514', NULL, 'base: un nombre en blanco se rechaza (va NULL o con texto)');
+
 DELETE FROM public.scheduling_closed_dates WHERE id = '00000000-0000-0000-0000-00000000c001';
 SELECT is(
   (SELECT count(*)::int FROM public.scheduling_closed_dates
@@ -75,6 +80,11 @@ SELECT throws_ok(
   $$INSERT INTO public.scheduling_manual_blocks (resource_id, starts_at, ends_at)
     VALUES ('00000000-0000-4000-8000-0000000002f1', '2026-10-21 18:00Z', '2026-10-21 17:00Z')$$,
   '23514', NULL, 'base: inicio después del fin se rechaza');
+
+SELECT throws_ok(
+  $$INSERT INTO public.scheduling_manual_blocks (resource_id, starts_at, ends_at, reason)
+    VALUES ('00000000-0000-4000-8000-0000000002f1', '2026-10-23 15:00Z', '2026-10-23 16:00Z', '')$$,
+  '23514', NULL, 'base: un motivo vacío se rechaza (va NULL o con texto)');
 
 -- ── Como clienta ────────────────────────────────────────────────────────────
 SELECT set_config('request.jwt.claims',
