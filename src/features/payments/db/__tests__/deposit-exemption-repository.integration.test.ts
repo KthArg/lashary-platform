@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { isOk } from '@/shared/result'
-import { DepositExemption } from '@/features/payments/domain/deposit-exemption'
-import { SupabaseDepositExemptionRepository } from '@/features/payments/db/deposit-exemption-repository'
+import { buildDepositExemption } from '@/features/payments/domain/deposit-exemption'
+import { createSupabaseDepositExemptionRepository } from '@/features/payments/db/deposit-exemption-repository'
+import type { DepositExemptionRepository } from '@/features/payments/application/ports'
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
@@ -50,8 +51,8 @@ async function seedRealIds(): Promise<{ userId: string; clientId: string }> {
   return { userId: data.user.id, clientId: profile.data.id as string }
 }
 
-describe.skipIf(!configured)('SupabaseDepositExemptionRepository (Supabase local)', () => {
-  let repo: SupabaseDepositExemptionRepository
+describe.skipIf(!configured)('createSupabaseDepositExemptionRepository (Supabase local)', () => {
+  let repo: DepositExemptionRepository
   let db: SupabaseClient
   let userId: string
   let clientId: string
@@ -63,14 +64,14 @@ describe.skipIf(!configured)('SupabaseDepositExemptionRepository (Supabase local
       return
     }
     db = createClient(URL, KEY)
-    repo = new SupabaseDepositExemptionRepository(db)
+    repo = createSupabaseDepositExemptionRepository(db)
     const seeded = await seedRealIds()
     userId = seeded.userId
     clientId = seeded.clientId
   })
 
   itLive('save() está denegado por RLS con token anónimo (SEC-001, fail-closed)', async () => {
-    const built = DepositExemption.create('00000000-0000-0000-0000-00000000f101', {
+    const built = buildDepositExemption('00000000-0000-0000-0000-00000000f101', {
       clientId,
       exemptedBy: userId,
       reason: 'rls probe',

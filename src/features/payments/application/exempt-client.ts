@@ -1,7 +1,8 @@
 import { ok, isErr, type Result } from '@/shared/result'
 import type { Clock } from '@/shared/clock'
 import {
-  DepositExemption,
+  buildDepositExemption,
+  depositExemptionToView,
   type DepositExemptionView,
 } from '../domain/deposit-exemption'
 import type {
@@ -34,7 +35,7 @@ export const exemptClient =
   ): Promise<
     Result<DepositExemptionView, DepositExemptionValidationError | ClientAlreadyExempt>
   > => {
-    const built = DepositExemption.create(deps.newId(), {
+    const built = buildDepositExemption(deps.newId(), {
       clientId: input.clientId,
       exemptedBy: input.exemptedBy,
       reason: input.reason,
@@ -54,5 +55,5 @@ export const exemptClient =
     })
     if (isErr(audited)) throw audited.error
 
-    return ok(built.value.toView())
+    return ok(depositExemptionToView(built.value))
   }
