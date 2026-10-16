@@ -6,7 +6,7 @@ actualizado: "2026-10-15"
 historias:
   - id: US-AGE-01
     estado: en_progreso
-    falta: "pieza 1 hecha (las tres tablas de disponibilidad en la base, sobre scheduling_resources de US-AGE-09: migración 20261015000000_scheduling_availability.sql; pruebas de los bloques semanales en scheduling_weekly_availability.test.sql y __tests__/availability-rls-isolation.test.ts). Faltan el dominio y la aplicación de bloques semanales, días no laborables y feriados, bloqueos manuales y el panel en /admin/citas. Criterios 4 y 5 con traslado propuesto al PO (US-AGE-02 y US-AGE-05), pendiente de aprobación"
+    falta: "piezas 1 y 2 hechas (criterio 1 en la base y el dominio: migración 20261015000000, domain/weekly-availability.ts y sus pruebas). Faltan la aplicación y el repositorio de bloques semanales. Faltan días no laborables y feriados, bloqueos manuales y el panel en /admin/citas. Criterios 4 y 5 con traslado propuesto al PO (US-AGE-02 y US-AGE-05), pendiente de aprobación"
   - id: US-AGE-02
     estado: no_iniciada
   - id: US-AGE-03
