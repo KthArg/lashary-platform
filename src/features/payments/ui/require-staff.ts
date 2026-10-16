@@ -1,8 +1,6 @@
-import { getAuthSession } from '@/features/auth'
+import { getAuthSession, isStaffRole } from '@/features/auth'
 
-const STAFF_ROLES = new Set(['admin', 'superadmin'])
-
-export async function isStaff(): Promise<boolean> {
+export async function getStaffSession() {
   const session = await getAuthSession()
-  return session !== null && STAFF_ROLES.has(session.role)
+  return session !== null && isStaffRole(session.role) ? session : null
 }
