@@ -74,7 +74,7 @@ describe('addWeeklyBlockAction — criterio 1', () => {
     const state = await addWeeklyBlockAction(idle, form({ weekday: '1', start: '09:00', end: '12:00' }))
     expect(mocks.service.addWeeklyBlock).toHaveBeenCalledWith({ weekday: 1, startMin: 540, endMin: 720 })
     expect(state).toEqual({ status: 'ok', message: m.weekly.savedOk })
-    expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/citas')
+    expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/citas/disponibilidad')
   })
 
   it('formato inválido no llega al servicio', async () => {
