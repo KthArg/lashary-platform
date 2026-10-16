@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { isErr } from '@/shared/result'
-import { exemptClient, ClientAlreadyExempt } from '@/features/payments'
+import { exemptClient, isClientAlreadyExempt } from '@/features/payments'
 import { listClientsAction } from '@/features/clients'
 import { getAuthSession } from '@/features/auth'
 import { isStaff } from './require-staff'
@@ -49,7 +49,7 @@ export async function exemptClientAction(
   })
 
   if (isErr(result)) {
-    if (result.error instanceof ClientAlreadyExempt) {
+    if (isClientAlreadyExempt(result.error)) {
       return { status: 'conflict', message: m.alreadyExempt }
     }
     return { status: 'invalid', problems: result.error.problems }
