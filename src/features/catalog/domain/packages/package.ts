@@ -73,6 +73,10 @@ export function markPackageInactive(pkg: Package): Package {
   return { ...pkg, isActive: false }
 }
 
+export function markPackageActive(pkg: Package): Package {
+  return { ...pkg, isActive: true }
+}
+
 export function packageToView(pkg: Package): PackageView {
   return {
     id: pkg.id,
