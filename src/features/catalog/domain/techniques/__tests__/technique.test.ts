@@ -1,7 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { Money } from '@/shared/money'
 import { isErr, isOk } from '@/shared/result'
-import { Technique } from '@/features/catalog/domain/techniques/technique'
+import {
+  buildTechnique,
+  markTechniqueInactive,
+  techniqueToSnapshot,
+} from '@/features/catalog/domain/techniques/technique'
 import { isTechniqueValidationError } from '@/features/catalog/domain/techniques/errors'
 
 const validInput = () => ({
@@ -18,9 +22,9 @@ const validInput = () => ({
   aftercareText: 'No mojar por 24 horas.',
 })
 
-describe('Technique.create — invariantes de dominio (DOM-007)', () => {
+describe('buildTechnique — invariantes de dominio (DOM-007)', () => {
   it('crea una técnica válida con todos los campos', () => {
-    const result = Technique.create(validInput())
+    const result = buildTechnique(validInput())
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
     expect(result.value.name).toBe('Set clásico')
@@ -31,7 +35,7 @@ describe('Technique.create — invariantes de dominio (DOM-007)', () => {
   })
 
   it('crea una técnica sin retoque (precio y duración de retoque ausentes)', () => {
-    const result = Technique.create({
+    const result = buildTechnique({
       ...validInput(),
       priceRetouch: null,
       durationRetouchMin: null,
@@ -43,12 +47,12 @@ describe('Technique.create — invariantes de dominio (DOM-007)', () => {
   })
 
   it('acepta intervalo de re-aplicación nulo', () => {
-    const result = Technique.create({ ...validInput(), reapplicationIntervalDays: null })
+    const result = buildTechnique({ ...validInput(), reapplicationIntervalDays: null })
     expect(isOk(result)).toBe(true)
   })
 
   it('recorta espacios de name y aftercareText', () => {
-    const result = Technique.create({
+    const result = buildTechnique({
       ...validInput(),
       name: '  Set clásico  ',
       aftercareText: '  cuidados  ',
@@ -59,7 +63,7 @@ describe('Technique.create — invariantes de dominio (DOM-007)', () => {
   })
 
   it('rechaza nombre vacío', () => {
-    const result = Technique.create({ ...validInput(), name: '   ' })
+    const result = buildTechnique({ ...validInput(), name: '   ' })
     expect(isErr(result)).toBe(true)
     if (!isErr(result)) return
     expect(isTechniqueValidationError(result.error)).toBe(true)
@@ -67,12 +71,12 @@ describe('Technique.create — invariantes de dominio (DOM-007)', () => {
   })
 
   it('rechaza texto de cuidados vacío (criterio 6 / D5)', () => {
-    const result = Technique.create({ ...validInput(), aftercareText: '  ' })
+    const result = buildTechnique({ ...validInput(), aftercareText: '  ' })
     expect(isErr(result)).toBe(true)
   })
 
   it('rechaza familia inválida', () => {
-    const result = Technique.create({
+    const result = buildTechnique({
       ...validInput(),
       // @ts-expect-error — familia fuera del catálogo
       family: 'tattoo',
@@ -81,12 +85,12 @@ describe('Technique.create — invariantes de dominio (DOM-007)', () => {
   })
 
   it('rechaza precio de primera vez no positivo', () => {
-    const result = Technique.create({ ...validInput(), priceFirstTime: Money.zero() })
+    const result = buildTechnique({ ...validInput(), priceFirstTime: Money.zero() })
     expect(isErr(result)).toBe(true)
   })
 
   it('rechaza precio de retoque no positivo cuando se da', () => {
-    const result = Technique.create({
+    const result = buildTechnique({
       ...validInput(),
       priceRetouch: Money.zero(),
       durationRetouchMin: 60,
@@ -95,34 +99,34 @@ describe('Technique.create — invariantes de dominio (DOM-007)', () => {
   })
 
   it('rechaza duración de primera vez no entera o no positiva', () => {
-    expect(isErr(Technique.create({ ...validInput(), durationFirstTimeMin: 0 }))).toBe(true)
-    expect(isErr(Technique.create({ ...validInput(), durationFirstTimeMin: 12.5 }))).toBe(true)
+    expect(isErr(buildTechnique({ ...validInput(), durationFirstTimeMin: 0 }))).toBe(true)
+    expect(isErr(buildTechnique({ ...validInput(), durationFirstTimeMin: 12.5 }))).toBe(true)
   })
 
   it('acepta buffer_min cero, rechaza negativo', () => {
-    expect(isOk(Technique.create({ ...validInput(), bufferMin: 0 }))).toBe(true)
-    expect(isErr(Technique.create({ ...validInput(), bufferMin: -1 }))).toBe(true)
+    expect(isOk(buildTechnique({ ...validInput(), bufferMin: 0 }))).toBe(true)
+    expect(isErr(buildTechnique({ ...validInput(), bufferMin: -1 }))).toBe(true)
   })
 
   it('acepta anticipo cero, rechaza negativo', () => {
-    expect(isOk(Technique.create({ ...validInput(), deposit: Money.zero() }))).toBe(true)
-    expect(isErr(Technique.create({ ...validInput(), deposit: Money.fromColones(-1) }))).toBe(true)
+    expect(isOk(buildTechnique({ ...validInput(), deposit: Money.zero() }))).toBe(true)
+    expect(isErr(buildTechnique({ ...validInput(), deposit: Money.fromColones(-1) }))).toBe(true)
   })
 
   it('D10 — rechaza precio de retoque sin duración de retoque', () => {
-    const result = Technique.create({ ...validInput(), durationRetouchMin: null })
+    const result = buildTechnique({ ...validInput(), durationRetouchMin: null })
     expect(isErr(result)).toBe(true)
     if (!isErr(result)) return
     expect(result.error.problems.join(' ')).toMatch(/retoque/i)
   })
 
   it('D10 — rechaza duración de retoque sin precio de retoque', () => {
-    const result = Technique.create({ ...validInput(), priceRetouch: null })
+    const result = buildTechnique({ ...validInput(), priceRetouch: null })
     expect(isErr(result)).toBe(true)
   })
 
   it('acumula varios problemas en un solo error', () => {
-    const result = Technique.create({
+    const result = buildTechnique({
       ...validInput(),
       name: '',
       aftercareText: '',
@@ -134,22 +138,22 @@ describe('Technique.create — invariantes de dominio (DOM-007)', () => {
   })
 })
 
-describe('Technique — comportamiento', () => {
-  it('deactivate devuelve una copia inactiva sin mutar la original', () => {
-    const result = Technique.create(validInput())
+describe('funciones de Technique', () => {
+  it('markTechniqueInactive devuelve una copia inactive sin mutar la original', () => {
+    const result = buildTechnique(validInput())
     if (!isOk(result)) throw new Error('esperaba ok')
     const original = result.value
-    const inactiva = original.deactivate()
-    expect(inactiva.isActive).toBe(false)
+    const inactive = markTechniqueInactive(original)
+    expect(inactive.isActive).toBe(false)
     expect(original.isActive).toBe(true)
-    expect(inactiva.id).toBe(original.id)
+    expect(inactive.id).toBe(original.id)
   })
 
-  it('snapshot produce los campos que la cita congela (DOM-002), en colones enteros', () => {
-    const result = Technique.create(validInput())
+  it('techniqueToSnapshot produce los campos que la cita congela (DOM-002), en colones enteros', () => {
+    const result = buildTechnique(validInput())
     if (!isOk(result)) throw new Error('esperaba ok')
-    const snap = result.value.snapshot()
-    expect(snap).toEqual({
+    const snapshot = techniqueToSnapshot(result.value)
+    expect(snapshot).toEqual({
       techniqueId: '11111111-1111-1111-1111-111111111111',
       name: 'Set clásico',
       family: 'lash_classic',
@@ -162,15 +166,15 @@ describe('Technique — comportamiento', () => {
     })
   })
 
-  it('snapshot deja priceRetouch/durationRetouchMin en null cuando no hay retoque', () => {
-    const result = Technique.create({
+  it('techniqueToSnapshot deja priceRetouch/durationRetouchMin en null cuando no hay retoque', () => {
+    const result = buildTechnique({
       ...validInput(),
       priceRetouch: null,
       durationRetouchMin: null,
     })
     if (!isOk(result)) throw new Error('esperaba ok')
-    const snap = result.value.snapshot()
-    expect(snap.priceRetouch).toBeNull()
-    expect(snap.durationRetouchMin).toBeNull()
+    const snapshot = techniqueToSnapshot(result.value)
+    expect(snapshot.priceRetouch).toBeNull()
+    expect(snapshot.durationRetouchMin).toBeNull()
   })
 })

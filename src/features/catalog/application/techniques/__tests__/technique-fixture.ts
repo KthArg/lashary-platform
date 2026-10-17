@@ -1,6 +1,6 @@
 import { Money } from '@/shared/money'
 import { isOk } from '@/shared/result'
-import { Technique, type ServiceFamily } from '@/features/catalog/domain/techniques/technique'
+import { buildTechnique, type Technique, type ServiceFamily } from '@/features/catalog/domain/techniques/technique'
 
 let counter = 0
 
@@ -16,7 +16,7 @@ export function makeTechnique(overrides: Partial<{
   isActive: boolean
 }> = {}): Technique {
   counter += 1
-  const result = Technique.create({
+  const result = buildTechnique({
     id: overrides.id ?? `t-${counter}`,
     name: overrides.name ?? `Técnica ${counter}`,
     family: overrides.family ?? 'lash_classic',
