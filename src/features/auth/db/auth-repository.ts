@@ -2,23 +2,36 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AuthRole } from '../domain/roles'
 import type { AuthRepository, ClientPhoneProfile, ClientProfile } from '../application/ports'
 
+export const CLIENT_PROFILE_COLUMNS =
+  'id, user_id, full_name, email, phone, phone_verified, created_at, updated_at'
+
+export const NO_ROWS_ERROR_CODE = 'PGRST116'
+
+function assertReadable(error: { code?: string; message: string } | null, operation: string) {
+  if (error && error.code !== NO_ROWS_ERROR_CODE) {
+    throw new Error(`${operation}: ${error.message}`)
+  }
+}
+
 export function createSupabaseAuthRepository(supabase: SupabaseClient): AuthRepository {
   return {
     async findRole(userId: string) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('auth_user_roles')
         .select('role')
         .eq('user_id', userId)
         .single()
+      assertReadable(error, 'auth_user_roles.findRole')
       return (data?.role as AuthRole | undefined) ?? null
     },
 
     async findClientProfile(userId: string) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('clients_profiles')
-        .select('*')
+        .select(CLIENT_PROFILE_COLUMNS)
         .eq('user_id', userId)
         .single()
+      assertReadable(error, 'clients_profiles.findClientProfile')
       return (data as ClientProfile | null) ?? null
     },
 
