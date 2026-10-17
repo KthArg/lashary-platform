@@ -2,7 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/shared/lib/supabase/server'
 import type { DepositExemption } from '../domain/deposit-exemption'
 import type { DepositExemptionRepository } from '../application/ports'
-import { ClientAlreadyExempt } from '../domain/errors'
+import { ok, err, type Result } from '@/shared/result'
+import { clientAlreadyExempt, type ClientAlreadyExempt } from '../domain/errors'
 
 const TABLE = 'payments_deposit_exemptions'
 
@@ -30,14 +31,15 @@ export function toRow(exemption: DepositExemption): InsertRow {
 export class SupabaseDepositExemptionRepository implements DepositExemptionRepository {
   constructor(private readonly db: SupabaseClient) {}
 
-  async save(exemption: DepositExemption): Promise<void> {
+  async save(exemption: DepositExemption): Promise<Result<void, ClientAlreadyExempt>> {
     const { error } = await this.db.from(TABLE).insert(toRow(exemption))
     if (error) {
       if (error.code === '23505') {
-        throw new ClientAlreadyExempt(exemption.clientId)
+        return err(clientAlreadyExempt(exemption.clientId))
       }
       throw new Error(`${TABLE}.save: ${error.message}`)
     }
+    return ok(undefined)
   }
 }
 
