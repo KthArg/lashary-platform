@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-15.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-17.
 
 ## Features
 
@@ -11,7 +11,7 @@
 | audit | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | en_progreso | 2 / 0 / 0 / 0 / 2 |
-| clients | pendiente | en_progreso | 1 / 1 / 0 / 0 / 3 |
+| clients | pendiente | en_progreso | 1 / 2 / 0 / 0 / 2 |
 | content | pendiente | terminada | 3 / 0 / 0 / 0 / 0 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | landing | pendiente | terminada | 6 / 0 / 0 / 0 / 0 |
@@ -38,11 +38,11 @@
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
-### clients (actualizado: 2026-10-08)
+### clients (actualizado: 2026-10-17)
 - US-CLI-01 — en_progreso — falta: las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
-- US-CLI-04 — no_iniciada
+- US-CLI-04 — en_progreso — falta: pieza 1/8: solo el esquema (clients_precaution_categories y clients_record_versions con su RLS y pgTAP). Faltan el bucket privado de imagenes (2/8), dominio, casos de uso con bitacora, repositorio y actions, la pestana Expediente, los formularios y las imagenes (3/8 a 8/8)
 - US-CLI-05 — terminada — PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx
 
 ### content (actualizado: 2026-10-14)
