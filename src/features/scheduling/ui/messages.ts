@@ -66,6 +66,7 @@ export const schedulingMessages = {
       savedOk: 'Día cerrado.',
       removedOk: 'Día reabierto.',
       alreadyClosed: 'Ese día ya está cerrado.',
+      reopen: 'Reabrir',
       removeLabel: (date: string) => `Reabrir el ${date}`,
     },
     blocks: {

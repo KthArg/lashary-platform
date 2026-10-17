@@ -9,16 +9,16 @@ import {
   isClosedDateAlreadyExists,
   isManualBlockOverlap,
   isWeeklyBlockOverlap,
-} from '../../domain/availability-errors'
-import { schedulingMessages } from '../messages'
-import { availabilityService } from './availability-service'
+} from '../../../domain/availability-errors'
+import { schedulingMessages } from '../../messages'
+import { availabilityService } from '../services/availability-service'
 import {
   closedDateFormSchema,
   manualBlockFormSchema,
   removeFormSchema,
   weeklyBlockFormSchema,
-} from './availability-schema'
-import type { AvailabilityActionState } from './availability-action-state'
+} from '../validation/availability-schema'
+import type { AvailabilityActionState } from '../types/availability-action-state'
 
 // Las acciones revisan el rol para dar un mensaje amable; la frontera real es RLS (SEC-001).
 

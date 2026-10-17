@@ -5,7 +5,7 @@ import {
   toClosedDateViews,
   toManualBlockViews,
   toWeeklyDays,
-} from '../availability-format'
+} from '../utils/availability-format'
 
 describe('availability-format', () => {
   it('minutesToTime escribe HH:MM, con 24:00 para la medianoche final', () => {

@@ -1,8 +1,8 @@
 import { STUDIO_TIME_ZONE } from '@/shared/studio-time'
-import type { WeeklyBlock } from '../../domain/weekly-availability'
-import type { ClosedDate } from '../../domain/closed-dates'
-import type { ManualBlock } from '../../domain/manual-blocks'
-import { schedulingMessages } from '../messages'
+import type { WeeklyBlock } from '../../../domain/weekly-availability'
+import type { ClosedDate } from '../../../domain/closed-dates'
+import type { ManualBlock } from '../../../domain/manual-blocks'
+import { schedulingMessages } from '../../messages'
 
 // Vistas ya formateadas en el servidor, en la zona del estudio: el navegador no reinterpreta
 // fechas con su propia zona y el HTML del servidor coincide con el del cliente.
