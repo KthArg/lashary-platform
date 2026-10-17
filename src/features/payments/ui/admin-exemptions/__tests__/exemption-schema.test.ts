@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { exemptClientFormSchema } from '../schema'
+import { exemptClientFormSchema } from '../validation/exemption-schema'
 
 describe('exemptClientFormSchema', () => {
   it('acepta datos válidos', () => {
