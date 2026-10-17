@@ -6,12 +6,12 @@ import {
   deactivateTechnique,
 } from '@/features/catalog/application/techniques/commands'
 import {
-  TechniqueNameConflict,
-  TechniqueNotFound,
-  TechniqueValidationError,
+  isTechniqueNameConflict,
+  isTechniqueNotFound,
+  isTechniqueValidationError,
 } from '@/features/catalog/domain/techniques/errors'
 import type { TechniqueWriteModel } from '@/features/catalog/application/techniques/ports'
-import { FakeTechniqueRepository } from './fake-repository'
+import { createFakeTechniqueRepository, type FakeTechniqueRepository } from './fake-repository'
 import { makeTechnique } from './technique-fixture'
 
 const validModel = (): TechniqueWriteModel => ({
@@ -34,7 +34,7 @@ const deps = (repo: FakeTechniqueRepository, id = 'nuevo-id') => ({
 
 describe('createTechnique', () => {
   it('crea y persiste una técnica válida', async () => {
-    const repo = new FakeTechniqueRepository()
+    const repo = createFakeTechniqueRepository()
     const result = await createTechnique(deps(repo, 'abc'))(validModel())
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
@@ -45,19 +45,19 @@ describe('createTechnique', () => {
   })
 
   it('rechaza y no persiste una técnica inválida (D10)', async () => {
-    const repo = new FakeTechniqueRepository()
+    const repo = createFakeTechniqueRepository()
     const result = await createTechnique(deps(repo))({
       ...validModel(),
       priceRetouch: 19000,
       durationRetouchMin: null,
     })
     expect(isErr(result)).toBe(true)
-    if (isErr(result)) expect(result.error).toBeInstanceOf(TechniqueValidationError)
+    if (isErr(result)) expect(isTechniqueValidationError(result.error)).toBe(true)
     expect(repo.saveCalls).toBe(0)
   })
 
   it('rechaza montos no enteros', async () => {
-    const repo = new FakeTechniqueRepository()
+    const repo = createFakeTechniqueRepository()
     const result = await createTechnique(deps(repo))({
       ...validModel(),
       priceFirstTime: 32000.5,
@@ -67,7 +67,7 @@ describe('createTechnique', () => {
   })
 
   it('DOM-006: devuelve TechniqueNameConflict si el nombre ya existe, no un Error genérico', async () => {
-    const repo = new FakeTechniqueRepository([
+    const repo = createFakeTechniqueRepository([
       makeTechnique({ id: 'existente', name: 'Set clásico' }),
     ])
     const result = await createTechnique(deps(repo, 'nuevo'))({
@@ -75,14 +75,14 @@ describe('createTechnique', () => {
       name: 'Set clásico',
     })
     expect(isErr(result)).toBe(true)
-    if (isErr(result)) expect(result.error).toBeInstanceOf(TechniqueNameConflict)
+    if (isErr(result)) expect(isTechniqueNameConflict(result.error)).toBe(true)
     expect(repo.saveCalls).toBe(0)
   })
 })
 
 describe('updateTechnique', () => {
   it('actualiza una técnica existente conservando su estado activo', async () => {
-    const repo = new FakeTechniqueRepository([
+    const repo = createFakeTechniqueRepository([
       makeTechnique({ id: 'e1', isActive: true }),
     ])
     const result = await updateTechnique(deps(repo))('e1', {
@@ -97,7 +97,7 @@ describe('updateTechnique', () => {
   })
 
   it('preserva isActive=false al actualizar una técnica desactivada', async () => {
-    const repo = new FakeTechniqueRepository([
+    const repo = createFakeTechniqueRepository([
       makeTechnique({ id: 'e2', isActive: false }),
     ])
     const result = await updateTechnique(deps(repo))('e2', validModel())
@@ -106,14 +106,14 @@ describe('updateTechnique', () => {
   })
 
   it('devuelve TechniqueNotFound si no existe', async () => {
-    const repo = new FakeTechniqueRepository()
+    const repo = createFakeTechniqueRepository()
     const result = await updateTechnique(deps(repo))('nope', validModel())
     expect(isErr(result)).toBe(true)
-    if (isErr(result)) expect(result.error).toBeInstanceOf(TechniqueNotFound)
+    if (isErr(result)) expect(isTechniqueNotFound(result.error)).toBe(true)
   })
 
   it('rechaza cambios inválidos sin persistir', async () => {
-    const repo = new FakeTechniqueRepository([makeTechnique({ id: 'e3' })])
+    const repo = createFakeTechniqueRepository([makeTechnique({ id: 'e3' })])
     const before = repo.saveCalls
     const result = await updateTechnique(deps(repo))('e3', {
       ...validModel(),
@@ -124,7 +124,7 @@ describe('updateTechnique', () => {
   })
 
   it('DOM-006: renombrar a un nombre ya usado por otra técnica devuelve TechniqueNameConflict', async () => {
-    const repo = new FakeTechniqueRepository([
+    const repo = createFakeTechniqueRepository([
       makeTechnique({ id: 'e4', name: 'Set clásico' }),
       makeTechnique({ id: 'e5', name: 'Laminado de cejas' }),
     ])
@@ -133,13 +133,13 @@ describe('updateTechnique', () => {
       name: 'Set clásico',
     })
     expect(isErr(result)).toBe(true)
-    if (isErr(result)) expect(result.error).toBeInstanceOf(TechniqueNameConflict)
+    if (isErr(result)) expect(isTechniqueNameConflict(result.error)).toBe(true)
   })
 })
 
 describe('deactivateTechnique', () => {
   it('desactiva una técnica existente', async () => {
-    const repo = new FakeTechniqueRepository([
+    const repo = createFakeTechniqueRepository([
       makeTechnique({ id: 'd1', isActive: true }),
     ])
     const result = await deactivateTechnique(deps(repo))('d1')
@@ -150,7 +150,7 @@ describe('deactivateTechnique', () => {
   })
 
   it('devuelve TechniqueNotFound si no existe', async () => {
-    const repo = new FakeTechniqueRepository()
+    const repo = createFakeTechniqueRepository()
     const result = await deactivateTechnique(deps(repo))('nope')
     expect(isErr(result)).toBe(true)
   })

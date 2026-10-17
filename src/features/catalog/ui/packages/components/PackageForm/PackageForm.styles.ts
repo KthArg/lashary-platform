@@ -14,6 +14,5 @@ export const packageFormStyles = {
   durationTotal: 'text-sm text-base-content/70',
   submitWrapper: '',
   submitButton: 'btn btn-primary',
-  deactivateForm: 'flex flex-col gap-2 border-t border-base-300 pt-4',
-  deactivateButton: 'btn btn-outline btn-error w-fit',
+  manageSection: 'flex flex-wrap items-start justify-between gap-4 border-t border-base-300 pt-4',
 }

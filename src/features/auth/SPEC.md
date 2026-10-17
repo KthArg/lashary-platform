@@ -15,6 +15,9 @@ deuda:
   - que: "Test de aislamiento RLS contra instancia local de Supabase en CI"
     aceptada_en: "PR #3"
     costo: "2h"
+  - que: "La política clients_profiles_select_own deja a la clienta leer su fila completa, notes incluido, llamando a PostgREST directo; findClientProfile ya no las pide pero la base no lo impide"
+    aceptada_en: "PR #273"
+    costo: "migración de privilegios por columna o vista para la clienta, más decisión del PO sobre si notes debe ser legible por ella"
 defectos: []
 ---
 
@@ -36,6 +39,8 @@ Completadas las historias `US-AUTH-01` y `US-AUTH-02`.
 - Aislamiento de datos mediante Row Level Security (RLS) en Supabase (`SEC-001`).
 - Pruebas unitarias de integración automatizadas (`auth-client.test.tsx`, `admin-auth.test.tsx`).
 - Pruebas de aislamiento RLS cross-cliente (`rls-isolation.test.ts`) según `SEC-002`.
+- `findClientProfile` (`db/auth-repository.ts`) pide las columnas explícitas de `CLIENT_PROFILE_COLUMNS`, sin `notes`, la nota privada de la administradora; la política `clients_profiles_select_own` sigue dejando leer la fila completa por PostgREST (ver `deuda`).
+- `findRole` y `findClientProfile` solo tratan como "sin fila" el código `PGRST116`; cualquier otro error de lectura lanza, así una caída de la base no se confunde con una usuaria sin rol ni niega el acceso sin dejar rastro.
 - Textos y etiquetas de interfaz completamente externalizados en constantes (`auth-strings.ts`, DOM-009).
 - Separación atómica de componentes UI, hooks dedicados (`useGoogleSignIn`, `usePhoneRegistration`, `useAdminLoginForm`, `useInactivityTimeout`), estilos e interfaces.
 - `clientCitasTitle` / `clientCitasSubtitle` / `clientCitasPlaceholder` retirados de `auth-strings.ts`: la ruta `/portal/citas` que los usaba como placeholder ahora la compone `scheduling` (`US-AGE-03`).
@@ -46,7 +51,7 @@ Punto de entrada exportado (ARCH-003):
 - Acciones y helpers: `getAuthSession()`, `requireAdminSession()`, `signInWithGoogleAction()`, `signInAdminAction()`, `signOutAction()`, `updateClientPhoneAction()`.
 - Componentes UI: `GoogleSignInButton`, `PhoneRegistrationModal`, `AdminLoginForm`, `InactivityTimeout`, `AdminSidebar`, `ClientSidebar`.
 - Hooks: `useGoogleSignIn`, `usePhoneRegistration`, `useAdminLoginForm`, `useInactivityTimeout`.
-- Capas (plantilla de feature): `domain/roles.ts` (`AUTH_ROLES`, `isStaffRole`) y `domain/phone.ts` (`validateClientPhone`); `application/ports.ts` (puerto `AuthRepository`, `ClientProfile`) y `application/session.ts` (`loadAuthSession`, `clientDisplayName`); `db/auth-repository.ts` (`createSupabaseAuthRepository`: rol, perfil y guardado del teléfono); `http/` vacío (el callback de OAuth vive en `src/app/auth/callback`). Las server actions de `ui/actions/` quedan delgadas sobre estas capas, sin cambiar lo que devuelven. La UI se ordena por área, como `catalog/ui/packages`: `ui/admin-login/` (`AdminLoginForm`, `useAdminLoginForm`), `ui/client-login/` (`GoogleSignInButton`, `PhoneRegistrationModal`, `useGoogleSignIn`, `usePhoneRegistration`), `ui/navigation/` (`AdminSidebar`, `ClientSidebar`) y `ui/session/` (`InactivityTimeout`, `useInactivityTimeout`), cada una con `components/<Componente>/` (`.tsx`, `.styles.ts` importado como `STYLES`, `.types.ts`, `index.ts`) y `hooks/`; textos en `ui/constants/auth-strings.ts`.
+- Capas (plantilla de feature): `domain/roles.ts` (`AUTH_ROLES`, `isStaffRole`) y `domain/phone.ts` (`validateClientPhone`); `application/ports.ts` (puerto `AuthRepository`, `ClientProfile`), `application/session.ts` (`loadAuthSession`, `clientDisplayName`), `application/sign-in.ts` (`signInStaff`, `startGoogleSignIn`, `signOutUser`) y `application/phone.ts` (`saveClientPhone`); `db/auth-repository.ts` (`createSupabaseAuthRepository`: rol, perfil, guardado del teléfono y operaciones de `supabase.auth`); `ui/session/server-session.ts` (`getAuthSession`, `requireAdminSession`, fuera del archivo `'use server'`); `http/` vacío (el callback de OAuth vive en `src/app/auth/callback`). Las server actions de `ui/actions/` quedan delgadas sobre estas capas, sin cambiar lo que devuelven. La UI se ordena por área, como `catalog/ui/packages`: `ui/admin-login/` (`AdminLoginForm`, `useAdminLoginForm`), `ui/client-login/` (`GoogleSignInButton`, `PhoneRegistrationModal`, `useGoogleSignIn`, `usePhoneRegistration`), `ui/navigation/` (`AdminSidebar`, `ClientSidebar`) y `ui/session/` (`InactivityTimeout`, `useInactivityTimeout`), cada una con `components/<Componente>/` (`.tsx`, `.styles.ts` importado como `STYLES`, `.types.ts`, `index.ts`) y `hooks/`; textos en `ui/constants/auth-strings.ts`.
 - Constantes: `AUTH_ROLES`, `AUTH_BUTTON_TEXTS`, `AUTH_LABELS`, `AUTH_ERROR_MESSAGES`, `CLIENT_PORTAL_ROUTES`, `ADMIN_PORTAL_ROUTES`.
 
 ## Invariantes de seguridad

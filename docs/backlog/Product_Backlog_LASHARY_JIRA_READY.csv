@@ -121,8 +121,8 @@ Acceptance Criteria:
 • Puedo definir bloques de disponibilidad por dia desde el panel administrativo.
 • Puedo definir dias no laborables y feriados.
 • Puedo bloquear manualmente un espacio especifico.
-• Los cambios se reflejan inmediatamente en el calendario publico.
-• Reducir la disponibilidad no elimina citas ya agendadas: el sistema advierte y pide confirmacion si el cambio afecta citas existentes.","6","US-AGE-01","Administración","Administrador","High","8","To Do","","","Administracion"
+
+Decision de alcance aprobada por el PO el 2026-10-14: se conservan los criterios 1 a 3. El criterio 4 (los cambios se reflejan inmediatamente en el calendario publico) se traslada a US-AGE-02 y el 5 (reducir la disponibilidad no elimina citas ya agendadas; el sistema advierte y pide confirmacion) a US-AGE-05; siguen obligatorios en esas historias (docs/process/DEPENDENCIES.md).","6","US-AGE-01","Administración","Administrador","High","8","To Do","","","Administracion"
 "28","Story","Visualizar calendario con espacios disponibles por dia","User Story:
 Como cliente, quiero visualizar cada dia del calendario con los espacios disponibles, para elegir el horario que mejor se ajuste a mi disponibilidad.
 
@@ -131,7 +131,10 @@ Acceptance Criteria:
 • Los espacios ocupados no revelan de quien es la cita ni que servicio es.
 • Los espacios ya reservados no pueden seleccionarse.
 • La navegacion entre dias no requiere recargar la pagina.
-• La disponibilidad mostrada considera la duracion del servicio seleccionado mas su tiempo de limpieza.","7","US-AGE-02","Cliente Registrado","Cliente Registrado","High","8","To Do","","","Cliente-Registrado"
+• La disponibilidad mostrada considera la duracion del servicio seleccionado mas su tiempo de limpieza.
+• Los cambios de disponibilidad que hace la administradora se reflejan inmediatamente en el calendario.
+
+Criterio 4 recibido de US-AGE-01, traslado aprobado por el PO el 2026-10-14; pendiente de implementacion y pruebas (docs/process/DEPENDENCIES.md).","7","US-AGE-02","Cliente Registrado","Cliente Registrado","High","8","To Do","","","Cliente-Registrado"
 "29","Story","Seleccionar la tecnica a agendar","User Story:
 Como cliente, quiero seleccionar la tecnica que deseo agendar, para que el sistema calcule el tiempo requerido segun si es primera vez o re-aplicacion.
 
@@ -161,8 +164,10 @@ Acceptance Criteria:
 • El precio de la tecnica queda congelado en la cita al momento de confirmarla.
 • El monto del anticipo se muestra al cliente antes de confirmar la cita, junto con la advertencia de que se pierde si cancela fuera de la ventana permitida o si no asiste.
 • El anticipo requerido y el efectivamente registrado quedan almacenados en la cita, no recalculados a partir del catalogo actual.
+• Reducir la disponibilidad no elimina citas ya agendadas: al quitar un bloque semanal, cerrar un dia o bloquear un espacio que afecte citas existentes, el sistema advierte y pide confirmacion.
 
-Criterios originales 2 y 3 recibidos de US-AGE-13, traslado aprobado por el PO y comunicado por Bayron el 2026-10-03; pendientes de implementacion y pruebas (docs/process/DEPENDENCIES.md).","7","US-AGE-05","Cliente Registrado","Cliente Registrado","High","8","To Do","","","Cliente-Registrado"
+Criterios originales 2 y 3 recibidos de US-AGE-13, traslado aprobado por el PO y comunicado por Bayron el 2026-10-03; pendientes de implementacion y pruebas (docs/process/DEPENDENCIES.md).
+Criterio 5 recibido de US-AGE-01, traslado aprobado por el PO el 2026-10-14; pendiente de implementacion y pruebas (docs/process/DEPENDENCIES.md).","7","US-AGE-05","Cliente Registrado","Cliente Registrado","High","8","To Do","","","Cliente-Registrado"
 "32","Story","Reagendar una cita existente","User Story:
 Como cliente, quiero mover mi cita a otra fecha u hora, para no tener que cancelarla y perder el anticipo cuando solo necesito cambiarla.
 
