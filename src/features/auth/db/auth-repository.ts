@@ -35,5 +35,28 @@ export function createSupabaseAuthRepository(supabase: SupabaseClient): AuthRepo
       )
       return { ok: !error }
     },
+
+    async getCurrentUser() {
+      const { data } = await supabase.auth.getUser()
+      return data?.user ?? null
+    },
+
+    async signInWithPassword(credentials) {
+      const { data, error } = await supabase.auth.signInWithPassword(credentials)
+      if (error || !data?.user) return null
+      return data.user
+    },
+
+    async signInWithGoogle(redirectTo: string) {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo },
+      })
+      return { failed: Boolean(error), url: data?.url ?? null }
+    },
+
+    async signOut() {
+      await supabase.auth.signOut()
+    },
   }
 }

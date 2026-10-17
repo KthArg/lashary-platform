@@ -1,4 +1,5 @@
-export { signInWithGoogleAction, signInAdminAction, signOutAction, getAuthSession, requireAdminSession } from './ui/actions/auth-actions'
+export { signInWithGoogleAction, signInAdminAction, signOutAction } from './ui/actions/auth-actions'
+export { getAuthSession, requireAdminSession } from './ui/session/server-session'
 export { updateClientPhoneAction } from './ui/actions/phone-actions'
 export { GoogleSignInButton } from './ui/client-login/components/GoogleSignInButton'
 export { PhoneRegistrationModal } from './ui/client-login/components/PhoneRegistrationModal'
