@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { techniqueToView } from '@/features/catalog/domain/techniques/technique'
 import { makeTechnique } from '@/features/catalog/application/techniques/__tests__/technique-fixture'
 import { PackageForm } from '../components/PackageForm'
 import { PackageTable } from '../components/PackageTable'
@@ -10,7 +11,7 @@ vi.mock('../actions/package-actions', () => ({
   updatePackageAction: (...args: unknown[]) => mocks.editar(...args),
   deactivatePackageAction: (...args: unknown[]) => mocks.desactivar(...args),
 }))
-const techniques = ['t1', 't2'].map((id) => makeTechnique({ id }).toView())
+const techniques = ['t1', 't2'].map((id) => techniqueToView(makeTechnique({ id })))
 const pkg = {
   id: 'p1', name: 'Paquete con anticipo', techniqueIds: ['t1', 't2'],
   price: 30000, deposit: 9000, isActive: true, durationTotalMin: 60,
