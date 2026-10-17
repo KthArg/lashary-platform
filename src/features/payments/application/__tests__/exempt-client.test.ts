@@ -10,17 +10,22 @@ import {
 } from '../exempt-client.constants'
 import { exemptClient } from '../exempt-client'
 
-class InMemoryDepositExemptionRepository implements DepositExemptionRepository {
-  readonly saved: DepositExemption[] = []
-  private readonly activeClients = new Set<string>()
+function createInMemoryDepositExemptionRepository(): DepositExemptionRepository & {
+  readonly saved: DepositExemption[]
+} {
+  const saved: DepositExemption[] = []
+  const activeClients = new Set<string>()
 
-  async save(exemption: DepositExemption): Promise<Result<void, ClientAlreadyExempt>> {
-    if (exemption.active && this.activeClients.has(exemption.clientId)) {
-      return err(clientAlreadyExempt(exemption.clientId))
-    }
-    this.activeClients.add(exemption.clientId)
-    this.saved.push(exemption)
-    return ok(undefined)
+  return {
+    saved,
+    async save(exemption: DepositExemption): Promise<Result<void, ClientAlreadyExempt>> {
+      if (exemption.active && activeClients.has(exemption.clientId)) {
+        return err(clientAlreadyExempt(exemption.clientId))
+      }
+      activeClients.add(exemption.clientId)
+      saved.push(exemption)
+      return ok(undefined)
+    },
   }
 }
 
@@ -36,7 +41,7 @@ function buildDeps(repo: DepositExemptionRepository, recordAuditEvent: RecordAud
 
 describe('exemptClient', () => {
   it('crea la exoneración, la persiste y registra el evento en la bitácora', async () => {
-    const repo = new InMemoryDepositExemptionRepository()
+    const repo = createInMemoryDepositExemptionRepository()
     const auditCalls: unknown[] = []
     const recordAuditEvent: RecordAuditEvent = async (input) => {
       auditCalls.push(input)
@@ -73,7 +78,7 @@ describe('exemptClient', () => {
   })
 
   it('una exoneración inválida no se persiste ni se audita', async () => {
-    const repo = new InMemoryDepositExemptionRepository()
+    const repo = createInMemoryDepositExemptionRepository()
     const auditCalls: unknown[] = []
     const recordAuditEvent: RecordAuditEvent = async (input) => {
       auditCalls.push(input)
@@ -92,7 +97,7 @@ describe('exemptClient', () => {
   })
 
   it('un cliente con exoneración vigente no puede recibir una segunda (Result, no throw)', async () => {
-    const repo = new InMemoryDepositExemptionRepository()
+    const repo = createInMemoryDepositExemptionRepository()
     const recordAuditEvent: RecordAuditEvent = async () => ok(undefined)
     const deps = buildDeps(repo, recordAuditEvent)
 
@@ -116,7 +121,7 @@ describe('exemptClient', () => {
   })
 
   it('si la bitácora lanza después de guardar, el error se propaga y la exoneración queda guardada', async () => {
-    const repo = new InMemoryDepositExemptionRepository()
+    const repo = createInMemoryDepositExemptionRepository()
     const recordAuditEvent: RecordAuditEvent = async () => {
       throw new Error('bitácora caída')
     }
@@ -132,7 +137,7 @@ describe('exemptClient', () => {
   })
 
   it('si la bitácora devuelve err, no se finge éxito: el error se propaga', async () => {
-    const repo = new InMemoryDepositExemptionRepository()
+    const repo = createInMemoryDepositExemptionRepository()
     const auditError = new Error('evento de auditoría inválido')
     const recordAuditEvent: RecordAuditEvent = async () => err(auditError)
 

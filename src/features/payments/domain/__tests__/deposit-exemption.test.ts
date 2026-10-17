@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { isOk, isErr } from '@/shared/result'
 import { fixedDate } from '@/shared/testing/fixed-clock'
-import { DepositExemption } from '../deposit-exemption'
+import { buildDepositExemption } from '../deposit-exemption'
 
 const validInput = {
   clientId: '00000000-0000-0000-0000-0000000000c1',
@@ -10,9 +10,9 @@ const validInput = {
   createdAt: fixedDate('2026-09-24T10:00:00Z'),
 }
 
-describe('DepositExemption.create', () => {
+describe('buildDepositExemption', () => {
   it('crea una exoneración válida, siempre activa', () => {
-    const result = DepositExemption.create('exm-1', validInput)
+    const result = buildDepositExemption('exm-1', validInput)
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
 
@@ -25,7 +25,7 @@ describe('DepositExemption.create', () => {
   })
 
   it('recorta espacios en los campos de texto', () => {
-    const result = DepositExemption.create('exm-2', {
+    const result = buildDepositExemption('exm-2', {
       ...validInput,
       reason: '  caso especial  ',
     })
@@ -35,12 +35,12 @@ describe('DepositExemption.create', () => {
   })
 
   it.each(['clientId', 'exemptedBy', 'reason'] as const)('rechaza %s vacío', (field) => {
-    const result = DepositExemption.create('exm-x', { ...validInput, [field]: '   ' })
+    const result = buildDepositExemption('exm-x', { ...validInput, [field]: '   ' })
     expect(isErr(result)).toBe(true)
   })
 
   it('acumula todos los problemas encontrados', () => {
-    const result = DepositExemption.create('exm-3', {
+    const result = buildDepositExemption('exm-3', {
       ...validInput,
       clientId: '',
       reason: '',
