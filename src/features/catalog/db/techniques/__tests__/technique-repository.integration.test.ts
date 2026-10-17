@@ -1,9 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { SupabaseTechniqueRepository } from '@/features/catalog/db/techniques/technique-repository'
-
-// Integración contra Supabase local (seed cargado). Lecturas con token anónimo; las escrituras
-// están denegadas por RLS (B1) y se verifican como tal. Se salta sin conexión.
+import { createSupabaseTechniqueRepository } from '@/features/catalog/db/techniques/technique-repository'
+import type { TechniqueRepository } from '@/features/catalog/application/techniques/ports'
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
@@ -21,13 +19,13 @@ if (!reachable) {
   console.warn('[catalog/db] Supabase local no disponible — suite omitida.')
 }
 
-describe.skipIf(!reachable)('SupabaseTechniqueRepository (Supabase local)', () => {
-  let repo: SupabaseTechniqueRepository
+describe.skipIf(!reachable)('createSupabaseTechniqueRepository (Supabase local)', () => {
+  let repo: TechniqueRepository
   let db: SupabaseClient
 
   beforeAll(() => {
     db = createClient(URL, KEY)
-    repo = new SupabaseTechniqueRepository(db)
+    repo = createSupabaseTechniqueRepository(db)
   })
 
   it('list reconstituye el dominio: 8 activas del seed, montos como Money', async () => {
@@ -67,7 +65,6 @@ describe.skipIf(!reachable)('SupabaseTechniqueRepository (Supabase local)', () =
     const { items } = await repo.list({ activeOnly: true, offset: 0, limit: 1 })
     await expect(repo.save(items[0])).rejects.toThrow()
 
-    // y la fila no cambió
     const again = await repo.findById(items[0].id)
     expect(again?.name).toBe(items[0].name)
   })
