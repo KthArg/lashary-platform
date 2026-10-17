@@ -15,6 +15,9 @@ deuda:
   - que: "Test de aislamiento RLS contra instancia local de Supabase en CI"
     aceptada_en: "PR #3"
     costo: "2h"
+  - que: "La política clients_profiles_select_own deja a la clienta leer su fila completa, notes incluido, llamando a PostgREST directo; findClientProfile ya no las pide pero la base no lo impide"
+    aceptada_en: "PR #273"
+    costo: "migración de privilegios por columna o vista para la clienta, más decisión del PO sobre si notes debe ser legible por ella"
 defectos: []
 ---
 
@@ -36,6 +39,8 @@ Completadas las historias `US-AUTH-01` y `US-AUTH-02`.
 - Aislamiento de datos mediante Row Level Security (RLS) en Supabase (`SEC-001`).
 - Pruebas unitarias de integración automatizadas (`auth-client.test.tsx`, `admin-auth.test.tsx`).
 - Pruebas de aislamiento RLS cross-cliente (`rls-isolation.test.ts`) según `SEC-002`.
+- `findClientProfile` (`db/auth-repository.ts`) pide las columnas explícitas de `CLIENT_PROFILE_COLUMNS`, sin `notes`, la nota privada de la administradora; la política `clients_profiles_select_own` sigue dejando leer la fila completa por PostgREST (ver `deuda`).
+- `findRole` y `findClientProfile` solo tratan como "sin fila" el código `PGRST116`; cualquier otro error de lectura lanza, así una caída de la base no se confunde con una usuaria sin rol ni niega el acceso sin dejar rastro.
 - Textos y etiquetas de interfaz completamente externalizados en constantes (`auth-strings.ts`, DOM-009).
 - Separación atómica de componentes UI, hooks dedicados (`useGoogleSignIn`, `usePhoneRegistration`, `useAdminLoginForm`, `useInactivityTimeout`), estilos e interfaces.
 - `clientCitasTitle` / `clientCitasSubtitle` / `clientCitasPlaceholder` retirados de `auth-strings.ts`: la ruta `/portal/citas` que los usaba como placeholder ahora la compone `scheduling` (`US-AGE-03`).
