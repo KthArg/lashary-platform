@@ -1,6 +1,6 @@
 import { Money } from '@/shared/money'
 import { ok, err, type Result } from '@/shared/result'
-import { TechniqueValidationError } from './errors'
+import { techniqueValidationError, type TechniqueValidationError } from './errors'
 
 // Familias de servicio del estudio (criterio 2 de US-AGE-08). Coincide con el enum
 // public.catalog_service_family. Enum plano: el volumen de pestañas va dentro del valor (D1).
@@ -139,7 +139,7 @@ export class Technique {
     }
 
     if (problems.length > 0) {
-      return err(new TechniqueValidationError(problems))
+      return err(techniqueValidationError(problems))
     }
 
     return ok(
