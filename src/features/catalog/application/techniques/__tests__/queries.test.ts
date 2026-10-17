@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { isErr, isOk } from '@/shared/result'
 import { listTechniques, getTechnique } from '@/features/catalog/application/techniques/queries'
-import { TechniqueNotFound } from '@/features/catalog/domain/techniques/errors'
+import { isTechniqueNotFound } from '@/features/catalog/domain/techniques/errors'
 import { FakeTechniqueRepository } from './fake-repository'
 import { makeTechnique } from './technique-fixture'
 
@@ -65,7 +65,7 @@ describe('getTechnique', () => {
     const result = await getTechnique(repo)('nope')
     expect(isErr(result)).toBe(true)
     if (isErr(result)) {
-      expect(result.error).toBeInstanceOf(TechniqueNotFound)
+      expect(isTechniqueNotFound(result.error)).toBe(true)
       expect(result.error.techniqueId).toBe('nope')
     }
   })
