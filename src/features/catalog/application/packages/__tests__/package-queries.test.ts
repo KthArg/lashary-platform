@@ -6,7 +6,7 @@ import {
   listPackageTechniques,
 } from '@/features/catalog/application/packages/queries'
 import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '@/features/catalog/application/pagination'
-import { FakeTechniqueRepository } from '../../techniques/__tests__/fake-repository'
+import { createFakeTechniqueRepository } from '../../techniques/__tests__/fake-repository'
 import { makeTechnique } from '../../techniques/__tests__/technique-fixture'
 import { isPackageNotFound } from '@/features/catalog/domain/packages/errors'
 import { createFakePackageRepository } from './fake-package-repository'
@@ -89,7 +89,7 @@ describe('getPackage', () => {
 
 describe('listPackageTechniques', () => {
   it('resuelve las técnicas de varios paquetes en una sola consulta, sin repetir ids', async () => {
-    const repo = new FakeTechniqueRepository([
+    const repo = createFakeTechniqueRepository([
       makeTechnique({ id: 't1', name: 'Set clásico', isActive: true }),
       makeTechnique({ id: 't2', name: 'Henna', isActive: false }),
       makeTechnique({ id: 't3', name: 'Laminado', isActive: true }),

@@ -2,12 +2,12 @@ import { describe, it, expect } from 'vitest'
 import { isErr, isOk } from '@/shared/result'
 import { listTechniques, getTechnique } from '@/features/catalog/application/techniques/queries'
 import { isTechniqueNotFound } from '@/features/catalog/domain/techniques/errors'
-import { FakeTechniqueRepository } from './fake-repository'
+import { createFakeTechniqueRepository } from './fake-repository'
 import { makeTechnique } from './technique-fixture'
 
 describe('listTechniques', () => {
   it('devuelve solo activas por defecto, como TechniqueView', async () => {
-    const repo = new FakeTechniqueRepository([
+    const repo = createFakeTechniqueRepository([
       makeTechnique({ id: 'a', name: 'A', isActive: true }),
       makeTechnique({ id: 'b', name: 'B', isActive: false }),
     ])
@@ -18,7 +18,7 @@ describe('listTechniques', () => {
   })
 
   it('incluye inactivas cuando activeOnly = false', async () => {
-    const repo = new FakeTechniqueRepository([
+    const repo = createFakeTechniqueRepository([
       makeTechnique({ id: 'a', isActive: true }),
       makeTechnique({ id: 'b', isActive: false }),
     ])
@@ -27,7 +27,7 @@ describe('listTechniques', () => {
   })
 
   it('pagina con tamaño por defecto 50 y tope 100', async () => {
-    const repo = new FakeTechniqueRepository(
+    const repo = createFakeTechniqueRepository(
       Array.from({ length: 120 }, (_, i) =>
         makeTechnique({ id: `t${i}`, name: `T${String(i).padStart(3, '0')}` }),
       ),
@@ -45,7 +45,7 @@ describe('listTechniques', () => {
   })
 
   it('normaliza page y pageSize inválidos', async () => {
-    const repo = new FakeTechniqueRepository([makeTechnique({ id: 'a' })])
+    const repo = createFakeTechniqueRepository([makeTechnique({ id: 'a' })])
     const page = await listTechniques(repo)({ page: 0, pageSize: -5 })
     expect(page.page).toBe(1)
     expect(page.pageSize).toBe(1)
@@ -54,14 +54,14 @@ describe('listTechniques', () => {
 
 describe('getTechnique', () => {
   it('devuelve la técnica cuando existe', async () => {
-    const repo = new FakeTechniqueRepository([makeTechnique({ id: 'x' })])
+    const repo = createFakeTechniqueRepository([makeTechnique({ id: 'x' })])
     const result = await getTechnique(repo)('x')
     expect(isOk(result)).toBe(true)
     if (isOk(result)) expect(result.value.id).toBe('x')
   })
 
   it('devuelve TechniqueNotFound cuando no existe', async () => {
-    const repo = new FakeTechniqueRepository([])
+    const repo = createFakeTechniqueRepository([])
     const result = await getTechnique(repo)('nope')
     expect(isErr(result)).toBe(true)
     if (isErr(result)) {
