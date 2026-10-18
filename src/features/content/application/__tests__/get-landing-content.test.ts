@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { err, ok } from '@/shared/result'
-import { CmsUnavailable } from '../../domain/errors'
+import { cmsUnavailable } from '../../domain/errors'
 import { landingFallback } from '../fallback-messages'
 import { readRawLandingContent, toLandingContent } from '../get-landing-content'
 import type { CmsReader, RawLandingContent } from '../ports'
@@ -93,7 +93,7 @@ describe('toLandingContent — US-LAND-01 criterio 3: contenido editable desde e
 describe('readRawLandingContent — una lectura a medias no se acepta', () => {
   const readerWith = (failing?: string): CmsReader => ({
     readSingleton: async (key) =>
-      key === failing ? err(new CmsUnavailable(key, 'HTTP 500')) : ok({ key }),
+      key === failing ? err(cmsUnavailable(key, 'HTTP 500')) : ok({ key }),
     // Esta lectura no usa colecciones; el doble cumple el puerto y nada más.
     readCollection: async () => ok([] as unknown[]),
   })

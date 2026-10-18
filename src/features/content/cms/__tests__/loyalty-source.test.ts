@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { err, ok } from '@/shared/result'
-import { CmsUnavailable } from '../../domain/errors'
+import { cmsUnavailable } from '../../domain/errors'
 import { EMPTY_LOYALTY } from '../../application/get-loyalty'
 import type { CmsReader } from '../../application/ports'
 import { LANDING_CACHE_SECONDS } from '../landing-source'
@@ -12,7 +12,7 @@ const passthroughCache = vi.fn((fn: () => Promise<unknown>) => fn) as never
 const readerWith = (niveles: unknown[] | 'falla'): (() => CmsReader) => () => ({
   readSingleton: async () => ok({ texto: 'Cada cita suma una visita.' }),
   readCollection: async (key) =>
-    niveles === 'falla' ? err(new CmsUnavailable(key, 'HTTP 503')) : ok(niveles),
+    niveles === 'falla' ? err(cmsUnavailable(key, 'HTTP 503')) : ok(niveles),
 })
 
 describe('loadLoyalty — criterio 2: la mecánica sale del CMS, y su falla no tumba la landing', () => {

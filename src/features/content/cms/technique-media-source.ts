@@ -31,7 +31,7 @@ export async function loadTechniqueMedia({
   const readCached = cache(
     async () => {
       const result = await readRawTechniqueMedia(reader)
-      if (!result.ok) throw result.error
+      if (!result.ok) throw new Error(result.error.message)
       return result.value
     },
     ['content', TECHNIQUE_MEDIA_KEY, baseUrl],

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { err, ok } from '@/shared/result'
-import { CmsUnavailable } from '../../domain/errors'
+import { cmsUnavailable } from '../../domain/errors'
 import { landingFallback } from '../../application/fallback-messages'
 import type { CmsReader } from '../../application/ports'
 import { LANDING_CACHE_SECONDS, loadLandingContent } from '../landing-source'
@@ -11,7 +11,7 @@ const passthroughCache = vi.fn((fn: () => Promise<unknown>) => fn) as never
 
 const readerReturning = (data: Record<string, unknown> | 'falla'): (() => CmsReader) => () => ({
   readSingleton: async (key) =>
-    data === 'falla' ? err(new CmsUnavailable(key, 'HTTP 503')) : ok(data[key]),
+    data === 'falla' ? err(cmsUnavailable(key, 'HTTP 503')) : ok(data[key]),
   // La landing no lee colecciones por esta vía; el doble cumple el puerto y nada más.
   readCollection: async () => ok([] as unknown[]),
 })
@@ -46,7 +46,7 @@ describe('loadLandingContent — degradación (docs/contracts/cms-api.md)', () =
       cache,
       createReader: readerReturning('falla') as never,
     })
-    await expect(cachedFn?.()).rejects.toBeInstanceOf(CmsUnavailable)
+    await expect(cachedFn?.()).rejects.toThrow(/CMS no disponible/)
   })
 
   it('con el CMS disponible sirve lo publicado, cacheado 10 min con los tags del aviso', async () => {

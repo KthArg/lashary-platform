@@ -56,6 +56,10 @@ Las tres historias de la feature están terminadas (US-BLOG-01, US-BLOG-02 y US-
 
 US-BLOG-01, terminada: la administradora crea, edita y elimina las publicaciones del blog en el panel de `lashary-cms`, en la coleccion `posts` (contrato v1.6, 2026-10-13). Esta feature no tiene codigo para esa historia: la cumple el CMS (ADR-0001) y la evidencia son las pruebas de `lashary-cms` citadas en el front-matter. Se detiene ahi: `content` todavia no lee `posts`; el gateway de lectura, el `slug` derivado de `titulo`, el orden por `fecha` y la paginacion los construye US-BLOG-02.
 
+## Notas de implementación (movidas desde comentarios del código, 2026-10-17)
+
+- `domain/errors.ts`: `CmsUnavailable` es un resultado esperado, no una excepción (ADR-0001 exige degradar; DOM-006): el lector lo retorna con `err(cmsUnavailable(clave, motivo))`. Es una `interface` con `code` literal (`CMS_UNAVAILABLE`), fábrica y guarda `isCmsUnavailable`, sin extender `DomainError` (ADR-0008). Las fuentes cacheadas lanzan dentro de la función de `unstable_cache` para que no se guarde una lectura fallida; como el valor lanzado debe ser un `Error`, lanzan `new Error(error.message)`.
+
 ## Contrato público (`index.ts`)
 
 - `getLandingContent(): Promise<LandingContent>` — solo servidor; nunca lanza.

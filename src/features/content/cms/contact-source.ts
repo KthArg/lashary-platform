@@ -31,7 +31,7 @@ export async function loadContact({
   const readCached = cache(
     async () => {
       const result = await readRawContact(reader)
-      if (!result.ok) throw result.error
+      if (!result.ok) throw new Error(result.error.message)
       return result.value
     },
     ['content', CONTACT_KEY, baseUrl],

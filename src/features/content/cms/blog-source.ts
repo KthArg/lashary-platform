@@ -49,7 +49,7 @@ async function readArticles({
   const readCached = cache(
     async () => {
       const result = await readRawBlogPosts(reader)
-      if (!result.ok) throw result.error
+      if (!result.ok) throw new Error(result.error.message)
       return result.value
     },
     ['content', BLOG_POSTS_KEY, baseUrl],
