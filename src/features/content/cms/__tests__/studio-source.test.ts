@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { err, ok } from '@/shared/result'
-import { CmsUnavailable } from '../../domain/errors'
+import { cmsUnavailable } from '../../domain/errors'
 import { studioFallback } from '../../application/fallback-messages'
 import type { CmsReader } from '../../application/ports'
 import { LANDING_CACHE_SECONDS } from '../landing-source'
@@ -14,7 +14,7 @@ const readerWith = (credenciales: unknown[] | 'falla'): (() => CmsReader) => () 
     ok({ nombre: 'Ana', texto: 'Hola.', retrato: { url: 'https://cdn.test/a.jpg', alt: 'Ana' } }),
   readCollection: async (key) =>
     key === 'credenciales' && credenciales === 'falla'
-      ? err(new CmsUnavailable(key, 'HTTP 503'))
+      ? err(cmsUnavailable(key, 'HTTP 503'))
       : ok(key === 'credenciales' ? (credenciales as unknown[]) : []),
 })
 

@@ -30,7 +30,7 @@ export async function loadLoyalty({
   const readCached = cache(
     async () => {
       const result = await readRawLoyalty(reader)
-      if (!result.ok) throw result.error
+      if (!result.ok) throw new Error(result.error.message)
       return result.value
     },
     ['content', LOYALTY_KEY, baseUrl],

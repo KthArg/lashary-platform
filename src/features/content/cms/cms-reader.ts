@@ -1,5 +1,5 @@
 import { err, ok } from '@/shared/result'
-import { CmsUnavailable } from '../domain/errors'
+import { cmsUnavailable } from '../domain/errors'
 import { CMS_CONTENT_KEYS, type LandingContentKey } from '../domain/landing-content'
 import type { CmsReader } from '../application/ports'
 
@@ -33,16 +33,16 @@ export function createCmsReader({
       })
     } catch (error) {
       return err(
-        new CmsUnavailable(reportedKey, error instanceof Error ? error.name : 'fetch fallido'),
+        cmsUnavailable(reportedKey, error instanceof Error ? error.name : 'fetch fallido'),
       )
     }
 
-    if (!response.ok) return err(new CmsUnavailable(reportedKey, `HTTP ${response.status}`))
+    if (!response.ok) return err(cmsUnavailable(reportedKey, `HTTP ${response.status}`))
 
     try {
       return ok((await response.json()) as unknown)
     } catch {
-      return err(new CmsUnavailable(reportedKey, 'JSON inválido'))
+      return err(cmsUnavailable(reportedKey, 'JSON inválido'))
     }
   }
 
@@ -54,7 +54,7 @@ export function createCmsReader({
       if (!body.ok) return body
 
       if (typeof body.value !== 'object' || body.value === null || !('data' in body.value)) {
-        return err(new CmsUnavailable(key, 'respuesta sin data'))
+        return err(cmsUnavailable(key, 'respuesta sin data'))
       }
       return ok((body.value as { data: unknown }).data)
     },
@@ -67,7 +67,7 @@ export function createCmsReader({
         typeof body.value === 'object' && body.value !== null
           ? (body.value as { items?: unknown }).items
           : undefined
-      if (!Array.isArray(items)) return err(new CmsUnavailable(key, 'respuesta sin items'))
+      if (!Array.isArray(items)) return err(cmsUnavailable(key, 'respuesta sin items'))
       return ok(items)
     },
   }

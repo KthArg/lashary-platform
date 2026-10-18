@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { err, ok } from '@/shared/result'
-import { CmsUnavailable } from '../../domain/errors'
+import { cmsUnavailable } from '../../domain/errors'
 import { faqFallback } from '../../application/fallback-messages'
 import type { CmsReader } from '../../application/ports'
 import { contactCacheTags, loadContact } from '../contact-source'
@@ -14,7 +14,7 @@ const readerWith = (horarios: unknown[] | 'falla'): (() => CmsReader) => () => (
     ok({ direccion: 'Frente al parque', whatsapp: '50688887777', instagram: 'https://instagram.com/x' }),
   readCollection: async (key) =>
     key === 'horarios' && horarios === 'falla'
-      ? err(new CmsUnavailable(key, 'HTTP 503'))
+      ? err(cmsUnavailable(key, 'HTTP 503'))
       : ok(key === 'horarios' ? (horarios as unknown[]) : []),
 })
 

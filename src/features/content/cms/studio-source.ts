@@ -30,7 +30,7 @@ export async function loadStudio({
   const readCached = cache(
     async () => {
       const result = await readRawStudio(reader)
-      if (!result.ok) throw result.error
+      if (!result.ok) throw new Error(result.error.message)
       return result.value
     },
     ['content', STUDIO_KEY, baseUrl],

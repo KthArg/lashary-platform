@@ -35,7 +35,7 @@ export async function loadLandingContent({
   const readCached = cache(
     async () => {
       const result = await readRawLandingContent(reader)
-      if (!result.ok) throw result.error
+      if (!result.ok) throw new Error(result.error.message)
       return result.value
     },
     ['content', 'landing', baseUrl],

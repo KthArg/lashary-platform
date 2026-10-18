@@ -29,7 +29,7 @@ export async function loadGallery({
   const readCached = cache(
     async () => {
       const result = await readRawGallery(reader)
-      if (!result.ok) throw result.error
+      if (!result.ok) throw new Error(result.error.message)
       return result.value
     },
     ['content', GALLERY_KEY, baseUrl],
