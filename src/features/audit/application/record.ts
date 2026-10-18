@@ -1,7 +1,8 @@
 import { ok, isErr, type Result } from '@/shared/result'
 import type { Clock } from '@/shared/clock'
 import {
-  AuditEvent,
+  buildAuditEvent,
+  auditEventToView,
   type AuditEventPayload,
   type AuditEventView,
 } from '../domain/audit-event'
@@ -27,12 +28,12 @@ export const record =
   async (
     input: RecordAuditEventInput,
   ): Promise<Result<AuditEventView, AuditEventValidationError>> => {
-    const built = AuditEvent.create(deps.newId(), {
+    const built = buildAuditEvent(deps.newId(), {
       ...input,
       createdAt: deps.clock(),
     })
     if (isErr(built)) return built
 
     await deps.repo.insert(built.value)
-    return ok(built.value.toView())
+    return ok(auditEventToView(built.value))
   }

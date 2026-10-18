@@ -16,27 +16,26 @@ type InsertRow = {
 }
 
 export function toRow(event: AuditEvent): InsertRow {
-  const view = event.toView()
   return {
-    id: view.id,
-    actor_id: view.actorId,
-    action: view.action,
-    entity_type: view.entityType,
-    entity_id: view.entityId,
-    payload: view.payload,
-    created_at: view.createdAt.toISOString(),
+    id: event.id,
+    actor_id: event.actorId,
+    action: event.action,
+    entity_type: event.entityType,
+    entity_id: event.entityId,
+    payload: event.payload,
+    created_at: event.createdAt.toISOString(),
   }
 }
 
-export class SupabaseAuditEventRepository implements AuditEventRepository {
-  constructor(private readonly db: SupabaseClient) {}
-
-  async insert(event: AuditEvent): Promise<void> {
-    const { error } = await this.db.from(TABLE).insert(toRow(event))
-    if (error) throw new Error(`${TABLE}.insert: ${error.message}`)
+export function createSupabaseAuditEventRepository(db: SupabaseClient): AuditEventRepository {
+  return {
+    async insert(event) {
+      const { error } = await db.from(TABLE).insert(toRow(event))
+      if (error) throw new Error(`${TABLE}.insert: ${error.message}`)
+    },
   }
 }
 
-export async function auditEventRepository(): Promise<SupabaseAuditEventRepository> {
-  return new SupabaseAuditEventRepository(await createClient())
+export async function auditEventRepository(): Promise<AuditEventRepository> {
+  return createSupabaseAuditEventRepository(await createClient())
 }

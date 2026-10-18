@@ -17,5 +17,5 @@ export async function record(
   })(input)
 }
 
-export type { RecordAuditEventInput, AuditEventView, AuditEventPayload }
-export { AuditEventValidationError } from './domain/errors'
+export type { RecordAuditEventInput, AuditEventView, AuditEventPayload, AuditEventValidationError }
+export { isAuditEventValidationError } from './domain/errors'
