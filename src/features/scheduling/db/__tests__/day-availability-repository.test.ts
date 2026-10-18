@@ -31,24 +31,17 @@ describe('day-availability-repository — US-AGE-02', () => {
       error: null,
     })
     const repo = createSupabaseDayAvailabilityRepository(db)
-    const from = new Date('2026-10-19T06:00:00Z')
-    const to = new Date('2026-10-20T06:00:00Z')
 
-    expect(await repo.listBusyRanges(RESOURCE, from, to)).toEqual([
+    expect(await repo.listBusyRanges(RESOURCE, '2026-10-19')).toEqual([
       { startsAt: new Date('2026-10-19T15:00:00Z'), endsAt: new Date('2026-10-19T16:00:00Z') },
     ])
-    expect(calls).toEqual([
-      [
-        'scheduling_busy_ranges',
-        { p_resource_id: RESOURCE, p_from: '2026-10-19T06:00:00.000Z', p_to: '2026-10-20T06:00:00.000Z' },
-      ],
-    ])
+    expect(calls).toEqual([['scheduling_busy_ranges', { p_resource_id: RESOURCE, p_day: '2026-10-19' }]])
   })
 
   it('sin filas devuelve listas vacías', async () => {
     const repo = createSupabaseDayAvailabilityRepository(dbAnswering({ data: null, error: null }).db)
     expect(await repo.listOpenHours(RESOURCE, '2026-10-19')).toEqual([])
-    expect(await repo.listBusyRanges(RESOURCE, new Date(0), new Date(1))).toEqual([])
+    expect(await repo.listBusyRanges(RESOURCE, '2026-10-19')).toEqual([])
   })
 
   it('un error de la base se lanza y sube al error.tsx de la ruta', async () => {
@@ -56,6 +49,6 @@ describe('day-availability-repository — US-AGE-02', () => {
       dbAnswering({ data: null, error: { message: 'permission denied' } }).db,
     )
     await expect(repo.listOpenHours(RESOURCE, '2026-10-19')).rejects.toThrow('permission denied')
-    await expect(repo.listBusyRanges(RESOURCE, new Date(0), new Date(1))).rejects.toThrow('permission denied')
+    await expect(repo.listBusyRanges(RESOURCE, '2026-10-19')).rejects.toThrow('permission denied')
   })
 })

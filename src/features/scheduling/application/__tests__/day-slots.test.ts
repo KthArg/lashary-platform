@@ -35,16 +35,20 @@ describe('getDaySlots — US-AGE-02', () => {
     const result = await getDaySlots({ repo, clock })({ resourceId: RESOURCE, date: MONDAY, durationMin: 60 })
 
     expect(calls.openHours).toEqual([[RESOURCE, MONDAY]])
-    expect(calls.busy).toEqual([
-      [RESOURCE, fixedDate('2026-10-19T06:00:00Z'), fixedDate('2026-10-20T06:00:00Z')],
-    ])
+    expect(calls.busy).toEqual([[RESOURCE, MONDAY]])
     expect(isOk(result) && result.value.map((slot) => slot.status)).toEqual(['busy', 'free', 'free'])
   })
 
-  it('una fecha inválida no consulta la base', async () => {
+  it('una fecha o una duración inválidas no consultan la base', async () => {
     const { repo, calls } = fakeRepo()
-    const result = await getDaySlots({ repo, clock })({ resourceId: RESOURCE, date: '2026-02-30', durationMin: 60 })
-    expect(isErr(result) && isDaySlotsInvalid(result.error)).toBe(true)
+    for (const query of [
+      { date: '2026-02-30', durationMin: 60 },
+      { date: MONDAY, durationMin: 0 },
+      { date: MONDAY, durationMin: 1441 },
+    ]) {
+      const result = await getDaySlots({ repo, clock })({ resourceId: RESOURCE, ...query })
+      expect(isErr(result) && isDaySlotsInvalid(result.error)).toBe(true)
+    }
     expect(calls.openHours).toEqual([])
     expect(calls.busy).toEqual([])
   })

@@ -3,9 +3,9 @@ import { isErr, isOk } from '@/shared/result'
 import { fixedDate } from '@/shared/testing/fixed-clock'
 import { isDaySlotsInvalid } from '../availability-errors'
 import {
+  checkDaySlotsQuery,
   computeDaySlots,
   SLOT_INTERVAL_MIN,
-  studioDayRange,
   type DaySlotsInput,
 } from '../day-slots'
 
@@ -106,15 +106,15 @@ describe('computeDaySlots — US-AGE-02', () => {
   })
 })
 
-describe('studioDayRange', () => {
-  it('va de medianoche a medianoche del estudio', () => {
-    const range = studioDayRange(MONDAY)
-    expect(isOk(range) && range.value.from.toISOString()).toBe('2026-10-19T06:00:00.000Z')
-    expect(isOk(range) && range.value.to.toISOString()).toBe('2026-10-20T06:00:00.000Z')
+describe('checkDaySlotsQuery', () => {
+  it('acepta una fecha real con una duración que cabe en el día', () => {
+    expect(isOk(checkDaySlotsQuery(MONDAY, 60))).toBe(true)
   })
 
-  it('rechaza una fecha inexistente', () => {
-    const range = studioDayRange('2026-02-29')
-    expect(isErr(range) && isDaySlotsInvalid(range.error)).toBe(true)
+  it('rechaza una fecha inexistente y una duración inválida', () => {
+    for (const [date, durationMin] of [['2026-02-29', 60], [MONDAY, 0], [MONDAY, 45.5]] as const) {
+      const checked = checkDaySlotsQuery(date, durationMin)
+      expect(isErr(checked) && isDaySlotsInvalid(checked.error)).toBe(true)
+    }
   })
 })

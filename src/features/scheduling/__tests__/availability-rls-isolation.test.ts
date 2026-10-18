@@ -107,20 +107,14 @@ describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de la disponibilidad de
   }
 
   // US-AGE-02: el calendario de la clienta lee por dos funciones SECURITY DEFINER que saltan la
-  // RLS a propósito. Con tokens reales: anon no las ejecuta y la clienta solo recibe horas.
-  it('funciones del calendario: anón no las ejecuta; la clienta solo recibe horas', async () => {
-    const day = { p_resource_id: RESOURCE_ID, p_day: '2030-01-07' }
-    const range = { p_resource_id: RESOURCE_ID, p_from: '2030-01-07T06:00:00Z', p_to: '2030-01-08T06:00:00Z' }
-
-    expect((await anon.rpc('scheduling_open_hours', day)).error).not.toBeNull()
-    expect((await anon.rpc('scheduling_busy_ranges', range)).error).not.toBeNull()
-
-    const hours = await clienta.rpc('scheduling_open_hours', day)
-    expect(hours.error).toBeNull()
-    for (const row of hours.data ?? []) expect(Object.keys(row).sort()).toEqual(['end_min', 'start_min'])
-
-    const busy = await clienta.rpc('scheduling_busy_ranges', range)
-    expect(busy.error).toBeNull()
-    for (const row of busy.data ?? []) expect(Object.keys(row).sort()).toEqual(['ends_at', 'starts_at'])
-  })
+  // RLS a propósito. Con tokens reales: anon no las ejecuta y la clienta sí. Que cada fila traiga
+  // solo inicio y fin se prueba con datos en scheduling_client_day_view.test.sql: aquí no hay
+  // staff que siembre (SEC-003).
+  for (const fn of ['scheduling_open_hours', 'scheduling_busy_ranges']) {
+    it(`${fn}: anón no la ejecuta y la clienta sí`, async () => {
+      const day = { p_resource_id: RESOURCE_ID, p_day: '2030-01-07' }
+      expect((await anon.rpc(fn, day)).error).not.toBeNull()
+      expect((await clienta.rpc(fn, day)).error).toBeNull()
+    })
+  }
 })

@@ -1,5 +1,5 @@
-import { ok, err, type Result } from '@/shared/result'
-import { addCalendarDays, isCalendarDate, studioLocalToUtc } from '@/shared/studio-time'
+import { ok, err, isErr, type Result } from '@/shared/result'
+import { isCalendarDate, studioLocalToUtc } from '@/shared/studio-time'
 import { daySlotsInvalid, type DaySlotsInvalid } from './availability-errors'
 import { MINUTES_PER_DAY } from './weekly-availability'
 
@@ -37,19 +37,16 @@ export interface DaySlotsInput {
   readonly now: Date
 }
 
-export interface StudioDayRange {
-  readonly from: Date
-  readonly to: Date
-}
-
-// El día como rango de instantes: de la medianoche del estudio a la siguiente.
-export function studioDayRange(date: string): Result<StudioDayRange, DaySlotsInvalid> {
-  if (!isCalendarDate(date)) return err(daySlotsInvalid(['la fecha no es válida']))
-  return ok({ from: studioLocalToUtc(date, 0), to: studioLocalToUtc(addCalendarDays(date, 1), 0) })
-}
-
 const isValidDuration = (minutes: number): boolean =>
   Number.isInteger(minutes) && minutes > 0 && minutes <= MINUTES_PER_DAY
+
+// Fecha y duración de un pedido de espacios; se revisa antes de leer la base.
+export function checkDaySlotsQuery(date: string, durationMin: number): Result<void, DaySlotsInvalid> {
+  const problems: string[] = []
+  if (!isCalendarDate(date)) problems.push('la fecha no es válida')
+  if (!isValidDuration(durationMin)) problems.push('la duración del servicio no es válida')
+  return problems.length > 0 ? err(daySlotsInvalid(problems)) : ok(undefined)
+}
 
 // Bloques que se solapan o se tocan se unen: un servicio puede cruzar de uno al siguiente.
 function mergeOpenHours(hours: readonly OpenHours[]): OpenHours[] {
@@ -63,10 +60,8 @@ function mergeOpenHours(hours: readonly OpenHours[]): OpenHours[] {
 }
 
 export function computeDaySlots(input: DaySlotsInput): Result<DaySlot[], DaySlotsInvalid> {
-  const problems: string[] = []
-  if (!isCalendarDate(input.date)) problems.push('la fecha no es válida')
-  if (!isValidDuration(input.durationMin)) problems.push('la duración del servicio no es válida')
-  if (problems.length > 0) return err(daySlotsInvalid(problems))
+  const checked = checkDaySlotsQuery(input.date, input.durationMin)
+  if (isErr(checked)) return checked
 
   const instantOf = (minute: number) => studioLocalToUtc(input.date, minute).getTime()
   const nowMs = input.now.getTime()

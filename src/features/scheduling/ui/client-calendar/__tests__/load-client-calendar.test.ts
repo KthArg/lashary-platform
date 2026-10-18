@@ -87,4 +87,12 @@ describe('loadClientCalendar — US-AGE-02', () => {
     const { deps: d } = deps()
     expect((await loadClientCalendar({ servicio: 'otro' }, d)).status).toBe('chooseService')
   })
+
+  it('un servicio que no cabe en el día: invalid, sin leer la agenda', async () => {
+    const tooLong: NamedTechnique = { ...technique, durationFirstTimeMin: 1440 }
+    const { deps: d, calls } = deps({ listTechniques: async () => [tooLong] })
+    const data = await loadClientCalendar({ servicio: 't1', fecha: '2026-10-19' }, d)
+    expect(data.status).toBe('invalid')
+    expect(calls).toEqual([])
+  })
 })

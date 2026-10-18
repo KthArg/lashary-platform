@@ -27,12 +27,8 @@ export function createSupabaseDayAvailabilityRepository(db: SupabaseClient): Day
       return ((data ?? []) as OpenHoursRow[]).map(rowToOpenHours)
     },
 
-    async listBusyRanges(resourceId, from, to) {
-      const { data, error } = await db.rpc(BUSY_RANGES_FN, {
-        p_resource_id: resourceId,
-        p_from: from.toISOString(),
-        p_to: to.toISOString(),
-      })
+    async listBusyRanges(resourceId, date) {
+      const { data, error } = await db.rpc(BUSY_RANGES_FN, { p_resource_id: resourceId, p_day: date })
       if (error) throw new Error(`${BUSY_RANGES_FN}: ${error.message}`)
       return ((data ?? []) as BusyRangeRow[]).map(rowToBusyRange)
     },

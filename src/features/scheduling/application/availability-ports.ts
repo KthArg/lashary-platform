@@ -42,7 +42,7 @@ export interface DayAvailabilityRepository {
   // Horario abierto de esa fecha del estudio; vacío si el día está cerrado.
   listOpenHours(resourceId: string, date: string): Promise<OpenHours[]>
   // Bloqueos y citas activas que se cruzan con [from, to).
-  listBusyRanges(resourceId: string, from: Date, to: Date): Promise<BusyRange[]>
+  listBusyRanges(resourceId: string, date: string): Promise<BusyRange[]>
 }
 
 export interface ManualBlockRepository {

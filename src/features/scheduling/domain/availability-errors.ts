@@ -56,7 +56,7 @@ export const daySlotsInvalid = (problems: readonly string[]): DaySlotsInvalid =>
   message: `no se pueden calcular los espacios del día: ${problems.join('; ')}`,
 })
 
-export const closedDateInvalid =(problems: readonly string[]): ClosedDateInvalid => ({
+export const closedDateInvalid = (problems: readonly string[]): ClosedDateInvalid => ({
   code: 'SCHEDULING_CLOSED_DATE_INVALID',
   problems,
   message: `día cerrado inválido: ${problems.join('; ')}`,
