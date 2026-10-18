@@ -27,8 +27,12 @@ if (!reachable) {
   console.warn('[scheduling/rls] Supabase local no disponible — suite omitida.')
 }
 
+// Sin sesión persistida: happy-dom comparte localStorage entre clientes, y la sesión que deja
+// signUp la tomaría también el cliente anónimo, que dejaría de probar lo que dice probar.
+const NO_SESSION = { auth: { persistSession: false } }
+
 async function signUpClienta(): Promise<SupabaseClient> {
-  const anon = createClient(URL, ANON_KEY)
+  const anon = createClient(URL, ANON_KEY, NO_SESSION)
   const email = `rls-sched-${Date.now()}-${Math.random().toString(36).slice(2)}@lashary.test`
   const { data, error } = await anon.auth.signUp({
     email,
@@ -38,6 +42,7 @@ async function signUpClienta(): Promise<SupabaseClient> {
     throw new Error(`no se pudo crear la clienta de prueba: ${error?.message ?? 'sin sesión'}`)
   }
   return createClient(URL, ANON_KEY, {
+    ...NO_SESSION,
     global: { headers: { Authorization: `Bearer ${data.session.access_token}` } },
   })
 }
@@ -67,7 +72,7 @@ describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de la disponibilidad de
   let clienta: SupabaseClient
 
   beforeAll(async () => {
-    anon = createClient(URL, ANON_KEY)
+    anon = createClient(URL, ANON_KEY, NO_SESSION)
     clienta = await signUpClienta()
     const staffCheck = await clienta.rpc('auth_is_staff')
     if (staffCheck.error || staffCheck.data !== false) {
@@ -100,4 +105,22 @@ describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de la disponibilidad de
       }
     })
   }
+
+  // US-AGE-02: el calendario de la clienta lee por dos funciones SECURITY DEFINER que saltan la
+  // RLS a propósito. Con tokens reales: anon no las ejecuta y la clienta solo recibe horas.
+  it('funciones del calendario: anón no las ejecuta; la clienta solo recibe horas', async () => {
+    const day = { p_resource_id: RESOURCE_ID, p_day: '2030-01-07' }
+    const range = { p_resource_id: RESOURCE_ID, p_from: '2030-01-07T06:00:00Z', p_to: '2030-01-08T06:00:00Z' }
+
+    expect((await anon.rpc('scheduling_open_hours', day)).error).not.toBeNull()
+    expect((await anon.rpc('scheduling_busy_ranges', range)).error).not.toBeNull()
+
+    const hours = await clienta.rpc('scheduling_open_hours', day)
+    expect(hours.error).toBeNull()
+    for (const row of hours.data ?? []) expect(Object.keys(row).sort()).toEqual(['end_min', 'start_min'])
+
+    const busy = await clienta.rpc('scheduling_busy_ranges', range)
+    expect(busy.error).toBeNull()
+    for (const row of busy.data ?? []) expect(Object.keys(row).sort()).toEqual(['ends_at', 'starts_at'])
+  })
 })

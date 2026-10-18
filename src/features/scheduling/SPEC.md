@@ -2,13 +2,15 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-10-15"
+actualizado: "2026-10-17"
 historias:
   - id: US-AGE-01
     estado: terminada
     evidencia: "PR de cierre us/US-AGE-01 a main, con las piezas 1 a 13 apiladas hacia la rama de la historia. Criterios 1, 2 y 3 demostrados en /admin/citas/disponibilidad; los criterios 4 y 5 se trasladaron a US-AGE-02 y US-AGE-05 con aprobación del PO el 2026-10-14 (docs/process/DEPENDENCIES.md); tests: weekly-availability.test.ts (domain y application), closed-dates.test.ts (domain y application), manual-blocks.test.ts (domain y application), los tres *-repository.test.ts, studio-time.test.ts, availability-schema.test.ts, availability-actions.test.ts, availability-format.test.ts, AdminAvailabilityView.test.tsx, __tests__/availability-rls-isolation.test.ts (SEC-002) y pgTAP scheduling_weekly_availability.test.sql y scheduling_closed_dates_and_manual_blocks.test.sql"
   - id: US-AGE-02
-    estado: no_iniciada
+    estado: en_progreso
+    evidencia: "tests: pgTAP supabase/tests/database/scheduling_client_day_view.test.sql (criterios 2 y 3 en la base, RLS intacta, anon sin acceso y criterio 4 de US-AGE-01), corrida en local el 2026-10-16, __tests__/availability-rls-isolation.test.ts (las dos funciones con tokens reales, SEC-002)"
+    falta: "Solo la vía de lectura en la base: faltan el cálculo de espacios, la aplicación y la vista de la clienta (piezas 2 a 6). Supuesto pendiente del PO: SLOT_INTERVAL_MIN = 30."
   - id: US-AGE-03
     estado: en_progreso
     evidencia: "criterios 1, 3 y 4 demostrados; tests: technique-selection.test.ts, select-technique.test.ts, no-appointment-history.test.ts, load-technique-selection-page.test.ts, TechniqueSelectionPageView.test.tsx"
@@ -76,14 +78,18 @@ Criterios 1 a 3 en `/admin/citas/disponibilidad`, pestaña junto a la cola de ap
 
 Alcance: los criterios 4 y 5 se trasladaron con aprobación del PO el 2026-10-14 (ver la sección siguiente y `docs/process/DEPENDENCIES.md`, Criterios trasladados). US-AGE-01 queda `terminada` con los criterios 1 a 3.
 
+### US-AGE-02 — calendario de la clienta
+
+- Base (migración `20261018000000_scheduling_client_day_view.sql`): las tablas siguen solo de staff (SEC-001). La clienta lee por dos funciones `SECURITY DEFINER`, solo para `authenticated`: `scheduling_open_hours(recurso, fecha)` devuelve los bloques semanales del día ISO de esa fecha, o ninguno si el día está cerrado; `scheduling_busy_ranges(recurso, desde, hasta)` devuelve solo `starts_at`/`ends_at` de bloqueos manuales y de citas en `pending_approval`, `approved` o `confirmed` (su `occupied_range`, con limpieza). Ni motivo, ni clienta, ni servicio (criterio 2). Ventana de más de dos días o invertida: sin filas; resultados con `LIMIT` (PERF-002). Pruebas: pgTAP `scheduling_client_day_view.test.sql` y, con tokens reales por PostgREST, `__tests__/availability-rls-isolation.test.ts` (anon no las ejecuta; la clienta solo recibe horas). Ese archivo crea sus clientes sin sesión persistida: happy-dom comparte `localStorage` y el cliente anónimo tomaba la sesión de la clienta.
+
 ## Criterios recibidos de US-AGE-01
 
-Traslado aprobado por el PO el 2026-10-14 y registrado en `docs/process/DEPENDENCIES.md`. Ambas historias de destino siguen `no_iniciada`.
+Traslado aprobado por el PO el 2026-10-14 y registrado en `docs/process/DEPENDENCIES.md`.
 
 ### US-AGE-02 — calendario de la clienta
 
-- Criterio 4 de US-AGE-01: los cambios de disponibilidad se reflejan inmediatamente en el calendario. La lectura no se cachea y nunca expone el motivo de un bloqueo: hoy las cuatro tablas de disponibilidad son solo de staff (SEC-001), así que US-AGE-02 agrega su vía de lectura.
-- Evidencia pendiente: prueba de que un cambio en `/admin/citas/disponibilidad` se ve en la siguiente lectura del calendario, y de que el motivo de un bloqueo no llega a la clienta.
+- Criterio 4 de US-AGE-01: los cambios de disponibilidad se reflejan inmediatamente en el calendario. La lectura no se cachea y nunca expone el motivo de un bloqueo.
+- Evidencia: en la base, `scheduling_client_day_view.test.sql` (un día que la administradora cierra deja de tener horario en la siguiente lectura; la clienta no lee el motivo), corrida en local el 2026-10-16. Falta la lectura desde la aplicación.
 
 ### US-AGE-05 — reservar
 
