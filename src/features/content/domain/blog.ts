@@ -1,16 +1,12 @@
 import type { CmsImage } from './landing-content'
 import type { RichTextBlock } from './rich-text'
 
-// Las publicaciones del blog (docs/contracts/cms-api.md v1.6, colección `posts`).
 export const BLOG_POSTS_KEY = 'posts'
 
-// El límite configurado del listado (US-BLOG-02, criterio 3; PERF-002).
 export const BLOG_PAGE_SIZE = 9
 
 export const BLOG_SLUG_MAX = 80
 
-// Lo que el listado muestra de una publicación. `publishedOn` es `AAAA-MM-DD`, o `null` cuando
-// el CMS trae una fecha que no se puede leer: esa publicación va al final.
 export interface BlogPost {
   readonly slug: string
   readonly title: string
@@ -19,8 +15,6 @@ export interface BlogPost {
   readonly publishedOn: string | null
 }
 
-// La publicación completa, para su página de detalle (US-BLOG-03). `seoTitle` y
-// `seoDescription` ya traen el título y el extracto cuando el CMS no los llenó.
 export interface BlogArticle extends BlogPost {
   readonly body: readonly RichTextBlock[]
   readonly seoTitle: string
@@ -36,8 +30,6 @@ export interface BlogPage {
 
 const DIACRITICS = /[\u0300-\u036f]/g
 
-// La identidad de ruta de una publicación: minúsculas, sin diacríticos, cada tramo fuera de
-// `a-z0-9` pasa a un guion, sin guiones en los extremos, recortado a 80. Puede quedar vacía.
 export function slugify(value: string): string {
   return value
     .normalize('NFD')
@@ -48,7 +40,6 @@ export function slugify(value: string): string {
     .replace(/^-+|-+$/g, '')
 }
 
-// Una fecha de calendario real en `AAAA-MM-DD`; `2026-02-30` no lo es.
 export function calendarDate(value: string): string | null {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
   if (match === null) return null
@@ -59,8 +50,6 @@ export function calendarDate(value: string): string | null {
   return day >= 1 && day <= daysInMonth ? value : null
 }
 
-// Fecha descendente; las que no tienen fecha, al final. `sort` es estable, así que dos
-// publicaciones con la misma fecha conservan el orden del editor.
 export function newestFirst<P extends BlogPost>(posts: readonly P[]): P[] {
   return [...posts].sort((a, b) => {
     if (a.publishedOn === b.publishedOn) return 0
@@ -70,14 +59,10 @@ export function newestFirst<P extends BlogPost>(posts: readonly P[]): P[] {
   })
 }
 
-// La publicación de ese slug, o `null`. El slug llega de la dirección: se compara tal cual,
-// sin normalizarlo, para que cada publicación tenga una sola dirección.
 export function articleBySlug<A extends BlogPost>(articles: readonly A[], slug: string): A | null {
   return articles.find((article) => article.slug === slug) ?? null
 }
 
-// Una página del listado. Un número de página que no existe cae en la más cercana que sí: la
-// página pública nunca falla por una dirección mal escrita.
 export function pageOf(
   posts: readonly BlogPost[],
   requested: number,

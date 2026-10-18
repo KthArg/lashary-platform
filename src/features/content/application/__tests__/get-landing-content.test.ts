@@ -94,7 +94,6 @@ describe('readRawLandingContent — una lectura a medias no se acepta', () => {
   const readerWith = (failing?: string): CmsReader => ({
     readSingleton: async (key) =>
       key === failing ? err(cmsUnavailable(key, 'HTTP 500')) : ok({ key }),
-    // Esta lectura no usa colecciones; el doble cumple el puerto y nada más.
     readCollection: async () => ok([] as unknown[]),
   })
 

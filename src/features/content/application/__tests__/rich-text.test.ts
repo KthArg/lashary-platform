@@ -96,7 +96,6 @@ describe('toRichText — el cuerpo de una publicación contra el contrato', () =
       null,
       null,
     ])
-    // El texto del enlace rechazado no se pierde.
     expect(first.inlines.every((inline) => inline.text === 'enlace')).toBe(true)
   })
 

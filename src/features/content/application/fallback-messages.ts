@@ -2,8 +2,6 @@ import type { Faq } from '../domain/contact'
 import type { LandingContent } from '../domain/landing-content'
 import type { StudioContent } from '../domain/studio'
 
-// Contenido de respaldo en código (docs/contracts/cms-api.md § Degradación): lo que se ve si el
-// CMS no responde o nunca se publicó. Textos del diseño de referencia, sin imagen (DOM-009).
 export const landingFallback: LandingContent = {
   hero: {
     titleLead: 'extensiones de pestañas',
@@ -26,9 +24,6 @@ export const landingFallback: LandingContent = {
   },
 }
 
-// Respaldo de El estudio y Por qué acá (US-LAND-04). Sin nombre ni retrato: no se inventa a la
-// dueña. Tampoco hay credenciales de respaldo, por la misma razón. Las razones son las del
-// diseño que no dependen de un dato pendiente.
 export const studioFallback: StudioContent = {
   profile: {
     name: null,
@@ -61,8 +56,6 @@ export const studioFallback: StudioContent = {
   ],
 }
 
-// Preguntas frecuentes de respaldo (US-LAND-07): las del diseño de referencia. Hablan de la
-// técnica en general, no de un dato del negocio, así que pueden mostrarse sin el CMS.
 export const faqFallback: Faq[] = [
   {
     question: '¿Cuánto duran las extensiones?',

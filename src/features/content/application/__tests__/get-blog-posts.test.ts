@@ -1,8 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { toBlogPosts } from '../get-blog-posts'
 
-// Una publicación de la colección `posts` tal como la entrega uno-cms
-// (docs/contracts/cms-api.md § `posts`).
 const publicacion = (overrides: Record<string, unknown> = {}) => ({
   titulo: 'Cómo cuidar tus extensiones',
   slug: '',
@@ -132,7 +130,6 @@ describe('toBlogPosts — las publicaciones que el listado puede mostrar', () =>
       'Sin SEO',
       'Lo que conviene hacer la primera semana.',
     ])
-    // Más largo que su máximo del contrato cuenta como ausente.
     expect([largo.seoTitle, largo.seoDescription]).toEqual([
       'SEO de más',
       'Lo que conviene hacer la primera semana.',

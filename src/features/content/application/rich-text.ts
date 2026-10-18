@@ -6,10 +6,6 @@ import {
 } from '../domain/rich-text'
 import { field, link } from './cms-values'
 
-// Lectura del richtext de uno-cms (un documento de ProseMirror) contra el contrato. Nunca
-// lanza, y lo que devuelve solo contiene lo que el contrato admite: lo demás se descarta aquí,
-// así que nada fuera de `content` ve un nodo que no esperaba (SEC-009).
-
 const EMPTY: Pick<RichTextBlock, 'level' | 'inlines' | 'children' | 'items'> = {
   level: null,
   inlines: [],
@@ -40,7 +36,6 @@ function toInline(node: unknown): RichTextInline | null {
     const markKind = field(mark, 'type')
     if (markKind === 'bold') bold = true
     else if (markKind === 'italic') italic = true
-    // Un destino que `s.link` no aceptaría deja el texto sin enlace.
     else if (markKind === 'link') href = link(field(field(mark, 'attrs'), 'href'))
   }
   return { kind: 'text', text, bold, italic, href }
@@ -93,8 +88,6 @@ function toBlocks(nodes: unknown[], depth: number): RichTextBlock[] {
     .filter((block): block is RichTextBlock => block !== null)
 }
 
-// Los bloques que se pueden pintar de un valor `s.richtext`. Lo que no es un documento, o un
-// documento sin nada admitido, es una lista vacía.
 export function toRichText(value: unknown): RichTextBlock[] {
   if (field(value, 'type') !== 'doc') return []
   return toBlocks(childrenOf(value), 0)
