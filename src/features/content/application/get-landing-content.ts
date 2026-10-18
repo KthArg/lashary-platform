@@ -5,8 +5,6 @@ import { field, image, link, text } from './cms-values'
 import { landingFallback } from './fallback-messages'
 import type { CmsReader, RawLandingContent } from './ports'
 
-// Lee los tipos vigentes en paralelo. Si uno falla, falla la lectura entera: así una respuesta a
-// medias nunca llega a la caché (docs/contracts/cms-api.md § Invalidación).
 export async function readRawLandingContent(
   reader: CmsReader,
 ): Promise<Result<RawLandingContent, CmsUnavailable>> {
@@ -20,13 +18,9 @@ export async function readRawLandingContent(
   return ok(raw)
 }
 
-// Un tipo cuyos requeridos llegan todos vacíos nunca se publicó: se usa su respaldo completo.
 const published = (source: unknown, required: string[]): boolean =>
   required.some((name) => text(field(source, name), Number.POSITIVE_INFINITY) !== null)
 
-// Valida la forma cruda contra el contrato y completa con el respaldo. Un requerido inválido o
-// vacío toma el respaldo de ese campo; un opcional vacío queda en null. Con `raw` null (CMS no
-// disponible o sin configurar) devuelve el respaldo entero. Nunca lanza.
 export function toLandingContent(
   raw: RawLandingContent | null,
   mediaBaseUrl: string,

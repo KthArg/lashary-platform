@@ -17,15 +17,12 @@ import { field, image, integer, paragraphsOf, text } from './cms-values'
 import { studioFallback } from './fallback-messages'
 import type { CmsReader } from './ports'
 
-// Lo que devolvió el CMS por cada tipo de El estudio, sin validar.
 export type RawStudioContent = {
   profile: unknown
   credentials: unknown[]
   reasons: unknown[]
 }
 
-// Lee los tres tipos en paralelo. Si uno falla, falla la lectura entera: una respuesta a medias
-// nunca llega a la caché (docs/contracts/cms-api.md § Invalidación).
 export async function readRawStudio(
   reader: CmsReader,
 ): Promise<Result<RawStudioContent, CmsUnavailable>> {
@@ -43,7 +40,6 @@ export async function readRawStudio(
 function toProfile(source: unknown, mediaBaseUrl: string): StudioProfile {
   const name = text(field(source, 'nombre'), 80)
   const body = text(field(source, 'texto'), 1200)
-  // Sin nombre ni texto, `estudio` nunca se publicó: se usa el respaldo entero.
   if (name === null && body === null) return studioFallback.profile
 
   return {
@@ -84,12 +80,9 @@ function toReasons(items: unknown[]): Reason[] {
     if (title === null || body === null) continue
     reasons.push({ title, text: body })
   }
-  // Por qué acá no queda vacía: sin ninguna razón válida, las del diseño.
   return reasons.length > 0 ? reasons : studioFallback.reasons
 }
 
-// Valida la forma cruda contra el contrato y completa con el respaldo. Con `raw` null (CMS no
-// disponible o sin configurar) devuelve el respaldo entero. Nunca lanza.
 export function toStudioContent(raw: RawStudioContent | null, mediaBaseUrl: string): StudioContent {
   if (raw === null) return studioFallback
   return {

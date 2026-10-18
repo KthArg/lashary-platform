@@ -14,9 +14,6 @@ export async function readRawTechniqueMedia(
   return reader.readCollection(TECHNIQUE_MEDIA_KEY)
 }
 
-// Indexa las fotos por familia. Nunca lanza y nunca exige que el CMS esté completo: una fila sin
-// familia o sin foto principal válida se descarta, y de dos filas con la misma familia vale la
-// primera en el orden del editor (docs/contracts/cms-api.md § `tecnicas`).
 export function toTechniqueMedia(
   items: unknown[] | null,
   mediaBaseUrl: string,
@@ -30,7 +27,6 @@ export function toTechniqueMedia(
     if (family === null || family in byFamily) continue
 
     const main = image(field(item, 'imagen'), mediaBaseUrl)
-    // Sin foto principal la fila no ilustra nada: los ejemplos sueltos no sustituyen a la foto.
     if (main === null) continue
 
     const examples = TECHNIQUE_EXAMPLE_FIELDS.map((name) =>
