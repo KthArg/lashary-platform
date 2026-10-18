@@ -15,9 +15,6 @@ export type ClientCalendarDeps = {
   resourceId: string
 }
 
-// Arma los datos del calendario a partir de la URL, con dependencias inyectadas: el servicio
-// compone las reales y las pruebas usan dobles. Sin sesión de clienta no consulta nada; el
-// chequeo es el mensaje amable, la frontera es el GRANT de las funciones (SEC-001).
 export async function loadClientCalendar(
   searchParams: CalendarSearchParams,
   deps: ClientCalendarDeps,

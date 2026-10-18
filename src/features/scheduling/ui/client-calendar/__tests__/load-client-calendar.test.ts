@@ -25,7 +25,6 @@ function deps(overrides: Partial<ClientCalendarDeps> = {}) {
       return []
     },
   }
-  // 2026-10-19 08:00 en Costa Rica.
   const base: ClientCalendarDeps = {
     isClient: async () => true,
     listTechniques: async () => [technique],

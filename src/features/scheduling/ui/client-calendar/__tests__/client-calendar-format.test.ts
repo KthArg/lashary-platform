@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { schedulingMessages } from '../../messages'
+import { clientCalendarMessages } from '../constants/client-calendar-strings'
 import { toClientCalendarView } from '../utils/client-calendar-format'
 import type { ClientCalendarData } from '../types/client-calendar.types'
 
-const m = schedulingMessages.clientCalendar
+const m = clientCalendarMessages
 const firstTime = { key: 't1', techniqueId: 't1', name: 'Volumen ruso', isFirstTime: true, durationMin: 135 }
 const retouch = { ...firstTime, key: 't1.retoque', isFirstTime: false, durationMin: 105 }
 const base = { options: [firstTime, retouch], date: '2026-10-21', today: '2026-10-19' }

@@ -1,7 +1,7 @@
 import { addCalendarDays } from '@/shared/studio-time'
 import type { DaySlot } from '../../../domain/day-slots'
 import type { ServiceOption } from '../../../domain/service-option'
-import { schedulingMessages } from '../../messages'
+import { clientCalendarMessages } from '../constants/client-calendar-strings'
 import { formatCalendarDate, minutesToTime } from '../../availability/utils/availability-format'
 import { calendarHref } from './calendar-params'
 import type {
@@ -12,9 +12,7 @@ import type {
   SlotView,
 } from '../types/client-calendar.types'
 
-// Vista ya formateada en el servidor, como utils/availability-format.ts: la vista solo pinta.
-
-const m = schedulingMessages.clientCalendar
+const m = clientCalendarMessages
 
 const toSlotViews = (slots: readonly DaySlot[]): SlotView[] =>
   slots.map((slot) => ({
@@ -32,7 +30,6 @@ const toPicker = (options: readonly ServiceOption[], date: string, selectedKey?:
   })),
 })
 
-// No se ofrece ir a un día anterior a hoy.
 const toDay = (date: string, today: string, serviceKey: string): DayView => ({
   title: formatCalendarDate(date),
   previousHref: date > today ? calendarHref({ serviceKey, date: addCalendarDays(date, -1) }) : null,

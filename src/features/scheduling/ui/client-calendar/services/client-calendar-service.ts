@@ -3,13 +3,11 @@ import { listTechniques } from '@/features/catalog'
 import { systemClock } from '@/shared/clock'
 import { DEFAULT_RESOURCE_ID } from '../../../application/availability-ports'
 import { dayAvailabilityRepository } from '../../../db/day-availability-repository'
-import { MAX_CALENDAR_SERVICES } from '../constants/client-calendar.constants'
+import { MAX_CALENDAR_SERVICES } from '../constants/client-calendar-strings'
 import { loadClientCalendar } from '../utils/load-client-calendar'
 import { toClientCalendarView } from '../utils/client-calendar-format'
 import type { CalendarSearchParams, ClientCalendarView } from '../types/client-calendar.types'
 
-// Composición del calendario de la clienta con sus adaptadores reales, como
-// ui/availability/services/availability-service.ts. Siempre sobre el recurso por defecto (ADR-0005).
 export const clientCalendarService = {
   async load(searchParams: CalendarSearchParams): Promise<ClientCalendarView> {
     const data = await loadClientCalendar(searchParams, {

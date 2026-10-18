@@ -1,11 +1,10 @@
 import Form from 'next/form'
 import Link from 'next/link'
-import { schedulingMessages } from '../../messages'
-import { CALENDAR_PARAMS, CLIENT_CALENDAR_PATH } from '../constants/client-calendar.constants'
+import { CALENDAR_PARAMS, CLIENT_CALENDAR_PATH, clientCalendarMessages } from '../constants/client-calendar-strings'
 import type { ClientCalendarView as CalendarView, DayView, ServicePickerView, SlotView } from '../types/client-calendar.types'
 import { clientCalendarStyles as s } from '../styles/client-calendar.styles'
 
-const m = schedulingMessages.clientCalendar
+const m = clientCalendarMessages
 
 // Elegir servicio es un GET a la misma ruta: next/form navega del lado del cliente.
 function ServicePicker({ picker }: { picker: ServicePickerView }) {

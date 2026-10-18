@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
 import type { ComponentProps } from 'react'
-import { schedulingMessages } from '../../messages'
+import { clientCalendarMessages } from '../constants/client-calendar-strings'
 import { ClientCalendarView } from '../components/ClientCalendarView'
 import { ClientCalendarLoading } from '../components/ClientCalendarLoading'
 import { toClientCalendarView } from '../utils/client-calendar-format'
@@ -11,7 +11,7 @@ vi.mock('next/form', () => ({ default: (props: ComponentProps<'form'>) => <form 
 
 afterEach(cleanup)
 
-const m = schedulingMessages.clientCalendar
+const m = clientCalendarMessages
 const option = { key: 't2', techniqueId: 't2', name: 'Diseño de cejas', isFirstTime: true, durationMin: 60 }
 const base = { options: [option], date: '2026-10-19', today: '2026-10-19' }
 

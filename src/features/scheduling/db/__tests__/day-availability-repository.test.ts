@@ -4,7 +4,6 @@ import { createSupabaseDayAvailabilityRepository } from '../day-availability-rep
 
 const RESOURCE = '00000000-0000-0000-0000-000000000a01'
 
-// Cliente mínimo: solo rpc, que es lo único que usa el calendario de la clienta.
 function dbAnswering(answer: { data: unknown; error: { message: string } | null }) {
   const calls: unknown[][] = []
   const db = {

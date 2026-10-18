@@ -12,7 +12,6 @@ import {
 const MONDAY = '2026-10-19'
 const H = (hours: number, minutes = 0) => hours * 60 + minutes
 
-// Hora de pared de Costa Rica (UTC-6, sin horario de verano).
 const costaRica = (date: string, time: string) => fixedDate(`${date}T${time}:00-06:00`)
 
 const input = (overrides: Partial<DaySlotsInput> = {}): DaySlotsInput => ({

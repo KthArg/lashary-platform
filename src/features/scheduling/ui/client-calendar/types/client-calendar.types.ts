@@ -14,8 +14,6 @@ type CalendarBase = {
   today: string
 }
 
-// Datos del calendario (UI-003): sesión que no es de clienta, sin servicios en el catálogo, sin
-// servicio elegido, pedido que no se pudo calcular, y el día con sus espacios.
 export type ClientCalendarData =
   | { status: 'forbidden' }
   | { status: 'noServices' }
@@ -23,7 +21,6 @@ export type ClientCalendarData =
   | (CalendarBase & { status: 'invalid'; selected: ServiceOption })
   | (CalendarBase & { status: 'ready'; selected: ServiceOption; slots: DaySlot[] })
 
-// Lo que pinta la vista, ya formateado en el servidor (utils/client-calendar-format.ts).
 export type ServiceOptionView = { key: string; label: string }
 
 export type ServicePickerView = {

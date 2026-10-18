@@ -1,8 +1,8 @@
 import { AUTH_LABELS } from '@/features/auth'
-import { ClientCalendarPage, schedulingMessages } from '@/features/scheduling'
+import { ClientCalendarPage, clientCalendarMessages } from '@/features/scheduling'
 
 export const metadata = {
-  title: `${schedulingMessages.clientCalendar.title} | ${AUTH_LABELS.clientPortalTitle} LASHARY`,
+  title: `${clientCalendarMessages.title} | ${AUTH_LABELS.clientPortalTitle} LASHARY`,
 }
 
 export default async function CalendarioPage({

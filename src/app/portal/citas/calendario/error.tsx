@@ -1,9 +1,9 @@
 'use client'
 
-import { schedulingMessages } from '@/features/scheduling/client'
+import { clientCalendarMessages } from '@/features/scheduling/client'
 import { citasStyles as s } from '../citas.styles'
 
-const m = schedulingMessages.clientCalendar.error
+const m = clientCalendarMessages.error
 
 export default function Error({ reset }: { error: Error; reset: () => void }) {
   return (

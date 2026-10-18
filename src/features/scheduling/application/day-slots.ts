@@ -15,9 +15,6 @@ export type DaySlotsQuery = {
   durationMin: number
 }
 
-// Espacios de un día para la clienta (US-AGE-02). Valida fecha y duración antes de tocar la base y lee
-// horario y ocupado en paralelo, siempre de la base: sin caché, un cambio de la administradora
-// se ve en la siguiente lectura (criterio 4).
 export const getDaySlots =
   (deps: DaySlotsDeps) =>
   async (query: DaySlotsQuery): Promise<Result<DaySlot[], DaySlotsInvalid>> => {
