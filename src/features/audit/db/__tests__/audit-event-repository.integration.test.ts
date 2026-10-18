@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeAll } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { isOk } from '@/shared/result'
-import { AuditEvent } from '@/features/audit/domain/audit-event'
-import { SupabaseAuditEventRepository } from '@/features/audit/db/audit-event-repository'
+import { buildAuditEvent } from '@/features/audit/domain/audit-event'
+import { createSupabaseAuditEventRepository } from '@/features/audit/db/audit-event-repository'
+import type { AuditEventRepository } from '@/features/audit/application/ports'
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
@@ -26,8 +27,8 @@ function itLive(name: string, fn: () => Promise<void>) {
   })
 }
 
-describe.skipIf(!configured)('SupabaseAuditEventRepository (Supabase local)', () => {
-  let repo: SupabaseAuditEventRepository
+describe.skipIf(!configured)('createSupabaseAuditEventRepository (Supabase local)', () => {
+  let repo: AuditEventRepository
   let db: SupabaseClient
 
   beforeAll(async () => {
@@ -37,11 +38,11 @@ describe.skipIf(!configured)('SupabaseAuditEventRepository (Supabase local)', ()
       return
     }
     db = createClient(URL, KEY)
-    repo = new SupabaseAuditEventRepository(db)
+    repo = createSupabaseAuditEventRepository(db)
   })
 
   itLive('insert() está denegado por RLS con token anónimo (SEC-001, fail-closed)', async () => {
-    const built = AuditEvent.create('00000000-0000-0000-0000-00000000f001', {
+    const built = buildAuditEvent('00000000-0000-0000-0000-00000000f001', {
       actorId: '00000000-0000-0000-0000-000000000000',
       action: 'rls.probe',
       entityType: 'rls_probe',

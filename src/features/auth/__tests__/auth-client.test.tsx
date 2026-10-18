@@ -87,7 +87,6 @@ describe('US-AUTH-02: Autenticación de Clientas con Google y Teléfono', () => 
     expect(screen.getByText('Tel: 88887777')).toBeDefined()
     expect(screen.getByRole('button', { name: /cerrar sesión/i })).toBeDefined()
 
-    // Colapsar y expandir
     const toggleBtn = screen.getByRole('button', { name: /colapsar barra/i })
     fireEvent.click(toggleBtn)
     expect(screen.queryByText('LASHARY')).toBeNull()

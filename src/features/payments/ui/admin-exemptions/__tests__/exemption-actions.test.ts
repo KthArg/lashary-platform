@@ -1,24 +1,26 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ClientAlreadyExempt, DepositExemptionValidationError } from '../../domain/errors'
+import {
+  clientAlreadyExempt,
+  depositExemptionValidationError,
+  isClientAlreadyExempt,
+} from '../../../domain/errors'
 
 const mocks = vi.hoisted(() => ({
-  isStaff: vi.fn(),
+  getStaffSession: vi.fn(),
   exemptClient: vi.fn(),
   listClientsAction: vi.fn(),
-  getAuthSession: vi.fn(),
 }))
 
-vi.mock('@/features/payments/ui/require-staff', () => ({ isStaff: mocks.isStaff }))
+vi.mock('@/features/payments/ui/require-staff', () => ({ getStaffSession: mocks.getStaffSession }))
 vi.mock('@/features/payments', () => ({
   exemptClient: mocks.exemptClient,
-  ClientAlreadyExempt,
+  isClientAlreadyExempt,
 }))
 vi.mock('@/features/clients', () => ({ listClientsAction: mocks.listClientsAction }))
-vi.mock('@/features/auth', () => ({ getAuthSession: mocks.getAuthSession }))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 
-import { exemptClientAction, searchClientsAction } from '../actions'
-import { initialExemptClientActionState } from '../action-state'
+import { exemptClientAction, searchClientsAction } from '../actions/exemption-actions'
+import { initialExemptClientActionState } from '../types/exempt-client-action-state'
 
 function form(fields: Record<string, string>): FormData {
   const formData = new FormData()
@@ -32,8 +34,7 @@ const validFields = { clientId: '00000000-0000-0000-0000-0000000000c1', reason: 
 describe('exemptClientAction', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.isStaff.mockResolvedValue(true)
-    mocks.getAuthSession.mockResolvedValue({ user: { id: STAFF_ID } })
+    mocks.getStaffSession.mockResolvedValue({ user: { id: STAFF_ID } })
     mocks.exemptClient.mockResolvedValue({
       ok: true,
       value: { id: 'exm-1', ...validFields, exemptedBy: STAFF_ID, active: true, createdAt: new Date() },
@@ -41,7 +42,7 @@ describe('exemptClientAction', () => {
   })
 
   it('rechaza una llamada directa sin sesión staff antes de tocar exemptClient', async () => {
-    mocks.isStaff.mockResolvedValueOnce(false)
+    mocks.getStaffSession.mockResolvedValueOnce(null)
 
     const state = await exemptClientAction(initialExemptClientActionState, form(validFields))
 
@@ -74,7 +75,7 @@ describe('exemptClientAction', () => {
   it('un cliente ya exonerado vuelve como estado "conflict", no como excepción', async () => {
     mocks.exemptClient.mockResolvedValueOnce({
       ok: false,
-      error: new ClientAlreadyExempt(validFields.clientId),
+      error: clientAlreadyExempt(validFields.clientId),
     })
 
     const state = await exemptClientAction(initialExemptClientActionState, form(validFields))
@@ -85,7 +86,7 @@ describe('exemptClientAction', () => {
   it('un error de validación del dominio vuelve como "invalid" con sus problemas', async () => {
     mocks.exemptClient.mockResolvedValueOnce({
       ok: false,
-      error: new DepositExemptionValidationError(['la razón no puede estar vacía']),
+      error: depositExemptionValidationError(['la razón no puede estar vacía']),
     })
 
     const state = await exemptClientAction(initialExemptClientActionState, form(validFields))
@@ -97,11 +98,11 @@ describe('exemptClientAction', () => {
 describe('searchClientsAction', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mocks.isStaff.mockResolvedValue(true)
+    mocks.getStaffSession.mockResolvedValue({ user: { id: STAFF_ID } })
   })
 
   it('sin sesión staff no busca nada y lo reporta como fallo', async () => {
-    mocks.isStaff.mockResolvedValueOnce(false)
+    mocks.getStaffSession.mockResolvedValueOnce(null)
 
     const result = await searchClientsAction('maría')
 

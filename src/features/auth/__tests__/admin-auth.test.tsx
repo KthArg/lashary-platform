@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, renderHook, act, fireEvent } from '@testing-library/react'
 import { AdminLoginForm, AdminSidebar, InactivityTimeout, useInactivityTimeout } from '@/features/auth'
-import { signInAdminAction, signOutAction, getAuthSession, requireAdminSession } from '@/features/auth/ui/actions/auth-actions'
+import { signInAdminAction, signOutAction } from '@/features/auth/ui/actions/auth-actions'
+import { getAuthSession, requireAdminSession } from '@/features/auth/ui/session/server-session'
 import AdminLayout from '@/app/admin/layout'
 import { middleware } from '@/middleware'
 import { NextRequest, NextResponse } from 'next/server'
@@ -93,19 +94,16 @@ describe('US-AUTH-01: Autenticación de Administradores (/admin)', () => {
   })
 
   it('CA-4: Bloquea el acceso a rutas administrativas mediante requireAdminSession si no hay sesión o rol admin', async () => {
-    // Caso 1: Sin sesión activa -> Redirige a /admin
     mockGetUser.mockResolvedValueOnce({ data: { user: null } })
     await expect(requireAdminSession()).rejects.toThrow('NEXT_REDIRECT:/admin')
     expect(mockRedirect).toHaveBeenCalledWith('/admin')
 
-    // Caso 2: Con sesión pero rol 'cliente' -> Redirige a /admin
     mockGetUser.mockResolvedValueOnce({ data: { user: { id: 'c1', email: 'c@lashary.com' } } })
     mockSingleRole.mockResolvedValueOnce({ data: { role: 'cliente' }, error: null })
     await expect(requireAdminSession()).rejects.toThrow('NEXT_REDIRECT:/admin')
   })
 
   it('CA-4: Bloquea el acceso a subrutas /admin/* en middleware si no hay sesión autenticada', async () => {
-    // Subruta administrativa sin usuario -> Redirige a /admin
     mockUpdateSession.mockResolvedValueOnce({
       supabaseResponse: NextResponse.next(),
       user: null,
@@ -116,7 +114,6 @@ describe('US-AUTH-01: Autenticación de Administradores (/admin)', () => {
     expect(response.status).toBe(307)
     expect(response.headers.get('location')).toBe('http://localhost:3000/admin')
 
-    // Subruta administrativa con usuario -> Permite continuar
     mockUpdateSession.mockResolvedValueOnce({
       supabaseResponse: NextResponse.next(),
       user: { id: 'admin-1', email: 'admin@lashary.com' },
@@ -148,14 +145,12 @@ describe('US-AUTH-01: Autenticación de Administradores (/admin)', () => {
     })
     expect(onTimeoutMock).not.toHaveBeenCalled()
 
-    // Registrar actividad resetea el temporizador
     act(() => {
       window.dispatchEvent(new Event('mousemove'))
       vi.advanceTimersByTime(600)
     })
     expect(onTimeoutMock).not.toHaveBeenCalled()
 
-    // Superar el tiempo de inactividad ejecuta el callback
     act(() => {
       vi.advanceTimersByTime(1100)
     })
@@ -188,7 +183,6 @@ describe('US-AUTH-01: Autenticación de Administradores (/admin)', () => {
     expect(screen.getByText('admin')).toBeDefined()
     expect(screen.getByRole('button', { name: /cerrar sesión/i })).toBeDefined()
 
-    // Permite colapsar y expandir la barra lateral
     const toggleBtn = screen.getByRole('button', { name: /colapsar barra/i })
     fireEvent.click(toggleBtn)
     expect(screen.queryByText('LASHARY')).toBeNull()
@@ -199,7 +193,6 @@ describe('US-AUTH-01: Autenticación de Administradores (/admin)', () => {
   })
 
   it('CA-2: AdminLayout envuelve con AdminSidebar a administradores y renderiza children plano para no-admins', async () => {
-    // Caso 1: Admin autenticado -> monta sidebar y contenido
     mockGetUser.mockResolvedValueOnce({ data: { user: { id: 'admin-1', email: 'admin@lashary.com' } } })
     mockSingleRole.mockResolvedValueOnce({ data: { role: 'admin' }, error: null })
 
@@ -210,7 +203,6 @@ describe('US-AUTH-01: Autenticación de Administradores (/admin)', () => {
     expect(screen.getByText('Dashboard')).toBeDefined()
     unmount()
 
-    // Caso 2: Sin sesión -> renderiza solo children sin sidebar
     mockGetUser.mockResolvedValueOnce({ data: { user: null } })
     const unauthJsx = await AdminLayout({ children: <div>Contenido Bare</div> })
     render(unauthJsx)

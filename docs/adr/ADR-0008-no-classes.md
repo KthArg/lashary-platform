@@ -38,12 +38,8 @@ Los built-ins de JavaScript (`Error`, `Map`, `Set`, `Date`) se siguen usando: la
 
 | Historia | Archivos | Clases |
 |---|---|---|
-| US-AGE-08 | `catalog/domain/technique.ts`, `catalog/domain/errors.ts`, `catalog/db/technique-repository.ts`, `catalog/application/__tests__/fake-repository.ts` | `Technique`, `CatalogError`, `TechniqueValidationError`, `TechniqueNotFound`, `TechniqueNameConflict`, `SupabaseTechniqueRepository`, `FakeTechniqueRepository` |
 | US-LAND-01 | `content/domain/errors.ts` | `CmsUnavailable` |
-| US-PROD-02 | `store/db/productos-db.ts`, `store/http/catalogo-productos-cms.ts` | `CatalogoProductosDb`, `CatalogoProductosCms` |
-| — (`shared/`) | `shared/money.ts`, `shared/domain-error.ts` | `Money`, `DomainError` — **al final**: son la base de las demás (`CatalogError` y `CmsUnavailable` extienden `DomainError`). |
-
-  `FakeTechniqueRepository` también lo usan los tests de US-PROD-01 (`package-commands.test.ts`): migrarlo toca tests de las dos historias.
+| — (`shared/`) | `shared/money.ts`, `shared/domain-error.ts` | `Money`, `DomainError` — **al final**: son la base de las demás (`CmsUnavailable` extiende `DomainError`). |
 
 - **Lecciones de #134, para quien migre:**
   - Un cambio de interfaz **no se parte por capas**: cambiar los exports de `domain/` en un PR y sus consumidores (`application/`, `db/`, `ui/`) en otro deja el primero sin compilar. Si todo junto supera las ~400 líneas de INT-002, se pide la excepción (`excepcion-proceso`) en vez de partirlo.
