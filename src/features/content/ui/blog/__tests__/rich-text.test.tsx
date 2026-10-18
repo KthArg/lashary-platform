@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { render, screen, cleanup, within } from '@testing-library/react'
 import { toRichText } from '../../../application/rich-text'
-import { blogMessages } from '../../constants/blog-strings'
+import { blogMessages } from '../constants/blog-strings'
 import { RichText } from '../components/RichText'
 
 afterEach(cleanup)
@@ -11,7 +11,6 @@ const paragraph = (...content: unknown[]) => ({ type: 'paragraph', content })
 const item = (value: string) => ({ type: 'listItem', content: [paragraph(text(value))] })
 const linked = (value: string, href: string) => text(value, [{ type: 'link', attrs: { href } }])
 
-// Pasa por `toRichText`, como en producción: lo que se pinta es lo que la validación dejó.
 const renderDoc = (...content: unknown[]) =>
   render(<RichText blocks={toRichText({ type: 'doc', content })} />)
 

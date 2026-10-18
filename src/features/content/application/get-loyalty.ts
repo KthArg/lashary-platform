@@ -37,7 +37,7 @@ function toLevels(items: unknown[]): LoyaltyLevel[] {
     if (visit === null || benefit === null || byVisit.has(visit)) continue
     byVisit.set(visit, { visit, benefit, detail: text(field(item, 'detalle'), 160) })
   }
-  return [...byVisit.values()].sort((a, b) => a.visit - b.visit).slice(0, MAX_LOYALTY_LEVELS)
+  return [...byVisit.values()].sort((first, second) => first.visit - second.visit).slice(0, MAX_LOYALTY_LEVELS)
 }
 
 export function toLoyaltyContent(raw: RawLoyaltyContent | null): LoyaltyContent {

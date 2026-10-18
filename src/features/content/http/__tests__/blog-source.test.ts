@@ -5,7 +5,6 @@ import type { CmsReader } from '../../application/ports'
 import { blogCacheTag, loadBlogArticle, loadBlogPage } from '../blog-source'
 import { LANDING_CACHE_SECONDS } from '../landing-source'
 
-// unstable_cache real necesita el runtime de Next; aquí se sustituye por uno que ejecuta.
 const passthroughCache = vi.fn((fn: () => Promise<unknown>) => fn) as never
 
 const readerReturning = (items: unknown[] | 'falla'): (() => CmsReader) => () => ({
@@ -21,7 +20,6 @@ const publicacion = (titulo: string, fecha: string) => ({
   fecha,
 })
 
-// Doce publicaciones, del día 01 al 12, entregadas de la más antigua a la más reciente.
 const doce = Array.from({ length: 12 }, (_, index) => {
   const dia = String(index + 1).padStart(2, '0')
   return publicacion(`Día ${dia}`, `2026-10-${dia}`)

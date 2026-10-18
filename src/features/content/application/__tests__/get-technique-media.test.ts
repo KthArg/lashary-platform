@@ -21,7 +21,7 @@ describe('toTechniqueMedia — las fotos del CMS, indexadas por familia', () => 
     )
 
     expect(media.lash_classic?.image.url).toBe('https://cdn.test/clasico.jpg')
-    expect(media.lash_classic?.examples.map((e) => e.alt)).toEqual([
+    expect(media.lash_classic?.examples.map((example) => example.alt)).toEqual([
       'A los 7 días',
       'Recién aplicado',
     ])

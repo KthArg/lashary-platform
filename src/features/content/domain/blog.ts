@@ -51,15 +51,18 @@ export function calendarDate(value: string): string | null {
 }
 
 export function newestFirst<P extends BlogPost>(posts: readonly P[]): P[] {
-  return [...posts].sort((a, b) => {
-    if (a.publishedOn === b.publishedOn) return 0
-    if (a.publishedOn === null) return 1
-    if (b.publishedOn === null) return -1
-    return a.publishedOn < b.publishedOn ? 1 : -1
+  return [...posts].sort((first, second) => {
+    if (first.publishedOn === second.publishedOn) return 0
+    if (first.publishedOn === null) return 1
+    if (second.publishedOn === null) return -1
+    return first.publishedOn < second.publishedOn ? 1 : -1
   })
 }
 
-export function articleBySlug<A extends BlogPost>(articles: readonly A[], slug: string): A | null {
+export function articleBySlug<Article extends BlogPost>(
+  articles: readonly Article[],
+  slug: string,
+): Article | null {
   return articles.find((article) => article.slug === slug) ?? null
 }
 

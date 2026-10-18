@@ -6,7 +6,6 @@ import type { CmsReader } from '../../application/ports'
 import { LANDING_CACHE_SECONDS } from '../landing-source'
 import { loadLoyalty, loyaltyCacheTags } from '../loyalty-source'
 
-// unstable_cache real necesita el runtime de Next; aquí se sustituye por uno que ejecuta.
 const passthroughCache = vi.fn((fn: () => Promise<unknown>) => fn) as never
 
 const readerWith = (niveles: unknown[] | 'falla'): (() => CmsReader) => () => ({

@@ -5,14 +5,11 @@ import { landingFallback } from '../../application/fallback-messages'
 import type { CmsReader } from '../../application/ports'
 import { LANDING_CACHE_SECONDS, loadLandingContent } from '../landing-source'
 
-// unstable_cache real necesita el runtime de Next; aquí se sustituye por uno que ejecuta y
-// registra con qué se configuró.
 const passthroughCache = vi.fn((fn: () => Promise<unknown>) => fn) as never
 
 const readerReturning = (data: Record<string, unknown> | 'falla'): (() => CmsReader) => () => ({
   readSingleton: async (key) =>
     data === 'falla' ? err(cmsUnavailable(key, 'HTTP 503')) : ok(data[key]),
-  // La landing no lee colecciones por esta vía; el doble cumple el puerto y nada más.
   readCollection: async () => ok([] as unknown[]),
 })
 

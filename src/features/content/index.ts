@@ -1,6 +1,3 @@
-// Entry point público de la feature content (ARCH-003). Solo servidor: lee el CMS externo
-// (uno-cms) según docs/contracts/cms-api.md.
-
 export { loadLandingContent as getLandingContent, landingCacheTags } from './http/landing-source'
 export {
   loadTechniqueMedia as getTechniqueMedia,
@@ -17,22 +14,19 @@ export {
   type BlogArticleLookup,
   type BlogListing,
 } from './http/blog-source'
-// Borde de POST /api/cms/webhook (aviso al publicar). Lo monta src/app/api/cms/webhook/route.ts.
 export { receiveCmsWebhook } from './http/webhook'
 export type { TechniqueMedia, TechniqueMediaByFamily } from './domain/technique-media'
 export type { GalleryFamily, GalleryPair } from './domain/gallery'
 export { BLOG_PAGE_SIZE, type BlogArticle, type BlogPage, type BlogPost } from './domain/blog'
 export type { RichTextBlock, RichTextInline, RichTextListItem } from './domain/rich-text'
-// La página pública del listado del blog. La monta src/app/(site)/blog/page.tsx.
 export { BlogList } from './ui/blog/components/BlogList'
-// La página de una publicación. La monta src/app/(site)/blog/[slug]/page.tsx.
 export { BlogArticleNotice, BlogArticleView } from './ui/blog/components/BlogArticleView'
 export {
   BLOG_PAGE_PARAM,
   BLOG_ROUTE,
   blogArticleRoute,
   blogMessages,
-} from './ui/constants/blog-strings'
+} from './ui/blog/constants/blog-strings'
 export type { LoyaltyContent, LoyaltyLevel } from './domain/loyalty'
 export type {
   ContactContent,
