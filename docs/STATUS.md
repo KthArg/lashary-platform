@@ -86,7 +86,7 @@
 
 ### scheduling (actualizado: 2026-10-17)
 - US-AGE-01 — terminada — PR de cierre us/US-AGE-01 a main, con las piezas 1 a 13 apiladas hacia la rama de la historia. Criterios 1, 2 y 3 demostrados en /admin/citas/disponibilidad; los criterios 4 y 5 se trasladaron a US-AGE-02 y US-AGE-05 con aprobación del PO el 2026-10-14 (docs/process/DEPENDENCIES.md); tests: weekly-availability.test.ts (domain y application), closed-dates.test.ts (domain y application), manual-blocks.test.ts (domain y application), los tres *-repository.test.ts, studio-time.test.ts, availability-schema.test.ts, availability-actions.test.ts, availability-format.test.ts, AdminAvailabilityView.test.tsx, __tests__/availability-rls-isolation.test.ts (SEC-002) y pgTAP scheduling_weekly_availability.test.sql y scheduling_closed_dates_and_manual_blocks.test.sql
-- US-AGE-02 — en_progreso — falta: Solo la vía de lectura en la base: faltan el cálculo de espacios, la aplicación y la vista de la clienta (piezas 2 a 6). Supuesto pendiente del PO: SLOT_INTERVAL_MIN = 30.
+- US-AGE-02 — en_progreso — falta: Faltan la aplicación, el repositorio y la vista de la clienta (piezas 3 a 6). Supuesto pendiente del PO: SLOT_INTERVAL_MIN = 30.
 - US-AGE-03 — en_progreso — falta: criterio 2 (detectar primera vez/re-aplicación por historial de citas) diferido: no existe scheduling_appointments todavía (la trae US-AGE-05, que depende de esta historia). Punto de extensión: application/no-appointment-history.ts (ClientHistoryPort), hoy siempre reporta sin historial; la corrección manual ya está resuelta en el use-case (isFirstTimeOverride). Ver docs/process/DEPENDENCIES.md, Criterios diferidos.
 - US-AGE-04 — no_iniciada
 - US-AGE-05 — no_iniciada
