@@ -13,7 +13,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-04
     estado: en_progreso
-    falta: "piezas 1/9 a 4/9: esquema, bucket privado de imagenes, el contenido validado del expediente y sus cambios puros. Faltan los casos de uso con bitacora (5/9), repositorio y actions (6/9), la pestana Expediente (7/9), los formularios (8/9) y las imagenes con URL firmada (9/9)"
+    falta: "piezas 1/10 a 5/10: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros y la lectura auditada del expediente. Faltan los casos de uso de escritura (6/10), repositorio, adaptadores de audit y catalog y actions (7/10), la pestana Expediente (8/10), los formularios y las categorias nuevas (9/10) y las imagenes con URL firmada (10/10)"
   - id: US-CLI-05
     estado: terminada
     evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
@@ -343,3 +343,16 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
 - **2026-10-17 — Editar el estudio sin cambiar nada devuelve `RecordUnchanged`**, en vez de guardar
   una versión idéntica que ensuciaría el historial. Se compara después de recortar espacios: agregar
   un espacio al final no cuenta como cambio.
+- **2026-10-17 — US-CLI-04 pasa de 9 a 10 piezas (INT-002), por decisión de José Loría.** Los casos
+  de uso salieron en ~454 líneas con sus dobles de prueba. Se parten en leer (5/10) y escribir
+  (6/10); lo que seguía se corre un número: repositorio y actions 7/10, vista 8/10, formularios
+  9/10, imágenes 10/10.
+- **2026-10-17 — La aplicación del expediente habla con el exterior solo por puertos (pieza 5/10):**
+  `RecordRepository`, `RecordAuditLog`, `TechniqueLookup` y `PrecautionCategoryLookup` en
+  `application/record/record-ports.ts`. `clients` no importa `audit` ni `catalog` aquí; los
+  adaptadores que llaman a sus APIs públicas llegan en la 7/10. Así se prueban con dobles en memoria.
+- **2026-10-17 — Leer el expediente audita primero (fail-closed).** `viewRecord` registra
+  `clients.record.viewed` antes de leer y, si la bitácora falla, devuelve `audit-failed` sin datos.
+- **2026-10-17 — El historial se lee con tope (`RECORD_HISTORY_LIMIT` = 50, PERF-002).** Si un
+  expediente pasa de 50 versiones, las más viejas no se muestran todavía; paginar el historial se
+  agrega cuando haga falta.
