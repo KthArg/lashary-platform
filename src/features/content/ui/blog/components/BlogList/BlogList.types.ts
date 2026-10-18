@@ -1,4 +1,4 @@
-import type { BlogListing } from '../../../../cms/blog-source'
+import type { BlogListing } from '../../../../http/blog-source'
 
 export interface BlogListProps {
   listing: BlogListing

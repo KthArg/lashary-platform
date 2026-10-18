@@ -1,24 +1,24 @@
 // Entry point público de la feature content (ARCH-003). Solo servidor: lee el CMS externo
 // (uno-cms) según docs/contracts/cms-api.md.
 
-export { loadLandingContent as getLandingContent, landingCacheTags } from './cms/landing-source'
+export { loadLandingContent as getLandingContent, landingCacheTags } from './http/landing-source'
 export {
   loadTechniqueMedia as getTechniqueMedia,
   techniqueMediaCacheTag,
-} from './cms/technique-media-source'
-export { loadGallery as getGallery, galleryCacheTag } from './cms/gallery-source'
-export { loadStudio as getStudio, studioCacheTags } from './cms/studio-source'
-export { loadLoyalty as getLoyalty, loyaltyCacheTags } from './cms/loyalty-source'
-export { loadContact as getContact, contactCacheTags } from './cms/contact-source'
+} from './http/technique-media-source'
+export { loadGallery as getGallery, galleryCacheTag } from './http/gallery-source'
+export { loadStudio as getStudio, studioCacheTags } from './http/studio-source'
+export { loadLoyalty as getLoyalty, loyaltyCacheTags } from './http/loyalty-source'
+export { loadContact as getContact, contactCacheTags } from './http/contact-source'
 export {
   loadBlogPage as getBlogPage,
   loadBlogArticle as getBlogArticle,
   blogCacheTag,
   type BlogArticleLookup,
   type BlogListing,
-} from './cms/blog-source'
+} from './http/blog-source'
 // Borde de POST /api/cms/webhook (aviso al publicar). Lo monta src/app/api/cms/webhook/route.ts.
-export { receiveCmsWebhook } from './cms/webhook'
+export { receiveCmsWebhook } from './http/webhook'
 export type { TechniqueMedia, TechniqueMediaByFamily } from './domain/technique-media'
 export type { GalleryFamily, GalleryPair } from './domain/gallery'
 export { BLOG_PAGE_SIZE, type BlogArticle, type BlogPage, type BlogPost } from './domain/blog'

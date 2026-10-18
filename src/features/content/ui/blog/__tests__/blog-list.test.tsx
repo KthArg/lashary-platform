@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup, within } from '@testing-library/react'
-import type { BlogListing } from '../../../cms/blog-source'
+import type { BlogListing } from '../../../http/blog-source'
 import type { BlogPost } from '../../../domain/blog'
 import { blogMessages } from '../../constants/blog-strings'
 import { BlogList } from '../components/BlogList'

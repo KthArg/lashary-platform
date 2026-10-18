@@ -8,7 +8,7 @@ import type { StudioSingletonKey } from '../domain/studio'
 // Lo que devolvió el CMS por cada tipo, sin validar (el `data` de GET /api/content/:key).
 export type RawLandingContent = Record<LandingContentKey, unknown>
 
-// Puerto de lectura del CMS. La implementación HTTP vive en cms/.
+// Puerto de lectura del CMS. La implementación HTTP vive en http/.
 export interface CmsReader {
   readSingleton(
     key: LandingContentKey | StudioSingletonKey | LoyaltySingletonKey | ContactSingletonKey,
