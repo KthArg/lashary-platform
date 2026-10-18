@@ -2,8 +2,6 @@ import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup, fireEvent, within } from '@testing-library/react'
 import { SiteHeader, LOGIN_ROUTE, RESERVE_ROUTE, landingMessages } from '@/features/landing'
 
-// Fuera del router `usePathname` devuelve null, que la cabecera trata como la portada. Las
-// pruebas que necesitan otra página lo fijan aquí.
 const pathname = vi.hoisted(() => ({ current: null as string | null }))
 vi.mock('next/navigation', () => ({ usePathname: () => pathname.current }))
 
