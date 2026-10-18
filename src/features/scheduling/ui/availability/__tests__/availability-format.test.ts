@@ -20,7 +20,7 @@ describe('availability-format', () => {
       { id: 'b', resourceId: 'r', weekday: 1, startMin: 780, endMin: 1020 },
       { id: 'c', resourceId: 'r', weekday: 6, startMin: 540, endMin: 780 },
     ])
-    expect(days.map((d) => d.label)).toEqual([
+    expect(days.map((day) => day.label)).toEqual([
       'Lunes',
       'Martes',
       'Miércoles',

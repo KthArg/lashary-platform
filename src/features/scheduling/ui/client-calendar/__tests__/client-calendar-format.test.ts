@@ -3,7 +3,6 @@ import { clientCalendarMessages } from '../constants/client-calendar-strings'
 import { toCalendarView } from '../utils/client-calendar-format'
 import type { ClientCalendarData } from '../types/client-calendar.types'
 
-const m = clientCalendarMessages
 const firstTime = { key: 't1', techniqueId: 't1', name: 'Volumen ruso', isFirstTime: true, durationMin: 135 }
 const retouch = { ...firstTime, key: 't1.retoque', isFirstTime: false, durationMin: 105 }
 const base = { options: [firstTime, retouch], date: '2026-10-21', today: '2026-10-19' }
@@ -25,8 +24,8 @@ describe('toCalendarView — US-AGE-02', () => {
         date: '2026-10-21',
         selectedKey: 't1.retoque',
         options: [
-          { key: 't1', label: m.serviceOption('Volumen ruso', true, 135) },
-          { key: 't1.retoque', label: m.serviceOption('Volumen ruso', false, 105) },
+          { key: 't1', label: clientCalendarMessages.serviceOption('Volumen ruso', true, 135) },
+          { key: 't1.retoque', label: clientCalendarMessages.serviceOption('Volumen ruso', false, 105) },
         ],
       },
       day: {

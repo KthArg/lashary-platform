@@ -4,17 +4,17 @@
 import { schedulingMessages } from '@/features/scheduling/client'
 import { adminCitasStyles as STYLES } from '../citas.styles'
 
-const m = schedulingMessages.availability
+const availabilityMessages = schedulingMessages.availability
 
 export default function Error({ reset }: { error: Error; reset: () => void }) {
   return (
     <main className={STYLES.main}>
-      <h1 className={STYLES.title}>{m.title}</h1>
+      <h1 className={STYLES.title}>{availabilityMessages.title}</h1>
       <div role="alert" className={STYLES.errorBox}>
-        <h2 className={STYLES.errorTitle}>{m.error.title}</h2>
-        <p className={STYLES.errorBody}>{m.error.body}</p>
+        <h2 className={STYLES.errorTitle}>{availabilityMessages.error.title}</h2>
+        <p className={STYLES.errorBody}>{availabilityMessages.error.body}</p>
         <button type="button" onClick={reset} className={STYLES.retryButton}>
-          {m.error.retry}
+          {availabilityMessages.error.retry}
         </button>
       </div>
     </main>

@@ -35,7 +35,7 @@ function zonedParts(instant: Date): Record<string, number> {
     hourCycle: 'h23',
   }).formatToParts(instant)
   return Object.fromEntries(
-    parts.filter((p) => p.type !== 'literal').map((p) => [p.type, Number(p.value)]),
+    parts.filter((part) => part.type !== 'literal').map((part) => [part.type, Number(part.value)]),
   )
 }
 

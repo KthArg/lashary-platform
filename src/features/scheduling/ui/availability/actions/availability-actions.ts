@@ -22,12 +22,12 @@ import type { AvailabilityActionState } from '../types/availability-action-state
 
 // Las acciones revisan el rol para dar un mensaje amable; la frontera real es RLS (SEC-001).
 
-const m = schedulingMessages.availability
+const availabilityMessages = schedulingMessages.availability
 const AVAILABILITY_PATH = '/admin/citas/disponibilidad'
 
 type ZodIssues = { issues: Array<{ message: string }> }
 
-const forbidden = (): AvailabilityActionState => ({ status: 'forbidden', message: m.accessDenied })
+const forbidden = (): AvailabilityActionState => ({ status: 'forbidden', message: availabilityMessages.accessDenied })
 const invalid = (problems: readonly string[]): AvailabilityActionState => ({
   status: 'invalid',
   problems: [...new Set(problems)],
@@ -59,10 +59,10 @@ export async function addWeeklyBlockAction(
     endMin: parsed.data.end,
   })
   if (isErr(result)) {
-    if (isWeeklyBlockOverlap(result.error)) return { status: 'conflict', message: m.weekly.overlap }
-    return invalid([m.validation.startBeforeEnd])
+    if (isWeeklyBlockOverlap(result.error)) return { status: 'conflict', message: availabilityMessages.weekly.overlap }
+    return invalid([availabilityMessages.validation.startBeforeEnd])
   }
-  return done(m.weekly.savedOk)
+  return done(availabilityMessages.weekly.savedOk)
 }
 
 export async function removeWeeklyBlockAction(
@@ -71,13 +71,13 @@ export async function removeWeeklyBlockAction(
 ): Promise<AvailabilityActionState> {
   if (!(await isStaff())) return forbidden()
   const parsed = removeFormSchema.safeParse(fields(formData))
-  if (!parsed.success) return { status: 'conflict', message: m.notFound }
+  if (!parsed.success) return { status: 'conflict', message: availabilityMessages.notFound }
 
   const result = await availabilityService.removeWeeklyBlock(parsed.data.id)
   if (isErr(result) && isAvailabilityEntryNotFound(result.error)) {
-    return { status: 'conflict', message: m.notFound }
+    return { status: 'conflict', message: availabilityMessages.notFound }
   }
-  return done(m.weekly.removedOk)
+  return done(availabilityMessages.weekly.removedOk)
 }
 
 export async function addClosedDateAction(
@@ -90,10 +90,10 @@ export async function addClosedDateAction(
 
   const result = await availabilityService.addClosedDate(parsed.data)
   if (isErr(result)) {
-    if (isClosedDateAlreadyExists(result.error)) return { status: 'conflict', message: m.closed.alreadyClosed }
-    return invalid([m.validation.date])
+    if (isClosedDateAlreadyExists(result.error)) return { status: 'conflict', message: availabilityMessages.closed.alreadyClosed }
+    return invalid([availabilityMessages.validation.date])
   }
-  return done(m.closed.savedOk)
+  return done(availabilityMessages.closed.savedOk)
 }
 
 export async function removeClosedDateAction(
@@ -102,13 +102,13 @@ export async function removeClosedDateAction(
 ): Promise<AvailabilityActionState> {
   if (!(await isStaff())) return forbidden()
   const parsed = removeFormSchema.safeParse(fields(formData))
-  if (!parsed.success) return { status: 'conflict', message: m.notFound }
+  if (!parsed.success) return { status: 'conflict', message: availabilityMessages.notFound }
 
   const result = await availabilityService.removeClosedDate(parsed.data.id)
   if (isErr(result) && isAvailabilityEntryNotFound(result.error)) {
-    return { status: 'conflict', message: m.notFound }
+    return { status: 'conflict', message: availabilityMessages.notFound }
   }
-  return done(m.closed.removedOk)
+  return done(availabilityMessages.closed.removedOk)
 }
 
 // La fecha y las horas llegan en hora del estudio y se guardan en UTC (DOM-003).
@@ -127,8 +127,8 @@ export async function addManualBlockAction(
     reason,
   })
   if (isErr(result)) {
-    if (isManualBlockOverlap(result.error)) return { status: 'conflict', message: m.blocks.overlap }
-    return invalid([m.validation.startBeforeEnd])
+    if (isManualBlockOverlap(result.error)) return { status: 'conflict', message: availabilityMessages.blocks.overlap }
+    return invalid([availabilityMessages.validation.startBeforeEnd])
   }
-  return done(m.blocks.savedOk)
+  return done(availabilityMessages.blocks.savedOk)
 }

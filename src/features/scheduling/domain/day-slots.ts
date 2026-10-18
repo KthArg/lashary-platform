@@ -43,7 +43,7 @@ export function checkDaySlotsQuery(date: string, durationMin: number): Result<vo
 
 function mergeOpenHours(hours: readonly OpenHours[]): OpenHours[] {
   const merged: { startMin: number; endMin: number }[] = []
-  for (const range of [...hours].sort((a, b) => a.startMin - b.startMin)) {
+  for (const range of [...hours].sort((left, right) => left.startMin - right.startMin)) {
     const last = merged[merged.length - 1]
     if (last && range.startMin <= last.endMin) last.endMin = Math.max(last.endMin, range.endMin)
     else merged.push({ ...range })

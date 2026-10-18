@@ -37,7 +37,7 @@ import {
 } from '../actions/availability-actions'
 import { initialAvailabilityActionState as idle } from '../types/availability-action-state'
 
-const m = schedulingMessages.availability
+const availabilityMessages = schedulingMessages.availability
 
 function form(fields: Record<string, string>): FormData {
   const formData = new FormData()
@@ -73,7 +73,7 @@ describe('addWeeklyBlockAction — criterio 1', () => {
     mocks.service.addWeeklyBlock.mockResolvedValue(ok({}))
     const state = await addWeeklyBlockAction(idle, form({ weekday: '1', start: '09:00', end: '12:00' }))
     expect(mocks.service.addWeeklyBlock).toHaveBeenCalledWith({ weekday: 1, startMin: 540, endMin: 720 })
-    expect(state).toEqual({ status: 'ok', message: m.weekly.savedOk })
+    expect(state).toEqual({ status: 'ok', message: availabilityMessages.weekly.savedOk })
     expect(mocks.revalidatePath).toHaveBeenCalledWith('/admin/citas/disponibilidad')
   })
 
@@ -87,12 +87,12 @@ describe('addWeeklyBlockAction — criterio 1', () => {
     mocks.service.addWeeklyBlock.mockResolvedValueOnce(err(weeklyBlockInvalid(['x'])))
     expect(await addWeeklyBlockAction(idle, form({ weekday: '1', start: '12:00', end: '09:00' }))).toEqual({
       status: 'invalid',
-      problems: [m.validation.startBeforeEnd],
+      problems: [availabilityMessages.validation.startBeforeEnd],
     })
     mocks.service.addWeeklyBlock.mockResolvedValueOnce(err(weeklyBlockOverlap('a')))
     expect(await addWeeklyBlockAction(idle, form({ weekday: '1', start: '09:00', end: '12:00' }))).toEqual({
       status: 'conflict',
-      message: m.weekly.overlap,
+      message: availabilityMessages.weekly.overlap,
     })
     expect(mocks.revalidatePath).not.toHaveBeenCalled()
   })
@@ -101,7 +101,7 @@ describe('addWeeklyBlockAction — criterio 1', () => {
     mocks.service.removeWeeklyBlock.mockResolvedValue(err(availabilityEntryNotFound('a')))
     expect(await removeWeeklyBlockAction(idle, form({ id: 'a' }))).toEqual({
       status: 'conflict',
-      message: m.notFound,
+      message: availabilityMessages.notFound,
     })
   })
 })
@@ -111,14 +111,14 @@ describe('addClosedDateAction — criterio 2', () => {
     mocks.service.addClosedDate.mockResolvedValue(ok({}))
     const state = await addClosedDateAction(idle, form({ date: '2026-12-25', kind: 'holiday', label: 'Navidad' }))
     expect(mocks.service.addClosedDate).toHaveBeenCalledWith({ date: '2026-12-25', kind: 'holiday', label: 'Navidad' })
-    expect(state).toEqual({ status: 'ok', message: m.closed.savedOk })
+    expect(state).toEqual({ status: 'ok', message: availabilityMessages.closed.savedOk })
   })
 
   it('un día ya cerrado es conflicto', async () => {
     mocks.service.addClosedDate.mockResolvedValue(err(closedDateAlreadyExists('2026-12-25')))
     expect(await addClosedDateAction(idle, form({ date: '2026-12-25', kind: 'holiday' }))).toEqual({
       status: 'conflict',
-      message: m.closed.alreadyClosed,
+      message: availabilityMessages.closed.alreadyClosed,
     })
   })
 
@@ -126,7 +126,7 @@ describe('addClosedDateAction — criterio 2', () => {
     mocks.service.removeClosedDate.mockResolvedValue(ok(undefined))
     expect(await removeClosedDateAction(idle, form({ id: 'c-1' }))).toEqual({
       status: 'ok',
-      message: m.closed.removedOk,
+      message: availabilityMessages.closed.removedOk,
     })
   })
 })
@@ -145,7 +145,7 @@ describe('addManualBlockAction — criterio 3', () => {
     mocks.service.addManualBlock.mockResolvedValue(err(manualBlockOverlap()))
     expect(await addManualBlockAction(idle, form({ date: '2026-10-20', start: '09:00', end: '11:00' }))).toEqual({
       status: 'conflict',
-      message: m.blocks.overlap,
+      message: availabilityMessages.blocks.overlap,
     })
   })
 })

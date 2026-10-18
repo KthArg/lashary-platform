@@ -15,19 +15,19 @@ import { AdminAvailabilityView } from '../components/AdminAvailabilityView'
 
 afterEach(cleanup)
 
-const m = schedulingMessages.availability
+const availabilityMessages = schedulingMessages.availability
 const emptyWeek = toWeeklyDays([])
 
 describe('AdminAvailabilityView — US-AGE-01', () => {
   it('sin datos: las tres listas muestran su estado vacío (UI-003) y los formularios siguen', () => {
     render(<AdminAvailabilityView weeklyDays={emptyWeek} closedDates={[]} manualBlocks={[]} />)
 
-    expect(screen.getByText(m.weekly.empty)).toBeTruthy()
-    expect(screen.getByText(m.closed.empty)).toBeTruthy()
-    expect(screen.getByText(m.blocks.empty)).toBeTruthy()
-    expect(screen.getByRole('button', { name: m.weekly.submit })).toBeTruthy()
-    expect(screen.getByRole('button', { name: m.closed.submit })).toBeTruthy()
-    expect(screen.getByRole('button', { name: m.blocks.submit })).toBeTruthy()
+    expect(screen.getByText(availabilityMessages.weekly.empty)).toBeTruthy()
+    expect(screen.getByText(availabilityMessages.closed.empty)).toBeTruthy()
+    expect(screen.getByText(availabilityMessages.blocks.empty)).toBeTruthy()
+    expect(screen.getByRole('button', { name: availabilityMessages.weekly.submit })).toBeTruthy()
+    expect(screen.getByRole('button', { name: availabilityMessages.closed.submit })).toBeTruthy()
+    expect(screen.getByRole('button', { name: availabilityMessages.blocks.submit })).toBeTruthy()
   })
 
   it('criterio 1: el horario semanal muestra cada día con sus bloques y un botón para quitarlos', () => {
@@ -37,15 +37,15 @@ describe('AdminAvailabilityView — US-AGE-01', () => {
     ])
     render(<AdminAvailabilityView weeklyDays={weeklyDays} closedDates={[]} manualBlocks={[]} />)
 
-    const weekly = screen.getByRole('region', { name: m.weekly.title })
+    const weekly = screen.getByRole('region', { name: availabilityMessages.weekly.title })
     expect(within(weekly).getByText('09:00–12:00')).toBeTruthy()
     expect(within(weekly).getByText('13:00–17:00')).toBeTruthy()
-    expect(within(weekly).getAllByText(m.weekly.noBlocks)).toHaveLength(6)
+    expect(within(weekly).getAllByText(availabilityMessages.weekly.noBlocks)).toHaveLength(6)
     const remove = within(weekly).getByRole('button', {
-      name: m.weekly.removeLabel('Lunes', '09:00–12:00'),
+      name: availabilityMessages.weekly.removeLabel('Lunes', '09:00–12:00'),
     })
-    expect(remove.textContent).toBe(m.remove)
-    expect(remove.getAttribute('aria-label')).toContain(m.remove)
+    expect(remove.textContent).toBe(availabilityMessages.remove)
+    expect(remove.getAttribute('aria-label')).toContain(availabilityMessages.remove)
   })
 
   it('criterio 2: los días cerrados muestran fecha, tipo y nombre, con botón para reabrir', () => {
@@ -57,14 +57,14 @@ describe('AdminAvailabilityView — US-AGE-01', () => {
       />,
     )
 
-    const closed = screen.getByRole('region', { name: m.closed.title })
+    const closed = screen.getByRole('region', { name: availabilityMessages.closed.title })
     expect(within(closed).getByText('Feriado · Navidad')).toBeTruthy()
     const reopen = within(closed).getByRole('button', {
-      name: m.closed.removeLabel('viernes, 25 de diciembre de 2026'),
+      name: availabilityMessages.closed.removeLabel('viernes, 25 de diciembre de 2026'),
     })
     // WCAG 2.5.3: el texto visible ("Reabrir") está contenido en el nombre accesible.
-    expect(reopen.textContent).toBe(m.closed.reopen)
-    expect(reopen.getAttribute('aria-label')).toContain(m.closed.reopen)
+    expect(reopen.textContent).toBe(availabilityMessages.closed.reopen)
+    expect(reopen.getAttribute('aria-label')).toContain(availabilityMessages.closed.reopen)
   })
 
   it('criterio 3: los espacios bloqueados muestran fecha, horario y motivo', () => {
@@ -76,7 +76,7 @@ describe('AdminAvailabilityView — US-AGE-01', () => {
       />,
     )
 
-    const blocks = screen.getByRole('region', { name: m.blocks.title })
+    const blocks = screen.getByRole('region', { name: availabilityMessages.blocks.title })
     expect(within(blocks).getByText('martes, 20 de octubre · 09:00–11:00')).toBeTruthy()
     expect(within(blocks).getByText('banco')).toBeTruthy()
   })
@@ -84,10 +84,10 @@ describe('AdminAvailabilityView — US-AGE-01', () => {
   it('UI-004: cada campo de los formularios tiene label', () => {
     render(<AdminAvailabilityView weeklyDays={emptyWeek} closedDates={[]} manualBlocks={[]} />)
 
-    for (const label of [m.weekly.weekdayLabel, m.closed.kindLabel, m.closed.labelLabel, m.blocks.reasonLabel]) {
+    for (const label of [availabilityMessages.weekly.weekdayLabel, availabilityMessages.closed.kindLabel, availabilityMessages.closed.labelLabel, availabilityMessages.blocks.reasonLabel]) {
       expect(screen.getByLabelText(label)).toBeTruthy()
     }
-    expect(screen.getAllByLabelText(m.weekly.startLabel)).toHaveLength(2)
-    expect(screen.getAllByLabelText(m.closed.dateLabel)).toHaveLength(2)
+    expect(screen.getAllByLabelText(availabilityMessages.weekly.startLabel)).toHaveLength(2)
+    expect(screen.getAllByLabelText(availabilityMessages.closed.dateLabel)).toHaveLength(2)
   })
 })

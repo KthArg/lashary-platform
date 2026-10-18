@@ -12,8 +12,6 @@ import type {
   SlotView,
 } from '../types/client-calendar.types'
 
-const m = clientCalendarMessages
-
 const toSlotViews = (slots: readonly DaySlot[]): SlotView[] =>
   slots.map((slot) => ({
     startMin: slot.startMin,
@@ -26,7 +24,7 @@ const toPicker = (options: readonly ServiceOption[], date: string, selectedKey?:
   selectedKey,
   options: options.map((option) => ({
     key: option.key,
-    label: m.serviceOption(option.name, option.isFirstTime, option.durationMin),
+    label: clientCalendarMessages.serviceOption(option.name, option.isFirstTime, option.durationMin),
   })),
 })
 

@@ -85,7 +85,7 @@ describe('listWeeklyBlocks', () => {
       },
     }
     const blocks = await listWeeklyBlocks({ ...deps, repo: spy })(RESOURCE)
-    expect(blocks.map((b) => b.id)).toEqual(['a', 'b', 'c'])
+    expect(blocks.map((block) => block.id)).toEqual(['a', 'b', 'c'])
     expect(askedLimit).toBe(MAX_WEEKLY_BLOCKS)
   })
 })
