@@ -4,7 +4,6 @@ import { GALLERY_KEY, type GalleryPair } from '../domain/gallery'
 import { createCmsReader } from './cms-reader'
 import { LANDING_CACHE_SECONDS } from './landing-source'
 
-// El mismo tag que manda el aviso de uno-cms para esta colección.
 export const galleryCacheTag = `content:${GALLERY_KEY}`
 
 type GallerySourceDeps = {
@@ -13,8 +12,6 @@ type GallerySourceDeps = {
   createReader?: typeof createCmsReader
 }
 
-// Pares de la galería, listos para renderizar. Nunca lanza: sin `CMS_URL`, con el CMS caído o
-// con una respuesta que no encaja, devuelve la lista vacía y la galería muestra su estado vacío.
 export async function loadGallery({
   env = process.env,
   cache = unstable_cache,
@@ -24,8 +21,6 @@ export async function loadGallery({
   if (baseUrl === '') return []
 
   const reader = createReader({ baseUrl })
-  // Lanzar dentro de la función cacheada es lo que evita guardar una lectura fallida. Desmarcar
-  // el consentimiento y publicar manda el aviso con `content:galeria`, que expira esta entrada.
   const readCached = cache(
     async () => {
       const result = await readRawGallery(reader)

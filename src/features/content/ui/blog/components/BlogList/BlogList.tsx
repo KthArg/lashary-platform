@@ -6,14 +6,12 @@ import {
   blogArticleRoute,
   blogMessages,
   blogPageRoute,
-} from '../../../constants/blog-strings'
+} from '../../constants/blog-strings'
 import { blogListStyles as STYLES } from './BlogList.styles'
 import type { BlogListProps } from './BlogList.types'
 
 const longDate = new Intl.DateTimeFormat('es-CR', { dateStyle: 'long', timeZone: 'UTC' })
 
-// `AAAA-MM-DD` es una fecha de calendario, sin hora: se formatea en UTC para que no retroceda
-// un día según la zona de quien renderiza.
 const formatDate = (isoDate: string): string => longDate.format(new Date(`${isoDate}T00:00:00Z`))
 
 export function BlogList({ listing }: BlogListProps) {
@@ -54,9 +52,6 @@ export function BlogList({ listing }: BlogListProps) {
                       alt={post.image.alt}
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 24rem"
-                      // La primera imagen es el elemento LCP en un teléfono (medición PERF-004 en
-                      // el SPEC): se precarga en vez de esperar al lazy-load. `preload` es el prop
-                      // de next/image desde Next 16; `priority` quedó obsoleto a su favor.
                       preload={index === 0}
                       className={STYLES.photo}
                     />

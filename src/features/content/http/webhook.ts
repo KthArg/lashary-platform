@@ -8,7 +8,6 @@ import { loyaltyCacheTags } from './loyalty-source'
 import { contactCacheTags } from './contact-source'
 import { blogCacheTag } from './blog-source'
 
-// Aviso al publicar de uno-cms (docs/contracts/cms-api.md § Invalidación).
 export const WEBHOOK_WINDOW_MS = 5 * 60 * 1000
 const MIN_SECRET_LENGTH = 32
 
@@ -31,7 +30,6 @@ function signatureMatches(secret: string, timestamp: string, rawBody: string, he
   return timingSafeEqual(expected, Buffer.from(match[1], 'hex'))
 }
 
-// Todo lo que este sitio sabe pedirle al CMS, y por tanto lo único que tiene sentido invalidar.
 const knownTags: readonly string[] = [
   ...landingCacheTags,
   techniqueMediaCacheTag,
@@ -42,9 +40,6 @@ const knownTags: readonly string[] = [
   blogCacheTag,
 ]
 
-// Decide qué hacer con un aviso. Pura: no toca la caché ni el reloj, así se prueba entera.
-// Firma sobre el cuerpo crudo, en tiempo constante; ventana de 5 min contra reenvíos. Del cuerpo
-// solo se usan los `tags` que coinciden con tipos vigentes (el resto se ignora, SEC-009).
 export function evaluateCmsWebhook({ rawBody, timestamp, signature, secret, now }: WebhookInput): WebhookOutcome {
   if (!secret || secret.length < MIN_SECRET_LENGTH) {
     return { status: 503, reason: 'aviso sin configurar' }
@@ -72,7 +67,6 @@ export function evaluateCmsWebhook({ rawBody, timestamp, signature, secret, now 
   return { status: 200, tags: known }
 }
 
-// Borde HTTP de POST /api/cms/webhook. Expira de inmediato la caché de cada tag aceptado.
 export async function receiveCmsWebhook(request: Request): Promise<Response> {
   const outcome = evaluateCmsWebhook({
     rawBody: await request.text(),

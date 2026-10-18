@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup, within } from '@testing-library/react'
 import { toRichText } from '../../../application/rich-text'
 import type { BlogArticle } from '../../../domain/blog'
-import { blogMessages } from '../../constants/blog-strings'
+import { blogMessages } from '../constants/blog-strings'
 import { BlogArticleNotice, BlogArticleView } from '../components/BlogArticleView'
 
 vi.mock('next/image', () => ({
@@ -37,7 +37,6 @@ describe('BlogArticleView — US-BLOG-03', () => {
     expect(screen.getByAltText('Extensiones recién puestas').getAttribute('src')).toBe(
       'https://cms.test/destacada.jpg',
     )
-    // De principio a fin: el primer párrafo del cuerpo y el último.
     expect(screen.getByText('Primer párrafo.')).toBeTruthy()
     expect(screen.getByText('Último párrafo.')).toBeTruthy()
     expect(screen.getByText('13 de octubre de 2026').getAttribute('datetime')).toBe('2026-10-13')
@@ -46,7 +45,6 @@ describe('BlogArticleView — US-BLOG-03', () => {
   it('criterio 3: hay navegación de regreso al listado, arriba y abajo', () => {
     render(<BlogArticleView article={article()} />)
 
-    // Cada uno con su nombre: dos regiones iguales no se distinguen con lector de pantalla.
     const navs = [copy.backNav, copy.backNavEnd].map((name) => screen.getByRole('navigation', { name }))
     for (const nav of navs) {
       expect(within(nav).getByRole('link', { name: copy.back }).getAttribute('href')).toBe('/blog')

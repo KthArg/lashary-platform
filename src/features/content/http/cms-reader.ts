@@ -10,9 +10,6 @@ type CmsReaderOptions = {
   now?: () => number
 }
 
-// Adaptador HTTP de GET {CMS_URL}/api/content/:key (docs/contracts/cms-api.md § Transporte).
-// Solo servidor: la ruta del CMS no manda CORS. `?v=` salta la copia de 60 s de la CDN del CMS;
-// la frecuencia de lectura la decide la caché de landing-source.ts.
 export function createCmsReader({
   baseUrl,
   fetchImpl = fetch,
@@ -21,8 +18,6 @@ export function createCmsReader({
 }: CmsReaderOptions): CmsReader {
   const origin = baseUrl.replace(/\/+$/, '')
 
-  // Una sola petición para los dos tipos de lectura: cambia solo qué campo se espera en el
-  // cuerpo (`data` para un singleton, `items` para una colección).
   async function read(cmsKey: string, reportedKey: string) {
     let response: Response
     try {
@@ -48,7 +43,6 @@ export function createCmsReader({
 
   return {
     async readSingleton(key) {
-      // Solo los tipos de la landing tienen una clave distinta en el CMS (`closing-cta`).
       const cmsKey = key in CMS_CONTENT_KEYS ? CMS_CONTENT_KEYS[key as LandingContentKey] : key
       const body = await read(cmsKey, key)
       if (!body.ok) return body

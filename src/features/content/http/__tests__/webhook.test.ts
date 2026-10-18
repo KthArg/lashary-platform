@@ -2,7 +2,6 @@ import { createHmac } from 'node:crypto'
 import { describe, it, expect } from 'vitest'
 import { evaluateCmsWebhook, WEBHOOK_WINDOW_MS, type WebhookInput } from '../webhook'
 
-// Valor de prueba, no una credencial: se arma repitiendo para superar el mínimo de 32 caracteres.
 const SECRET = 'prueba-'.repeat(6)
 const NOW = 1_800_000_000_000
 
@@ -47,7 +46,6 @@ describe('evaluateCmsWebhook — aviso al publicar (docs/contracts/cms-api.md §
   it('acepta los tags de El estudio y Por qué acá', () => {
     const rawBody = JSON.stringify({ tags: ['content:estudio', 'content:credenciales', 'content:razones', 'content:about'] })
     const input = aviso({ rawBody, signature: sign(SECRET, String(NOW), rawBody) })
-    // `about` es el de ejemplo de uno-cms: la plataforma no lo lee, así que no lo invalida.
     expect(evaluateCmsWebhook(input)).toEqual({
       status: 200,
       tags: ['content:estudio', 'content:credenciales', 'content:razones'],
