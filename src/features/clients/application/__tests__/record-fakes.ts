@@ -1,9 +1,12 @@
 import { ok, err } from '@/shared/result'
-import { fixedDate } from '@/shared/testing/fixed-clock'
+import { fixedClock, fixedDate } from '@/shared/testing/fixed-clock'
 import { validContent } from '../../domain/record/__tests__/record-fixtures'
+import type { RecordCommandDeps } from '../record/record-commands'
 import type { RecordActor, RecordAuditEvent, RecordRepository, RecordVersion } from '../record/record-ports'
 
 export const ACTOR: RecordActor = { clientId: 'client-1', actorId: 'admin-1' }
+
+export const SAVED_AT = '2026-10-17T16:00:00Z'
 
 export const initialVersion = (): RecordVersion => ({
   id: 'version-1',
@@ -40,4 +43,27 @@ export function fakeAuditLog(succeeds = true) {
     return succeeds
   }
   return { auditLog, events }
+}
+
+export function commandDeps(initial: RecordVersion[] = [], auditSucceeds = true) {
+  const { repo, versions } = fakeRecordRepository(initial)
+  const { auditLog, events } = fakeAuditLog(auditSucceeds)
+  let nextId = 0
+  const deps: RecordCommandDeps = {
+    repo,
+    auditLog,
+    techniques: {
+      async findActiveTechnique(techniqueId) {
+        return techniqueId === 'technique-volume' ? { id: techniqueId, name: 'Volumen' } : null
+      },
+    },
+    categories: {
+      async findCategory(categoryId) {
+        return categoryId === 'category-condition' ? { id: categoryId, name: 'Condición relevante' } : null
+      },
+    },
+    newId: () => `generated-${++nextId}`,
+    clock: fixedClock(SAVED_AT),
+  }
+  return { deps, versions, events }
 }

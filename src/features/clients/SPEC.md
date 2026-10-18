@@ -13,7 +13,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-04
     estado: en_progreso
-    falta: "piezas 1/10 a 5/10: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros y la lectura auditada del expediente. Faltan los casos de uso de escritura (6/10), repositorio, adaptadores de audit y catalog y actions (7/10), la pestana Expediente (8/10), los formularios y las categorias nuevas (9/10) y las imagenes con URL firmada (10/10)"
+    falta: "piezas 1/10 a 6/10: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros y los casos de uso de lectura y escritura con bitacora. Faltan repositorio, adaptadores de audit y catalog y actions (7/10), la pestana Expediente (8/10), los formularios y las categorias nuevas (9/10) y las imagenes con URL firmada (10/10)"
   - id: US-CLI-05
     estado: terminada
     evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
@@ -356,3 +356,20 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
 - **2026-10-17 — El historial se lee con tope (`RECORD_HISTORY_LIMIT` = 50, PERF-002).** Si un
   expediente pasa de 50 versiones, las más viejas no se muestran todavía; paginar el historial se
   agrega cuando haga falta.
+- **2026-10-17 — Escribir guarda y después audita (pieza 6/10).** `record-commands.ts` crea el registro
+  inicial, agrega y quita antecedentes y edita el estudio. Cada cambio guarda una versión encadenada
+  a la vigente, con autora y fecha del reloj inyectado (DOM-004), y registra
+  `clients.record.updated`. Si la bitácora falla después de guardar, se lanza un error en vez de
+  callarlo, igual que `payments.exemptClient`.
+- **2026-10-17 — Una técnica nueva tiene que estar activa en `catalog`; la vigente se conserva aunque
+  se haya desactivado.** Editar solo el texto de un estudio cuya técnica se desactivó después no
+  falla: si el id no cambió, se reusa la copia guardada sin consultar `catalog`.
+- **2026-10-17 — Un choque de versiones llega como `version-conflict`.** Si dos cambios parten de la
+  misma versión, el segundo choca con `UNIQUE (previous_version_id)` y no se guarda; la pantalla
+  pedirá recargar. El repositorio traduce el error de la base en la 7/10.
+- **2026-10-18 — El contenido del expediente se llama `RecordContent` desde la pieza 3, por decisión
+  de José Loría.** Se llamó `RecordSnapshot` hasta este día; "snapshot" había que explicarlo y
+  "contenido" se lee solo: el contenido es lo escrito en el expediente, y una versión es ese
+  contenido más quién, cuándo y por qué. Se renombró dentro de cada pieza (3/10 a 6/10, con rebase y
+  force-push de sus ramas) en vez de sumar una pieza de renombre, porque sus PRs aún no tenían
+  revisión humana. Solo cambiaron nombres; las pruebas pasan sin tocar ninguna aserción.
