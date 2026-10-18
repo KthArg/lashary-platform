@@ -1,3 +1,4 @@
+import { CLIENT_PORTAL_ROUTES } from '@/features/auth'
 import { BLOG_ROUTE, getContact } from '@/features/content'
 import { SiteFooter, SiteHeader, landingSections } from '@/features/landing'
 import { publicDetailRoutes } from '@/features/store/client'
@@ -15,7 +16,11 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       data-theme="lashary-site"
       className={`${siteDisplay.variable} ${siteSans.variable} min-h-screen bg-site-paper font-site-sans text-site-ink antialiased`}
     >
-      <SiteHeader sections={landingSections} productsHref={publicDetailRoutes.catalog} />
+      <SiteHeader
+        sections={landingSections}
+        productsHref={publicDetailRoutes.catalog}
+        cartHref={CLIENT_PORTAL_ROUTES.carrito}
+      />
       {children}
       <SiteFooter contact={contact} year={new Date().getFullYear()} blogHref={BLOG_ROUTE} />
     </div>

@@ -9,7 +9,7 @@ import { siteHeaderStyles as STYLES } from './SiteHeader.styles'
 import { SiteMenu } from '../SiteMenu'
 import type { SiteHeaderProps } from './SiteHeader.types'
 
-export function SiteHeader({ sections, productsHref }: SiteHeaderProps) {
+export function SiteHeader({ sections, productsHref, cartHref }: SiteHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const hasSections = sections.length > 0
@@ -49,6 +49,24 @@ export function SiteHeader({ sections, productsHref }: SiteHeaderProps) {
             <Link href={RESERVE_ROUTE} className={STYLES.reserve}>
               {landingMessages.header.reserve}
             </Link>
+            {cartHref && (
+              <Link
+                href={cartHref}
+                aria-label={landingMessages.header.cart}
+                className={hasSections ? STYLES.cartDesktop : STYLES.cart}
+              >
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                  className={STYLES.cartIcon}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              </Link>
+            )}
             {hasSections && (
               <button
                 ref={menuButtonRef}
@@ -67,7 +85,13 @@ export function SiteHeader({ sections, productsHref }: SiteHeaderProps) {
         </div>
       </header>
       {menuOpen && (
-        <SiteMenu sections={sections} anchorBase={anchorBase} productsHref={productsHref} onClose={closeMenu} />
+        <SiteMenu
+          sections={sections}
+          anchorBase={anchorBase}
+          productsHref={productsHref}
+          cartHref={cartHref}
+          onClose={closeMenu}
+        />
       )}
     </>
   )
