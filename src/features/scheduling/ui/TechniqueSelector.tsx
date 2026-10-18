@@ -1,6 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import { useTechniqueSelector } from './hooks/useTechniqueSelector'
+import { serviceOptionKey } from '../domain/service-option'
+import { calendarHref } from './client-calendar/utils/calendar-params'
 import { schedulingMessages } from './messages'
 import { TECHNIQUE_SELECTOR_FIELDS, FIRST_TIME_OVERRIDE_VALUES } from './constants'
 import { techniqueSelectorStyles as s } from './TechniqueSelector.styles'
@@ -78,6 +81,14 @@ export function TechniqueSelector({ techniques }: { techniques: SelectableTechni
           <p className={s.resultDuration}>
             {m.durationLabel}: {state.selection.totalDurationMin} {m.minutesShort}
           </p>
+          <Link
+            href={calendarHref({
+              serviceKey: serviceOptionKey(state.selection.techniqueId, state.selection.isFirstTime),
+            })}
+            className={s.calendarLink}
+          >
+            {m.seeSlots}
+          </Link>
         </div>
       )}
       {(state.status === 'invalid' || state.status === 'forbidden') && (

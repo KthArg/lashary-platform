@@ -1,5 +1,6 @@
 export { ClientTechniqueSelectionPage } from './ui/ClientTechniqueSelectionPage'
 export { AdminAvailabilityPage } from './ui/availability/components/AdminAvailabilityPage'
+export { ClientCalendarPage } from './ui/client-calendar/components/ClientCalendarPage'
 export { schedulingMessages } from './ui/messages'
 export { ApprovalQueue } from './ui/approval-queue/components/ApprovalQueue'
 export { listPendingAppointmentsAction } from './ui/approval-queue/actions/approval-queue-actions'
