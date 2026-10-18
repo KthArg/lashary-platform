@@ -36,12 +36,8 @@ export interface ClosedDateRepository {
 // Tope de bloqueos próximos que lista el panel (PERF-002).
 export const MAX_MANUAL_BLOCKS = 100
 
-// Lectura del calendario de la clienta (US-AGE-02). No toca las tablas: pasa por funciones de
-// la base que solo devuelven horas (20261018000000_scheduling_client_day_view.sql).
 export interface DayAvailabilityRepository {
-  // Horario abierto de esa fecha del estudio; vacío si el día está cerrado.
   listOpenHours(resourceId: string, date: string): Promise<OpenHours[]>
-  // Bloqueos y citas activas que se cruzan con [from, to).
   listBusyRanges(resourceId: string, date: string): Promise<BusyRange[]>
 }
 

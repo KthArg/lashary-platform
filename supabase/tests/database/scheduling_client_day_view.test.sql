@@ -12,7 +12,7 @@
 -- Correr con: npx supabase test db   (requiere `supabase start`)
 
 BEGIN;
-SELECT plan(16);
+SELECT plan(17);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -30,7 +30,9 @@ VALUES ('00000000-0000-4000-8000-0000000003f1', 'zz-test recurso calendario');
 -- Costa Rica (UTC-6) las 11:00 locales son las 17:00Z.
 --   · aprobada de 11:00 a 12:00 con limpieza hasta las 12:15, que cae en el almuerzo;
 --   · rechazada de 13:00 a 14:00: no ocupa;
---   · pendiente de 14:00 a 14:40 con limpieza hasta las 14:50: un final fuera de la grilla.
+--   · pendiente de 14:00 a 14:40 con limpieza hasta las 14:50: un final fuera de la grilla;
+--   · confirmada de 16:00 a 16:30: ocupa;
+--   · cancelada de 10:00 a 10:30 y completada de 10:30 a 11:00: no ocupan.
 INSERT INTO public.scheduling_appointments (resource_id, status, starts_at, ends_at, occupied_range)
 VALUES
   ('00000000-0000-4000-8000-0000000003f1', 'approved',
@@ -38,7 +40,13 @@ VALUES
   ('00000000-0000-4000-8000-0000000003f1', 'rejected',
    '2026-10-19 19:00Z', '2026-10-19 20:00Z', tstzrange('2026-10-19 19:00Z', '2026-10-19 20:00Z')),
   ('00000000-0000-4000-8000-0000000003f1', 'pending_approval',
-   '2026-10-19 20:00Z', '2026-10-19 20:40Z', tstzrange('2026-10-19 20:00Z', '2026-10-19 20:50Z'));
+   '2026-10-19 20:00Z', '2026-10-19 20:40Z', tstzrange('2026-10-19 20:00Z', '2026-10-19 20:50Z')),
+  ('00000000-0000-4000-8000-0000000003f1', 'confirmed',
+   '2026-10-19 22:00Z', '2026-10-19 22:30Z', tstzrange('2026-10-19 22:00Z', '2026-10-19 22:30Z')),
+  ('00000000-0000-4000-8000-0000000003f1', 'cancelled',
+   '2026-10-19 16:00Z', '2026-10-19 16:30Z', tstzrange('2026-10-19 16:00Z', '2026-10-19 16:30Z')),
+  ('00000000-0000-4000-8000-0000000003f1', 'completed',
+   '2026-10-19 16:30Z', '2026-10-19 17:00Z', tstzrange('2026-10-19 16:30Z', '2026-10-19 17:00Z'));
 
 -- ── Como admin ──────────────────────────────────────────────────────────────
 SET LOCAL ROLE authenticated;
@@ -76,10 +84,12 @@ SELECT results_eq(
       FROM public.scheduling_busy_ranges('00000000-0000-4000-8000-0000000003f1', '2026-10-19')$$,
   $$VALUES ('2026-10-19 15:00Z'::timestamptz, '2026-10-19 16:00Z'::timestamptz),
            ('2026-10-19 17:00Z'::timestamptz, '2026-10-19 18:00Z'::timestamptz),
-           ('2026-10-19 20:00Z'::timestamptz, '2026-10-19 21:30Z'::timestamptz)$$,
+           ('2026-10-19 20:00Z'::timestamptz, '2026-10-19 21:30Z'::timestamptz),
+           ('2026-10-19 22:00Z'::timestamptz, '2026-10-19 22:30Z'::timestamptz)$$,
   'clienta: lo ocupado no deja leer la duración de una cita: la limpieza que cae en el almuerzo '
   'se recorta, el final de 14:50 sube a 15:00 y la cita pendiente y el bloqueo pegado salen como '
-  'un solo rango; la rechazada no ocupa');
+  'un solo rango; la confirmada ocupa; la rechazada, la cancelada y la completada no ocupan (si '
+  'ocuparan, de 9:00 a 12:00 saldría un solo rango)');
 
 SELECT is(
   (SELECT array_agg(k ORDER BY k)
@@ -104,6 +114,27 @@ SELECT is(
     + (SELECT count(*)::int FROM public.scheduling_manual_blocks)
     + (SELECT count(*)::int FROM public.scheduling_appointments),
   0, 'clienta: las tablas siguen cerradas (SEC-001)');
+
+-- ── Bloques que se tocan: la grilla empieza en el primero, como en computeDaySlots ──
+-- Miércoles 2026-10-21 de 9:00 a 12:15 y de 12:15 a 18:00, con una cita de 12:00 a 12:40. Si la
+-- función no uniera los bloques, el final redondearía desde las 12:15 (12:45, 18:45Z) y no desde
+-- las 9:00 (13:00, 19:00Z), y no coincidiría con los espacios que ofrece el dominio.
+SELECT set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-0000-0000-0000000003a1","role":"authenticated"}', true);
+INSERT INTO public.scheduling_weekly_availability (resource_id, weekday, start_min, end_min)
+VALUES ('00000000-0000-4000-8000-0000000003f1', 3, 540, 735), ('00000000-0000-4000-8000-0000000003f1', 3, 735, 1080);
+RESET ROLE;
+INSERT INTO public.scheduling_appointments (resource_id, status, starts_at, ends_at, occupied_range)
+VALUES ('00000000-0000-4000-8000-0000000003f1', 'approved', '2026-10-21 18:00Z', '2026-10-21 18:40Z', tstzrange('2026-10-21 18:00Z', '2026-10-21 18:40Z'));
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-0000-0000-0000000003c1","role":"authenticated"}', true);
+
+SELECT results_eq(
+  $$SELECT starts_at, ends_at
+      FROM public.scheduling_busy_ranges('00000000-0000-4000-8000-0000000003f1', '2026-10-21')$$,
+  $$VALUES ('2026-10-21 18:00Z'::timestamptz, '2026-10-21 19:00Z'::timestamptz)$$,
+  'clienta: con dos bloques que se tocan, el final redondea desde el inicio del primero');
 
 -- ── Cada cambio de la administradora se ve en la siguiente lectura (criterio 4) ──
 -- Sobre el lunes 2026-10-26, que todavía no tiene nada ocupado.

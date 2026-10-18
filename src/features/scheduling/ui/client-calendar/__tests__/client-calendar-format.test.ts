@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { clientCalendarMessages } from '../constants/client-calendar-strings'
-import { toClientCalendarView } from '../utils/client-calendar-format'
+import { toCalendarView } from '../utils/client-calendar-format'
 import type { ClientCalendarData } from '../types/client-calendar.types'
 
 const m = clientCalendarMessages
@@ -8,7 +8,7 @@ const firstTime = { key: 't1', techniqueId: 't1', name: 'Volumen ruso', isFirstT
 const retouch = { ...firstTime, key: 't1.retoque', isFirstTime: false, durationMin: 105 }
 const base = { options: [firstTime, retouch], date: '2026-10-21', today: '2026-10-19' }
 
-describe('toClientCalendarView — US-AGE-02', () => {
+describe('toCalendarView — US-AGE-02', () => {
   it('formatea en el servidor los espacios, el día y los enlaces a los días vecinos', () => {
     const data: ClientCalendarData = {
       ...base,
@@ -19,7 +19,7 @@ describe('toClientCalendarView — US-AGE-02', () => {
         { startMin: 570, endMin: 675, status: 'busy' },
       ],
     }
-    expect(toClientCalendarView(data)).toEqual({
+    expect(toCalendarView(data)).toEqual({
       status: 'ready',
       picker: {
         date: '2026-10-21',
@@ -42,16 +42,16 @@ describe('toClientCalendarView — US-AGE-02', () => {
   })
 
   it('hoy no ofrece día anterior', () => {
-    const view = toClientCalendarView({ ...base, date: '2026-10-19', status: 'invalid', selected: firstTime })
+    const view = toCalendarView({ ...base, date: '2026-10-19', status: 'invalid', selected: firstTime })
     expect(view.status === 'invalid' && view.day.previousHref).toBeNull()
   })
 
   it('sin servicio elegido no hay día ni espacios; forbidden y noServices pasan tal cual', () => {
-    expect(toClientCalendarView({ ...base, status: 'chooseService' })).toEqual({
+    expect(toCalendarView({ ...base, status: 'chooseService' })).toEqual({
       status: 'chooseService',
       picker: { date: '2026-10-21', selectedKey: undefined, options: expect.any(Array) },
     })
-    expect(toClientCalendarView({ status: 'forbidden' })).toEqual({ status: 'forbidden' })
-    expect(toClientCalendarView({ status: 'noServices' })).toEqual({ status: 'noServices' })
+    expect(toCalendarView({ status: 'forbidden' })).toEqual({ status: 'forbidden' })
+    expect(toCalendarView({ status: 'noServices' })).toEqual({ status: 'noServices' })
   })
 })

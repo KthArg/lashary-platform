@@ -6,7 +6,7 @@ import { formatCalendarDate, minutesToTime } from '../../availability/utils/avai
 import { calendarHref } from './calendar-params'
 import type {
   ClientCalendarData,
-  ClientCalendarView,
+  CalendarView,
   DayView,
   ServicePickerView,
   SlotView,
@@ -36,7 +36,7 @@ const toDay = (date: string, today: string, serviceKey: string): DayView => ({
   nextHref: calendarHref({ serviceKey, date: addCalendarDays(date, 1) }),
 })
 
-export function toClientCalendarView(data: ClientCalendarData): ClientCalendarView {
+export function toCalendarView(data: ClientCalendarData): CalendarView {
   switch (data.status) {
     case 'forbidden':
     case 'noServices':

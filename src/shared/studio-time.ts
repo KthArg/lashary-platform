@@ -19,8 +19,6 @@ export function isCalendarDate(value: string): boolean {
 
 const MS_PER_DAY = 86_400_000
 
-// Fecha de calendario AAAA-MM-DD corrida `days` días (negativo para atrás). Aritmética de
-// calendario, sin zona: el resultado es siempre una fecha real.
 export function addCalendarDays(date: string, days: number): string {
   const [year, month, day] = date.split('-').map(Number)
   return new Date(Date.UTC(year, month - 1, day) + days * MS_PER_DAY).toISOString().slice(0, 10)

@@ -4,7 +4,7 @@ import type { ComponentProps } from 'react'
 import { clientCalendarMessages } from '../constants/client-calendar-strings'
 import { ClientCalendarView } from '../components/ClientCalendarView'
 import { ClientCalendarLoading } from '../components/ClientCalendarLoading'
-import { toClientCalendarView } from '../utils/client-calendar-format'
+import { toCalendarView } from '../utils/client-calendar-format'
 import type { ClientCalendarData } from '../types/client-calendar.types'
 
 vi.mock('next/form', () => ({ default: (props: ComponentProps<'form'>) => <form {...props} /> }))
@@ -25,7 +25,7 @@ const ready: ClientCalendarData = {
   ],
 }
 
-const renderData = (data: ClientCalendarData) => render(<ClientCalendarView view={toClientCalendarView(data)} />)
+const renderData = (data: ClientCalendarData) => render(<ClientCalendarView view={toCalendarView(data)} />)
 
 describe('ClientCalendarView — US-AGE-02', () => {
   it('diferencia libres y ocupados con texto, y lo ocupado no se puede seleccionar (criterios 1 y 3)', () => {

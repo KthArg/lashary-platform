@@ -1,5 +1,5 @@
-import type { ClientCalendarView } from '../../types/client-calendar.types'
+import type { CalendarView } from '../../types/client-calendar.types'
 
 export interface ClientCalendarViewProps {
-  view: ClientCalendarView
+  view: CalendarView
 }

@@ -37,7 +37,7 @@ export type DayView = {
 
 export type SlotView = { startMin: number; range: string; busy: boolean }
 
-export type ClientCalendarView =
+export type CalendarView =
   | { status: 'forbidden' }
   | { status: 'noServices' }
   | { status: 'chooseService'; picker: ServicePickerView }

@@ -42,8 +42,6 @@ export interface ManualBlockOverlap {
   readonly message: string
 }
 
-// Pedido de espacios de un día que no se puede calcular: fecha inexistente o duración inválida
-// (US-AGE-02).
 export interface DaySlotsInvalid {
   readonly code: 'SCHEDULING_DAY_SLOTS_INVALID'
   readonly problems: readonly string[]

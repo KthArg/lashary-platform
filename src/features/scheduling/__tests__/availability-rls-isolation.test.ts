@@ -27,8 +27,6 @@ if (!reachable) {
   console.warn('[scheduling/rls] Supabase local no disponible — suite omitida.')
 }
 
-// Sin sesión persistida: happy-dom comparte localStorage entre clientes, y la sesión que deja
-// signUp la tomaría también el cliente anónimo, que dejaría de probar lo que dice probar.
 const NO_SESSION = { auth: { persistSession: false } }
 
 async function signUpClienta(): Promise<SupabaseClient> {
@@ -106,10 +104,6 @@ describe.skipIf(!reachable)('SEC-002 — aislamiento RLS de la disponibilidad de
     })
   }
 
-  // US-AGE-02: el calendario de la clienta lee por dos funciones SECURITY DEFINER que saltan la
-  // RLS a propósito. Con tokens reales: anon no las ejecuta y la clienta sí. Que cada fila traiga
-  // solo inicio y fin se prueba con datos en scheduling_client_day_view.test.sql: aquí no hay
-  // staff que siembre (SEC-003).
   for (const fn of ['scheduling_open_hours', 'scheduling_busy_ranges']) {
     it(`${fn}: anón no la ejecuta y la clienta sí`, async () => {
       const day = { p_resource_id: RESOURCE_ID, p_day: '2030-01-07' }
