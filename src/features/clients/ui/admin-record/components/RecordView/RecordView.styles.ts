@@ -1,0 +1,16 @@
+export const recordViewStyles = {
+  record: 'space-y-8',
+  header: 'border-b border-brand-border/60 pb-4',
+  title: 'font-serif text-lg text-brand-dark font-normal',
+  subtitle: 'mt-1 text-sm text-brand-muted',
+  section: 'space-y-3',
+  sectionTitle: 'text-xs uppercase tracking-widest text-brand-muted',
+  studyText: 'whitespace-pre-line text-sm text-brand-dark',
+  technique: 'flex flex-wrap gap-2 text-sm text-brand-dark',
+  label: 'text-sm text-brand-muted',
+  muted: 'text-sm italic text-brand-muted/70',
+  list: 'divide-y divide-brand-border/60',
+  precaution: 'flex flex-wrap gap-x-4 gap-y-1 py-2 text-sm text-brand-dark',
+  historyItem: 'flex flex-wrap gap-x-4 gap-y-1 py-2 text-sm text-brand-dark',
+  empty: 'py-8 text-sm text-brand-muted',
+}

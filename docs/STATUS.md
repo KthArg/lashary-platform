@@ -42,7 +42,7 @@
 - US-CLI-01 — en_progreso — falta: las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
-- US-CLI-04 — en_progreso — falta: piezas 1/11 a 8/11: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros, los casos de uso de lectura y escritura con bitacora, el repositorio con los adaptadores de audit y catalog y las server actions. Faltan la pestana Expediente (9/11), los formularios y las categorias nuevas (10/11) y las imagenes con URL firmada (11/11)
+- US-CLI-04 — en_progreso — falta: piezas 1/12 a 9/12: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros, los casos de uso con bitacora, el repositorio con los adaptadores de audit y catalog, las server actions y la vista del expediente en /admin/clients/<id>/expediente. Faltan la ficha con nombre, pestanas y enlace desde el listado (10/12), los formularios y las categorias nuevas (11/12) y las imagenes con URL firmada (12/12)
 - US-CLI-05 — terminada — PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx
 
 ### content (actualizado: 2026-10-14)
