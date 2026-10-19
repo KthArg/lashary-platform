@@ -3,6 +3,7 @@ import { describeVersion, formatRecordDate } from '../../record-history'
 import { StudyEditor } from '../StudyEditor'
 import { PrecautionsEditor } from '../PrecautionsEditor'
 import { ImagesEditor } from '../ImagesEditor'
+import { RecordIcon } from '../RecordIcon'
 import { recordViewStyles as STYLES } from './RecordView.styles'
 import type { RecordViewProps } from './RecordView.types'
 
@@ -20,22 +21,21 @@ export function RecordView({ clientId, current, history, techniques, categories,
       </header>
 
       <section className={STYLES.section}>
-        <h3 className={STYLES.sectionTitle}>{RECORD_LABELS.initialStudyHeading}</h3>
+        <h3 className={STYLES.sectionTitle}><RecordIcon name="study" className={STYLES.icon} />{RECORD_LABELS.initialStudyHeading}</h3>
         <StudyEditor clientId={clientId} study={{ studyText, recommendedTechnique }} techniques={techniques} />
       </section>
 
       <section className={STYLES.section}>
-        <h3 className={STYLES.sectionTitle}>{RECORD_LABELS.precautionsHeading}</h3>
         <PrecautionsEditor clientId={clientId} precautions={precautions} categories={categories} />
       </section>
 
       <section className={STYLES.section}>
-        <h3 className={STYLES.sectionTitle}>{RECORD_LABELS.imagesHeading}</h3>
+        <h3 className={STYLES.sectionTitle}><RecordIcon name="image" className={STYLES.icon} />{RECORD_LABELS.imagesHeading}</h3>
         <ImagesEditor clientId={clientId} images={images} imageUrls={imageUrls} />
       </section>
 
       <section className={STYLES.section}>
-        <h3 className={STYLES.sectionTitle}>{RECORD_LABELS.historyHeading}</h3>
+        <h3 className={STYLES.sectionTitle}><RecordIcon name="history" className={STYLES.icon} />{RECORD_LABELS.historyHeading}</h3>
         <ol className={STYLES.list}>
           {history.map((version, index) => (
             <li key={version.id} className={STYLES.historyItem}>

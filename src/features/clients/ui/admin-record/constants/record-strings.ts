@@ -20,8 +20,9 @@ export const RECORD_ERROR_MESSAGES = {
 } as const
 
 export const PRECAUTION_FORM_LABELS = {
-  addSymbol: '+',
-  addButton: 'Agregar antecedente',
+  addButton: 'Agregar',
+  emptyHint: 'Pulsa «Agregar» para crear uno.',
+  recordsCount: (count: number) => (count === 1 ? '1 registro' : `${count} registros`),
   category: 'Categoría',
   chooseCategory: 'Elige una categoría',
   description: 'Descripción',
@@ -34,6 +35,12 @@ export const PRECAUTION_FORM_LABELS = {
   confirmMessage: (category: string, description: string) =>
     `${category}: ${description}. Sale del expediente vigente, pero sigue en el historial.`,
 } as const
+
+export const PRECAUTION_CATEGORY_TITLES: Readonly<Record<string, string>> = {
+  Alergia: 'Alergias',
+  Sensibilidad: 'Sensibilidades',
+  'Condición relevante': 'Condiciones relevantes',
+}
 
 export const RECORD_PROBLEM_MESSAGES: Record<RecordProblem, string> = {
   'study-text-empty': 'Escribe el estudio de la clienta.',

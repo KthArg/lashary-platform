@@ -82,3 +82,12 @@ describe('PrecautionsEditor — quitar antecedentes (criterio 4)', () => {
     expect(mocks.remove).not.toHaveBeenCalled()
   })
 })
+
+describe('PrecautionsEditor — cómo se presenta la sección', () => {
+  it('cuenta los registros de cada categoría y orienta cuando no hay ninguno', () => {
+    render(<PrecautionsEditor clientId={CLIENT_ID} precautions={[]} categories={[CONDITION]} />)
+    expect(screen.getByRole('heading', { level: 4, name: 'Condiciones relevantes' })).toBeTruthy()
+    expect(screen.getByText(PRECAUTION_FORM_LABELS.recordsCount(0))).toBeTruthy()
+    expect(screen.getByText(PRECAUTION_FORM_LABELS.emptyHint)).toBeTruthy()
+  })
+})
