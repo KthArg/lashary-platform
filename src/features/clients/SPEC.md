@@ -13,7 +13,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-04
     estado: en_progreso
-    falta: "piezas 1/11 a 7/11: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros, los casos de uso de lectura y escritura con bitacora, y el repositorio con los adaptadores de audit y catalog. Faltan las server actions (8/11), la pestana Expediente (9/11), los formularios y las categorias nuevas (10/11) y las imagenes con URL firmada (11/11)"
+    falta: "piezas 1/11 a 8/11: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros, los casos de uso de lectura y escritura con bitacora, el repositorio con los adaptadores de audit y catalog y las server actions. Faltan la pestana Expediente (9/11), los formularios y las categorias nuevas (10/11) y las imagenes con URL firmada (11/11)"
   - id: US-CLI-05
     estado: terminada
     evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
@@ -387,3 +387,11 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
   como `scheduling/application/catalog-adapter.ts`, y solo usan sus APIs públicas (ARCH-003). El de
   la bitácora convierte en `false` tanto un evento rechazado como un error de red o de RLS: para el
   expediente las dos cosas significan "el acceso no quedó registrado" (fail-closed, SEC-006).
+- **2026-10-18 — Las server actions del expediente viven en `ui/admin-record/actions/` (pieza 8/11).**
+  Ver, crear, agregar y quitar antecedentes y editar el estudio. Cada una exige primero
+  `requireAdminSession()` y firma con el id de esa sesión, nunca con uno que llegue del navegador
+  (SEC-005). Los ids de clienta, técnica y categoría se revisan con forma de UUID antes de tocar la
+  base: uno mal formado se responde como "no encontrado" sin consultar nada. Devuelven datos planos
+  (`RecordVersionView`, fecha en ISO, sin la marca del contenido) porque viajan al navegador, y cada
+  código de error o problema de validación se traduce a su texto en `record-strings.ts` (DOM-009).
+  Tras guardar se revalida `/admin/clients/<id>/expediente`, la ruta que crea la 9/11.
