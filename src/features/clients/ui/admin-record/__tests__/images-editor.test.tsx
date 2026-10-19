@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import { ImagesEditor } from '../components/ImagesEditor'
-import { IMAGES_LABELS, RECORD_LABELS } from '../constants/record-strings'
+import { IMAGES_LABELS, RECORD_IMAGE_PROBLEM_MESSAGES, RECORD_LABELS } from '../constants/record-strings'
+import { RECORD_IMAGE_MAX_BYTES } from '../../../domain/record/record-image'
+import { RECORD_LIMITS } from '../../../domain/record/record-limits'
 
 const CLIENT_ID = '11111111-1111-4111-8111-111111111111'
 const PATHS = [`${CLIENT_ID}/a.png`, `${CLIENT_ID}/b.jpg`]
@@ -82,5 +84,29 @@ describe('ImageViewer — ampliar una imagen', () => {
     openSecond()
     fireEvent.click(screen.getByRole('button', { name: IMAGES_LABELS.close }))
     expect(screen.queryByRole('dialog')).toBeNull()
+  })
+})
+
+describe('ImagesEditor — lo que se frena antes de enviar (A1, M4, B6)', () => {
+  it('una foto de más de 1 MB se rechaza en el navegador, sin enviar nada', () => {
+    render(<ImagesEditor clientId={CLIENT_ID} images={[]} imageUrls={{}} />)
+    const heavy = new File([new Uint8Array(RECORD_IMAGE_MAX_BYTES + 1)], 'grande.png', { type: 'image/png' })
+    fireEvent.change(screen.getByLabelText(new RegExp(IMAGES_LABELS.addPhoto)), { target: { files: [heavy] } })
+    expect(screen.getByRole('alert').textContent).toBe(RECORD_IMAGE_PROBLEM_MESSAGES['image-too-large'])
+    expect(mocks.upload).not.toHaveBeenCalled()
+  })
+
+  it('con el máximo de imágenes ya no ofrece agregar otra', () => {
+    const full = Array.from({ length: RECORD_LIMITS.maxImages }, (_, index) => `${CLIENT_ID}/foto-${index}.png`)
+    render(<ImagesEditor clientId={CLIENT_ID} images={full} imageUrls={{}} />)
+    expect(screen.queryByLabelText(new RegExp(IMAGES_LABELS.addPhoto))).toBeNull()
+    expect(screen.getByText(IMAGES_LABELS.limitReached)).toBeTruthy()
+  })
+
+  it('si la URL firmada ya venció, pide recargar en vez de mostrar una imagen rota', () => {
+    render(<ImagesEditor clientId={CLIENT_ID} images={PATHS} imageUrls={SIGNED} />)
+    fireEvent.error(screen.getAllByRole('img')[0])
+    expect(screen.getByText(IMAGES_LABELS.expired)).toBeTruthy()
+    expect(screen.getAllByRole('img')).toHaveLength(1)
   })
 })

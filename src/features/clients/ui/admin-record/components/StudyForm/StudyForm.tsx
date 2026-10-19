@@ -25,6 +25,7 @@ export function StudyForm({ clientId, mode, initial, techniques, onClose }: Stud
         : await editRecordStudyAction(clientId, input)
       if (!result.ok) {
         setFailure({ error: result.error, problems: result.problems })
+        if (result.saved) router.refresh()
         return
       }
       onClose()

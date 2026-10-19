@@ -145,3 +145,29 @@ describe('acciones de escritura del expediente (criterios 1, 2 y 4)', () => {
     expect([first, second]).toContainEqual({ ok: false, error: RECORD_ERROR_MESSAGES.versionConflict, problems: [] })
   })
 })
+
+describe('acciones de escritura ante fallos de infraestructura (M1)', () => {
+  it('si la base falla, responde con un mensaje en vez de lanzar el error a la pantalla', async () => {
+    store = existingRecord()
+    store.repo.listVersions = async () => { throw new Error('caída') }
+    expect(await removeRecordPrecautionAction(CLIENT_ID, ALLERGY.id)).toEqual({
+      ok: false, error: RECORD_ERROR_MESSAGES.saveFailed, problems: [],
+    })
+  })
+
+  it('si se guardó pero falló la bitácora, lo dice y refresca porque el cambio sí quedó', async () => {
+    store = existingRecord()
+    auditSucceeds = false
+    const result = await removeRecordPrecautionAction(CLIENT_ID, ALLERGY.id)
+    expect(result).toEqual({ ok: false, error: RECORD_ERROR_MESSAGES.savedWithoutAudit, problems: [], saved: true })
+    expect(store.versions).toHaveLength(2)
+    expect(mockRevalidate).toHaveBeenCalledWith(`/admin/clients/${CLIENT_ID}/expediente`)
+  })
+
+  it('un id de clienta en mayúsculas se guarda en minúsculas, como lo guarda la base', async () => {
+    store = existingRecord()
+    const result = await removeRecordPrecautionAction(CLIENT_ID.toUpperCase(), ALLERGY.id)
+    expect(result.ok).toBe(true)
+    expect(store.versions.at(-1)?.clientId).toBe(CLIENT_ID)
+  })
+})

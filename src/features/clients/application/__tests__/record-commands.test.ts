@@ -102,8 +102,10 @@ describe('cambios sobre el expediente — cada uno es una versión nueva (criter
     expect(versions).toHaveLength(2)
   })
 
-  it('si la bitácora falla después de guardar, lo avisa en vez de callarlo', async () => {
-    const { deps } = commandDeps([initialVersion()], false)
-    await expect(removeRecordPrecaution(deps)(ACTOR, ALLERGY.id)).rejects.toThrow('bitácora')
+  it('si la bitácora falla después de guardar, lo dice con su propio código y la versión queda guardada', async () => {
+    const { deps, versions } = commandDeps([initialVersion()], false)
+    const result = await removeRecordPrecaution(deps)(ACTOR, ALLERGY.id)
+    expect(codeOf(result)).toBe('saved-without-audit')
+    expect(versions).toHaveLength(2)
   })
 })
