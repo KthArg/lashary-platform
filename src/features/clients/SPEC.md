@@ -13,7 +13,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-04
     estado: en_progreso
-    falta: "pieza 1/8: solo el esquema (clients_precaution_categories y clients_record_versions con su RLS y pgTAP). Faltan el bucket privado de imagenes (2/8), dominio, casos de uso con bitacora, repositorio y actions, la pestana Expediente, los formularios y las imagenes (3/8 a 8/8)"
+    falta: "piezas 1/9 a 3/9: esquema, bucket privado de imagenes y el contenido validado del expediente. Faltan los cambios del contenido (4/9), los casos de uso con bitacora (5/9), repositorio y actions (6/9), la pestana Expediente (7/9), los formularios (8/9) y las imagenes con URL firmada (9/9)"
   - id: US-CLI-05
     estado: terminada
     evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
@@ -313,3 +313,25 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
   tablas (SEC-006). La política de INSERT exige además `created_by = auth.uid()`: nadie firma una
   versión ni una categoría a nombre de otra persona. `client_id` es `ON DELETE RESTRICT`
   (ADR-0009): una clienta con expediente no se borra.
+- **2026-10-17 — El bucket `clients-record-images` (pieza 2/8, PR #370) es privado, de 1 MB y solo
+  JPEG, PNG y WebP.** Solo la administradora lee y sube, y solo dentro de la carpeta de una clienta
+  que existe (`<client_id>/archivo`); sin políticas de UPDATE ni DELETE. Se registra aquí y no en
+  #370 para que las dos ramas no editaran las mismas líneas del SPEC. Supabase ya impide borrar de
+  `storage.objects` por SQL (trigger `storage.protect_delete`); la falta de política de DELETE cierra
+  también el camino de la API.
+- **2026-10-17 — US-CLI-04 pasa de 8 a 9 piezas (INT-002), por decisión de José Loría.** El dominio
+  estimado en ~350 líneas salió en ~525 con sus pruebas, sobre el tope de 400. Se parte por un corte
+  natural: 3/9 es qué es un contenido válido (`buildRecordContent`) y 4/9 cómo cambia el contenido. Lo que
+  seguía se corre un número: casos de uso 5/9, repositorio y actions 6/9, vista 7/9, formularios
+  8/9, imágenes 9/9. #369 y #370 pasan a 1/9 y 2/9.
+- **2026-10-17 — El contenido del expediente vive en `domain/record/` (pieza 3/9).** `buildRecordContent`
+  es la única forma de crear un contenido válido: recorta espacios, aplica los mismos topes que los
+  `CHECK` de la base (`RECORD_LIMITS`) y lleva una marca `unique symbol` no exportada, para que un
+  objeto escrito a mano con la misma forma no pase por un contenido válido.
+- **2026-10-17 — Los problemas de validación son códigos (`'study-text-empty'`…), no textos.** El
+  dominio no sabe de pantallas: la UI traduce cada código con sus constantes (DOM-009). Por lo mismo,
+  el texto del historial ("Se agregó alergia: X") se arma en la UI a partir de `change_kind` y de la
+  comparación de dos contenidos, no en el dominio.
+- **2026-10-17 — Cada antecedente lleva su `id`, generado fuera del dominio.** *Quitar* dice qué
+  antecedente quita, no su posición en la lista. Un antecedente repetido (misma categoría y misma
+  descripción sin importar mayúsculas, o mismo id) se rechaza.
