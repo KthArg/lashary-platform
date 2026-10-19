@@ -17,14 +17,12 @@ import { field, link, paragraphsOf, text } from './cms-values'
 import { faqFallback } from './fallback-messages'
 import type { CmsReader } from './ports'
 
-// Lo que devolvió el CMS por cada tipo de contacto, sin validar.
 export type RawContactContent = {
   contact: unknown
   hours: unknown[]
   faqs: unknown[]
 }
 
-// Lee los tres tipos en paralelo. Si uno falla, falla la lectura entera.
 export async function readRawContact(
   reader: CmsReader,
 ): Promise<Result<RawContactContent, CmsUnavailable>> {
@@ -39,7 +37,6 @@ export async function readRawContact(
   return ok({ contact: contact.value, hours: hours.value, faqs: faqs.value })
 }
 
-// Solo https: un perfil social o un enlace de mapa nunca es una ruta interna ni `http:`.
 const httpsLink = (value: unknown): string | null => {
   const candidate = link(value)
   return candidate !== null && /^https:\/\//i.test(candidate) ? candidate : null
@@ -48,7 +45,6 @@ const httpsLink = (value: unknown): string | null => {
 const WHATSAPP_NUMBER = /^\d{8,15}$/
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-// El número solo con dígitos y código de país (docs/contracts/cms-api.md § `contacto`).
 function toWhatsapp(source: unknown): WhatsappLink | null {
   const number = text(field(source, 'whatsapp'), 15)
   if (number === null || !WHATSAPP_NUMBER.test(number)) return null
@@ -60,7 +56,6 @@ function toWhatsapp(source: unknown): WhatsappLink | null {
 function toContact(source: unknown): ContactInfo | null {
   const address = text(field(source, 'direccion'), 160)
   const whatsapp = toWhatsapp(source)
-  // Sin dirección ni WhatsApp el contacto no se publicó (docs/contracts/cms-api.md § `contacto`).
   if (address === null && whatsapp === null) return null
 
   const email = text(field(source, 'correo'), 120)
@@ -98,13 +93,9 @@ function toFaqs(items: unknown[]): Faq[] {
     const answer = text(field(item, 'respuesta'), 800)
     if (question !== null && answer !== null) faqs.push({ question, paragraphs: paragraphsOf(answer) })
   }
-  // Las preguntas no quedan vacías: sin ninguna válida, las del diseño.
   return faqs.length > 0 ? faqs : faqFallback
 }
 
-// Valida contra el contrato. Contacto y horario no tienen respaldo; las preguntas sí. Con `raw`
-// null (CMS no disponible o sin configurar): sin contacto, sin horario y las preguntas del
-// diseño. Nunca lanza.
 export function toContactContent(raw: RawContactContent | null): ContactContent {
   if (raw === null) return { contact: null, hours: [], faqs: faqFallback }
   return {

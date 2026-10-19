@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isCalendarDate, studioDateOf, studioLocalToUtc } from '../studio-time'
+import { addCalendarDays, isCalendarDate, studioDateOf, studioLocalToUtc } from '../studio-time'
 
 describe('studio-time', () => {
   it.each([
@@ -25,6 +25,13 @@ describe('studio-time', () => {
     expect(studioLocalToUtc('2026-10-20', 21 * 60 + 30).toISOString()).toBe(
       '2026-10-21T03:30:00.000Z',
     )
+  })
+
+  it('addCalendarDays cruza fin de mes, de año y años bisiestos', () => {
+    expect(addCalendarDays('2026-10-31', 1)).toBe('2026-11-01')
+    expect(addCalendarDays('2026-12-31', 1)).toBe('2027-01-01')
+    expect(addCalendarDays('2028-03-01', -1)).toBe('2028-02-29')
+    expect(addCalendarDays('2026-10-16', 0)).toBe('2026-10-16')
   })
 
   it('ida y vuelta: la fecha del estudio de un instante convertido es la misma', () => {

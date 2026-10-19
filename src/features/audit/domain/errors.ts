@@ -1,11 +1,22 @@
-import { DomainError } from '@/shared/domain-error'
+export const AUDIT_ERROR_CODES = {
+  invalidEvent: 'AUDIT_EVENT_INVALID',
+} as const
 
-export abstract class AuditError extends DomainError {}
+export interface AuditEventValidationError {
+  readonly code: typeof AUDIT_ERROR_CODES.invalidEvent
+  readonly message: string
+  readonly problems: string[]
+}
 
-export class AuditEventValidationError extends AuditError {
-  readonly code = 'AUDIT_EVENT_INVALID'
-
-  constructor(public readonly problems: string[]) {
-    super(`evento de auditoría inválido: ${problems.join('; ')}`)
+export function auditEventValidationError(problems: string[]): AuditEventValidationError {
+  return {
+    code: AUDIT_ERROR_CODES.invalidEvent,
+    message: `evento de auditoría inválido: ${problems.join('; ')}`,
+    problems,
   }
 }
+
+export const isAuditEventValidationError = (error: unknown): error is AuditEventValidationError =>
+  typeof error === 'object' &&
+  error !== null &&
+  (error as { code?: unknown }).code === AUDIT_ERROR_CODES.invalidEvent

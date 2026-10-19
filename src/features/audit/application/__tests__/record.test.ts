@@ -5,12 +5,14 @@ import type { AuditEvent } from '../../domain/audit-event'
 import type { AuditEventRepository } from '../ports'
 import { record } from '../record'
 
-class InMemoryAuditEventRepository implements AuditEventRepository {
-  readonly inserted: AuditEvent[] = []
-
-  async insert(event: AuditEvent): Promise<void> {
-    this.inserted.push(event)
+function createInMemoryAuditEventRepository() {
+  const inserted: AuditEvent[] = []
+  const repo: AuditEventRepository = {
+    async insert(event) {
+      inserted.push(event)
+    },
   }
+  return { repo, inserted }
 }
 
 function buildDeps(repo: AuditEventRepository) {
@@ -24,7 +26,7 @@ function buildDeps(repo: AuditEventRepository) {
 
 describe('record', () => {
   it('construye el evento, lo persiste y devuelve su vista', async () => {
-    const repo = new InMemoryAuditEventRepository()
+    const { repo, inserted } = createInMemoryAuditEventRepository()
     const result = await record(buildDeps(repo))({
       actorId: '00000000-0000-0000-0000-0000000000a1',
       action: 'payments.deposit_exemption.granted',
@@ -44,12 +46,12 @@ describe('record', () => {
       payload: { reason: 'caso especial' },
       createdAt: fixedDate('2026-09-23T10:00:00Z'),
     })
-    expect(repo.inserted).toHaveLength(1)
-    expect(repo.inserted[0].id).toBe('evt-1')
+    expect(inserted).toHaveLength(1)
+    expect(inserted[0].id).toBe('evt-1')
   })
 
   it('payload es opcional y por defecto queda vacío', async () => {
-    const repo = new InMemoryAuditEventRepository()
+    const { repo } = createInMemoryAuditEventRepository()
     const result = await record(buildDeps(repo))({
       actorId: '00000000-0000-0000-0000-0000000000a1',
       action: 'x',
@@ -62,7 +64,7 @@ describe('record', () => {
   })
 
   it('un evento inválido no se persiste', async () => {
-    const repo = new InMemoryAuditEventRepository()
+    const { repo, inserted } = createInMemoryAuditEventRepository()
     const result = await record(buildDeps(repo))({
       actorId: '00000000-0000-0000-0000-0000000000a1',
       action: '',
@@ -71,11 +73,11 @@ describe('record', () => {
     })
 
     expect(isErr(result)).toBe(true)
-    expect(repo.inserted).toHaveLength(0)
+    expect(inserted).toHaveLength(0)
   })
 
   it('cada llamada usa el generador de id inyectado', async () => {
-    const repo = new InMemoryAuditEventRepository()
+    const { repo } = createInMemoryAuditEventRepository()
     const deps = buildDeps(repo)
 
     const first = await record(deps)({

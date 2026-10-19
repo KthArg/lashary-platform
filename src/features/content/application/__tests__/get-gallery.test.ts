@@ -2,8 +2,6 @@ import { describe, it, expect } from 'vitest'
 import { GALLERY_MAX_PAIRS } from '../../domain/gallery'
 import { toGallery } from '../get-gallery'
 
-// Un par de la colección `galeria` tal como lo entrega uno-cms
-// (docs/contracts/cms-api.md § `galeria`), con la casilla marcada.
 const par = (overrides: Record<string, unknown> = {}) => ({
   titulo: 'Clásicas de Ana',
   familia: 'lash_classic',
@@ -28,7 +26,6 @@ describe('toGallery — los pares que la landing puede publicar', () => {
     const pairs = toGallery(
       [
         par({ consentimiento: false }),
-        // Ni ausente, ni un texto, ni un número cuentan como autorización.
         par({ consentimiento: undefined }),
         par({ consentimiento: 'true' }),
         par({ consentimiento: 1 }),
@@ -44,7 +41,6 @@ describe('toGallery — los pares que la landing puede publicar', () => {
     const pairs = toGallery(
       [
         par({ antes: { url: '', alt: '' } }),
-        // Sin `alt` la foto no llega a la pantalla (UI-004).
         par({ despues: { url: 'https://cdn.test/d.jpg' } }),
       ],
       'https://cms.test',

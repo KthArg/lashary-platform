@@ -2,8 +2,6 @@ import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup, fireEvent, within } from '@testing-library/react'
 import { SiteHeader, LOGIN_ROUTE, RESERVE_ROUTE, landingMessages } from '@/features/landing'
 
-// Fuera del router `usePathname` devuelve null, que la cabecera trata como la portada. Las
-// pruebas que necesitan otra página lo fijan aquí.
 const pathname = vi.hoisted(() => ({ current: null as string | null }))
 vi.mock('next/navigation', () => ({ usePathname: () => pathname.current }))
 
@@ -162,6 +160,44 @@ describe('SiteHeader — enlace a la página de productos', () => {
     const products = within(dialog).getByRole('link', { name: landingMessages.menu.products })
     expect(products.getAttribute('href')).toBe(productsHref)
     fireEvent.click(products)
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+})
+
+describe('SiteHeader — enlace al carrito', () => {
+  const cartHref = '/portal/carrito'
+
+  it('con la ruta del carrito, la cabecera enlaza a ella', () => {
+    render(<SiteHeader sections={sections} cartHref={cartHref} />)
+
+    const cart = screen.getByRole('link', { name: landingMessages.header.cart })
+    expect(cart.getAttribute('href')).toBe(cartHref)
+  })
+
+  it('en la cabecera el carrito es un ícono con nombre accesible, a la derecha de "Reservar cita"', () => {
+    render(<SiteHeader sections={sections} cartHref={cartHref} />)
+
+    const cart = screen.getByRole('link', { name: landingMessages.header.cart })
+    const reserve = screen.getByRole('link', { name: landingMessages.header.reserve })
+    expect(cart.textContent).toBe('')
+    expect(cart.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true')
+    expect(reserve.compareDocumentPosition(cart) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('sin la ruta del carrito, la cabecera no muestra el enlace', () => {
+    render(<SiteHeader sections={sections} />)
+
+    expect(screen.queryByRole('link', { name: landingMessages.header.cart })).toBeNull()
+  })
+
+  it('el menú del teléfono ofrece el carrito y se cierra al elegirlo', () => {
+    render(<SiteHeader sections={sections} cartHref={cartHref} />)
+    fireEvent.click(screen.getByRole('button', { name: landingMessages.header.openMenu }))
+
+    const dialog = screen.getByRole('dialog', { name: landingMessages.menu.dialogLabel })
+    const cart = within(dialog).getByRole('link', { name: landingMessages.menu.cart })
+    expect(cart.getAttribute('href')).toBe(cartHref)
+    fireEvent.click(cart)
     expect(screen.queryByRole('dialog')).toBeNull()
   })
 })

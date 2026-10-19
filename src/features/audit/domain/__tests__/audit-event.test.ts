@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { isOk, isErr } from '@/shared/result'
 import { fixedDate } from '@/shared/testing/fixed-clock'
-import { AuditEvent } from '../audit-event'
+import { buildAuditEvent } from '../audit-event'
 
 const validInput = {
   actorId: '00000000-0000-0000-0000-0000000000a1',
@@ -11,9 +11,9 @@ const validInput = {
   createdAt: fixedDate('2026-09-23T10:00:00Z'),
 }
 
-describe('AuditEvent.create', () => {
+describe('buildAuditEvent', () => {
   it('crea un evento válido y expone sus campos', () => {
-    const result = AuditEvent.create('evt-1', validInput)
+    const result = buildAuditEvent('evt-1', validInput)
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
 
@@ -26,14 +26,14 @@ describe('AuditEvent.create', () => {
   })
 
   it('el payload es opcional y por defecto queda vacío', () => {
-    const result = AuditEvent.create('evt-2', validInput)
+    const result = buildAuditEvent('evt-2', validInput)
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
     expect(result.value.payload).toEqual({})
   })
 
   it('conserva el payload cuando se provee', () => {
-    const result = AuditEvent.create('evt-3', {
+    const result = buildAuditEvent('evt-3', {
       ...validInput,
       payload: { reason: 'promoción de bienvenida' },
     })
@@ -43,7 +43,7 @@ describe('AuditEvent.create', () => {
   })
 
   it('recorta espacios en los campos de texto', () => {
-    const result = AuditEvent.create('evt-4', {
+    const result = buildAuditEvent('evt-4', {
       ...validInput,
       action: '  payments.deposit_exemption.granted  ',
     })
@@ -55,13 +55,13 @@ describe('AuditEvent.create', () => {
   it.each(['actorId', 'action', 'entityType', 'entityId'] as const)(
     'rechaza %s vacío',
     (field) => {
-      const result = AuditEvent.create('evt-x', { ...validInput, [field]: '   ' })
+      const result = buildAuditEvent('evt-x', { ...validInput, [field]: '   ' })
       expect(isErr(result)).toBe(true)
     },
   )
 
   it('acumula todos los problemas encontrados', () => {
-    const result = AuditEvent.create('evt-9', {
+    const result = buildAuditEvent('evt-9', {
       ...validInput,
       action: '',
       entityType: '',

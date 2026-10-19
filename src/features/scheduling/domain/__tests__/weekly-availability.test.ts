@@ -80,6 +80,6 @@ describe('sortWeeklyBlocks', () => {
       block({ id: 'b', weekday: 1, startMin: 800, endMin: 900 }),
       block({ id: 'a', weekday: 1, startMin: 60, endMin: 120 }),
     ])
-    expect(sorted.map((b) => b.id)).toEqual(['a', 'b', 'c'])
+    expect(sorted.map((block) => block.id)).toEqual(['a', 'b', 'c'])
   })
 })

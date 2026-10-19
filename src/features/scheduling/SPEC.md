@@ -2,17 +2,17 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-10-15"
+actualizado: "2026-10-18"
 historias:
   - id: US-AGE-01
     estado: terminada
     evidencia: "PR de cierre us/US-AGE-01 a main, con las piezas 1 a 13 apiladas hacia la rama de la historia. Criterios 1, 2 y 3 demostrados en /admin/citas/disponibilidad; los criterios 4 y 5 se trasladaron a US-AGE-02 y US-AGE-05 con aprobación del PO el 2026-10-14 (docs/process/DEPENDENCIES.md); tests: weekly-availability.test.ts (domain y application), closed-dates.test.ts (domain y application), manual-blocks.test.ts (domain y application), los tres *-repository.test.ts, studio-time.test.ts, availability-schema.test.ts, availability-actions.test.ts, availability-format.test.ts, AdminAvailabilityView.test.tsx, __tests__/availability-rls-isolation.test.ts (SEC-002) y pgTAP scheduling_weekly_availability.test.sql y scheduling_closed_dates_and_manual_blocks.test.sql"
   - id: US-AGE-02
-    estado: no_iniciada
+    estado: terminada
+    evidencia: "PR de cierre us/US-AGE-02 a main (#403), con las piezas 1 a 12 apiladas hacia la rama de la historia (#387 a #392 y la pila de correcciones de la revisión #397 a #402). SLOT_INTERVAL_MIN = 30 confirmado por el PO el 2026-10-18. Criterios 1 a 5 y el criterio 4 recibido de US-AGE-01 con prueba unitaria; tests: domain/__tests__/day-slots.test.ts (criterios 1, 2, 3 y 5), domain/__tests__/service-option.test.ts (criterio 5), application/__tests__/day-slots.test.ts (criterio 4 de US-AGE-01), db/__tests__/day-availability-repository.test.ts, ui/client-calendar/__tests__/ClientCalendarView.test.tsx (criterios 1, 3 y 4), ui/client-calendar/__tests__/load-client-calendar.test.ts, ui/client-calendar/__tests__/calendar-params.test.ts, ui/client-calendar/__tests__/client-calendar-format.test.ts, ui/__tests__/TechniqueSelector.test.tsx (enlace desde el selector de US-AGE-03), shared/__tests__/studio-time.test.ts (addCalendarDays), __tests__/availability-rls-isolation.test.ts (las dos funciones con tokens reales, SEC-002), pgTAP supabase/tests/database/scheduling_client_day_view.test.sql (criterios 2 y 3 en la base, RLS intacta, anon sin acceso y criterio 4 de US-AGE-01), corrida en local el 2026-10-18; verificada en navegador el 2026-10-17 con Playwright contra Supabase local (escritorio y 375 px, capturas en el PR de la pieza 6)"
   - id: US-AGE-03
-    estado: en_progreso
-    evidencia: "criterios 1, 3 y 4 demostrados; tests: technique-selection.test.ts, select-technique.test.ts, no-appointment-history.test.ts, load-technique-selection-page.test.ts, TechniqueSelectionPageView.test.tsx"
-    falta: "criterio 2 (detectar primera vez/re-aplicación por historial de citas) diferido: no existe scheduling_appointments todavía (la trae US-AGE-05, que depende de esta historia). Punto de extensión: application/no-appointment-history.ts (ClientHistoryPort), hoy siempre reporta sin historial; la corrección manual ya está resuelta en el use-case (isFirstTimeOverride). Ver docs/process/DEPENDENCIES.md, Criterios diferidos."
+    estado: terminada
+    evidencia: "criterios 1, 3 y 4 demostrados; el criterio 2 se trasladó a US-AGE-05 con aprobación del PO (líder del proyecto), comunicado por Erick Duran el 2026-10-17 (docs/process/DEPENDENCIES.md, Criterios trasladados, ítem 6); tests: technique-selection.test.ts, select-technique.test.ts, no-appointment-history.test.ts, load-technique-selection-page.test.ts, TechniqueSelectionPageView.test.tsx"
   - id: US-AGE-04
     estado: no_iniciada
   - id: US-AGE-05
@@ -41,11 +41,13 @@ Agenda completa. US-AGE-09 cubre el flujo de aprobacion manual (su texto origina
 
 ## Qué hace hoy
 
-`US-AGE-03` en progreso: primer código de la feature.
+`US-AGE-03` terminada: primer código de la feature.
+
+Nombres en toda la feature: los estilos se importan como `STYLES` y los textos con un nombre que dice de qué son (`availabilityMessages`, `validationMessages`, `selectorMessages`, `pageMessages`, `errorMessages`, `clientCalendarMessages`); sin alias ni parámetros de una letra, también en las pruebas.
 
 - Capa `domain/` (`technique-selection.ts`): función pura `selectTechnique(technique, isFirstTime)` — aplica la política de duración (criterio 3: duración según primera vez o retoque, más `bufferMin` del catálogo) y el invariante de una sola técnica por selección (criterio 4: el tipo `TechniqueSelection` no admite una lista). Errores como tipos + factories en `domain/errors.ts` (`TechniqueNotSelectable`, `TechniqueNotAvailable`, DOM-006), sin clases. Prueba: `domain/__tests__/technique-selection.test.ts`.
-- Capa `application/`: puertos `CatalogPort` y `ClientHistoryPort` (`ports.ts`). `catalog-adapter.ts` implementa `CatalogPort` contra el contrato público de `catalog` (`listTechniques`/`getTechnique`, nunca su tabla — ARCH-005). `select-technique.ts` orquesta: consulta el catálogo (criterio 1), decide primera vez/re-aplicación (criterio 2, ver más abajo) y aplica la política de duración del dominio. Prueba: `application/__tests__/select-technique.test.ts` con fakes como funciones factory (`__tests__/fakes.ts`), sin clases.
-- Criterio 2, diferido: `application/no-appointment-history.ts` implementa `ClientHistoryPort` siempre reportando "sin historial" — no existe `scheduling_appointments` todavía (la trae `US-AGE-05`, que depende de esta historia). La corrección manual ya está resuelta en el use-case: `isFirstTimeOverride` en `SelectTechniqueInput` gana sobre la detección automática. Prueba del stub: `application/__tests__/no-appointment-history.test.ts`.
+- Capa `application/`: puertos `CatalogPort` y `ClientHistoryPort` (`ports.ts`). `catalog-adapter.ts` implementa `CatalogPort` contra el contrato público de `catalog` (`listTechniques`/`getTechnique`, nunca su tabla — ARCH-005). `select-technique.ts` orquesta: consulta el catálogo (criterio 1), decide primera vez/re-aplicación (criterio 2, trasladado a US-AGE-05, ver más abajo) y aplica la política de duración del dominio. Prueba: `application/__tests__/select-technique.test.ts` con fakes como funciones factory (`__tests__/fakes.ts`), sin clases.
+- Criterio 2, trasladado a US-AGE-05 (aprobado por el PO el 2026-10-17, ver más abajo): `application/no-appointment-history.ts` implementa `ClientHistoryPort` siempre reportando "sin historial" — la tabla mínima `scheduling_appointments` de US-AGE-09 no tiene `client_id` ni `technique_id`, así que no hay cómo detectar primera vez/re-aplicación por historial real todavía. La corrección manual ya está resuelta en el use-case: `isFirstTimeOverride` en `SelectTechniqueInput` gana sobre la detección automática. US-AGE-05 deberá reemplazar o extender este puerto cuando agregue el vínculo cliente↔cita. Prueba del stub: `application/__tests__/no-appointment-history.test.ts`.
 - Capa `ui/`: `load-technique-selection-page.ts` concentra toda la lógica de la página (sesión de clienta vía `getAuthSession`/`AUTH_ROLES.CLIENTE`, y la llamada a `listTechniques` del catálogo — criterio 1 de punta a punta), con su propio test (`ui/__tests__/load-technique-selection-page.test.ts`, mocks de `@/features/auth` y `@/features/catalog`). `TechniqueSelectionPageView.tsx` es puramente presentacional — decide forbidden/vacío/selector a partir de esos datos ya cargados, sin fetch ni sesión propios; prueba: `ui/__tests__/TechniqueSelectionPageView.test.tsx`. `ClientTechniqueSelectionPage.tsx` solo orquesta: llama al loader y delega el render a la vista. `TechniqueSelector.tsx` (client) es solo render; su estado vive en el hook `ui/hooks/useTechniqueSelector.ts` (`useActionState`). Los nombres de campo y valores del formulario están en `ui/constants.ts`, compartidos con `actions.ts` (`selectTechniqueAction`), que resuelve el `clientId` desde la sesión del servidor, nunca del formulario (SEC-005). Texto externalizado en `ui/messages.ts` (DOM-009).
 - Entry points y ruta: `index.ts` expone `ClientTechniqueSelectionPage` y `schedulingMessages`; `client.ts` expone solo `schedulingMessages` para `loading.tsx`/`error.tsx` de la ruta (ARCH-003, sin `next/headers` en el bundle cliente). `src/app/portal/citas/page.tsx` compone la página; `loading.tsx`/`error.tsx` usan estilos de `citas.styles.ts`, con `role="status"`/`role="alert"` (UI-004). Esa ruta era un placeholder de `auth`; ahora la compone `scheduling` (ver nota en `auth/SPEC.md`).
 
@@ -61,7 +63,7 @@ Agenda completa. US-AGE-09 cubre el flujo de aprobacion manual (su texto origina
 - **Acciones del servidor** (`ui/approval-queue/actions/approval-queue-actions.ts`): `listPendingAppointmentsAction`, `approveAppointmentAction` y `rejectAppointmentAction` exigen `requireAdminSession`, cablean los casos de uso con el cliente de servidor y la bitácora de `audit`, toman el actor de la sesión (SEC-005) y refrescan `/admin/citas`. Solo orquestan: el mensaje de cada error sale de `ui/approval-queue/utils/decision-error-message.ts`. Si solo falla la bitácora devuelven un mensaje propio (la cita sí quedó rechazada) y refrescan igual. La lectura de pendientes está en `application/list-pending-appointments.ts` y `db/pending-appointments-repository.ts` (con la sesión de quien llama: la RLS decide). Prueba: `ui/approval-queue/__tests__/approval-queue-actions.test.ts`.
 - **Cola de aprobación** (`src/app/admin/citas/page.tsx` y `ui/approval-queue/{actions,components,constants,hooks,styles,types,utils}`): la página lista las citas pendientes con `listPendingAppointmentsAction` y las pinta con `ApprovalQueue`; `loading.tsx` cubre la carga; el estado vacío y el de error (`loadError` con `role="alert"` y reintento) los resuelve `ApprovalQueue` (UI-003). `ApprovalQueue` y `ApprovalQueueItem` solo renderizan; el estado y los handlers están en `hooks/useApprovalQueue.ts`. Cada cita muestra su horario en la hora del estudio (`America/Costa_Rica`) con botones Aprobar y Rechazar con nombre accesible propio; rechazar abre un campo de motivo opcional con etiqueta (máximo 500 caracteres); un fallo se muestra con `role="alert"`. No hay `error.tsx` propio para `/admin/citas`. Prueba: `ui/approval-queue/__tests__/ApprovalQueue.test.tsx`.
 
-Dónde se detiene: criterio 2 no se puede demostrar completo hasta que `US-AGE-05` aporte el historial real de citas — no se marca `terminada` hasta cerrarlo.
+Alcance: el criterio 2 se trasladó a US-AGE-05 con aprobación del PO el 2026-10-17 (ver "Criterios recibidos de US-AGE-03" más abajo y `docs/process/DEPENDENCIES.md`, Criterios trasladados). US-AGE-03 queda `terminada` con los criterios 1, 3 y 4.
 
 ### US-AGE-01 — disponibilidad
 
@@ -76,14 +78,25 @@ Criterios 1 a 3 en `/admin/citas/disponibilidad`, pestaña junto a la cola de ap
 
 Alcance: los criterios 4 y 5 se trasladaron con aprobación del PO el 2026-10-14 (ver la sección siguiente y `docs/process/DEPENDENCIES.md`, Criterios trasladados). US-AGE-01 queda `terminada` con los criterios 1 a 3.
 
+### US-AGE-02 — calendario de la clienta
+
+En `/portal/citas/calendario` (la sesión la exige el layout del portal), sobre `DEFAULT_RESOURCE_ID`.
+
+- Base (migraciones `20261018000000_scheduling_client_day_view.sql` y `20261018000001_scheduling_busy_ranges_by_day.sql`, que reemplaza `scheduling_busy_ranges` tras la revisión de la pila): las tablas siguen solo de staff (SEC-001). La clienta lee por dos funciones `SECURITY DEFINER`, solo para `authenticated`: `scheduling_open_hours(recurso, fecha)` devuelve los bloques semanales del día ISO de esa fecha, o ninguno si el día está cerrado; `scheduling_busy_ranges(recurso, fecha)` devuelve solo `starts_at`/`ends_at` de lo ocupado ese día: bloqueos manuales y citas en `pending_approval`, `approved` o `confirmed` (su `occupied_range`, con limpieza), unidos en un solo conjunto, recortados al horario abierto y con cada final redondeado hacia arriba a la grilla de `SLOT_INTERVAL_MIN` que empieza en cada bloque abierto; los bloques que se tocan se unen antes, como en `computeDaySlots`, para que la grilla empiece en el mismo punto. Ni motivo, ni clienta, ni servicio, ni la duración exacta de una cita: no se distingue una cita de un bloqueo ni se cuentan citas (criterio 2). Los espacios que calcula el dominio no cambian, porque empiezan en esa misma grilla. La función repite el 30 de `SLOT_INTERVAL_MIN` y la zona `America/Costa_Rica` de `shared/studio-time.ts`: si cambian, se cambia también ahí. Resultados con `LIMIT` (PERF-002). Pruebas: pgTAP `scheduling_client_day_view.test.sql` y, con tokens reales por PostgREST, `__tests__/availability-rls-isolation.test.ts` (anon no las ejecuta y la clienta sí; que cada fila traiga solo inicio y fin lo prueba el pgTAP, que tiene datos sembrados por staff). Ese archivo crea sus clientes sin sesión persistida: happy-dom comparte `localStorage` y el cliente anónimo tomaba la sesión de la clienta.
+- Dominio (`domain/day-slots.ts`): `computeDaySlots` une los bloques que se solapan o se tocan y ofrece un inicio cada `SLOT_INTERVAL_MIN` (30, confirmado por el PO el 2026-10-18) mientras la duración quepa; un espacio que se cruza con un rango ocupado es `busy` (rangos semiabiertos); no ofrece espacios que ya empezaron (la hora actual entra como dato, DOM-004). Instantes con `studioLocalToUtc` de `shared/studio-time.ts`; `addCalendarDays` corre una fecha de calendario sin zona, así el resultado es siempre una fecha real. `checkDaySlotsQuery` revisa fecha y duración; la usan `computeDaySlots` y el caso de uso antes de leer la base.
+- Servicios (`domain/service-option.ts`): cada técnica activa en primera vez y, si tiene, en retoque; la duración la calcula `selectTechnique` de US-AGE-03, así calendario y selector no difieren (criterio 5). Clave `<id>` o `<id>.retoque`.
+- Aplicación (`application/day-slots.ts`): `getDaySlots({ repo, clock })` valida fecha y duración antes de tocar la base y lee horario y ocupado del día en paralelo por el puerto `DayAvailabilityRepository` (`availability-ports.ts`), que implementa `db/day-availability-repository.ts` con `rpc`. Sin caché: un cambio de la administradora se ve en la siguiente lectura (criterio 4 recibido de US-AGE-01).
+- UI (`ui/client-calendar/{components,constants,services,types,utils}`): `services/client-calendar-service.ts` compone los adaptadores reales y revisa que la sesión sea de clienta (si no, estado `forbidden`, como el selector de US-AGE-03; la frontera es el GRANT, SEC-001). `utils/` lee `?servicio=&fecha=` (fecha ausente, pasada o inexistente → hoy del estudio; nunca ofrece ir a un día anterior a hoy), arma los estados en `load-client-calendar.ts` y los deja formateados en `client-calendar-format.ts`: la vista solo pinta. Textos y rutas en `constants/client-calendar-strings.ts` (`clientCalendarMessages`, `CLIENT_CALENDAR_PATH`, `CALENDAR_PARAMS`), como `blog-strings.ts` de content; el código del calendario no lleva comentarios: el porqué vive en este SPEC. Cada componente vive en su carpeta con `.tsx`, `.styles.ts`, `.types.ts` (sus props) e `index.ts`, como en content y payments: `ClientCalendarView`, `ServicePicker`, `DayNavigator`, `SlotList`, `ClientCalendarLoading` y `ClientCalendarPage`. Elegir servicio es un `next/form` GET y cambiar de día un `<Link>`, sin recargar la página (criterio 4); un `Suspense` con la clave del pedido vuelve a mostrar la carga al navegar (UI-003). Los espacios son radios: libre con la etiqueta "Libre" (`badge-success` relleno, 6.59:1; la variante outline daba 2.73:1) y ocupado deshabilitado con "Ocupado" (criterio 3, UI-004); en el teléfono el día va en su propia fila sobre los botones, que muestran "Anterior" y "Siguiente" con el nombre accesible completo (WCAG 2.5.3). Estados (UI-003): sesión que no es de clienta, sin servicios, sin servicio elegido, día sin espacios y pedido inválido; la carga es `ClientCalendarLoading` (ruta y navegación) y el error, `error.tsx`. Entrada desde `/portal/citas`: el resultado del selector de técnica enlaza al calendario con ese servicio.
+- Elegir un espacio libre todavía no reserva: eso es US-AGE-05.
+
 ## Criterios recibidos de US-AGE-01
 
-Traslado aprobado por el PO el 2026-10-14 y registrado en `docs/process/DEPENDENCIES.md`. Ambas historias de destino siguen `no_iniciada`.
+Traslado aprobado por el PO el 2026-10-14 y registrado en `docs/process/DEPENDENCIES.md`.
 
 ### US-AGE-02 — calendario de la clienta
 
-- Criterio 4 de US-AGE-01: los cambios de disponibilidad se reflejan inmediatamente en el calendario. La lectura no se cachea y nunca expone el motivo de un bloqueo: hoy las cuatro tablas de disponibilidad son solo de staff (SEC-001), así que US-AGE-02 agrega su vía de lectura.
-- Evidencia pendiente: prueba de que un cambio en `/admin/citas/disponibilidad` se ve en la siguiente lectura del calendario, y de que el motivo de un bloqueo no llega a la clienta.
+- Criterio 4 de US-AGE-01: los cambios de disponibilidad se reflejan inmediatamente en el calendario. La lectura no se cachea y nunca expone el motivo de un bloqueo.
+- Evidencia: `application/__tests__/day-slots.test.ts` (cada lectura va a la base) y, en la base, `scheduling_client_day_view.test.sql` (en la siguiente lectura de la clienta se ve el espacio que la administradora bloquea, el bloque semanal que agrega o quita y el día que cierra o reabre; la clienta no lee el motivo; una cita confirmada ocupa y una rechazada, cancelada o completada no; con dos bloques que se tocan, el redondeo empieza en el primero). Corrida en local el 2026-10-18.
 
 ### US-AGE-05 — reservar
 
@@ -105,10 +118,21 @@ Traslado aprobado por el PO, comunicado por Bayron el 2026-10-03 y registrado en
 - Criterio original 4 de US-AGE-13: descontar el anticipo del saldo pendiente al cerrar la cita, de modo que el pago final sea la diferencia.
 - Evidencia pendiente: prueba del saldo final y del asiento del anticipo en el ledger de `payments` (DOM-005).
 
+## Criterios recibidos de US-AGE-03
+
+Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el 2026-10-17 y registrado en `docs/process/DEPENDENCIES.md`. US-AGE-05 sigue `no_iniciada`.
+
+### US-AGE-05 — reservar
+
+- Criterio 2 de US-AGE-03: el sistema determina si es primera vez o re-aplicación según el historial del cliente, permitiendo corregirlo manualmente. Requiere el vínculo cliente↔cita que esta historia agrega sobre `scheduling_appointments` — la tabla mínima de US-AGE-09 no tiene `client_id` ni `technique_id`, por eso el puerto no se puede implementar de verdad antes de esta historia.
+- Evidencia pendiente: implementación real de `ClientHistoryPort` (o su reemplazo) contra el historial de citas completadas de la clienta, y su prueba.
+
 ## Contrato público (`index.ts`, ARCH-003)
 
 - `ClientTechniqueSelectionPage` — compone la ruta `/portal/citas`. Consumidor: `src/app/portal/citas/page.tsx`.
 - `AdminAvailabilityPage` — compone la ruta `/admin/citas/disponibilidad`. Consumidor: `src/app/admin/citas/disponibilidad/page.tsx`; las pestañas de la sección están en `src/app/admin/citas/layout.tsx`.
+- `ClientCalendarPage` — compone la ruta `/portal/citas/calendario`. Consumidor: `src/app/portal/citas/calendario/page.tsx`.
 - `schedulingMessages` — también en `client.ts` para `loading.tsx`/`error.tsx`.
+- `clientCalendarMessages` — textos del calendario de la clienta: en `index.ts` para el título de `src/app/portal/citas/calendario/page.tsx` y en `client.ts` para su `error.tsx`.
 - `ApprovalQueue`, `listPendingAppointmentsAction` y `APPROVAL_QUEUE_LABELS` — componen `/admin/citas`. Consumidor: `src/app/admin/citas/page.tsx`. No están en `client.ts`.
 - Dominio y aplicación (`selectTechnique`, puertos) son superficie interna: ninguna otra feature los consume todavía.

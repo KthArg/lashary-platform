@@ -6,10 +6,7 @@ import { exemptClient as exemptClientUseCase } from './application/exempt-client
 import { depositExemptionRepository } from './db/deposit-exemption-repository'
 import type { ExemptClientInput } from './application/exempt-client'
 import type { DepositExemptionView } from './domain/deposit-exemption'
-import type {
-  DepositExemptionValidationError,
-  ClientAlreadyExempt,
-} from './domain/errors'
+import type { DepositExemptionValidationError, ClientAlreadyExempt } from './domain/errors'
 
 export async function exemptClient(
   input: ExemptClientInput,
@@ -24,6 +21,6 @@ export async function exemptClient(
   })(input)
 }
 
-export type { ExemptClientInput, DepositExemptionView }
-export { ClientAlreadyExempt, DepositExemptionValidationError } from './domain/errors'
-export { ExemptClientForm } from './ui/ExemptClientForm'
+export type { ExemptClientInput, DepositExemptionView, ClientAlreadyExempt, DepositExemptionValidationError }
+export { isClientAlreadyExempt, isDepositExemptionValidationError } from './domain/errors'
+export { ExemptClientForm } from './ui/admin-exemptions/components/ExemptClientForm'

@@ -1,6 +1,6 @@
 import { ok, err, type Result } from '@/shared/result'
-import type { TechniqueView } from '../../domain/techniques/technique'
-import { TechniqueNotFound } from '../../domain/techniques/errors'
+import { techniqueToView, type TechniqueView } from '../../domain/techniques/technique'
+import { techniqueNotFound, type TechniqueNotFound } from '../../domain/techniques/errors'
 import type { ListTechniquesQuery, TechniqueRepository } from './ports'
 import { clampPage, clampPageSize, type Page } from '../pagination'
 
@@ -18,7 +18,7 @@ export const listTechniques =
     })
 
     return {
-      items: items.map((technique) => technique.toView()),
+      items: items.map(techniqueToView),
       page,
       pageSize,
       total,
@@ -29,6 +29,6 @@ export const getTechnique =
   (repo: TechniqueRepository) =>
   async (id: string): Promise<Result<TechniqueView, TechniqueNotFound>> => {
     const technique = await repo.findById(id)
-    if (technique === null) return err(new TechniqueNotFound(id))
-    return ok(technique.toView())
+    if (technique === null) return err(techniqueNotFound(id))
+    return ok(techniqueToView(technique))
   }

@@ -1,33 +1,65 @@
-import { DomainError } from '@/shared/domain-error'
+export const TECHNIQUE_ERROR_CODES = {
+  invalid: 'CATALOG_TECHNIQUE_INVALID',
+  notFound: 'CATALOG_TECHNIQUE_NOT_FOUND',
+  nameConflict: 'CATALOG_TECHNIQUE_NAME_CONFLICT',
+} as const
 
-// Errores de dominio de la feature catalog (DOM-006). El mapeo a HTTP status ocurre en el
-// borde (server actions / route handlers), en un solo lugar.
+type TechniqueErrorCode = (typeof TECHNIQUE_ERROR_CODES)[keyof typeof TECHNIQUE_ERROR_CODES]
 
-export abstract class CatalogError extends DomainError {}
+function hasCode<T extends { code: TechniqueErrorCode }>(
+  error: unknown,
+  code: T['code'],
+): error is T {
+  return typeof error === 'object' && error !== null && (error as { code?: unknown }).code === code
+}
 
-export class TechniqueValidationError extends CatalogError {
-  readonly code = 'CATALOG_TECHNIQUE_INVALID'
+export interface TechniqueValidationError {
+  readonly code: typeof TECHNIQUE_ERROR_CODES.invalid
+  readonly message: string
+  readonly problems: string[]
+}
 
-  constructor(public readonly problems: string[]) {
-    super(`técnica inválida: ${problems.join('; ')}`)
+export function techniqueValidationError(problems: string[]): TechniqueValidationError {
+  return {
+    code: TECHNIQUE_ERROR_CODES.invalid,
+    message: `técnica inválida: ${problems.join('; ')}`,
+    problems,
   }
 }
 
-export class TechniqueNotFound extends CatalogError {
-  readonly code = 'CATALOG_TECHNIQUE_NOT_FOUND'
+export const isTechniqueValidationError = (error: unknown): error is TechniqueValidationError =>
+  hasCode<TechniqueValidationError>(error, TECHNIQUE_ERROR_CODES.invalid)
 
-  constructor(public readonly techniqueId: string) {
-    super(`no existe la técnica ${techniqueId}`)
+export interface TechniqueNotFound {
+  readonly code: typeof TECHNIQUE_ERROR_CODES.notFound
+  readonly message: string
+  readonly techniqueId: string
+}
+
+export function techniqueNotFound(techniqueId: string): TechniqueNotFound {
+  return {
+    code: TECHNIQUE_ERROR_CODES.notFound,
+    message: `no existe la técnica ${techniqueId}`,
+    techniqueId,
   }
 }
 
-// DOM-006: la violación de catalog_techniques_name_unique es un caso de negocio esperable
-// (dos técnicas no pueden compartir nombre), no una falla de infraestructura — se mapea a un
-// subtipo en vez de relanzarse como Error genérico (db/technique-repository.ts).
-export class TechniqueNameConflict extends CatalogError {
-  readonly code = 'CATALOG_TECHNIQUE_NAME_CONFLICT'
+export const isTechniqueNotFound = (error: unknown): error is TechniqueNotFound =>
+  hasCode<TechniqueNotFound>(error, TECHNIQUE_ERROR_CODES.notFound)
 
-  constructor(public readonly name: string) {
-    super(`ya existe una técnica llamada "${name}"`)
+export interface TechniqueNameConflict {
+  readonly code: typeof TECHNIQUE_ERROR_CODES.nameConflict
+  readonly message: string
+  readonly name: string
+}
+
+export function techniqueNameConflict(name: string): TechniqueNameConflict {
+  return {
+    code: TECHNIQUE_ERROR_CODES.nameConflict,
+    message: `ya existe una técnica llamada "${name}"`,
+    name,
   }
 }
+
+export const isTechniqueNameConflict = (error: unknown): error is TechniqueNameConflict =>
+  hasCode<TechniqueNameConflict>(error, TECHNIQUE_ERROR_CODES.nameConflict)

@@ -3,7 +3,6 @@ import { MAX_FAQS, MAX_HOURS } from '../../domain/contact'
 import { faqFallback } from '../fallback-messages'
 import { toContactContent, type RawContactContent } from '../get-contact'
 
-// El contacto publicado tal como lo entrega uno-cms (docs/contracts/cms-api.md § `contacto`).
 const contacto = (overrides: Record<string, unknown> = {}) => ({
   direccion: '200 m norte de la iglesia',
   ciudad: 'Ciudad Quesada, Alajuela, Costa Rica',
@@ -75,7 +74,6 @@ describe('toContactContent — contacto, horario y preguntas desde el CMS', () =
 
   it('sin dirección ni WhatsApp no hay contacto: no se inventa uno', () => {
     expect(contactoDe({ direccion: '', whatsapp: '' })).toBeNull()
-    // Con uno de los dos sí hay contacto.
     expect(contactoDe({ direccion: '' })?.whatsapp?.number).toBe('50688887777')
   })
 

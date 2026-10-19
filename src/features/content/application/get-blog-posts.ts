@@ -22,11 +22,6 @@ interface Warn {
   (message: string): void
 }
 
-// Las publicaciones que el listado puede mostrar, ya ordenadas por fecha descendente
-// (docs/contracts/cms-api.md § `posts`). Nunca lanza. Una publicación entra con `titulo`,
-// `extracto` e `imagen` válidos; su `slug` sale del campo o, vacío, del título. La que queda
-// sin slug y la que repite el de una anterior se descartan con una advertencia. Cada una
-// trae además su cuerpo ya validado y sus metadatos, que usa la página de detalle.
 export function toBlogPosts(
   items: unknown[] | null,
   mediaBaseUrl: string,
