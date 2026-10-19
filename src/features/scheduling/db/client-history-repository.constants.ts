@@ -1,0 +1,1 @@
+export const HAS_COMPLETED_APPOINTMENT_FUNCTION = 'scheduling_has_completed_appointment'

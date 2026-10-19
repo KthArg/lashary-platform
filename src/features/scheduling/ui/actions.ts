@@ -2,9 +2,10 @@
 
 import { getAuthSession, AUTH_ROLES } from '@/features/auth'
 import { isErr } from '@/shared/result'
+import { createClient } from '@/shared/lib/supabase/server'
 import { selectTechnique } from '../application/select-technique'
 import { catalogGateway } from '../application/catalog-adapter'
-import { noAppointmentHistoryYet } from '../application/no-appointment-history'
+import { createSupabaseClientHistory } from '../db/client-history-repository'
 import { schedulingMessages } from './messages'
 import { TECHNIQUE_SELECTOR_FIELDS, FIRST_TIME_OVERRIDE_VALUES } from './constants'
 import type { SelectTechniqueActionState } from './action-state'
@@ -35,8 +36,8 @@ export async function selectTechniqueAction(
 
   const result = await selectTechnique(
     catalogGateway,
-    noAppointmentHistoryYet,
-  )({ clientId: session.user.id, techniqueId, isFirstTimeOverride })
+    createSupabaseClientHistory(await createClient()),
+  )({ techniqueId, isFirstTimeOverride })
 
   if (isErr(result)) {
     return { status: 'invalid', message: result.error.message }
