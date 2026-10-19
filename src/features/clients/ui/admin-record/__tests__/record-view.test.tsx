@@ -24,12 +24,11 @@ describe('RecordView — la pestaña Expediente (criterios 1, 2 y 4)', () => {
     expect(within(sectionNamed(RECORD_LABELS.initialStudyHeading)).getByText('Clásicas')).toBeTruthy()
   })
 
-  it('lista cada antecedente con su categoría', () => {
+  it('muestra cada antecedente dentro de la tarjeta de su categoría', () => {
     render(<RecordView clientId={CLIENT_ID} techniques={[]} categories={[]} imageUrls={{}} current={ADDED_VIEW} history={[ADDED_VIEW, INITIAL_VIEW]} />)
-    const items = within(sectionNamed(RECORD_LABELS.precautionsHeading)).getAllByRole('listitem')
-    expect(items).toHaveLength(2)
-    expect(items[0].textContent).toContain(`${ALLERGY.categoryName}${ALLERGY.description}`)
-    expect(items[1].textContent).toContain(`${SENSITIVITY.categoryName}${SENSITIVITY.description}`)
+    const cardOf = (title: string) => screen.getByRole('heading', { level: 4, name: title }).closest('li') as HTMLElement
+    expect(within(cardOf('Alergias')).getByText(ALLERGY.description)).toBeTruthy()
+    expect(within(cardOf('Sensibilidades')).getByText(SENSITIVITY.description)).toBeTruthy()
   })
 
   it('el historial va de lo más nuevo a lo más viejo, con fecha y qué cambió', () => {

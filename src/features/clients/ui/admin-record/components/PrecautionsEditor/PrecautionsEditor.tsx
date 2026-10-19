@@ -6,6 +6,8 @@ import { RECORD_LIMITS } from '../../../../domain/record/record-limits'
 import { addRecordPrecautionAction, removeRecordPrecautionAction } from '../../actions/record-actions'
 import { PRECAUTION_FORM_LABELS, RECORD_LABELS } from '../../constants/record-strings'
 import { ConfirmDialog } from '../../../admin-clients/components/ConfirmDialog'
+import { RecordIcon } from '../RecordIcon'
+import { groupPrecautions } from '../../precaution-groups'
 import { precautionsEditorStyles as STYLES } from './PrecautionsEditor.styles'
 import type { Precaution } from '../../../../domain/record/record.types'
 import type { SaveRecordResult } from '../../types/record-action-results'
@@ -54,31 +56,14 @@ export function PrecautionsEditor({ clientId, precautions, categories }: Precaut
 
   return (
     <div className={STYLES.editor}>
-      {precautions.length === 0 ? (
-        <p className={STYLES.muted}>{RECORD_LABELS.noPrecautions}</p>
-      ) : (
-        <ul className={STYLES.list}>
-          {precautions.map((precaution) => (
-            <li key={precaution.id} className={STYLES.precaution}>
-              <span className={STYLES.label}>{precaution.categoryName}</span>
-              <span className={STYLES.description}>{precaution.description}</span>
-              <button type="button" disabled={isSaving} onClick={() => setPendingRemoval(precaution)} className={STYLES.textButton}
-                aria-label={PRECAUTION_FORM_LABELS.removeButton(precaution.categoryName, precaution.description)}>
-                {PRECAUTION_FORM_LABELS.remove}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {failure ? (
-        <div role="alert" className={STYLES.alert}>
-          <p>{failure.error}</p>
-          {failure.problems.length > 0 ? (
-            <ul className={STYLES.problems}>{failure.problems.map((problem) => <li key={problem}>{problem}</li>)}</ul>
-          ) : null}
-        </div>
-      ) : null}
+      <header className={STYLES.header}>
+        <h3 className={STYLES.title}><RecordIcon name="shield" className={STYLES.titleIcon} />{RECORD_LABELS.precautionsHeading}</h3>
+        {isAdding ? null : (
+          <button type="button" onClick={() => setIsAdding(true)} disabled={isSaving} className={STYLES.addButton}>
+            <RecordIcon name="plus" className={STYLES.buttonIcon} />{PRECAUTION_FORM_LABELS.addButton}
+          </button>
+        )}
+      </header>
 
       {isAdding ? (
         <form onSubmit={add} className={STYLES.form}>
@@ -104,12 +89,46 @@ export function PrecautionsEditor({ clientId, precautions, categories }: Precaut
             </button>
           </div>
         </form>
-      ) : (
-        <button type="button" onClick={() => setIsAdding(true)} disabled={isSaving} className={STYLES.addButton}
-          aria-label={PRECAUTION_FORM_LABELS.addButton}>
-          {PRECAUTION_FORM_LABELS.addSymbol}
-        </button>
-      )}
+      ) : null}
+
+      {failure ? (
+        <div role="alert" className={STYLES.alert}>
+          <p>{failure.error}</p>
+          {failure.problems.length > 0 ? (
+            <ul className={STYLES.problems}>{failure.problems.map((problem) => <li key={problem}>{problem}</li>)}</ul>
+          ) : null}
+        </div>
+      ) : null}
+
+      <ul className={STYLES.groups}>
+        {groupPrecautions(categories, precautions).map((group) => (
+          <li key={group.categoryId} className={STYLES.group}>
+            <h4 className={STYLES.groupTitle}><RecordIcon name={group.icon} className={STYLES.titleIcon} />{group.title}</h4>
+            <p className={STYLES.count}>{PRECAUTION_FORM_LABELS.recordsCount(group.precautions.length)}</p>
+            {group.precautions.length > 0 ? (
+              <ul className={STYLES.items}>
+                {group.precautions.map((precaution) => (
+                  <li key={precaution.id} className={STYLES.item}>
+                    <span>{precaution.description}</span>
+                    <button type="button" disabled={isSaving} onClick={() => setPendingRemoval(precaution)} className={STYLES.textButton}
+                      aria-label={PRECAUTION_FORM_LABELS.removeButton(precaution.categoryName, precaution.description)}>
+                      {PRECAUTION_FORM_LABELS.remove}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+
+      {precautions.length === 0 ? (
+        <div className={STYLES.empty}>
+          <RecordIcon name="clipboard" className={STYLES.titleIcon} />
+          <p className={STYLES.emptyTitle}>{RECORD_LABELS.noPrecautions}</p>
+          <p className={STYLES.count}>{PRECAUTION_FORM_LABELS.emptyHint}</p>
+        </div>
+      ) : null}
 
       <ConfirmDialog
         isOpen={pendingRemoval !== null}

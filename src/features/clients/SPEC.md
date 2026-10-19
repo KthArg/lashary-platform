@@ -461,3 +461,10 @@ También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el e
   muestra y cada imagen dice "Imagen no disponible"; la pantalla nunca arma una URL a partir de la
   ruta. `ImagesEditor` muestra miniaturas con texto alternativo propio y el campo para subir. Con
   esta pieza US-CLI-04 queda `terminada`; su evidencia está en el front-matter.
+- **2026-10-18 — Mejoras visuales del expediente en dos piezas más (15/16 y 16/16), por decisión de
+  José Loría tras probarlo a mano.** No cambian ningún criterio: US-CLI-04 sigue `terminada`. Van
+  encima de la 14/14 porque la 9/14 y la 12/14 ya estaban cerca de las 400 líneas. **15/16:** íconos
+  SVG propios en los títulos (sin librería nueva), la ficha con ancho máximo para que no se estire en
+  pantallas grandes, y "Antecedentes y precauciones" con "+ Agregar" arriba
+  y una tarjeta por categoría con su conteo (`groupPrecautions`). Una categoría nueva tendría su
+  tarjeta con el nombre guardado y un ícono genérico.
