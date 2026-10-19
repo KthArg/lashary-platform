@@ -21,3 +21,19 @@ export function createSupabaseCategoryLookup(db: SupabaseClient): PrecautionCate
 export async function precautionCategoryLookup(): Promise<PrecautionCategoryLookup> {
   return createSupabaseCategoryLookup(await createClient())
 }
+
+export const CATEGORY_OPTIONS_LIMIT = 100
+
+export async function listSupabaseCategories(db: SupabaseClient): Promise<PrecautionCategory[]> {
+  const { data, error } = await db
+    .from(PRECAUTION_CATEGORIES_TABLE)
+    .select('id, name')
+    .order('name')
+    .limit(CATEGORY_OPTIONS_LIMIT)
+  if (error || !data) throw new Error('no se pudieron leer las categorías de antecedentes')
+  return data as PrecautionCategory[]
+}
+
+export async function listPrecautionCategories(): Promise<PrecautionCategory[]> {
+  return listSupabaseCategories(await createClient())
+}

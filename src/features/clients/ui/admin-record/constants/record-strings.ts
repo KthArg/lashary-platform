@@ -12,6 +12,23 @@ export const RECORD_ERROR_MESSAGES = {
   precautionNotFound: 'Ese antecedente ya no está en el expediente.',
   unchanged: 'No hay cambios para guardar.',
   techniquesUnavailable: 'No se pudieron cargar las técnicas del catálogo.',
+  categoriesUnavailable: 'No se pudieron cargar las categorías de antecedentes.',
+} as const
+
+export const PRECAUTION_FORM_LABELS = {
+  addSymbol: '+',
+  addButton: 'Agregar antecedente',
+  category: 'Categoría',
+  chooseCategory: 'Elige una categoría',
+  description: 'Descripción',
+  save: 'Guardar',
+  saving: 'Guardando…',
+  cancel: 'Cancelar',
+  remove: 'Quitar',
+  removeButton: (category: string, description: string) => `Quitar ${category}: ${description}`,
+  confirmTitle: '¿Quitar este antecedente?',
+  confirmMessage: (category: string, description: string) =>
+    `${category}: ${description}. Sale del expediente vigente, pero sigue en el historial.`,
 } as const
 
 export const RECORD_PROBLEM_MESSAGES: Record<RecordProblem, string> = {

@@ -13,7 +13,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-04
     estado: en_progreso
-    falta: "piezas 1/14 a 11/14: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros, los casos de uso con bitacora, el repositorio con los adaptadores de audit y catalog, las server actions, la vista del expediente, la ficha de la clienta y registrar y editar el estudio. Faltan agregar y quitar antecedentes (12/14), crear categorias nuevas (13/14, en pausa por decision de Jose Loria) y las imagenes con URL firmada (14/14)"
+    falta: "piezas 1/14 a 12/14: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros, los casos de uso con bitacora, el repositorio con los adaptadores de audit y catalog, las server actions, la vista del expediente, la ficha de la clienta, registrar y editar el estudio y agregar y quitar antecedentes. Faltan crear categorias nuevas (13/14, en pausa por decision de Jose Loria) y las imagenes con URL firmada (14/14)"
   - id: US-CLI-05
     estado: terminada
     evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
@@ -422,3 +422,5 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
   editar. Si `catalog` falla, el menú queda solo con "Sin técnica recomendada" y el expediente
   igual se muestra. Errores y problemas del servidor se anuncian con `role="alert"` sin cerrar el
   formulario; al guardar, se cierra y `router.refresh()` trae la versión nueva.
+- **2026-10-18 — Antecedentes (12/14):** el **+** usa las categorías existentes (tope de 100); *Quitar*
+  nombra su antecedente (UI-004) y confirma con el `ConfirmDialog` de `clients`: sigue en el historial.
