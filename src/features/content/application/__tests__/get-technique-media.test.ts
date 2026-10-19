@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { toTechniqueMedia } from '../get-technique-media'
 
-// Un elemento de la colección `tecnicas` tal como lo entrega uno-cms
-// (docs/contracts/cms-api.md § `tecnicas`).
 const fila = (overrides: Record<string, unknown> = {}) => ({
   nombre: 'Set clásico',
   familia: 'lash_classic',
@@ -23,8 +21,7 @@ describe('toTechniqueMedia — las fotos del CMS, indexadas por familia', () => 
     )
 
     expect(media.lash_classic?.image.url).toBe('https://cdn.test/clasico.jpg')
-    // Las ranuras no se llenan en orden: falta ejemplo2 y los otros dos siguen valiendo.
-    expect(media.lash_classic?.examples.map((e) => e.alt)).toEqual([
+    expect(media.lash_classic?.examples.map((example) => example.alt)).toEqual([
       'A los 7 días',
       'Recién aplicado',
     ])
@@ -47,7 +44,6 @@ describe('toTechniqueMedia — las fotos del CMS, indexadas por familia', () => 
       [
         fila({ familia: '   ' }),
         fila({ familia: 'brow_design', imagen: { url: '', alt: '' } }),
-        // Sin `alt` no se publica: una foto sin texto alternativo no llega a la pantalla (UI-004).
         fila({ familia: 'henna', imagen: { url: 'https://cdn.test/h.jpg' } }),
       ],
       'https://cms.test',
@@ -63,7 +59,6 @@ describe('toTechniqueMedia — las fotos del CMS, indexadas por familia', () => 
     )
 
     expect(Object.keys(media)).toContain('lips')
-    // Queda indexada pero nadie la busca: el catálogo decide qué familias existen.
     expect(media.inventada).toBeTruthy()
   })
 

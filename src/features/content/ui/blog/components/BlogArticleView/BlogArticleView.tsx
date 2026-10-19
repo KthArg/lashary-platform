@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { BLOG_ROUTE, blogMessages } from '../../../constants/blog-strings'
+import { BLOG_ROUTE, blogMessages } from '../../constants/blog-strings'
 import { RichText } from '../RichText'
 import { blogArticleStyles as STYLES } from './BlogArticleView.styles'
 import type { BlogArticleNoticeProps, BlogArticleViewProps } from './BlogArticleView.types'
@@ -40,8 +40,6 @@ export function BlogArticleView({ article }: BlogArticleViewProps) {
             alt={article.image.alt}
             fill
             sizes="(max-width: 928px) 100vw, 55rem"
-            // La imagen destacada es el elemento más grande de la primera pantalla. `preload` es
-            // el prop de next/image desde Next 16; `priority` quedó obsoleto a su favor.
             preload
             className={STYLES.photo}
           />
@@ -55,8 +53,6 @@ export function BlogArticleView({ article }: BlogArticleViewProps) {
   )
 }
 
-// Lo que se muestra en lugar de la publicación cuando no se pudo leer o no existe. En los dos
-// casos queda el camino de regreso al listado.
 export function BlogArticleNotice({ kind, retryHref }: BlogArticleNoticeProps) {
   const copy = blogMessages.article
   return (

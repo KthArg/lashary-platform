@@ -1,17 +1,16 @@
 import { describe, it, expect, vi } from 'vitest'
 import { err, ok } from '@/shared/result'
-import { CmsUnavailable } from '../../domain/errors'
+import { cmsUnavailable } from '../../domain/errors'
 import type { CmsReader } from '../../application/ports'
 import { galleryCacheTag, loadGallery } from '../gallery-source'
 import { LANDING_CACHE_SECONDS } from '../landing-source'
 
-// unstable_cache real necesita el runtime de Next; aquí se sustituye por uno que ejecuta.
 const passthroughCache = vi.fn((fn: () => Promise<unknown>) => fn) as never
 
 const readerReturning = (items: unknown[] | 'falla'): (() => CmsReader) => () => ({
   readSingleton: async () => ok({}),
   readCollection: async (key) =>
-    items === 'falla' ? err(new CmsUnavailable(key, 'HTTP 503')) : ok(items),
+    items === 'falla' ? err(cmsUnavailable(key, 'HTTP 503')) : ok(items),
 })
 
 const parPublicado = {
@@ -51,7 +50,7 @@ describe('loadGallery — criterio 2: los pares salen del CMS, y su falla no tum
       cache,
       createReader: readerReturning('falla') as never,
     })
-    await expect(cachedFn?.()).rejects.toBeInstanceOf(CmsUnavailable)
+    await expect(cachedFn?.()).rejects.toThrow(/CMS no disponible/)
   })
 
   it('con el CMS disponible sirve los pares publicados, cacheados 10 min con el tag del aviso', async () => {

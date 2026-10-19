@@ -3,10 +3,8 @@ import { CMS_CONTENT_KEYS, LANDING_CONTENT_KEYS, type LandingContent } from '../
 import { readRawLandingContent, toLandingContent } from '../application/get-landing-content'
 import { createCmsReader } from './cms-reader'
 
-// TTL de respaldo (docs/contracts/cms-api.md § Invalidación): cota un aviso perdido.
 export const LANDING_CACHE_SECONDS = 600
 
-// Los mismos tags que manda el aviso de uno-cms: `content:<clave>`.
 export const landingCacheTags: readonly string[] = LANDING_CONTENT_KEYS.map(
   (key) => `content:${CMS_CONTENT_KEYS[key]}`,
 )
@@ -17,8 +15,6 @@ type LandingSourceDeps = {
   createReader?: typeof createCmsReader
 }
 
-// Contenido de la landing, listo para renderizar. Nunca lanza: sin CMS_URL, con el CMS caído o
-// con una respuesta que no encaja, devuelve el respaldo (§ Degradación).
 export async function loadLandingContent({
   env = process.env,
   cache = unstable_cache,
@@ -31,11 +27,10 @@ export async function loadLandingContent({
   }
 
   const reader = createReader({ baseUrl })
-  // Lanzar dentro de la función cacheada es lo que evita guardar una lectura fallida.
   const readCached = cache(
     async () => {
       const result = await readRawLandingContent(reader)
-      if (!result.ok) throw result.error
+      if (!result.ok) throw new Error(result.error.message)
       return result.value
     },
     ['content', 'landing', baseUrl],

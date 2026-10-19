@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { RichTextBlock, RichTextInline } from '../../../../domain/rich-text'
-import { blogMessages } from '../../../constants/blog-strings'
+import { blogMessages } from '../../constants/blog-strings'
 import { richTextStyles as STYLES } from './RichText.styles'
 import type { RichTextProps } from './RichText.types'
 
@@ -8,7 +8,6 @@ const HEADING_STYLES = { 2: STYLES.heading2, 3: STYLES.heading3, 4: STYLES.headi
 
 const isExternal = (href: string): boolean => /^https?:\/\//i.test(href)
 
-// Cada tramo se pinta como elemento de React: el texto del CMS nunca se interpreta como HTML.
 function Inline({ inline }: { inline: RichTextInline }) {
   if (inline.kind === 'break') return <br />
 

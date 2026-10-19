@@ -1,17 +1,16 @@
 import { describe, it, expect, vi } from 'vitest'
 import { err, ok } from '@/shared/result'
-import { CmsUnavailable } from '../../domain/errors'
+import { cmsUnavailable } from '../../domain/errors'
 import type { CmsReader } from '../../application/ports'
 import { blogCacheTag, loadBlogArticle, loadBlogPage } from '../blog-source'
 import { LANDING_CACHE_SECONDS } from '../landing-source'
 
-// unstable_cache real necesita el runtime de Next; aquí se sustituye por uno que ejecuta.
 const passthroughCache = vi.fn((fn: () => Promise<unknown>) => fn) as never
 
 const readerReturning = (items: unknown[] | 'falla'): (() => CmsReader) => () => ({
   readSingleton: async () => ok({}),
   readCollection: async (key) =>
-    items === 'falla' ? err(new CmsUnavailable(key, 'HTTP 503')) : ok(items),
+    items === 'falla' ? err(cmsUnavailable(key, 'HTTP 503')) : ok(items),
 })
 
 const publicacion = (titulo: string, fecha: string) => ({
@@ -21,7 +20,6 @@ const publicacion = (titulo: string, fecha: string) => ({
   fecha,
 })
 
-// Doce publicaciones, del día 01 al 12, entregadas de la más antigua a la más reciente.
 const doce = Array.from({ length: 12 }, (_, index) => {
   const dia = String(index + 1).padStart(2, '0')
   return publicacion(`Día ${dia}`, `2026-10-${dia}`)
@@ -55,7 +53,7 @@ describe('loadBlogPage — el listado sale del CMS, y su falla no tumba la pági
       return fn
     }) as never
     await loadBlogPage(1, { ...withCms('falla'), cache })
-    await expect(cachedFn?.()).rejects.toBeInstanceOf(CmsUnavailable)
+    await expect(cachedFn?.()).rejects.toThrow(/CMS no disponible/)
   })
 
   it('sin publicaciones la página está vacía pero disponible', async () => {

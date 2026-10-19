@@ -4,7 +4,6 @@ import { LOYALTY_KEY, LOYALTY_LEVELS_KEY, type LoyaltyContent } from '../domain/
 import { createCmsReader } from './cms-reader'
 import { LANDING_CACHE_SECONDS } from './landing-source'
 
-// Los mismos tags que manda el aviso de uno-cms: `content:<clave>`.
 export const loyaltyCacheTags: readonly string[] = [LOYALTY_KEY, LOYALTY_LEVELS_KEY].map(
   (key) => `content:${key}`,
 )
@@ -15,8 +14,6 @@ type LoyaltySourceDeps = {
   createReader?: typeof createCmsReader
 }
 
-// La mecánica del programa de fidelidad, lista para renderizar. Nunca lanza: sin `CMS_URL`, con
-// el CMS caído o con una respuesta que no encaja, devuelve el contenido vacío.
 export async function loadLoyalty({
   env = process.env,
   cache = unstable_cache,
@@ -26,11 +23,10 @@ export async function loadLoyalty({
   if (baseUrl === '') return EMPTY_LOYALTY
 
   const reader = createReader({ baseUrl })
-  // Lanzar dentro de la función cacheada es lo que evita guardar una lectura fallida.
   const readCached = cache(
     async () => {
       const result = await readRawLoyalty(reader)
-      if (!result.ok) throw result.error
+      if (!result.ok) throw new Error(result.error.message)
       return result.value
     },
     ['content', LOYALTY_KEY, baseUrl],

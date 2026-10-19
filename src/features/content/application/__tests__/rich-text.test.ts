@@ -96,7 +96,6 @@ describe('toRichText — el cuerpo de una publicación contra el contrato', () =
       null,
       null,
     ])
-    // El texto del enlace rechazado no se pierde.
     expect(first.inlines.every((inline) => inline.text === 'enlace')).toBe(true)
   })
 
@@ -139,7 +138,7 @@ describe('toRichText — el cuerpo de una publicación contra el contrato', () =
 
   it('una cita anidada más allá del límite se corta en vez de reventar', () => {
     let nested: unknown = paragraph(text('fondo'))
-    for (let i = 0; i < RICH_TEXT_MAX_DEPTH + 20; i += 1) nested = { type: 'blockquote', content: [nested] }
+    for (let depth = 0; depth < RICH_TEXT_MAX_DEPTH + 20; depth += 1) nested = { type: 'blockquote', content: [nested] }
 
     expect(() => toRichText(doc(nested))).not.toThrow()
     expect(JSON.stringify(toRichText(doc(nested)))).not.toContain('fondo')

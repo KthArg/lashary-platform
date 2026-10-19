@@ -12,9 +12,8 @@ historias:
     evidencia: "criterios 1 a 5 y el criterio 4 recibido de US-AGE-01 con prueba unitaria; tests: domain/__tests__/day-slots.test.ts (criterios 1, 2, 3 y 5), domain/__tests__/service-option.test.ts (criterio 5), application/__tests__/day-slots.test.ts (criterio 4 de US-AGE-01), db/__tests__/day-availability-repository.test.ts, ui/client-calendar/__tests__/ClientCalendarView.test.tsx (criterios 1, 3 y 4), ui/client-calendar/__tests__/load-client-calendar.test.ts, ui/client-calendar/__tests__/calendar-params.test.ts, ui/client-calendar/__tests__/client-calendar-format.test.ts, ui/__tests__/TechniqueSelector.test.tsx (enlace desde el selector de US-AGE-03), shared/__tests__/studio-time.test.ts (addCalendarDays), __tests__/availability-rls-isolation.test.ts (las dos funciones con tokens reales, SEC-002), pgTAP supabase/tests/database/scheduling_client_day_view.test.sql (criterios 2 y 3 en la base, RLS intacta, anon sin acceso y criterio 4 de US-AGE-01), corrida en local el 2026-10-18; verificada en navegador el 2026-10-17 con Playwright contra Supabase local (escritorio y 375 px, capturas en el PR de la pieza 6)"
     falta: "Supuesto pendiente del PO: SLOT_INTERVAL_MIN = 30."
   - id: US-AGE-03
-    estado: en_progreso
-    evidencia: "criterios 1, 3 y 4 demostrados; tests: technique-selection.test.ts, select-technique.test.ts, no-appointment-history.test.ts, load-technique-selection-page.test.ts, TechniqueSelectionPageView.test.tsx"
-    falta: "criterio 2 (detectar primera vez/re-aplicación por historial de citas) diferido: no existe scheduling_appointments todavía (la trae US-AGE-05, que depende de esta historia). Punto de extensión: application/no-appointment-history.ts (ClientHistoryPort), hoy siempre reporta sin historial; la corrección manual ya está resuelta en el use-case (isFirstTimeOverride). Ver docs/process/DEPENDENCIES.md, Criterios diferidos."
+    estado: terminada
+    evidencia: "criterios 1, 3 y 4 demostrados; el criterio 2 se trasladó a US-AGE-05 con aprobación del PO (líder del proyecto), comunicado por Erick Duran el 2026-10-17 (docs/process/DEPENDENCIES.md, Criterios trasladados, ítem 6); tests: technique-selection.test.ts, select-technique.test.ts, no-appointment-history.test.ts, load-technique-selection-page.test.ts, TechniqueSelectionPageView.test.tsx"
   - id: US-AGE-04
     estado: no_iniciada
   - id: US-AGE-05
@@ -43,13 +42,13 @@ Agenda completa. US-AGE-09 cubre el flujo de aprobacion manual (su texto origina
 
 ## Qué hace hoy
 
-`US-AGE-03` en progreso: primer código de la feature.
+`US-AGE-03` terminada: primer código de la feature.
 
 Nombres en toda la feature: los estilos se importan como `STYLES` y los textos con un nombre que dice de qué son (`availabilityMessages`, `validationMessages`, `selectorMessages`, `pageMessages`, `errorMessages`, `clientCalendarMessages`); sin alias ni parámetros de una letra, también en las pruebas.
 
 - Capa `domain/` (`technique-selection.ts`): función pura `selectTechnique(technique, isFirstTime)` — aplica la política de duración (criterio 3: duración según primera vez o retoque, más `bufferMin` del catálogo) y el invariante de una sola técnica por selección (criterio 4: el tipo `TechniqueSelection` no admite una lista). Errores como tipos + factories en `domain/errors.ts` (`TechniqueNotSelectable`, `TechniqueNotAvailable`, DOM-006), sin clases. Prueba: `domain/__tests__/technique-selection.test.ts`.
-- Capa `application/`: puertos `CatalogPort` y `ClientHistoryPort` (`ports.ts`). `catalog-adapter.ts` implementa `CatalogPort` contra el contrato público de `catalog` (`listTechniques`/`getTechnique`, nunca su tabla — ARCH-005). `select-technique.ts` orquesta: consulta el catálogo (criterio 1), decide primera vez/re-aplicación (criterio 2, ver más abajo) y aplica la política de duración del dominio. Prueba: `application/__tests__/select-technique.test.ts` con fakes como funciones factory (`__tests__/fakes.ts`), sin clases.
-- Criterio 2, diferido: `application/no-appointment-history.ts` implementa `ClientHistoryPort` siempre reportando "sin historial" — no existe `scheduling_appointments` todavía (la trae `US-AGE-05`, que depende de esta historia). La corrección manual ya está resuelta en el use-case: `isFirstTimeOverride` en `SelectTechniqueInput` gana sobre la detección automática. Prueba del stub: `application/__tests__/no-appointment-history.test.ts`.
+- Capa `application/`: puertos `CatalogPort` y `ClientHistoryPort` (`ports.ts`). `catalog-adapter.ts` implementa `CatalogPort` contra el contrato público de `catalog` (`listTechniques`/`getTechnique`, nunca su tabla — ARCH-005). `select-technique.ts` orquesta: consulta el catálogo (criterio 1), decide primera vez/re-aplicación (criterio 2, trasladado a US-AGE-05, ver más abajo) y aplica la política de duración del dominio. Prueba: `application/__tests__/select-technique.test.ts` con fakes como funciones factory (`__tests__/fakes.ts`), sin clases.
+- Criterio 2, trasladado a US-AGE-05 (aprobado por el PO el 2026-10-17, ver más abajo): `application/no-appointment-history.ts` implementa `ClientHistoryPort` siempre reportando "sin historial" — la tabla mínima `scheduling_appointments` de US-AGE-09 no tiene `client_id` ni `technique_id`, así que no hay cómo detectar primera vez/re-aplicación por historial real todavía. La corrección manual ya está resuelta en el use-case: `isFirstTimeOverride` en `SelectTechniqueInput` gana sobre la detección automática. US-AGE-05 deberá reemplazar o extender este puerto cuando agregue el vínculo cliente↔cita. Prueba del stub: `application/__tests__/no-appointment-history.test.ts`.
 - Capa `ui/`: `load-technique-selection-page.ts` concentra toda la lógica de la página (sesión de clienta vía `getAuthSession`/`AUTH_ROLES.CLIENTE`, y la llamada a `listTechniques` del catálogo — criterio 1 de punta a punta), con su propio test (`ui/__tests__/load-technique-selection-page.test.ts`, mocks de `@/features/auth` y `@/features/catalog`). `TechniqueSelectionPageView.tsx` es puramente presentacional — decide forbidden/vacío/selector a partir de esos datos ya cargados, sin fetch ni sesión propios; prueba: `ui/__tests__/TechniqueSelectionPageView.test.tsx`. `ClientTechniqueSelectionPage.tsx` solo orquesta: llama al loader y delega el render a la vista. `TechniqueSelector.tsx` (client) es solo render; su estado vive en el hook `ui/hooks/useTechniqueSelector.ts` (`useActionState`). Los nombres de campo y valores del formulario están en `ui/constants.ts`, compartidos con `actions.ts` (`selectTechniqueAction`), que resuelve el `clientId` desde la sesión del servidor, nunca del formulario (SEC-005). Texto externalizado en `ui/messages.ts` (DOM-009).
 - Entry points y ruta: `index.ts` expone `ClientTechniqueSelectionPage` y `schedulingMessages`; `client.ts` expone solo `schedulingMessages` para `loading.tsx`/`error.tsx` de la ruta (ARCH-003, sin `next/headers` en el bundle cliente). `src/app/portal/citas/page.tsx` compone la página; `loading.tsx`/`error.tsx` usan estilos de `citas.styles.ts`, con `role="status"`/`role="alert"` (UI-004). Esa ruta era un placeholder de `auth`; ahora la compone `scheduling` (ver nota en `auth/SPEC.md`).
 
@@ -65,7 +64,7 @@ Nombres en toda la feature: los estilos se importan como `STYLES` y los textos c
 - **Acciones del servidor** (`ui/approval-queue/actions/approval-queue-actions.ts`): `listPendingAppointmentsAction`, `approveAppointmentAction` y `rejectAppointmentAction` exigen `requireAdminSession`, cablean los casos de uso con el cliente de servidor y la bitácora de `audit`, toman el actor de la sesión (SEC-005) y refrescan `/admin/citas`. Solo orquestan: el mensaje de cada error sale de `ui/approval-queue/utils/decision-error-message.ts`. Si solo falla la bitácora devuelven un mensaje propio (la cita sí quedó rechazada) y refrescan igual. La lectura de pendientes está en `application/list-pending-appointments.ts` y `db/pending-appointments-repository.ts` (con la sesión de quien llama: la RLS decide). Prueba: `ui/approval-queue/__tests__/approval-queue-actions.test.ts`.
 - **Cola de aprobación** (`src/app/admin/citas/page.tsx` y `ui/approval-queue/{actions,components,constants,hooks,styles,types,utils}`): la página lista las citas pendientes con `listPendingAppointmentsAction` y las pinta con `ApprovalQueue`; `loading.tsx` cubre la carga; el estado vacío y el de error (`loadError` con `role="alert"` y reintento) los resuelve `ApprovalQueue` (UI-003). `ApprovalQueue` y `ApprovalQueueItem` solo renderizan; el estado y los handlers están en `hooks/useApprovalQueue.ts`. Cada cita muestra su horario en la hora del estudio (`America/Costa_Rica`) con botones Aprobar y Rechazar con nombre accesible propio; rechazar abre un campo de motivo opcional con etiqueta (máximo 500 caracteres); un fallo se muestra con `role="alert"`. No hay `error.tsx` propio para `/admin/citas`. Prueba: `ui/approval-queue/__tests__/ApprovalQueue.test.tsx`.
 
-Dónde se detiene: criterio 2 no se puede demostrar completo hasta que `US-AGE-05` aporte el historial real de citas — no se marca `terminada` hasta cerrarlo.
+Alcance: el criterio 2 se trasladó a US-AGE-05 con aprobación del PO el 2026-10-17 (ver "Criterios recibidos de US-AGE-03" más abajo y `docs/process/DEPENDENCIES.md`, Criterios trasladados). US-AGE-03 queda `terminada` con los criterios 1, 3 y 4.
 
 ### US-AGE-01 — disponibilidad
 
@@ -119,6 +118,15 @@ Traslado aprobado por el PO, comunicado por Bayron el 2026-10-03 y registrado en
 
 - Criterio original 4 de US-AGE-13: descontar el anticipo del saldo pendiente al cerrar la cita, de modo que el pago final sea la diferencia.
 - Evidencia pendiente: prueba del saldo final y del asiento del anticipo en el ledger de `payments` (DOM-005).
+
+## Criterios recibidos de US-AGE-03
+
+Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el 2026-10-17 y registrado en `docs/process/DEPENDENCIES.md`. US-AGE-05 sigue `no_iniciada`.
+
+### US-AGE-05 — reservar
+
+- Criterio 2 de US-AGE-03: el sistema determina si es primera vez o re-aplicación según el historial del cliente, permitiendo corregirlo manualmente. Requiere el vínculo cliente↔cita que esta historia agrega sobre `scheduling_appointments` — la tabla mínima de US-AGE-09 no tiene `client_id` ni `technique_id`, por eso el puerto no se puede implementar de verdad antes de esta historia.
+- Evidencia pendiente: implementación real de `ClientHistoryPort` (o su reemplazo) contra el historial de citas completadas de la clienta, y su prueba.
 
 ## Contrato público (`index.ts`, ARCH-003)
 

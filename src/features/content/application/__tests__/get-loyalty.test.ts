@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 import { MAX_LOYALTY_LEVELS } from '../../domain/loyalty'
 import { EMPTY_LOYALTY, toLoyaltyContent } from '../get-loyalty'
 
-// La fidelidad publicada tal como la entrega uno-cms (docs/contracts/cms-api.md § `fidelidad`).
 const programa = {
   texto: 'Cada cita completada suma una visita.\n\nLos beneficios se aplican solos al llegar a cada nivel.',
   nota: 'Los beneficios no son acumulables.',
