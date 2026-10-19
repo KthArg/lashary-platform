@@ -13,7 +13,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-04
     estado: en_progreso
-    falta: "piezas 1/10 a 6/10: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros y los casos de uso de lectura y escritura con bitacora. Faltan repositorio, adaptadores de audit y catalog y actions (7/10), la pestana Expediente (8/10), los formularios y las categorias nuevas (9/10) y las imagenes con URL firmada (10/10)"
+    falta: "piezas 1/11 a 7/11: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros, los casos de uso de lectura y escritura con bitacora, y el repositorio con los adaptadores de audit y catalog. Faltan las server actions (8/11), la pestana Expediente (9/11), los formularios y las categorias nuevas (10/11) y las imagenes con URL firmada (11/11)"
   - id: US-CLI-05
     estado: terminada
     evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
@@ -373,3 +373,17 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
   contenido más quién, cuándo y por qué. Se renombró dentro de cada pieza (3/10 a 6/10, con rebase y
   force-push de sus ramas) en vez de sumar una pieza de renombre, porque sus PRs aún no tenían
   revisión humana. Solo cambiaron nombres; las pruebas pasan sin tocar ninguna aserción.
+- **2026-10-18 — US-CLI-04 pasa de 10 a 11 piezas (INT-002), por decisión de José Loría.** Repositorio,
+  adaptadores y server actions estimados con sus pruebas daban ~480 líneas. Se parten en
+  repositorio y adaptadores (7/11) y server actions (8/11); vista 9/11, formularios 10/11, imágenes
+  11/11.
+- **2026-10-18 — El repositorio del expediente vive en `db/record/` (pieza 7/11).** Es una función
+  fábrica (ADR-0008) que recibe el cliente de Supabase, para poder probarla con uno simulado. Al
+  leer, cada fila vuelve a pasar por `buildRecordContent`: si el `jsonb` de antecedentes o imágenes
+  no tiene la forma esperada, se lanza un error en vez de mostrar un expediente a medias. El código
+  `23505` de la base (versión anterior repetida o segundo registro inicial) se traduce a
+  `version-conflict`; cualquier otro error se lanza, porque no es esperado (DOM-006).
+- **2026-10-18 — Los adaptadores a `audit` y `catalog` viven en `application/record/record-gateways.ts`,**
+  como `scheduling/application/catalog-adapter.ts`, y solo usan sus APIs públicas (ARCH-003). El de
+  la bitácora convierte en `false` tanto un evento rechazado como un error de red o de RLS: para el
+  expediente las dos cosas significan "el acceso no quedó registrado" (fail-closed, SEC-006).
