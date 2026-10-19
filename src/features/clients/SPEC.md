@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-08
+actualizado: 2026-10-17
 historias:
   - id: US-CLI-01
     estado: en_progreso
@@ -12,7 +12,8 @@ historias:
   - id: US-CLI-03
     estado: no_iniciada
   - id: US-CLI-04
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "pieza 1/8: solo el esquema (clients_precaution_categories y clients_record_versions con su RLS y pgTAP). Faltan el bucket privado de imagenes (2/8), dominio, casos de uso con bitacora, repositorio y actions, la pestana Expediente, los formularios y las imagenes (3/8 a 8/8)"
   - id: US-CLI-05
     estado: terminada
     evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
@@ -266,3 +267,49 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
   uso y pasa a `application/ports.ts`. Las pruebas de las actions no cambiaron y siguen pasando: la
   secuencia de llamadas a Supabase es la misma. **Consecuencia asumida:** `updateClientAction` con un id
   vacío crea el cliente de Supabase antes de rechazarlo, aunque no consulta la base.
+- **2026-10-17 — US-CLI-04 se entrega en 8 piezas (INT-002, INT-008), por decisión de José Loría.**
+  Las dos migraciones van por fuera del stack, cada una en su PR directo a `main`: 1/8 el esquema
+  del expediente y 2/8 el bucket privado de imágenes. El código (3/8 a 8/8) es un stack que sale de
+  `main`; la 5/8 espera a que 1/8 esté en `main` y la 8/8 a que lo esté 2/8. Cada PR trae una sola
+  migración, así que INT-008 se cumple pieza por pieza.
+- **2026-10-17 — El expediente es una cadena de versiones completas, append-only.** Cada cambio
+  (registro inicial, agregar o quitar un antecedente, editar el estudio, agregar una imagen) inserta
+  una fila en `clients_record_versions` con la foto entera del expediente; la vigente es la última.
+  Sin políticas de UPDATE ni DELETE, la base no deja reescribir ni borrar el historial (criterio 4),
+  igual que `audit_events`. "Quitar" un antecedente es una versión nueva sin él, no un borrado.
+  No hay tabla `clients_records`: el expediente de una clienta son sus versiones. Un índice único
+  parcial impide dos registros iniciales por clienta, y la FK compuesta
+  `(previous_version_id, client_id)` impide que una versión continúe el expediente de otra.
+- **2026-10-17 — Concurrencia por `UNIQUE (previous_version_id)`.** Una versión solo puede tener
+  una sucesora: si dos sesiones guardan sobre la misma foto, la segunda choca y debe recargar, en
+  vez de borrar sin saberlo lo que agregó la primera. Lo garantiza la base, sin bloqueos.
+- **2026-10-17 — Antecedentes e imágenes en `jsonb` dentro de la versión, no en tablas aparte.**
+  Guardar una versión es un solo `INSERT`, atómico sin función SQL. **Consecuencia asumida:** la
+  base no tiene FK desde los antecedentes a su categoría; la forma de cada elemento la valida el
+  dominio, y cada antecedente guarda una copia del nombre de la categoría, que es lo que muestra el
+  historial. Consultar "todas las clientas con tal alergia" no lo pide ninguna historia.
+- **2026-10-17 — Las categorías de antecedentes son una tabla, no un `CHECK`, por decisión de José
+  Loría:** la administradora crea las que falten desde el diálogo de agregar, sin migración. La
+  migración trae Alergia, Sensibilidad y Condición relevante (criterio 2); van en la migración y no
+  en `seed.sql` porque tienen que existir en producción. Únicas sin importar mayúsculas; no se
+  renombran ni se borran, porque el historial las cita.
+- **2026-10-17 — La técnica recomendada se elige de `catalog` por su API pública**
+  (`listTechniques`, `getTechnique`), sin cambiar su contrato (INT-003 no aplica). La versión guarda
+  `recommended_technique_id` sin FK (ARCH-005) y una copia del nombre: el historial muestra lo que
+  se recomendó ese día aunque la técnica cambie de nombre.
+- **2026-10-17 — Opción A para "actualizar con cada cita posterior":** cada versión lleva fecha y
+  autora, sin vínculo a una cita. Vincular algo a una cita concreta es US-CLI-03 (anotaciones), que
+  depende de US-CLI-02 y US-AGE-05. Si se quiere el vínculo, se agrega después una columna
+  `appointment_id` con una migración forward.
+- **2026-10-17 — Frontera con US-CLI-03:** el expediente es el estado clínico vigente; las
+  anotaciones son lo que pasó en cada cita, y se pueden borrar. Un dato clínico escrito en una
+  anotación o en `clients_profiles.notes` queda fuera de SEC-006 (sin bitácora y borrable). Cuando
+  llegue US-CLI-03, su formulario debe orientar a usar el expediente para lo clínico.
+- **2026-10-17 — Toda lectura del expediente se audita, fail-closed (SEC-006).** Se registra el
+  acceso antes de devolver los datos; si la bitácora falla, no se muestran. El evento lleva actor,
+  acción y clienta, nunca el contenido del expediente. El expediente vive en su propia pestaña de
+  la ficha para que el acceso sea deliberado y la bitácora no se llene de accesos que no ocurrieron.
+- **2026-10-17 — Solo la administradora (`auth_is_admin()`), no `auth_is_staff()`**, en las dos
+  tablas (SEC-006). La política de INSERT exige además `created_by = auth.uid()`: nadie firma una
+  versión ni una categoría a nombre de otra persona. `client_id` es `ON DELETE RESTRICT`
+  (ADR-0009): una clienta con expediente no se borra.
