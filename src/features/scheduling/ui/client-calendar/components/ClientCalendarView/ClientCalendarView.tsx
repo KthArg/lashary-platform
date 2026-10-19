@@ -39,7 +39,7 @@ function CalendarBody({ view }: ClientCalendarViewProps) {
         <section className={STYLES.card}>
           <ServicePicker picker={view.picker} />
           <DayNavigator day={view.day} />
-          <SlotList slots={view.slots} />
+          <SlotList slots={view.slots} serviceKey={view.picker.selectedKey ?? ''} date={view.picker.date} />
         </section>
       )
   }

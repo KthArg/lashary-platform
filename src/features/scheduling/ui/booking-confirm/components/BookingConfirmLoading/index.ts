@@ -1,0 +1,1 @@
+export { BookingConfirmLoading } from './BookingConfirmLoading'

@@ -25,6 +25,7 @@ export const clientCalendarMessages = {
   busy: 'Ocupado',
   noServices: 'Todavía no hay servicios para agendar. Volvé a intentarlo más tarde.',
   chooseService: 'Elegí un servicio para ver los espacios disponibles.',
+  continueToConfirm: 'Continuar',
   noSlots: 'No hay espacios disponibles este día. Probá con otro día.',
   invalid: 'No pudimos calcular los espacios de ese día. Elegí otro día o servicio.',
   loading: 'Cargando los espacios…',
