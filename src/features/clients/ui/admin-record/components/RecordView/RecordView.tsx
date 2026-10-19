@@ -2,10 +2,11 @@ import { RECORD_LABELS } from '../../constants/record-strings'
 import { describeVersion, formatRecordDate } from '../../record-history'
 import { StudyEditor } from '../StudyEditor'
 import { PrecautionsEditor } from '../PrecautionsEditor'
+import { ImagesEditor } from '../ImagesEditor'
 import { recordViewStyles as STYLES } from './RecordView.styles'
 import type { RecordViewProps } from './RecordView.types'
 
-export function RecordView({ clientId, current, history, techniques, categories }: RecordViewProps) {
+export function RecordView({ clientId, current, history, techniques, categories, imageUrls }: RecordViewProps) {
   if (current === null) return <StudyEditor clientId={clientId} study={null} techniques={techniques} />
 
   const initial = history.find((version) => version.changeKind === 'initial')
@@ -30,7 +31,7 @@ export function RecordView({ clientId, current, history, techniques, categories 
 
       <section className={STYLES.section}>
         <h3 className={STYLES.sectionTitle}>{RECORD_LABELS.imagesHeading}</h3>
-        <p className={STYLES.muted}>{images.length === 0 ? RECORD_LABELS.noImages : RECORD_LABELS.imagesCount(images.length)}</p>
+        <ImagesEditor clientId={clientId} images={images} imageUrls={imageUrls} />
       </section>
 
       <section className={STYLES.section}>

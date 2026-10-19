@@ -25,6 +25,6 @@ export default async function AdminRecordPage({ params }: AdminRecordPageProps) 
   return (
     <RecordView clientId={id} current={result.current} history={result.history}
       techniques={techniqueOptions.ok ? techniqueOptions.techniques : []}
-      categories={categoryOptions.ok ? categoryOptions.categories : []} />
+      categories={categoryOptions.ok ? categoryOptions.categories : []} imageUrls={result.imageUrls} />
   )
 }

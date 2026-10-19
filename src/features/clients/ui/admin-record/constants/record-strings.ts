@@ -60,7 +60,6 @@ export const RECORD_LABELS = {
   noPrecautions: 'Sin antecedentes registrados.',
   imagesHeading: 'Imágenes',
   noImages: 'Sin imágenes todavía.',
-  imagesCount: (count: number) => (count === 1 ? '1 imagen' : `${count} imágenes`),
   historyHeading: 'Historial de cambios',
   emptyRecord: 'Esta clienta todavía no tiene expediente.',
   loading: 'Cargando expediente…',
@@ -87,4 +86,13 @@ export const STUDY_FORM_LABELS = {
   save: 'Guardar',
   saving: 'Guardando…',
   cancel: 'Cancelar',
+} as const
+
+export const IMAGES_LABELS = {
+  imageAlt: (position: number) => `Imagen ${position} del expediente`,
+  unavailable: 'Imagen no disponible',
+  field: 'Agregar imagen (JPEG, PNG o WebP, hasta 1 MB)',
+  accept: 'image/jpeg,image/png,image/webp',
+  upload: 'Subir imagen',
+  uploading: 'Subiendo…',
 } as const

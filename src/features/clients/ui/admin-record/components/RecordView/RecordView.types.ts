@@ -7,4 +7,5 @@ export interface RecordViewProps {
   history: readonly RecordVersionView[]
   techniques: readonly RecommendedTechnique[]
   categories: readonly CategoryOption[]
+  imageUrls: Readonly<Record<string, string>>
 }

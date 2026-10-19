@@ -18,3 +18,17 @@ export function createSupabaseRecordImageStorage(db: SupabaseClient): RecordImag
 export async function recordImageStorage(): Promise<RecordImageStorage> {
   return createSupabaseRecordImageStorage(await createClient())
 }
+
+export const RECORD_IMAGE_URL_SECONDS = 300
+
+export async function signSupabaseRecordImages(db: SupabaseClient, paths: readonly string[]): Promise<Record<string, string>> {
+  const { data, error } = await db.storage.from(RECORD_IMAGES_BUCKET).createSignedUrls([...paths], RECORD_IMAGE_URL_SECONDS)
+  if (error || !data) throw new Error('no se pudieron firmar las imágenes del expediente')
+  return Object.fromEntries(
+    data.flatMap((signed) => (signed.path && signed.signedUrl ? [[signed.path, signed.signedUrl]] : [])),
+  )
+}
+
+export async function signRecordImageUrls(paths: readonly string[]): Promise<Record<string, string>> {
+  return signSupabaseRecordImages(await createClient(), paths)
+}
