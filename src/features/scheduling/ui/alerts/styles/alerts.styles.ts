@@ -1,0 +1,15 @@
+export const alertsStyles = {
+  main: 'mx-auto flex max-w-4xl flex-col gap-6 p-4 sm:p-6',
+  header: 'border-b border-brand-border pb-4',
+  title: 'font-serif text-2xl md:text-3xl font-bold text-brand-dark',
+  subtitle: 'mt-1 text-sm text-brand-muted',
+  list: 'flex flex-col gap-3',
+  card: 'flex flex-col gap-2 rounded-box border border-warning/50 bg-warning/10 p-4',
+  cardTitle: 'font-semibold text-brand-dark',
+  cardDetail: 'text-sm',
+  meta: 'grid grid-cols-1 gap-1 text-sm sm:grid-cols-[auto_1fr] sm:gap-x-4',
+  term: 'font-medium',
+  empty: 'rounded-box bg-base-200 p-4 text-sm',
+  alertError: 'alert alert-error flex flex-wrap items-center gap-3',
+  retry: 'btn btn-outline btn-sm',
+}
