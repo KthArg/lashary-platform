@@ -52,6 +52,8 @@ VALUES ('00000000-0000-0000-0000-000000000a01', '2027-09-13', 'non_working');
 INSERT INTO public.scheduling_manual_blocks (resource_id, starts_at, ends_at)
 VALUES ('00000000-0000-0000-0000-000000000a01', '2027-09-20 10:00-06', '2027-09-20 11:00-06');
 
+UPDATE public.scheduling_booking_limits SET max_pending_per_client = 100;
+
 -- ── Clienta A reserva ────────────────────────────────────────────────────────
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claims',

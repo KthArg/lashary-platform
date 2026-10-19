@@ -47,6 +47,8 @@ SELECT '00000000-0000-0000-0000-000000000a01', v.status, v.starts_at, v.starts_a
     ('completed', '2026-01-09 09:00-06'::timestamptz, '00000000-0000-0000-0000-0000000007c7'::uuid, '00000000-0000-0000-0000-0000000007f5'::uuid)
   ) AS v(status, starts_at, client_id, technique_id);
 
+UPDATE public.scheduling_booking_limits SET max_pending_per_client = 100;
+
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claims',
   '{"sub":"00000000-0000-0000-0000-0000000007e2","role":"authenticated"}', true);
