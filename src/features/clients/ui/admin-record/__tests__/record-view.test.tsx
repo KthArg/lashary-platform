@@ -17,7 +17,7 @@ const sectionNamed = (heading: string) => screen.getByRole('heading', { name: he
 
 describe('RecordView — la pestaña Expediente (criterios 1, 2 y 4)', () => {
   it('muestra el estudio, la técnica recomendada y la fecha del registro inicial', () => {
-    render(<RecordView clientId={CLIENT_ID} techniques={[]} current={ADDED_VIEW} history={[ADDED_VIEW, INITIAL_VIEW]} />)
+    render(<RecordView clientId={CLIENT_ID} techniques={[]} categories={[]} current={ADDED_VIEW} history={[ADDED_VIEW, INITIAL_VIEW]} />)
     expect(screen.getByRole('heading', { name: RECORD_LABELS.studyHeading })).toBeTruthy()
     expect(screen.getByText(RECORD_LABELS.initialRecordOn(formatRecordDate(INITIAL_VIEW.createdAt)))).toBeTruthy()
     expect(within(sectionNamed(RECORD_LABELS.initialStudyHeading)).getByText(ADDED_VIEW.studyText)).toBeTruthy()
@@ -25,16 +25,15 @@ describe('RecordView — la pestaña Expediente (criterios 1, 2 y 4)', () => {
   })
 
   it('lista cada antecedente con su categoría', () => {
-    render(<RecordView clientId={CLIENT_ID} techniques={[]} current={ADDED_VIEW} history={[ADDED_VIEW, INITIAL_VIEW]} />)
+    render(<RecordView clientId={CLIENT_ID} techniques={[]} categories={[]} current={ADDED_VIEW} history={[ADDED_VIEW, INITIAL_VIEW]} />)
     const items = within(sectionNamed(RECORD_LABELS.precautionsHeading)).getAllByRole('listitem')
-    expect(items.map((item) => item.textContent)).toEqual([
-      `${ALLERGY.categoryName}${ALLERGY.description}`,
-      `${SENSITIVITY.categoryName}${SENSITIVITY.description}`,
-    ])
+    expect(items).toHaveLength(2)
+    expect(items[0].textContent).toContain(`${ALLERGY.categoryName}${ALLERGY.description}`)
+    expect(items[1].textContent).toContain(`${SENSITIVITY.categoryName}${SENSITIVITY.description}`)
   })
 
   it('el historial va de lo más nuevo a lo más viejo, con fecha y qué cambió', () => {
-    render(<RecordView clientId={CLIENT_ID} techniques={[]} current={ADDED_VIEW} history={[ADDED_VIEW, INITIAL_VIEW]} />)
+    render(<RecordView clientId={CLIENT_ID} techniques={[]} categories={[]} current={ADDED_VIEW} history={[ADDED_VIEW, INITIAL_VIEW]} />)
     const items = within(sectionNamed(RECORD_LABELS.historyHeading)).getAllByRole('listitem')
     expect(items[0].textContent).toContain(RECORD_CHANGE_TEXTS.precautionAdded(SENSITIVITY.categoryName, SENSITIVITY.description))
     expect(items[0].querySelector('time')?.getAttribute('dateTime')).toBe(ADDED_VIEW.createdAt)
@@ -43,14 +42,14 @@ describe('RecordView — la pestaña Expediente (criterios 1, 2 y 4)', () => {
 
   it('sin técnica, sin antecedentes y sin imágenes lo dice en vez de dejar huecos', () => {
     const bare = { ...INITIAL_VIEW, recommendedTechnique: null, precautions: [] }
-    render(<RecordView clientId={CLIENT_ID} techniques={[]} current={bare} history={[bare]} />)
+    render(<RecordView clientId={CLIENT_ID} techniques={[]} categories={[]} current={bare} history={[bare]} />)
     expect(screen.getByText(RECORD_LABELS.noRecommendedTechnique)).toBeTruthy()
     expect(screen.getByText(RECORD_LABELS.noPrecautions)).toBeTruthy()
     expect(screen.getByText(RECORD_LABELS.noImages)).toBeTruthy()
   })
 
   it('una clienta sin expediente ve el estado vacío', () => {
-    render(<RecordView clientId={CLIENT_ID} techniques={[]} current={null} history={[]} />)
+    render(<RecordView clientId={CLIENT_ID} techniques={[]} categories={[]} current={null} history={[]} />)
     expect(screen.getByText(RECORD_LABELS.emptyRecord)).toBeTruthy()
     expect(screen.queryByRole('heading', { name: RECORD_LABELS.historyHeading })).toBeNull()
   })

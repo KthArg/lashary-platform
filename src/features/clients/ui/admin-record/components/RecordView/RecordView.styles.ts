@@ -8,6 +8,5 @@ export const recordViewStyles = {
   label: 'text-sm text-brand-muted',
   muted: 'text-sm italic text-brand-muted/70',
   list: 'divide-y divide-brand-border/60',
-  precaution: 'flex flex-wrap gap-x-4 gap-y-1 py-2 text-sm text-brand-dark',
   historyItem: 'flex flex-wrap gap-x-4 gap-y-1 py-2 text-sm text-brand-dark',
 }

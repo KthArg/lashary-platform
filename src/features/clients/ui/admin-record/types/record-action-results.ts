@@ -33,3 +33,12 @@ export interface PrecautionFormInput {
 export type ListTechniqueOptionsResult =
   | { ok: true; techniques: RecommendedTechnique[] }
   | { ok: false; error: string }
+
+export interface CategoryOption {
+  readonly id: string
+  readonly name: string
+}
+
+export type ListCategoryOptionsResult =
+  | { ok: true; categories: CategoryOption[] }
+  | { ok: false; error: string }

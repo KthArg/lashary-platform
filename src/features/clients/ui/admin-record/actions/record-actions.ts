@@ -8,7 +8,7 @@ import { isErr, type Result } from '@/shared/result'
 import { viewRecord } from '../../../application/record/view-record'
 import { auditRecordLog, catalogTechniqueLookup, listActiveCatalogTechniques } from '../../../application/record/record-gateways'
 import { recordRepository } from '../../../db/record/record-repository'
-import { precautionCategoryLookup } from '../../../db/record/precaution-category-repository'
+import { listPrecautionCategories, precautionCategoryLookup } from '../../../db/record/precaution-category-repository'
 import { RECORD_ERROR_CODES, isRecordValidationError } from '../../../domain/record/record-errors'
 import {
   addRecordPrecaution,
@@ -22,6 +22,7 @@ import {
 import { RECORD_ERROR_MESSAGES, RECORD_PROBLEM_MESSAGES } from '../constants/record-strings'
 import type { RecordActor, RecordVersion } from '../../../application/record/record-ports'
 import type {
+  ListCategoryOptionsResult,
   ListTechniqueOptionsResult,
   PrecautionFormInput,
   RecordVersionView,
@@ -144,5 +145,14 @@ export async function listTechniqueOptionsAction(): Promise<ListTechniqueOptions
     return { ok: true, techniques: await listActiveCatalogTechniques() }
   } catch {
     return { ok: false, error: RECORD_ERROR_MESSAGES.techniquesUnavailable }
+  }
+}
+
+export async function listCategoryOptionsAction(): Promise<ListCategoryOptionsResult> {
+  await requireAdminSession()
+  try {
+    return { ok: true, categories: await listPrecautionCategories() }
+  } catch {
+    return { ok: false, error: RECORD_ERROR_MESSAGES.categoriesUnavailable }
   }
 }

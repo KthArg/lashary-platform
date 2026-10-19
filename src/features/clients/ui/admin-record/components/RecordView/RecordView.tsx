@@ -1,10 +1,11 @@
 import { RECORD_LABELS } from '../../constants/record-strings'
 import { describeVersion, formatRecordDate } from '../../record-history'
 import { StudyEditor } from '../StudyEditor'
+import { PrecautionsEditor } from '../PrecautionsEditor'
 import { recordViewStyles as STYLES } from './RecordView.styles'
 import type { RecordViewProps } from './RecordView.types'
 
-export function RecordView({ clientId, current, history, techniques }: RecordViewProps) {
+export function RecordView({ clientId, current, history, techniques, categories }: RecordViewProps) {
   if (current === null) return <StudyEditor clientId={clientId} study={null} techniques={techniques} />
 
   const initial = history.find((version) => version.changeKind === 'initial')
@@ -24,18 +25,7 @@ export function RecordView({ clientId, current, history, techniques }: RecordVie
 
       <section className={STYLES.section}>
         <h3 className={STYLES.sectionTitle}>{RECORD_LABELS.precautionsHeading}</h3>
-        {precautions.length === 0 ? (
-          <p className={STYLES.muted}>{RECORD_LABELS.noPrecautions}</p>
-        ) : (
-          <ul className={STYLES.list}>
-            {precautions.map((precaution) => (
-              <li key={precaution.id} className={STYLES.precaution}>
-                <span className={STYLES.label}>{precaution.categoryName}</span>
-                <span>{precaution.description}</span>
-              </li>
-            ))}
-          </ul>
-        )}
+        <PrecautionsEditor clientId={clientId} precautions={precautions} categories={categories} />
       </section>
 
       <section className={STYLES.section}>

@@ -8,7 +8,12 @@ import {
   rowToVersion,
   versionToRow,
 } from '../record/record-repository'
-import { PRECAUTION_CATEGORIES_TABLE, createSupabaseCategoryLookup } from '../record/precaution-category-repository'
+import {
+  CATEGORY_OPTIONS_LIMIT,
+  PRECAUTION_CATEGORIES_TABLE,
+  createSupabaseCategoryLookup,
+  listSupabaseCategories,
+} from '../record/precaution-category-repository'
 import { RECORD_HISTORY_LIMIT } from '../../application/record/view-record'
 import { initialVersion } from '../../application/__tests__/record-fakes'
 
@@ -97,5 +102,14 @@ describe('createSupabaseCategoryLookup', () => {
   it('una categoría que no existe se lee como null', async () => {
     const { db } = fakeDb({ data: null, error: null })
     expect(await createSupabaseCategoryLookup(db).findCategory('category-x')).toBeNull()
+  })
+})
+
+describe('listSupabaseCategories', () => {
+  it('lee las categorías en orden alfabético y con tope', async () => {
+    const { db, calls } = fakeDb({ data: [{ id: 'category-1', name: 'Alergia' }], error: null })
+    expect(await listSupabaseCategories(db)).toEqual([{ id: 'category-1', name: 'Alergia' }])
+    expect(calls).toContainEqual(['order', 'name'])
+    expect(calls).toContainEqual(['limit', CATEGORY_OPTIONS_LIMIT])
   })
 })
