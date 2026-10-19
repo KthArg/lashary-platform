@@ -1,6 +1,7 @@
 import { ok, err, isErr, type Result } from '@/shared/result'
 import type { Clock } from '@/shared/clock'
 import type { RecordContent } from '../../domain/record/record-content'
+import type { RecordImageProblem } from '../../domain/record/record-image'
 import type { RecommendedTechnique } from '../../domain/record/record.types'
 import type { PrecautionNotFound, RecordUnchanged, RecordValidationError } from '../../domain/record/record-errors'
 import {
@@ -20,12 +21,18 @@ import type {
 } from './record-ports'
 
 export interface RecordCommandFailure {
-  readonly code: 'record-missing' | 'record-exists' | 'version-conflict' | 'technique-not-found' | 'category-not-found'
+  readonly code:
+    | 'record-missing'
+    | 'record-exists'
+    | 'version-conflict'
+    | 'technique-not-found'
+    | 'category-not-found'
+    | RecordImageProblem
 }
 
 export type RecordCommandError = RecordCommandFailure | RecordValidationError | PrecautionNotFound | RecordUnchanged
 
-type RecordCommandResult<T> = Result<T, RecordCommandError>
+export type RecordCommandResult<T> = Result<T, RecordCommandError>
 
 export interface RecordCommandDeps {
   readonly repo: RecordRepository
@@ -46,7 +53,7 @@ export interface PrecautionInput {
   readonly description: string
 }
 
-const failure = (code: RecordCommandFailure['code']): RecordCommandFailure => ({ code })
+export const failure = (code: RecordCommandFailure['code']): RecordCommandFailure => ({ code })
 
 async function currentVersion(deps: RecordCommandDeps, clientId: string): Promise<RecordVersion | null> {
   const [latest] = await deps.repo.listVersions(clientId, 1)
@@ -85,7 +92,7 @@ async function saveChange(
   return saved
 }
 
-async function updateRecord(
+export async function updateRecord(
   deps: RecordCommandDeps,
   actor: RecordActor,
   applyChange: (content: RecordContent) => Promise<RecordCommandResult<RecordChange>>,

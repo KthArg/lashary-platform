@@ -13,7 +13,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-04
     estado: en_progreso
-    falta: "piezas 1/14 a 12/14: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros, los casos de uso con bitacora, el repositorio con los adaptadores de audit y catalog, las server actions, la vista del expediente, la ficha de la clienta, registrar y editar el estudio y agregar y quitar antecedentes. Faltan crear categorias nuevas (13/14, en pausa por decision de Jose Loria) y las imagenes con URL firmada (14/14)"
+    falta: "piezas 1/14 a 13/14: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros, los casos de uso con bitacora, el repositorio con los adaptadores de audit y catalog, las server actions, la vista del expediente, la ficha de la clienta, registrar y editar el estudio, agregar y quitar antecedentes y subir imagenes. Falta ver las imagenes con URL firmada en la pestana (14/14), que cierra la historia"
   - id: US-CLI-05
     estado: terminada
     evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
@@ -424,3 +424,13 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
   formulario; al guardar, se cierra y `router.refresh()` trae la versión nueva.
 - **2026-10-18 — Antecedentes (12/14):** el **+** usa las categorías existentes (tope de 100); *Quitar*
   nombra su antecedente (UI-004) y confirma con el `ConfirmDialog` de `clients`: sigue en el historial.
+- **2026-10-18 — Crear categorías nuevas sale del plan por ahora, por decisión de José Loría;** las
+  imágenes ocupan 13/14 (subir) y 14/14 (verlas y cerrar). Si la categoría vuelve, se renumera.
+- **2026-10-18 — Subir imágenes (pieza 13/14).** `addRecordImageAction` recibe el archivo en un
+  `FormData`; `recordImageExtension` (dominio) acepta JPEG, PNG y WebP de hasta 1 MB, igual que el
+  bucket, midiendo los bytes reales. Se sube a `<clienta>/<uuid>.<ext>` y después se guarda la
+  versión con `addImage`, con su bitácora. **Consecuencia asumida, por decisión de José Loría:** si
+  guardar la versión falla (p.ej. un choque), el archivo queda en el bucket sin versión que lo use;
+  no se borra porque el bucket no tiene política de DELETE. Es privado, así que nadie lo ve. **Límite
+  conocido:** Next corta las server actions a 1 MB de cuerpo, así que una imagen muy cerca de 1 MB
+  falla antes de llegar a la validación (la misma deuda abierta en `store`).

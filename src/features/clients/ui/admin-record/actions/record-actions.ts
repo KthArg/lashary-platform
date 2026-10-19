@@ -9,6 +9,8 @@ import { viewRecord } from '../../../application/record/view-record'
 import { auditRecordLog, catalogTechniqueLookup, listActiveCatalogTechniques } from '../../../application/record/record-gateways'
 import { recordRepository } from '../../../db/record/record-repository'
 import { listPrecautionCategories, precautionCategoryLookup } from '../../../db/record/precaution-category-repository'
+import { recordImageStorage } from '../../../db/record/record-image-storage'
+import { addRecordImage } from '../../../application/record/add-record-image'
 import { RECORD_ERROR_CODES, isRecordValidationError } from '../../../domain/record/record-errors'
 import {
   addRecordPrecaution,
@@ -34,6 +36,8 @@ import { clientRecordPath, isUuid } from '../../client-routes'
 
 const readText = (value: unknown): string => (typeof value === 'string' ? value : '')
 
+const RECORD_IMAGE_FIELD = 'image'
+
 const COMMAND_ERROR_MESSAGES: Record<Exclude<RecordCommandError['code'], typeof RECORD_ERROR_CODES.invalid>, string> = {
   'record-missing': RECORD_ERROR_MESSAGES.recordMissing,
   'record-exists': RECORD_ERROR_MESSAGES.recordExists,
@@ -42,6 +46,9 @@ const COMMAND_ERROR_MESSAGES: Record<Exclude<RecordCommandError['code'], typeof 
   'category-not-found': RECORD_ERROR_MESSAGES.categoryNotFound,
   [RECORD_ERROR_CODES.precautionNotFound]: RECORD_ERROR_MESSAGES.precautionNotFound,
   [RECORD_ERROR_CODES.unchanged]: RECORD_ERROR_MESSAGES.unchanged,
+  'image-empty': RECORD_ERROR_MESSAGES.imageEmpty,
+  'image-too-large': RECORD_ERROR_MESSAGES.imageTooLarge,
+  'image-type-not-allowed': RECORD_ERROR_MESSAGES.imageTypeNotAllowed,
 }
 
 const failed = (error: string, problems: string[] = []): SaveRecordResult => ({ ok: false, error, problems })
@@ -137,6 +144,14 @@ export async function addRecordPrecautionAction(clientId: string, input: Precaut
 
 export async function removeRecordPrecautionAction(clientId: string, precautionId: string): Promise<SaveRecordResult> {
   return saveRecord(clientId, (deps, actor) => removeRecordPrecaution(deps)(actor, readText(precautionId)))
+}
+
+export async function addRecordImageAction(clientId: string, formData: FormData): Promise<SaveRecordResult> {
+  const file = formData?.get?.(RECORD_IMAGE_FIELD)
+  if (!(file instanceof File)) return rejectInput(RECORD_ERROR_MESSAGES.imageMissing)
+  const image = { bytes: new Uint8Array(await file.arrayBuffer()), contentType: file.type }
+  return saveRecord(clientId, async (deps, actor) =>
+    addRecordImage({ ...deps, images: await recordImageStorage() })(actor, image))
 }
 
 export async function listTechniqueOptionsAction(): Promise<ListTechniqueOptionsResult> {
