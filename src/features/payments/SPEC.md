@@ -2,7 +2,7 @@
 feature: payments
 dri: pendiente
 estado: terminada
-actualizado: 2026-10-14
+actualizado: 2026-10-19
 historias:
   - id: US-AGE-13
     estado: terminada
@@ -53,6 +53,7 @@ El feedback de #152 sobre los estilos se aplica en `ExemptClientForm` y `src/app
 ## Contrato público (`index.ts`, ARCH-003)
 
 - `exemptClient(input: ExemptClientInput): Promise<Result<DepositExemptionView, DepositExemptionValidationError | ClientAlreadyExempt>>` — otorga la exoneración y la registra en la bitácora. `input`: `{ clientId, exemptedBy, reason }`.
+- Contrato SQL `public.payments_deposit_due(client_id, deposit)` (migración `20261019000000_payments_deposit_due_fn.sql`), para la reserva de US-AGE-05: devuelve `0` si la clienta tiene una exoneración vigente y el mismo `deposit` si no, para que `scheduling` no lea `payments_deposit_exemptions` (ARCH-005, INT-003). **Ningún rol de la API la ejecuta** (`anon`, `authenticated` y `service_role` sin `EXECUTE`): recibe un id de clienta y, si se pudiera llamar directo, cualquiera sabría quién está exonerada (SEC-005). La llaman las funciones de reserva de `scheduling`, que corren como el dueño de la base, con el id sacado de la sesión. `SECURITY INVOKER`, sin elevar permisos. Prueba: pgTAP `payments_deposit_due.test.sql`.
 - Tipos: `ExemptClientInput`, `DepositExemptionView`.
 - Errores (tipos, sin valor en runtime): `DepositExemptionValidationError` (campos vacíos), `ClientAlreadyExempt` (el cliente ya tiene una exoneración vigente); guardas `isDepositExemptionValidationError` e `isClientAlreadyExempt`.
 
