@@ -16,7 +16,8 @@ historias:
   - id: US-AGE-04
     estado: no_iniciada
   - id: US-AGE-05
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "Empezada el 2026-10-18; todavía sin código. Supuestos pendientes del PO: (1) el anticipo registrado vale 0 al reservar y lo actualiza quien registre el pago; (2) el aviso del anticipo toma la ventana de cancelación de una constante hasta que US-AGE-06 la haga configurable. Pendiente del equipo: el FK de las citas a clients_profiles(id) con ON DELETE RESTRICT (ADR-0009). Criterio 2 (morosidad) diferido a US-MOR-02 (docs/process/DEPENDENCIES.md, Criterios diferidos, ítem 1). La alerta del constraint (trasladada de US-AGE-09) llegará al panel por un puerto; el correo queda para US-NOT-03."
   - id: US-AGE-06
     estado: no_iniciada
   - id: US-AGE-07
