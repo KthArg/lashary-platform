@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-17
+actualizado: 2026-10-18
 historias:
   - id: US-CLI-01
     estado: en_progreso
@@ -12,8 +12,8 @@ historias:
   - id: US-CLI-03
     estado: no_iniciada
   - id: US-CLI-04
-    estado: en_progreso
-    falta: "piezas 1/14 a 13/14: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros, los casos de uso con bitacora, el repositorio con los adaptadores de audit y catalog, las server actions, la vista del expediente, la ficha de la clienta, registrar y editar el estudio, agregar y quitar antecedentes y subir imagenes. Falta ver las imagenes con URL firmada en la pestana (14/14), que cierra la historia"
+    estado: terminada
+    evidencia: "Pila de 14 piezas: PRs #369 (1/14, esquema), #370 (2/14, bucket), #372, #374, #384, #385, #394, #395, #396, #404, #405, #406 y los PRs de las piezas 13/14 (subir imagenes) y 14/14 (ver imagenes, cierre). Criterio 1 (estudio con texto e imagenes): record-content.test.ts, record-changes.test.ts, record-commands.test.ts, study-editor.test.tsx, add-record-image.test.ts, record-image-action.test.ts, images-editor.test.tsx. Criterio 2 (alergias, sensibilidades, condiciones): clients_record_versions.test.sql (categorias), record-content.test.ts, precautions-editor.test.tsx. Criterio 3 (solo la administradora y cada acceso en la bitacora): clients_record_versions.test.sql y clients_record_images_bucket.test.sql (aislamiento SEC-002 frente a clienta y anon), view-record.test.ts (bitacora fail-closed), record-gateways.test.ts, record-actions.test.ts. Criterio 4 (historial de cambios): clients_record_versions.test.sql (sin UPDATE ni DELETE, una sucesora por version), record-changes.test.ts, record-commands.test.ts (dos cambios simultaneos), record-history.test.ts, record-view.test.tsx. Criterio 5 (imagenes sin URL publica): clients_record_images_bucket.test.sql (bucket privado), record-image-storage.test.ts (URLs firmadas de 5 minutos), images-editor.test.tsx"
   - id: US-CLI-05
     estado: terminada
     evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
@@ -92,6 +92,20 @@ Supabase y `clients_profiles`) y `ui/` (todo en el área `ui/admin-clients/`: la
 construcción pura de URLs del listado, separada de `ui/admin-clients/hooks/` porque no usa React: así se prueba sin
 renderizar. Las pruebas de la interfaz están en `ui/admin-clients/__tests__/` y las de los casos de uso en `application/__tests__/`.
 
+### Expediente de la clienta (US-CLI-04)
+
+Cada fila del listado enlaza a la ficha `/admin/clients/<id>`: volver, nombre, teléfono y la pestaña
+**Expediente**. La pestaña muestra el estudio con su técnica recomendada, "Antecedentes y
+precauciones" con su categoría, las imágenes y el historial de cambios, y permite registrar y editar
+el estudio, agregar (**+**) y quitar antecedentes y subir imágenes. Cada cambio guarda una versión
+completa nueva en `clients_record_versions`; la vigente es la última y las anteriores no se tocan.
+Cada lectura y cada cambio quedan en la bitácora de `audit`; si la bitácora falla al leer, el
+expediente no se muestra. Capas: `domain/record/` (el contenido y sus cambios),
+`application/record/` (puertos, lectura y escritura, adaptadores a `audit` y `catalog`),
+`db/record/` (versiones, categorías e imágenes) y `ui/admin-record/` (actions, textos y
+componentes); la ruta vive en `src/app/admin/clients/[id]/`. Crear categorías nuevas desde el menú
+quedó fuera del plan por decisión de José Loría.
+
 ## Qué no hace todavía
 
 No existe un flujo de archivado o borrado de clientas en esta rama. `docs/adr/ADR-0009-client-archival-and-exemptions.md` recoge el acuerdo de archivar sin eliminar el perfil ni sus referencias, comunicado por Bayron el 2026-10-05. Antes de implementarlo deben acordarse permisos, búsquedas y reservas, citas existentes y restauración. La pieza 21 de US-AGE-13 implementa y prueba la migración de `payments` a `ON DELETE RESTRICT`; bloquea el borrado de perfiles con exoneraciones activas o históricas, incluso desde `auth.users`. Su integración sigue pendiente. Reactivar un perfil deberá revisar la vigencia de su exoneración antes de aplicarla. Este cambio de documentación no implementa archivado ni completa una historia de `clients`.
@@ -116,7 +130,10 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 `useClientForm`, `useClientDialog` y `useFocusTrap`, `createClientAction`, `listClientsAction` y `updateClientAction` con sus tipos
 `SaveClientResult`, `ListClientsQuery` y `ListClientsResult`, `validateClientForm`, `normalizePhone` y las constantes de
 textos y límites, entre ellas `CLIENTS_LIST_LIMITS`, `CLIENTS_TABLE_HEADERS`, `CLIENTS_TABLE_TEXTS` , `CLIENTS_PAGINATION_TEXTS` y `CLIENTS_FILTER_TEXTS` (DOM-009).
-También exporta `ClientsPagination` y `ClientsNameFilter`.
+También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el expediente (US-CLI-04):
+`getClientAction`, `CLIENTS_PATH`, `clientRecordPath`, `CLIENT_PROFILE_LABELS`, `RecordView`,
+`RecordLoadError`, `viewRecordAction`, `listTechniqueOptionsAction`, `listCategoryOptionsAction`,
+`RECORD_LABELS` y `STUDY_FORM_LABELS`.
 
 ## Invariantes
 
@@ -127,8 +144,11 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
   de aislamiento cross-cliente en CI (SEC-002).
 - **El teléfono identifica a una clienta.** No pueden coexistir dos con el mismo número (criterio 3).
 - **Una clienta creada a mano por la administradora nace con el teléfono verificado** (criterio 4).
-- **El expediente es dato sensible** (SEC-006): cuando llegue US-CLI-04, su acceso es solo de la
-  administradora, queda en la bitácora y sus imágenes no son públicas por URL. No aplica todavía.
+- **El expediente es dato sensible** (SEC-006): solo lo lee y escribe la administradora (RLS con
+  `auth_is_admin()`), cada lectura y cada cambio quedan en la bitácora, y sus imágenes viven en un
+  bucket privado y se ven solo con URLs firmadas de 5 minutos.
+- **El historial del expediente no se reescribe ni se borra:** la base no tiene políticas de UPDATE
+  ni DELETE en `clients_record_versions` ni en el bucket de imágenes.
 
 ## Decisiones
 
@@ -434,3 +454,10 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
   no se borra porque el bucket no tiene política de DELETE. Es privado, así que nadie lo ve. **Límite
   conocido:** Next corta las server actions a 1 MB de cuerpo, así que una imagen muy cerca de 1 MB
   falla antes de llegar a la validación (la misma deuda abierta en `store`).
+- **2026-10-18 — Ver las imágenes y cierre de US-CLI-04 (pieza 14/14).** `viewRecordAction`, después
+  de registrar el acceso, firma las rutas de las imágenes vigentes con URLs de 5 minutos
+  (`RECORD_IMAGE_URL_SECONDS`, por decisión de José Loría): lo bastante para mirar la página y lo
+  bastante corto para que un enlace copiado deje de servir. Si firmar falla, el expediente igual se
+  muestra y cada imagen dice "Imagen no disponible"; la pantalla nunca arma una URL a partir de la
+  ruta. `ImagesEditor` muestra miniaturas con texto alternativo propio y el campo para subir. Con
+  esta pieza US-CLI-04 queda `terminada`; su evidencia está en el front-matter.

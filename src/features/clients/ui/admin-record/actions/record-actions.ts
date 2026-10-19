@@ -9,7 +9,7 @@ import { viewRecord } from '../../../application/record/view-record'
 import { auditRecordLog, catalogTechniqueLookup, listActiveCatalogTechniques } from '../../../application/record/record-gateways'
 import { recordRepository } from '../../../db/record/record-repository'
 import { listPrecautionCategories, precautionCategoryLookup } from '../../../db/record/precaution-category-repository'
-import { recordImageStorage } from '../../../db/record/record-image-storage'
+import { recordImageStorage, signRecordImageUrls } from '../../../db/record/record-image-storage'
 import { addRecordImage } from '../../../application/record/add-record-image'
 import { RECORD_ERROR_CODES, isRecordValidationError } from '../../../domain/record/record-errors'
 import {
@@ -111,6 +111,15 @@ async function saveRecord(
   return { ok: true, version: toVersionView(result.value) }
 }
 
+async function signImages(paths: readonly string[]): Promise<Record<string, string>> {
+  if (paths.length === 0) return {}
+  try {
+    return await signRecordImageUrls(paths)
+  } catch {
+    return {}
+  }
+}
+
 export async function viewRecordAction(clientId: string): Promise<ViewRecordResult> {
   const session = await requireAdminSession()
   if (!isUuid(clientId)) return { ok: false, error: RECORD_ERROR_MESSAGES.clientNotFound }
@@ -120,7 +129,8 @@ export async function viewRecordAction(clientId: string): Promise<ViewRecordResu
   })
   if (isErr(result)) return { ok: false, error: RECORD_ERROR_MESSAGES.auditFailed }
   const { current, history } = result.value
-  return { ok: true, current: current ? toVersionView(current) : null, history: history.map(toVersionView) }
+  const imageUrls = await signImages(current?.content.images ?? [])
+  return { ok: true, current: current ? toVersionView(current) : null, history: history.map(toVersionView), imageUrls }
 }
 
 export async function createRecordAction(clientId: string, input: StudyFormInput): Promise<SaveRecordResult> {
