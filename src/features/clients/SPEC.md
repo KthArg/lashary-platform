@@ -13,7 +13,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-04
     estado: en_progreso
-    falta: "piezas 1/9 a 3/9: esquema, bucket privado de imagenes y el contenido validado del expediente. Faltan los cambios del contenido (4/9), los casos de uso con bitacora (5/9), repositorio y actions (6/9), la pestana Expediente (7/9), los formularios (8/9) y las imagenes con URL firmada (9/9)"
+    falta: "piezas 1/9 a 4/9: esquema, bucket privado de imagenes, el contenido validado del expediente y sus cambios puros. Faltan los casos de uso con bitacora (5/9), repositorio y actions (6/9), la pestana Expediente (7/9), los formularios (8/9) y las imagenes con URL firmada (9/9)"
   - id: US-CLI-05
     estado: terminada
     evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
@@ -335,3 +335,11 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
 - **2026-10-17 — Cada antecedente lleva su `id`, generado fuera del dominio.** *Quitar* dice qué
   antecedente quita, no su posición en la lista. Un antecedente repetido (misma categoría y misma
   descripción sin importar mayúsculas, o mismo id) se rechaza.
+- **2026-10-17 — Los cambios del contenido viven en `domain/record/record-changes.ts` (pieza 4/9).**
+  `createInitialRecord`, `addPrecaution`, `removePrecaution`, `editStudy` y `addImage` reciben el contenido
+  vigente y devuelven `{ changeKind, content }` sin modificarlo: cada cambio vuelve a pasar por
+  `buildRecordContent`, así que un contenido nuevo cumple las mismas reglas que el inicial. Quitar un
+  antecedente que no está devuelve `PrecautionNotFound`.
+- **2026-10-17 — Editar el estudio sin cambiar nada devuelve `RecordUnchanged`**, en vez de guardar
+  una versión idéntica que ensuciaría el historial. Se compara después de recortar espacios: agregar
+  un espacio al final no cuenta como cambio.
