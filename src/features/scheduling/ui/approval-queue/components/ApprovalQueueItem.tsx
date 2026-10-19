@@ -5,18 +5,27 @@ import {
   REASON_FIELD_ROWS,
 } from '../constants/approval-queue.labels'
 import { approvalQueueStyles as STYLES } from '../styles/approval-queue.styles'
+import { formatAppointmentChoice } from '../utils/format-appointment-choice'
 import { formatAppointmentSlot } from '../utils/format-appointment-slot'
 import type { ApprovalQueueItemProps } from '../types/approval-queue.types'
 
 export function ApprovalQueueItem({ appointment, queue }: ApprovalQueueItemProps) {
   const slot = formatAppointmentSlot(appointment.startsAtMs, appointment.endsAtMs)
+  const choice = formatAppointmentChoice(appointment.choice)
   const reasonFieldId = `approval-reason-${appointment.id}`
   const isBusy = queue.busyAppointmentId === appointment.id
   const isRejecting = queue.rejectingAppointmentId === appointment.id
 
   return (
     <li className={STYLES.item} aria-busy={isBusy}>
-      <p className={STYLES.slot}>{slot}</p>
+      <div className={STYLES.details}>
+        <p className={STYLES.slot}>{slot}</p>
+        <p className={STYLES.service}>
+          {choice.service}
+          {choice.kind && <span className={STYLES.kindBadge}>{choice.kind}</span>}
+        </p>
+        {choice.amounts && <p className={STYLES.amounts}>{choice.amounts}</p>}
+      </div>
       {isRejecting ? (
         <div className={STYLES.rejectForm}>
           <label htmlFor={reasonFieldId} className={STYLES.reasonLabel}>

@@ -116,10 +116,18 @@ export type RecordAuditEvent = (input: {
   payload?: Record<string, unknown>
 }) => Promise<Result<unknown, unknown>>
 
+export type AppointmentChoice = {
+  techniqueName: string
+  isFirstTime: boolean
+  servicePrice: number
+  depositRequired: number
+}
+
 export type PendingAppointment = {
   id: string
   startsAtMs: number
   endsAtMs: number
+  choice: AppointmentChoice | null
 }
 
 export interface PendingAppointmentsRepository {
