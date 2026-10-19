@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isErr, isOk } from '@/shared/result'
 import { createSupabasePendingAppointmentsRepository } from '../pending-appointments-repository'
-import { APPOINTMENTS_TABLE, PENDING_APPOINTMENT_COLUMNS } from '../appointment-repository.constants'
+import { APPOINTMENTS_TABLE, PENDING_APPOINTMENT_COLUMNS, PENDING_APPOINTMENTS_LIMIT } from '../appointment-repository.constants'
 
 const baseRow = {
   id: 'cita-1',
@@ -33,14 +33,15 @@ function createFakeDb(response: FakeResponse) {
   const query = {
     select: (columns: string) => (calls.push(['select', columns]), query),
     eq: (column: string, value: unknown) => (calls.push(['eq', column, value]), query),
-    order: async (column: string, options: unknown) => (calls.push(['order', column, options]), response),
+    order: (column: string, options: unknown) => (calls.push(['order', column, options]), query),
+    limit: async (count: number) => (calls.push(['limit', count]), response),
   }
   const db = { from: (table: string) => (calls.push(['from', table]), query) } as unknown as SupabaseClient
   return { db, calls }
 }
 
 describe('createSupabasePendingAppointmentsRepository', () => {
-  it('pide la elección de la clienta junto con el horario, solo las pendientes y las más próximas primero', async () => {
+  it('pide la elección de la clienta junto con el horario, solo las pendientes y las más próximas primero y con tope', async () => {
     const { db, calls } = createFakeDb({ data: [chosenRow], error: null })
     const result = await createSupabasePendingAppointmentsRepository(db).listPending()
 
@@ -49,6 +50,7 @@ describe('createSupabasePendingAppointmentsRepository', () => {
       ['select', PENDING_APPOINTMENT_COLUMNS],
       ['eq', 'status', 'pending_approval'],
       ['order', 'starts_at', { ascending: true }],
+      ['limit', PENDING_APPOINTMENTS_LIMIT],
     ])
     expect(isOk(result) && result.value).toEqual([
       {

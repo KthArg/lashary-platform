@@ -28,7 +28,7 @@ const fakeDb = {
     select: () => ({
       eq: (column: string, value: string) => {
         mockEq(column, value)
-        return { order: async () => listResult }
+        return { order: () => ({ limit: async () => listResult }) }
       },
     }),
   }),

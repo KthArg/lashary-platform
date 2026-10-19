@@ -68,8 +68,14 @@ export interface ClientHasActiveDelinquency {
   readonly message: string
 }
 
+export interface TooManyPendingAppointments {
+  readonly code: 'SCHEDULING_TOO_MANY_PENDING_APPOINTMENTS'
+  readonly message: string
+}
+
 export type SchedulingError =
   | SlotNotOffered
+  | TooManyPendingAppointments
   | ClientNotRegistered
   | ClientHasActiveDelinquency
   | TechniqueNotSelectable
@@ -128,6 +134,11 @@ export const slotNotOffered = (resourceId: string): SlotNotOffered => ({
 export const clientNotRegistered = (): ClientNotRegistered => ({
   code: 'SCHEDULING_CLIENT_NOT_REGISTERED',
   message: 'la sesión no es de una clienta registrada',
+})
+
+export const tooManyPendingAppointments = (): TooManyPendingAppointments => ({
+  code: 'SCHEDULING_TOO_MANY_PENDING_APPOINTMENTS',
+  message: 'la clienta ya tiene el máximo de citas pendientes de aprobación',
 })
 
 export const clientHasActiveDelinquency = (): ClientHasActiveDelinquency => ({

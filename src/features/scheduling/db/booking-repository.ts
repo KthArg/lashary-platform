@@ -6,6 +6,7 @@ import {
   spaceNotAvailable,
   storageFailed,
   techniqueNotAvailable,
+  tooManyPendingAppointments,
 } from '../domain/errors'
 import type {
   BookAppointmentError,
@@ -66,6 +67,8 @@ function toBookingError(message: string, input: BookAppointmentInput): BookAppoi
       return slotNotOffered(input.resourceId)
     case BOOKING_ERROR_MESSAGES.slotTaken:
       return spaceNotAvailable(input.resourceId)
+    case BOOKING_ERROR_MESSAGES.tooManyPending:
+      return tooManyPendingAppointments()
     default:
       return storageFailed(message)
   }

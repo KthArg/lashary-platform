@@ -8,6 +8,7 @@ import {
   spaceNotAvailable,
   storageFailed,
   techniqueNotAvailable,
+  tooManyPendingAppointments,
 } from '../../../domain/errors'
 import { MS_PER_MINUTE } from '../../../domain/appointment-window.constants'
 import { bookingConfirmMessages } from '../constants/booking-confirm-strings'
@@ -101,6 +102,7 @@ describe('performBooking — US-AGE-05', () => {
   it.each([
     ['clienta sin perfil', clientNotRegistered(), bookingConfirmMessages.clientNotRegistered],
     ['morosidad activa', clientHasActiveDelinquency(), bookingConfirmMessages.delinquency],
+    ['tope de pendientes alcanzado', tooManyPendingAppointments(), bookingConfirmMessages.tooManyPending],
     ['servicio que ya no está', techniqueNotAvailable('t1'), bookingConfirmMessages.unavailable],
     ['fallo de la base', storageFailed('sin conexión'), bookingConfirmMessages.storageFailed],
   ])('%s: avisa sin salir de la pantalla', async (_name, error, message) => {

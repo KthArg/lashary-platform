@@ -27,6 +27,7 @@ export const bookingConfirmMessages = {
   loading: 'Preparando tu reserva…',
   clientNotRegistered: 'Completá tu perfil de clienta para poder reservar.',
   delinquency: 'Tenés un pago pendiente: no podés reservar hasta regularizarlo.',
+  tooManyPending: 'Ya tenés citas pendientes de aprobación. Esperá a que la administradora las revise para reservar otra.',
   storageFailed: 'No pudimos guardar tu reserva. Intentá de nuevo.',
   pendingApproval: 'Tu reserva quedó pendiente de aprobación de la administradora.',
   error: {

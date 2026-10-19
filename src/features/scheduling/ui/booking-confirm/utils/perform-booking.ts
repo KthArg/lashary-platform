@@ -32,6 +32,7 @@ const failureMessages: Partial<Record<FailureCode, string>> = {
   SCHEDULING_CLIENT_NOT_REGISTERED: bookingConfirmMessages.clientNotRegistered,
   SCHEDULING_CLIENT_HAS_ACTIVE_DELINQUENCY: bookingConfirmMessages.delinquency,
   SCHEDULING_TECHNIQUE_NOT_AVAILABLE: bookingConfirmMessages.unavailable,
+  SCHEDULING_TOO_MANY_PENDING_APPOINTMENTS: bookingConfirmMessages.tooManyPending,
 }
 
 const retryNotices: Partial<Record<FailureCode, CalendarNotice>> = {

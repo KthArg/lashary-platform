@@ -89,6 +89,7 @@ describe('createSupabaseBookingRepository', () => {
       { code: 'SCHEDULING_TECHNIQUE_NOT_AVAILABLE', techniqueId: TECHNIQUE_ID },
     ],
     [BOOKING_ERROR_MESSAGES.clientNotRegistered, { code: 'SCHEDULING_CLIENT_NOT_REGISTERED' }],
+    [BOOKING_ERROR_MESSAGES.tooManyPending, { code: 'SCHEDULING_TOO_MANY_PENDING_APPOINTMENTS' }],
   ])('el mensaje %s de la base llega como su error tipado', async (message, expectedError) => {
     expect(await bookExpectingError(message)).toMatchObject(expectedError)
   })
