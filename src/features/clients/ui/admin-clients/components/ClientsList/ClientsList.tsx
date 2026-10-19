@@ -1,7 +1,9 @@
 'use client'
 
 import { useCallback, useRef, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { clientRecordPath } from '../../../client-routes'
 import { CLIENTS_ARIA_LABELS, CLIENTS_BUTTON_TEXTS, CLIENTS_LABELS, CLIENTS_TABLE_HEADERS, CLIENTS_TABLE_TEXTS } from '../../constants/client-strings'
 import { CLIENTS_ICON_PATHS } from '../../constants/client-icons'
 import { EditClientDialog } from '../EditClientDialog'
@@ -57,6 +59,12 @@ export function ClientsList({ clients, isLoading = false, loadError = null, acti
                 <td className={STYLES.pendingCell}>{CLIENTS_TABLE_TEXTS.pendingColumnValue}</td>
                 <td className={STYLES.pendingCell}>{CLIENTS_TABLE_TEXTS.pendingColumnValue}</td>
                 <td className={STYLES.actionsCell}>
+                  <Link href={clientRecordPath(client.id)} className={STYLES.recordLink}
+                    aria-label={CLIENTS_ARIA_LABELS.openRecord(client.fullName)}>
+                    <svg className={STYLES.editIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+                      <path d={CLIENTS_ICON_PATHS.recordFile} />
+                    </svg>
+                  </Link>
                   <button type="button" className={STYLES.editButton} title={CLIENTS_BUTTON_TEXTS.edit}
                     aria-label={CLIENTS_ARIA_LABELS.editClient(client.fullName)}
                     onClick={(event) => { triggerRef.current = event.currentTarget; setEditing(client) }}>

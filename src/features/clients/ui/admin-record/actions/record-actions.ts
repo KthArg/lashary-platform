@@ -28,14 +28,9 @@ import type {
   StudyFormInput,
   ViewRecordResult,
 } from '../types/record-action-results'
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
-const isUuid = (value: unknown): value is string => typeof value === 'string' && UUID_PATTERN.test(value)
+import { clientRecordPath, isUuid } from '../../client-routes'
 
 const readText = (value: unknown): string => (typeof value === 'string' ? value : '')
-
-const recordPath = (clientId: string): string => `/admin/clients/${clientId}/expediente`
 
 const COMMAND_ERROR_MESSAGES: Record<Exclude<RecordCommandError['code'], typeof RECORD_ERROR_CODES.invalid>, string> = {
   'record-missing': RECORD_ERROR_MESSAGES.recordMissing,
@@ -103,7 +98,7 @@ async function saveRecord(
   if (!isUuid(clientId)) return failed(RECORD_ERROR_MESSAGES.clientNotFound)
   const result = await run(await commandDeps(), { clientId, actorId: session.user.id })
   if (isErr(result)) return toSaveFailure(result.error)
-  revalidatePath(recordPath(clientId))
+  revalidatePath(clientRecordPath(clientId))
   return { ok: true, version: toVersionView(result.value) }
 }
 

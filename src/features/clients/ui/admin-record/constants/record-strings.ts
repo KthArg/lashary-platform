@@ -29,7 +29,6 @@ export const RECORD_PROBLEM_MESSAGES: Record<RecordProblem, string> = {
 }
 
 export const RECORD_LABELS = {
-  pageTitle: 'Expediente',
   studyHeading: 'Estudio de la clienta',
   initialRecordOn: (date: string) => `Registro inicial · ${date}`,
   initialStudyHeading: 'Estudio inicial',

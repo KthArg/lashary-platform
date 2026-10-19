@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { ClientsList, CLIENTS_ARIA_LABELS, CLIENTS_BUTTON_TEXTS, CLIENTS_ERROR_MESSAGES, CLIENTS_LABELS, CLIENTS_TABLE_HEADERS, CLIENTS_TABLE_TEXTS } from '@/features/clients'
+import { ClientsList, CLIENTS_ARIA_LABELS, CLIENTS_BUTTON_TEXTS, CLIENTS_ERROR_MESSAGES, CLIENTS_LABELS, CLIENTS_TABLE_HEADERS, CLIENTS_TABLE_TEXTS, clientRecordPath } from '@/features/clients'
 import { CLIENT_FIXTURES } from '../../../__tests__/client-fixtures'
 
 const mockRefresh = vi.fn()
@@ -13,6 +13,15 @@ describe('ClientsList', () => {
       const button = screen.getByRole('button', { name: CLIENTS_ARIA_LABELS.editClient(client.fullName) })
       expect(button.textContent).toBe('')
       expect(button.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true')
+    }
+  })
+
+  it('da a cada clienta un enlace a su expediente con nombre propio', () => {
+    render(<ClientsList clients={CLIENT_FIXTURES} />)
+    for (const client of CLIENT_FIXTURES) {
+      const link = screen.getByRole('link', { name: CLIENTS_ARIA_LABELS.openRecord(client.fullName) })
+      expect(link.getAttribute('href')).toBe(clientRecordPath(client.id))
+      expect(link.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true')
     }
   })
 
