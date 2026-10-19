@@ -26,5 +26,5 @@ export type { SaveClientResult, ListClientsResult, GetClientResult } from './ui/
 export type { ListClientsQuery } from './application/ports'
 export { RecordView } from './ui/admin-record/components/RecordView'
 export { RecordLoadError } from './ui/admin-record/components/RecordLoadError'
-export { listCategoryOptionsAction, listTechniqueOptionsAction, viewRecordAction } from './ui/admin-record/actions/record-actions'
+export { readCategoryOptions, readRecord, readTechniqueOptions } from './ui/admin-record/queries/record-queries'
 export { RECORD_LABELS, STUDY_FORM_LABELS } from './ui/admin-record/constants/record-strings'

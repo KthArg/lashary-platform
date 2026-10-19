@@ -13,8 +13,14 @@ export interface RecordVersionView {
 }
 
 export type ViewRecordResult =
-  | { ok: true; current: RecordVersionView | null; history: RecordVersionView[]; imageUrls: Record<string, string> }
-  | { ok: false; error: string }
+  | {
+      ok: true
+      current: RecordVersionView | null
+      history: RecordVersionView[]
+      initial: RecordVersionView | null
+      imageUrls: Record<string, string>
+    }
+  | { ok: false; error: string; notFound?: true }
 
 export type SaveRecordResult =
   | { ok: true; version: RecordVersionView }

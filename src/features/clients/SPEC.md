@@ -482,3 +482,12 @@ También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el e
   subir y, lleno, desaparece "Agregar foto". B9: el tipo de la imagen sale de su firma real, no del
   que declara el navegador. B6: si una URL firmada vence, la imagen pide recargar. El id de clienta
   se normaliza a minúsculas, como lo guarda la base (la ruta de cada imagen debe empezar por él).
+- **2026-10-19 — Lecturas fuera de las server actions (pieza 18/19, M6 de la auditoría).** `readRecord`,
+  `readTechniqueOptions` y `readCategoryOptions` viven en `ui/admin-record/queries/record-queries.ts`,
+  un módulo de servidor normal: `'use server'` queda solo para escribir. `readRecord` comprueba que la
+  clienta exista antes de auditar; una inexistente va a `notFound()` sin dejar acceso en la bitácora.
+  **Qué cuenta como acceso:** cada carga de los datos del expediente, incluido el refresco tras
+  guardar, porque en ese momento se vuelven a leer datos sensibles. `error.tsx`, que corre en el
+  navegador, importa de `@/features/clients/client` (como `catalog`), para no arrastrar código de
+  servidor. B5: la fecha del registro inicial se lee aparte (`findInitialVersion`), así aparece
+  aunque el expediente pase de 50 versiones.

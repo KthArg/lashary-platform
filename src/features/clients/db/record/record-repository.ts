@@ -98,6 +98,17 @@ export function createSupabaseRecordRepository(db: SupabaseClient): RecordReposi
       return (data as RecordVersionRow[]).map(rowToVersion)
     },
 
+    async findInitialVersion(clientId) {
+      const { data, error } = await db
+        .from(RECORD_VERSIONS_TABLE)
+        .select(VERSION_COLUMNS)
+        .eq('client_id', clientId)
+        .is('previous_version_id', null)
+        .maybeSingle()
+      if (error) throw new Error('no se pudo leer el registro inicial del expediente')
+      return data ? rowToVersion(data as RecordVersionRow) : null
+    },
+
     async saveVersion(version) {
       const { error } = await db.from(RECORD_VERSIONS_TABLE).insert(versionToRow(version))
       if (error?.code === UNIQUE_VIOLATION_CODE) return err('version-conflict')

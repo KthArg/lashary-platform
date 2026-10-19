@@ -5,11 +5,11 @@ import { revalidatePath } from 'next/cache'
 import { requireAdminSession } from '@/features/auth'
 import { systemClock } from '@/shared/clock'
 import { isErr, type Result } from '@/shared/result'
-import { viewRecord } from '../../../application/record/view-record'
-import { auditRecordLog, catalogTechniqueLookup, listActiveCatalogTechniques } from '../../../application/record/record-gateways'
+import { auditRecordLog, catalogTechniqueLookup } from '../../../application/record/record-gateways'
 import { recordRepository } from '../../../db/record/record-repository'
-import { listPrecautionCategories, precautionCategoryLookup } from '../../../db/record/precaution-category-repository'
-import { recordImageStorage, signRecordImageUrls } from '../../../db/record/record-image-storage'
+import { precautionCategoryLookup } from '../../../db/record/precaution-category-repository'
+import { recordImageStorage } from '../../../db/record/record-image-storage'
+import { toVersionView } from '../record-version-view'
 import { addRecordImage } from '../../../application/record/add-record-image'
 import { RECORD_ERROR_CODES, isRecordValidationError } from '../../../domain/record/record-errors'
 import {
@@ -23,15 +23,7 @@ import {
 } from '../../../application/record/record-commands'
 import { RECORD_ERROR_MESSAGES, RECORD_PROBLEM_MESSAGES } from '../constants/record-strings'
 import type { RecordActor, RecordVersion } from '../../../application/record/record-ports'
-import type {
-  ListCategoryOptionsResult,
-  ListTechniqueOptionsResult,
-  PrecautionFormInput,
-  RecordVersionView,
-  SaveRecordResult,
-  StudyFormInput,
-  ViewRecordResult,
-} from '../types/record-action-results'
+import type { PrecautionFormInput, SaveRecordResult, StudyFormInput } from '../types/record-action-results'
 import { clientRecordPath, isUuid } from '../../client-routes'
 
 const readText = (value: unknown): string => (typeof value === 'string' ? value : '')
@@ -53,21 +45,6 @@ const COMMAND_ERROR_MESSAGES: Record<Exclude<RecordCommandError['code'], typeof 
 }
 
 const failed = (error: string, problems: string[] = []): SaveRecordResult => ({ ok: false, error, problems })
-
-function toVersionView(version: RecordVersion): RecordVersionView {
-  const { content } = version
-  return {
-    id: version.id,
-    previousVersionId: version.previousVersionId,
-    changeKind: version.changeKind,
-    studyText: content.studyText,
-    recommendedTechnique: content.recommendedTechnique,
-    precautions: content.precautions.map((precaution) => ({ ...precaution })),
-    images: [...content.images],
-    createdBy: version.createdBy,
-    createdAt: version.createdAt.toISOString(),
-  }
-}
 
 function toSaveFailure(error: RecordCommandError): SaveRecordResult {
   if (isRecordValidationError(error)) {
@@ -124,28 +101,6 @@ async function saveRecord(
   }
 }
 
-async function signImages(paths: readonly string[]): Promise<Record<string, string>> {
-  if (paths.length === 0) return {}
-  try {
-    return await signRecordImageUrls(paths)
-  } catch {
-    return {}
-  }
-}
-
-export async function viewRecordAction(clientId: string): Promise<ViewRecordResult> {
-  const session = await requireAdminSession()
-  if (!isUuid(clientId)) return { ok: false, error: RECORD_ERROR_MESSAGES.clientNotFound }
-  const result = await viewRecord({ repo: await recordRepository(), auditLog: auditRecordLog })({
-    clientId: clientId.toLowerCase(),
-    actorId: session.user.id,
-  })
-  if (isErr(result)) return { ok: false, error: RECORD_ERROR_MESSAGES.auditFailed }
-  const { current, history } = result.value
-  const imageUrls = await signImages(current?.content.images ?? [])
-  return { ok: true, current: current ? toVersionView(current) : null, history: history.map(toVersionView), imageUrls }
-}
-
 export async function createRecordAction(clientId: string, input: StudyFormInput): Promise<SaveRecordResult> {
   const study = readStudy(input)
   if (study === null) return rejectInput(RECORD_ERROR_MESSAGES.techniqueNotFound)
@@ -175,22 +130,4 @@ export async function addRecordImageAction(clientId: string, formData: FormData)
   const image = { bytes: new Uint8Array(await file.arrayBuffer()), contentType: file.type }
   return saveRecord(clientId, async (deps, actor) =>
     addRecordImage({ ...deps, images: await recordImageStorage() })(actor, image))
-}
-
-export async function listTechniqueOptionsAction(): Promise<ListTechniqueOptionsResult> {
-  await requireAdminSession()
-  try {
-    return { ok: true, techniques: await listActiveCatalogTechniques() }
-  } catch {
-    return { ok: false, error: RECORD_ERROR_MESSAGES.techniquesUnavailable }
-  }
-}
-
-export async function listCategoryOptionsAction(): Promise<ListCategoryOptionsResult> {
-  await requireAdminSession()
-  try {
-    return { ok: true, categories: await listPrecautionCategories() }
-  } catch {
-    return { ok: false, error: RECORD_ERROR_MESSAGES.categoriesUnavailable }
-  }
 }
