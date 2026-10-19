@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { err, ok } from '@/shared/result'
 import { Money } from '@/shared/money'
 import { techniqueNotAvailable } from '../../../domain/errors'
-import { bookingConfirmMessages, CANCELLATION_WINDOW_HOURS } from '../constants/booking-confirm-strings'
+import { bookingConfirmMessages } from '../constants/booking-confirm-strings'
 import { loadBookingConfirm, type BookingConfirmDeps } from '../utils/load-booking-confirm'
 import { readConfirmParams } from '../utils/read-confirm-params'
 import { toBookingConfirmView } from '../utils/booking-confirm-format'
@@ -107,7 +107,7 @@ describe('toBookingConfirmView — criterio 7', () => {
     return toBookingConfirmView(await loadBookingConfirm(validParams, deps))
   }
 
-  it('muestra el anticipo con la advertencia de que se pierde si cancela fuera de la ventana o no asiste', async () => {
+  it('muestra el anticipo con la advertencia de que puede perderse si cancela o no asiste', async () => {
     const view = await ready(QUOTE)
     expect(view).toMatchObject({
       status: 'ready',
@@ -116,7 +116,7 @@ describe('toBookingConfirmView — criterio 7', () => {
         duration: '60 min',
         price: Money.fromColones(QUOTE.servicePrice).toString(),
         deposit: Money.fromColones(QUOTE.depositDue).toString(),
-        depositNotice: bookingConfirmMessages.depositNotice(CANCELLATION_WINDOW_HOURS),
+        depositNotice: bookingConfirmMessages.depositNotice,
       },
     })
     if (view.status === 'ready') expect(view.summary.when).toContain('09:00–10:00')

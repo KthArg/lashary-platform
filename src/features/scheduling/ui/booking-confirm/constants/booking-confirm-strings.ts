@@ -2,8 +2,6 @@ export const BOOKING_CONFIRM_PATH = '/portal/citas/calendario/confirmar'
 
 export const PORTAL_CITAS_PATH = '/portal/citas'
 
-export const CANCELLATION_WINDOW_HOURS = 48
-
 export const MAX_CONFIRM_SERVICES = 100
 
 export const bookingConfirmMessages = {
@@ -17,8 +15,7 @@ export const bookingConfirmMessages = {
   noDeposit: 'Sin anticipo',
   duration: (minutes: number) => `${minutes} min`,
   service: (name: string, isFirstTime: boolean) => `${name} — ${isFirstTime ? 'primera vez' : 'retoque'}`,
-  depositNotice: (hours: number) =>
-    `El anticipo se pierde si cancelás con menos de ${hours} horas de anticipación o si no asistís a la cita.`,
+  depositNotice: 'Si cancelás o no asistís a la cita, es posible que pierdas el anticipo.',
   changeSlot: 'Elegir otro horario',
   confirm: 'Confirmar reserva',
   booking: 'Reservando…',
