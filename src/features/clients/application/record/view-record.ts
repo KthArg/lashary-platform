@@ -6,6 +6,7 @@ export const RECORD_HISTORY_LIMIT = 50
 export interface RecordView {
   readonly current: RecordVersion | null
   readonly history: readonly RecordVersion[]
+  readonly initial: RecordVersion | null
 }
 
 export interface ViewRecordDeps {
@@ -18,6 +19,9 @@ export const viewRecord =
   async (actor: RecordActor): Promise<Result<RecordView, 'audit-failed'>> => {
     const audited = await deps.auditLog({ ...actor, action: 'clients.record.viewed' })
     if (!audited) return err('audit-failed')
-    const history = await deps.repo.listVersions(actor.clientId, RECORD_HISTORY_LIMIT)
-    return ok({ current: history[0] ?? null, history })
+    const [history, initial] = await Promise.all([
+      deps.repo.listVersions(actor.clientId, RECORD_HISTORY_LIMIT),
+      deps.repo.findInitialVersion(actor.clientId),
+    ])
+    return ok({ current: history[0] ?? null, history, initial })
   }

@@ -7,10 +7,9 @@ import { RecordIcon } from '../RecordIcon'
 import { recordViewStyles as STYLES } from './RecordView.styles'
 import type { RecordViewProps } from './RecordView.types'
 
-export function RecordView({ clientId, current, history, techniques, categories, imageUrls }: RecordViewProps) {
+export function RecordView({ clientId, current, history, initial, techniques, categories, imageUrls }: RecordViewProps) {
   if (current === null) return <StudyEditor clientId={clientId} study={null} techniques={techniques} />
 
-  const initial = history.find((version) => version.changeKind === 'initial')
   const { images, precautions, recommendedTechnique, studyText } = current
 
   return (

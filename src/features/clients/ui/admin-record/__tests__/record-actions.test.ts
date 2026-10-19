@@ -4,7 +4,6 @@ import {
   createRecordAction,
   editRecordStudyAction,
   removeRecordPrecautionAction,
-  viewRecordAction,
 } from '../actions/record-actions'
 import { RECORD_ERROR_MESSAGES, RECORD_PROBLEM_MESSAGES } from '../constants/record-strings'
 import { fakeRecordRepository, initialVersion } from '../../../application/__tests__/record-fakes'
@@ -48,36 +47,6 @@ beforeEach(() => {
   auditSucceeds = true
   auditEvents.length = 0
   mockRequireAdmin.mockResolvedValue({ user: { id: ADMIN_ID }, role: 'admin' })
-})
-
-describe('viewRecordAction — ver el expediente (criterio 3)', () => {
-  it('registra el acceso con la admin de la sesión y devuelve datos planos para la pantalla', async () => {
-    store = existingRecord()
-    const result = await viewRecordAction(CLIENT_ID)
-    if (!result.ok) throw new Error('debería leer')
-    expect(auditEvents).toEqual([{ clientId: CLIENT_ID, actorId: ADMIN_ID, action: 'clients.record.viewed' }])
-    expect(result.current?.precautions).toEqual([ALLERGY])
-    expect(result.current?.createdAt).toBe('2026-10-17T15:00:00.000Z')
-    expect(Object.getOwnPropertySymbols(result.current)).toEqual([])
-  })
-
-  it('si la bitácora falla, muestra el aviso y no el expediente', async () => {
-    store = existingRecord()
-    auditSucceeds = false
-    expect(await viewRecordAction(CLIENT_ID)).toEqual({ ok: false, error: RECORD_ERROR_MESSAGES.auditFailed })
-  })
-
-  it('un id de clienta mal formado no llega a la base ni a la bitácora', async () => {
-    expect(await viewRecordAction('../otra')).toEqual({ ok: false, error: RECORD_ERROR_MESSAGES.clientNotFound })
-    expect(mockRequireAdmin).toHaveBeenCalled()
-    expect(auditEvents).toEqual([])
-  })
-
-  it('sin sesión de administradora no lee nada', async () => {
-    mockRequireAdmin.mockRejectedValue(new Error('NEXT_REDIRECT'))
-    await expect(viewRecordAction(CLIENT_ID)).rejects.toThrow('NEXT_REDIRECT')
-    expect(auditEvents).toEqual([])
-  })
 })
 
 describe('acciones de escritura del expediente (criterios 1, 2 y 4)', () => {

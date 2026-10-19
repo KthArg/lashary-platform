@@ -14,6 +14,7 @@ export interface RecordVersion {
 
 export interface RecordRepository {
   listVersions(clientId: string, limit: number): Promise<RecordVersion[]>
+  findInitialVersion(clientId: string): Promise<RecordVersion | null>
   saveVersion(version: RecordVersion): Promise<Result<RecordVersion, 'version-conflict'>>
 }
 

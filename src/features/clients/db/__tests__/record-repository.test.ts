@@ -24,6 +24,7 @@ function fakeDb(response: FakeResponse) {
   const query = {
     select: (...args: unknown[]) => (calls.push(['select', ...args]), query),
     eq: (...args: unknown[]) => (calls.push(['eq', ...args]), query),
+    is: (...args: unknown[]) => (calls.push(['is', ...args]), query),
     order: (...args: unknown[]) => (calls.push(['order', ...args]), query),
     limit: async (...args: unknown[]) => (calls.push(['limit', ...args]), response),
     maybeSingle: async () => (calls.push(['maybeSingle']), response),
@@ -111,5 +112,15 @@ describe('listSupabaseCategories', () => {
     expect(await listSupabaseCategories(db)).toEqual([{ id: 'category-1', name: 'Alergia' }])
     expect(calls).toContainEqual(['order', 'name'])
     expect(calls).toContainEqual(['limit', CATEGORY_OPTIONS_LIMIT])
+  })
+})
+
+describe('findInitialVersion — el registro inicial, aunque no entre en el historial (B5)', () => {
+  it('busca la versión sin anterior de la clienta', async () => {
+    const { db, calls } = fakeDb({ data: versionToRow(initialVersion()), error: null })
+    const initial = await createSupabaseRecordRepository(db).findInitialVersion('client-1')
+    expect(initial?.id).toBe('version-1')
+    expect(calls).toContainEqual(['eq', 'client_id', 'client-1'])
+    expect(calls).toContainEqual(['is', 'previous_version_id', null])
   })
 })

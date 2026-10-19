@@ -24,6 +24,9 @@ export function fakeRecordRepository(initial: RecordVersion[] = []) {
     async listVersions(clientId, limit) {
       return versions.filter((version) => version.clientId === clientId).reverse().slice(0, limit)
     },
+    async findInitialVersion(clientId) {
+      return versions.find((version) => version.clientId === clientId && version.previousVersionId === null) ?? null
+    },
     async saveVersion(version) {
       const taken = versions.some(
         (saved) => saved.clientId === version.clientId && saved.previousVersionId === version.previousVersionId,
