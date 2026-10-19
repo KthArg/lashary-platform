@@ -1,10 +1,11 @@
 import { RECORD_LABELS } from '../../constants/record-strings'
 import { describeVersion, formatRecordDate } from '../../record-history'
+import { StudyEditor } from '../StudyEditor'
 import { recordViewStyles as STYLES } from './RecordView.styles'
 import type { RecordViewProps } from './RecordView.types'
 
-export function RecordView({ current, history }: RecordViewProps) {
-  if (current === null) return <p className={STYLES.empty}>{RECORD_LABELS.emptyRecord}</p>
+export function RecordView({ clientId, current, history, techniques }: RecordViewProps) {
+  if (current === null) return <StudyEditor clientId={clientId} study={null} techniques={techniques} />
 
   const initial = history.find((version) => version.changeKind === 'initial')
   const { images, precautions, recommendedTechnique, studyText } = current
@@ -18,11 +19,7 @@ export function RecordView({ current, history }: RecordViewProps) {
 
       <section className={STYLES.section}>
         <h3 className={STYLES.sectionTitle}>{RECORD_LABELS.initialStudyHeading}</h3>
-        <p className={STYLES.studyText}>{studyText}</p>
-        <dl className={STYLES.technique}>
-          <dt className={STYLES.label}>{RECORD_LABELS.recommendedTechnique}</dt>
-          <dd>{recommendedTechnique?.name ?? RECORD_LABELS.noRecommendedTechnique}</dd>
-        </dl>
+        <StudyEditor clientId={clientId} study={{ studyText, recommendedTechnique }} techniques={techniques} />
       </section>
 
       <section className={STYLES.section}>

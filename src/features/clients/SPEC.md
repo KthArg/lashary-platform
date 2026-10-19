@@ -13,7 +13,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-04
     estado: en_progreso
-    falta: "piezas 1/12 a 9/12: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros, los casos de uso con bitacora, el repositorio con los adaptadores de audit y catalog, las server actions, la vista del expediente y la ficha de la clienta con su pestana y el enlace desde el listado. Faltan los formularios y las categorias nuevas (11/12) y las imagenes con URL firmada (12/12)"
+    falta: "piezas 1/14 a 11/14: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros, los casos de uso con bitacora, el repositorio con los adaptadores de audit y catalog, las server actions, la vista del expediente, la ficha de la clienta y registrar y editar el estudio. Faltan agregar y quitar antecedentes (12/14), crear categorias nuevas (13/14, en pausa por decision de Jose Loria) y las imagenes con URL firmada (14/14)"
   - id: US-CLI-05
     estado: terminada
     evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
@@ -411,3 +411,14 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
   falla, la ficha lo avisa y la pestaña igual se ve. Cada fila del listado suma un enlace con ícono
   al expediente, con nombre accesible propio (UI-004). La revisión de UUID y las rutas pasan a
   `ui/client-routes.ts`, que comparten las dos áreas de `ui/`.
+- **2026-10-18 — 14 piezas (INT-002), por decisión de José Loría:** los formularios estimaban ~830
+  líneas; se parten en estudio (11/14), antecedentes (12/14) y categoría nueva (13/14). La 13/14
+  queda **en pausa**: se decide después si se hace. Imágenes 14/14.
+- **2026-10-18 — Registrar y editar el estudio (pieza 11/14).** `StudyEditor` alterna entre ver el
+  estudio y `StudyForm`: en el estado vacío ofrece "Registrar estudio inicial" y con expediente
+  "Editar estudio". El formulario va en línea, no en un modal: es un solo bloque de la página y no
+  necesita trampa de foco. El menú de técnicas sale de `listTechniqueOptionsAction` (solo activas,
+  tope de 100); si la técnica vigente ya no está activa, se agrega al menú para no perderla al
+  editar. Si `catalog` falla, el menú queda solo con "Sin técnica recomendada" y el expediente
+  igual se muestra. Errores y problemas del servidor se anuncian con `role="alert"` sin cerrar el
+  formulario; al guardar, se cierra y `router.refresh()` trae la versión nueva.

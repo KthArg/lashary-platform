@@ -6,7 +6,7 @@ import { requireAdminSession } from '@/features/auth'
 import { systemClock } from '@/shared/clock'
 import { isErr, type Result } from '@/shared/result'
 import { viewRecord } from '../../../application/record/view-record'
-import { auditRecordLog, catalogTechniqueLookup } from '../../../application/record/record-gateways'
+import { auditRecordLog, catalogTechniqueLookup, listActiveCatalogTechniques } from '../../../application/record/record-gateways'
 import { recordRepository } from '../../../db/record/record-repository'
 import { precautionCategoryLookup } from '../../../db/record/precaution-category-repository'
 import { RECORD_ERROR_CODES, isRecordValidationError } from '../../../domain/record/record-errors'
@@ -22,6 +22,7 @@ import {
 import { RECORD_ERROR_MESSAGES, RECORD_PROBLEM_MESSAGES } from '../constants/record-strings'
 import type { RecordActor, RecordVersion } from '../../../application/record/record-ports'
 import type {
+  ListTechniqueOptionsResult,
   PrecautionFormInput,
   RecordVersionView,
   SaveRecordResult,
@@ -135,4 +136,13 @@ export async function addRecordPrecautionAction(clientId: string, input: Precaut
 
 export async function removeRecordPrecautionAction(clientId: string, precautionId: string): Promise<SaveRecordResult> {
   return saveRecord(clientId, (deps, actor) => removeRecordPrecaution(deps)(actor, readText(precautionId)))
+}
+
+export async function listTechniqueOptionsAction(): Promise<ListTechniqueOptionsResult> {
+  await requireAdminSession()
+  try {
+    return { ok: true, techniques: await listActiveCatalogTechniques() }
+  } catch {
+    return { ok: false, error: RECORD_ERROR_MESSAGES.techniquesUnavailable }
+  }
 }

@@ -29,3 +29,7 @@ export interface PrecautionFormInput {
   categoryId: string
   description: string
 }
+
+export type ListTechniqueOptionsResult =
+  | { ok: true; techniques: RecommendedTechnique[] }
+  | { ok: false; error: string }
