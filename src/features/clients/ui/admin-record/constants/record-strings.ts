@@ -13,6 +13,10 @@ export const RECORD_ERROR_MESSAGES = {
   unchanged: 'No hay cambios para guardar.',
   techniquesUnavailable: 'No se pudieron cargar las técnicas del catálogo.',
   categoriesUnavailable: 'No se pudieron cargar las categorías de antecedentes.',
+  imageMissing: 'Elige una imagen para subir.',
+  imageEmpty: 'La imagen está vacía.',
+  imageTooLarge: 'La imagen pesa más de 1 MB.',
+  imageTypeNotAllowed: 'Solo se aceptan imágenes JPEG, PNG o WebP.',
 } as const
 
 export const PRECAUTION_FORM_LABELS = {

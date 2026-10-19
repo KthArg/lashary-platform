@@ -44,3 +44,12 @@ export interface RecordActor {
   readonly clientId: string
   readonly actorId: string
 }
+
+export interface RecordImageUpload {
+  readonly bytes: Uint8Array
+  readonly contentType: string
+}
+
+export interface RecordImageStorage {
+  upload(path: string, image: RecordImageUpload): Promise<void>
+}
