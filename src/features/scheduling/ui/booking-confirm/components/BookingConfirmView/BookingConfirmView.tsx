@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { bookingConfirmMessages } from '../../constants/booking-confirm-strings'
+import { BookingConfirmForm } from '../BookingConfirmForm'
 import { bookingConfirmViewStyles as STYLES } from './BookingConfirmView.styles'
 import type { BookingConfirmViewProps } from './BookingConfirmView.types'
 
@@ -28,26 +29,7 @@ function BookingBody({ view }: BookingConfirmViewProps) {
     case 'ready':
       return (
         <section className={STYLES.card}>
-          <dl className={STYLES.details}>
-            <dt className={STYLES.term}>{copy.serviceLabel}</dt>
-            <dd className={STYLES.value}>{view.summary.service}</dd>
-            <dt className={STYLES.term}>{copy.whenLabel}</dt>
-            <dd className={STYLES.value}>{view.summary.when}</dd>
-            <dt className={STYLES.term}>{copy.durationLabel}</dt>
-            <dd className={STYLES.value}>{view.summary.duration}</dd>
-            <dt className={STYLES.term}>{copy.priceLabel}</dt>
-            <dd className={STYLES.value}>{view.summary.price}</dd>
-            <dt className={STYLES.term}>{copy.depositLabel}</dt>
-            <dd className={STYLES.value}>{view.summary.deposit}</dd>
-          </dl>
-          {view.summary.depositNotice && (
-            <p role="note" className={STYLES.notice}>
-              {view.summary.depositNotice}
-            </p>
-          )}
-          <Link href={view.backHref} className={STYLES.back}>
-            {copy.changeSlot}
-          </Link>
+          <BookingConfirmForm fields={view.fields} summary={view.summary} backHref={view.backHref} />
         </section>
       )
   }

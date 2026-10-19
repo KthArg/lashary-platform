@@ -37,7 +37,13 @@ describe('toCalendarView — US-AGE-02', () => {
         { startMin: 540, range: '09:00–10:45', busy: false },
         { startMin: 570, range: '09:30–11:15', busy: true },
       ],
+      notice: null,
     })
+  })
+
+  it('un aviso de la URL llega a la vista con su texto, y uno desconocido no', () => {
+    const view = toCalendarView({ ...base, status: 'ready', selected: firstTime, slots: [], notice: 'ocupado' })
+    expect(view.status === 'ready' && view.notice).toBe(clientCalendarMessages.notices.ocupado)
   })
 
   it('hoy no ofrece día anterior', () => {
@@ -49,6 +55,7 @@ describe('toCalendarView — US-AGE-02', () => {
     expect(toCalendarView({ ...base, status: 'chooseService' })).toEqual({
       status: 'chooseService',
       picker: { date: '2026-10-21', selectedKey: undefined, options: expect.any(Array) },
+      notice: null,
     })
     expect(toCalendarView({ status: 'forbidden' })).toEqual({ status: 'forbidden' })
     expect(toCalendarView({ status: 'noServices' })).toEqual({ status: 'noServices' })

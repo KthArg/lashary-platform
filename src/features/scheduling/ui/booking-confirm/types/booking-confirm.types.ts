@@ -35,4 +35,4 @@ export type BookingConfirmView =
   | { status: 'forbidden' }
   | { status: 'invalid'; backHref: string }
   | { status: 'unavailable'; backHref: string }
-  | { status: 'ready'; summary: BookingSummaryView; backHref: string }
+  | { status: 'ready'; fields: ConfirmParams; summary: BookingSummaryView; backHref: string }

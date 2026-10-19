@@ -30,6 +30,10 @@ export const clientCalendarMessages = {
   noServices: 'Todavía no hay servicios para agendar. Volvé a intentarlo más tarde.',
   chooseService: 'Elegí un servicio para ver los espacios disponibles.',
   continueToConfirm: 'Continuar',
+  notices: {
+    [CALENDAR_NOTICES.taken]: 'Ese espacio ya fue tomado. Elegí otro horario: conservamos tu servicio y el día.',
+    [CALENDAR_NOTICES.notOffered]: 'Ese horario ya no está disponible. Elegí otro.',
+  },
   noSlots: 'No hay espacios disponibles este día. Probá con otro día.',
   invalid: 'No pudimos calcular los espacios de ese día. Elegí otro día o servicio.',
   loading: 'Cargando los espacios…',

@@ -45,6 +45,12 @@ describe('ClientCalendarView — US-AGE-02', () => {
     expect((screen.getByRole('button', { name: clientCalendarMessages.continueToConfirm }) as HTMLButtonElement).disabled).toBe(false)
   })
 
+  it('muestra el aviso de que el espacio fue tomado y conserva el servicio y el día (criterio 4)', () => {
+    renderData({ ...ready, notice: 'ocupado' })
+    expect(screen.getByRole('alert').textContent).toContain(clientCalendarMessages.notices.ocupado)
+    expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('t2')
+  })
+
   it('si todos los espacios están ocupados, no se puede continuar', () => {
     renderData({ ...ready, slots: [{ startMin: 540, endMin: 600, status: 'busy' }] })
     expect((screen.getByRole('button', { name: clientCalendarMessages.continueToConfirm }) as HTMLButtonElement).disabled).toBe(true)

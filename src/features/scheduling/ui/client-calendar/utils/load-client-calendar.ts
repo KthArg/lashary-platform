@@ -25,8 +25,8 @@ export async function loadClientCalendar(
   if (options.length === 0) return { status: 'noServices' }
 
   const today = studioDateOf(deps.clock())
-  const { serviceKey, date } = readCalendarParams(searchParams, today)
-  const base = { options, date, today }
+  const { serviceKey, date, notice } = readCalendarParams(searchParams, today)
+  const base = { options, date, today, notice }
   const selected = findServiceOption(options, serviceKey)
   if (!selected) return { ...base, status: 'chooseService' }
 
