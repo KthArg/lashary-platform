@@ -27,3 +27,32 @@ export const RECORD_PROBLEM_MESSAGES: Record<RecordProblem, string> = {
   'image-path-empty': 'La imagen no tiene ruta.',
   'duplicate-image': 'Esa imagen ya está en el expediente.',
 }
+
+export const RECORD_LABELS = {
+  pageTitle: 'Expediente',
+  studyHeading: 'Estudio de la clienta',
+  initialRecordOn: (date: string) => `Registro inicial · ${date}`,
+  initialStudyHeading: 'Estudio inicial',
+  recommendedTechnique: 'Técnica recomendada',
+  noRecommendedTechnique: 'Sin técnica recomendada',
+  precautionsHeading: 'Antecedentes y precauciones',
+  noPrecautions: 'Sin antecedentes registrados.',
+  imagesHeading: 'Imágenes',
+  noImages: 'Sin imágenes todavía.',
+  imagesCount: (count: number) => (count === 1 ? '1 imagen' : `${count} imágenes`),
+  historyHeading: 'Historial de cambios',
+  emptyRecord: 'Esta clienta todavía no tiene expediente.',
+  loading: 'Cargando expediente…',
+  unexpectedError: 'No se pudo cargar el expediente.',
+  retry: 'Reintentar',
+} as const
+
+export const RECORD_CHANGE_TEXTS = {
+  initial: 'Registro inicial',
+  precautionAdded: (category: string, description: string) => `Se agregó ${category.toLowerCase()}: ${description}`,
+  precautionRemoved: (category: string, description: string) => `Se quitó ${category.toLowerCase()}: ${description}`,
+  somePrecautionAdded: 'Se agregó un antecedente',
+  somePrecautionRemoved: 'Se quitó un antecedente',
+  studyEdited: 'Se editó el estudio',
+  imageAdded: 'Se agregó una imagen',
+} as const

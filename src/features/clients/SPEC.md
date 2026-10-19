@@ -13,7 +13,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-04
     estado: en_progreso
-    falta: "piezas 1/11 a 8/11: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros, los casos de uso de lectura y escritura con bitacora, el repositorio con los adaptadores de audit y catalog y las server actions. Faltan la pestana Expediente (9/11), los formularios y las categorias nuevas (10/11) y las imagenes con URL firmada (11/11)"
+    falta: "piezas 1/12 a 9/12: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros, los casos de uso con bitacora, el repositorio con los adaptadores de audit y catalog, las server actions y la vista del expediente en /admin/clients/<id>/expediente. Faltan la ficha con nombre, pestanas y enlace desde el listado (10/12), los formularios y las categorias nuevas (11/12) y las imagenes con URL firmada (12/12)"
   - id: US-CLI-05
     estado: terminada
     evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
@@ -395,3 +395,12 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
   (`RecordVersionView`, fecha en ISO, sin la marca del contenido) porque viajan al navegador, y cada
   código de error o problema de validación se traduce a su texto en `record-strings.ts` (DOM-009).
   Tras guardar se revalida `/admin/clients/<id>/expediente`, la ruta que crea la 9/11.
+- **2026-10-18 — 12 piezas (INT-002), por decisión de José Loría:** la pestaña completa estimaba ~580
+  líneas; se parte en vista con estados (9/12) y ficha con pestañas (10/12).
+- **2026-10-18 — Vista en `/admin/clients/<id>/expediente` (pieza 9/12).** `RecordView` muestra
+  estudio y técnica, antecedentes con su categoría, cuántas imágenes hay (verlas es la 12/12) y el
+  historial. Estados (UI-003): vacío (crear llega en la 11/12), `loading.tsx`, y error con
+  *Reintentar* si falla la bitácora (`RecordLoadError`) o algo inesperado (`error.tsx`).
+- **2026-10-18 — `describeVersion` (UI) nombra el antecedente agregado o quitado** comparando con la
+  versión anterior. Si esa quedó fuera del tope de 50, "se agregó" usa el último antecedente y "se
+  quitó" no inventa cuál. Fechas en la hora del estudio (`STUDIO_TIME_ZONE`).
