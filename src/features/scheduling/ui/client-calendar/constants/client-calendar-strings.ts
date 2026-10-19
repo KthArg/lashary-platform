@@ -34,3 +34,5 @@ export const clientCalendarMessages = {
     retry: 'Reintentar',
   },
 } as const
+
+export const SLOT_FIELD = 'espacio'
