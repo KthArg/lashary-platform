@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({ requireAdminSession: vi.fn(), listActiveCatalo
 
 vi.mock('@/features/auth', () => ({ requireAdminSession: mocks.requireAdminSession }))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
-vi.mock('../../../application/record/record-gateways', () => ({
+vi.mock('@/features/clients/http/record/record-gateways', () => ({
   auditRecordLog: vi.fn(),
   catalogTechniqueLookup: { findActiveTechnique: vi.fn() },
   listActiveCatalogTechniques: mocks.listActiveCatalogTechniques,

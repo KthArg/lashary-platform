@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useId } from 'react'
-import { useFocusTrap } from '../../hooks/useFocusTrap'
-import { CLIENTS_CONFIRM_MESSAGES } from '../../constants/client-strings'
+import { useFocusTrap } from '@/features/clients/ui/shared/hooks/useFocusTrap'
+import { CLIENTS_CONFIRM_MESSAGES } from '@/features/clients/ui/admin-clients/constants/client-strings'
 import { confirmDialogStyles as STYLES } from './ConfirmDialog.styles'
 import type { ConfirmDialogProps } from './ConfirmDialog.types'
 

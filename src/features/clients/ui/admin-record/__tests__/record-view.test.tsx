@@ -3,7 +3,7 @@ import { render, screen, fireEvent, within } from '@testing-library/react'
 import { RECORD_LABELS, RecordLoadError, RecordView } from '@/features/clients'
 import { RECORD_CHANGE_TEXTS } from '../constants/record-strings'
 import { formatRecordDate } from '../record-history'
-import { ALLERGY, SENSITIVITY } from '../../../domain/record/__tests__/record-fixtures'
+import { ALLERGY, SENSITIVITY } from '@/features/clients/domain/record/__tests__/record-fixtures'
 import { ADDED_VIEW, INITIAL_VIEW } from './record-view-fixtures'
 
 const mockRefresh = vi.fn()

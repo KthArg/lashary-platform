@@ -5,13 +5,13 @@ import { revalidatePath } from 'next/cache'
 import { requireAdminSession } from '@/features/auth'
 import { systemClock } from '@/shared/clock'
 import { isErr, type Result } from '@/shared/result'
-import { auditRecordLog, catalogTechniqueLookup } from '../../../application/record/record-gateways'
-import { recordRepository } from '../../../db/record/record-repository'
-import { precautionCategoryLookup } from '../../../db/record/precaution-category-repository'
-import { recordImageStorage } from '../../../db/record/record-image-storage'
+import { auditRecordLog, catalogTechniqueLookup } from '@/features/clients/http/record/record-gateways'
+import { recordRepository } from '@/features/clients/db/record/record-repository'
+import { precautionCategoryLookup } from '@/features/clients/db/record/precaution-category-repository'
+import { recordImageStorage } from '@/features/clients/db/record/record-image-storage'
 import { toVersionView } from '../record-version-view'
-import { addRecordImage } from '../../../application/record/add-record-image'
-import { RECORD_ERROR_CODES, isRecordValidationError } from '../../../domain/record/record-errors'
+import { addRecordImage } from '@/features/clients/application/record/add-record-image'
+import { RECORD_ERROR_CODES, isRecordValidationError } from '@/features/clients/domain/record/record-errors'
 import {
   addRecordPrecaution,
   createRecord,
@@ -20,9 +20,9 @@ import {
   type RecordCommandDeps,
   type RecordCommandError,
   type StudyInput,
-} from '../../../application/record/record-commands'
+} from '@/features/clients/application/record/record-commands'
 import { RECORD_ERROR_MESSAGES, RECORD_PROBLEM_MESSAGES } from '../constants/record-strings'
-import type { RecordActor, RecordVersion } from '../../../application/record/record-ports'
+import type { RecordActor, RecordVersion } from '@/features/clients/application/record/record-ports'
 import type { PrecautionFormInput, SaveRecordResult, StudyFormInput } from '../types/record-action-results'
 import { clientRecordPath, isUuid } from '../../client-routes'
 

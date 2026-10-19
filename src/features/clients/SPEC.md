@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-18
+actualizado: 2026-10-19
 historias:
   - id: US-CLI-01
     estado: en_progreso
@@ -88,7 +88,7 @@ La estructura de carpetas sigue las capas de `docs/spec/ARCHITECTURE.md`, como `
 `application/` (los casos de uso `addClient`, `editClient` y `listClients`, el puerto
 `ClientRepository` y `CLIENTS_LIST_LIMITS`), `db/` (`clientRepository()`, lo único que conoce
 Supabase y `clients_profiles`) y `ui/` (todo en el área `ui/admin-clients/`: las server actions en `ui/admin-clients/actions/client-actions.ts`, los textos en
-`ui/admin-clients/constants/client-strings.ts`, los hooks en `ui/admin-clients/hooks/` y un subdirectorio por componente en `ui/admin-clients/components/`). No hay `http/`: la feature no tiene route handlers. `ui/admin-clients/clients-list-url.ts` guarda la
+`ui/admin-clients/constants/client-strings.ts`, los hooks en `ui/admin-clients/hooks/` y un subdirectorio por componente en `ui/admin-clients/components/`; lo que comparten `admin-clients` y `admin-record`, `ConfirmDialog` y `useFocusTrap`, vive en `ui/shared/`). `http/` guarda solo los adaptadores a otras features (`http/record/record-gateways.ts`); no hay route handlers. `ui/admin-clients/clients-list-url.ts` guarda la
 construcción pura de URLs del listado, separada de `ui/admin-clients/hooks/` porque no usa React: así se prueba sin
 renderizar. Las pruebas de la interfaz están en `ui/admin-clients/__tests__/` y las de los casos de uso en `application/__tests__/`.
 
@@ -491,3 +491,8 @@ También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el e
   navegador, importa de `@/features/clients/client` (como `catalog`), para no arrastrar código de
   servidor. B5: la fecha del registro inicial se lee aparte (`findInitialVersion`), así aparece
   aunque el expediente pase de 50 versiones.
+- **2026-10-19 — Orden de imports y capas (pieza 19/20, B1 y B2 de la auditoría).** Los imports de
+  tres o más niveles de los archivos del expediente pasan a `@/features/clients/...`.
+  `record-gateways.ts` deja `application/` y pasa a `http/record/`: habla con `audit` y `catalog`, no
+  es un caso de uso. `ConfirmDialog` y `useFocusTrap` pasan a `ui/shared/` porque ya los usan dos
+  áreas. Los archivos de US-CLI-05 solo cambian la ruta de esos dos imports.

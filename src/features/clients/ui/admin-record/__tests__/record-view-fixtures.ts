@@ -1,4 +1,4 @@
-import { ALLERGY, SENSITIVITY } from '../../../domain/record/__tests__/record-fixtures'
+import { ALLERGY, SENSITIVITY } from '@/features/clients/domain/record/__tests__/record-fixtures'
 import type { RecordVersionView } from '../types/record-action-results'
 
 export const INITIAL_VIEW: RecordVersionView = {

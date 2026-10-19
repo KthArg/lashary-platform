@@ -5,7 +5,7 @@ import { RECORD_ERROR_MESSAGES } from '../constants/record-strings'
 const mocks = vi.hoisted(() => ({ requireAdminSession: vi.fn(), listPrecautionCategories: vi.fn() }))
 
 vi.mock('@/features/auth', () => ({ requireAdminSession: mocks.requireAdminSession }))
-vi.mock('../../../db/record/precaution-category-repository', () => ({
+vi.mock('@/features/clients/db/record/precaution-category-repository', () => ({
   precautionCategoryLookup: vi.fn(),
   listPrecautionCategories: mocks.listPrecautionCategories,
 }))

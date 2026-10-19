@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { PrecautionsEditor } from '../components/PrecautionsEditor'
 import { PRECAUTION_FORM_LABELS, RECORD_LABELS } from '../constants/record-strings'
-import { ALLERGY, SENSITIVITY } from '../../../domain/record/__tests__/record-fixtures'
+import { ALLERGY, SENSITIVITY } from '@/features/clients/domain/record/__tests__/record-fixtures'
 
 const CLIENT_ID = '11111111-1111-4111-8111-111111111111'
 const CONDITION = { id: '44444444-4444-4444-8444-444444444444', name: 'Condición relevante' }

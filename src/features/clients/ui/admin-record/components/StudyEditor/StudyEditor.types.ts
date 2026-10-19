@@ -1,4 +1,4 @@
-import type { RecordStudy, RecommendedTechnique } from '../../../../domain/record/record.types'
+import type { RecordStudy, RecommendedTechnique } from '@/features/clients/domain/record/record.types'
 
 export interface StudyEditorProps {
   clientId: string

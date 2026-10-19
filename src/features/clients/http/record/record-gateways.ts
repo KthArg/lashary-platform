@@ -2,7 +2,7 @@ import { record } from '@/features/audit'
 import { getTechnique, listTechniques } from '@/features/catalog'
 import { isOk } from '@/shared/result'
 import type { RecommendedTechnique } from '../../domain/record/record.types'
-import type { RecordAuditLog, TechniqueLookup } from './record-ports'
+import type { RecordAuditLog, TechniqueLookup } from '../../application/record/record-ports'
 
 export const RECORD_AUDIT_ENTITY_TYPE = 'clients_profile'
 

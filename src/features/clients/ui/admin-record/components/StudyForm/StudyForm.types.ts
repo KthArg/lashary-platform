@@ -1,4 +1,4 @@
-import type { RecommendedTechnique } from '../../../../domain/record/record.types'
+import type { RecommendedTechnique } from '@/features/clients/domain/record/record.types'
 import type { StudyFormInput } from '../../types/record-action-results'
 
 export interface StudyFormProps {

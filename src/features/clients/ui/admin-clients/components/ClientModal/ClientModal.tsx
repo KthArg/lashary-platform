@@ -2,7 +2,7 @@
 
 import { useEffect, useId } from 'react'
 import { CLIENTS_LABELS } from '../../constants/client-strings'
-import { useFocusTrap } from '../../hooks/useFocusTrap'
+import { useFocusTrap } from '@/features/clients/ui/shared/hooks/useFocusTrap'
 import { clientModalStyles as STYLES } from './ClientModal.styles'
 import type { ClientModalProps } from './ClientModal.types'
 
