@@ -13,11 +13,20 @@ import type {
   BookedAppointment,
   BookingRepository,
 } from '../application/ports'
-import {
-  BOOK_APPOINTMENT_FUNCTION,
-  BOOKING_ERROR_MESSAGES,
-  NO_ROW_RETURNED,
-} from './booking-repository.constants'
+import { OVERLAP_REJECTED_EVENT } from './appointment-repository.constants'
+import { BOOK_APPOINTMENT_FUNCTION, BOOKING_ERROR_MESSAGES } from './booking-repository.constants'
+
+export type BookingOverlapEvent = {
+  event: typeof OVERLAP_REJECTED_EVENT
+  resourceId: string
+  startsAtMs: number
+}
+
+export type BookingOverlapReporter = (event: BookingOverlapEvent) => void
+
+export const logBookingOverlap: BookingOverlapReporter = (event) => {
+  console.error(JSON.stringify(event))
+}
 
 type AppointmentRow = {
   id: string
@@ -62,7 +71,10 @@ function toBookingError(message: string, input: BookAppointmentInput): BookAppoi
   }
 }
 
-export function createSupabaseBookingRepository(db: SupabaseClient): BookingRepository {
+export function createSupabaseBookingRepository(
+  db: SupabaseClient,
+  reportOverlap: BookingOverlapReporter = logBookingOverlap,
+): BookingRepository {
   return {
     async book(input) {
       const { data, error } = await db.rpc(BOOK_APPOINTMENT_FUNCTION, {
@@ -73,7 +85,10 @@ export function createSupabaseBookingRepository(db: SupabaseClient): BookingRepo
       })
 
       if (error) return err(toBookingError(error.message, input))
-      if (!data) return err(storageFailed(NO_ROW_RETURNED))
+      if (!data || !(data as AppointmentRow).id) {
+        reportOverlap({ event: OVERLAP_REJECTED_EVENT, resourceId: input.resourceId, startsAtMs: input.startsAtMs })
+        return err(spaceNotAvailable(input.resourceId))
+      }
       return ok(toBookedAppointment(data as AppointmentRow))
     },
   }

@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isErr, isOk } from '@/shared/result'
-import { createSupabaseBookingRepository } from '../booking-repository'
+import { createSupabaseBookingRepository, type BookingOverlapEvent } from '../booking-repository'
+import { OVERLAP_REJECTED_EVENT } from '../appointment-repository.constants'
 import {
   BOOK_APPOINTMENT_FUNCTION,
   BOOKING_ERROR_MESSAGES,
@@ -98,11 +99,25 @@ describe('createSupabaseBookingRepository', () => {
     })
   })
 
-  it('sin fila devuelta → StorageFailed', async () => {
-    const { db } = createFakeDb({ data: null, error: null })
-    const result = await createSupabaseBookingRepository(db).book(input)
+  it.each([
+    ['sin fila', null],
+    ['una fila vacía', { ...row, id: null }],
+  ])(
+    'si la función devuelve %s, el constraint rechazó la reserva: espacio no disponible y un evento estructurado',
+    async (_name, data) => {
+      const { db } = createFakeDb({ data: data as typeof row | null, error: null })
+      const reported: BookingOverlapEvent[] = []
+      const result = await createSupabaseBookingRepository(db, (event) => reported.push(event)).book(input)
 
-    expect(isErr(result)).toBe(true)
-    if (isErr(result)) expect(result.error.code).toBe('SCHEDULING_STORAGE_FAILED')
+      expect(isErr(result) && result.error).toMatchObject({ code: 'SCHEDULING_SPACE_NOT_AVAILABLE', resourceId: RESOURCE_ID })
+      expect(reported).toEqual([{ event: OVERLAP_REJECTED_EVENT, resourceId: RESOURCE_ID, startsAtMs: STARTS_AT_MS }])
+    },
+  )
+
+  it('una reserva normal no emite ningún evento', async () => {
+    const { db } = createFakeDb({ data: row, error: null })
+    const reported: BookingOverlapEvent[] = []
+    await createSupabaseBookingRepository(db, (event) => reported.push(event)).book(input)
+    expect(reported).toHaveLength(0)
   })
 })
