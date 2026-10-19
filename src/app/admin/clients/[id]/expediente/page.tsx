@@ -1,5 +1,5 @@
 import { requireAdminSession } from '@/features/auth'
-import { RecordLoadError, RecordView, viewRecordAction } from '@/features/clients'
+import { RecordLoadError, RecordView, listTechniqueOptionsAction, viewRecordAction } from '@/features/clients'
 import type { AdminRecordPageProps } from './expediente.types'
 
 export const metadata = {
@@ -10,7 +10,10 @@ export const metadata = {
 export default async function AdminRecordPage({ params }: AdminRecordPageProps) {
   await requireAdminSession()
   const { id } = await params
-  const result = await viewRecordAction(id)
+  const [result, techniqueOptions] = await Promise.all([viewRecordAction(id), listTechniqueOptionsAction()])
   if (!result.ok) return <RecordLoadError message={result.error} />
-  return <RecordView current={result.current} history={result.history} />
+  return (
+    <RecordView clientId={id} current={result.current} history={result.history}
+      techniques={techniqueOptions.ok ? techniqueOptions.techniques : []} />
+  )
 }

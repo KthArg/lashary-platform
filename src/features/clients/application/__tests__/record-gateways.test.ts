@@ -1,12 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ok, err } from '@/shared/result'
-import { RECORD_AUDIT_ENTITY_TYPE, auditRecordLog, catalogTechniqueLookup } from '../record/record-gateways'
+import {
+  RECORD_AUDIT_ENTITY_TYPE,
+  TECHNIQUE_OPTIONS_LIMIT,
+  auditRecordLog,
+  catalogTechniqueLookup,
+  listActiveCatalogTechniques,
+} from '../record/record-gateways'
 
 const mockRecord = vi.fn()
 const mockGetTechnique = vi.fn()
+const mockListTechniques = vi.fn()
 
 vi.mock('@/features/audit', () => ({ record: (input: unknown) => mockRecord(input) }))
-vi.mock('@/features/catalog', () => ({ getTechnique: (id: string) => mockGetTechnique(id) }))
+vi.mock('@/features/catalog', () => ({
+  getTechnique: (id: string) => mockGetTechnique(id),
+  listTechniques: (query: unknown) => mockListTechniques(query),
+}))
 
 const event = { actorId: 'admin-1', clientId: 'client-1', action: 'clients.record.viewed' as const }
 
@@ -49,5 +59,13 @@ describe('catalogTechniqueLookup — la técnica recomendada sale de catalog', (
   it('una técnica que no existe se lee como null', async () => {
     mockGetTechnique.mockResolvedValue(err({ code: 'not-found' }))
     expect(await catalogTechniqueLookup.findActiveTechnique('technique-x')).toBeNull()
+  })
+})
+
+describe('listActiveCatalogTechniques — las opciones del menú de técnicas', () => {
+  it('pide solo las activas, con tope, y deja id y nombre', async () => {
+    mockListTechniques.mockResolvedValue({ items: [{ id: 'technique-1', name: 'Clásicas', isActive: true, family: 'pestanas' }] })
+    expect(await listActiveCatalogTechniques()).toEqual([{ id: 'technique-1', name: 'Clásicas' }])
+    expect(mockListTechniques).toHaveBeenCalledWith({ activeOnly: true, pageSize: TECHNIQUE_OPTIONS_LIMIT })
   })
 })

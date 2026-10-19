@@ -11,6 +11,7 @@ export const RECORD_ERROR_MESSAGES = {
   categoryNotFound: 'La categoría elegida no existe.',
   precautionNotFound: 'Ese antecedente ya no está en el expediente.',
   unchanged: 'No hay cambios para guardar.',
+  techniquesUnavailable: 'No se pudieron cargar las técnicas del catálogo.',
 } as const
 
 export const RECORD_PROBLEM_MESSAGES: Record<RecordProblem, string> = {
@@ -54,4 +55,15 @@ export const RECORD_CHANGE_TEXTS = {
   somePrecautionRemoved: 'Se quitó un antecedente',
   studyEdited: 'Se editó el estudio',
   imageAdded: 'Se agregó una imagen',
+} as const
+
+export const STUDY_FORM_LABELS = {
+  createButton: 'Registrar estudio inicial',
+  editButton: 'Editar estudio',
+  studyText: 'Estudio',
+  technique: 'Técnica recomendada',
+  noTechniqueOption: 'Sin técnica recomendada',
+  save: 'Guardar',
+  saving: 'Guardando…',
+  cancel: 'Cancelar',
 } as const
