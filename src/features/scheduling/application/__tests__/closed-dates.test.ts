@@ -21,19 +21,19 @@ function createFakeClosedDateRepository(initial: ClosedDate[] = []) {
     async listFrom(resourceId, fromDate, limit) {
       listCalls.push({ fromDate, limit })
       return dates
-        .filter((d) => d.resourceId === resourceId && d.date >= fromDate)
-        .sort((a, b) => a.date.localeCompare(b.date))
+        .filter((stored) => stored.resourceId === resourceId && stored.date >= fromDate)
+        .sort((left, right) => left.date.localeCompare(right.date))
         .slice(0, limit)
     },
     async insert(closedDate) {
-      if (dates.some((d) => d.resourceId === closedDate.resourceId && d.date === closedDate.date)) {
+      if (dates.some((stored) => stored.resourceId === closedDate.resourceId && stored.date === closedDate.date)) {
         return err(closedDateAlreadyExists(closedDate.date))
       }
       dates.push(closedDate)
       return ok(undefined)
     },
     async remove(id) {
-      const index = dates.findIndex((d) => d.id === id)
+      const index = dates.findIndex((stored) => stored.id === id)
       if (index === -1) return false
       dates.splice(index, 1)
       return true
@@ -96,7 +96,7 @@ describe('listUpcomingClosedDates', () => {
       closed('futuro', '2026-12-25'),
     ])
     const dates = await listUpcomingClosedDates(deps(repo))(RESOURCE)
-    expect(dates.map((d) => d.id)).toEqual(['hoy', 'futuro'])
+    expect(dates.map((closedDate) => closedDate.id)).toEqual(['hoy', 'futuro'])
     expect(listCalls).toEqual([{ fromDate: '2026-10-14', limit: MAX_CLOSED_DATES }])
   })
 })

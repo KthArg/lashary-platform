@@ -20,13 +20,13 @@ function createFakeManualBlockRepository(initial: ManualBlock[] = []) {
     async listEndingAfter(resourceId, after, limit) {
       listCalls.push({ after, limit })
       return blocks
-        .filter((b) => b.resourceId === resourceId && b.endsAt > after)
-        .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())
+        .filter((stored) => stored.resourceId === resourceId && stored.endsAt > after)
+        .sort((left, right) => left.startsAt.getTime() - right.startsAt.getTime())
         .slice(0, limit)
     },
     async insert(block) {
       const overlaps = blocks.some(
-        (b) => b.resourceId === block.resourceId && b.startsAt < block.endsAt && block.startsAt < b.endsAt,
+        (stored) => stored.resourceId === block.resourceId && stored.startsAt < block.endsAt && block.startsAt < stored.endsAt,
       )
       if (overlaps) return err(manualBlockOverlap())
       blocks.push(block)
@@ -96,7 +96,7 @@ describe('listUpcomingManualBlocks', () => {
       blockOf('futuro', '2026-10-20T15:00:00Z', '2026-10-20T17:00:00Z'),
     ])
     const blocks = await listUpcomingManualBlocks(deps(repo))(RESOURCE)
-    expect(blocks.map((b) => b.id)).toEqual(['en-curso', 'futuro'])
+    expect(blocks.map((block) => block.id)).toEqual(['en-curso', 'futuro'])
     expect(listCalls).toEqual([{ after: at(NOW), limit: MAX_MANUAL_BLOCKS }])
   })
 })

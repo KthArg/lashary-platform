@@ -44,4 +44,4 @@ export const findOverlappingBlock = (
 ): WeeklyBlock | undefined => existing.find((block) => weeklyBlocksOverlap(candidate, block))
 
 export const sortWeeklyBlocks = (blocks: readonly WeeklyBlock[]): WeeklyBlock[] =>
-  [...blocks].sort((a, b) => a.weekday - b.weekday || a.startMin - b.startMin)
+  [...blocks].sort((left, right) => left.weekday - right.weekday || left.startMin - right.startMin)

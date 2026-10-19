@@ -42,6 +42,18 @@ export interface ManualBlockOverlap {
   readonly message: string
 }
 
+export interface DaySlotsInvalid {
+  readonly code: 'SCHEDULING_DAY_SLOTS_INVALID'
+  readonly problems: readonly string[]
+  readonly message: string
+}
+
+export const daySlotsInvalid = (problems: readonly string[]): DaySlotsInvalid => ({
+  code: 'SCHEDULING_DAY_SLOTS_INVALID',
+  problems,
+  message: `no se pueden calcular los espacios del día: ${problems.join('; ')}`,
+})
+
 export const closedDateInvalid = (problems: readonly string[]): ClosedDateInvalid => ({
   code: 'SCHEDULING_CLOSED_DATE_INVALID',
   problems,
@@ -108,3 +120,6 @@ export const isManualBlockInvalid = (error: unknown): error is ManualBlockInvali
 
 export const isManualBlockOverlap = (error: unknown): error is ManualBlockOverlap =>
   hasCode(error, 'SCHEDULING_MANUAL_BLOCK_OVERLAP')
+
+export const isDaySlotsInvalid = (error: unknown): error is DaySlotsInvalid =>
+  hasCode(error, 'SCHEDULING_DAY_SLOTS_INVALID')

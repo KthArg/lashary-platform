@@ -23,6 +23,7 @@ export const schedulingMessages = {
     minutesShort: 'min',
     accessDenied: 'Iniciá sesión como clienta para agendar una cita.',
     pickOne: 'Elegí una técnica de la lista.',
+    seeSlots: 'Ver espacios disponibles',
   },
   availability: {
     title: 'Disponibilidad de la agenda',

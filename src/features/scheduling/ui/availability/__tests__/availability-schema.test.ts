@@ -7,7 +7,7 @@ import {
 } from '../validation/availability-schema'
 import { schedulingMessages } from '../../messages'
 
-const v = schedulingMessages.availability.validation
+const validationMessages = schedulingMessages.availability.validation
 
 describe('availability-schema', () => {
   it('timeToMinutes convierte HH:MM a minutos desde la medianoche', () => {
@@ -28,8 +28,8 @@ describe('availability-schema', () => {
   it('bloque semanal: rechaza día fuera de rango y horas mal escritas, con texto externalizado', () => {
     const result = weeklyBlockFormSchema.safeParse({ weekday: '8', start: '9:00', end: '25:00' })
     expect(result.success).toBe(false)
-    const messages = result.success ? [] : result.error.issues.map((i) => i.message)
-    expect(messages).toEqual([v.weekday, v.time, v.time])
+    const messages = result.success ? [] : result.error.issues.map((issue) => issue.message)
+    expect(messages).toEqual([validationMessages.weekday, validationMessages.time, validationMessages.time])
   })
 
   it('día cerrado: valida fecha real y tipo; nombre vacío queda en null', () => {
@@ -39,8 +39,8 @@ describe('availability-schema', () => {
       label: null,
     })
     const result = closedDateFormSchema.safeParse({ date: '2026-02-30', kind: 'vacaciones' })
-    const messages = result.success ? [] : result.error.issues.map((i) => i.message)
-    expect(messages).toEqual([v.date, v.kind])
+    const messages = result.success ? [] : result.error.issues.map((issue) => issue.message)
+    expect(messages).toEqual([validationMessages.date, validationMessages.kind])
   })
 
   it('bloqueo: convierte horas y recorta el motivo', () => {

@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-15.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-18.
 
 ## Features
 
@@ -19,7 +19,7 @@
 | notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
 | payments | pendiente | terminada | 1 / 0 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
-| scheduling | pendiente | en_progreso | 2 / 1 / 0 / 0 / 8 |
+| scheduling | pendiente | en_progreso | 2 / 2 / 0 / 0 / 7 |
 | store | pendiente | en_progreso | 3 / 0 / 0 / 0 / 1 |
 
 ## Detalle por feature
@@ -84,9 +84,9 @@
 
 ### platform (actualizado: 2026-09-16)
 
-### scheduling (actualizado: 2026-10-15)
+### scheduling (actualizado: 2026-10-18)
 - US-AGE-01 — terminada — PR de cierre us/US-AGE-01 a main, con las piezas 1 a 13 apiladas hacia la rama de la historia. Criterios 1, 2 y 3 demostrados en /admin/citas/disponibilidad; los criterios 4 y 5 se trasladaron a US-AGE-02 y US-AGE-05 con aprobación del PO el 2026-10-14 (docs/process/DEPENDENCIES.md); tests: weekly-availability.test.ts (domain y application), closed-dates.test.ts (domain y application), manual-blocks.test.ts (domain y application), los tres *-repository.test.ts, studio-time.test.ts, availability-schema.test.ts, availability-actions.test.ts, availability-format.test.ts, AdminAvailabilityView.test.tsx, __tests__/availability-rls-isolation.test.ts (SEC-002) y pgTAP scheduling_weekly_availability.test.sql y scheduling_closed_dates_and_manual_blocks.test.sql
-- US-AGE-02 — no_iniciada
+- US-AGE-02 — en_progreso — falta: Supuesto pendiente del PO: SLOT_INTERVAL_MIN = 30.
 - US-AGE-03 — en_progreso — falta: criterio 2 (detectar primera vez/re-aplicación por historial de citas) diferido: no existe scheduling_appointments todavía (la trae US-AGE-05, que depende de esta historia). Punto de extensión: application/no-appointment-history.ts (ClientHistoryPort), hoy siempre reporta sin historial; la corrección manual ya está resuelta en el use-case (isFirstTimeOverride). Ver docs/process/DEPENDENCIES.md, Criterios diferidos.
 - US-AGE-04 — no_iniciada
 - US-AGE-05 — no_iniciada

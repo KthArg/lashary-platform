@@ -2,6 +2,7 @@ import type { Result } from '@/shared/result'
 import type { WeeklyBlock } from '../domain/weekly-availability'
 import type { ClosedDate } from '../domain/closed-dates'
 import type { ManualBlock } from '../domain/manual-blocks'
+import type { BusyRange, OpenHours } from '../domain/day-slots'
 import type {
   ClosedDateAlreadyExists,
   ManualBlockOverlap,
@@ -34,6 +35,11 @@ export interface ClosedDateRepository {
 
 // Tope de bloqueos próximos que lista el panel (PERF-002).
 export const MAX_MANUAL_BLOCKS = 100
+
+export interface DayAvailabilityRepository {
+  listOpenHours(resourceId: string, date: string): Promise<OpenHours[]>
+  listBusyRanges(resourceId: string, date: string): Promise<BusyRange[]>
+}
 
 export interface ManualBlockRepository {
   // Bloqueos que terminan después de `after`, por inicio ascendente.

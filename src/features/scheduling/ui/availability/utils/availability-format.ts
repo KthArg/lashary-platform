@@ -7,7 +7,7 @@ import { schedulingMessages } from '../../messages'
 // Vistas ya formateadas en el servidor, en la zona del estudio: el navegador no reinterpreta
 // fechas con su propia zona y el HTML del servidor coincide con el del cliente.
 
-const m = schedulingMessages.availability
+const availabilityMessages = schedulingMessages.availability
 const LOCALE = 'es-CR'
 
 const pad = (value: number) => String(value).padStart(2, '0')
@@ -51,7 +51,7 @@ export type WeeklyDayView = {
 
 // Los siete días siempre aparecen, aunque no tengan bloques: un día vacío es un día sin atención.
 export const toWeeklyDays = (blocks: readonly WeeklyBlock[]): WeeklyDayView[] =>
-  m.weekdays.map((label, index) => ({
+  availabilityMessages.weekdays.map((label, index) => ({
     weekday: index + 1,
     label,
     blocks: blocks
@@ -68,7 +68,7 @@ export const toClosedDateViews = (dates: readonly ClosedDate[]): ClosedDateView[
   dates.map((closed) => ({
     id: closed.id,
     date: formatCalendarDate(closed.date),
-    kind: m.closed.kinds[closed.kind],
+    kind: availabilityMessages.closed.kinds[closed.kind],
     label: closed.label,
   }))
 
