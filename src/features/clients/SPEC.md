@@ -468,3 +468,9 @@ También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el e
   pantallas grandes, y "Antecedentes y precauciones" con "+ Agregar" arriba
   y una tarjeta por categoría con su conteo (`groupPrecautions`). Una categoría nueva tendría su
   tarjeta con el nombre guardado y un ícono genérico.
+- **2026-10-18 — Imágenes en mosaicos con visor (pieza 16/16).** Las imágenes se muestran en mosaicos
+  cuadrados; el último, "+ Agregar foto", sube apenas se elige el archivo. Tocar una miniatura abre
+  `ImageViewer`: la imagen en grande sobre fondo oscuro, con la misma URL firmada (no pide nada al
+  servidor), flechas y teclas ← → entre imágenes, y cierre con ✕, Escape o tocando afuera. Reusa
+  `useFocusTrap` y al cerrar devuelve el foco a la miniatura que lo abrió (UI-004). La ficha queda
+  alineada a la izquierda, junto al menú, sin centrarse en pantallas anchas (decisión de José Loría).

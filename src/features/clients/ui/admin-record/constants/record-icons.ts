@@ -7,6 +7,9 @@ export const RECORD_ICON_PATHS = {
   image: 'M4 5h16v14H4z M4 16l5-5 4 4 2-2 5 5 M15 9.5h.01',
   history: 'M3 12a9 9 0 1 0 3-6.7L3 8 M3 3v5h5 M12 7v5l3 2',
   plus: 'M12 5v14 M5 12h14',
+  close: 'M6 6l12 12 M18 6L6 18',
+  previous: 'M15 18l-6-6 6-6',
+  next: 'M9 18l6-6-6-6',
 } as const
 
 export type RecordIconName = keyof typeof RECORD_ICON_PATHS
