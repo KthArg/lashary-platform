@@ -17,6 +17,14 @@ const readName = (name: unknown): string | null => {
   return name.trim().slice(0, CLIENTS_LIST_LIMITS.nameFilterMaxLength) || null
 }
 
+export const getClient =
+  (repo: ClientRepository) =>
+  async (id: string): Promise<Result<ClientRecord, 'not-found' | 'failed'>> => {
+    const found = await repo.findById(id)
+    if (isErr(found)) return err('failed')
+    return found.value ? ok(found.value) : err('not-found')
+  }
+
 export const listClients =
   (repo: ClientRepository) =>
   async (query: ListClientsQuery = {}): Promise<Result<ClientsListPage, 'failed'>> => {

@@ -13,7 +13,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-04
     estado: en_progreso
-    falta: "piezas 1/12 a 9/12: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros, los casos de uso con bitacora, el repositorio con los adaptadores de audit y catalog, las server actions y la vista del expediente en /admin/clients/<id>/expediente. Faltan la ficha con nombre, pestanas y enlace desde el listado (10/12), los formularios y las categorias nuevas (11/12) y las imagenes con URL firmada (12/12)"
+    falta: "piezas 1/12 a 9/12: esquema, bucket privado de imagenes, el contenido validado, sus cambios puros, los casos de uso con bitacora, el repositorio con los adaptadores de audit y catalog, las server actions, la vista del expediente y la ficha de la clienta con su pestana y el enlace desde el listado. Faltan los formularios y las categorias nuevas (11/12) y las imagenes con URL firmada (12/12)"
   - id: US-CLI-05
     estado: terminada
     evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
@@ -404,3 +404,10 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
 - **2026-10-18 — `describeVersion` (UI) nombra el antecedente agregado o quitado** comparando con la
   versión anterior. Si esa quedó fuera del tope de 50, "se agregó" usa el último antecedente y "se
   quitó" no inventa cuál. Fechas en la hora del estudio (`STUDIO_TIME_ZONE`).
+- **2026-10-18 — Ficha de la clienta en `src/app/admin/clients/[id]/layout.tsx` (pieza 10/12).** Arriba,
+  volver al listado, nombre y teléfono; debajo, las pestañas (hoy solo Expediente, con
+  `aria-current`). La lee `getClientAction(id)`: sesión exigida, id con forma de UUID y `findById`
+  en el repositorio. Una clienta inexistente o que RLS no deja ver va a `notFound()`; si la base
+  falla, la ficha lo avisa y la pestaña igual se ve. Cada fila del listado suma un enlace con ícono
+  al expediente, con nombre accesible propio (UI-004). La revisión de UUID y las rutas pasan a
+  `ui/client-routes.ts`, que comparten las dos áreas de `ui/`.

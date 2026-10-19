@@ -49,6 +49,7 @@ export const CLIENTS_ERROR_MESSAGES = {
   saveFailed: 'No se pudo guardar la clienta. Intenta de nuevo.',
   phoneTaken: 'Ya hay una clienta registrada con este teléfono.',
   loadFailed: 'No se pudieron cargar las clientas.',
+  loadClientFailed: 'No se pudieron cargar los datos de la clienta.',
   clientNotFound: 'Esta clienta ya no existe o no tienes acceso a ella.',
 } as const
 
@@ -61,4 +62,13 @@ export const CLIENTS_CONFIRM_MESSAGES = {
   discardEdits: 'Los cambios que hiciste en esta clienta se perderán. La clienta seguirá registrada como estaba.',
 } as const
 
-export const CLIENTS_ARIA_LABELS = { editClient: (fullName: string) => `Editar a ${fullName}` } as const
+export const CLIENTS_ARIA_LABELS = {
+  editClient: (fullName: string) => `Editar a ${fullName}`,
+  openRecord: (fullName: string) => `Ver expediente de ${fullName}`,
+} as const
+
+export const CLIENT_PROFILE_LABELS = {
+  backToClients: 'Volver a clientas',
+  tabsLabel: 'Secciones de la clienta',
+  recordTab: 'Expediente',
+} as const
