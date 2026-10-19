@@ -17,6 +17,13 @@ export function isCalendarDate(value: string): boolean {
   )
 }
 
+const MS_PER_DAY = 86_400_000
+
+export function addCalendarDays(date: string, days: number): string {
+  const [year, month, day] = date.split('-').map(Number)
+  return new Date(Date.UTC(year, month - 1, day) + days * MS_PER_DAY).toISOString().slice(0, 10)
+}
+
 function zonedParts(instant: Date): Record<string, number> {
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: STUDIO_TIME_ZONE,
@@ -28,7 +35,7 @@ function zonedParts(instant: Date): Record<string, number> {
     hourCycle: 'h23',
   }).formatToParts(instant)
   return Object.fromEntries(
-    parts.filter((p) => p.type !== 'literal').map((p) => [p.type, Number(p.value)]),
+    parts.filter((part) => part.type !== 'literal').map((part) => [part.type, Number(part.value)]),
   )
 }
 

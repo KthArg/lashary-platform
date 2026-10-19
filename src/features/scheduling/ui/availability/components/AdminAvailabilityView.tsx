@@ -9,7 +9,7 @@ import {
   WeeklyBlockForm,
 } from './AvailabilityForms'
 
-const m = schedulingMessages.availability
+const availabilityMessages = schedulingMessages.availability
 
 export type AdminAvailabilityViewProps = {
   weeklyDays: WeeklyDayView[]
@@ -39,11 +39,11 @@ export function AdminAvailabilityView({ weeklyDays, closedDates, manualBlocks }:
   return (
     <main className={STYLES.main}>
       <header className={STYLES.header}>
-        <h1 className={STYLES.title}>{m.title}</h1>
-        <p className={STYLES.subtitle}>{m.subtitle}</p>
+        <h1 className={STYLES.title}>{availabilityMessages.title}</h1>
+        <p className={STYLES.subtitle}>{availabilityMessages.subtitle}</p>
       </header>
 
-      <Section id="weekly-title" title={m.weekly.title} subtitle={m.weekly.subtitle}>
+      <Section id="weekly-title" title={availabilityMessages.weekly.title} subtitle={availabilityMessages.weekly.subtitle}>
         <WeeklyBlockForm />
         {hasWeekly ? (
           <ul className={STYLES.list}>
@@ -51,13 +51,13 @@ export function AdminAvailabilityView({ weeklyDays, closedDates, manualBlocks }:
               <li key={day.weekday} className={STYLES.dayRow}>
                 <span className={STYLES.dayLabel}>{day.label}</span>
                 {day.blocks.length === 0 ? (
-                  <span className={STYLES.dayClosed}>{m.weekly.noBlocks}</span>
+                  <span className={STYLES.dayClosed}>{availabilityMessages.weekly.noBlocks}</span>
                 ) : (
                   <ul className={STYLES.dayBlocks}>
                     {day.blocks.map((block) => (
                       <li key={block.id} className={STYLES.chip}>
                         <span>{block.range}</span>
-                        <RemoveWeeklyBlockButton id={block.id} label={m.weekly.removeLabel(day.label, block.range)} />
+                        <RemoveWeeklyBlockButton id={block.id} label={availabilityMessages.weekly.removeLabel(day.label, block.range)} />
                       </li>
                     ))}
                   </ul>
@@ -66,11 +66,11 @@ export function AdminAvailabilityView({ weeklyDays, closedDates, manualBlocks }:
             ))}
           </ul>
         ) : (
-          <p className={STYLES.empty}>{m.weekly.empty}</p>
+          <p className={STYLES.empty}>{availabilityMessages.weekly.empty}</p>
         )}
       </Section>
 
-      <Section id="closed-title" title={m.closed.title} subtitle={m.closed.subtitle}>
+      <Section id="closed-title" title={availabilityMessages.closed.title} subtitle={availabilityMessages.closed.subtitle}>
         <ClosedDateForm />
         {closedDates.length > 0 ? (
           <ul className={STYLES.list}>
@@ -82,16 +82,16 @@ export function AdminAvailabilityView({ weeklyDays, closedDates, manualBlocks }:
                     {closed.label ? `${closed.kind} · ${closed.label}` : closed.kind}
                   </span>
                 </div>
-                <RemoveClosedDateButton id={closed.id} label={m.closed.removeLabel(closed.date)} />
+                <RemoveClosedDateButton id={closed.id} label={availabilityMessages.closed.removeLabel(closed.date)} />
               </li>
             ))}
           </ul>
         ) : (
-          <p className={STYLES.empty}>{m.closed.empty}</p>
+          <p className={STYLES.empty}>{availabilityMessages.closed.empty}</p>
         )}
       </Section>
 
-      <Section id="blocks-title" title={m.blocks.title} subtitle={m.blocks.subtitle}>
+      <Section id="blocks-title" title={availabilityMessages.blocks.title} subtitle={availabilityMessages.blocks.subtitle}>
         <ManualBlockForm />
         {manualBlocks.length > 0 ? (
           <ul className={STYLES.list}>
@@ -107,7 +107,7 @@ export function AdminAvailabilityView({ weeklyDays, closedDates, manualBlocks }:
             ))}
           </ul>
         ) : (
-          <p className={STYLES.empty}>{m.blocks.empty}</p>
+          <p className={STYLES.empty}>{availabilityMessages.blocks.empty}</p>
         )}
       </Section>
     </main>

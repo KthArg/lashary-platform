@@ -42,7 +42,7 @@ El backlog se mantiene en sus 51 historias; estas capacidades se construyen **de
 | US-AGE-08 catálogo | — | porta modelo de datos/CI si va primera |
 | US-AGE-13 anticipos | US-AGE-08 | **porta la bitácora de auditoría** |
 | US-AGE-01 disponibilidad | US-AUTH-01 | |
-| US-AGE-02 calendario cliente | US-AGE-01, US-AGE-08 | duración + limpieza |
+| US-AGE-02 calendario cliente | US-AGE-01, US-AGE-03, US-AGE-08, US-AGE-09 | duración + limpieza (la calcula `selectTechnique` de US-AGE-03); lo ocupado incluye las citas activas del modelo de US-AGE-09 |
 | US-AGE-03 seleccionar técnica | US-AGE-08, US-AUTH-02 | **terminada**; criterio 2 (primera vez según historial) trasladado a US-AGE-05 |
 | US-AGE-09 aprobación + constraint | US-AGE-13 (bitácora para rechazos) | dos entregables: flujo de aprobación (ADR-0003) y exclusion constraint con prueba de concurrencia (ADR-0002). Pendiente **ocupa** espacio |
 | US-AGE-05 reservar | US-AUTH-02, US-AGE-02, US-AGE-03, US-AGE-09, US-AGE-13 | criterio de morosidad **diferido** hasta US-MOR-02 (ver abajo); hereda la alerta del constraint de US-AGE-09 y el criterio de primera vez/re-aplicación de US-AGE-03 (criterios trasladados, ver abajo) |

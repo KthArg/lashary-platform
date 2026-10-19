@@ -7,7 +7,7 @@ import { schedulingMessages } from '../../messages'
 // input type="time" y salen como minutos desde la medianoche; los invariantes de negocio
 // (inicio antes del fin, no-solape) los aplica el dominio.
 
-const v = schedulingMessages.availability.validation
+const validationMessages = schedulingMessages.availability.validation
 const HH_MM = /^([01]\d|2[0-3]):([0-5]\d)$/
 
 export const timeToMinutes = (value: string): number => {
@@ -18,12 +18,12 @@ export const timeToMinutes = (value: string): number => {
 // "24:00" no lo produce un input type="time"; un bloque hasta medianoche se escribe 00:00.
 const timeField = z
   .string()
-  .regex(HH_MM, v.time)
+  .regex(HH_MM, validationMessages.time)
   .transform(timeToMinutes)
 
 const endTimeField = timeField.transform((minutes) => (minutes === 0 ? 1440 : minutes))
 
-const dateField = z.string().refine(isCalendarDate, v.date)
+const dateField = z.string().refine(isCalendarDate, validationMessages.date)
 
 const optionalText = z
   .string()
@@ -31,14 +31,14 @@ const optionalText = z
   .transform((value) => value?.trim() || null)
 
 export const weeklyBlockFormSchema = z.object({
-  weekday: z.coerce.number().int(v.weekday).min(1, v.weekday).max(7, v.weekday),
+  weekday: z.coerce.number().int(validationMessages.weekday).min(1, validationMessages.weekday).max(7, validationMessages.weekday),
   start: timeField,
   end: endTimeField,
 })
 
 export const closedDateFormSchema = z.object({
   date: dateField,
-  kind: z.enum(CLOSED_DATE_KINDS, { message: v.kind }),
+  kind: z.enum(CLOSED_DATE_KINDS, { message: validationMessages.kind }),
   label: optionalText,
 })
 

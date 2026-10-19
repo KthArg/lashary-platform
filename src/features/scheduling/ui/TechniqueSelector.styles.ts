@@ -9,5 +9,6 @@ export const techniqueSelectorStyles = {
   submitButton: 'btn btn-primary',
   resultBox: 'space-y-1 rounded-xl border border-brand-border bg-brand-cream/60 p-4 text-sm text-brand-dark',
   resultDuration: 'font-semibold',
+  calendarLink: 'btn btn-outline btn-sm mt-2',
   errorBox: 'rounded-xl border border-error/40 bg-error/10 p-4 text-sm text-error',
 } as const
