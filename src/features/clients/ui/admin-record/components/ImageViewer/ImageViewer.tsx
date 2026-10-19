@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useFocusTrap } from '../../../admin-clients/hooks/useFocusTrap'
+import { useFocusTrap } from '@/features/clients/ui/shared/hooks/useFocusTrap'
 import { IMAGES_LABELS } from '../../constants/record-strings'
 import { RecordIcon } from '../RecordIcon'
 import { imageViewerStyles as STYLES } from './ImageViewer.styles'

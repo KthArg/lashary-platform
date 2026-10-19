@@ -1,4 +1,4 @@
-import type { Precaution, RecommendedTechnique, RecordChangeKind } from '../../../domain/record/record.types'
+import type { Precaution, RecommendedTechnique, RecordChangeKind } from '@/features/clients/domain/record/record.types'
 
 export interface RecordVersionView {
   readonly id: string

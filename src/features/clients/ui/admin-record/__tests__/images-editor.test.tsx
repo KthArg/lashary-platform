@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import { ImagesEditor } from '../components/ImagesEditor'
 import { IMAGES_LABELS, RECORD_IMAGE_PROBLEM_MESSAGES, RECORD_LABELS } from '../constants/record-strings'
-import { RECORD_IMAGE_MAX_BYTES } from '../../../domain/record/record-image'
-import { RECORD_LIMITS } from '../../../domain/record/record-limits'
+import { RECORD_IMAGE_MAX_BYTES } from '@/features/clients/domain/record/record-image'
+import { RECORD_LIMITS } from '@/features/clients/domain/record/record-limits'
 
 const CLIENT_ID = '11111111-1111-4111-8111-111111111111'
 const PATHS = [`${CLIENT_ID}/a.png`, `${CLIENT_ID}/b.jpg`]

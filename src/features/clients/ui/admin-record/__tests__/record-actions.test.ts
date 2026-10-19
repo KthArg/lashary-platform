@@ -6,9 +6,9 @@ import {
   removeRecordPrecautionAction,
 } from '../actions/record-actions'
 import { RECORD_ERROR_MESSAGES, RECORD_PROBLEM_MESSAGES } from '../constants/record-strings'
-import { fakeRecordRepository, initialVersion } from '../../../application/__tests__/record-fakes'
-import { ALLERGY } from '../../../domain/record/__tests__/record-fixtures'
-import type { RecordAuditEvent } from '../../../application/record/record-ports'
+import { fakeRecordRepository, initialVersion } from '@/features/clients/application/__tests__/record-fakes'
+import { ALLERGY } from '@/features/clients/domain/record/__tests__/record-fixtures'
+import type { RecordAuditEvent } from '@/features/clients/application/record/record-ports'
 
 const CLIENT_ID = '11111111-1111-4111-8111-111111111111'
 const ADMIN_ID = '22222222-2222-4222-8222-222222222222'
@@ -23,13 +23,13 @@ const mockRevalidate = vi.fn()
 
 vi.mock('@/features/auth', () => ({ requireAdminSession: () => mockRequireAdmin() }))
 vi.mock('next/cache', () => ({ revalidatePath: (path: string) => mockRevalidate(path) }))
-vi.mock('../../../db/record/record-repository', () => ({ recordRepository: async () => store.repo }))
-vi.mock('../../../db/record/precaution-category-repository', () => ({
+vi.mock('@/features/clients/db/record/record-repository', () => ({ recordRepository: async () => store.repo }))
+vi.mock('@/features/clients/db/record/precaution-category-repository', () => ({
   precautionCategoryLookup: async () => ({
     findCategory: async (id: string) => (id === CATEGORY_ID ? { id, name: 'Condición relevante' } : null),
   }),
 }))
-vi.mock('../../../application/record/record-gateways', () => ({
+vi.mock('@/features/clients/http/record/record-gateways', () => ({
   auditRecordLog: async (event: RecordAuditEvent) => {
     auditEvents.push(event)
     return auditSucceeds

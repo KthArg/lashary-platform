@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { addRecordImageAction } from '../actions/record-actions'
 import { RECORD_ERROR_MESSAGES } from '../constants/record-strings'
-import { fakeRecordRepository, initialVersion } from '../../../application/__tests__/record-fakes'
+import { fakeRecordRepository, initialVersion } from '@/features/clients/application/__tests__/record-fakes'
 
 const CLIENT_ID = '11111111-1111-4111-8111-111111111111'
 
@@ -13,10 +13,10 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/features/auth', () => ({ requireAdminSession: mocks.requireAdminSession }))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
-vi.mock('../../../db/record/record-repository', () => ({ recordRepository: async () => mocks.store.repo }))
-vi.mock('../../../db/record/precaution-category-repository', () => ({ precautionCategoryLookup: async () => ({}) }))
-vi.mock('../../../application/record/record-gateways', () => ({ auditRecordLog: async () => true, catalogTechniqueLookup: {} }))
-vi.mock('../../../db/record/record-image-storage', () => ({
+vi.mock('@/features/clients/db/record/record-repository', () => ({ recordRepository: async () => mocks.store.repo }))
+vi.mock('@/features/clients/db/record/precaution-category-repository', () => ({ precautionCategoryLookup: async () => ({}) }))
+vi.mock('@/features/clients/http/record/record-gateways', () => ({ auditRecordLog: async () => true, catalogTechniqueLookup: {} }))
+vi.mock('@/features/clients/db/record/record-image-storage', () => ({
   recordImageStorage: async () => ({ upload: async (path: string) => { mocks.uploads.push(path) } }),
 }))
 

@@ -2,14 +2,14 @@
 
 import { useId, useState, useTransition, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { RECORD_LIMITS } from '../../../../domain/record/record-limits'
+import { RECORD_LIMITS } from '@/features/clients/domain/record/record-limits'
 import { addRecordPrecautionAction, removeRecordPrecautionAction } from '../../actions/record-actions'
 import { PRECAUTION_FORM_LABELS, RECORD_LABELS } from '../../constants/record-strings'
-import { ConfirmDialog } from '../../../admin-clients/components/ConfirmDialog'
+import { ConfirmDialog } from '@/features/clients/ui/shared/components/ConfirmDialog'
 import { RecordIcon } from '../RecordIcon'
 import { groupPrecautions } from '../../precaution-groups'
 import { precautionsEditorStyles as STYLES } from './PrecautionsEditor.styles'
-import type { Precaution } from '../../../../domain/record/record.types'
+import type { Precaution } from '@/features/clients/domain/record/record.types'
 import type { SaveRecordResult } from '../../types/record-action-results'
 import type { PrecautionsEditorProps } from './PrecautionsEditor.types'
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { describeVersion, formatRecordDate } from '../record-history'
 import { RECORD_CHANGE_TEXTS } from '../constants/record-strings'
-import { ALLERGY, SENSITIVITY } from '../../../domain/record/__tests__/record-fixtures'
+import { ALLERGY, SENSITIVITY } from '@/features/clients/domain/record/__tests__/record-fixtures'
 import { ADDED_VIEW, INITIAL_VIEW, REMOVED_VIEW } from './record-view-fixtures'
 
 describe('describeVersion — el texto de cada línea del historial (criterio 4)', () => {

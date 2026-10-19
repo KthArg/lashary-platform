@@ -2,7 +2,7 @@
 
 import { useId, useState, useTransition, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { RECORD_LIMITS } from '../../../../domain/record/record-limits'
+import { RECORD_LIMITS } from '@/features/clients/domain/record/record-limits'
 import { createRecordAction, editRecordStudyAction } from '../../actions/record-actions'
 import { STUDY_FORM_LABELS } from '../../constants/record-strings'
 import { studyFormStyles as STYLES } from './StudyForm.styles'

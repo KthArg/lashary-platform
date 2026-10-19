@@ -6,7 +6,7 @@ import {
   auditRecordLog,
   catalogTechniqueLookup,
   listActiveCatalogTechniques,
-} from '../record/record-gateways'
+} from '@/features/clients/http/record/record-gateways'
 
 const mockRecord = vi.fn()
 const mockGetTechnique = vi.fn()

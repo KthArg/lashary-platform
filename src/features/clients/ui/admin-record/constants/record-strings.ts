@@ -1,5 +1,5 @@
-import type { RecordProblem } from '../../../domain/record/record-errors'
-import type { RecordImageProblem } from '../../../domain/record/record-image'
+import type { RecordProblem } from '@/features/clients/domain/record/record-errors'
+import type { RecordImageProblem } from '@/features/clients/domain/record/record-image'
 
 export const RECORD_ERROR_MESSAGES = {
   clientNotFound: 'No encontramos a esta clienta.',

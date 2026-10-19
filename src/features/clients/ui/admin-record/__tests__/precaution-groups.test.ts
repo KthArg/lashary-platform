@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { groupPrecautions } from '../precaution-groups'
 import { DEFAULT_PRECAUTION_ICON } from '../constants/record-icons'
-import { ALLERGY, SENSITIVITY } from '../../../domain/record/__tests__/record-fixtures'
+import { ALLERGY, SENSITIVITY } from '@/features/clients/domain/record/__tests__/record-fixtures'
 
 const ALLERGY_CATEGORY = { id: ALLERGY.categoryId, name: 'Alergia' }
 const CONDITION_CATEGORY = { id: 'category-condition', name: 'Condición relevante' }

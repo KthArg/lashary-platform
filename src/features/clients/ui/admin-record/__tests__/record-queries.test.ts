@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ok } from '@/shared/result'
 import { readRecord } from '../queries/record-queries'
 import { RECORD_ERROR_MESSAGES } from '../constants/record-strings'
-import { fakeRecordRepository, initialVersion } from '../../../application/__tests__/record-fakes'
-import { ALLERGY } from '../../../domain/record/__tests__/record-fixtures'
-import type { RecordAuditEvent } from '../../../application/record/record-ports'
+import { fakeRecordRepository, initialVersion } from '@/features/clients/application/__tests__/record-fakes'
+import { ALLERGY } from '@/features/clients/domain/record/__tests__/record-fixtures'
+import type { RecordAuditEvent } from '@/features/clients/application/record/record-ports'
 
 const CLIENT_ID = '11111111-1111-4111-8111-111111111111'
 const MISSING_ID = '99999999-9999-4999-8999-999999999999'
@@ -18,13 +18,13 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@/features/auth', () => ({ requireAdminSession: mocks.requireAdminSession }))
-vi.mock('../../../db/record/record-repository', () => ({ recordRepository: async () => mocks.store.repo }))
-vi.mock('../../../db/record/record-image-storage', () => ({ signRecordImageUrls: async () => ({}) }))
-vi.mock('../../../db/record/precaution-category-repository', () => ({ listPrecautionCategories: async () => [] }))
-vi.mock('../../../db/client-repository', () => ({
+vi.mock('@/features/clients/db/record/record-repository', () => ({ recordRepository: async () => mocks.store.repo }))
+vi.mock('@/features/clients/db/record/record-image-storage', () => ({ signRecordImageUrls: async () => ({}) }))
+vi.mock('@/features/clients/db/record/precaution-category-repository', () => ({ listPrecautionCategories: async () => [] }))
+vi.mock('@/features/clients/db/client-repository', () => ({
   clientRepository: async () => ({ findById: async (id: string) => ok(id === CLIENT_ID ? { id } : null) }),
 }))
-vi.mock('../../../application/record/record-gateways', () => ({
+vi.mock('@/features/clients/http/record/record-gateways', () => ({
   listActiveCatalogTechniques: async () => [],
   auditRecordLog: async (event: RecordAuditEvent) => {
     mocks.auditEvents.push(event)
