@@ -20,7 +20,13 @@ const FIRST_APPOINTMENT = {
   id: 'cita-1',
   startsAtMs: Date.parse('2027-03-01T16:00:00Z'),
   endsAtMs: Date.parse('2027-03-01T17:00:00Z'),
-  choice: { techniqueName: 'Clásicas', isFirstTime: true, servicePrice: 35000, depositRequired: 10000 },
+  choice: {
+    techniqueName: 'Clásicas',
+    isFirstTime: true,
+    detectedFirstTime: true,
+    servicePrice: 35000,
+    depositRequired: 10000,
+  },
 }
 const SECOND_APPOINTMENT = {
   id: 'cita-2',
@@ -82,6 +88,19 @@ describe('ApprovalQueue: lo que eligió la clienta', () => {
     expect(screen.getByText(APPROVAL_QUEUE_CHOICE.firstTime)).toBeTruthy()
     const amounts = APPROVAL_QUEUE_CHOICE.priceAndDeposit(Money.fromColones(35000).toString(), Money.fromColones(10000).toString())
     expect(screen.getByText((_, element) => element?.tagName === 'P' && element.textContent === amounts)).toBeTruthy()
+  })
+
+  it('marca la cita cuando eligió retoque y el sistema detectó primera vez, y no marca las que coinciden', () => {
+    const retouchChosen = {
+      ...FIRST_APPOINTMENT,
+      id: 'cita-retoque',
+      choice: { ...FIRST_APPOINTMENT.choice, isFirstTime: false, servicePrice: 25000 },
+    }
+    render(<ApprovalQueue appointments={[FIRST_APPOINTMENT, retouchChosen]} />)
+
+    const notes = screen.getAllByRole('note')
+    expect(notes).toHaveLength(1)
+    expect(notes[0].textContent).toBe(APPROVAL_QUEUE_CHOICE.chose.retouchButDetectedFirstTime)
   })
 
   it('una cita sin elección guardada lo dice y no inventa montos', () => {

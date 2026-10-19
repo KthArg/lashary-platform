@@ -25,6 +25,11 @@ export function ApprovalQueueItem({ appointment, queue }: ApprovalQueueItemProps
           {choice.kind && <span className={STYLES.kindBadge}>{choice.kind}</span>}
         </p>
         {choice.amounts && <p className={STYLES.amounts}>{choice.amounts}</p>}
+        {choice.warning && (
+          <p role="note" className={STYLES.mismatch}>
+            {choice.warning}
+          </p>
+        )}
       </div>
       {isRejecting ? (
         <div className={STYLES.rejectForm}>

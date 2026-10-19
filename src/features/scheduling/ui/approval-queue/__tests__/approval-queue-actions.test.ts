@@ -60,6 +60,7 @@ describe('listPendingAppointmentsAction', () => {
           ends_at: '2027-03-01T11:00:00Z',
           technique_name: 'Clásicas',
           is_first_time: true,
+          is_first_time_detected: true,
           service_price: 35000,
           deposit_required: 10000,
         },
@@ -74,7 +75,13 @@ describe('listPendingAppointmentsAction', () => {
           id: APPOINTMENT_ID,
           startsAtMs: Date.parse('2027-03-01T10:00:00Z'),
           endsAtMs: Date.parse('2027-03-01T11:00:00Z'),
-          choice: { techniqueName: 'Clásicas', isFirstTime: true, servicePrice: 35000, depositRequired: 10000 },
+          choice: {
+            techniqueName: 'Clásicas',
+            isFirstTime: true,
+            detectedFirstTime: true,
+            servicePrice: 35000,
+            depositRequired: 10000,
+          },
         },
       ],
     })

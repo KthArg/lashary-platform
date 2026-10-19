@@ -17,6 +17,10 @@ export const APPROVAL_QUEUE_CHOICE = {
   firstTime: 'Primera vez',
   retouch: 'Retoque',
   noService: 'Servicio no registrado',
+  chose: {
+    retouchButDetectedFirstTime: 'Eligió retoque, pero el sistema no encuentra una cita anterior con esta técnica. Verificá antes de aprobar.',
+    firstTimeButDetectedRetouch: 'Eligió primera vez, pero el sistema encontró una cita anterior con esta técnica. Verificá antes de aprobar.',
+  },
   priceNoDeposit: (price: string) => `Precio ${price} · Sin anticipo`,
   priceAndDeposit: (price: string, deposit: string) => `Precio ${price} · Anticipo ${deposit}`,
 } as const

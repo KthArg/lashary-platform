@@ -5,6 +5,7 @@ export interface AppointmentChoiceView {
   service: string
   kind: string | null
   amounts: string | null
+  warning: string | null
 }
 
 export interface ApprovalQueueProps {

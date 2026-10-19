@@ -13,10 +13,18 @@ const chosenRow = {
   ...baseRow,
   technique_name: 'Clásicas',
   is_first_time: false,
+  is_first_time_detected: true,
   service_price: 25000,
   deposit_required: 10000,
 }
-const staffRow = { ...baseRow, technique_name: null, is_first_time: null, service_price: null, deposit_required: null }
+const staffRow = {
+  ...baseRow,
+  technique_name: null,
+  is_first_time: null,
+  is_first_time_detected: null,
+  service_price: null,
+  deposit_required: null,
+}
 
 type FakeResponse = { data: unknown; error: { message: string } | null }
 
@@ -47,7 +55,13 @@ describe('createSupabasePendingAppointmentsRepository', () => {
         id: 'cita-1',
         startsAtMs: Date.parse('2027-03-01T16:00:00Z'),
         endsAtMs: Date.parse('2027-03-01T17:00:00Z'),
-        choice: { techniqueName: 'Clásicas', isFirstTime: false, servicePrice: 25000, depositRequired: 10000 },
+        choice: {
+          techniqueName: 'Clásicas',
+          isFirstTime: false,
+          detectedFirstTime: true,
+          servicePrice: 25000,
+          depositRequired: 10000,
+        },
       },
     ])
   })
