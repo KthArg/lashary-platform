@@ -13,7 +13,7 @@ historias:
     estado: no_iniciada
   - id: US-CLI-04
     estado: terminada
-    evidencia: "Pila de 14 piezas: PRs #369 (1/14, esquema), #370 (2/14, bucket), #372, #374, #384, #385, #394, #395, #396, #404, #405, #406 y los PRs de las piezas 13/14 (subir imagenes) y 14/14 (ver imagenes, cierre). Criterio 1 (estudio con texto e imagenes): record-content.test.ts, record-changes.test.ts, record-commands.test.ts, study-editor.test.tsx, add-record-image.test.ts, record-image-action.test.ts, images-editor.test.tsx. Criterio 2 (alergias, sensibilidades, condiciones): clients_record_versions.test.sql (categorias), record-content.test.ts, precautions-editor.test.tsx. Criterio 3 (solo la administradora y cada acceso en la bitacora): clients_record_versions.test.sql y clients_record_images_bucket.test.sql (aislamiento SEC-002 frente a clienta y anon), view-record.test.ts (bitacora fail-closed), record-gateways.test.ts, record-actions.test.ts. Criterio 4 (historial de cambios): clients_record_versions.test.sql (sin UPDATE ni DELETE, una sucesora por version), record-changes.test.ts, record-commands.test.ts (dos cambios simultaneos), record-history.test.ts, record-view.test.tsx. Criterio 5 (imagenes sin URL publica): clients_record_images_bucket.test.sql (bucket privado), record-image-storage.test.ts (URLs firmadas de 5 minutos), images-editor.test.tsx"
+    evidencia: "Pila de 20 piezas: PRs #369 (1/20, esquema), #370 (2/20, bucket), #372, #374, #384, #385, #394, #395, #396, #404, #405, #406, #407, #408 (14/20, cierre funcional), #409 y #410 (mejoras visuales) y los PRs de las piezas 17/20 a 20/20 (auditoria del 2026-10-19). Criterio 1 (estudio con texto e imagenes): record-content.test.ts, record-changes.test.ts, record-commands.test.ts, study-editor.test.tsx, add-record-image.test.ts, record-image.test.ts, record-image-action.test.ts, images-editor.test.tsx. Criterio 2 (alergias, sensibilidades, condiciones): clients_record_versions.test.sql (categorias), record-content.test.ts, precautions-editor.test.tsx. Criterio 3 (solo la administradora y cada acceso en la bitacora): clients_record_versions.test.sql y clients_record_images_bucket.test.sql (aislamiento SEC-002 frente a clienta y anon), view-record.test.ts (bitacora fail-closed), record-gateways.test.ts, record-actions.test.ts, record-queries.test.ts. Criterio 4 (historial de cambios): clients_record_versions.test.sql (sin UPDATE ni DELETE, una sucesora por version), record-changes.test.ts, record-commands.test.ts (dos cambios simultaneos), record-history.test.ts, record-view.test.tsx. Criterio 5 (imagenes sin URL publica): clients_record_images_bucket.test.sql (bucket privado), record-image-storage.test.ts (URLs firmadas de 5 minutos), images-editor.test.tsx"
   - id: US-CLI-05
     estado: terminada
     evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
@@ -22,6 +22,18 @@ deuda:
   - que: "Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras"
     aceptada_en: "PR #32, etiqueta excepcion-proceso"
     costo: "3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)"
+  - que: "M2 de la auditoria de US-CLI-04: escribir el expediente guarda la version y despues audita, sin transaccion. Si la bitacora falla, el cambio queda sin evento; la pantalla lo avisa como saved-without-audit"
+    aceptada_en: "Auditoria del 2026-10-19, por decision de Jose Loria; mismo pendiente heredado de US-AGE-13"
+    costo: "4h: funcion SQL que inserte version y evento en una transaccion, con contrato pactado con audit (INT-003), y su pgTAP"
+  - que: "M3 de la auditoria de US-CLI-04 (riesgo aceptado): una admin con su token puede leer clients_record_versions directo por PostgREST sin pasar por readRecord, y esa lectura no queda en la bitacora (SEC-006 se cumple solo dentro de la app)"
+    aceptada_en: "Auditoria del 2026-10-19, riesgo aceptado por Jose Loria"
+    costo: "6h: quitar el SELECT directo y leer por una funcion SECURITY DEFINER que registre el acceso y devuelva las versiones, con pgTAP"
+  - que: "Resto de M4 de la auditoria de US-CLI-04: si guardar la version falla despues de subir la imagen (choque de versiones o caida), el archivo queda en el bucket privado sin version que lo use, y no se puede borrar porque el bucket no tiene politica de DELETE"
+    aceptada_en: "Auditoria del 2026-10-19, por decision de Jose Loria; el cupo de 20 ya se revisa antes de subir"
+    costo: "3h: limpieza programada fuera de la app que borre objetos sin version de mas de un dia"
+  - que: "B4 de la auditoria de US-CLI-04: rowToVersion revalida cada version con las reglas vigentes; si un tope se endurece o una fila quedo rara, el expediente entero no abre"
+    aceptada_en: "Auditoria del 2026-10-19, por decision de Jose Loria"
+    costo: "2h: leer el historial sin revalidar topes (solo la forma) y validar solo al escribir"
 defectos: []
 ---
 
@@ -101,9 +113,9 @@ el estudio, agregar (**+**) y quitar antecedentes y subir imágenes. Cada cambio
 completa nueva en `clients_record_versions`; la vigente es la última y las anteriores no se tocan.
 Cada lectura y cada cambio quedan en la bitácora de `audit`; si la bitácora falla al leer, el
 expediente no se muestra. Capas: `domain/record/` (el contenido y sus cambios),
-`application/record/` (puertos, lectura y escritura, adaptadores a `audit` y `catalog`),
-`db/record/` (versiones, categorías e imágenes) y `ui/admin-record/` (actions, textos y
-componentes); la ruta vive en `src/app/admin/clients/[id]/`. Crear categorías nuevas desde el menú
+`application/record/` (puertos, lectura y escritura), `http/record/` (adaptadores a `audit` y
+`catalog`), `db/record/` (versiones, categorías e imágenes) y `ui/admin-record/` (actions de
+escritura, lecturas en `queries/`, textos y componentes); la ruta vive en `src/app/admin/clients/[id]/`. Crear categorías nuevas desde el menú
 quedó fuera del plan por decisión de José Loría.
 
 ## Qué no hace todavía
@@ -132,8 +144,9 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 textos y límites, entre ellas `CLIENTS_LIST_LIMITS`, `CLIENTS_TABLE_HEADERS`, `CLIENTS_TABLE_TEXTS` , `CLIENTS_PAGINATION_TEXTS` y `CLIENTS_FILTER_TEXTS` (DOM-009).
 También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el expediente (US-CLI-04):
 `getClientAction`, `CLIENTS_PATH`, `clientRecordPath`, `CLIENT_PROFILE_LABELS`, `RecordView`,
-`RecordLoadError`, `viewRecordAction`, `listTechniqueOptionsAction`, `listCategoryOptionsAction`,
-`RECORD_LABELS` y `STUDY_FORM_LABELS`.
+`RecordLoadError`, `readRecord`, `readTechniqueOptions`, `readCategoryOptions`, `RECORD_LABELS` y
+`STUDY_FORM_LABELS`. `src/features/clients/client.ts` es la entrada para código del navegador
+(`error.tsx`): solo `RecordLoadError` y `RECORD_LABELS`, sin nada de servidor.
 
 ## Invariantes
 
@@ -287,212 +300,85 @@ También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el e
   uso y pasa a `application/ports.ts`. Las pruebas de las actions no cambiaron y siguen pasando: la
   secuencia de llamadas a Supabase es la misma. **Consecuencia asumida:** `updateClientAction` con un id
   vacío crea el cliente de Supabase antes de rechazarlo, aunque no consulta la base.
-- **2026-10-17 — US-CLI-04 se entrega en 8 piezas (INT-002, INT-008), por decisión de José Loría.**
-  Las dos migraciones van por fuera del stack, cada una en su PR directo a `main`: 1/8 el esquema
-  del expediente y 2/8 el bucket privado de imágenes. El código (3/8 a 8/8) es un stack que sale de
-  `main`; la 5/8 espera a que 1/8 esté en `main` y la 8/8 a que lo esté 2/8. Cada PR trae una sola
-  migración, así que INT-008 se cumple pieza por pieza.
+- **2026-10-17 a 2026-10-19 — US-CLI-04 se entregó en 20 piezas (INT-002, INT-008), por decisión de
+  José Loría.** Cada migración va en su propio PR: 1/20 el esquema (#369, base del stack) y 2/20 el
+  bucket (#370, directo a `main`). El plan empezó en 8 piezas y se partió cada vez que una estimaba
+  más de 400 líneas: dominio (3 contenido válido, 4 cambios), casos de uso (5 leer, 6 escribir),
+  repositorio y adaptadores (7), server actions (8), vista (9), ficha con pestañas (10), estudio
+  (11), antecedentes (12), imágenes (13 subir, 14 ver y cierre). 15 y 16 son mejoras visuales tras
+  probarlo a mano; 17 a 20 atienden la auditoría del 2026-10-19. Crear categorías nuevas desde el
+  menú salió del plan; si vuelve, es una pieza aparte.
 - **2026-10-17 — El expediente es una cadena de versiones completas, append-only.** Cada cambio
-  (registro inicial, agregar o quitar un antecedente, editar el estudio, agregar una imagen) inserta
-  una fila en `clients_record_versions` con la foto entera del expediente; la vigente es la última.
-  Sin políticas de UPDATE ni DELETE, la base no deja reescribir ni borrar el historial (criterio 4),
-  igual que `audit_events`. "Quitar" un antecedente es una versión nueva sin él, no un borrado.
-  No hay tabla `clients_records`: el expediente de una clienta son sus versiones. Un índice único
-  parcial impide dos registros iniciales por clienta, y la FK compuesta
-  `(previous_version_id, client_id)` impide que una versión continúe el expediente de otra.
-- **2026-10-17 — Concurrencia por `UNIQUE (previous_version_id)`.** Una versión solo puede tener
-  una sucesora: si dos sesiones guardan sobre la misma foto, la segunda choca y debe recargar, en
-  vez de borrar sin saberlo lo que agregó la primera. Lo garantiza la base, sin bloqueos.
-- **2026-10-17 — Antecedentes e imágenes en `jsonb` dentro de la versión, no en tablas aparte.**
-  Guardar una versión es un solo `INSERT`, atómico sin función SQL. **Consecuencia asumida:** la
-  base no tiene FK desde los antecedentes a su categoría; la forma de cada elemento la valida el
-  dominio, y cada antecedente guarda una copia del nombre de la categoría, que es lo que muestra el
-  historial. Consultar "todas las clientas con tal alergia" no lo pide ninguna historia.
-- **2026-10-17 — Las categorías de antecedentes son una tabla, no un `CHECK`, por decisión de José
-  Loría:** la administradora crea las que falten desde el diálogo de agregar, sin migración. La
-  migración trae Alergia, Sensibilidad y Condición relevante (criterio 2); van en la migración y no
-  en `seed.sql` porque tienen que existir en producción. Únicas sin importar mayúsculas; no se
-  renombran ni se borran, porque el historial las cita.
-- **2026-10-17 — La técnica recomendada se elige de `catalog` por su API pública**
-  (`listTechniques`, `getTechnique`), sin cambiar su contrato (INT-003 no aplica). La versión guarda
-  `recommended_technique_id` sin FK (ARCH-005) y una copia del nombre: el historial muestra lo que
-  se recomendó ese día aunque la técnica cambie de nombre.
+  inserta una fila en `clients_record_versions` con el contenido entero; la vigente es la última.
+  Sin políticas de UPDATE ni DELETE la base no deja reescribir el historial (criterio 4), igual que
+  `audit_events`; "quitar" un antecedente es una versión nueva sin él. No hay tabla
+  `clients_records`. Un índice único parcial impide dos registros iniciales por clienta y la FK
+  compuesta `(previous_version_id, client_id)` impide continuar el expediente de otra.
+- **2026-10-17 — Concurrencia por `UNIQUE (previous_version_id)`.** Una versión tiene una sola
+  sucesora: si dos sesiones guardan sobre la misma, la segunda choca (`23505` → `version-conflict`)
+  y la pantalla pide recargar, en vez de borrar sin saberlo lo que agregó la primera.
+- **2026-10-17 — Antecedentes e imágenes en `jsonb` dentro de la versión.** Guardar es un solo
+  `INSERT`. Desde la auditoría (M5), dos `CHECK` exigen la forma de cada antecedente (`id`,
+  `categoryId`, `categoryName`, `description`) y que cada imagen esté en la carpeta de su clienta.
+  No hay FK a la categoría: cada antecedente guarda una copia de su nombre, que es lo que muestra el
+  historial.
+- **2026-10-17 — Las categorías son una tabla, no un `CHECK`, por decisión de José Loría.** La
+  migración trae Alergia, Sensibilidad y Condición relevante (criterio 2), que deben existir en
+  producción. Únicas sin importar mayúsculas; no se renombran ni se borran porque el historial las
+  cita.
+- **2026-10-17 — La técnica recomendada se elige de `catalog` por su API pública** (sin FK,
+  ARCH-005), con copia del nombre. Una técnica nueva tiene que estar activa; la vigente se conserva
+  aunque se haya desactivado.
 - **2026-10-17 — Opción A para "actualizar con cada cita posterior":** cada versión lleva fecha y
-  autora, sin vínculo a una cita. Vincular algo a una cita concreta es US-CLI-03 (anotaciones), que
-  depende de US-CLI-02 y US-AGE-05. Si se quiere el vínculo, se agrega después una columna
-  `appointment_id` con una migración forward.
-- **2026-10-17 — Frontera con US-CLI-03:** el expediente es el estado clínico vigente; las
-  anotaciones son lo que pasó en cada cita, y se pueden borrar. Un dato clínico escrito en una
-  anotación o en `clients_profiles.notes` queda fuera de SEC-006 (sin bitácora y borrable). Cuando
-  llegue US-CLI-03, su formulario debe orientar a usar el expediente para lo clínico.
-- **2026-10-17 — Toda lectura del expediente se audita, fail-closed (SEC-006).** Se registra el
-  acceso antes de devolver los datos; si la bitácora falla, no se muestran. El evento lleva actor,
-  acción y clienta, nunca el contenido del expediente. El expediente vive en su propia pestaña de
-  la ficha para que el acceso sea deliberado y la bitácora no se llene de accesos que no ocurrieron.
-- **2026-10-17 — Solo la administradora (`auth_is_admin()`), no `auth_is_staff()`**, en las dos
-  tablas (SEC-006). La política de INSERT exige además `created_by = auth.uid()`: nadie firma una
-  versión ni una categoría a nombre de otra persona. `client_id` es `ON DELETE RESTRICT`
-  (ADR-0009): una clienta con expediente no se borra.
-- **2026-10-17 — El bucket `clients-record-images` (pieza 2/8, PR #370) es privado, de 1 MB y solo
-  JPEG, PNG y WebP.** Solo la administradora lee y sube, y solo dentro de la carpeta de una clienta
-  que existe (`<client_id>/archivo`); sin políticas de UPDATE ni DELETE. Se registra aquí y no en
-  #370 para que las dos ramas no editaran las mismas líneas del SPEC. Supabase ya impide borrar de
-  `storage.objects` por SQL (trigger `storage.protect_delete`); la falta de política de DELETE cierra
-  también el camino de la API.
-- **2026-10-17 — US-CLI-04 pasa de 8 a 9 piezas (INT-002), por decisión de José Loría.** El dominio
-  estimado en ~350 líneas salió en ~525 con sus pruebas, sobre el tope de 400. Se parte por un corte
-  natural: 3/9 es qué es un contenido válido (`buildRecordContent`) y 4/9 cómo cambia el contenido. Lo que
-  seguía se corre un número: casos de uso 5/9, repositorio y actions 6/9, vista 7/9, formularios
-  8/9, imágenes 9/9. #369 y #370 pasan a 1/9 y 2/9.
-- **2026-10-17 — El contenido del expediente vive en `domain/record/` (pieza 3/9).** `buildRecordContent`
-  es la única forma de crear un contenido válido: recorta espacios, aplica los mismos topes que los
-  `CHECK` de la base (`RECORD_LIMITS`) y lleva una marca `unique symbol` no exportada, para que un
-  objeto escrito a mano con la misma forma no pase por un contenido válido.
-- **2026-10-17 — Los problemas de validación son códigos (`'study-text-empty'`…), no textos.** El
-  dominio no sabe de pantallas: la UI traduce cada código con sus constantes (DOM-009). Por lo mismo,
-  el texto del historial ("Se agregó alergia: X") se arma en la UI a partir de `change_kind` y de la
-  comparación de dos contenidos, no en el dominio.
-- **2026-10-17 — Cada antecedente lleva su `id`, generado fuera del dominio.** *Quitar* dice qué
-  antecedente quita, no su posición en la lista. Un antecedente repetido (misma categoría y misma
-  descripción sin importar mayúsculas, o mismo id) se rechaza.
-- **2026-10-17 — Los cambios del contenido viven en `domain/record/record-changes.ts` (pieza 4/9).**
-  `createInitialRecord`, `addPrecaution`, `removePrecaution`, `editStudy` y `addImage` reciben el contenido
-  vigente y devuelven `{ changeKind, content }` sin modificarlo: cada cambio vuelve a pasar por
-  `buildRecordContent`, así que un contenido nuevo cumple las mismas reglas que el inicial. Quitar un
-  antecedente que no está devuelve `PrecautionNotFound`.
-- **2026-10-17 — Editar el estudio sin cambiar nada devuelve `RecordUnchanged`**, en vez de guardar
-  una versión idéntica que ensuciaría el historial. Se compara después de recortar espacios: agregar
-  un espacio al final no cuenta como cambio.
-- **2026-10-17 — US-CLI-04 pasa de 9 a 10 piezas (INT-002), por decisión de José Loría.** Los casos
-  de uso salieron en ~454 líneas con sus dobles de prueba. Se parten en leer (5/10) y escribir
-  (6/10); lo que seguía se corre un número: repositorio y actions 7/10, vista 8/10, formularios
-  9/10, imágenes 10/10.
-- **2026-10-17 — La aplicación del expediente habla con el exterior solo por puertos (pieza 5/10):**
-  `RecordRepository`, `RecordAuditLog`, `TechniqueLookup` y `PrecautionCategoryLookup` en
-  `application/record/record-ports.ts`. `clients` no importa `audit` ni `catalog` aquí; los
-  adaptadores que llaman a sus APIs públicas llegan en la 7/10. Así se prueban con dobles en memoria.
-- **2026-10-17 — Leer el expediente audita primero (fail-closed).** `viewRecord` registra
-  `clients.record.viewed` antes de leer y, si la bitácora falla, devuelve `audit-failed` sin datos.
-- **2026-10-17 — El historial se lee con tope (`RECORD_HISTORY_LIMIT` = 50, PERF-002).** Si un
-  expediente pasa de 50 versiones, las más viejas no se muestran todavía; paginar el historial se
-  agrega cuando haga falta.
-- **2026-10-17 — Escribir guarda y después audita (pieza 6/10).** `record-commands.ts` crea el registro
-  inicial, agrega y quita antecedentes y edita el estudio. Cada cambio guarda una versión encadenada
-  a la vigente, con autora y fecha del reloj inyectado (DOM-004), y registra
-  `clients.record.updated`. Si la bitácora falla después de guardar, se lanza un error en vez de
-  callarlo, igual que `payments.exemptClient`.
-- **2026-10-17 — Una técnica nueva tiene que estar activa en `catalog`; la vigente se conserva aunque
-  se haya desactivado.** Editar solo el texto de un estudio cuya técnica se desactivó después no
-  falla: si el id no cambió, se reusa la copia guardada sin consultar `catalog`.
-- **2026-10-17 — Un choque de versiones llega como `version-conflict`.** Si dos cambios parten de la
-  misma versión, el segundo choca con `UNIQUE (previous_version_id)` y no se guarda; la pantalla
-  pedirá recargar. El repositorio traduce el error de la base en la 7/10.
-- **2026-10-18 — El contenido del expediente se llama `RecordContent` desde la pieza 3, por decisión
-  de José Loría.** Se llamó `RecordSnapshot` hasta este día; "snapshot" había que explicarlo y
-  "contenido" se lee solo: el contenido es lo escrito en el expediente, y una versión es ese
-  contenido más quién, cuándo y por qué. Se renombró dentro de cada pieza (3/10 a 6/10, con rebase y
-  force-push de sus ramas) en vez de sumar una pieza de renombre, porque sus PRs aún no tenían
-  revisión humana. Solo cambiaron nombres; las pruebas pasan sin tocar ninguna aserción.
-- **2026-10-18 — US-CLI-04 pasa de 10 a 11 piezas (INT-002), por decisión de José Loría.** Repositorio,
-  adaptadores y server actions estimados con sus pruebas daban ~480 líneas. Se parten en
-  repositorio y adaptadores (7/11) y server actions (8/11); vista 9/11, formularios 10/11, imágenes
-  11/11.
-- **2026-10-18 — El repositorio del expediente vive en `db/record/` (pieza 7/11).** Es una función
-  fábrica (ADR-0008) que recibe el cliente de Supabase, para poder probarla con uno simulado. Al
-  leer, cada fila vuelve a pasar por `buildRecordContent`: si el `jsonb` de antecedentes o imágenes
-  no tiene la forma esperada, se lanza un error en vez de mostrar un expediente a medias. El código
-  `23505` de la base (versión anterior repetida o segundo registro inicial) se traduce a
-  `version-conflict`; cualquier otro error se lanza, porque no es esperado (DOM-006).
-- **2026-10-18 — Los adaptadores a `audit` y `catalog` viven en `application/record/record-gateways.ts`,**
-  como `scheduling/application/catalog-adapter.ts`, y solo usan sus APIs públicas (ARCH-003). El de
-  la bitácora convierte en `false` tanto un evento rechazado como un error de red o de RLS: para el
-  expediente las dos cosas significan "el acceso no quedó registrado" (fail-closed, SEC-006).
-- **2026-10-18 — Las server actions del expediente viven en `ui/admin-record/actions/` (pieza 8/11).**
-  Ver, crear, agregar y quitar antecedentes y editar el estudio. Cada una exige primero
-  `requireAdminSession()` y firma con el id de esa sesión, nunca con uno que llegue del navegador
-  (SEC-005). Los ids de clienta, técnica y categoría se revisan con forma de UUID antes de tocar la
-  base: uno mal formado se responde como "no encontrado" sin consultar nada. Devuelven datos planos
-  (`RecordVersionView`, fecha en ISO, sin la marca del contenido) porque viajan al navegador, y cada
-  código de error o problema de validación se traduce a su texto en `record-strings.ts` (DOM-009).
-  Tras guardar se revalida `/admin/clients/<id>/expediente`, la ruta que crea la 9/11.
-- **2026-10-18 — 12 piezas (INT-002), por decisión de José Loría:** la pestaña completa estimaba ~580
-  líneas; se parte en vista con estados (9/12) y ficha con pestañas (10/12).
-- **2026-10-18 — Vista en `/admin/clients/<id>/expediente` (pieza 9/12).** `RecordView` muestra
-  estudio y técnica, antecedentes con su categoría, cuántas imágenes hay (verlas es la 12/12) y el
-  historial. Estados (UI-003): vacío (crear llega en la 11/12), `loading.tsx`, y error con
-  *Reintentar* si falla la bitácora (`RecordLoadError`) o algo inesperado (`error.tsx`).
-- **2026-10-18 — `describeVersion` (UI) nombra el antecedente agregado o quitado** comparando con la
-  versión anterior. Si esa quedó fuera del tope de 50, "se agregó" usa el último antecedente y "se
-  quitó" no inventa cuál. Fechas en la hora del estudio (`STUDIO_TIME_ZONE`).
-- **2026-10-18 — Ficha de la clienta en `src/app/admin/clients/[id]/layout.tsx` (pieza 10/12).** Arriba,
-  volver al listado, nombre y teléfono; debajo, las pestañas (hoy solo Expediente, con
-  `aria-current`). La lee `getClientAction(id)`: sesión exigida, id con forma de UUID y `findById`
-  en el repositorio. Una clienta inexistente o que RLS no deja ver va a `notFound()`; si la base
-  falla, la ficha lo avisa y la pestaña igual se ve. Cada fila del listado suma un enlace con ícono
-  al expediente, con nombre accesible propio (UI-004). La revisión de UUID y las rutas pasan a
-  `ui/client-routes.ts`, que comparten las dos áreas de `ui/`.
-- **2026-10-18 — 14 piezas (INT-002), por decisión de José Loría:** los formularios estimaban ~830
-  líneas; se parten en estudio (11/14), antecedentes (12/14) y categoría nueva (13/14). La 13/14
-  queda **en pausa**: se decide después si se hace. Imágenes 14/14.
-- **2026-10-18 — Registrar y editar el estudio (pieza 11/14).** `StudyEditor` alterna entre ver el
-  estudio y `StudyForm`: en el estado vacío ofrece "Registrar estudio inicial" y con expediente
-  "Editar estudio". El formulario va en línea, no en un modal: es un solo bloque de la página y no
-  necesita trampa de foco. El menú de técnicas sale de `listTechniqueOptionsAction` (solo activas,
-  tope de 100); si la técnica vigente ya no está activa, se agrega al menú para no perderla al
-  editar. Si `catalog` falla, el menú queda solo con "Sin técnica recomendada" y el expediente
-  igual se muestra. Errores y problemas del servidor se anuncian con `role="alert"` sin cerrar el
-  formulario; al guardar, se cierra y `router.refresh()` trae la versión nueva.
-- **2026-10-18 — Antecedentes (12/14):** el **+** usa las categorías existentes (tope de 100); *Quitar*
-  nombra su antecedente (UI-004) y confirma con el `ConfirmDialog` de `clients`: sigue en el historial.
-- **2026-10-18 — Crear categorías nuevas sale del plan por ahora, por decisión de José Loría;** las
-  imágenes ocupan 13/14 (subir) y 14/14 (verlas y cerrar). Si la categoría vuelve, se renumera.
-- **2026-10-18 — Subir imágenes (pieza 13/14).** `addRecordImageAction` recibe el archivo en un
-  `FormData`; `recordImageExtension` (dominio) acepta JPEG, PNG y WebP de hasta 1 MB, igual que el
-  bucket, midiendo los bytes reales. Se sube a `<clienta>/<uuid>.<ext>` y después se guarda la
-  versión con `addImage`, con su bitácora. **Consecuencia asumida, por decisión de José Loría:** si
-  guardar la versión falla (p.ej. un choque), el archivo queda en el bucket sin versión que lo use;
-  no se borra porque el bucket no tiene política de DELETE. Es privado, así que nadie lo ve. **Límite
-  conocido:** Next corta las server actions a 1 MB de cuerpo, así que una imagen muy cerca de 1 MB
-  falla antes de llegar a la validación (la misma deuda abierta en `store`).
-- **2026-10-18 — Ver las imágenes y cierre de US-CLI-04 (pieza 14/14).** `viewRecordAction`, después
-  de registrar el acceso, firma las rutas de las imágenes vigentes con URLs de 5 minutos
-  (`RECORD_IMAGE_URL_SECONDS`, por decisión de José Loría): lo bastante para mirar la página y lo
-  bastante corto para que un enlace copiado deje de servir. Si firmar falla, el expediente igual se
-  muestra y cada imagen dice "Imagen no disponible"; la pantalla nunca arma una URL a partir de la
-  ruta. `ImagesEditor` muestra miniaturas con texto alternativo propio y el campo para subir. Con
-  esta pieza US-CLI-04 queda `terminada`; su evidencia está en el front-matter.
-- **2026-10-18 — Mejoras visuales del expediente en dos piezas más (15/16 y 16/16), por decisión de
-  José Loría tras probarlo a mano.** No cambian ningún criterio: US-CLI-04 sigue `terminada`. Van
-  encima de la 14/14 porque la 9/14 y la 12/14 ya estaban cerca de las 400 líneas. **15/16:** íconos
-  SVG propios en los títulos (sin librería nueva), la ficha con ancho máximo para que no se estire en
-  pantallas grandes, y "Antecedentes y precauciones" con "+ Agregar" arriba
-  y una tarjeta por categoría con su conteo (`groupPrecautions`). Una categoría nueva tendría su
-  tarjeta con el nombre guardado y un ícono genérico.
-- **2026-10-18 — Imágenes en mosaicos con visor (pieza 16/16).** Las imágenes se muestran en mosaicos
-  cuadrados; el último, "+ Agregar foto", sube apenas se elige el archivo. Tocar una miniatura abre
-  `ImageViewer`: la imagen en grande sobre fondo oscuro, con la misma URL firmada (no pide nada al
-  servidor), flechas y teclas ← → entre imágenes, y cierre con ✕, Escape o tocando afuera. Reusa
-  `useFocusTrap` y al cerrar devuelve el foco a la miniatura que lo abrió (UI-004). La ficha queda
-  alineada a la izquierda, junto al menú, sin centrarse en pantallas anchas (decisión de José Loría).
-- **2026-10-19 — Robustez tras la auditoría del 2026-10-19 (pieza 17/19).** A1: el tope de imagen
-  queda en 1.000.000 bytes, debajo del límite de 1 MB del cuerpo de las server actions, y la
-  pantalla valida tamaño y tipo antes de enviar. M1: las actions de escritura no lanzan; un fallo
-  inesperado responde "No se pudo guardar" y "se guardó pero falta la bitácora" es su propio código
-  (`saved-without-audit`), que además refresca la ruta. M4: el cupo de 20 imágenes se revisa antes de
-  subir y, lleno, desaparece "Agregar foto". B9: el tipo de la imagen sale de su firma real, no del
-  que declara el navegador. B6: si una URL firmada vence, la imagen pide recargar. El id de clienta
-  se normaliza a minúsculas, como lo guarda la base (la ruta de cada imagen debe empezar por él).
-- **2026-10-19 — Lecturas fuera de las server actions (pieza 18/19, M6 de la auditoría).** `readRecord`,
-  `readTechniqueOptions` y `readCategoryOptions` viven en `ui/admin-record/queries/record-queries.ts`,
-  un módulo de servidor normal: `'use server'` queda solo para escribir. `readRecord` comprueba que la
-  clienta exista antes de auditar; una inexistente va a `notFound()` sin dejar acceso en la bitácora.
-  **Qué cuenta como acceso:** cada carga de los datos del expediente, incluido el refresco tras
-  guardar, porque en ese momento se vuelven a leer datos sensibles. `error.tsx`, que corre en el
-  navegador, importa de `@/features/clients/client` (como `catalog`), para no arrastrar código de
-  servidor. B5: la fecha del registro inicial se lee aparte (`findInitialVersion`), así aparece
-  aunque el expediente pase de 50 versiones.
-- **2026-10-19 — Orden de imports y capas (pieza 19/20, B1 y B2 de la auditoría).** Los imports de
-  tres o más niveles de los archivos del expediente pasan a `@/features/clients/...`.
-  `record-gateways.ts` deja `application/` y pasa a `http/record/`: habla con `audit` y `catalog`, no
-  es un caso de uso. `ConfirmDialog` y `useFocusTrap` pasan a `ui/shared/` porque ya los usan dos
-  áreas. Los archivos de US-CLI-05 solo cambian la ruta de esos dos imports.
+  autora, sin vínculo a una cita. Vincular a una cita es US-CLI-03 (anotaciones), que depende de
+  US-CLI-02 y US-AGE-05; si hace falta, se agrega `appointment_id` con una migración forward. El
+  expediente es el estado clínico vigente; las anotaciones, lo que pasó en cada cita. Un dato
+  clínico escrito en una anotación o en `clients_profiles.notes` queda fuera de SEC-006.
+- **2026-10-17 — Solo la administradora (`auth_is_admin()`), no `auth_is_staff()`** (SEC-006). El
+  INSERT exige `created_by = auth.uid()`. `client_id` es `ON DELETE RESTRICT` (ADR-0009).
+- **2026-10-17 — Bucket `clients-record-images` privado, 1 MB, solo JPEG, PNG y WebP (#370).** Solo
+  la administradora lee y sube, dentro de la carpeta de una clienta que existe; sin UPDATE ni DELETE.
+- **2026-10-17 — Dominio en `domain/record/`.** `buildRecordContent` es la única forma de crear un
+  contenido válido: recorta, aplica los topes de la base (`RECORD_LIMITS`) y lleva una marca
+  `unique symbol`. Se llamó `RecordSnapshot` hasta el 2026-10-18; se renombró a `RecordContent`
+  dentro de cada pieza, por decisión de José Loría, porque "contenido" se lee solo. Los cambios
+  (`createInitialRecord`, `addPrecaution`, `removePrecaution`, `editStudy`, `addImage`) devuelven
+  `{ changeKind, content }` y vuelven a pasar por `buildRecordContent`. Los problemas son códigos,
+  no textos: la UI los traduce (DOM-009). Cada antecedente lleva su `id`; uno repetido se rechaza.
+  Editar sin cambiar nada devuelve `RecordUnchanged`.
+- **2026-10-17 — La aplicación habla con el exterior solo por puertos** (`record-ports.ts`).
+  Leer audita primero, fail-closed: si la bitácora falla, no hay datos. El evento lleva actor,
+  acción y clienta, nunca el contenido. El expediente vive en su propia pestaña para que el acceso
+  sea deliberado. El historial se lee con tope (`RECORD_HISTORY_LIMIT` = 50, PERF-002); la fecha del
+  registro inicial se lee aparte (`findInitialVersion`, B5) para que no se pierda pasando ese tope.
+- **2026-10-17 — Escribir guarda y después audita.** Cada versión se encadena a la vigente con
+  autora y fecha del reloj inyectado (DOM-004). Si la bitácora falla después de guardar, el código
+  es `saved-without-audit`: la pantalla avisa y refresca, porque el cambio sí quedó (deuda M2).
+- **2026-10-18 — Repositorio en `db/record/`, función fábrica (ADR-0008).** Al leer, cada fila vuelve
+  a pasar por `buildRecordContent`; una fila mal formada lanza en vez de mostrar un expediente a
+  medias (B4, aceptado). Otro error de la base se lanza (DOM-006). Los adaptadores a `audit` y
+  `catalog` viven en `http/record/record-gateways.ts` (B2; antes en `application/`) y usan solo sus
+  APIs públicas (ARCH-003); el de la bitácora convierte un rechazo o un error en `false`.
+- **2026-10-18 — Server actions solo para escribir; lecturas en `ui/admin-record/queries/` (M6).**
+  Cada una exige `requireAdminSession()` y firma con esa sesión (SEC-005). Los ids se revisan con
+  forma de UUID antes de tocar la base y el de clienta se normaliza a minúsculas. No lanzan: un fallo
+  inesperado responde "No se pudo guardar" (M1). Devuelven datos planos (`RecordVersionView`) y cada
+  código se traduce en `record-strings.ts`. `readRecord` comprueba que la clienta exista antes de
+  auditar; una inexistente va a `notFound()`. **Qué cuenta como acceso:** cada carga de los datos,
+  incluido el refresco tras guardar. `error.tsx` importa de `@/features/clients/client`.
+- **2026-10-18 — Ficha en `src/app/admin/clients/[id]/`.** Volver, nombre, teléfono y la pestaña
+  Expediente (`aria-current`); alineada a la izquierda con ancho máximo. Estados (UI-003): vacío,
+  `loading.tsx`, `RecordLoadError` con *Reintentar* y `error.tsx`. `describeVersion` nombra el
+  antecedente agregado o quitado comparando con la versión anterior. Fechas en `STUDIO_TIME_ZONE`.
+- **2026-10-18 — Estudio y antecedentes.** `StudyForm` va en línea, no en modal; el menú muestra
+  técnicas activas (tope 100) más la vigente. Si `catalog` falla, queda "Sin técnica recomendada".
+  Antecedentes en una tarjeta por categoría con su conteo (`groupPrecautions`) e íconos SVG propios;
+  *Quitar* nombra su antecedente (UI-004) y confirma con `ConfirmDialog`.
+- **2026-10-18 — Imágenes.** Tope de 1.000.000 bytes, debajo del límite de 1 MB del cuerpo de las
+  server actions (A1); la pantalla valida tamaño y tipo antes de enviar y el servidor lee el tipo de
+  la firma real del archivo (B9). El cupo de 20 se revisa antes de subir y, lleno, desaparece
+  "Agregar foto" (M4). Se suben a `<clienta>/<uuid>.<ext>` y se ven con URLs firmadas de 5 minutos
+  (`RECORD_IMAGE_URL_SECONDS`, por decisión de José Loría); si una vence, pide recargar (B6). Mosaicos
+  con `ImageViewer` (flechas, Escape, devuelve el foco).
+- **2026-10-19 — Imports con `@/` y piezas compartidas en `ui/shared/` (B1).** `ConfirmDialog` y
+  `useFocusTrap` los usan `admin-clients` y `admin-record`.
