@@ -7,7 +7,9 @@ import {
   weeklyBlockInvalid,
   weeklyBlockOverlap,
 } from '../../../domain/availability-errors'
+import { storageFailed } from '../../../domain/errors'
 import { schedulingMessages } from '../../messages'
+import { CONFIRM_FIELD, CONFIRM_VALUE } from '../constants/confirm-reduction.constants'
 
 const mocks = vi.hoisted(() => ({
   getAuthSession: vi.fn(),
@@ -18,6 +20,9 @@ const mocks = vi.hoisted(() => ({
     addClosedDate: vi.fn(),
     removeClosedDate: vi.fn(),
     addManualBlock: vi.fn(),
+    countAffectedByWeeklyBlock: vi.fn(),
+    countAffectedOnDate: vi.fn(),
+    countAffectedInRange: vi.fn(),
   },
 }))
 
@@ -48,6 +53,9 @@ function form(fields: Record<string, string>): FormData {
 beforeEach(() => {
   vi.clearAllMocks()
   mocks.getAuthSession.mockResolvedValue({ user: { id: 'admin-1' }, role: 'admin' })
+  mocks.service.countAffectedByWeeklyBlock.mockResolvedValue(ok(0))
+  mocks.service.countAffectedOnDate.mockResolvedValue(ok(0))
+  mocks.service.countAffectedInRange.mockResolvedValue(ok(0))
 })
 
 describe('acceso — SEC-001 (mensaje amable; la frontera es RLS)', () => {
@@ -147,5 +155,70 @@ describe('addManualBlockAction — criterio 3', () => {
       status: 'conflict',
       message: availabilityMessages.blocks.overlap,
     })
+  })
+})
+
+describe('reducir la disponibilidad con citas agendadas — criterio 9', () => {
+  const reductions = [
+    {
+      name: 'quitar un bloque semanal',
+      run: (extra: Record<string, string> = {}) => removeWeeklyBlockAction(idle, form({ id: 'b-1', ...extra })),
+      count: mocks.service.countAffectedByWeeklyBlock,
+      apply: mocks.service.removeWeeklyBlock,
+      fields: { id: 'b-1' },
+    },
+    {
+      name: 'cerrar un día',
+      run: (extra: Record<string, string> = {}) =>
+        addClosedDateAction(idle, form({ date: '2026-12-25', kind: 'holiday', ...extra })),
+      count: mocks.service.countAffectedOnDate,
+      apply: mocks.service.addClosedDate,
+      fields: { date: '2026-12-25', kind: 'holiday' },
+    },
+    {
+      name: 'bloquear un espacio',
+      run: (extra: Record<string, string> = {}) =>
+        addManualBlockAction(idle, form({ date: '2026-10-20', start: '09:00', end: '11:00', ...extra })),
+      count: mocks.service.countAffectedInRange,
+      apply: mocks.service.addManualBlock,
+      fields: { date: '2026-10-20', start: '09:00', end: '11:00' },
+    },
+  ]
+
+  it.each(reductions)('$name con citas afectadas: advierte con el número y no aplica nada', async ({ run, count, apply, fields }) => {
+    count.mockResolvedValue(ok(3))
+    expect(await run()).toEqual({
+      status: 'needsConfirmation',
+      message: availabilityMessages.affected.warning(3),
+      affected: 3,
+      fields,
+    })
+    expect(apply).not.toHaveBeenCalled()
+    expect(mocks.revalidatePath).not.toHaveBeenCalled()
+  })
+
+  it.each(reductions)('$name confirmado: aplica sin volver a contar', async ({ run, count, apply }) => {
+    count.mockResolvedValue(ok(3))
+    apply.mockResolvedValue(ok({}))
+    expect((await run({ [CONFIRM_FIELD]: CONFIRM_VALUE })).status).toBe('ok')
+    expect(apply).toHaveBeenCalledTimes(1)
+    expect(count).not.toHaveBeenCalled()
+  })
+
+  it.each(reductions)('$name sin citas afectadas: aplica sin pedir confirmación', async ({ run, apply }) => {
+    apply.mockResolvedValue(ok({}))
+    expect((await run()).status).toBe('ok')
+    expect(apply).toHaveBeenCalledTimes(1)
+  })
+
+  it.each(reductions)('$name con el conteo caído: no aplica nada y lo dice', async ({ run, count, apply }) => {
+    count.mockResolvedValue(err(storageFailed('sin conexión')))
+    expect(await run()).toEqual({ status: 'conflict', message: availabilityMessages.affected.countFailed })
+    expect(apply).not.toHaveBeenCalled()
+  })
+
+  it('el aviso usa singular cuando es una sola cita', () => {
+    expect(availabilityMessages.affected.warning(1)).toContain('Hay 1 cita agendada')
+    expect(availabilityMessages.affected.warning(2)).toContain('Hay 2 citas agendadas')
   })
 })

@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import { schedulingMessages } from '../../messages'
+import { CONFIRM_FIELD, CONFIRM_VALUE } from '../constants/confirm-reduction.constants'
 import { availabilityStyles as STYLES } from '../styles/availability.styles'
 import {
   initialAvailabilityActionState,
@@ -19,8 +20,27 @@ const availabilityMessages = schedulingMessages.availability
 
 type Action = (prev: AvailabilityActionState, formData: FormData) => Promise<AvailabilityActionState>
 
-export function AvailabilityFeedback({ state }: { state: AvailabilityActionState }) {
+type FeedbackProps = { state: AvailabilityActionState; formAction?: (formData: FormData) => void; pending?: boolean }
+
+function ReductionConfirmation({ state, formAction, pending }: FeedbackProps) {
+  return (
+    <form action={formAction} className={STYLES.confirmation}>
+      <div role="alert" className={STYLES.alertWarning}>
+        <span>{state.message}</span>
+      </div>
+      {Object.entries(state.fields ?? {}).map(([name, value]) => (
+        <input key={name} type="hidden" name={name} value={value} />
+      ))}
+      <button type="submit" name={CONFIRM_FIELD} value={CONFIRM_VALUE} className={STYLES.submit} disabled={pending}>
+        {availabilityMessages.affected.confirm}
+      </button>
+    </form>
+  )
+}
+
+export function AvailabilityFeedback({ state, formAction, pending }: FeedbackProps) {
   if (state.status === 'idle') return null
+  if (state.status === 'needsConfirmation') return <ReductionConfirmation state={state} formAction={formAction} pending={pending} />
   if (state.status === 'ok') {
     return (
       <div role="status" className={STYLES.alertSuccess}>
@@ -115,7 +135,7 @@ export function ClosedDateForm() {
           {availabilityMessages.closed.submit}
         </button>
       </form>
-      <AvailabilityFeedback state={state} />
+      <AvailabilityFeedback state={state} formAction={formAction} pending={pending} />
     </>
   )
 }
@@ -141,7 +161,7 @@ export function ManualBlockForm() {
           {availabilityMessages.blocks.submit}
         </button>
       </form>
-      <AvailabilityFeedback state={state} />
+      <AvailabilityFeedback state={state} formAction={formAction} pending={pending} />
     </>
   )
 }
@@ -151,13 +171,19 @@ export function ManualBlockForm() {
 function RemoveButton({ action, id, label, text }: { action: Action; id: string; label: string; text: string }) {
   const [state, formAction, pending] = useFormAction(action)
   return (
-    <form action={formAction}>
-      <input type="hidden" name="id" value={id} />
-      <button type="submit" className={STYLES.removeButton} aria-label={label} disabled={pending}>
-        {text}
-      </button>
-      {state.status !== 'ok' && <AvailabilityFeedback state={state} />}
-    </form>
+    <>
+      <form action={formAction}>
+        <input type="hidden" name="id" value={id} />
+        <button type="submit" className={STYLES.removeButton} aria-label={label} disabled={pending}>
+          {text}
+        </button>
+      </form>
+      {state.status !== 'ok' && state.status !== 'idle' && (
+        <div className={STYLES.removeFeedback}>
+          <AvailabilityFeedback state={state} formAction={formAction} pending={pending} />
+        </div>
+      )}
+    </>
   )
 }
 
