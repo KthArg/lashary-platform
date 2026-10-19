@@ -98,8 +98,12 @@ export const STUDY_FORM_LABELS = {
 export const IMAGES_LABELS = {
   imageAlt: (position: number) => `Imagen ${position} del expediente`,
   unavailable: 'Imagen no disponible',
-  field: 'Agregar imagen (JPEG, PNG o WebP, hasta 1 MB)',
+  addPhoto: 'Agregar foto',
+  addPhotoHint: 'JPEG, PNG o WebP, hasta 1 MB',
   accept: 'image/jpeg,image/png,image/webp',
-  upload: 'Subir imagen',
   uploading: 'Subiendo…',
+  open: (position: number) => `Ampliar imagen ${position}`,
+  close: 'Cerrar',
+  previous: 'Imagen anterior',
+  next: 'Imagen siguiente',
 } as const

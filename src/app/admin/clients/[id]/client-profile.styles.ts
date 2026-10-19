@@ -1,5 +1,5 @@
 export const clientProfileStyles = {
-  page: 'mx-auto w-full max-w-5xl space-y-6',
+  page: 'w-full max-w-5xl space-y-6',
   header: 'space-y-1 border-b border-brand-border pb-4',
   back: 'text-xs uppercase tracking-widest text-brand-muted transition-colors hover:text-brand-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-dark',
   title: 'font-serif text-2xl md:text-3xl font-bold text-brand-dark',
