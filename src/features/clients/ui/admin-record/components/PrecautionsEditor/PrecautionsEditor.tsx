@@ -35,6 +35,7 @@ export function PrecautionsEditor({ clientId, precautions, categories }: Precaut
       const result = await save()
       if (!result.ok) {
         setFailure({ error: result.error, problems: result.problems })
+        if (result.saved) router.refresh()
         return
       }
       onSaved()

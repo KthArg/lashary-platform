@@ -35,7 +35,7 @@ beforeEach(() => {
 
 describe('addRecordImageAction — la puerta de entrada de las imágenes', () => {
   it('sube la imagen elegida y guarda la versión', async () => {
-    const result = await addRecordImageAction(CLIENT_ID, formWith(new File([new Uint8Array([1, 2])], 'estudio.png', { type: 'image/png' })))
+    const result = await addRecordImageAction(CLIENT_ID, formWith(new File([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00])], 'estudio.png', { type: 'image/png' })))
     if (!result.ok) throw new Error('debería guardar')
     expect(mocks.uploads).toHaveLength(1)
     expect(result.version.images).toEqual(mocks.uploads)

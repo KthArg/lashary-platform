@@ -49,6 +49,7 @@ const COMMAND_ERROR_MESSAGES: Record<Exclude<RecordCommandError['code'], typeof 
   'image-empty': RECORD_ERROR_MESSAGES.imageEmpty,
   'image-too-large': RECORD_ERROR_MESSAGES.imageTooLarge,
   'image-type-not-allowed': RECORD_ERROR_MESSAGES.imageTypeNotAllowed,
+  'saved-without-audit': RECORD_ERROR_MESSAGES.savedWithoutAudit,
 }
 
 const failed = (error: string, problems: string[] = []): SaveRecordResult => ({ ok: false, error, problems })
@@ -71,6 +72,9 @@ function toVersionView(version: RecordVersion): RecordVersionView {
 function toSaveFailure(error: RecordCommandError): SaveRecordResult {
   if (isRecordValidationError(error)) {
     return failed(RECORD_ERROR_MESSAGES.invalid, error.problems.map((problem) => RECORD_PROBLEM_MESSAGES[problem]))
+  }
+  if (error.code === 'saved-without-audit') {
+    return { ok: false, error: COMMAND_ERROR_MESSAGES[error.code], problems: [], saved: true }
   }
   return failed(COMMAND_ERROR_MESSAGES[error.code])
 }
@@ -105,10 +109,19 @@ async function saveRecord(
 ): Promise<SaveRecordResult> {
   const session = await requireAdminSession()
   if (!isUuid(clientId)) return failed(RECORD_ERROR_MESSAGES.clientNotFound)
-  const result = await run(await commandDeps(), { clientId, actorId: session.user.id })
-  if (isErr(result)) return toSaveFailure(result.error)
-  revalidatePath(clientRecordPath(clientId))
-  return { ok: true, version: toVersionView(result.value) }
+  const actor = { clientId: clientId.toLowerCase(), actorId: session.user.id }
+  try {
+    const result = await run(await commandDeps(), actor)
+    if (isErr(result)) {
+      const failure = toSaveFailure(result.error)
+      if (!failure.ok && failure.saved) revalidatePath(clientRecordPath(actor.clientId))
+      return failure
+    }
+    revalidatePath(clientRecordPath(actor.clientId))
+    return { ok: true, version: toVersionView(result.value) }
+  } catch {
+    return failed(RECORD_ERROR_MESSAGES.saveFailed)
+  }
 }
 
 async function signImages(paths: readonly string[]): Promise<Record<string, string>> {
@@ -124,7 +137,7 @@ export async function viewRecordAction(clientId: string): Promise<ViewRecordResu
   const session = await requireAdminSession()
   if (!isUuid(clientId)) return { ok: false, error: RECORD_ERROR_MESSAGES.clientNotFound }
   const result = await viewRecord({ repo: await recordRepository(), auditLog: auditRecordLog })({
-    clientId,
+    clientId: clientId.toLowerCase(),
     actorId: session.user.id,
   })
   if (isErr(result)) return { ok: false, error: RECORD_ERROR_MESSAGES.auditFailed }

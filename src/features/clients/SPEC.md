@@ -474,3 +474,11 @@ También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el e
   servidor), flechas y teclas ← → entre imágenes, y cierre con ✕, Escape o tocando afuera. Reusa
   `useFocusTrap` y al cerrar devuelve el foco a la miniatura que lo abrió (UI-004). La ficha queda
   alineada a la izquierda, junto al menú, sin centrarse en pantallas anchas (decisión de José Loría).
+- **2026-10-19 — Robustez tras la auditoría del 2026-10-19 (pieza 17/19).** A1: el tope de imagen
+  queda en 1.000.000 bytes, debajo del límite de 1 MB del cuerpo de las server actions, y la
+  pantalla valida tamaño y tipo antes de enviar. M1: las actions de escritura no lanzan; un fallo
+  inesperado responde "No se pudo guardar" y "se guardó pero falta la bitácora" es su propio código
+  (`saved-without-audit`), que además refresca la ruta. M4: el cupo de 20 imágenes se revisa antes de
+  subir y, lleno, desaparece "Agregar foto". B9: el tipo de la imagen sale de su firma real, no del
+  que declara el navegador. B6: si una URL firmada vence, la imagen pide recargar. El id de clienta
+  se normaliza a minúsculas, como lo guarda la base (la ruta de cada imagen debe empezar por él).

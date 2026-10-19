@@ -1,4 +1,5 @@
 import type { RecordProblem } from '../../../domain/record/record-errors'
+import type { RecordImageProblem } from '../../../domain/record/record-image'
 
 export const RECORD_ERROR_MESSAGES = {
   clientNotFound: 'No encontramos a esta clienta.',
@@ -17,6 +18,8 @@ export const RECORD_ERROR_MESSAGES = {
   imageEmpty: 'La imagen está vacía.',
   imageTooLarge: 'La imagen pesa más de 1 MB.',
   imageTypeNotAllowed: 'Solo se aceptan imágenes JPEG, PNG o WebP.',
+  saveFailed: 'No se pudo guardar. Revisa tu conexión e intenta de nuevo.',
+  savedWithoutAudit: 'El cambio se guardó, pero no quedó registrado en la bitácora. Avisa a quien administra el sistema.',
 } as const
 
 export const PRECAUTION_FORM_LABELS = {
@@ -106,4 +109,12 @@ export const IMAGES_LABELS = {
   close: 'Cerrar',
   previous: 'Imagen anterior',
   next: 'Imagen siguiente',
+  limitReached: 'Llegaste al máximo de imágenes del expediente.',
+  expired: 'La vista expiró. Recarga la página para verla.',
 } as const
+
+export const RECORD_IMAGE_PROBLEM_MESSAGES: Record<RecordImageProblem, string> = {
+  'image-empty': RECORD_ERROR_MESSAGES.imageEmpty,
+  'image-too-large': RECORD_ERROR_MESSAGES.imageTooLarge,
+  'image-type-not-allowed': RECORD_ERROR_MESSAGES.imageTypeNotAllowed,
+}

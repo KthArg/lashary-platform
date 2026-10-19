@@ -18,7 +18,7 @@ export type ViewRecordResult =
 
 export type SaveRecordResult =
   | { ok: true; version: RecordVersionView }
-  | { ok: false; error: string; problems: string[] }
+  | { ok: false; error: string; problems: string[]; saved?: true }
 
 export interface StudyFormInput {
   studyText: string

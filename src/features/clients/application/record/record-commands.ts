@@ -27,6 +27,7 @@ export interface RecordCommandFailure {
     | 'version-conflict'
     | 'technique-not-found'
     | 'category-not-found'
+    | 'saved-without-audit'
     | RecordImageProblem
 }
 
@@ -88,7 +89,7 @@ async function saveChange(
   })
   if (isErr(saved)) return err(failure('version-conflict'))
   const audited = await deps.auditLog({ ...actor, action: 'clients.record.updated' })
-  if (!audited) throw new Error('el expediente se guardó pero el cambio no quedó en la bitácora')
+  if (!audited) return err(failure('saved-without-audit'))
   return saved
 }
 
