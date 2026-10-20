@@ -26,8 +26,6 @@ const toLiteralNamePattern = (name: string | null): string | null => {
   return term ? `%${term}%` : null
 }
 
-// db inyectable: la sesión por cookies (createClient) sirve a las server actions del panel; el
-// cron de notifications (sin cookies, US-NOT-03) pasa su propio cliente ya autenticado como staff.
 export async function clientRepository(db?: SupabaseClient): Promise<ClientRepository> {
   const supabase = db ?? (await createClient())
 

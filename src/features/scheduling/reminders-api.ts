@@ -7,8 +7,6 @@ import {
 } from './application/reminder-snapshots'
 import type { ReminderSnapshotsWindow } from './application/ports'
 
-// db inyectable: el cron de notifications (sin cookies, US-NOT-03) pasa su propio cliente ya
-// autenticado como staff en vez del de sesión por cookies.
 export async function listAppointmentsForReminders(window: ReminderSnapshotsWindow, db?: SupabaseClient) {
   const repo = createSupabaseReminderSnapshotsRepository(db ?? (await createClient()))
   return listForReminders(repo, window)

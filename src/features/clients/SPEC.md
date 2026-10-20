@@ -151,7 +151,8 @@ También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el e
 `getClientContactForReminders` (US-NOT-03, ARCH-005): lectura pública de solo teléfono y email
 (nunca `notes`) para que `notifications` nunca consulte `clients_profiles` directo. Sin
 `requireAdminSession` — es para el cron, sin cookies; la RLS de `clients_profiles` sigue siendo la
-frontera real (SEC-001). `clientRepository` ahora acepta un `SupabaseClient` inyectable para que
+frontera real (SEC-001). Sin comentarios en el código: el porqué vive aquí. `clientRepository`
+ahora acepta un `SupabaseClient` inyectable para que
 el cron pase su propia sesión en vez de la de cookies. Consumidor: `notifications/index.ts`.
 
 ## Invariantes
