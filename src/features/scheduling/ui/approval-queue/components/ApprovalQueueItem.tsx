@@ -6,6 +6,7 @@ import {
 } from '../constants/approval-queue.labels'
 import { approvalQueueStyles as STYLES } from '../styles/approval-queue.styles'
 import { formatAppointmentChoice } from '../utils/format-appointment-choice'
+import { formatClientName } from '../utils/format-client-name'
 import { formatAppointmentSlot } from '../utils/format-appointment-slot'
 import type { ApprovalQueueItemProps } from '../types/approval-queue.types'
 
@@ -19,6 +20,7 @@ export function ApprovalQueueItem({ appointment, queue }: ApprovalQueueItemProps
   return (
     <li className={STYLES.item} aria-busy={isBusy}>
       <div className={STYLES.details}>
+        <p className={STYLES.client}>{formatClientName(appointment.clientName)}</p>
         <p className={STYLES.slot}>{slot}</p>
         <p className={STYLES.service}>
           {choice.service}

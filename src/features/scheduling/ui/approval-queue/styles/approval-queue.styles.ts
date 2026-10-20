@@ -7,6 +7,7 @@ export const approvalQueueStyles = {
   list: 'mt-4 divide-y divide-brand-border/60 border-y border-brand-border/60',
   item: 'flex flex-wrap items-start justify-between gap-4 py-4',
   details: 'flex min-w-0 flex-col gap-1',
+  client: 'text-sm font-medium text-brand-dark',
   slot: 'text-sm text-brand-dark first-letter:uppercase',
   service: 'flex flex-wrap items-center gap-2 text-sm font-medium text-brand-dark',
   kindBadge: 'border border-brand-gold px-2 py-0.5 text-xs uppercase tracking-widest text-brand-dark',

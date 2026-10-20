@@ -130,6 +130,7 @@ export type PendingAppointment = {
   id: string
   startsAtMs: number
   endsAtMs: number
+  clientName: string | null
   choice: AppointmentChoice | null
 }
 
