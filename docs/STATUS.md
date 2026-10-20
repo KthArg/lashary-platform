@@ -10,7 +10,7 @@
 | account | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | audit | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
-| catalog | pendiente | en_progreso | 2 / 0 / 0 / 0 / 2 |
+| catalog | pendiente | en_progreso | 2 / 1 / 0 / 0 / 1 |
 | clients | pendiente | en_progreso | 2 / 1 / 0 / 0 / 2 |
 | content | pendiente | terminada | 3 / 0 / 0 / 0 / 0 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
@@ -32,10 +32,10 @@
 - US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
 - US-AUTH-02 — terminada — PR #3, PR #18, tests: auth-client.test.tsx, rls-isolation.test.ts
 
-### catalog (actualizado: 2026-10-18)
+### catalog (actualizado: 2026-10-20)
 - US-AGE-08 — terminada — PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx
 - US-PROD-01 — terminada — PRs #98 a #107, #134, #157 a #168 (pila) y el cierre us/US-PROD-01 a main; tests: package.test.ts, package-commands.test.ts, package-queries.test.ts, package-actions.test.ts, package-schema.test.ts, package-inactive-techniques.test.tsx, package-pagination.test.tsx, package-repository.integration.test.ts, package-rls-isolation.test.ts, catalog_package_staff_write.test.sql; UI probada a mano contra lashary-pruebas (2026-10-03)
-- US-PROM-01 — no_iniciada
+- US-PROM-01 — en_progreso — falta: capas db/ui. Criterio 2 (mostrar en el flujo de agendamiento) y criterio 4 (precio con promoción congelado en la cita) diferidos: requieren scheduling_appointments, que trae US-AGE-05 (no_iniciada). Punto de extensión: listActivePromotions ya expone las vigentes; el consumo desde agendamiento y el congelamiento llegan con US-AGE-05. Ver docs/process/DEPENDENCIES.md, Criterios diferidos.
 - US-PROM-02 — no_iniciada
 
 ### clients (actualizado: 2026-10-19)
