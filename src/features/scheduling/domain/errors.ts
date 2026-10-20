@@ -52,7 +52,26 @@ export interface AuditNotRecorded {
   readonly message: string
 }
 
+export interface SlotNotOffered {
+  readonly code: 'SCHEDULING_SLOT_NOT_OFFERED'
+  readonly resourceId: string
+  readonly message: string
+}
+
+export interface ClientNotRegistered {
+  readonly code: 'SCHEDULING_CLIENT_NOT_REGISTERED'
+  readonly message: string
+}
+
+export interface ClientHasActiveDelinquency {
+  readonly code: 'SCHEDULING_CLIENT_HAS_ACTIVE_DELINQUENCY'
+  readonly message: string
+}
+
 export type SchedulingError =
+  | SlotNotOffered
+  | ClientNotRegistered
+  | ClientHasActiveDelinquency
   | TechniqueNotSelectable
   | TechniqueNotAvailable
   | InvalidAppointmentWindow
@@ -99,6 +118,22 @@ export const isSpaceNotAvailable = (value: unknown): value is SpaceNotAvailable 
   typeof value === 'object' &&
   value !== null &&
   (value as { code?: unknown }).code === 'SCHEDULING_SPACE_NOT_AVAILABLE'
+
+export const slotNotOffered = (resourceId: string): SlotNotOffered => ({
+  code: 'SCHEDULING_SLOT_NOT_OFFERED',
+  resourceId,
+  message: 'ese horario no está entre los que ofrece el calendario',
+})
+
+export const clientNotRegistered = (): ClientNotRegistered => ({
+  code: 'SCHEDULING_CLIENT_NOT_REGISTERED',
+  message: 'la sesión no es de una clienta registrada',
+})
+
+export const clientHasActiveDelinquency = (): ClientHasActiveDelinquency => ({
+  code: 'SCHEDULING_CLIENT_HAS_ACTIVE_DELINQUENCY',
+  message: 'la clienta tiene una morosidad activa y no puede reservar',
+})
 
 export const appointmentNotPending = (appointmentId: string): AppointmentNotPending => ({
   code: 'SCHEDULING_APPOINTMENT_NOT_PENDING',

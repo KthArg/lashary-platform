@@ -3,6 +3,8 @@ import type { SelectableTechnique } from '../domain/technique-selection'
 import type { AppointmentDecision } from '../domain/appointment-decision.constants'
 import type {
   AppointmentNotPending,
+  ClientNotRegistered,
+  SlotNotOffered,
   SpaceNotAvailable,
   StorageFailed,
   TechniqueNotAvailable,
@@ -33,6 +35,40 @@ export type CreatedAppointment = {
 
 export interface AppointmentRepository {
   create(appointment: NewAppointment): Promise<Result<CreatedAppointment, SpaceNotAvailable | StorageFailed>>
+}
+
+export type BookAppointmentInput = {
+  resourceId: string
+  startsAtMs: number
+  techniqueId: string
+  isFirstTime: boolean
+}
+
+export type BookedAppointment = {
+  id: string
+  resourceId: string
+  startsAtMs: number
+  endsAtMs: number
+  techniqueName: string
+  servicePrice: number
+  depositRequired: number
+  depositRegistered: number
+  isFirstTime: boolean
+}
+
+export type BookAppointmentError =
+  | ClientNotRegistered
+  | TechniqueNotAvailable
+  | SlotNotOffered
+  | SpaceNotAvailable
+  | StorageFailed
+
+export interface BookingRepository {
+  book(input: BookAppointmentInput): Promise<Result<BookedAppointment, BookAppointmentError>>
+}
+
+export interface DelinquencyPort {
+  hasActiveDelinquency(): Promise<boolean>
 }
 
 export type DecideAppointmentInput = {
