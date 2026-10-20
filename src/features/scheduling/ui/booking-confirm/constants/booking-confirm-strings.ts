@@ -22,6 +22,10 @@ export const bookingConfirmMessages = {
   invalid: 'Ese horario no es válido. Elegí uno de nuevo.',
   unavailable: 'Ese servicio ya no está disponible. Elegí otro.',
   loading: 'Preparando tu reserva…',
+  clientNotRegistered: 'Completá tu perfil de clienta para poder reservar.',
+  delinquency: 'Tenés un pago pendiente: no podés reservar hasta regularizarlo.',
+  storageFailed: 'No pudimos guardar tu reserva. Intentá de nuevo.',
+  pendingApproval: 'Tu reserva quedó pendiente de aprobación de la administradora.',
   error: {
     title: 'No se pudo preparar tu reserva',
     body: 'Ocurrió un error al calcular el resumen.',

@@ -1,6 +1,10 @@
 export const CLIENT_CALENDAR_PATH = '/portal/citas/calendario'
 
-export const CALENDAR_PARAMS = { service: 'servicio', date: 'fecha' } as const
+export const CALENDAR_PARAMS = { service: 'servicio', date: 'fecha', notice: 'aviso' } as const
+
+export const CALENDAR_NOTICES = { taken: 'ocupado', notOffered: 'no-ofrecido' } as const
+
+export type CalendarNotice = (typeof CALENDAR_NOTICES)[keyof typeof CALENDAR_NOTICES]
 
 export const MAX_CALENDAR_SERVICES = 100
 
