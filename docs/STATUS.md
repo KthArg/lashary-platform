@@ -71,7 +71,7 @@
 ### notifications (actualizado: 2026-10-20)
 - US-NOT-01 — no_iniciada
 - US-NOT-02 — no_iniciada
-- US-NOT-03 — en_progreso — falta: solo el dominio (criterios 1 y 2) está construido; faltan aplicación, persistencia, canales y el disparo del cron
+- US-NOT-03 — en_progreso — falta: dominio y la mitad de la aplicación (descubrir, reconciliar) están construidos; faltan el envío, la persistencia, los canales y el disparo del cron
 - US-NOT-04 — no_iniciada
 - US-NOT-05 — no_iniciada
 - US-NOT-06 — no_iniciada
