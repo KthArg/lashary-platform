@@ -72,7 +72,9 @@ lo reusa vía el puerto que US-NOT-08 exige.
   del FK de `payments` a `clients_profiles`, ADR-0009). RLS solo staff (`auth_is_staff()`), sin
   política de DELETE. Índices sobre `appointment_id` y `(status, send_at)` (PERF-003). Pruebas:
   pgTAP `supabase/tests/database/notifications_reminders_staff_access.test.sql` (control positivo
-  de staff y negativo de clienta y anon, SEC-002), corrida contra Supabase local el 2026-10-20.
+  de staff y negativo de clienta y anon, SEC-002) y `__tests__/rls-isolation.test.ts` (anon y
+  clienta con tokens reales por PostgREST, mismo patrón de `auth`/`payments`/`scheduling`),
+  corridas contra Supabase local el 2026-10-20.
 - Canales (`channels/`): `twilio-whatsapp-channel.ts` y `resend-email-channel.ts`, REST directo con
   `fetch` (sin SDK nuevo) detrás de variables de entorno; sin configurar, el canal se declara
   `channelNotConfigured` en vez de fallar en producción por sorpresa (SEC-003/004). Pruebas:

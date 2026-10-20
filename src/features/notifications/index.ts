@@ -14,9 +14,6 @@ const REPOSITORY_FAILURE: RepositoryFailure = 'repository-failed'
 
 export type NotificationsCycleError = 'system-client-not-configured' | RepositoryFailure
 
-// Única puerta de entrada de notifications (ARCH-003): la llama el cron de US-NOT-03. Arma los
-// adaptadores reales (scheduling y clients por su índice público, ARCH-005; canales por ADR-0006)
-// y corre descubrir → reconciliar → enviar.
 export async function runNotificationsReminderCycle(): Promise<
   Result<RunReminderCycleSummary, NotificationsCycleError>
 > {

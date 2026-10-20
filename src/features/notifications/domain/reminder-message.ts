@@ -1,12 +1,11 @@
 import { STUDIO_TIME_ZONE } from '@/shared/studio-time'
 
-// Texto externalizado del recordatorio (DOM-009): un solo lugar que compone lo que lee la
-// clienta por WhatsApp o email, con fecha y hora en la zona del estudio (DOM-003).
 export const REMINDER_MESSAGE_TEXTS = {
   greeting: 'Hola',
   intro: 'te recordamos tu cita en LASHARY:',
   techniqueLabel: 'Técnica',
   whenLabel: 'Fecha y hora',
+  emailSubject: 'Recordatorio de tu cita en LASHARY',
 }
 
 const dateTimeFormatter = new Intl.DateTimeFormat('es-CR', {
@@ -25,12 +24,10 @@ export function formatStudioDateTime(instant: Date): string {
 
 export type ReminderMessageInput = { techniqueName: string; startsAt: Date }
 
-// Criterio 2 de US-NOT-03: el mensaje incluye fecha, hora y técnica reservada.
 export function buildReminderMessage(input: ReminderMessageInput): string {
-  const t = REMINDER_MESSAGE_TEXTS
   return [
-    `${t.greeting}, ${t.intro}`,
-    `${t.techniqueLabel}: ${input.techniqueName}`,
-    `${t.whenLabel}: ${formatStudioDateTime(input.startsAt)}`,
+    `${REMINDER_MESSAGE_TEXTS.greeting}, ${REMINDER_MESSAGE_TEXTS.intro}`,
+    `${REMINDER_MESSAGE_TEXTS.techniqueLabel}: ${input.techniqueName}`,
+    `${REMINDER_MESSAGE_TEXTS.whenLabel}: ${formatStudioDateTime(input.startsAt)}`,
   ].join('\n')
 }

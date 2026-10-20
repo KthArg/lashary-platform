@@ -6,7 +6,7 @@ describe('buildReminderMessage', () => {
   it('incluye la técnica y la fecha/hora en la zona del estudio (criterio 2)', () => {
     const message = buildReminderMessage({
       techniqueName: 'Lifting de pestañas',
-      startsAt: fixedDate('2026-11-02T21:00:00Z'), // 15:00 en America/Costa_Rica (UTC-6)
+      startsAt: fixedDate('2026-11-02T21:00:00Z'),
     })
 
     expect(message).toContain('Lifting de pestañas')
