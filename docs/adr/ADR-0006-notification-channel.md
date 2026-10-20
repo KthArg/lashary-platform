@@ -1,6 +1,8 @@
 # ADR-0006 — Canal de notificaciones: WhatsApp vía Twilio, email como respaldo
 
-> **Estado:** aceptado (proveedor de email pendiente). **Fecha:** 2026-08-27. **Decisores:** PO + bootstrap. **Historias:** US-NOT-03 (portadora del canal, ADR-0007), US-NOT-07, US-NOT-08, US-CLI-06, US-NOT-04, US-NOT-05.
+> **Estado:** aceptado. **Fecha:** 2026-08-27. **Decisores:** PO + bootstrap. **Historias:** US-NOT-03 (portadora del canal, ADR-0007), US-NOT-07, US-NOT-08, US-CLI-06, US-NOT-04, US-NOT-05.
+>
+> **Registro de la decisión (2026-10-20):** el PO eligió Resend como proveedor de email de respaldo, resolviendo el pendiente del ítem de Consecuencias. `notifications/channels/resend-email-channel.ts` lo implementa detrás del puerto `NotificationChannel`.
 
 ## Contexto
 
@@ -11,7 +13,7 @@ El backlog fija WhatsApp como canal por defecto de recordatorios y confirmacione
 Una **abstracción única de canal** en `notifications`, construida con US-NOT-03 (ADR-0007): puerto `NotificationChannel` con implementaciones intercambiables. Ninguna historia de notificaciones habla con un proveedor directamente — US-NOT-08 ya lo exige ("el envío usa el canal configurado en US-NOT-07").
 
 - **WhatsApp:** Twilio (WhatsApp Business Platform como transporte). Requiere: cuenta Twilio, número de WhatsApp verificado del negocio, plantillas aprobadas por Meta para mensajes iniciados por el negocio (recordatorios). Costo por conversación — se presupuesta con el PO antes de activar en producción.
-- **Respaldo:** email. Proveedor **pendiente de decisión del PO** (candidatos: Resend, SendGrid, SMTP de Supabase Auth para transaccionales); la abstracción hace la elección barata. Hasta activar Twilio, email es el canal por defecto en desarrollo y los primeros despliegues.
+- **Respaldo:** email, vía **Resend** (decisión del PO, 2026-10-20; candidatos descartados: SendGrid, SMTP de Supabase Auth para transaccionales). Hasta activar Twilio, email es el canal por defecto en desarrollo y los primeros despliegues.
 - Todo envío (intento, éxito, fallo, reintento) queda registrado en una tabla de `notifications` — los criterios de US-NOT-03/07 lo exigen; los reintentos son responsabilidad del canal, no de cada historia.
 - Credenciales de Twilio/email: server-only, jamás en el repo (SEC-004).
 
@@ -26,4 +28,4 @@ Una **abstracción única de canal** en `notifications`, construida con US-NOT-0
 - Costo recurrente nuevo (Twilio por conversación) y una dependencia de aprobación externa: **las plantillas de Meta tardan** — se tramitan al inicio de F2, no al final.
 - El sandbox de Twilio permite desarrollar y probar US-NOT-03/08 sin número verificado.
 - Cambiar de proveedor después = una implementación nueva del puerto; ninguna historia se reescribe.
-- Pendiente que bloquea el cierre del canal en US-NOT-03, no este ADR: elección del proveedor de email por el PO.
+- Sigue pendiente, operativo y no de este ADR: la cuenta real de Twilio (número de WhatsApp verificado, plantillas aprobadas por Meta) y el dominio verificado en Resend. Hasta tenerlos, ambos canales corren con sus adaptadores reales sin configurar en producción.
