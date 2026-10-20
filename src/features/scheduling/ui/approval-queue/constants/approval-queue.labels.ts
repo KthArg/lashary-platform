@@ -13,6 +13,10 @@ export const APPROVAL_QUEUE_LABELS = {
   saving: 'Guardando…',
 } as const
 
+export const APPROVAL_QUEUE_CLIENT = {
+  noClient: 'Sin clienta asociada',
+} as const
+
 export const APPROVAL_QUEUE_CHOICE = {
   firstTime: 'Primera vez',
   retouch: 'Retoque',

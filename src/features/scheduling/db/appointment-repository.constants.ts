@@ -13,5 +13,7 @@ export const APPOINTMENTS_TABLE = 'scheduling_appointments'
 
 export const PENDING_APPOINTMENTS_LIMIT = 100
 
+export const CLIENT_NAMES_FUNCTION = 'clients_display_names'
+
 export const PENDING_APPOINTMENT_COLUMNS =
-  'id, starts_at, ends_at, technique_name, is_first_time, is_first_time_detected, service_price, deposit_required'
+  'id, starts_at, ends_at, client_id, technique_name, is_first_time, is_first_time_detected, service_price, deposit_required'

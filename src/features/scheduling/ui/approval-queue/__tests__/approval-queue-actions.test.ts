@@ -75,6 +75,7 @@ describe('listPendingAppointmentsAction', () => {
           id: APPOINTMENT_ID,
           startsAtMs: Date.parse('2027-03-01T10:00:00Z'),
           endsAtMs: Date.parse('2027-03-01T11:00:00Z'),
+          clientName: null,
           choice: {
             techniqueName: 'Clásicas',
             isFirstTime: true,
