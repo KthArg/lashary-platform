@@ -1,15 +1,16 @@
 ---
 feature: notifications
 dri: pendiente
-estado: no_iniciada
-actualizado: 2026-08-29
+estado: en_progreso
+actualizado: 2026-10-20
 historias:
   - id: US-NOT-01
     estado: no_iniciada
   - id: US-NOT-02
     estado: no_iniciada
   - id: US-NOT-03
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "solo el dominio (criterios 1 y 2) está construido; faltan aplicación, persistencia, canales y el disparo del cron"
   - id: US-NOT-04
     estado: no_iniciada
   - id: US-NOT-05
@@ -29,12 +30,30 @@ defectos: []
 
 # notifications
 
-Notificaciones. El canal unico (ADR-0006: Twilio WhatsApp + email fallback, registro de envios) se construye con US-NOT-03 (ADR-0007); el resto lo reusa via el puerto que US-NOT-08 exige.
+Notificaciones. El canal único (ADR-0006) se construye con US-NOT-03 (ADR-0007); el resto lo
+reusa vía el puerto que US-NOT-08 exige.
 
 ## Qué hace hoy
 
-Hoy: no existe. Se detiene antes de todo.
+`US-NOT-03` en progreso (pieza 1/N): solo el dominio.
 
-## Contrato público
+- `domain/reminder.ts`: `buildReminder` construye el recordatorio con sus invariantes (campos no
+  vacíos, la cita debe empezar después de cuándo se programa) y calcula `sendAt` 24h antes de
+  `startsAt` (`computeReminderSendAt`, criterio 1) con `addHours` de `shared/date-math.ts` — la
+  aritmética de fechas vive en `shared/` para que `domain/`/`application/` nunca construyan un
+  `Date` con aritmética (DOM-004, lo escanea `check-domain-purity.sh`). `isReminderDue` y
+  `hasExhaustedRetries` son los predicados puros que usará la aplicación.
+- `domain/errors.ts`: errores tipados (DOM-006).
+- `domain/reminder-message.ts`: texto externalizado (`REMINDER_MESSAGE_TEXTS`, DOM-009) con fecha
+  y hora en `America/Costa_Rica` (`formatStudioDateTime`, DOM-003) y la técnica reservada
+  (criterio 2).
+- Pruebas: `domain/__tests__/reminder.test.ts` y `reminder-message.test.ts`.
 
-Sin contrato todavía. Al crearse, entra por `index.ts` (ARCH-003).
+## Qué no hace todavía
+
+Aplicación, persistencia, canales (Twilio/Resend, ADR-0006) y el disparo del cron: siguientes
+piezas de US-NOT-03.
+
+## Contrato público (`index.ts`, ARCH-003)
+
+Vacío todavía.
