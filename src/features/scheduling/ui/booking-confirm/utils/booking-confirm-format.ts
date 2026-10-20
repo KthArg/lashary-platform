@@ -1,6 +1,6 @@
 import { Money } from '@/shared/money'
 import { formatCalendarDate, minutesToTime } from '../../availability/utils/availability-format'
-import { bookingConfirmMessages, CANCELLATION_WINDOW_HOURS } from '../constants/booking-confirm-strings'
+import { bookingConfirmMessages } from '../constants/booking-confirm-strings'
 import type { BookingConfirmData, BookingConfirmView, BookingSummaryView } from '../types/booking-confirm.types'
 
 const money = (colones: number): string => Money.fromColones(colones).toString()
@@ -24,7 +24,7 @@ export function toBookingSummary(input: SummaryInput): BookingSummaryView {
     duration: copy.duration(input.durationMin),
     price: money(input.price),
     deposit: hasDeposit ? money(input.depositDue) : copy.noDeposit,
-    depositNotice: hasDeposit ? copy.depositNotice(CANCELLATION_WINDOW_HOURS) : null,
+    depositNotice: hasDeposit ? copy.depositNotice : null,
   }
 }
 

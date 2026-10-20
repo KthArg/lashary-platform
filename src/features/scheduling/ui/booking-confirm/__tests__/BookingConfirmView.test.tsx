@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
-import { bookingConfirmMessages, CANCELLATION_WINDOW_HOURS } from '../constants/booking-confirm-strings'
+import { bookingConfirmMessages } from '../constants/booking-confirm-strings'
 import { BookingConfirmView } from '../components/BookingConfirmView'
 import type { BookingConfirmView as BookingConfirmViewModel } from '../types/booking-confirm.types'
 
@@ -16,7 +16,7 @@ const summary = {
   duration: '60 min',
   price: '₡35.000',
   deposit: '₡10.000',
-  depositNotice: bookingConfirmMessages.depositNotice(CANCELLATION_WINDOW_HOURS),
+  depositNotice: bookingConfirmMessages.depositNotice,
 }
 
 const renderView = (view: BookingConfirmViewModel) => render(<BookingConfirmView view={view} />)
@@ -27,7 +27,7 @@ describe('BookingConfirmView — US-AGE-05', () => {
 
     expect(screen.getByText('Clásicas — primera vez')).toBeTruthy()
     expect(screen.getByText('₡10.000')).toBeTruthy()
-    expect(screen.getByRole('note').textContent).toContain(`${CANCELLATION_WINDOW_HOURS} horas`)
+    expect(screen.getByRole('note').textContent).toContain(bookingConfirmMessages.depositNotice)
     expect(screen.getByRole('link', { name: bookingConfirmMessages.changeSlot }).getAttribute('href')).toBe(BACK_HREF)
   })
 
