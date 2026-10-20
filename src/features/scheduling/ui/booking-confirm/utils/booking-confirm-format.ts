@@ -13,6 +13,7 @@ export type SummaryInput = {
   durationMin: number
   price: number
   depositDue: number
+  discountPercent: number | null
 }
 
 export function toBookingSummary(input: SummaryInput): BookingSummaryView {
@@ -25,6 +26,7 @@ export function toBookingSummary(input: SummaryInput): BookingSummaryView {
     price: money(input.price),
     deposit: hasDeposit ? money(input.depositDue) : copy.noDeposit,
     depositNotice: hasDeposit ? copy.depositNotice : null,
+    promotionNotice: input.discountPercent !== null ? copy.promotionNotice(input.discountPercent) : null,
   }
 }
 
@@ -44,6 +46,7 @@ export function toBookingConfirmView(data: BookingConfirmData): BookingConfirmVi
       durationMin: quote.durationMin,
       price: quote.servicePrice,
       depositDue: quote.depositDue,
+      discountPercent: quote.discountPercent,
     }),
   }
 }

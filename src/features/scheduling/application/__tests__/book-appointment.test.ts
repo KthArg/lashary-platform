@@ -30,6 +30,8 @@ const booked: BookedAppointment = {
   depositRequired: 10000,
   depositRegistered: 0,
   isFirstTime: true,
+  promotionId: null,
+  discountPercent: null,
 }
 
 function createFakeBookingRepository(result: Awaited<ReturnType<BookingRepository['book']>>) {
