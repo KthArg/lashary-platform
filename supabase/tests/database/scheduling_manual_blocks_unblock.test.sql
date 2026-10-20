@@ -1,7 +1,8 @@
 -- scheduling_manual_blocks_unblock.test.sql
 -- US-AGE-07 · feature scheduling — staff desbloquea (criterio 3) y la clienta no; un bloqueo sobre
 -- una cita activa se rechaza y, resuelta la cita, se acepta (criterio 4); lo bloqueado y lo
--- desbloqueado se ve en la siguiente lectura del calendario de la clienta (criterio 2).
+-- desbloqueado se ve en la siguiente lectura del calendario de la clienta (criterio 2). Una clienta
+-- que intenta bloquear recibe siempre el rechazo de RLS, nunca el del trigger (SEC-001).
 --
 -- Complementa __tests__/availability-rls-isolation.test.ts (SEC-002). El rol se siembra como
 -- superusuario local dentro de la transacción; no se usa la service-role key (SEC-003) y todo se
@@ -10,7 +11,7 @@
 -- Correr con: npx supabase test db   (requiere `supabase start`)
 
 BEGIN;
-SELECT plan(11);
+SELECT plan(13);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -73,6 +74,20 @@ SELECT lives_ok(
 -- ── Como clienta ────────────────────────────────────────────────────────────
 SELECT set_config('request.jwt.claims',
   '{"sub":"00000000-0000-0000-0000-0000000007c1","role":"authenticated"}', true);
+
+-- Un bloqueo que pisa la cita y uno que no la pisa fallan igual para ella: RLS lo rechaza antes
+-- de que el trigger mire las citas, así no se puede leer dónde termina una cita ajena (SEC-001).
+SELECT throws_ok(
+  $$INSERT INTO public.scheduling_manual_blocks (resource_id, starts_at, ends_at)
+    VALUES ('00000000-0000-4000-8000-0000000007f1', '2026-10-19 18:14Z', '2026-10-19 18:30Z')$$,
+  '42501', NULL,
+  'clienta: bloquear sobre una cita choca con RLS, no con el trigger que revela la cita');
+
+SELECT throws_ok(
+  $$INSERT INTO public.scheduling_manual_blocks (resource_id, starts_at, ends_at)
+    VALUES ('00000000-0000-4000-8000-0000000007f1', '2026-10-19 21:00Z', '2026-10-19 21:30Z')$$,
+  '42501', NULL,
+  'clienta: bloquear un espacio libre también choca con RLS');
 
 -- La cita (hasta las 18:15Z, que sube a 18:30Z) y el bloqueo pegado (hasta las 18:45Z, que sube a
 -- 19:00Z) salen como un solo rango ocupado.

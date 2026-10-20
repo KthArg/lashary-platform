@@ -23,6 +23,11 @@ CREATE POLICY "scheduling_manual_blocks_delete_staff"
 --    rechaza un espacio bloqueado: una reserva y un bloqueo del mismo recurso nunca corren a la
 --    vez, y el segundo ve al primero.
 --    SECURITY DEFINER para ver todas las citas aunque cambie la RLS de lectura; solo lee.
+--    AFTER INSERT y no BEFORE: el WITH CHECK de RLS y los CHECK de la tabla se evalúan antes de
+--    los triggers AFTER, así que quien no es staff choca con RLS y nunca llega a esta consulta.
+--    Con un trigger BEFORE, una clienta que intentaba insertar recibía este error o el de RLS
+--    según hubiera o no una cita, y con eso podía leer al minuto el final de una cita ajena
+--    (y por la duración, el servicio) y distinguir una cita de un bloqueo (SEC-001).
 CREATE FUNCTION public.scheduling_manual_block_rejects_active_appointment()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -30,12 +35,6 @@ SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
 BEGIN
-  -- Un rango invertido lo rechaza el CHECK scheduling_manual_blocks_start_before_end; aquí no se
-  -- podría ni armar el tstzrange.
-  IF NEW.starts_at >= NEW.ends_at THEN
-    RETURN NEW;
-  END IF;
-
   PERFORM pg_advisory_xact_lock(hashtextextended('scheduling_resource:' || NEW.resource_id::text, 0));
 
   IF EXISTS (
@@ -51,7 +50,7 @@ BEGIN
             DETAIL = 'El espacio tiene una cita activa; hay que resolverla antes de bloquearlo.';
   END IF;
 
-  RETURN NEW;
+  RETURN NULL;
 END;
 $$;
 
@@ -59,6 +58,6 @@ REVOKE ALL ON FUNCTION public.scheduling_manual_block_rejects_active_appointment
 REVOKE ALL ON FUNCTION public.scheduling_manual_block_rejects_active_appointment() FROM anon;
 
 CREATE TRIGGER scheduling_manual_blocks_no_active_appointment
-  BEFORE INSERT ON public.scheduling_manual_blocks
+  AFTER INSERT ON public.scheduling_manual_blocks
   FOR EACH ROW
   EXECUTE FUNCTION public.scheduling_manual_block_rejects_active_appointment();
