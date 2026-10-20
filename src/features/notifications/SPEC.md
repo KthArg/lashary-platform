@@ -74,7 +74,9 @@ lo reusa vía el puerto que US-NOT-08 exige.
   e índice sobre `(status, send_at)` (PERF-003); sin un segundo índice aparte sobre `appointment_id`
   (sería redundante con el UNIQUE). Pruebas: pgTAP
   `supabase/tests/database/notifications_reminders_staff_access.test.sql` (control positivo de
-  staff y negativo de clienta y anon, SEC-002), corrida contra Supabase local el 2026-10-20.
+  staff y negativo de clienta y anon, SEC-002) y `__tests__/rls-isolation.test.ts` (anon y clienta
+  con tokens reales por PostgREST, mismo patrón de `auth`/`payments`/`scheduling`), corridas contra
+  Supabase local el 2026-10-20.
 
   La fecha de la migración (`20261026000000`) no es la original: `20261020000000` quedó ocupada en
   `main` por US-AGE-06 (#443) y en ramas abiertas por US-AGE-07, así que el líder pidió fusionarla

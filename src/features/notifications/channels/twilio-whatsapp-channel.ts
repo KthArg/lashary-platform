@@ -2,9 +2,6 @@ import { ok, err } from '@/shared/result'
 import { channelNotConfigured, channelSendFailed } from '../domain/errors'
 import type { NotificationChannel } from '../application/ports'
 
-// ADR-0006: WhatsApp vía Twilio es el canal por defecto. REST directo (sin SDK) para no sumar
-// una dependencia nueva solo por una llamada HTTP. Credenciales server-only (SEC-003/004); sin
-// configurar, el canal se declara no disponible en vez de fallar en producción por sorpresa.
 export type TwilioWhatsAppConfig = {
   accountSid: string
   authToken: string

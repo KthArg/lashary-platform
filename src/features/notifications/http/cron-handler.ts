@@ -3,8 +3,6 @@ import { runNotificationsReminderCycle } from '../index'
 
 export type CronAuthInput = { authorizationHeader: string | null; secret: string | undefined }
 
-// Convención de Vercel Cron: la plataforma manda Authorization: Bearer <CRON_SECRET> en cada
-// corrida. Sin CRON_SECRET configurado, el endpoint se niega: nunca abierto por accidente.
 export function isAuthorizedCronRequest({ authorizationHeader, secret }: CronAuthInput): boolean {
   if (!secret) return false
   return authorizationHeader === `Bearer ${secret}`
