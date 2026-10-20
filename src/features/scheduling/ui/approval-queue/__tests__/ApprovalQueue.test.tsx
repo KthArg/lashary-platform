@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { Money } from '@/shared/money'
 import { ApprovalQueue } from '../components/ApprovalQueue'
-import { APPROVAL_QUEUE_ARIA, APPROVAL_QUEUE_LABELS } from '../constants/approval-queue.labels'
+import { APPROVAL_QUEUE_ARIA, APPROVAL_QUEUE_CHOICE, APPROVAL_QUEUE_LABELS } from '../constants/approval-queue.labels'
 import { APPROVAL_QUEUE_ERRORS } from '../constants/approval-queue.constants'
 import { formatAppointmentSlot } from '../utils/format-appointment-slot'
 
@@ -19,11 +20,13 @@ const FIRST_APPOINTMENT = {
   id: 'cita-1',
   startsAtMs: Date.parse('2027-03-01T16:00:00Z'),
   endsAtMs: Date.parse('2027-03-01T17:00:00Z'),
+  choice: { techniqueName: 'Clásicas', isFirstTime: true, servicePrice: 35000, depositRequired: 10000 },
 }
 const SECOND_APPOINTMENT = {
   id: 'cita-2',
   startsAtMs: Date.parse('2027-03-02T16:00:00Z'),
   endsAtMs: Date.parse('2027-03-02T17:00:00Z'),
+  choice: null,
 }
 const FIRST_SLOT = formatAppointmentSlot(FIRST_APPOINTMENT.startsAtMs, FIRST_APPOINTMENT.endsAtMs)
 const REJECTION_REASON = 'horario no disponible'
@@ -68,6 +71,24 @@ describe('ApprovalQueue: estados (UI-003)', () => {
     expect(screen.getAllByRole('listitem')).toHaveLength(2)
     expect(screen.getByRole('button', { name: APPROVAL_QUEUE_ARIA.approve(FIRST_SLOT) })).toBeTruthy()
     expect(screen.getByRole('button', { name: APPROVAL_QUEUE_ARIA.reject(FIRST_SLOT) })).toBeTruthy()
+  })
+})
+
+describe('ApprovalQueue: lo que eligió la clienta', () => {
+  it('muestra el servicio, si es primera vez o retoque, el precio y el anticipo para poder detectar un error', () => {
+    render(<ApprovalQueue appointments={[FIRST_APPOINTMENT]} />)
+
+    expect(screen.getByText('Clásicas')).toBeTruthy()
+    expect(screen.getByText(APPROVAL_QUEUE_CHOICE.firstTime)).toBeTruthy()
+    const amounts = APPROVAL_QUEUE_CHOICE.priceAndDeposit(Money.fromColones(35000).toString(), Money.fromColones(10000).toString())
+    expect(screen.getByText((_, element) => element?.tagName === 'P' && element.textContent === amounts)).toBeTruthy()
+  })
+
+  it('una cita sin elección guardada lo dice y no inventa montos', () => {
+    render(<ApprovalQueue appointments={[SECOND_APPOINTMENT]} />)
+
+    expect(screen.getByText(APPROVAL_QUEUE_CHOICE.noService)).toBeTruthy()
+    expect(screen.queryByText(/Precio/)).toBeNull()
   })
 })
 

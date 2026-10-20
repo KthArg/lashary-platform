@@ -53,14 +53,29 @@ beforeEach(() => {
 describe('listPendingAppointmentsAction', () => {
   it('devuelve las citas pendientes con los instantes en milisegundos', async () => {
     listResult = {
-      data: [{ id: APPOINTMENT_ID, starts_at: '2027-03-01T10:00:00Z', ends_at: '2027-03-01T11:00:00Z' }],
+      data: [
+        {
+          id: APPOINTMENT_ID,
+          starts_at: '2027-03-01T10:00:00Z',
+          ends_at: '2027-03-01T11:00:00Z',
+          technique_name: 'Clásicas',
+          is_first_time: true,
+          service_price: 35000,
+          deposit_required: 10000,
+        },
+      ],
       error: null,
     }
 
     expect(await listPendingAppointmentsAction()).toEqual({
       ok: true,
       appointments: [
-        { id: APPOINTMENT_ID, startsAtMs: Date.parse('2027-03-01T10:00:00Z'), endsAtMs: Date.parse('2027-03-01T11:00:00Z') },
+        {
+          id: APPOINTMENT_ID,
+          startsAtMs: Date.parse('2027-03-01T10:00:00Z'),
+          endsAtMs: Date.parse('2027-03-01T11:00:00Z'),
+          choice: { techniqueName: 'Clásicas', isFirstTime: true, servicePrice: 35000, depositRequired: 10000 },
+        },
       ],
     })
   })

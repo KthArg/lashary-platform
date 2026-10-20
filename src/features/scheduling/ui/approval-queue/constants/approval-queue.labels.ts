@@ -13,6 +13,14 @@ export const APPROVAL_QUEUE_LABELS = {
   saving: 'Guardando…',
 } as const
 
+export const APPROVAL_QUEUE_CHOICE = {
+  firstTime: 'Primera vez',
+  retouch: 'Retoque',
+  noService: 'Servicio no registrado',
+  priceNoDeposit: (price: string) => `Precio ${price} · Sin anticipo`,
+  priceAndDeposit: (price: string, deposit: string) => `Precio ${price} · Anticipo ${deposit}`,
+} as const
+
 export const APPROVAL_QUEUE_ARIA = {
   list: 'Citas pendientes de aprobación',
   approve: (slot: string) => `Aprobar la cita del ${slot}`,
