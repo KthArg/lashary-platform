@@ -11,6 +11,7 @@ type PendingAppointmentRow = {
   ends_at: string
   technique_name: string | null
   is_first_time: boolean | null
+  is_first_time_detected: boolean | null
   service_price: number | null
   deposit_required: number | null
 }
@@ -27,6 +28,7 @@ function toChoice(row: PendingAppointmentRow): AppointmentChoice | null {
   return {
     techniqueName: row.technique_name,
     isFirstTime: row.is_first_time,
+    detectedFirstTime: row.is_first_time_detected,
     servicePrice: row.service_price,
     depositRequired: row.deposit_required,
   }

@@ -11,6 +11,7 @@ export const approvalQueueStyles = {
   service: 'flex flex-wrap items-center gap-2 text-sm font-medium text-brand-dark',
   kindBadge: 'border border-brand-gold px-2 py-0.5 text-xs uppercase tracking-widest text-brand-dark',
   amounts: 'text-xs text-brand-muted',
+  mismatch: 'max-w-xl border border-brand-gold bg-brand-gold/10 px-2 py-1 text-xs text-brand-dark',
   actions: 'flex flex-wrap gap-2',
   primaryButton: `${BUTTON_BASE} bg-brand-dark text-white hover:bg-brand-gold`,
   secondaryButton: `${BUTTON_BASE} bg-white border border-brand-border text-brand-dark hover:border-brand-gold`,

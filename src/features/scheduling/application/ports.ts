@@ -119,6 +119,7 @@ export type RecordAuditEvent = (input: {
 export type AppointmentChoice = {
   techniqueName: string
   isFirstTime: boolean
+  detectedFirstTime: boolean | null
   servicePrice: number
   depositRequired: number
 }

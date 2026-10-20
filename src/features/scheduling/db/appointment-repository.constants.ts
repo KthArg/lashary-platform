@@ -12,4 +12,4 @@ export const DECIDE_APPOINTMENT_FUNCTION = 'scheduling_decide_appointment'
 export const APPOINTMENTS_TABLE = 'scheduling_appointments'
 
 export const PENDING_APPOINTMENT_COLUMNS =
-  'id, starts_at, ends_at, technique_name, is_first_time, service_price, deposit_required'
+  'id, starts_at, ends_at, technique_name, is_first_time, is_first_time_detected, service_price, deposit_required'
