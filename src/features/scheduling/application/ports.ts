@@ -17,7 +17,7 @@ export interface CatalogPort {
 }
 
 export interface ClientHistoryPort {
-  hasCompletedAppointment(clientId: string, techniqueId: string): Promise<boolean>
+  hasCompletedAppointment(techniqueId: string): Promise<Result<boolean, StorageFailed>>
 }
 
 export type NewAppointment = {
