@@ -8,3 +8,4 @@ export { listPendingAppointmentsAction } from './ui/approval-queue/actions/appro
 export { APPROVAL_QUEUE_LABELS } from './ui/approval-queue/constants/approval-queue.labels'
 export { BookingConfirmPage } from './ui/booking-confirm/components/BookingConfirmPage'
 export { bookingConfirmMessages } from './ui/booking-confirm/constants/booking-confirm-strings'
+export { AlertsPage } from './ui/alerts/components/AlertsPage'

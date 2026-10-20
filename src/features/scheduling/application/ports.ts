@@ -1,6 +1,7 @@
 import type { Result } from '@/shared/result'
 import type { SelectableTechnique } from '../domain/technique-selection'
 import type { AppointmentDecision } from '../domain/appointment-decision.constants'
+import type { SchedulingAlert } from '../domain/alert'
 import type {
   AppointmentNotPending,
   ClientNotRegistered,
@@ -123,4 +124,8 @@ export type PendingAppointment = {
 
 export interface PendingAppointmentsRepository {
   listPending(): Promise<Result<PendingAppointment[], StorageFailed>>
+}
+
+export interface AlertsRepository {
+  listRecent(limit: number): Promise<Result<SchedulingAlert[], StorageFailed>>
 }
