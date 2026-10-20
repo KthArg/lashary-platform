@@ -12,6 +12,7 @@ import {
 } from '../../../domain/availability-errors'
 import { schedulingMessages } from '../../messages'
 import { availabilityService } from '../services/availability-service'
+import { confirmationNeeded } from '../utils/confirm-reduction'
 import {
   closedDateFormSchema,
   manualBlockFormSchema,
@@ -73,6 +74,11 @@ export async function removeWeeklyBlockAction(
   const parsed = removeFormSchema.safeParse(fields(formData))
   if (!parsed.success) return { status: 'conflict', message: availabilityMessages.notFound }
 
+  const needsConfirmation = await confirmationNeeded(formData, () =>
+    availabilityService.countAffectedByWeeklyBlock(parsed.data.id),
+  )
+  if (needsConfirmation) return needsConfirmation
+
   const result = await availabilityService.removeWeeklyBlock(parsed.data.id)
   if (isErr(result) && isAvailabilityEntryNotFound(result.error)) {
     return { status: 'conflict', message: availabilityMessages.notFound }
@@ -87,6 +93,11 @@ export async function addClosedDateAction(
   if (!(await isStaff())) return forbidden()
   const parsed = closedDateFormSchema.safeParse(fields(formData))
   if (!parsed.success) return fromZod(parsed.error)
+
+  const needsConfirmation = await confirmationNeeded(formData, () =>
+    availabilityService.countAffectedOnDate(parsed.data.date),
+  )
+  if (needsConfirmation) return needsConfirmation
 
   const result = await availabilityService.addClosedDate(parsed.data)
   if (isErr(result)) {
@@ -121,11 +132,15 @@ export async function addManualBlockAction(
   if (!parsed.success) return fromZod(parsed.error)
 
   const { date, start, end, reason } = parsed.data
-  const result = await availabilityService.addManualBlock({
-    startsAt: studioLocalToUtc(date, start),
-    endsAt: studioLocalToUtc(date, end),
-    reason,
-  })
+  const startsAt = studioLocalToUtc(date, start)
+  const endsAt = studioLocalToUtc(date, end)
+
+  const needsConfirmation = await confirmationNeeded(formData, () =>
+    availabilityService.countAffectedInRange(startsAt, endsAt),
+  )
+  if (needsConfirmation) return needsConfirmation
+
+  const result = await availabilityService.addManualBlock({ startsAt, endsAt, reason })
   if (isErr(result)) {
     if (isManualBlockOverlap(result.error)) return { status: 'conflict', message: availabilityMessages.blocks.overlap }
     return invalid([availabilityMessages.validation.startBeforeEnd])
