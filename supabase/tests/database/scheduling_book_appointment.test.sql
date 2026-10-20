@@ -4,7 +4,7 @@
 -- 2027-09-13 (cerrado) y 2027-09-20 (con un bloqueo de 10:00 a 11:00). Hora de Costa Rica, UTC-6.
 
 BEGIN;
-SELECT plan(26);
+SELECT plan(27);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -35,7 +35,15 @@ VALUES
   ('00000000-0000-0000-0000-0000000005f5', 'zz-test sin retoque', 'henna',
    18000, NULL, 60, NULL, 0, 5000, 'cuidados', true),
   ('00000000-0000-0000-0000-0000000005f6', 'zz-test desactivada', 'lips',
-   22000, NULL, 45, NULL, 0, 0, 'cuidados', false);
+   22000, NULL, 45, NULL, 0, 0, 'cuidados', false),
+  ('00000000-0000-0000-0000-0000000005f7', 'zz-test con promo', 'lash_classic',
+   10000, NULL, 20, NULL, 0, 0, 'cuidados', true);
+
+-- US-PROM-01: promoción vigente sobre esta técnica, para probar que la reserva guarda el
+-- precio ya rebajado junto con cuál promoción se aplicó.
+INSERT INTO public.catalog_promotions (id, technique_id, discount_percent, starts_at, ends_at, is_active)
+VALUES ('00000000-0000-0000-0000-0000000006f5', '00000000-0000-0000-0000-0000000005f7', 30,
+  now() - interval '1 day', now() + interval '1 day', true);
 
 DELETE FROM public.scheduling_weekly_availability WHERE resource_id = '00000000-0000-0000-0000-000000000a01';
 DELETE FROM public.scheduling_closed_dates WHERE resource_id = '00000000-0000-0000-0000-000000000a01';
@@ -91,6 +99,16 @@ SELECT lives_ok(
       '00000000-0000-0000-0000-000000000a01', '2027-09-06 11:30-06',
       '00000000-0000-0000-0000-0000000005f4', true)$$,
   'una reserva puede cruzar el punto donde dos bloques abiertos se tocan');
+
+-- US-PROM-01: con promoción vigente, la cita guarda el precio ya rebajado y cuál promoción
+-- se aplicó (criterio 4) — no solo el precio final, sino de dónde viene.
+SELECT results_eq(
+  $$SELECT service_price, promotion_id, discount_percent
+      FROM public.scheduling_book_appointment(
+        '00000000-0000-0000-0000-000000000a01', '2027-09-06 15:30-06',
+        '00000000-0000-0000-0000-0000000005f7', true)$$,
+  $$VALUES (7000::bigint, '00000000-0000-0000-0000-0000000006f5'::uuid, 30)$$,
+  'con promoción vigente, guarda el precio rebajado y cuál promoción se aplicó');
 
 -- ── Lo que el calendario no ofrece ───────────────────────────────────────────
 SELECT throws_ok(
@@ -196,7 +214,7 @@ RESET ROLE;
 SELECT is(
   (SELECT count(*)::int FROM public.scheduling_appointments
     WHERE client_id IN ('00000000-0000-0000-0000-0000000005c6', '00000000-0000-0000-0000-0000000005c7')),
-  4, 'los intentos rechazados no dejaron ninguna cita');
+  5, 'los intentos rechazados no dejaron ninguna cita');
 
 SELECT is(
   (SELECT pronargs::int FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
