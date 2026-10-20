@@ -11,7 +11,7 @@
 | audit | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | en_progreso | 2 / 0 / 0 / 0 / 2 |
-| clients | pendiente | en_progreso | 1 / 1 / 0 / 0 / 3 |
+| clients | pendiente | en_progreso | 2 / 1 / 0 / 0 / 2 |
 | content | pendiente | terminada | 3 / 0 / 0 / 0 / 0 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | landing | pendiente | terminada | 6 / 0 / 0 / 0 / 0 |
@@ -38,11 +38,11 @@
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
-### clients (actualizado: 2026-10-08)
+### clients (actualizado: 2026-10-19)
 - US-CLI-01 — en_progreso — falta: las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
-- US-CLI-04 — no_iniciada
+- US-CLI-04 — terminada — Pila de 20 piezas: PRs #369 (1/20, esquema), #370 (2/20, bucket), #372, #374, #384, #385, #394, #395, #396, #404, #405, #406, #407, #408 (14/20, cierre funcional), #409 y #410 (mejoras visuales) y los PRs de las piezas 17/20 a 20/20 (auditoria del 2026-10-19). Criterio 1 (estudio con texto e imagenes): record-content.test.ts, record-changes.test.ts, record-commands.test.ts, study-editor.test.tsx, add-record-image.test.ts, record-image.test.ts, record-image-action.test.ts, images-editor.test.tsx. Criterio 2 (alergias, sensibilidades, condiciones): clients_record_versions.test.sql (categorias), record-content.test.ts, precautions-editor.test.tsx. Criterio 3 (solo la administradora y cada acceso en la bitacora): clients_record_versions.test.sql y clients_record_images_bucket.test.sql (aislamiento SEC-002 frente a clienta y anon), view-record.test.ts (bitacora fail-closed), record-gateways.test.ts, record-actions.test.ts, record-queries.test.ts. Criterio 4 (historial de cambios): clients_record_versions.test.sql (sin UPDATE ni DELETE, una sucesora por version), record-changes.test.ts, record-commands.test.ts (dos cambios simultaneos), record-history.test.ts, record-view.test.tsx. Criterio 5 (imagenes sin URL publica): clients_record_images_bucket.test.sql (bucket privado), record-image-storage.test.ts (URLs firmadas de 5 minutos), images-editor.test.tsx
 - US-CLI-05 — terminada — PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx
 
 ### content (actualizado: 2026-10-14)
@@ -115,6 +115,10 @@ Ninguno registrado.
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
 - auth: La política clients_profiles_select_own deja a la clienta leer su fila completa, notes incluido, llamando a PostgREST directo; findClientProfile ya no las pide pero la base no lo impide — aceptada en PR #273 — costo: migración de privilegios por columna o vista para la clienta, más decisión del PO sobre si notes debe ser legible por ella
 - clients: Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras — aceptada en PR #32, etiqueta excepcion-proceso — costo: 3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)
+- clients: M2 de la auditoria de US-CLI-04: escribir el expediente guarda la version y despues audita, sin transaccion. Si la bitacora falla, el cambio queda sin evento; la pantalla lo avisa como saved-without-audit — aceptada en Auditoria del 2026-10-19, por decision de Jose Loria; mismo pendiente heredado de US-AGE-13 — costo: 4h: funcion SQL que inserte version y evento en una transaccion, con contrato pactado con audit (INT-003), y su pgTAP
+- clients: M3 de la auditoria de US-CLI-04 (riesgo aceptado): una admin con su token puede leer clients_record_versions directo por PostgREST sin pasar por readRecord, y esa lectura no queda en la bitacora (SEC-006 se cumple solo dentro de la app) — aceptada en Auditoria del 2026-10-19, riesgo aceptado por Jose Loria — costo: 6h: quitar el SELECT directo y leer por una funcion SECURITY DEFINER que registre el acceso y devuelva las versiones, con pgTAP
+- clients: Resto de M4 de la auditoria de US-CLI-04: si guardar la version falla despues de subir la imagen (choque de versiones o caida), el archivo queda en el bucket privado sin version que lo use, y no se puede borrar porque el bucket no tiene politica de DELETE — aceptada en Auditoria del 2026-10-19, por decision de Jose Loria; el cupo de 20 ya se revisa antes de subir — costo: 3h: limpieza programada fuera de la app que borre objetos sin version de mas de un dia
+- clients: B4 de la auditoria de US-CLI-04: rowToVersion revalida cada version con las reglas vigentes; si un tope se endurece o una fila quedo rara, el expediente entero no abre — aceptada en Auditoria del 2026-10-19, por decision de Jose Loria — costo: 2h: leer el historial sin revalidar topes (solo la forma) y validar solo al escribir
 - store: Prueba de aislamiento RLS (SEC-002) de las politicas store_products_*_admin (supabase/migrations/20260912000000_store_products.sql): src/features/store/__tests__/products-admin-rls.test.ts se omite con describe.skipIf cuando no hay Supabase local, y CI no lo levanta, asi que no demuestra que anon y una clienta sin rol de staff no puedan INSERT, UPDATE ni DELETE — aceptada en PR de cierre us/US-PROD-02 a main — costo: 1h si ya existe el arnes de Supabase local en CI de la deuda de auth (PR #3); 3h si no: arnes mas correr la suite existente en CI
 - store: Prueba de aislamiento (SEC-002) del bucket store-product-images: src/features/store/__tests__/product-images-storage-rls.test.ts se omite sin Supabase local y CI no lo levanta, asi que no demuestra que anon y una clienta no puedan subir, listar ni borrar — aceptada en PR de la pieza US-PROD-03 1/8 — costo: el mismo arnes de la deuda anterior; con el arnes, 0h extra
 - store: Las server actions de Next aceptan 1 MB por defecto y next.config.js no lo cambia: una imagen de entre ~1 MB y 2 MB pasa validateProductImage pero Next corta la peticion antes con un error generico; el formulario dice 'hasta 1 MB' — aceptada en PR de la pieza US-PROD-03 8/8 — costo: 1 linea en next.config.js (experimental.serverActions.bodySizeLimit '3mb') y cambiar el texto del campo; decision pendiente de investigar

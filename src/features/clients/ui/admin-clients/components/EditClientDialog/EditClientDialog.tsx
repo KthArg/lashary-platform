@@ -6,8 +6,8 @@ import { CLIENTS_CONFIRM_MESSAGES, CLIENTS_LABELS } from '../../constants/client
 import { useClientDialog } from '../../hooks/useClientDialog'
 import { ClientModal } from '../ClientModal'
 import { ClientForm } from '../ClientForm'
-import { ConfirmDialog } from '../ConfirmDialog'
-import type { ClientFormValues } from '../../../../domain/client-form.types'
+import { ConfirmDialog } from '@/features/clients/ui/shared/components/ConfirmDialog'
+import type { ClientFormValues } from '@/features/clients/domain/client-form.types'
 import type { EditClientDialogProps } from './EditClientDialog.types'
 
 export function EditClientDialog({ client, onClose }: EditClientDialogProps) {
