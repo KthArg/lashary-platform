@@ -71,7 +71,7 @@
 ### notifications (actualizado: 2026-10-20)
 - US-NOT-01 — no_iniciada
 - US-NOT-02 — no_iniciada
-- US-NOT-03 — en_progreso — falta: dominio y aplicación completos (sin canales reales todavía); faltan la persistencia, los canales y el disparo del cron
+- US-NOT-03 — en_progreso — falta: dominio, aplicación y persistencia completos; faltan los canales reales (Twilio/Resend) y el disparo del cron
 - US-NOT-04 — no_iniciada
 - US-NOT-05 — no_iniciada
 - US-NOT-06 — no_iniciada
