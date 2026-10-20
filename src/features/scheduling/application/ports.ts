@@ -67,6 +67,25 @@ export interface BookingRepository {
   book(input: BookAppointmentInput): Promise<Result<BookedAppointment, BookAppointmentError>>
 }
 
+export type QuoteBookingInput = {
+  techniqueId: string
+  isFirstTime: boolean
+}
+
+export type BookingQuote = {
+  techniqueName: string
+  servicePrice: number
+  durationMin: number
+  bufferMin: number
+  depositDue: number
+}
+
+export type QuoteBookingError = ClientNotRegistered | TechniqueNotAvailable | StorageFailed
+
+export interface BookingQuoteRepository {
+  quote(input: QuoteBookingInput): Promise<Result<BookingQuote, QuoteBookingError>>
+}
+
 export interface DelinquencyPort {
   hasActiveDelinquency(): Promise<boolean>
 }
