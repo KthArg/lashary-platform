@@ -10,7 +10,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-03
     estado: en_progreso
-    falta: "solo el dominio (criterios 1 y 2) está construido; faltan aplicación, persistencia, canales y el disparo del cron"
+    falta: "dominio y la mitad de la aplicación (descubrir, reconciliar) están construidos; faltan el envío, la persistencia, los canales y el disparo del cron"
   - id: US-NOT-04
     estado: no_iniciada
   - id: US-NOT-05
@@ -49,10 +49,23 @@ reusa vía el puerto que US-NOT-08 exige.
   (criterio 2).
 - Pruebas: `domain/__tests__/reminder.test.ts` y `reminder-message.test.ts`.
 
+`US-NOT-03` pieza 2/N: la mitad de la aplicación (sin persistencia real todavía, contra puertos
+en `application/ports.ts`: `SchedulingReadPort`, `ClientContactPort`, `ReminderRepository`,
+`NotificationChannel` — ninguno implementado aquí, ARCH-005).
+
+- `application/discover-reminders.ts`: lee de `scheduling` (vía el puerto) las citas activas que
+  entran a la ventana de 24h + 2h de margen y crea el recordatorio pendiente si no existe
+  (`insertIfAbsent`, idempotente). Prueba: `__tests__/discover-reminders.test.ts`.
+- `application/reconcile-reminders.ts` (criterio 3): para cada recordatorio pendiente vuelve a
+  consultar el estado vigente de la cita; si ya no está activa lo cancela, si cambió de hora o
+  técnica lo reprograma. No depende de un evento de US-AGE-06 ni US-AGE-10 (ninguna existe
+  todavía, `docs/process/DEPENDENCIES.md`): vuelve a preguntar en vez de escuchar un aviso que no
+  existe. Prueba: `__tests__/reconcile-reminders.test.ts`.
+
 ## Qué no hace todavía
 
-Aplicación, persistencia, canales (Twilio/Resend, ADR-0006) y el disparo del cron: siguientes
-piezas de US-NOT-03.
+Enviar de verdad (criterios 2 y 4), persistencia, canales (Twilio/Resend, ADR-0006) y el disparo
+del cron: siguientes piezas de US-NOT-03.
 
 ## Contrato público (`index.ts`, ARCH-003)
 
