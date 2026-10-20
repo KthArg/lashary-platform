@@ -1,7 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
 
-// El entry point usa el cliente Supabase de servidor (next/headers). Lo sustituimos por un
-// almacén de cookies vacío -> cliente anónimo, y probamos contra Supabase local con el seed.
 vi.mock('next/headers', () => ({
   cookies: async () => ({ getAll: () => [], set: () => {} }),
 }))
@@ -9,7 +7,7 @@ vi.mock('next/headers', () => ({
 import {
   listTechniques,
   getTechnique,
-  TechniqueNotFound,
+  isTechniqueNotFound,
 } from '@/features/catalog'
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
@@ -44,7 +42,7 @@ describe.skipIf(!reachable)('API pública de catalog (index.ts)', () => {
     const missing = await getTechnique('00000000-0000-0000-0000-000000000000')
     expect(missing.ok).toBe(false)
     if (!missing.ok) {
-      expect(missing.error).toBeInstanceOf(TechniqueNotFound)
+      expect(isTechniqueNotFound(missing.error)).toBe(true)
     }
   })
 })

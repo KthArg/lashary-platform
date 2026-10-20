@@ -11,6 +11,7 @@
 - [ ] Paso 4 ejecutado: salida de `scripts/verify.sh` y de las pruebas **pegada abajo** — no descrita, pegada.
 - [ ] Cada criterio de aceptación tocado está mapeado a la prueba que lo demuestra (lista abajo). Criterio sin prueba = no cumplido.
 - [ ] `SPEC.md` de las features tocadas actualizado; `STATUS.md` regenerado (EST-002/003).
+- [ ] Si es el PR de la historia (`us/<ID>` → `main`): la historia queda `terminada` con su `evidencia:` en este mismo PR, o `en_progreso` con un criterio diferido y la etiqueta `excepcion-proceso` (EST-007).
 - [ ] Deuda tomada registrada con su costo; lo incompleto dice exactamente dónde se detiene (EST-006).
 
 ```
@@ -20,6 +21,14 @@
 | Criterio | Prueba que lo demuestra |
 |---|---|
 | | |
+
+## Capturas (INT-010)
+
+<!-- Tomadas con Playwright en la app local, con datos de seed. `bash scripts/pr-capturas.sh` las sube y devuelve este bloque.
+     Sin efecto observable (reglas, docs, CI, dependencias, refactor sin cambio visible): "Capturas: no aplica — <motivo>". -->
+
+![nombre](url)
+_Qué muestra:_
 
 ## Revisión
 

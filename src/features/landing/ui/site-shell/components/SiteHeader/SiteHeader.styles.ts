@@ -7,6 +7,11 @@ export const siteHeaderStyles = {
   actions: 'pointer-events-auto flex items-center gap-4',
   desktopNav: 'hidden items-center gap-6 text-site-nav site-nav:flex',
   navLink: 'no-underline',
+  products: 'inline-flex min-h-11 items-center text-site-nav no-underline',
+  productsDesktop: 'hidden min-h-11 items-center text-site-nav no-underline site-nav:inline-flex',
+  cart: 'inline-flex min-h-11 min-w-11 items-center justify-center',
+  cartDesktop: 'hidden min-h-11 min-w-11 items-center justify-center site-nav:inline-flex',
+  cartIcon: 'h-6 w-6',
   login: 'inline-flex min-h-11 items-center text-site-nav no-underline',
   loginDesktop: 'hidden min-h-11 items-center text-site-nav no-underline site-nav:inline-flex',
   reserve:

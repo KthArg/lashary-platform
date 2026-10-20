@@ -4,6 +4,8 @@ import {
   createPackage,
   updatePackage,
   deactivatePackage,
+  activatePackage,
+  deletePackage,
 } from '@/features/catalog/application/packages/commands'
 import {
   isPackageNameConflict,
@@ -11,7 +13,7 @@ import {
   isPackageValidationError,
 } from '@/features/catalog/domain/packages/errors'
 import type { PackageWriteModel } from '@/features/catalog/application/packages/ports'
-import { FakeTechniqueRepository } from '../../techniques/__tests__/fake-repository'
+import { createFakeTechniqueRepository, type FakeTechniqueRepository } from '../../techniques/__tests__/fake-repository'
 import { createFakePackageRepository } from './fake-package-repository'
 import { makeTechnique } from '../../techniques/__tests__/technique-fixture'
 import { makePackage } from './package-fixture'
@@ -30,7 +32,7 @@ const deps = (
 
 describe('createPackage', () => {
   it('crea y persiste un paquete con dos técnicas existentes y activas (criterio 1)', async () => {
-    const techniqueRepo = new FakeTechniqueRepository([
+    const techniqueRepo = createFakeTechniqueRepository([
       makeTechnique({ id: 't1', isActive: true }),
       makeTechnique({ id: 't2', isActive: true }),
     ])
@@ -46,7 +48,7 @@ describe('createPackage', () => {
   })
 
   it('rechaza y no persiste si alguna técnica no existe', async () => {
-    const techniqueRepo = new FakeTechniqueRepository([
+    const techniqueRepo = createFakeTechniqueRepository([
       makeTechnique({ id: 't1', isActive: true }),
     ])
     const packageRepo = createFakePackageRepository()
@@ -63,7 +65,7 @@ describe('createPackage', () => {
   })
 
   it('rechaza y no persiste si alguna técnica está inactiva', async () => {
-    const techniqueRepo = new FakeTechniqueRepository([
+    const techniqueRepo = createFakeTechniqueRepository([
       makeTechnique({ id: 't1', isActive: true }),
       makeTechnique({ id: 't2', isActive: false }),
     ])
@@ -81,7 +83,7 @@ describe('createPackage', () => {
   })
 
   it('rechaza menos de dos técnicas (delegado a buildPackage)', async () => {
-    const techniqueRepo = new FakeTechniqueRepository([
+    const techniqueRepo = createFakeTechniqueRepository([
       makeTechnique({ id: 't1', isActive: true }),
     ])
     const packageRepo = createFakePackageRepository()
@@ -91,7 +93,7 @@ describe('createPackage', () => {
   })
 
   it('rechaza precio no entero', async () => {
-    const techniqueRepo = new FakeTechniqueRepository([
+    const techniqueRepo = createFakeTechniqueRepository([
       makeTechnique({ id: 't1', isActive: true }),
       makeTechnique({ id: 't2', isActive: true }),
     ])
@@ -105,7 +107,7 @@ describe('createPackage', () => {
   })
 
   it('DOM-006: devuelve PackageNameConflict si el nombre ya existe, no un Error genérico', async () => {
-    const techniqueRepo = new FakeTechniqueRepository([
+    const techniqueRepo = createFakeTechniqueRepository([
       makeTechnique({ id: 't1', isActive: true }),
       makeTechnique({ id: 't2', isActive: true }),
     ])
@@ -123,7 +125,7 @@ describe('createPackage', () => {
 
 describe('updatePackage', () => {
   it('actualiza un paquete existente conservando su estado activo', async () => {
-    const techniqueRepo = new FakeTechniqueRepository([
+    const techniqueRepo = createFakeTechniqueRepository([
       makeTechnique({ id: 't1', isActive: true }),
       makeTechnique({ id: 't2', isActive: true }),
     ])
@@ -141,7 +143,7 @@ describe('updatePackage', () => {
   })
 
   it('preserva isActive=false al actualizar un paquete desactivado', async () => {
-    const techniqueRepo = new FakeTechniqueRepository([
+    const techniqueRepo = createFakeTechniqueRepository([
       makeTechnique({ id: 't1', isActive: true }),
       makeTechnique({ id: 't2', isActive: true }),
     ])
@@ -157,7 +159,7 @@ describe('updatePackage', () => {
   })
 
   it('devuelve PackageNotFound si no existe', async () => {
-    const techniqueRepo = new FakeTechniqueRepository([
+    const techniqueRepo = createFakeTechniqueRepository([
       makeTechnique({ id: 't1', isActive: true }),
       makeTechnique({ id: 't2', isActive: true }),
     ])
@@ -171,7 +173,7 @@ describe('updatePackage', () => {
   })
 
   it('rechaza técnicas inválidas sin persistir', async () => {
-    const techniqueRepo = new FakeTechniqueRepository([
+    const techniqueRepo = createFakeTechniqueRepository([
       makeTechnique({ id: 't1', isActive: true }),
       makeTechnique({ id: 't2', isActive: true }),
     ])
@@ -189,7 +191,7 @@ describe('updatePackage', () => {
 
 describe('deactivatePackage', () => {
   it('desactiva un paquete existente', async () => {
-    const techniqueRepo = new FakeTechniqueRepository()
+    const techniqueRepo = createFakeTechniqueRepository()
     const packageRepo = createFakePackageRepository([
       makePackage({ id: 'd1', isActive: true }),
     ])
@@ -201,9 +203,58 @@ describe('deactivatePackage', () => {
   })
 
   it('devuelve PackageNotFound si no existe', async () => {
-    const techniqueRepo = new FakeTechniqueRepository()
+    const techniqueRepo = createFakeTechniqueRepository()
     const packageRepo = createFakePackageRepository()
     const result = await deactivatePackage(deps(packageRepo, techniqueRepo))('nope')
     expect(isErr(result)).toBe(true)
+  })
+})
+
+describe('activatePackage', () => {
+  it('reactiva un paquete desactivado cuyas técnicas siguen activas', async () => {
+    const techniqueRepo = createFakeTechniqueRepository([
+      makeTechnique({ id: 't1', isActive: true }),
+      makeTechnique({ id: 't2', isActive: true }),
+    ])
+    const packageRepo = createFakePackageRepository([
+      makePackage({ id: 'a1', techniqueIds: ['t1', 't2'], isActive: false }),
+    ])
+    const result = await activatePackage(deps(packageRepo, techniqueRepo))('a1')
+    expect(isOk(result)).toBe(true)
+    expect((await packageRepo.findById('a1'))?.pkg.isActive).toBe(true)
+  })
+
+  it('no reactiva si una de sus técnicas está desactivada', async () => {
+    const techniqueRepo = createFakeTechniqueRepository([
+      makeTechnique({ id: 't1', isActive: true }),
+      makeTechnique({ id: 't2', isActive: false }),
+    ])
+    const packageRepo = createFakePackageRepository([
+      makePackage({ id: 'a2', techniqueIds: ['t1', 't2'], isActive: false }),
+    ])
+    const result = await activatePackage(deps(packageRepo, techniqueRepo))('a2')
+    expect(isErr(result) && isPackageValidationError(result.error)).toBe(true)
+    expect((await packageRepo.findById('a2'))?.pkg.isActive).toBe(false)
+  })
+
+  it('devuelve PackageNotFound si no existe', async () => {
+    const result = await activatePackage(
+      deps(createFakePackageRepository(), createFakeTechniqueRepository()),
+    )('nope')
+    expect(isErr(result) && isPackageNotFound(result.error)).toBe(true)
+  })
+})
+
+describe('deletePackage', () => {
+  it('elimina un paquete existente', async () => {
+    const packageRepo = createFakePackageRepository([makePackage({ id: 'x1' })])
+    const result = await deletePackage({ packageRepo })('x1')
+    expect(isOk(result)).toBe(true)
+    expect(await packageRepo.findById('x1')).toBeNull()
+  })
+
+  it('devuelve PackageNotFound si no existe', async () => {
+    const result = await deletePackage({ packageRepo: createFakePackageRepository() })('nope')
+    expect(isErr(result) && isPackageNotFound(result.error)).toBe(true)
   })
 })

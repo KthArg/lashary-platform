@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-08
+actualizado: 2026-10-19
 historias:
   - id: US-CLI-01
     estado: en_progreso
@@ -12,7 +12,8 @@ historias:
   - id: US-CLI-03
     estado: no_iniciada
   - id: US-CLI-04
-    estado: no_iniciada
+    estado: terminada
+    evidencia: "Pila de 20 piezas: PRs #369 (1/20, esquema), #370 (2/20, bucket), #372, #374, #384, #385, #394, #395, #396, #404, #405, #406, #407, #408 (14/20, cierre funcional), #409 y #410 (mejoras visuales) y los PRs de las piezas 17/20 a 20/20 (auditoria del 2026-10-19). Criterio 1 (estudio con texto e imagenes): record-content.test.ts, record-changes.test.ts, record-commands.test.ts, study-editor.test.tsx, add-record-image.test.ts, record-image.test.ts, record-image-action.test.ts, images-editor.test.tsx. Criterio 2 (alergias, sensibilidades, condiciones): clients_record_versions.test.sql (categorias), record-content.test.ts, precautions-editor.test.tsx. Criterio 3 (solo la administradora y cada acceso en la bitacora): clients_record_versions.test.sql y clients_record_images_bucket.test.sql (aislamiento SEC-002 frente a clienta y anon), view-record.test.ts (bitacora fail-closed), record-gateways.test.ts, record-actions.test.ts, record-queries.test.ts. Criterio 4 (historial de cambios): clients_record_versions.test.sql (sin UPDATE ni DELETE, una sucesora por version), record-changes.test.ts, record-commands.test.ts (dos cambios simultaneos), record-history.test.ts, record-view.test.tsx. Criterio 5 (imagenes sin URL publica): clients_record_images_bucket.test.sql (bucket privado), record-image-storage.test.ts (URLs firmadas de 5 minutos), images-editor.test.tsx"
   - id: US-CLI-05
     estado: terminada
     evidencia: "PR #16, PR #28, PR #31, PR #32, tests: clients-actions.test.ts, save-client.test.tsx, list-clients.test.ts, clients-list.test.tsx, update-client.test.ts, edit-client.test.tsx"
@@ -21,6 +22,18 @@ deuda:
   - que: "Prueba de aislamiento RLS (SEC-002) de las politicas de administradora de clients_profiles (supabase/migrations/20260911000000_clients_profiles_admin_access.sql): las pruebas simulan Supabase y no demuestran que una clienta con token valido no pueda leer, crear ni editar a otras"
     aceptada_en: "PR #32, etiqueta excepcion-proceso"
     costo: "3h: arnes de Supabase local en CI y el test con token de clienta contra SELECT, INSERT y UPDATE; 1h si ya existe el arnes de la deuda de auth (PR #3)"
+  - que: "M2 de la auditoria de US-CLI-04: escribir el expediente guarda la version y despues audita, sin transaccion. Si la bitacora falla, el cambio queda sin evento; la pantalla lo avisa como saved-without-audit"
+    aceptada_en: "Auditoria del 2026-10-19, por decision de Jose Loria; mismo pendiente heredado de US-AGE-13"
+    costo: "4h: funcion SQL que inserte version y evento en una transaccion, con contrato pactado con audit (INT-003), y su pgTAP"
+  - que: "M3 de la auditoria de US-CLI-04 (riesgo aceptado): una admin con su token puede leer clients_record_versions directo por PostgREST sin pasar por readRecord, y esa lectura no queda en la bitacora (SEC-006 se cumple solo dentro de la app)"
+    aceptada_en: "Auditoria del 2026-10-19, riesgo aceptado por Jose Loria"
+    costo: "6h: quitar el SELECT directo y leer por una funcion SECURITY DEFINER que registre el acceso y devuelva las versiones, con pgTAP"
+  - que: "Resto de M4 de la auditoria de US-CLI-04: si guardar la version falla despues de subir la imagen (choque de versiones o caida), el archivo queda en el bucket privado sin version que lo use, y no se puede borrar porque el bucket no tiene politica de DELETE"
+    aceptada_en: "Auditoria del 2026-10-19, por decision de Jose Loria; el cupo de 20 ya se revisa antes de subir"
+    costo: "3h: limpieza programada fuera de la app que borre objetos sin version de mas de un dia"
+  - que: "B4 de la auditoria de US-CLI-04: rowToVersion revalida cada version con las reglas vigentes; si un tope se endurece o una fila quedo rara, el expediente entero no abre"
+    aceptada_en: "Auditoria del 2026-10-19, por decision de Jose Loria"
+    costo: "2h: leer el historial sin revalidar topes (solo la forma) y validar solo al escribir"
 defectos: []
 ---
 
@@ -87,11 +100,27 @@ La estructura de carpetas sigue las capas de `docs/spec/ARCHITECTURE.md`, como `
 `application/` (los casos de uso `addClient`, `editClient` y `listClients`, el puerto
 `ClientRepository` y `CLIENTS_LIST_LIMITS`), `db/` (`clientRepository()`, lo único que conoce
 Supabase y `clients_profiles`) y `ui/` (todo en el área `ui/admin-clients/`: las server actions en `ui/admin-clients/actions/client-actions.ts`, los textos en
-`ui/admin-clients/constants/client-strings.ts`, los hooks en `ui/admin-clients/hooks/` y un subdirectorio por componente en `ui/admin-clients/components/`). No hay `http/`: la feature no tiene route handlers. `ui/admin-clients/clients-list-url.ts` guarda la
+`ui/admin-clients/constants/client-strings.ts`, los hooks en `ui/admin-clients/hooks/` y un subdirectorio por componente en `ui/admin-clients/components/`; lo que comparten `admin-clients` y `admin-record`, `ConfirmDialog` y `useFocusTrap`, vive en `ui/shared/`). `http/` guarda solo los adaptadores a otras features (`http/record/record-gateways.ts`); no hay route handlers. `ui/admin-clients/clients-list-url.ts` guarda la
 construcción pura de URLs del listado, separada de `ui/admin-clients/hooks/` porque no usa React: así se prueba sin
 renderizar. Las pruebas de la interfaz están en `ui/admin-clients/__tests__/` y las de los casos de uso en `application/__tests__/`.
 
+### Expediente de la clienta (US-CLI-04)
+
+Cada fila del listado enlaza a la ficha `/admin/clients/<id>`: volver, nombre, teléfono y la pestaña
+**Expediente**. La pestaña muestra el estudio con su técnica recomendada, "Antecedentes y
+precauciones" con su categoría, las imágenes y el historial de cambios, y permite registrar y editar
+el estudio, agregar (**+**) y quitar antecedentes y subir imágenes. Cada cambio guarda una versión
+completa nueva en `clients_record_versions`; la vigente es la última y las anteriores no se tocan.
+Cada lectura y cada cambio quedan en la bitácora de `audit`; si la bitácora falla al leer, el
+expediente no se muestra. Capas: `domain/record/` (el contenido y sus cambios),
+`application/record/` (puertos, lectura y escritura), `http/record/` (adaptadores a `audit` y
+`catalog`), `db/record/` (versiones, categorías e imágenes) y `ui/admin-record/` (actions de
+escritura, lecturas en `queries/`, textos y componentes); la ruta vive en `src/app/admin/clients/[id]/`. Crear categorías nuevas desde el menú
+quedó fuera del plan por decisión de José Loría.
+
 ## Qué no hace todavía
+
+No existe un flujo de archivado o borrado de clientas en esta rama. `docs/adr/ADR-0009-client-archival-and-exemptions.md` recoge el acuerdo de archivar sin eliminar el perfil ni sus referencias, comunicado por Bayron el 2026-10-05. Antes de implementarlo deben acordarse permisos, búsquedas y reservas, citas existentes y restauración. La pieza 21 de US-AGE-13 implementa y prueba la migración de `payments` a `ON DELETE RESTRICT`; bloquea el borrado de perfiles con exoneraciones activas o históricas, incluso desde `auth.users`. Su integración sigue pendiente. Reactivar un perfil deberá revisar la vigencia de su exoneración antes de aplicarla. Este cambio de documentación no implementa archivado ni completa una historia de `clients`.
 
 **No hay prueba de aislamiento RLS (SEC-002)**; está registrada como deuda. Las pruebas de las
 actions simulan Supabase: demuestran qué se envía y se lee, no qué permite RLS.
@@ -113,7 +142,11 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 `useClientForm`, `useClientDialog` y `useFocusTrap`, `createClientAction`, `listClientsAction` y `updateClientAction` con sus tipos
 `SaveClientResult`, `ListClientsQuery` y `ListClientsResult`, `validateClientForm`, `normalizePhone` y las constantes de
 textos y límites, entre ellas `CLIENTS_LIST_LIMITS`, `CLIENTS_TABLE_HEADERS`, `CLIENTS_TABLE_TEXTS` , `CLIENTS_PAGINATION_TEXTS` y `CLIENTS_FILTER_TEXTS` (DOM-009).
-También exporta `ClientsPagination` y `ClientsNameFilter`.
+También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el expediente (US-CLI-04):
+`getClientAction`, `CLIENTS_PATH`, `clientRecordPath`, `CLIENT_PROFILE_LABELS`, `RecordView`,
+`RecordLoadError`, `readRecord`, `readTechniqueOptions`, `readCategoryOptions`, `RECORD_LABELS` y
+`STUDY_FORM_LABELS`. `src/features/clients/client.ts` es la entrada para código del navegador
+(`error.tsx`): solo `RecordLoadError` y `RECORD_LABELS`, sin nada de servidor.
 
 ## Invariantes
 
@@ -124,8 +157,11 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
   de aislamiento cross-cliente en CI (SEC-002).
 - **El teléfono identifica a una clienta.** No pueden coexistir dos con el mismo número (criterio 3).
 - **Una clienta creada a mano por la administradora nace con el teléfono verificado** (criterio 4).
-- **El expediente es dato sensible** (SEC-006): cuando llegue US-CLI-04, su acceso es solo de la
-  administradora, queda en la bitácora y sus imágenes no son públicas por URL. No aplica todavía.
+- **El expediente es dato sensible** (SEC-006): solo lo lee y escribe la administradora (RLS con
+  `auth_is_admin()`), cada lectura y cada cambio quedan en la bitácora, y sus imágenes viven en un
+  bucket privado y se ven solo con URLs firmadas de 5 minutos.
+- **El historial del expediente no se reescribe ni se borra:** la base no tiene políticas de UPDATE
+  ni DELETE en `clients_record_versions` ni en el bucket de imágenes.
 
 ## Decisiones
 
@@ -264,3 +300,94 @@ También exporta `ClientsPagination` y `ClientsNameFilter`.
   uso y pasa a `application/ports.ts`. Las pruebas de las actions no cambiaron y siguen pasando: la
   secuencia de llamadas a Supabase es la misma. **Consecuencia asumida:** `updateClientAction` con un id
   vacío crea el cliente de Supabase antes de rechazarlo, aunque no consulta la base.
+- **2026-10-17 a 2026-10-19 — US-CLI-04 se entregó en 20 piezas (INT-002, INT-008), por decisión de
+  José Loría.** Cada migración va en su propio PR: 1/20 el esquema (#369, base del stack) y 2/20 el
+  bucket (#370, directo a `main`). El plan empezó en 8 piezas y se partió cada vez que una estimaba
+  más de 400 líneas: dominio (3 contenido válido, 4 cambios), casos de uso (5 leer, 6 escribir),
+  repositorio y adaptadores (7), server actions (8), vista (9), ficha con pestañas (10), estudio
+  (11), antecedentes (12), imágenes (13 subir, 14 ver y cierre). 15 y 16 son mejoras visuales tras
+  probarlo a mano; 17 a 20 atienden la auditoría del 2026-10-19. Crear categorías nuevas desde el
+  menú salió del plan; si vuelve, es una pieza aparte.
+- **2026-10-17 — El expediente es una cadena de versiones completas, append-only.** Cada cambio
+  inserta una fila en `clients_record_versions` con el contenido entero; la vigente es la última.
+  Sin políticas de UPDATE ni DELETE la base no deja reescribir el historial (criterio 4), igual que
+  `audit_events`; "quitar" un antecedente es una versión nueva sin él. No hay tabla
+  `clients_records`. Un índice único parcial impide dos registros iniciales por clienta y la FK
+  compuesta `(previous_version_id, client_id)` impide continuar el expediente de otra.
+- **2026-10-17 — Concurrencia por `UNIQUE (previous_version_id)`.** Una versión tiene una sola
+  sucesora: si dos sesiones guardan sobre la misma, la segunda choca (`23505` → `version-conflict`)
+  y la pantalla pide recargar, en vez de borrar sin saberlo lo que agregó la primera.
+- **2026-10-17 — Antecedentes e imágenes en `jsonb` dentro de la versión.** Guardar es un solo
+  `INSERT`. Desde la auditoría (M5), dos `CHECK` exigen la forma de cada antecedente (`id`,
+  `categoryId`, `categoryName`, `description`) y que cada imagen esté en la carpeta de su clienta.
+  No hay FK a la categoría: cada antecedente guarda una copia de su nombre, que es lo que muestra el
+  historial.
+- **2026-10-17 — Las categorías son una tabla, no un `CHECK`, por decisión de José Loría.** La
+  migración trae Alergia, Sensibilidad y Condición relevante (criterio 2), que deben existir en
+  producción. Únicas sin importar mayúsculas; no se renombran ni se borran porque el historial las
+  cita.
+- **2026-10-17 — La técnica recomendada se elige de `catalog` por su API pública** (sin FK,
+  ARCH-005), con copia del nombre. Una técnica nueva tiene que estar activa; la vigente se conserva
+  aunque se haya desactivado.
+- **2026-10-17 — Opción A para "actualizar con cada cita posterior":** cada versión lleva fecha y
+  autora, sin vínculo a una cita. Vincular a una cita es US-CLI-03 (anotaciones), que depende de
+  US-CLI-02 y US-AGE-05; si hace falta, se agrega `appointment_id` con una migración forward. El
+  expediente es el estado clínico vigente; las anotaciones, lo que pasó en cada cita. Un dato
+  clínico escrito en una anotación o en `clients_profiles.notes` queda fuera de SEC-006.
+- **2026-10-17 — Solo la administradora (`auth_is_admin()`), no `auth_is_staff()`** (SEC-006). El
+  INSERT exige `created_by = auth.uid()`. `client_id` es `ON DELETE RESTRICT` (ADR-0009).
+- **2026-10-17 — Bucket `clients-record-images` privado, 1 MB, solo JPEG, PNG y WebP (#370).** Solo
+  la administradora lee y sube, dentro de la carpeta de una clienta que existe; sin UPDATE ni DELETE.
+- **2026-10-17 — Dominio en `domain/record/`.** `buildRecordContent` es la única forma de crear un
+  contenido válido: recorta, aplica los topes de la base (`RECORD_LIMITS`) y lleva una marca
+  `unique symbol`. Se llamó `RecordSnapshot` hasta el 2026-10-18; se renombró a `RecordContent`
+  dentro de cada pieza, por decisión de José Loría, porque "contenido" se lee solo. Los cambios
+  (`createInitialRecord`, `addPrecaution`, `removePrecaution`, `editStudy`, `addImage`) devuelven
+  `{ changeKind, content }` y vuelven a pasar por `buildRecordContent`. Los problemas son códigos,
+  no textos: la UI los traduce (DOM-009). Cada antecedente lleva su `id`; uno repetido se rechaza.
+  Editar sin cambiar nada devuelve `RecordUnchanged`.
+- **2026-10-17 — La aplicación habla con el exterior solo por puertos** (`record-ports.ts`).
+  Leer audita primero, fail-closed: si la bitácora falla, no hay datos. El evento lleva actor,
+  acción y clienta, nunca el contenido. El expediente vive en su propia pestaña para que el acceso
+  sea deliberado. El historial se lee con tope (`RECORD_HISTORY_LIMIT` = 50, PERF-002); la fecha del
+  registro inicial se lee aparte (`findInitialVersion`, B5) para que no se pierda pasando ese tope.
+- **2026-10-17 — Escribir guarda y después audita.** Cada versión se encadena a la vigente con
+  autora y fecha del reloj inyectado (DOM-004). Si la bitácora falla después de guardar, el código
+  es `saved-without-audit`: la pantalla avisa y refresca, porque el cambio sí quedó (deuda M2).
+- **2026-10-18 — Repositorio en `db/record/`, función fábrica (ADR-0008).** Al leer, cada fila vuelve
+  a pasar por `buildRecordContent`; una fila mal formada lanza en vez de mostrar un expediente a
+  medias (B4, aceptado). Otro error de la base se lanza (DOM-006). Los adaptadores a `audit` y
+  `catalog` viven en `http/record/record-gateways.ts` (B2; antes en `application/`) y usan solo sus
+  APIs públicas (ARCH-003); el de la bitácora convierte un rechazo o un error en `false`.
+- **2026-10-18 — Server actions solo para escribir; lecturas en `ui/admin-record/queries/` (M6).**
+  Cada una exige `requireAdminSession()` y firma con esa sesión (SEC-005). Los ids se revisan con
+  forma de UUID antes de tocar la base y el de clienta se normaliza a minúsculas. No lanzan: un fallo
+  inesperado responde "No se pudo guardar" (M1). Devuelven datos planos (`RecordVersionView`) y cada
+  código se traduce en `record-strings.ts`. `readRecord` comprueba que la clienta exista antes de
+  auditar; una inexistente va a `notFound()`. **Qué cuenta como acceso:** cada carga de los datos,
+  incluido el refresco tras guardar. `error.tsx` importa de `@/features/clients/client`.
+- **2026-10-18 — Ficha en `src/app/admin/clients/[id]/`.** Volver, nombre, teléfono y la pestaña
+  Expediente (`aria-current`); alineada a la izquierda con ancho máximo. Estados (UI-003): vacío,
+  `loading.tsx`, `RecordLoadError` con *Reintentar* y `error.tsx`. `describeVersion` nombra el
+  antecedente agregado o quitado comparando con la versión anterior. Fechas en `STUDIO_TIME_ZONE`.
+- **2026-10-18 — Estudio y antecedentes.** `StudyForm` va en línea, no en modal; el menú muestra
+  técnicas activas (tope 100) más la vigente. Si `catalog` falla, queda "Sin técnica recomendada".
+  Antecedentes en una tarjeta por categoría con su conteo (`groupPrecautions`) e íconos SVG propios;
+  *Quitar* nombra su antecedente (UI-004) y confirma con `ConfirmDialog`.
+- **2026-10-18 — Imágenes.** Tope de 1.000.000 bytes, debajo del límite de 1 MB del cuerpo de las
+  server actions (A1); la pantalla valida tamaño y tipo antes de enviar y el servidor lee el tipo de
+  la firma real del archivo (B9). El cupo de 20 se revisa antes de subir y, lleno, desaparece
+  "Agregar foto" (M4). Se suben a `<clienta>/<uuid>.<ext>` y se ven con URLs firmadas de 5 minutos
+  (`RECORD_IMAGE_URL_SECONDS`, por decisión de José Loría); si una vence, pide recargar (B6). Mosaicos
+  con `ImageViewer` (flechas, Escape, devuelve el foco).
+- **2026-10-19 — Imports con `@/` y piezas compartidas en `ui/shared/` (B1).** `ConfirmDialog` y
+  `useFocusTrap` los usan `admin-clients` y `admin-record`.
+
+## Contrato para scheduling (US-AGE-05)
+
+`scheduling` necesita saber cuál es el perfil de la clienta de la sesión y mostrar de quién es cada cita pendiente. Antes lo hacía leyendo `clients_profiles` directo, lo que incumplía ARCH-005 y acoplaba la reserva al modelo de perfiles (hallazgo M2 de la auditoría de US-AGE-05). Acordado con José Loría el 2026-10-19: el contrato vive en `docs/contracts/clients-api.md`.
+
+- Migración `20261019000008_clients_contract_fns.sql` con dos funciones `SECURITY INVOKER` solo para `authenticated`: `clients_current_profile_id()` (el perfil de la sesión, nulo si no tiene) y `clients_display_names(uuid[])` (nombre de cada perfil que la RLS deja ver). Pruebas: pgTAP `clients_contract.test.sql`.
+- No hay código TypeScript nuevo en `clients`: el contrato es SQL. Las tablas del expediente (`clients_record_versions` y las demás) no se tocan ni se comparten.
+- La llave foránea `scheduling_appointments.client_id → clients_profiles(id)` (`ON DELETE RESTRICT`) queda registrada en el anexo del ADR-0009. Cambiar `clients_profiles.id` exige coordinar con `scheduling`.
+- Esto no reabre US-CLI-04 ni cambia su estado.

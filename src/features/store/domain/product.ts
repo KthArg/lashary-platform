@@ -3,6 +3,7 @@ import { createInvalidProduct, type InvalidProduct } from './product-errors'
 
 export type PublicProduct = {
   id: string;
+  slug: string;
   name: string;
   imageUrl: string;
   priceCrc: number;
@@ -11,6 +12,7 @@ export type PublicProduct = {
 
 export type PublicProductCard = {
   id: string;
+  slug: string;
   name: string;
   imageUrl: string;
   priceLabel: string;
@@ -32,6 +34,7 @@ export type ProductGridStrings = {
   catalogAriaLabel: string;
   productAltPrefix: string;
   retryButtonAriaLabel: string;
+  viewMoreLabel: string;
 };
 
 export function formatPriceCrc(priceCrc: number): string {
@@ -55,6 +58,7 @@ export function sanitizeUrl(url: string): string {
 export function toProductCard(product: PublicProduct): PublicProductCard {
   return {
     id: product.id,
+    slug: product.slug,
     name: product.name,
     imageUrl: sanitizeUrl(product.imageUrl),
     priceLabel: formatPriceCrc(product.priceCrc),
@@ -70,6 +74,7 @@ export type AdminProduct = {
   priceCrc: number
   isActive: boolean
   displayOrder: number
+  stock: number
 }
 
 export type ProductInput = {
@@ -81,6 +86,7 @@ export type ProductInput = {
   priceCrc: number
   isActive?: boolean
   displayOrder: number
+  stock: number
 }
 
 const isNonNegativeInteger = (value: number): boolean => Number.isInteger(value) && value >= 0
@@ -106,6 +112,10 @@ export function buildProduct(input: ProductInput): Result<AdminProduct, InvalidP
     problems.push('el orden de presentación debe ser un entero no negativo')
   }
 
+  if (!isNonNegativeInteger(input.stock)) {
+    problems.push('las existencias deben ser un entero no negativo')
+  }
+
   if (problems.length > 0) {
     return err(createInvalidProduct(problems))
   }
@@ -119,9 +129,14 @@ export function buildProduct(input: ProductInput): Result<AdminProduct, InvalidP
     priceCrc: input.priceCrc,
     isActive: input.isActive ?? true,
     displayOrder: input.displayOrder,
+    stock: input.stock,
   })
 }
 
 export function markProductInactive(product: AdminProduct): AdminProduct {
   return { ...product, isActive: false }
+}
+
+export function markProductActive(product: AdminProduct): AdminProduct {
+  return { ...product, isActive: true }
 }

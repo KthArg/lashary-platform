@@ -1,0 +1,49 @@
+import { RECORD_LABELS } from '../../constants/record-strings'
+import { describeVersion, formatRecordDate } from '../../record-history'
+import { StudyEditor } from '../StudyEditor'
+import { PrecautionsEditor } from '../PrecautionsEditor'
+import { ImagesEditor } from '../ImagesEditor'
+import { RecordIcon } from '../RecordIcon'
+import { recordViewStyles as STYLES } from './RecordView.styles'
+import type { RecordViewProps } from './RecordView.types'
+
+export function RecordView({ clientId, current, history, initial, techniques, categories, imageUrls }: RecordViewProps) {
+  if (current === null) return <StudyEditor clientId={clientId} study={null} techniques={techniques} />
+
+  const { images, precautions, recommendedTechnique, studyText } = current
+
+  return (
+    <article className={STYLES.record}>
+      <header className={STYLES.header}>
+        <h2 className={STYLES.title}>{RECORD_LABELS.studyHeading}</h2>
+        {initial ? <p className={STYLES.subtitle}>{RECORD_LABELS.initialRecordOn(formatRecordDate(initial.createdAt))}</p> : null}
+      </header>
+
+      <section className={STYLES.section}>
+        <h3 className={STYLES.sectionTitle}><RecordIcon name="study" className={STYLES.icon} />{RECORD_LABELS.initialStudyHeading}</h3>
+        <StudyEditor clientId={clientId} study={{ studyText, recommendedTechnique }} techniques={techniques} />
+      </section>
+
+      <section className={STYLES.section}>
+        <PrecautionsEditor clientId={clientId} precautions={precautions} categories={categories} />
+      </section>
+
+      <section className={STYLES.section}>
+        <h3 className={STYLES.sectionTitle}><RecordIcon name="image" className={STYLES.icon} />{RECORD_LABELS.imagesHeading}</h3>
+        <ImagesEditor clientId={clientId} images={images} imageUrls={imageUrls} />
+      </section>
+
+      <section className={STYLES.section}>
+        <h3 className={STYLES.sectionTitle}><RecordIcon name="history" className={STYLES.icon} />{RECORD_LABELS.historyHeading}</h3>
+        <ol className={STYLES.list}>
+          {history.map((version, index) => (
+            <li key={version.id} className={STYLES.historyItem}>
+              <time dateTime={version.createdAt} className={STYLES.label}>{formatRecordDate(version.createdAt)}</time>
+              <span>{describeVersion(version, history[index + 1])}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </article>
+  )
+}

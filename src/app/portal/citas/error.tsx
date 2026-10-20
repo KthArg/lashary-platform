@@ -1,17 +1,17 @@
 'use client'
 
 import { schedulingMessages } from '@/features/scheduling/client'
-import { citasStyles as s } from './citas.styles'
+import { citasStyles as STYLES } from './citas.styles'
 
-const m = schedulingMessages.page.error
+const errorMessages = schedulingMessages.page.error
 
 export default function Error({ reset }: { error: Error; reset: () => void }) {
   return (
-    <div role="alert" className={s.errorBox}>
-      <p className={s.errorTitle}>{m.title}</p>
-      <p>{m.body}</p>
-      <button type="button" onClick={reset} className={s.retryButton}>
-        {m.retry}
+    <div role="alert" className={STYLES.errorBox}>
+      <p className={STYLES.errorTitle}>{errorMessages.title}</p>
+      <p>{errorMessages.body}</p>
+      <button type="button" onClick={reset} className={STYLES.retryButton}>
+        {errorMessages.retry}
       </button>
     </div>
   )

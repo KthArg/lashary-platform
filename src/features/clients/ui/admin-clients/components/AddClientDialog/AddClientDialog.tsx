@@ -2,13 +2,13 @@
 
 import { useCallback, useRef, useState } from 'react'
 import { createClientAction } from '../../actions/client-actions'
-import { EMPTY_CLIENT_FORM_VALUES } from '../../../../domain/client-form'
+import { EMPTY_CLIENT_FORM_VALUES } from '@/features/clients/domain/client-form'
 import { CLIENTS_CONFIRM_MESSAGES, CLIENTS_LABELS } from '../../constants/client-strings'
 import { useClientDialog } from '../../hooks/useClientDialog'
 import { AddClientButton } from '../AddClientButton'
 import { ClientModal } from '../ClientModal'
 import { ClientForm } from '../ClientForm'
-import { ConfirmDialog } from '../ConfirmDialog'
+import { ConfirmDialog } from '@/features/clients/ui/shared/components/ConfirmDialog'
 
 export function AddClientDialog() {
   const [isOpen, setIsOpen] = useState(false)

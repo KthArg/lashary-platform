@@ -27,6 +27,12 @@ export function createFakeAdminProductRepository(
       return store.get(id) ?? null
     },
 
+    async listSlugsStartingWith(prefix: string) {
+      return [...store.values()]
+        .map((product) => product.slug)
+        .filter((slug) => slug.startsWith(prefix))
+    },
+
     async save(product: AdminProduct) {
       for (const other of store.values()) {
         if (other.id !== product.id && other.slug === product.slug) {

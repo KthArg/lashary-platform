@@ -3,7 +3,6 @@ import { MAX_CREDENTIALS, MAX_REASONS } from '../../domain/studio'
 import { studioFallback } from '../fallback-messages'
 import { toStudioContent, type RawStudioContent } from '../get-studio'
 
-// El estudio publicado tal como lo entrega uno-cms (docs/contracts/cms-api.md § `estudio`).
 const estudio = (overrides: Record<string, unknown> = {}) => ({
   nombre: 'Ana Rojas',
   rol: 'Lash artist y fundadora',

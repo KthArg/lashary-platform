@@ -12,6 +12,7 @@ export type PackageWriteModel = {
   name: string
   techniqueIds: string[]
   price: number
+  deposit?: number
 }
 
 export type PackageWithDuration = {
@@ -29,4 +30,6 @@ export interface PackageRepository {
   findById(id: string): Promise<PackageWithDuration | null>
 
   save(pkg: Package): Promise<Result<void, PackageNameConflict>>
+
+  delete(id: string): Promise<void>
 }

@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(21);
+SELECT plan(26);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -124,6 +124,27 @@ SELECT throws_ok(
 SELECT is(
   (SELECT name FROM public.catalog_packages WHERE id = '00000000-0000-0000-0000-00000000d001'),
   'zz-test paquete editado', 'clienta: el paquete no cambió');
+
+SELECT throws_ok(
+  $$SELECT public.catalog_delete_package('00000000-0000-0000-0000-00000000d001')$$,
+  '42501', NULL, 'clienta: catalog_delete_package denegado por RLS');
+SELECT is(
+  (SELECT count(*)::int FROM public.catalog_packages WHERE id = '00000000-0000-0000-0000-00000000d001'),
+  1, 'clienta: el paquete sigue existiendo');
+
+SELECT set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-0000-0000-0000000000b1","role":"authenticated"}', true);
+
+SELECT lives_ok(
+  $$SELECT public.catalog_delete_package('00000000-0000-0000-0000-00000000d001')$$,
+  'admin: elimina el paquete con catalog_delete_package');
+SELECT is(
+  (SELECT count(*)::int FROM public.catalog_packages WHERE id = '00000000-0000-0000-0000-00000000d001'),
+  0, 'admin: el paquete ya no existe');
+SELECT is(
+  (SELECT count(*)::int FROM public.catalog_package_techniques
+    WHERE package_id = '00000000-0000-0000-0000-00000000d001'),
+  0, 'admin: no quedan filas huérfanas en la tabla puente');
 
 SELECT * FROM finish();
 ROLLBACK;

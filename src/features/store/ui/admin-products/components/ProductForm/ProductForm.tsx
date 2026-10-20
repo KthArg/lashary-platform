@@ -4,17 +4,18 @@ import type { ComponentType } from 'react'
 import { productStrings } from '../../constants/product-strings'
 import { useProductForm, type ProductFormMode } from '../../hooks/useProductForm'
 import { ProductFormField } from '../ProductFormField'
+import { ProductImageField } from '../ProductImageField'
 import { ProductFormFeedback } from '../ProductFormFeedback'
-import { DeactivateSection } from '../DeactivateSection'
-import { NoDeactivateSection } from '../NoDeactivateSection'
+import { ProductStatusSection } from '../ProductStatusSection'
+import { NoStatusSection } from '../NoStatusSection'
 import { productFormStyles as STYLES } from './ProductForm.styles'
 import type { ProductFormProps } from './ProductForm.types'
 
 const formMessages = productStrings.form
 
-const DEACTIVATE_SECTIONS: Record<ProductFormMode, ComponentType<any>> = {
-  create: NoDeactivateSection,
-  edit: DeactivateSection,
+const STATUS_SECTIONS: Record<ProductFormMode, ComponentType<any>> = {
+  create: NoStatusSection,
+  edit: ProductStatusSection,
 }
 
 export function ProductForm({ product }: ProductFormProps) {
@@ -25,12 +26,14 @@ export function ProductForm({ product }: ProductFormProps) {
     state,
     formAction,
     pending,
-    deactivateState,
-    deactivateAction,
-    deactivating,
+    imageField,
+    statusControl,
+    statusState,
+    statusAction,
+    statusPending,
   } = useProductForm(product)
 
-  const DeactivateSectionForMode = DEACTIVATE_SECTIONS[mode]
+  const StatusSectionForMode = STATUS_SECTIONS[mode]
 
   return (
     <section className={STYLES.section}>
@@ -42,23 +45,12 @@ export function ProductForm({ product }: ProductFormProps) {
         <input type="hidden" name="id" value={product?.id ?? ''} />
 
         <ProductFormField
-          name="slug"
-          label={formMessages.fields.slug}
-          defaultValue={product?.slug}
-          required
-        />
-        <ProductFormField
           name="name"
           label={formMessages.fields.name}
           defaultValue={product?.name}
           required
         />
-        <ProductFormField
-          name="imageUrl"
-          label={formMessages.fields.imageUrl}
-          defaultValue={product?.imageUrl}
-          required
-        />
+        <ProductImageField {...imageField} />
         <ProductFormField
           name="priceCrc"
           label={formMessages.fields.priceCrc}
@@ -74,6 +66,14 @@ export function ProductForm({ product }: ProductFormProps) {
           min={0}
           required
           defaultValue={product?.displayOrder ?? 0}
+        />
+        <ProductFormField
+          name="stock"
+          label={formMessages.fields.stock}
+          type="number"
+          min={0}
+          required
+          defaultValue={product?.stock ?? 0}
         />
 
         <label className={STYLES.descriptionLabel} htmlFor="description">
@@ -94,11 +94,12 @@ export function ProductForm({ product }: ProductFormProps) {
         </div>
       </form>
 
-      <DeactivateSectionForMode
+      <StatusSectionForMode
         productId={product?.id ?? ''}
-        deactivateAction={deactivateAction}
-        deactivateState={deactivateState}
-        deactivating={deactivating}
+        statusControl={statusControl}
+        statusAction={statusAction}
+        statusState={statusState}
+        statusPending={statusPending}
       />
     </section>
   )

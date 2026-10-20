@@ -7,7 +7,7 @@
 # layers: ci (L1 determinista) | structural (L3 imposible de romper) | ai (L4 advisoria) | human (L5 revisión)
 # ci_status: implementado (script en scripts/rules/) | planificado_f6 (exige la app: tests, ESLint, presupuesto) | no_aplica (capa humana/estructural)
 version: 1
-updated: 2026-09-28
+updated: 2026-10-14
 
 rules:
   # ── Arquitectura ──────────────────────────────────────────────
@@ -267,6 +267,15 @@ rules:
     ci_status: implementado
     doc: docs/spec/INTEGRATION.md
     anchor: "#int-009"
+  - id: INT-010
+    title: Capturas de Playwright que muestran lo que hace el PR
+    statement: Todo PR que cambia comportamiento observable lleva en su descripción una o más capturas tomadas con Playwright del cambio funcionando, con datos locales o de seed. Exentos, con la línea "Capturas: no aplica — <motivo>", los PRs sin efecto observable (reglas, docs, CI, dependencias, refactor sin cambio visible).
+    rationale: El revisor externo (INT-005) no conoce la feature; leer el diff le dice qué cambió, no qué hace. Una captura del resultado deja ver en segundos si el código hace lo que el PR dice, y si la pantalla rompe el sistema visual.
+    severity: alta
+    layers: [ai, human]
+    ci_status: no_aplica
+    doc: docs/spec/INTEGRATION.md
+    anchor: "#int-010"
 
   # ── Estado del proyecto ───────────────────────────────────────
   - id: EST-001
@@ -323,6 +332,15 @@ rules:
     ci_status: no_aplica
     doc: docs/spec/STATE.md
     anchor: "#est-006"
+  - id: EST-007
+    title: El PR de la historia trae su estado final
+    statement: "El PR us/<ID> → main deja a <ID> en terminada, con su evidencia, en el SPEC.md dueño. Si entra con un criterio diferido queda en_progreso con su falta, y el PR lleva la etiqueta excepcion-proceso con la justificación."
+    rationale: Un spec que sigue en en_progreso después de que la historia entró a main bloquea en falso a las historias que dependen de ella, y nadie lo nota hasta que alguien pregunta por qué no se pueden empezar.
+    severity: alta
+    layers: [ci]
+    ci_status: implementado
+    doc: docs/spec/STATE.md
+    anchor: "#est-007"
 
   # ── Seguridad ─────────────────────────────────────────────────
   - id: SEC-001

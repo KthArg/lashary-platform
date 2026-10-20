@@ -6,7 +6,7 @@ import { createDuplicateProductSlug } from '../domain/product-errors'
 import type { AdminProductRepository } from '../application/admin-products/ports'
 
 const TABLE = 'store_products'
-const COLUMNS = 'id, slug, nombre, descripcion, url_imagen, precio_crc, activo, sort_order'
+const COLUMNS = 'id, slug, nombre, descripcion, url_imagen, precio_crc, activo, sort_order, existencias'
 
 type ProductRow = {
   id: string
@@ -17,6 +17,7 @@ type ProductRow = {
   precio_crc: number | string
   activo: boolean
   sort_order: number
+  existencias: number
 }
 
 function rowToDomain(row: ProductRow): AdminProduct {
@@ -28,6 +29,7 @@ function rowToDomain(row: ProductRow): AdminProduct {
     imageUrl: row.url_imagen,
     priceCrc: Number(row.precio_crc),
     displayOrder: row.sort_order,
+    stock: row.existencias,
     isActive: row.activo,
   })
   if (!isOk(built)) {
@@ -46,6 +48,7 @@ function domainToRow(product: AdminProduct): ProductRow {
     precio_crc: product.priceCrc,
     activo: product.isActive,
     sort_order: product.displayOrder,
+    existencias: product.stock,
   }
 }
 
@@ -73,6 +76,12 @@ function createAdminProductRepository(db: SupabaseClient): AdminProductRepositor
       const { data, error } = await db.from(TABLE).select(COLUMNS).eq('id', id).maybeSingle()
       if (error) throw new Error(`${TABLE}.findById: ${error.message}`)
       return data ? rowToDomain(data as ProductRow) : null
+    },
+
+    async listSlugsStartingWith(prefix: string): Promise<string[]> {
+      const { data, error } = await db.from(TABLE).select('slug').like('slug', `${prefix}%`)
+      if (error) throw new Error(`${TABLE}.listSlugsStartingWith: ${error.message}`)
+      return (data ?? []).map((row: { slug: string }) => row.slug)
     },
 
     async save(product: AdminProduct): Promise<void> {

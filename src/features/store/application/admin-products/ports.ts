@@ -14,12 +14,18 @@ export type AdminProductListQuery = {
 }
 
 export type ProductWrite = {
-  slug: string
   name: string
   description: string
   imageUrl: string
   priceCrc: number
   displayOrder: number
+  stock: number
+}
+
+export interface ProductImageStorage {
+  upload(path: string, bytes: Uint8Array, contentType: string): Promise<string>
+  remove(path: string): Promise<void>
+  pathFromUrl(url: string): string | null
 }
 
 export interface AdminProductRepository {
@@ -30,6 +36,8 @@ export interface AdminProductRepository {
   }): Promise<{ items: AdminProduct[]; total: number }>
 
   findById(id: string): Promise<AdminProduct | null>
+
+  listSlugsStartingWith(prefix: string): Promise<string[]>
 
   save(product: AdminProduct): Promise<void>
 }

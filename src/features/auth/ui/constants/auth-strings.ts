@@ -14,14 +14,11 @@ export const AUTH_LABELS = {
   adminAccessTitle: 'Acceso de Gestión', adminAccessSubtitle: 'Ingresa tus credenciales autorizadas',
   adminRestrictedNotice: 'Acceso restringido a personal autorizado.',
   adminActiveSession: 'Sesión Administrativa Activa', adminRoleBadge: 'Rol:',
-  dashboardNav: 'Dashboard', citasNav: 'Citas', clientsNav: 'Clientas', catalogNav: 'Catálogo',
+  dashboardNav: 'Dashboard', citasNav: 'Citas', clientsNav: 'Clientas', catalogNav: 'Catálogo', paymentsNav: 'Pagos',
   collapseSidebar: 'Colapsar barra', expandSidebar: 'Expandir barra',
   adminNavAriaLabel: 'Panel de navegación administrativa',
   clientCitasNav: 'Mis Citas', clientCartNav: 'Carrito',
   clientAccountNav: 'Mi Cuenta', clientPortalTitle: 'Portal Clienta',
-  clientCartTitle: 'Carrito de Compras',
-  clientCartSubtitle: 'Módulo de compras y productos seleccionados (US-SHOP-01).',
-  clientCartPlaceholder: 'Espacio reservado para el carrito de compras persistente durante la sesión.',
   clientAccountTitle: 'Mi Cuenta',
   clientAccountSubtitle: 'Ficha de clienta, estado de cuenta e información personal (US-CLI-06 / US-MOR-03).',
   clientNavAriaLabel: 'Panel de clienta', clientFallbackName: 'Clienta',
@@ -37,10 +34,12 @@ export const CLIENT_PORTAL_ROUTES = {
 } as const
 
 export const ADMIN_PORTAL_ROUTES = {
+  login: '/admin',
   dashboard: '/admin/dashboard',
   citas: '/admin/citas',
   clients: '/admin/clients',
   catalog: '/admin/catalog',
+  payments: '/admin/payments',
 } as const
 
 export const AUTH_ERROR_MESSAGES = {

@@ -29,6 +29,12 @@ export async function clientRepository(): Promise<ClientRepository> {
   const supabase = await createClient()
 
   return {
+    async findById(id) {
+      const { data, error } = await supabase.from(CLIENTS_TABLE).select(CLIENT_COLUMNS).eq('id', id).maybeSingle()
+      if (error) return err(FAILED)
+      return ok(data ? toRecord(data as ClientRow) : null)
+    },
+
     async findByPhoneDigits(digits) {
       const { data, error } = await supabase.from(CLIENTS_TABLE).select('id, phone').like('phone', toDigitsInOrderPattern(digits))
       if (error || !data) return err(FAILED)

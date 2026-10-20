@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => ({
   packageSave: vi.fn(),
   packageFindById: vi.fn(),
   techniqueFindByIds: vi.fn(),
+  packageDelete: vi.fn(),
+  redirect: vi.fn(),
 }))
 
 vi.mock('@/features/catalog/ui/require-staff', () => ({
@@ -15,6 +17,7 @@ vi.mock('@/features/catalog/db/packages/package-repository', () => ({
   packageRepository: vi.fn(async () => ({
     save: mocks.packageSave,
     findById: mocks.packageFindById,
+    delete: mocks.packageDelete,
   })),
 }))
 vi.mock('@/features/catalog/db/techniques/technique-repository', () => ({
@@ -23,14 +26,17 @@ vi.mock('@/features/catalog/db/techniques/technique-repository', () => ({
   })),
 }))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
+vi.mock('next/navigation', () => ({ redirect: mocks.redirect }))
 
 import {
   createPackageAction,
-  deactivatePackageAction,
+  setPackageActiveAction,
+  deletePackageAction,
 } from '@/features/catalog/ui/packages/actions/package-actions'
 import { initialPackageActionState } from '@/features/catalog/ui/packages/types/package-action-state'
 import { ok, err } from '@/shared/result'
 import { packageNameConflict } from '@/features/catalog/domain/packages/errors'
+import { makePackage } from '@/features/catalog/application/packages/__tests__/package-fixture'
 
 function form(
   fields: Record<string, string>,
@@ -42,7 +48,7 @@ function form(
   return formData
 }
 
-const validFields = { name: 'Combo cejas', price: '30000' }
+const validFields = { name: 'Combo cejas', price: '30000', deposit: '9000' }
 const activeTechniques = [
   makeTechnique({ id: 't1', isActive: true }),
   makeTechnique({ id: 't2', isActive: true }),
@@ -82,6 +88,7 @@ describe('acciones administrativas de paquetes', () => {
 
     expect(state).toMatchObject({ status: 'ok', message: 'Paquete creado.' })
     expect(mocks.packageSave).toHaveBeenCalledTimes(1)
+    expect(mocks.packageSave.mock.calls[0][0].deposit.colones).toBe(9000)
   })
 
   it('rechaza si alguna técnica no existe o no está activa, sin guardar', async () => {
@@ -104,15 +111,47 @@ describe('acciones administrativas de paquetes', () => {
     expect(state.problems).toEqual(['ya existe un paquete llamado "Combo cejas"'])
   })
 
-  it('rechaza desactivar mediante una llamada directa sin sesión staff', async () => {
+  it('rechaza activar o desactivar mediante una llamada directa sin sesión staff', async () => {
     mocks.isStaff.mockResolvedValueOnce(false)
 
-    const state = await deactivatePackageAction(
+    const state = await setPackageActiveAction(
       initialPackageActionState,
-      form({ id: 'algo' }, []),
+      form({ id: 'algo', active: 'false' }, []),
     )
 
     expect(state.status).toBe('forbidden')
     expect(mocks.packageFindById).not.toHaveBeenCalled()
+  })
+
+  it('el interruptor reactiva un paquete desactivado', async () => {
+    const pkg = makePackage({ id: 'p1', techniqueIds: ['t1', 't2'], isActive: false })
+    mocks.packageFindById.mockResolvedValueOnce({ pkg, durationTotalMin: 90 })
+
+    const state = await setPackageActiveAction(
+      initialPackageActionState,
+      form({ id: 'p1', active: 'true' }, []),
+    )
+
+    expect(state.status).toBe('ok')
+    expect(mocks.packageSave.mock.calls[0][0].isActive).toBe(true)
+  })
+
+  it('rechaza eliminar mediante una llamada directa sin sesión staff', async () => {
+    mocks.isStaff.mockResolvedValueOnce(false)
+
+    const state = await deletePackageAction(initialPackageActionState, form({ id: 'p1' }, []))
+
+    expect(state.status).toBe('forbidden')
+    expect(mocks.packageDelete).not.toHaveBeenCalled()
+  })
+
+  it('elimina el paquete y vuelve al listado', async () => {
+    const pkg = makePackage({ id: 'p1' })
+    mocks.packageFindById.mockResolvedValueOnce({ pkg, durationTotalMin: 90 })
+
+    await deletePackageAction(initialPackageActionState, form({ id: 'p1' }, []))
+
+    expect(mocks.packageDelete).toHaveBeenCalledWith('p1')
+    expect(mocks.redirect).toHaveBeenCalledWith('/admin/catalog/packages')
   })
 })

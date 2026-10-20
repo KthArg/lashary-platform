@@ -1,30 +1,21 @@
 import { Money } from '@/shared/money'
 import { ok, err, isErr, type Result } from '@/shared/result'
-import { Technique, type TechniqueView } from '../../domain/techniques/technique'
 import {
-  TechniqueNameConflict,
-  TechniqueNotFound,
-  TechniqueValidationError,
+  buildTechnique,
+  markTechniqueInactive,
+  techniqueToView,
+  type Technique,
+  type TechniqueView,
+} from '../../domain/techniques/technique'
+import {
+  techniqueNotFound,
+  techniqueValidationError,
+  type TechniqueNameConflict,
+  type TechniqueNotFound,
+  type TechniqueValidationError,
 } from '../../domain/techniques/errors'
 import type { TechniqueRepository, TechniqueWriteModel } from './ports'
 import { commandMessages } from './messages'
-
-// DOM-006: repo.save() lanza TechniqueNameConflict ante catalog_techniques_name_unique — el
-// único error de infra que es en realidad un caso de negocio. Se atrapa acá, en el borde de
-// application/, y se convierte a Result; cualquier otro throw es una falla de infra real y se
-// deja propagar.
-async function saveOrConflict(
-  repo: TechniqueRepository,
-  technique: Technique,
-): Promise<Result<void, TechniqueNameConflict>> {
-  try {
-    await repo.save(technique)
-    return ok(undefined)
-  } catch (error) {
-    if (error instanceof TechniqueNameConflict) return err(error)
-    throw error
-  }
-}
 
 export type CommandDeps = {
   repo: TechniqueRepository
@@ -39,9 +30,7 @@ const toMoney = (value: number): Money | null => {
   }
 }
 
-// Construye la entidad desde el modelo del borde: envuelve los montos en Money (rechazando
-// no-enteros) y delega el resto de invariantes al constructor de Technique (DOM-007).
-function buildTechnique(
+function buildFromModel(
   id: string,
   model: TechniqueWriteModel,
   isActive: boolean,
@@ -68,10 +57,10 @@ function buildTechnique(
     moneyProblems.push(commandMessages.invalidDeposit)
   }
   if (priceFirstTime === null || deposit === null || moneyProblems.length > 0) {
-    return err(new TechniqueValidationError(moneyProblems))
+    return err(techniqueValidationError(moneyProblems))
   }
 
-  return Technique.create({
+  return buildTechnique({
     id,
     name: model.name,
     family: model.family,
@@ -94,11 +83,11 @@ export const createTechnique =
   ): Promise<
     Result<TechniqueView, TechniqueValidationError | TechniqueNameConflict>
   > => {
-    const built = buildTechnique(deps.newId(), model, true)
+    const built = buildFromModel(deps.newId(), model, true)
     if (isErr(built)) return built
-    const saved = await saveOrConflict(deps.repo, built.value)
+    const saved = await deps.repo.save(built.value)
     if (isErr(saved)) return saved
-    return ok(built.value.toView())
+    return ok(techniqueToView(built.value))
   }
 
 export const updateTechnique =
@@ -113,24 +102,25 @@ export const updateTechnique =
     >
   > => {
     const existing = await deps.repo.findById(id)
-    if (existing === null) return err(new TechniqueNotFound(id))
+    if (existing === null) return err(techniqueNotFound(id))
 
-    const built = buildTechnique(id, model, existing.isActive)
+    const built = buildFromModel(id, model, existing.isActive)
     if (isErr(built)) return built
-    const saved = await saveOrConflict(deps.repo, built.value)
+    const saved = await deps.repo.save(built.value)
     if (isErr(saved)) return saved
-    return ok(built.value.toView())
+    return ok(techniqueToView(built.value))
   }
 
 export const deactivateTechnique =
   (deps: CommandDeps) =>
   async (
     id: string,
-  ): Promise<Result<TechniqueView, TechniqueNotFound>> => {
+  ): Promise<Result<TechniqueView, TechniqueNotFound | TechniqueNameConflict>> => {
     const existing = await deps.repo.findById(id)
-    if (existing === null) return err(new TechniqueNotFound(id))
+    if (existing === null) return err(techniqueNotFound(id))
 
-    const deactivated = existing.deactivate()
-    await deps.repo.save(deactivated)
-    return ok(deactivated.toView())
+    const deactivated = markTechniqueInactive(existing)
+    const saved = await deps.repo.save(deactivated)
+    if (isErr(saved)) return saved
+    return ok(techniqueToView(deactivated))
   }

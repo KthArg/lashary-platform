@@ -1,8 +1,14 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup, fireEvent, within } from '@testing-library/react'
 import { SiteHeader, LOGIN_ROUTE, RESERVE_ROUTE, landingMessages } from '@/features/landing'
 
-afterEach(cleanup)
+const pathname = vi.hoisted(() => ({ current: null as string | null }))
+vi.mock('next/navigation', () => ({ usePathname: () => pathname.current }))
+
+afterEach(() => {
+  cleanup()
+  pathname.current = null
+})
 
 const sections = [
   { id: 'servicios', label: 'Servicios' },
@@ -100,5 +106,98 @@ describe('SiteMenu — UI-004: operable con teclado', () => {
     expect(document.body.style.overflow).toBe('hidden')
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(document.body.style.overflow).toBe('')
+  })
+})
+
+describe('SiteHeader — fuera de la portada (US-BLOG-02)', () => {
+  it('en /blog la marca y las secciones vuelven a la portada, no a un ancla que no existe', () => {
+    pathname.current = '/blog'
+    render(<SiteHeader sections={sections} />)
+
+    const nav = screen.getByRole('navigation', { name: landingMessages.header.sectionsNav })
+    expect(within(nav).getByRole('link', { name: 'Servicios' }).getAttribute('href')).toBe('/#servicios')
+    expect(screen.getByRole('link', { name: /LASHARY/ }).getAttribute('href')).toBe('/#inicio')
+  })
+
+  it('en /blog el menú del teléfono también vuelve a la portada', () => {
+    pathname.current = '/blog'
+    openMenu()
+
+    const dialog = screen.getByRole('dialog', { name: landingMessages.menu.dialogLabel })
+    expect(within(dialog).getByRole('link', { name: /El estudio/ }).getAttribute('href')).toBe('/#estudio')
+  })
+
+  it('en la portada las secciones siguen siendo anclas de la misma página', () => {
+    pathname.current = '/'
+    render(<SiteHeader sections={sections} />)
+
+    const nav = screen.getByRole('navigation', { name: landingMessages.header.sectionsNav })
+    expect(within(nav).getByRole('link', { name: 'Servicios' }).getAttribute('href')).toBe('#servicios')
+  })
+})
+
+describe('SiteHeader — enlace a la página de productos', () => {
+  const productsHref = '/productos'
+
+  it('con la ruta de productos, la cabecera enlaza a ella', () => {
+    render(<SiteHeader sections={sections} productsHref={productsHref} />)
+
+    const products = screen.getByRole('link', { name: landingMessages.header.products })
+    expect(products.getAttribute('href')).toBe(productsHref)
+  })
+
+  it('sin la ruta de productos, la cabecera no muestra el enlace', () => {
+    render(<SiteHeader sections={sections} />)
+
+    expect(screen.queryByRole('link', { name: landingMessages.header.products })).toBeNull()
+  })
+
+  it('el menú del teléfono ofrece los productos y se cierra al elegirlos', () => {
+    render(<SiteHeader sections={sections} productsHref={productsHref} />)
+    fireEvent.click(screen.getByRole('button', { name: landingMessages.header.openMenu }))
+
+    const dialog = screen.getByRole('dialog', { name: landingMessages.menu.dialogLabel })
+    const products = within(dialog).getByRole('link', { name: landingMessages.menu.products })
+    expect(products.getAttribute('href')).toBe(productsHref)
+    fireEvent.click(products)
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+})
+
+describe('SiteHeader — enlace al carrito', () => {
+  const cartHref = '/portal/carrito'
+
+  it('con la ruta del carrito, la cabecera enlaza a ella', () => {
+    render(<SiteHeader sections={sections} cartHref={cartHref} />)
+
+    const cart = screen.getByRole('link', { name: landingMessages.header.cart })
+    expect(cart.getAttribute('href')).toBe(cartHref)
+  })
+
+  it('en la cabecera el carrito es un ícono con nombre accesible, a la derecha de "Reservar cita"', () => {
+    render(<SiteHeader sections={sections} cartHref={cartHref} />)
+
+    const cart = screen.getByRole('link', { name: landingMessages.header.cart })
+    const reserve = screen.getByRole('link', { name: landingMessages.header.reserve })
+    expect(cart.textContent).toBe('')
+    expect(cart.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true')
+    expect(reserve.compareDocumentPosition(cart) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('sin la ruta del carrito, la cabecera no muestra el enlace', () => {
+    render(<SiteHeader sections={sections} />)
+
+    expect(screen.queryByRole('link', { name: landingMessages.header.cart })).toBeNull()
+  })
+
+  it('el menú del teléfono ofrece el carrito y se cierra al elegirlo', () => {
+    render(<SiteHeader sections={sections} cartHref={cartHref} />)
+    fireEvent.click(screen.getByRole('button', { name: landingMessages.header.openMenu }))
+
+    const dialog = screen.getByRole('dialog', { name: landingMessages.menu.dialogLabel })
+    const cart = within(dialog).getByRole('link', { name: landingMessages.menu.cart })
+    expect(cart.getAttribute('href')).toBe(cartHref)
+    fireEvent.click(cart)
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
 })

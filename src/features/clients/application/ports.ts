@@ -14,6 +14,7 @@ export interface ClientsPage { clients: ClientRecord[]; total: number }
 export type RepositoryFailure = 'repository-failed'
 
 export interface ClientRepository {
+  findById(id: string): Promise<Result<ClientRecord | null, RepositoryFailure>>
   findByPhoneDigits(digits: string): Promise<Result<ClientPhoneEntry[], RepositoryFailure>>
   insertVerified(client: ClientWriteModel): Promise<Result<ClientRecord, RepositoryFailure>>
   update(id: string, client: ClientWriteModel): Promise<Result<ClientRecord | null, RepositoryFailure>>

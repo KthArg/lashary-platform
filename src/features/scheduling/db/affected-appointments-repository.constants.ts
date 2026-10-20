@@ -1,0 +1,3 @@
+export const COUNT_APPOINTMENTS_IN_RANGE_FUNCTION = 'scheduling_count_appointments_in_range'
+
+export const COUNT_APPOINTMENTS_BY_WEEKLY_BLOCK_FUNCTION = 'scheduling_count_appointments_affected_by_weekly_block'

@@ -78,3 +78,8 @@ Punto de entrada único para "¿dónde está el proyecto?". Lo genera `scripts/s
 **Regla.** En specs y estado: hechos, fechas, IDs y rutas. Todo defecto nombra archivo o función (`donde:`). Toda deuda nombra qué se aceptó, en qué PR y qué cuesta. Ningún adjetivo de progreso en ninguna parte.
 **Racional.** Un defecto sin ubicación es un rumor; una deuda sin decisión registrada es indistinguible de un error; "casi listo" significa seis cosas para seis personas.
 **Cumplimiento.** L4 skills + L5 review.
+
+### EST-007 — El PR de la historia trae su estado final
+**Regla.** El PR `us/<ID>` → `main` deja a `<ID>` en `terminada`, con su `evidencia:`, en el `SPEC.md` de la feature dueña: el cambio de estado viaja **en ese mismo PR**, no en uno posterior. La única excepción es la historia que entra con un criterio diferido (DEPENDENCIES.md § Criterios diferidos): queda `en_progreso` con su `falta:` nombrando el criterio y la historia que lo habilita, y el PR lleva la etiqueta `excepcion-proceso` con la justificación en la descripción (INTEGRATION.md, el escape legítimo).
+**Racional.** El merge a `main` es el momento en que el estado de la historia se puede verificar contra el código. Si el spec sigue en `en_progreso` después, las historias que dependen de ella figuran bloqueadas en falso y nadie lo nota hasta que alguien pregunta por qué no se pueden empezar: pasó con US-AGE-13, que entró a `main` el 2026-10-13 y siguió `en_progreso` hasta el 2026-10-14, bloqueando US-AGE-09 y US-CLI-04.
+**Cumplimiento.** L1 `scripts/rules/check-story-state.sh`, en su propio workflow (`.github/workflows/pr-story-state.yml`) para re-evaluar cuando el PR se marca listo o cambian sus etiquetas; en draft no juzga. Dentro de `verify.sh` no conoce las etiquetas y solo avisa.

@@ -1,5 +1,11 @@
 import { ok, err, isErr, type Result } from '@/shared/result'
-import { buildProduct, markProductInactive, type AdminProduct } from '../../domain/product'
+import {
+  buildProduct,
+  markProductActive,
+  markProductInactive,
+  type AdminProduct,
+} from '../../domain/product'
+import { firstAvailableSlug, slugFromName } from '../../domain/product-slug'
 import {
   createProductNotFound,
   isDuplicateProductSlug,
@@ -29,17 +35,19 @@ export type ProductCommandDeps = {
 
 function buildFromWrite(
   id: string,
+  slug: string,
   model: ProductWrite,
   isActive: boolean,
 ): Result<AdminProduct, InvalidProduct> {
   return buildProduct({
     id,
-    slug: model.slug,
+    slug,
     name: model.name,
     description: model.description,
     imageUrl: model.imageUrl,
     priceCrc: model.priceCrc,
     displayOrder: model.displayOrder,
+    stock: model.stock,
     isActive,
   })
 }
@@ -49,11 +57,13 @@ export const createProduct =
   async (
     model: ProductWrite,
   ): Promise<Result<AdminProduct, InvalidProduct | DuplicateProductSlug>> => {
-    const built = buildFromWrite(deps.newId(), model, true)
-    if (isErr(built)) return built
-    const saved = await saveOrConflict(deps.repo, built.value)
+    const draft = buildFromWrite(deps.newId(), slugFromName(model.name), model, true)
+    if (isErr(draft)) return draft
+    const takenSlugs = await deps.repo.listSlugsStartingWith(draft.value.slug)
+    const product = { ...draft.value, slug: firstAvailableSlug(draft.value.slug, takenSlugs) }
+    const saved = await saveOrConflict(deps.repo, product)
     if (isErr(saved)) return saved
-    return ok(built.value)
+    return ok(product)
   }
 
 export const updateProduct =
@@ -67,7 +77,7 @@ export const updateProduct =
     const existing = await deps.repo.findById(id)
     if (existing === null) return err(createProductNotFound(id))
 
-    const built = buildFromWrite(id, model, existing.isActive)
+    const built = buildFromWrite(id, existing.slug, model, existing.isActive)
     if (isErr(built)) return built
     const saved = await saveOrConflict(deps.repo, built.value)
     if (isErr(saved)) return saved
@@ -83,4 +93,15 @@ export const deactivateProduct =
     const deactivated = markProductInactive(existing)
     await deps.repo.save(deactivated)
     return ok(deactivated)
+  }
+
+export const activateProduct =
+  (deps: ProductCommandDeps) =>
+  async (id: string): Promise<Result<AdminProduct, ProductNotFound>> => {
+    const existing = await deps.repo.findById(id)
+    if (existing === null) return err(createProductNotFound(id))
+
+    const activated = markProductActive(existing)
+    await deps.repo.save(activated)
+    return ok(activated)
   }

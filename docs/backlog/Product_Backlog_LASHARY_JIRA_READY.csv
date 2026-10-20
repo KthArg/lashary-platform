@@ -111,10 +111,9 @@ Como administradora del negocio, quiero definir el anticipo que se cobra para co
 
 Acceptance Criteria:
 • Puedo definir el anticipo por tecnica y por paquete.
-• El monto del anticipo se muestra al cliente antes de confirmar la cita, junto con la advertencia de que se pierde si cancela fuera de la ventana permitida o si no asiste.
-• El anticipo requerido y el efectivamente registrado quedan almacenados en la cita, no recalculados a partir del catalogo actual.
-• El anticipo se descuenta del saldo pendiente al cerrar la cita, de modo que el pago final sea la diferencia.
-• La administradora puede exonerar el anticipo a un cliente especifico, y la exoneracion queda en la bitacora de auditoria.","6","US-AGE-13","Administración","Administrador","High","5","To Do","","","Administracion"
+• La administradora puede exonerar el anticipo a un cliente especifico, y la exoneracion queda en la bitacora de auditoria.
+
+Decision de alcance aprobada por el PO, comunicada por Bayron el 2026-10-03: se conservan los criterios originales 1 y 5. Los criterios originales 2 y 3 se trasladan a US-AGE-05 y el 4 a US-AGE-12; siguen obligatorios en esas historias (docs/process/DEPENDENCIES.md).","6","US-AGE-13","Administración","Administrador","High","5","To Do","","","Administracion"
 "27","Story","Configurar espacios y horarios disponibles para citas","User Story:
 Como administradora del negocio, quiero configurar los espacios y horarios disponibles para citas, para controlar cuando los clientes pueden agendar.
 
@@ -122,8 +121,8 @@ Acceptance Criteria:
 • Puedo definir bloques de disponibilidad por dia desde el panel administrativo.
 • Puedo definir dias no laborables y feriados.
 • Puedo bloquear manualmente un espacio especifico.
-• Los cambios se reflejan inmediatamente en el calendario publico.
-• Reducir la disponibilidad no elimina citas ya agendadas: el sistema advierte y pide confirmacion si el cambio afecta citas existentes.","6","US-AGE-01","Administración","Administrador","High","8","To Do","","","Administracion"
+
+Decision de alcance aprobada por el PO el 2026-10-14: se conservan los criterios 1 a 3. El criterio 4 (los cambios se reflejan inmediatamente en el calendario publico) se traslada a US-AGE-02 y el 5 (reducir la disponibilidad no elimina citas ya agendadas; el sistema advierte y pide confirmacion) a US-AGE-05; siguen obligatorios en esas historias (docs/process/DEPENDENCIES.md).","6","US-AGE-01","Administración","Administrador","High","8","To Do","","","Administracion"
 "28","Story","Visualizar calendario con espacios disponibles por dia","User Story:
 Como cliente, quiero visualizar cada dia del calendario con los espacios disponibles, para elegir el horario que mejor se ajuste a mi disponibilidad.
 
@@ -132,15 +131,19 @@ Acceptance Criteria:
 • Los espacios ocupados no revelan de quien es la cita ni que servicio es.
 • Los espacios ya reservados no pueden seleccionarse.
 • La navegacion entre dias no requiere recargar la pagina.
-• La disponibilidad mostrada considera la duracion del servicio seleccionado mas su tiempo de limpieza.","7","US-AGE-02","Cliente Registrado","Cliente Registrado","High","8","To Do","","","Cliente-Registrado"
+• La disponibilidad mostrada considera la duracion del servicio seleccionado mas su tiempo de limpieza.
+• Los cambios de disponibilidad que hace la administradora se reflejan inmediatamente en el calendario.
+
+Criterio 4 recibido de US-AGE-01, traslado aprobado por el PO el 2026-10-14; pendiente de implementacion y pruebas (docs/process/DEPENDENCIES.md).","7","US-AGE-02","Cliente Registrado","Cliente Registrado","High","8","To Do","","","Cliente-Registrado"
 "29","Story","Seleccionar la tecnica a agendar","User Story:
 Como cliente, quiero seleccionar la tecnica que deseo agendar, para que el sistema calcule el tiempo requerido segun si es primera vez o re-aplicacion.
 
 Acceptance Criteria:
 • El listado de tecnicas se obtiene del catalogo administrado por la administradora.
-• El sistema determina si es primera vez o re-aplicacion segun el historial del cliente, permitiendo corregirlo manualmente.
 • La duracion del espacio a reservar se ajusta automaticamente e incluye el tiempo de limpieza.
-• Solo se puede seleccionar una tecnica por cita, conforme a la regla de negocio definida.","7","US-AGE-03","Cliente Registrado","Cliente Registrado","High","5","To Do","","","Cliente-Registrado"
+• Solo se puede seleccionar una tecnica por cita, conforme a la regla de negocio definida.
+
+Decision de alcance aprobada por el PO (lider del proyecto), comunicada por Erick Duran el 2026-10-17: se conservan los criterios 1, 3 y 4. El criterio 2 (el sistema determina si es primera vez o re-aplicacion segun el historial del cliente, permitiendo corregirlo manualmente) se traslada a US-AGE-05, porque requiere el vinculo cliente-cita que esa historia agrega sobre scheduling_appointments; sigue obligatorio en esa historia (docs/process/DEPENDENCIES.md).","7","US-AGE-03","Cliente Registrado","Cliente Registrado","High","5","To Do","","","Cliente-Registrado"
 "30","Story","Evitar choques de horario en reservas simultaneas","User Story:
 Como administradora de la página quiero poder aceptar o rechazar manualmente mediante un historial de citas, para evitar choques de horario, o en caso de tener una emergencia, poder rechazarla y que no se agende automáticamente.
 
@@ -159,7 +162,16 @@ Acceptance Criteria:
 • Al confirmar, el espacio queda ocupado de forma automatica.
 • Si el espacio fue tomado entre la seleccion y la confirmacion, el cliente recibe un mensaje claro y vuelve a la seleccion de horario sin perder el resto de sus datos.
 • El cliente recibe una confirmacion visual con el detalle de la cita.
-• El precio de la tecnica queda congelado en la cita al momento de confirmarla.","7","US-AGE-05","Cliente Registrado","Cliente Registrado","High","8","To Do","","","Cliente-Registrado"
+• El precio de la tecnica queda congelado en la cita al momento de confirmarla.
+• El monto del anticipo se muestra al cliente antes de confirmar la cita, junto con la advertencia de que se pierde si cancela fuera de la ventana permitida o si no asiste.
+• El anticipo requerido y el efectivamente registrado quedan almacenados en la cita, no recalculados a partir del catalogo actual.
+• Reducir la disponibilidad no elimina citas ya agendadas: al quitar un bloque semanal, cerrar un dia o bloquear un espacio que afecte citas existentes, el sistema advierte y pide confirmacion.
+• El sistema determina si es primera vez o re-aplicacion segun el historial del cliente, permitiendo corregirlo manualmente.
+
+Criterios originales 2 y 3 recibidos de US-AGE-13, traslado aprobado por el PO y comunicado por Bayron el 2026-10-03; pendientes de implementacion y pruebas (docs/process/DEPENDENCIES.md).
+Criterio 5 recibido de US-AGE-01, traslado aprobado por el PO el 2026-10-14; pendiente de implementacion y pruebas (docs/process/DEPENDENCIES.md).
+Criterio 2 recibido de US-AGE-03, traslado aprobado por el PO (lider del proyecto) y comunicado por Erick Duran el 2026-10-17; pendiente de implementacion y pruebas (docs/process/DEPENDENCIES.md).
+Decision de alcance aprobada por el PO el 2026-10-19, comunicada por Bayron: el criterio 2 (morosidad) se traslada a US-MOR-02 (aprobado por KthArg); los criterios 7 y 10 se entregan parcialmente: el aviso del anticipo es generico, sin la ventana de cancelacion (US-AGE-06), y la deteccion de primera vez o re-aplicacion no tiene citas completadas hasta US-AGE-12 ni campo para que la administradora corrija el anticipo (US-MOR-03). Faltantes con dueno en el SPEC de scheduling (docs/process/DEPENDENCIES.md).","7","US-AGE-05","Cliente Registrado","Cliente Registrado","High","8","To Do","","","Cliente-Registrado"
 "32","Story","Reagendar una cita existente","User Story:
 Como cliente, quiero mover mi cita a otra fecha u hora, para no tener que cancelarla y perder el anticipo cuando solo necesito cambiarla.
 
@@ -211,7 +223,10 @@ Acceptance Criteria:
 • Una cita completada genera el cargo correspondiente al cliente.
 • Una ausencia sin aviso aplica la politica definida por el negocio respecto del anticipo.
 • Las citas pasadas sin cerrar aparecen destacadas en el panel hasta que la administradora las resuelva.
-• Ningun estado se revierte silenciosamente: todo cambio queda en la bitacora de auditoria.","6","US-AGE-12","Administración","Administrador","High","5","To Do","","","Administracion"
+• Ningun estado se revierte silenciosamente: todo cambio queda en la bitacora de auditoria.
+• El anticipo se descuenta del saldo pendiente al cerrar la cita, de modo que el pago final sea la diferencia.
+
+Criterio original 4 recibido de US-AGE-13, traslado aprobado por el PO y comunicado por Bayron el 2026-10-03; pendientes de implementacion y pruebas (docs/process/DEPENDENCIES.md).","6","US-AGE-12","Administración","Administrador","High","5","To Do","","","Administracion"
 "38","Story","Bloquear manualmente espacios del calendario","User Story:
 Como administradora del negocio, quiero bloquear manualmente espacios del calendario, para reservar tiempo personal sin que los clientes puedan agendar.
 
