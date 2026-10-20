@@ -10,7 +10,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-03
     estado: en_progreso
-    falta: "dominio y aplicación completos (sin canales reales todavía); faltan la persistencia, los canales y el disparo del cron"
+    falta: "dominio, aplicación y persistencia completos; faltan los canales reales (Twilio/Resend) y el disparo del cron"
   - id: US-NOT-04
     estado: no_iniciada
   - id: US-NOT-05
@@ -68,10 +68,19 @@ en `application/ports.ts`: `SchedulingReadPort`, `ClientContactPort`, `ReminderR
 - `application/run-reminder-cycle.ts`: encadena descubrir → reconciliar → enviar; lo llamará el
   cron. Prueba: `__tests__/run-reminder-cycle.test.ts`.
 
+Persistencia (`db/reminder-repository.ts`, migración `20261020000000_notifications_reminders.sql`):
+tabla `notifications_reminders` (ARCH-006), sin FK a `scheduling_appointments` ni
+`clients_profiles` a propósito (es un registro operativo de envíos, no un dato de negocio
+permanente, a diferencia del FK de `payments` a `clients_profiles`, ADR-0009). RLS solo staff
+(`auth_is_staff()`), sin política de DELETE. Índices sobre `appointment_id` y `(status, send_at)`
+(PERF-003). El repositorio acepta un `SupabaseClient` inyectable para que el cron (sin cookies)
+pase su propia sesión. Pruebas: pgTAP
+`supabase/tests/database/notifications_reminders_staff_access.test.sql` (control positivo de
+staff y negativo de clienta y anon, SEC-002), corrida contra Supabase local el 2026-10-20.
+
 ## Qué no hace todavía
 
-Persistencia real (los puertos hoy los implementan solo los dobles de prueba), canales reales
-(Twilio/Resend, ADR-0006) y el disparo del cron: siguientes piezas de US-NOT-03.
+Canales reales (Twilio/Resend, ADR-0006) y el disparo del cron: siguientes piezas de US-NOT-03.
 
 ## Contrato público (`index.ts`, ARCH-003)
 
