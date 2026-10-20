@@ -1,0 +1,17 @@
+export const slotPickerStyles = {
+  empty: 'rounded-box bg-base-200 p-4 text-sm',
+  form: 'flex flex-col gap-4',
+  fieldset: 'flex flex-col gap-3',
+  legend: 'text-sm font-semibold first-letter:uppercase',
+  grid: 'grid grid-cols-1 gap-2 sm:grid-cols-3 lg:grid-cols-4',
+  slotFree: 'flex cursor-pointer items-center gap-2 rounded-box border border-success bg-success/10 p-2',
+  slotBusy: 'flex cursor-not-allowed items-center gap-2 rounded-box border border-base-300 bg-base-200 p-2 opacity-70',
+  checkbox: 'checkbox checkbox-sm',
+  time: 'flex-1 whitespace-nowrap text-sm font-medium',
+  badgeFree: 'badge badge-success badge-sm',
+  badgeBusy: 'badge badge-ghost badge-sm',
+  field: 'form-control w-full sm:max-w-md',
+  labelText: 'label-text',
+  input: 'input input-bordered w-full',
+  submit: 'btn btn-primary self-start',
+}
