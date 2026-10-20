@@ -24,6 +24,8 @@ const QUOTE: BookingQuote = {
   durationMin: 60,
   bufferMin: 15,
   depositDue: 10000,
+  promotionId: null,
+  discountPercent: null,
 }
 const validParams = { servicio: 't1', fecha: '2026-10-20', espacio: '540' }
 
@@ -128,5 +130,28 @@ describe('toBookingConfirmView — criterio 7', () => {
       status: 'ready',
       summary: { deposit: bookingConfirmMessages.noDeposit, depositNotice: null },
     })
+  })
+})
+
+describe('toBookingConfirmView — US-PROM-01 criterio 2 (mostrar la promoción antes de confirmar)', () => {
+  const ready = async (quote: BookingQuote) => {
+    const { deps } = createDeps({ quote: async () => ok(quote) })
+    return toBookingConfirmView(await loadBookingConfirm(validParams, deps))
+  }
+
+  it('con promoción vigente, el precio ya viene rebajado y se avisa el descuento', async () => {
+    const view = await ready({ ...QUOTE, servicePrice: 28000, promotionId: 'promo-1', discountPercent: 20 })
+    expect(view).toMatchObject({
+      status: 'ready',
+      summary: {
+        price: Money.fromColones(28000).toString(),
+        promotionNotice: bookingConfirmMessages.promotionNotice(20),
+      },
+    })
+  })
+
+  it('sin promoción vigente, no hay aviso', async () => {
+    const view = await ready(QUOTE)
+    expect(view).toMatchObject({ status: 'ready', summary: { promotionNotice: null } })
   })
 })

@@ -74,6 +74,7 @@ export async function performBooking(
           durationMin: (booked.endsAtMs - booked.startsAtMs) / MS_PER_MINUTE,
           price: booked.servicePrice,
           depositDue: booked.depositRequired,
+          discountPercent: booked.discountPercent,
         }),
       },
     }

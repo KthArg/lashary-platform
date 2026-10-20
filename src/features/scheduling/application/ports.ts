@@ -76,6 +76,8 @@ export type BookedAppointment = {
   depositRequired: number
   depositRegistered: number
   isFirstTime: boolean
+  promotionId: string | null
+  discountPercent: number | null
 }
 
 export type BookAppointmentError =
@@ -101,6 +103,8 @@ export type BookingQuote = {
   durationMin: number
   bufferMin: number
   depositDue: number
+  promotionId: string | null
+  discountPercent: number | null
 }
 
 export type QuoteBookingError = ClientNotRegistered | TechniqueNotAvailable | StorageFailed

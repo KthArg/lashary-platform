@@ -37,6 +37,8 @@ const BOOKED: BookedAppointment = {
   depositRequired: 10000,
   depositRegistered: 0,
   isFirstTime: true,
+  promotionId: null,
+  discountPercent: null,
 }
 const fields = { servicio: 't1', fecha: '2027-03-01', espacio: '600' }
 
@@ -84,6 +86,23 @@ describe('performBooking — US-AGE-05', () => {
       },
     })
     if (outcome.kind === 'booked') expect(outcome.booked.summary.when).toContain('10:00–11:00')
+  })
+
+  it('con promoción aplicada, el resumen de la confirmación avisa el descuento (US-PROM-01)', async () => {
+    const { deps } = createDeps({
+      book: async () => ok({ ...BOOKED, servicePrice: 28000, promotionId: 'promo-1', discountPercent: 20 }),
+    })
+    const outcome = await performBooking(fields, deps)
+
+    expect(outcome).toMatchObject({
+      kind: 'booked',
+      booked: {
+        summary: {
+          price: Money.fromColones(28000).toString(),
+          promotionNotice: bookingConfirmMessages.promotionNotice(20),
+        },
+      },
+    })
   })
 
   it.each([
