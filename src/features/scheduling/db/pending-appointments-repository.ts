@@ -3,7 +3,7 @@ import { err, ok } from '@/shared/result'
 import { storageFailed } from '../domain/errors'
 import { PENDING_APPROVAL_STATUS } from '../domain/appointment-decision.constants'
 import type { AppointmentChoice, PendingAppointmentsRepository } from '../application/ports'
-import { APPOINTMENTS_TABLE, PENDING_APPOINTMENT_COLUMNS } from './appointment-repository.constants'
+import { APPOINTMENTS_TABLE, PENDING_APPOINTMENT_COLUMNS, PENDING_APPOINTMENTS_LIMIT } from './appointment-repository.constants'
 
 type PendingAppointmentRow = {
   id: string
@@ -44,6 +44,7 @@ export function createSupabasePendingAppointmentsRepository(
         .select(PENDING_APPOINTMENT_COLUMNS)
         .eq('status', PENDING_APPROVAL_STATUS)
         .order('starts_at', { ascending: true })
+        .limit(PENDING_APPOINTMENTS_LIMIT)
 
       if (error) return err(storageFailed(error.message))
 

@@ -5,6 +5,7 @@ import type { SchedulingAlert } from '../domain/alert'
 import type {
   AppointmentNotPending,
   ClientNotRegistered,
+  TooManyPendingAppointments,
   SlotNotOffered,
   SpaceNotAvailable,
   StorageFailed,
@@ -59,6 +60,7 @@ export type BookedAppointment = {
 
 export type BookAppointmentError =
   | ClientNotRegistered
+  | TooManyPendingAppointments
   | TechniqueNotAvailable
   | SlotNotOffered
   | SpaceNotAvailable
