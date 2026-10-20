@@ -2,7 +2,7 @@
 feature: catalog
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-09
+actualizado: 2026-10-18
 historias:
   - id: US-AGE-08
     estado: terminada
@@ -107,6 +107,7 @@ Detalle y garantías: [docs/contracts/catalog-api.md](../../../docs/contracts/ca
 - `getTechnique(id)` → `TechniqueView | TechniqueNotFound`. US-AGE-05 toma el `TechniqueSnapshot` de aquí al confirmar la cita (DOM-002).
 - Tipos: `TechniqueView`, `ServiceFamily`, `TechniqueSnapshot`. La entidad de dominio `Technique` (usa `Money`) no cruza la frontera.
 - `create` / `update` / `deactivate` **no se exportan**: son admin, se usan por server action dentro de `catalog/ui/`.
+- Contrato SQL `public.catalog_booking_terms(technique_id, is_first_time)` (migración `20261018000003_catalog_booking_terms_fn.sql`): las condiciones de la técnica que usa la reserva de US-AGE-05, para que `scheduling` no lea `catalog_techniques`. Detalle en [catalog-api.md](../../../docs/contracts/catalog-api.md). Prueba: pgTAP `catalog_booking_terms.test.sql`.
 
 ## Decisiones
 
