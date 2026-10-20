@@ -1,12 +1,15 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
 import { bookingConfirmMessages, CANCELLATION_WINDOW_HOURS } from '../constants/booking-confirm-strings'
 import { BookingConfirmView } from '../components/BookingConfirmView'
 import type { BookingConfirmView as BookingConfirmViewModel } from '../types/booking-confirm.types'
 
+vi.mock('../actions/book-appointment-action', () => ({ bookAppointmentAction: vi.fn() }))
+
 afterEach(cleanup)
 
 const BACK_HREF = '/portal/citas/calendario?servicio=t1&fecha=2026-10-20'
+const fields = { serviceKey: 't1', date: '2026-10-20', startMin: 540 }
 const summary = {
   service: 'Clásicas — primera vez',
   when: 'Martes 20 de octubre · 09:00–10:00',
@@ -20,7 +23,7 @@ const renderView = (view: BookingConfirmViewModel) => render(<BookingConfirmView
 
 describe('BookingConfirmView — US-AGE-05', () => {
   it('muestra el resumen y la advertencia del anticipo antes de confirmar (criterio 7)', () => {
-    renderView({ status: 'ready', summary, backHref: BACK_HREF })
+    renderView({ status: 'ready', fields, summary, backHref: BACK_HREF })
 
     expect(screen.getByText('Clásicas — primera vez')).toBeTruthy()
     expect(screen.getByText('₡10.000')).toBeTruthy()
@@ -31,6 +34,7 @@ describe('BookingConfirmView — US-AGE-05', () => {
   it('sin anticipo no muestra ninguna advertencia', () => {
     renderView({
       status: 'ready',
+      fields,
       summary: { ...summary, deposit: bookingConfirmMessages.noDeposit, depositNotice: null },
       backHref: BACK_HREF,
     })

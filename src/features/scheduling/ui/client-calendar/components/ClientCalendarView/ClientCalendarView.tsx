@@ -5,6 +5,15 @@ import { SlotList } from '../SlotList'
 import { clientCalendarViewStyles as STYLES } from './ClientCalendarView.styles'
 import type { ClientCalendarViewProps } from './ClientCalendarView.types'
 
+function CalendarNotice({ message }: { message: string | null }) {
+  if (!message) return null
+  return (
+    <div role="alert" className={STYLES.alertWarning}>
+      <span>{message}</span>
+    </div>
+  )
+}
+
 function CalendarBody({ view }: ClientCalendarViewProps) {
   const copy = clientCalendarMessages
 
@@ -20,6 +29,7 @@ function CalendarBody({ view }: ClientCalendarViewProps) {
     case 'chooseService':
       return (
         <section className={STYLES.card}>
+          <CalendarNotice message={view.notice} />
           <ServicePicker picker={view.picker} />
           <p className={STYLES.empty}>{copy.chooseService}</p>
         </section>
@@ -27,6 +37,7 @@ function CalendarBody({ view }: ClientCalendarViewProps) {
     case 'invalid':
       return (
         <section className={STYLES.card}>
+          <CalendarNotice message={view.notice} />
           <ServicePicker picker={view.picker} />
           <DayNavigator day={view.day} />
           <div role="alert" className={STYLES.alertError}>
@@ -37,6 +48,7 @@ function CalendarBody({ view }: ClientCalendarViewProps) {
     case 'ready':
       return (
         <section className={STYLES.card}>
+          <CalendarNotice message={view.notice} />
           <ServicePicker picker={view.picker} />
           <DayNavigator day={view.day} />
           <SlotList slots={view.slots} serviceKey={view.picker.selectedKey ?? ''} date={view.picker.date} />

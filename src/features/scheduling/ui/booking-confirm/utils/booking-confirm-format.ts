@@ -34,6 +34,7 @@ export function toBookingConfirmView(data: BookingConfirmData): BookingConfirmVi
   const { params, quote } = data
   return {
     status: 'ready',
+    fields: params,
     backHref: data.backHref,
     summary: toBookingSummary({
       serviceName: data.serviceName,

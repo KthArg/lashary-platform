@@ -6,4 +6,5 @@ export const clientCalendarViewStyles = {
   card: 'flex flex-col gap-4 rounded-xl border border-brand-border bg-brand-surface p-4 sm:p-6 shadow-sm',
   empty: 'rounded-box bg-base-200 p-4 text-sm',
   alertError: 'alert alert-error',
+  alertWarning: 'alert alert-warning',
 }

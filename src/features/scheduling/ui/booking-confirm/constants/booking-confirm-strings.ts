@@ -1,5 +1,7 @@
 export const BOOKING_CONFIRM_PATH = '/portal/citas/calendario/confirmar'
 
+export const PORTAL_CITAS_PATH = '/portal/citas'
+
 export const CANCELLATION_WINDOW_HOURS = 48
 
 export const MAX_CONFIRM_SERVICES = 100
@@ -18,6 +20,10 @@ export const bookingConfirmMessages = {
   depositNotice: (hours: number) =>
     `El anticipo se pierde si cancelás con menos de ${hours} horas de anticipación o si no asistís a la cita.`,
   changeSlot: 'Elegir otro horario',
+  confirm: 'Confirmar reserva',
+  booking: 'Reservando…',
+  bookedTitle: 'Tu reserva fue enviada',
+  backToCitas: 'Ir a mis citas',
   accessDenied: 'Iniciá sesión como clienta para reservar una cita.',
   invalid: 'Ese horario no es válido. Elegí uno de nuevo.',
   unavailable: 'Ese servicio ya no está disponible. Elegí otro.',

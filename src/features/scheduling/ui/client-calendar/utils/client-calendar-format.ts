@@ -35,17 +35,19 @@ const toDay = (date: string, today: string, serviceKey: string): DayView => ({
 })
 
 export function toCalendarView(data: ClientCalendarData): CalendarView {
+  const notice = 'notice' in data && data.notice ? clientCalendarMessages.notices[data.notice] : null
   switch (data.status) {
     case 'forbidden':
     case 'noServices':
       return { status: data.status }
     case 'chooseService':
-      return { status: 'chooseService', picker: toPicker(data.options, data.date) }
+      return { status: 'chooseService', picker: toPicker(data.options, data.date), notice }
     case 'invalid':
       return {
         status: 'invalid',
         picker: toPicker(data.options, data.date, data.selected.key),
         day: toDay(data.date, data.today, data.selected.key),
+        notice,
       }
     case 'ready':
       return {
@@ -53,6 +55,7 @@ export function toCalendarView(data: ClientCalendarData): CalendarView {
         picker: toPicker(data.options, data.date, data.selected.key),
         day: toDay(data.date, data.today, data.selected.key),
         slots: toSlotViews(data.slots),
+        notice,
       }
   }
 }
