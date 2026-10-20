@@ -171,4 +171,5 @@ Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el
 - `schedulingMessages` — también en `client.ts` para `loading.tsx`/`error.tsx`.
 - `clientCalendarMessages` — textos del calendario de la clienta: en `index.ts` para el título de `src/app/portal/citas/calendario/page.tsx` y en `client.ts` para su `error.tsx`.
 - `ApprovalQueue`, `listPendingAppointmentsAction` y `APPROVAL_QUEUE_LABELS` — componen `/admin/citas`. Consumidor: `src/app/admin/citas/page.tsx`. No están en `client.ts`.
-- Dominio y aplicación (`selectTechnique`, puertos) son superficie interna: ninguna otra feature los consume todavía.
+- `listSchedulingAppointmentsForReminders` y `getSchedulingAppointmentForReminder` (US-NOT-03, ARCH-005): lectura pública de solo lectura sobre `scheduling_appointments` (`appointmentId`, `clientId`, `startsAt`, `techniqueName` de citas `approved`/`confirmed`) para que `notifications` nunca consulte la tabla directo. `db/reminder-snapshots-repository.ts` acepta un `SupabaseClient` inyectado para que el cron de `notifications` (sin cookies) pase su propia sesión. Consumidor: `notifications/index.ts`.
+- Dominio y aplicación (`selectTechnique`, puertos) son superficie interna: ninguna otra feature los consume todavía, salvo el puerto de solo lectura anterior.
