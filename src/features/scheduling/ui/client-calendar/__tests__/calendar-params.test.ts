@@ -11,6 +11,14 @@ describe('calendar-params — US-AGE-02', () => {
     })
   })
 
+  it.each([
+    ['ocupado', 'ocupado'],
+    ['no-ofrecido', 'no-ofrecido'],
+    ['otra-cosa', undefined],
+  ])('el aviso %s se lee solo si es uno conocido', (notice, expected) => {
+    expect(readCalendarParams({ servicio: 't1', aviso: notice }, TODAY).notice).toBe(expected)
+  })
+
   it('sin parámetros: sin servicio y hoy', () => {
     expect(readCalendarParams({}, TODAY)).toEqual({ serviceKey: undefined, date: TODAY })
   })
@@ -28,6 +36,9 @@ describe('calendar-params — US-AGE-02', () => {
     )
     expect(calendarHref({ serviceKey: 't1' })).toBe('/portal/citas/calendario?servicio=t1')
     expect(calendarHref({})).toBe('/portal/citas/calendario')
+    expect(calendarHref({ serviceKey: 't1', date: '2026-10-20', notice: 'ocupado' })).toBe(
+      '/portal/citas/calendario?servicio=t1&fecha=2026-10-20&aviso=ocupado',
+    )
   })
 
   it('la clave del pedido cambia con el servicio o el día, y no con otros parámetros (UI-003)', () => {

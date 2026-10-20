@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { systemClock } from '@/shared/clock'
+import { createClient } from '@/shared/lib/supabase/server'
+import { addCalendarDays, studioLocalToUtc } from '@/shared/studio-time'
 import { DEFAULT_RESOURCE_ID } from '../../../application/availability-ports'
 import { addWeeklyBlock, listWeeklyBlocks, removeWeeklyBlock } from '../../../application/weekly-availability'
 import { addClosedDate, listUpcomingClosedDates, removeClosedDate } from '../../../application/closed-dates'
@@ -7,6 +9,7 @@ import { addManualBlock, listUpcomingManualBlocks } from '../../../application/m
 import { weeklyAvailabilityRepository } from '../../../db/weekly-availability-repository'
 import { closedDateRepository } from '../../../db/closed-date-repository'
 import { manualBlockRepository } from '../../../db/manual-block-repository'
+import { createSupabaseAffectedAppointmentsRepository } from '../../../db/affected-appointments-repository'
 
 // Composición de los casos de uso de disponibilidad con sus adaptadores reales. Siempre sobre el
 // recurso por defecto: la UI no ofrece selector mientras exista uno solo (ADR-0005).
@@ -42,6 +45,22 @@ export const availabilityService = {
 
   async removeClosedDate(id: string) {
     return removeClosedDate({ repo: await closedDateRepository() })(id)
+  },
+
+  async countAffectedByWeeklyBlock(blockId: string) {
+    return createSupabaseAffectedAppointmentsRepository(await createClient()).countByWeeklyBlock(blockId)
+  },
+
+  async countAffectedOnDate(date: string) {
+    return this.countAffectedInRange(studioLocalToUtc(date, 0), studioLocalToUtc(addCalendarDays(date, 1), 0))
+  },
+
+  async countAffectedInRange(startsAt: Date, endsAt: Date) {
+    return createSupabaseAffectedAppointmentsRepository(await createClient()).countInRange({
+      resourceId,
+      fromMs: startsAt.getTime(),
+      toMs: endsAt.getTime(),
+    })
   },
 
   async addManualBlock(input: { startsAt: Date; endsAt: Date; reason: string | null }) {

@@ -1,4 +1,5 @@
 import type { Result } from '@/shared/result'
+import type { StorageFailed } from '../domain/errors'
 import type { WeeklyBlock } from '../domain/weekly-availability'
 import type { ClosedDate } from '../domain/closed-dates'
 import type { ManualBlock } from '../domain/manual-blocks'
@@ -45,4 +46,15 @@ export interface ManualBlockRepository {
   // Bloqueos que terminan después de `after`, por inicio ascendente.
   listEndingAfter(resourceId: string, after: Date, limit: number): Promise<ManualBlock[]>
   insert(block: ManualBlock): Promise<Result<void, ManualBlockOverlap>>
+}
+
+export type AppointmentsInRange = {
+  resourceId: string
+  fromMs: number
+  toMs: number
+}
+
+export interface AffectedAppointmentsRepository {
+  countInRange(input: AppointmentsInRange): Promise<Result<number, StorageFailed>>
+  countByWeeklyBlock(blockId: string): Promise<Result<number, StorageFailed>>
 }

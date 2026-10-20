@@ -35,6 +35,27 @@ describe('ClientCalendarView — US-AGE-02', () => {
     expect(busy.disabled).toBe(true)
   })
 
+  it('los espacios libres van en un formulario que lleva al resumen de la reserva con el servicio y el día', () => {
+    const { container } = renderData(ready)
+    const form = container.querySelector('form[action="/portal/citas/calendario/confirmar"]')
+    expect(form).not.toBeNull()
+    expect((form!.querySelector('input[name="servicio"]') as HTMLInputElement).value).toBe('t2')
+    expect((form!.querySelector('input[name="fecha"]') as HTMLInputElement).value).toBe('2026-10-19')
+    expect((screen.getByRole('radio', { name: /09:00–10:00.*Libre/ }) as HTMLInputElement).name).toBe('espacio')
+    expect((screen.getByRole('button', { name: clientCalendarMessages.continueToConfirm }) as HTMLButtonElement).disabled).toBe(false)
+  })
+
+  it('muestra el aviso de que el espacio fue tomado y conserva el servicio y el día (criterio 4)', () => {
+    renderData({ ...ready, notice: 'ocupado' })
+    expect(screen.getByRole('alert').textContent).toContain(clientCalendarMessages.notices.ocupado)
+    expect((screen.getByRole('combobox') as HTMLSelectElement).value).toBe('t2')
+  })
+
+  it('si todos los espacios están ocupados, no se puede continuar', () => {
+    renderData({ ...ready, slots: [{ startMin: 540, endMin: 600, status: 'busy' }] })
+    expect((screen.getByRole('button', { name: clientCalendarMessages.continueToConfirm }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
   it('navega entre días con enlaces que conservan el servicio, sin ir a días pasados (criterio 4)', () => {
     renderData(ready)
     expect(screen.queryByRole('link', { name: new RegExp(clientCalendarMessages.previousDay) })).toBeNull()

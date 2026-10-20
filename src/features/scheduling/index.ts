@@ -6,3 +6,6 @@ export { clientCalendarMessages } from './ui/client-calendar/constants/client-ca
 export { ApprovalQueue } from './ui/approval-queue/components/ApprovalQueue'
 export { listPendingAppointmentsAction } from './ui/approval-queue/actions/approval-queue-actions'
 export { APPROVAL_QUEUE_LABELS } from './ui/approval-queue/constants/approval-queue.labels'
+export { BookingConfirmPage } from './ui/booking-confirm/components/BookingConfirmPage'
+export { bookingConfirmMessages } from './ui/booking-confirm/constants/booking-confirm-strings'
+export { AlertsPage } from './ui/alerts/components/AlertsPage'

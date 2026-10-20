@@ -1,6 +1,7 @@
 // Clases de DaisyUI y tokens del tema (UI-001, UI-002). El encabezado repite el de las demás
 // secciones del panel (catalog.styles.ts).
 export const availabilityStyles = {
+  confirmation: 'flex flex-col gap-3',
   main: 'mx-auto flex max-w-4xl flex-col gap-8 p-4 sm:p-6',
   header: 'border-b border-brand-border pb-4',
   title: 'font-serif text-2xl md:text-3xl font-bold text-brand-dark',
@@ -23,7 +24,8 @@ export const availabilityStyles = {
   dayLabel: 'w-28 font-medium',
   dayBlocks: 'flex flex-wrap gap-2',
   dayClosed: 'text-sm text-base-content/60',
-  chip: 'badge badge-outline gap-1 whitespace-nowrap py-3',
+  chip: 'flex flex-wrap items-center gap-2 rounded-box border border-base-300 px-3 py-1 text-sm',
+  removeFeedback: 'w-72 max-w-full basis-full sm:w-96',
   removeButton: 'btn btn-ghost btn-xs',
   empty: 'rounded-box bg-base-200 p-4 text-sm',
   alertSuccess: 'alert alert-success',

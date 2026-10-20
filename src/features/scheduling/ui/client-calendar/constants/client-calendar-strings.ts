@@ -1,6 +1,10 @@
 export const CLIENT_CALENDAR_PATH = '/portal/citas/calendario'
 
-export const CALENDAR_PARAMS = { service: 'servicio', date: 'fecha' } as const
+export const CALENDAR_PARAMS = { service: 'servicio', date: 'fecha', notice: 'aviso' } as const
+
+export const CALENDAR_NOTICES = { taken: 'ocupado', notOffered: 'no-ofrecido' } as const
+
+export type CalendarNotice = (typeof CALENDAR_NOTICES)[keyof typeof CALENDAR_NOTICES]
 
 export const MAX_CALENDAR_SERVICES = 100
 
@@ -25,6 +29,11 @@ export const clientCalendarMessages = {
   busy: 'Ocupado',
   noServices: 'Todavía no hay servicios para agendar. Volvé a intentarlo más tarde.',
   chooseService: 'Elegí un servicio para ver los espacios disponibles.',
+  continueToConfirm: 'Continuar',
+  notices: {
+    [CALENDAR_NOTICES.taken]: 'Ese espacio ya fue tomado. Elegí otro horario: conservamos tu servicio y el día.',
+    [CALENDAR_NOTICES.notOffered]: 'Ese horario ya no está disponible. Elegí otro.',
+  },
   noSlots: 'No hay espacios disponibles este día. Probá con otro día.',
   invalid: 'No pudimos calcular los espacios de ese día. Elegí otro día o servicio.',
   loading: 'Cargando los espacios…',
@@ -34,3 +43,5 @@ export const clientCalendarMessages = {
     retry: 'Reintentar',
   },
 } as const
+
+export const SLOT_FIELD = 'espacio'

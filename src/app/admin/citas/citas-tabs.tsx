@@ -8,6 +8,7 @@ import { adminCitasStyles as STYLES } from './citas.styles'
 const CITAS_TABS = [
   { label: CITAS_SECTION.tabs.approvals, href: CITAS_ROUTES.approvals },
   { label: CITAS_SECTION.tabs.availability, href: CITAS_ROUTES.availability },
+  { label: CITAS_SECTION.tabs.alerts, href: CITAS_ROUTES.alerts },
 ]
 
 export function CitasTabs() {

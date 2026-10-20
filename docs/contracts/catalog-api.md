@@ -138,3 +138,15 @@ Este contrato está implementado y probado en #179–#181, pendiente de integrac
 El anticipo del paquete admite como máximo 9 007 199 254 740 991 colones, para conservar enteros exactos en JavaScript y PostgreSQL. El formulario valida la representación entera antes de convertirla.
 
 La aprobación del traslado de criterios está registrada en `docs/process/DEPENDENCIES.md`, sección «Criterios trasladados», y en el PR #176 de la pila original.
+
+## Condiciones para reservar (SQL) — contrato de US-AGE-05
+
+`scheduling` no lee `catalog_techniques`: la reserva de la clienta la calcula la base, y para eso llama a esta función (ARCH-005, INT-003). Una clienta puede invocar la reserva directo por PostgREST, así que precio, anticipo y duración no pueden llegar como parámetros suyos (SEC-001, SEC-005, DOM-002).
+
+### `public.catalog_booking_terms(p_technique_id uuid, p_is_first_time boolean)`
+
+Devuelve una fila `(technique_id, name, price, duration_min, buffer_min, deposit)` con las condiciones aplicables: precio y duración de la primera vez o del retoque según `p_is_first_time`; `buffer_min` y `deposit` son los de la técnica. No devuelve ninguna fila si la técnica no existe, está desactivada, o se pide retoque y no lo ofrece. Con un argumento nulo tampoco devuelve nada.
+
+- Solo `authenticated` la ejecuta; `anon` no. Corre con los permisos de quien llama (`SECURITY INVOKER`): el catálogo ya es público.
+- La forma de la fila es contrato: un cambio se versiona aquí antes del cambio (INT-003).
+- Prueba: pgTAP `supabase/tests/database/catalog_booking_terms.test.sql`.

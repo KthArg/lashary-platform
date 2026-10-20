@@ -382,3 +382,12 @@ También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el e
   con `ImageViewer` (flechas, Escape, devuelve el foco).
 - **2026-10-19 — Imports con `@/` y piezas compartidas en `ui/shared/` (B1).** `ConfirmDialog` y
   `useFocusTrap` los usan `admin-clients` y `admin-record`.
+
+## Contrato para scheduling (US-AGE-05)
+
+`scheduling` necesita saber cuál es el perfil de la clienta de la sesión y mostrar de quién es cada cita pendiente. Antes lo hacía leyendo `clients_profiles` directo, lo que incumplía ARCH-005 y acoplaba la reserva al modelo de perfiles (hallazgo M2 de la auditoría de US-AGE-05). Acordado con José Loría el 2026-10-19: el contrato vive en `docs/contracts/clients-api.md`.
+
+- Migración `20261019000008_clients_contract_fns.sql` con dos funciones `SECURITY INVOKER` solo para `authenticated`: `clients_current_profile_id()` (el perfil de la sesión, nulo si no tiene) y `clients_display_names(uuid[])` (nombre de cada perfil que la RLS deja ver). Pruebas: pgTAP `clients_contract.test.sql`.
+- No hay código TypeScript nuevo en `clients`: el contrato es SQL. Las tablas del expediente (`clients_record_versions` y las demás) no se tocan ni se comparten.
+- La llave foránea `scheduling_appointments.client_id → clients_profiles(id)` (`ON DELETE RESTRICT`) queda registrada en el anexo del ADR-0009. Cambiar `clients_profiles.id` exige coordinar con `scheduling`.
+- Esto no reabre US-CLI-04 ni cambia su estado.
