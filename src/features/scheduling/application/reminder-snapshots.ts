@@ -6,8 +6,6 @@ import type {
   ReminderSnapshotsWindow,
 } from './ports'
 
-// Único punto por el que notifications lee citas (ARCH-005): nunca una consulta directa a
-// scheduling_appointments. Delega completo, igual que listPendingAppointments.
 export async function listAppointmentsForReminders(
   repo: ReminderSnapshotsRepository,
   window: ReminderSnapshotsWindow,
