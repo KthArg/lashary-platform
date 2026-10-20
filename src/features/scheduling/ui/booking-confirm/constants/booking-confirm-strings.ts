@@ -15,6 +15,7 @@ export const bookingConfirmMessages = {
   service: (name: string, isFirstTime: boolean | null) =>
     isFirstTime === null ? `${name} — paquete` : `${name} — ${isFirstTime ? 'primera vez' : 'retoque'}`,
   depositNotice: 'Si cancelás o no asistís a la cita, es posible que pierdas el anticipo.',
+  promotionNotice: (discountPercent: number) => `Precio con ${discountPercent}% de descuento por promoción.`,
   changeSlot: 'Elegir otro horario',
   confirm: 'Confirmar reserva',
   booking: 'Reservando…',

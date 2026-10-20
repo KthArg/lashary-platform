@@ -34,6 +34,7 @@ export type BookingSummaryView = {
   price: string
   deposit: string
   depositNotice: string | null
+  promotionNotice: string | null
 }
 
 export type BookingConfirmView =

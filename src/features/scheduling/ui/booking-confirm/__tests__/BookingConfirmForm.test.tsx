@@ -21,6 +21,7 @@ const summary = {
   price: '₡35 000',
   deposit: '₡10 000',
   depositNotice: bookingConfirmMessages.depositNotice,
+  promotionNotice: null,
 }
 const props = { fields: { serviceKey: 't1', date: '2027-03-01', startMin: 600 }, summary, backHref: BACK_HREF }
 

@@ -39,6 +39,8 @@ type AppointmentRow = {
   deposit_required: number
   deposit_registered: number
   is_first_time: boolean
+  promotion_id: string | null
+  discount_percent: number | null
 }
 
 const toIso = (epochMs: number): string => new Date(epochMs).toISOString()
@@ -54,6 +56,8 @@ function toBookedAppointment(row: AppointmentRow): BookedAppointment {
     depositRequired: row.deposit_required,
     depositRegistered: row.deposit_registered,
     isFirstTime: row.is_first_time,
+    promotionId: row.promotion_id,
+    discountPercent: row.discount_percent,
   }
 }
 
