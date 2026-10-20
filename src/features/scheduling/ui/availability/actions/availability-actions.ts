@@ -7,6 +7,7 @@ import { studioLocalToUtc } from '@/shared/studio-time'
 import {
   isAvailabilityEntryNotFound,
   isClosedDateAlreadyExists,
+  isManualBlockHasAppointment,
   isManualBlockOverlap,
   isWeeklyBlockOverlap,
 } from '../../../domain/availability-errors'
@@ -14,17 +15,18 @@ import { schedulingMessages } from '../../messages'
 import { availabilityService } from '../services/availability-service'
 import { confirmationNeeded } from '../utils/confirm-reduction'
 import {
+  blockSlotsFormSchema,
   closedDateFormSchema,
   manualBlockFormSchema,
   removeFormSchema,
   weeklyBlockFormSchema,
 } from '../validation/availability-schema'
 import type { AvailabilityActionState } from '../types/availability-action-state'
+import { AVAILABILITY_PATH, BLOCK_SLOTS_FIELDS } from '../constants/availability.constants'
 
 // Las acciones revisan el rol para dar un mensaje amable; la frontera real es RLS (SEC-001).
 
 const availabilityMessages = schedulingMessages.availability
-const AVAILABILITY_PATH = '/admin/citas/disponibilidad'
 
 type ZodIssues = { issues: Array<{ message: string }> }
 
@@ -135,15 +137,52 @@ export async function addManualBlockAction(
   const startsAt = studioLocalToUtc(date, start)
   const endsAt = studioLocalToUtc(date, end)
 
-  const needsConfirmation = await confirmationNeeded(formData, () =>
-    availabilityService.countAffectedInRange(startsAt, endsAt),
-  )
-  if (needsConfirmation) return needsConfirmation
-
   const result = await availabilityService.addManualBlock({ startsAt, endsAt, reason })
   if (isErr(result)) {
     if (isManualBlockOverlap(result.error)) return { status: 'conflict', message: availabilityMessages.blocks.overlap }
+    if (isManualBlockHasAppointment(result.error)) {
+      return { status: 'conflict', message: availabilityMessages.blocks.hasAppointment }
+    }
     return invalid([availabilityMessages.validation.startBeforeEnd])
   }
   return done(availabilityMessages.blocks.savedOk)
+}
+
+export async function blockSlotsAction(
+  _prev: AvailabilityActionState,
+  formData: FormData,
+): Promise<AvailabilityActionState> {
+  if (!(await isStaff())) return forbidden()
+  const parsed = blockSlotsFormSchema.safeParse({
+    date: formData.get(BLOCK_SLOTS_FIELDS.date) ?? undefined,
+    slotStartMinutes: formData.getAll(BLOCK_SLOTS_FIELDS.slot),
+    reason: formData.get(BLOCK_SLOTS_FIELDS.reason) ?? undefined,
+  })
+  if (!parsed.success) return fromZod(parsed.error)
+
+  const result = await availabilityService.blockSlots(parsed.data)
+  if (isErr(result)) {
+    revalidatePath(AVAILABILITY_PATH)
+    if (isManualBlockOverlap(result.error)) return { status: 'conflict', message: availabilityMessages.picker.overlap }
+    if (isManualBlockHasAppointment(result.error)) {
+      return { status: 'conflict', message: availabilityMessages.picker.hasAppointment }
+    }
+    return { status: 'conflict', message: availabilityMessages.picker.stale }
+  }
+  return done(availabilityMessages.picker.savedOk)
+}
+
+export async function removeManualBlockAction(
+  _prev: AvailabilityActionState,
+  formData: FormData,
+): Promise<AvailabilityActionState> {
+  if (!(await isStaff())) return forbidden()
+  const parsed = removeFormSchema.safeParse(fields(formData))
+  if (!parsed.success) return { status: 'conflict', message: availabilityMessages.notFound }
+
+  const result = await availabilityService.removeManualBlock(parsed.data.id)
+  if (isErr(result) && isAvailabilityEntryNotFound(result.error)) {
+    return { status: 'conflict', message: availabilityMessages.notFound }
+  }
+  return done(availabilityMessages.blocks.removedOk)
 }

@@ -49,4 +49,10 @@ export const manualBlockFormSchema = z.object({
   reason: optionalText,
 })
 
+export const blockSlotsFormSchema = z.object({
+  date: dateField,
+  slotStartMinutes: z.array(z.coerce.number().int(validationMessages.pickSlot)).min(1, validationMessages.pickSlot),
+  reason: optionalText,
+})
+
 export const removeFormSchema = z.object({ id: z.string().min(1) })
