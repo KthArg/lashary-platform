@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-20.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-24.
 
 ## Features
 
@@ -68,7 +68,7 @@
 ### loyalty (actualizado: 2026-08-28)
 - US-LAND-06 — no_iniciada
 
-### notifications (actualizado: 2026-10-20)
+### notifications (actualizado: 2026-10-24)
 - US-NOT-01 — no_iniciada
 - US-NOT-02 — no_iniciada
 - US-NOT-03 — en_progreso — falta: dominio, aplicación y persistencia completos; faltan los canales reales (Twilio/Resend) y el disparo del cron

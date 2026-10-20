@@ -2,7 +2,7 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-20
+actualizado: 2026-10-24
 historias:
   - id: US-NOT-01
     estado: no_iniciada
@@ -68,15 +68,25 @@ en `application/ports.ts`: `SchedulingReadPort`, `ClientContactPort`, `ReminderR
 - `application/run-reminder-cycle.ts`: encadena descubrir → reconciliar → enviar; lo llamará el
   cron. Prueba: `__tests__/run-reminder-cycle.test.ts`.
 
-Persistencia (`db/reminder-repository.ts`, migración `20261020000000_notifications_reminders.sql`):
+Persistencia (`db/reminder-repository.ts`, migración `20261026000000_notifications_reminders.sql`):
 tabla `notifications_reminders` (ARCH-006), sin FK a `scheduling_appointments` ni
 `clients_profiles` a propósito (es un registro operativo de envíos, no un dato de negocio
 permanente, a diferencia del FK de `payments` a `clients_profiles`, ADR-0009). RLS solo staff
-(`auth_is_staff()`), sin política de DELETE. Índices sobre `appointment_id` y `(status, send_at)`
-(PERF-003). El repositorio acepta un `SupabaseClient` inyectable para que el cron (sin cookies)
-pase su propia sesión. Pruebas: pgTAP
-`supabase/tests/database/notifications_reminders_staff_access.test.sql` (control positivo de
-staff y negativo de clienta y anon, SEC-002), corrida contra Supabase local el 2026-10-20.
+(`auth_is_staff()`), sin política de DELETE. Índice único sobre `appointment_id`
+(`notifications_reminders_one_per_appointment`) e índice sobre `(status, send_at)` (PERF-003); sin
+un segundo índice aparte sobre `appointment_id` (sería redundante con el UNIQUE). El repositorio
+acepta un `SupabaseClient` inyectable para que el cron (sin cookies) pase su propia sesión.
+Pruebas: pgTAP `supabase/tests/database/notifications_reminders_staff_access.test.sql` (control
+positivo de staff y negativo de clienta y anon, SEC-002), corrida contra Supabase local el
+2026-10-20.
+
+La fecha de la migración (`20261026000000`) no es la original: `20261020000000` quedó ocupada en
+`main` por US-AGE-06 (#443) y en ramas abiertas por US-AGE-07, así que el líder pidió fusionarla
+con la que esta historia agregó después (reclamo atómico, `claimed`) en una sola, con fecha
+posterior a todo lo usado en cualquier rama remota a esta fecha. El estado `claimed` y la columna
+`claimed_at` nacen aquí (en vez de en una migración aparte hacia adelante) porque se reescribió
+esta pieza antes de que llegara a `main`: INT-008 prohíbe editar una migración ya mergeada, no
+reescribir una que todavía no salió de draft.
 
 ## Qué no hace todavía
 
