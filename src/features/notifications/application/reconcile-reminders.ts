@@ -11,11 +11,9 @@ export type ReconcileRemindersDeps = {
 
 export type ReconcileRemindersSummary = { cancelled: number; rescheduled: number }
 
-const sameInstant = (a: Date, b: Date): boolean => a.getTime() === b.getTime()
+const sameInstant = (firstInstant: Date, secondInstant: Date): boolean =>
+  firstInstant.getTime() === secondInstant.getTime()
 
-// Criterio 3 de US-NOT-03: si la cita se cancela o se mueve, el recordatorio se cancela o se
-// reprograma. No depende de un evento de US-AGE-06/US-AGE-10 (ninguna existe todavía): vuelve a
-// consultar el estado vigente de la cita contra scheduling (ARCH-005) y ajusta el recordatorio.
 export const reconcileReminders =
   (deps: ReconcileRemindersDeps) =>
   async (): Promise<Result<ReconcileRemindersSummary, RepositoryFailure>> => {

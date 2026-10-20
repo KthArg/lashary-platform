@@ -15,9 +15,6 @@ export type RunReminderCycleSummary = {
   exhausted: number
 }
 
-// Una corrida completa del canal de recordatorios (US-NOT-03, ADR-0006): descubre citas nuevas
-// dentro de la ventana de 24h, reconcilia las pendientes contra el estado vigente de la cita
-// (criterio 3) y envía las que ya están vencidas (criterios 1, 2 y 4). La llama el cron.
 export const runReminderCycle =
   (deps: RunReminderCycleDeps) =>
   async (): Promise<Result<RunReminderCycleSummary, RepositoryFailure>> => {

@@ -10,7 +10,6 @@ export type SendDueRemindersDeps = {
   markSent: ReminderRepository['markSent']
   markRetry: ReminderRepository['markRetry']
   markExhausted: ReminderRepository['markExhausted']
-  // Primario por ADR-0006 (WhatsApp vía Twilio); respaldo si falla (email vía Resend).
   primaryChannel: NotificationChannel
   backupChannel: NotificationChannel
   clock: Clock
@@ -53,8 +52,6 @@ const registerFailure = async (
   reminder: ReminderSnapshot,
   error: string,
 ): Promise<Result<'retried' | 'exhausted', RepositoryFailure>> => {
-  // Criterio 4: los envíos fallidos se reintentan y quedan registrados. Tras MAX_REMINDER_ATTEMPTS
-  // se deja de reintentar y el recordatorio queda en failed con el motivo.
   const nextAttempts = reminder.attempts + 1
   if (hasExhaustedRetries({ ...reminder, attempts: nextAttempts })) {
     const marked = await deps.markExhausted(reminder.id, nextAttempts, error)
