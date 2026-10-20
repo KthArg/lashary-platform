@@ -10,7 +10,8 @@ import {
   isPromotionValidationError,
 } from '@/features/catalog/domain/promotions/errors'
 import type { PromotionWriteModel } from '@/features/catalog/application/promotions/ports'
-import { FakeTechniqueRepository } from '../../techniques/__tests__/fake-repository'
+import { createFakeTechniqueRepository } from '../../techniques/__tests__/fake-repository'
+import type { FakeTechniqueRepository } from '../../techniques/__tests__/fake-repository'
 import { makeTechnique } from '../../techniques/__tests__/technique-fixture'
 import { createFakePackageRepository } from '../../packages/__tests__/fake-package-repository'
 import { makePackage } from '../../packages/__tests__/package-fixture'
@@ -36,7 +37,7 @@ const deps = (
 
 describe('createPromotion', () => {
   it('crea y persiste una promoción sobre una técnica existente y activa (criterio 1)', async () => {
-    const techniqueRepo = new FakeTechniqueRepository([makeTechnique({ id: 't1', isActive: true })])
+    const techniqueRepo = createFakeTechniqueRepository([makeTechnique({ id: 't1', isActive: true })])
     const packageRepo = createFakePackageRepository()
     const promotionRepo = createFakePromotionRepository()
 
@@ -51,7 +52,7 @@ describe('createPromotion', () => {
   })
 
   it('crea y persiste una promoción sobre un paquete existente y activo', async () => {
-    const techniqueRepo = new FakeTechniqueRepository()
+    const techniqueRepo = createFakeTechniqueRepository()
     const packageRepo = createFakePackageRepository([makePackage({ id: 'pk1', isActive: true })])
     const promotionRepo = createFakePromotionRepository()
 
@@ -63,7 +64,7 @@ describe('createPromotion', () => {
   })
 
   it('rechaza y no persiste si la técnica no existe', async () => {
-    const techniqueRepo = new FakeTechniqueRepository()
+    const techniqueRepo = createFakeTechniqueRepository()
     const packageRepo = createFakePackageRepository()
     const promotionRepo = createFakePromotionRepository()
 
@@ -79,7 +80,7 @@ describe('createPromotion', () => {
   })
 
   it('rechaza y no persiste si la técnica está inactiva', async () => {
-    const techniqueRepo = new FakeTechniqueRepository([makeTechnique({ id: 't1', isActive: false })])
+    const techniqueRepo = createFakeTechniqueRepository([makeTechnique({ id: 't1', isActive: false })])
     const packageRepo = createFakePackageRepository()
     const promotionRepo = createFakePromotionRepository()
 
@@ -92,7 +93,7 @@ describe('createPromotion', () => {
   })
 
   it('rechaza y no persiste si el paquete no existe o está inactivo', async () => {
-    const techniqueRepo = new FakeTechniqueRepository()
+    const techniqueRepo = createFakeTechniqueRepository()
     const packageRepo = createFakePackageRepository([makePackage({ id: 'pk1', isActive: false })])
     const promotionRepo = createFakePromotionRepository()
 
@@ -105,7 +106,7 @@ describe('createPromotion', () => {
   })
 
   it('rechaza descuento inválido (delegado a buildPromotion)', async () => {
-    const techniqueRepo = new FakeTechniqueRepository([makeTechnique({ id: 't1', isActive: true })])
+    const techniqueRepo = createFakeTechniqueRepository([makeTechnique({ id: 't1', isActive: true })])
     const packageRepo = createFakePackageRepository()
     const promotionRepo = createFakePromotionRepository()
 
@@ -119,7 +120,7 @@ describe('createPromotion', () => {
 
 describe('updatePromotion', () => {
   it('actualiza una promoción existente conservando su estado activo', async () => {
-    const techniqueRepo = new FakeTechniqueRepository([makeTechnique({ id: 't1', isActive: true })])
+    const techniqueRepo = createFakeTechniqueRepository([makeTechnique({ id: 't1', isActive: true })])
     const packageRepo = createFakePackageRepository()
     const promotionRepo = createFakePromotionRepository([
       makePromotion({ id: 'e1', discountPercent: 10, isActive: true }),
@@ -136,7 +137,7 @@ describe('updatePromotion', () => {
   })
 
   it('preserva isActive=false al actualizar una promoción pausada', async () => {
-    const techniqueRepo = new FakeTechniqueRepository([makeTechnique({ id: 't1', isActive: true })])
+    const techniqueRepo = createFakeTechniqueRepository([makeTechnique({ id: 't1', isActive: true })])
     const packageRepo = createFakePackageRepository()
     const promotionRepo = createFakePromotionRepository([makePromotion({ id: 'e2', isActive: false })])
 
@@ -149,7 +150,7 @@ describe('updatePromotion', () => {
   })
 
   it('devuelve PromotionNotFound si no existe', async () => {
-    const techniqueRepo = new FakeTechniqueRepository([makeTechnique({ id: 't1', isActive: true })])
+    const techniqueRepo = createFakeTechniqueRepository([makeTechnique({ id: 't1', isActive: true })])
     const packageRepo = createFakePackageRepository()
     const promotionRepo = createFakePromotionRepository()
 
@@ -164,7 +165,7 @@ describe('updatePromotion', () => {
 
 describe('deactivatePromotion', () => {
   it('desactiva una promoción existente', async () => {
-    const techniqueRepo = new FakeTechniqueRepository()
+    const techniqueRepo = createFakeTechniqueRepository()
     const packageRepo = createFakePackageRepository()
     const promotionRepo = createFakePromotionRepository([makePromotion({ id: 'd1', isActive: true })])
 
@@ -176,7 +177,7 @@ describe('deactivatePromotion', () => {
   })
 
   it('devuelve PromotionNotFound si no existe', async () => {
-    const techniqueRepo = new FakeTechniqueRepository()
+    const techniqueRepo = createFakeTechniqueRepository()
     const packageRepo = createFakePackageRepository()
     const promotionRepo = createFakePromotionRepository()
 
