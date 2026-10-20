@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-19
+actualizado: 2026-10-20
 historias:
   - id: US-CLI-01
     estado: en_progreso
@@ -147,6 +147,12 @@ También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el e
 `RecordLoadError`, `readRecord`, `readTechniqueOptions`, `readCategoryOptions`, `RECORD_LABELS` y
 `STUDY_FORM_LABELS`. `src/features/clients/client.ts` es la entrada para código del navegador
 (`error.tsx`): solo `RecordLoadError` y `RECORD_LABELS`, sin nada de servidor.
+
+`getClientContactForReminders` (US-NOT-03, ARCH-005): lectura pública de solo teléfono y email
+(nunca `notes`) para que `notifications` nunca consulte `clients_profiles` directo. Sin
+`requireAdminSession` — es para el cron, sin cookies; la RLS de `clients_profiles` sigue siendo la
+frontera real (SEC-001). `clientRepository` ahora acepta un `SupabaseClient` inyectable para que
+el cron pase su propia sesión en vez de la de cookies. Consumidor: `notifications/index.ts`.
 
 ## Invariantes
 
