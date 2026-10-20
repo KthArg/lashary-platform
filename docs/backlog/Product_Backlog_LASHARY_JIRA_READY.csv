@@ -170,7 +170,8 @@ Acceptance Criteria:
 
 Criterios originales 2 y 3 recibidos de US-AGE-13, traslado aprobado por el PO y comunicado por Bayron el 2026-10-03; pendientes de implementacion y pruebas (docs/process/DEPENDENCIES.md).
 Criterio 5 recibido de US-AGE-01, traslado aprobado por el PO el 2026-10-14; pendiente de implementacion y pruebas (docs/process/DEPENDENCIES.md).
-Criterio 2 recibido de US-AGE-03, traslado aprobado por el PO (lider del proyecto) y comunicado por Erick Duran el 2026-10-17; pendiente de implementacion y pruebas (docs/process/DEPENDENCIES.md).","7","US-AGE-05","Cliente Registrado","Cliente Registrado","High","8","To Do","","","Cliente-Registrado"
+Criterio 2 recibido de US-AGE-03, traslado aprobado por el PO (lider del proyecto) y comunicado por Erick Duran el 2026-10-17; pendiente de implementacion y pruebas (docs/process/DEPENDENCIES.md).
+Decision de alcance aprobada por el PO el 2026-10-19, comunicada por Bayron: el criterio 2 (morosidad) se traslada a US-MOR-02 (aprobado por KthArg); los criterios 7 y 10 se entregan parcialmente: el aviso del anticipo es generico, sin la ventana de cancelacion (US-AGE-06), y la deteccion de primera vez o re-aplicacion no tiene citas completadas hasta US-AGE-12 ni campo para que la administradora corrija el anticipo (US-MOR-03). Faltantes con dueno en el SPEC de scheduling (docs/process/DEPENDENCIES.md).","7","US-AGE-05","Cliente Registrado","Cliente Registrado","High","8","To Do","","","Cliente-Registrado"
 "32","Story","Reagendar una cita existente","User Story:
 Como cliente, quiero mover mi cita a otra fecha u hora, para no tener que cancelarla y perder el anticipo cuando solo necesito cambiarla.
 
