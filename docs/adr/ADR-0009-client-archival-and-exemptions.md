@@ -40,3 +40,14 @@ El borrado definitivo y la anonimización requieren una política posterior sobr
 ## Implementación de la protección (2026-10-05)
 
 La pieza 21 de US-AGE-13 añade `20261005000000_payments_exemption_history.sql` y `payments_exemption_history.test.sql`. Las 16 aserciones pasan en PostgreSQL local y la suite SQL completa aprueba 87 aserciones. También se comprobó que dos exoneraciones existentes antes de la migración conservan contenido y estado. Esta pieza protege la FK; su integración y despliegue siguen pendientes, así como el flujo de archivado y reactivación de `clients`. El estado anterior descrito arriba corresponde a #118 y al PR documental #177.
+
+## Anexo (2026-10-19): llave foránea de las citas hacia `clients_profiles`
+
+US-AGE-05 agrega `scheduling_appointments.client_id → clients_profiles(id)` con `ON DELETE RESTRICT` (migración `20261018000002_scheduling_appointment_client_snapshot.sql`). Es la segunda llave foránea entre features, y se acepta por las mismas razones que la de `payments`: una cita sin clienta, o una clienta borrada con citas, rompe el historial y el cobro del anticipo, y la base es el único lugar donde esa integridad se garantiza aunque la clienta llame la reserva directo por PostgREST.
+
+Condiciones, iguales a las de la decisión original:
+
+- Esto no declara compartidas las tablas de `clients` ni permite consultas directas a ellas desde `scheduling`. Lo que `scheduling` necesita de una clienta lo obtiene por el contrato SQL `docs/contracts/clients-api.md` (`clients_current_profile_id()` y `clients_display_names(uuid[])`).
+- La FK bloquea el borrado físico de un perfil con citas. Archivar a la clienta, que es lo que decide este ADR, no la afecta.
+- Cambiar `clients_profiles.id` o su tipo requiere coordinación entre `clients` y `scheduling`.
+- Por ahora solo reservan clientas con cuenta (decisión del PO, 2026-10-19). Vincular una cita a una clienta creada por la administradora, con confirmación de correo o número, es otra historia y su ubicación la decide el equipo según el ADR-0007.
