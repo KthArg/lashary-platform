@@ -10,7 +10,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-03
     estado: en_progreso
-    falta: "dominio y la mitad de la aplicación (descubrir, reconciliar) están construidos; faltan el envío, la persistencia, los canales y el disparo del cron"
+    falta: "dominio y aplicación completos (sin canales reales todavía); faltan la persistencia, los canales y el disparo del cron"
   - id: US-NOT-04
     estado: no_iniciada
   - id: US-NOT-05
@@ -61,11 +61,17 @@ en `application/ports.ts`: `SchedulingReadPort`, `ClientContactPort`, `ReminderR
   técnica lo reprograma. No depende de un evento de US-AGE-06 ni US-AGE-10 (ninguna existe
   todavía, `docs/process/DEPENDENCIES.md`): vuelve a preguntar en vez de escuchar un aviso que no
   existe. Prueba: `__tests__/reconcile-reminders.test.ts`.
+- `application/send-due-reminders.ts` (criterios 2 y 4): envía los recordatorios vencidos por el
+  canal primario y, si falla, por el respaldo (ADR-0006); sin contacto o con ambos canales
+  fallidos reintenta hasta `MAX_REMINDER_ATTEMPTS` (5) y después queda `failed` con el motivo
+  ("reintenta y queda registrado"). Prueba: `__tests__/send-due-reminders.test.ts`.
+- `application/run-reminder-cycle.ts`: encadena descubrir → reconciliar → enviar; lo llamará el
+  cron. Prueba: `__tests__/run-reminder-cycle.test.ts`.
 
 ## Qué no hace todavía
 
-Enviar de verdad (criterios 2 y 4), persistencia, canales (Twilio/Resend, ADR-0006) y el disparo
-del cron: siguientes piezas de US-NOT-03.
+Persistencia real (los puertos hoy los implementan solo los dobles de prueba), canales reales
+(Twilio/Resend, ADR-0006) y el disparo del cron: siguientes piezas de US-NOT-03.
 
 ## Contrato público (`index.ts`, ARCH-003)
 
