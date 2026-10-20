@@ -20,7 +20,10 @@
 
 -- 1. catalog_booking_terms (contrato de catalog, 20261018000003) ahora también busca la
 --    promoción vigente para esa técnica y, si hay una, descuenta el precio y la identifica.
-CREATE OR REPLACE FUNCTION public.catalog_booking_terms(p_technique_id uuid, p_is_first_time boolean)
+--    Postgres no deja cambiar las columnas de salida de una función RETURNS TABLE con CREATE OR
+--    REPLACE ("Row type defined by OUT parameters is different"): hay que soltarla primero.
+DROP FUNCTION IF EXISTS public.catalog_booking_terms(uuid, boolean);
+CREATE FUNCTION public.catalog_booking_terms(p_technique_id uuid, p_is_first_time boolean)
 RETURNS TABLE (
   technique_id      uuid,
   name              text,
@@ -66,6 +69,12 @@ AS $$
      AND t.is_active
      AND (p_is_first_time OR t.price_retouch IS NOT NULL);
 $$;
+
+-- DROP + CREATE es un objeto nuevo (OID distinto): los permisos de 20261018000003 no
+-- sobreviven, hay que volver a otorgarlos.
+REVOKE ALL ON FUNCTION public.catalog_booking_terms(uuid, boolean) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.catalog_booking_terms(uuid, boolean) FROM anon;
+GRANT EXECUTE ON FUNCTION public.catalog_booking_terms(uuid, boolean) TO authenticated;
 
 -- 2. La cita guarda qué promoción se aplicó, no solo el precio ya rebajado (decisión del líder
 --    del proyecto). Ambas columnas o ninguna: una cita no puede tener descuento sin saber de
@@ -223,8 +232,10 @@ GRANT EXECUTE ON FUNCTION public.scheduling_book_appointment(uuid, timestamptz, 
 
 -- 4. scheduling_quote_booking (20261019000009, la versión vigente) muestra el descuento ANTES
 --    de confirmar (criterio 2 de US-PROM-01): lo que se cotiza vuelve a ser exactamente lo mismo
---    que luego guarda la reserva (DOM-002), ahora incluida la promoción.
-CREATE OR REPLACE FUNCTION public.scheduling_quote_booking(p_technique_id uuid, p_is_first_time boolean)
+--    que luego guarda la reserva (DOM-002), ahora incluida la promoción. Mismo motivo que
+--    catalog_booking_terms arriba: RETURNS TABLE con columnas nuevas exige soltarla primero.
+DROP FUNCTION IF EXISTS public.scheduling_quote_booking(uuid, boolean);
+CREATE FUNCTION public.scheduling_quote_booking(p_technique_id uuid, p_is_first_time boolean)
 RETURNS TABLE (
   technique_name    text,
   price             bigint,
@@ -259,3 +270,9 @@ BEGIN
            v_terms.promotion_id, v_terms.discount_percent;
 END;
 $$;
+
+-- DROP + CREATE es un objeto nuevo (OID distinto): los permisos de 20261019000002 no
+-- sobreviven, hay que volver a otorgarlos.
+REVOKE ALL ON FUNCTION public.scheduling_quote_booking(uuid, boolean) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.scheduling_quote_booking(uuid, boolean) FROM anon;
+GRANT EXECUTE ON FUNCTION public.scheduling_quote_booking(uuid, boolean) TO authenticated;
