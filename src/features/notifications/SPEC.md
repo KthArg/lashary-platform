@@ -10,7 +10,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-03
     estado: en_progreso
-    falta: "el negocio todavía no tiene número de WhatsApp Business ni dominio de email propios (2026-10-21): activarlos es solo completar TWILIO_ACCOUNT_SID/AUTH_TOKEN/WHATSAPP_FROM, TWILIO_CONTENT_SID (con la plantilla de 2 variables aprobada por Meta, ver domain/reminder-message.ts) y RESEND_API_KEY/FROM_ADDRESS, sin tocar código (ADR-0006). También falta la cuenta de staff del cron (NOTIFICATIONS_CRON_EMAIL/NOTIFICATIONS_CRON_PASSWORD), creada a mano en Supabase con rol admin/superadmin igual que la cuenta de la administradora (US-AUTH-01) — no depende del negocio y se puede crear ya. Verificación end-to-end contra un número de WhatsApp real, pendiente."
+    falta: "el negocio todavía no tiene número de WhatsApp Business ni dominio de email propios (2026-10-21): activarlos es solo completar META_WHATSAPP_ACCESS_TOKEN/PHONE_NUMBER_ID, META_WHATSAPP_TEMPLATE_NAME (con la plantilla de 2 variables aprobada por Meta, ver domain/reminder-message.ts) y RESEND_API_KEY/FROM_ADDRESS, sin tocar código (ADR-0006). También falta la cuenta de staff del cron (NOTIFICATIONS_CRON_EMAIL/NOTIFICATIONS_CRON_PASSWORD), creada a mano en Supabase con rol admin/superadmin igual que la cuenta de la administradora (US-AUTH-01) — no depende del negocio y se puede crear ya. Verificación end-to-end contra un número de WhatsApp real, pendiente."
   - id: US-NOT-04
     estado: no_iniciada
   - id: US-NOT-05
@@ -33,9 +33,9 @@ defectos: []
 
 # notifications
 
-Notificaciones. El canal único (ADR-0006: Twilio WhatsApp + Resend como respaldo por email —
-decisión del PO, 2026-10-20 — registro de envíos) se construye con US-NOT-03 (ADR-0007); el resto
-lo reusa vía el puerto que US-NOT-08 exige.
+Notificaciones. El canal único (ADR-0006: WhatsApp directo contra la Graph API de Meta + Resend
+como respaldo por email — decisión del PO, 2026-10-20/21 — registro de envíos) se construye con
+US-NOT-03 (ADR-0007); el resto lo reusa vía el puerto que US-NOT-08 exige.
 
 ## Qué hace hoy
 
@@ -85,19 +85,23 @@ lo reusa vía el puerto que US-NOT-08 exige.
   `claimed_at` nacen aquí (en vez de en una migración aparte hacia adelante) porque se reescribió
   esta pieza antes de que llegara a `main`: INT-008 prohíbe editar una migración ya mergeada, no
   reescribir una que todavía no salió de draft.
-- Canales (`channels/`): `twilio-whatsapp-channel.ts` y `resend-email-channel.ts`, REST directo con
+- Canales (`channels/`): `meta-whatsapp-channel.ts` y `resend-email-channel.ts`, REST directo con
   `fetch` (sin SDK nuevo) detrás de variables de entorno; sin configurar, el canal se declara
-  `channelNotConfigured` en vez de fallar en producción por sorpresa (SEC-003/004). El negocio
-  todavía no tiene número de WhatsApp ni dominio de email propios (2026-10-21): hasta tenerlos,
-  ambos canales quedan listos para que activarlos sea solo completar variables de entorno, sin
-  tocar código. Para WhatsApp en concreto: sin `TWILIO_CONTENT_SID`, manda el mensaje como texto
-  libre (sirve en el sandbox de Twilio); con un número de WhatsApp Business real, Meta exige una
-  plantilla aprobada para que el negocio le escriba primero a la clienta (que es justo lo que hace
-  un recordatorio) — `domain/reminder-message.ts` expone `buildReminderTemplateVariables` con las
-  2 variables en el orden que esa plantilla debe declarar (técnica, fecha y hora); con
-  `TWILIO_CONTENT_SID` configurado, el canal manda `ContentSid` + `ContentVariables` en vez de
-  `Body`. Pruebas: `channels/__tests__/twilio-whatsapp-channel.test.ts` (sin plantilla y con
-  plantilla) y `resend-email-channel.test.ts` (mock de `fetch`).
+  `channelNotConfigured` en vez de fallar en producción por sorpresa (SEC-003/004). WhatsApp habla
+  directo con la Graph API de Meta (developers.facebook.com), sin Twilio ni ningún otro
+  intermediario. El negocio todavía no tiene número de WhatsApp ni dominio de email propios
+  (2026-10-21): hasta tenerlos, ambos canales quedan listos para que activarlos sea solo completar
+  variables de entorno, sin tocar código. Para WhatsApp en concreto: sin
+  `META_WHATSAPP_TEMPLATE_NAME`, manda el mensaje como texto libre (`type: "text"`, solo funciona
+  dentro de una sesión que la clienta ya abrió — sirve para el modo de prueba de Meta, sin
+  verificación de negocio); con un número de WhatsApp Business real, Meta exige una plantilla
+  aprobada para que el negocio le escriba primero a la clienta (que es justo lo que hace un
+  recordatorio) — `domain/reminder-message.ts` expone `buildReminderTemplateVariables` con las 2
+  variables en el orden que esa plantilla debe declarar (técnica, fecha y hora); con
+  `META_WHATSAPP_TEMPLATE_NAME` configurado, el canal manda `type: "template"` con esas variables
+  en `components[0].parameters` en vez de texto libre. Pruebas:
+  `channels/__tests__/meta-whatsapp-channel.test.ts` (sin plantilla y con plantilla) y
+  `resend-email-channel.test.ts` (mock de `fetch`).
 - Disparo (`http/cron-handler.ts`, `src/app/api/cron/notifications-reminders/route.ts`, `vercel.json`):
   Vercel Cron llama cada 15 minutos con `Authorization: Bearer <CRON_SECRET>`; sin ese secreto
   configurado el endpoint se niega siempre (fail-closed). Sin sesión de usuario (sin cookies): el
@@ -123,5 +127,6 @@ lo reusa vía el puerto que US-NOT-08 exige.
 
 ## Decisiones
 
-- ADR-0006 (canal de notificaciones): WhatsApp vía Twilio primario, Resend como respaldo por
-  email — proveedor elegido por el PO el 2026-10-20 (antes "pendiente de decisión").
+- ADR-0006 (canal de notificaciones): WhatsApp directo contra la Graph API de Meta (sin Twilio,
+  decisión del PO el 2026-10-21: lo exige quien pide el proyecto), Resend como respaldo por email
+  (proveedor elegido por el PO el 2026-10-20).
