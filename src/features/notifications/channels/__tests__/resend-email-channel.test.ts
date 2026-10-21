@@ -16,7 +16,7 @@ describe('readResendEmailConfigFromEnv', () => {
 describe('resendEmailChannel', () => {
   it('reporta el canal sin configurar cuando no hay credenciales', async () => {
     const result = await resendEmailChannel(null).send({
-      contact: { phone: '+50688887777', email: 'a@b.com' }, message: 'hola',
+      contact: { phone: '+50688887777', email: 'a@b.com' }, message: 'hola', templateVariables: [],
     })
     expect(isErr(result)).toBe(true)
     if (!isErr(result)) return
@@ -29,7 +29,7 @@ describe('resendEmailChannel', () => {
 
     const result = await resendEmailChannel({
       apiKey: 'key', fromAddress: 'recordatorios@lashary.example', subject: 'Recordatorio',
-    }).send({ contact: { phone: '+50688887777', email: 'clienta@example.com' }, message: 'hola' })
+    }).send({ contact: { phone: '+50688887777', email: 'clienta@example.com' }, message: 'hola', templateVariables: [] })
 
     expect(isOk(result)).toBe(true)
     expect(fetchMock).toHaveBeenCalledOnce()
@@ -46,7 +46,7 @@ describe('resendEmailChannel', () => {
 
     const result = await resendEmailChannel({
       apiKey: 'key', fromAddress: 'recordatorios@lashary.example', subject: 'Recordatorio',
-    }).send({ contact: { phone: '+50688887777', email: 'clienta@example.com' }, message: 'hola' })
+    }).send({ contact: { phone: '+50688887777', email: 'clienta@example.com' }, message: 'hola', templateVariables: [] })
 
     expect(isErr(result)).toBe(true)
     if (!isErr(result)) return

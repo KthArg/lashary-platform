@@ -46,7 +46,7 @@ export interface ReminderRepository {
   markExhausted(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
 }
 
-export type ChannelSendInput = { contact: ContactInfo; message: string }
+export type ChannelSendInput = { contact: ContactInfo; message: string; templateVariables: string[] }
 
 export interface NotificationChannel {
   readonly kind: ReminderChannelKind
