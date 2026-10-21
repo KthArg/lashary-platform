@@ -1,4 +1,11 @@
 export const cancellationMessages = {
+  cancelButton: 'Cancelar cita',
+  cancelButtonLabel: (slot: string) => `Cancelar la cita del ${slot}`,
+  quoting: 'Calculando…',
+  confirmQuestion: '¿Querés cancelar esta cita?',
+  confirmYes: 'Sí, cancelar',
+  confirmBack: 'Volver',
+  cancelling: 'Cancelando…',
   accessDenied: 'Iniciá sesión como clienta para gestionar tus citas.',
   invalidAppointment: 'Esa cita no es válida.',
   clientNotRegistered: 'Completá tu perfil de clienta para gestionar tus citas.',

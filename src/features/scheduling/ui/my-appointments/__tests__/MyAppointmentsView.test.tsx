@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { describe, it, expect, afterEach, vi } from 'vitest'
+import { render, screen, cleanup, within } from '@testing-library/react'
 import {
   BOOK_APPOINTMENT_PATH,
   MY_APPOINTMENTS_PATH,
@@ -9,6 +9,13 @@ import { MyAppointmentsView } from '../components/MyAppointmentsView'
 import type { MyAppointmentView } from '../types/my-appointments.types'
 
 const copy = myAppointmentsMessages
+
+vi.mock('../actions/cancel-appointment-actions', () => ({
+  quoteCancellationAction: vi.fn(),
+  cancelAppointmentAction: vi.fn(),
+}))
+
+afterEach(cleanup)
 const appointment: MyAppointmentView = {
   id: 'cita-1',
   service: 'Clásicas',
