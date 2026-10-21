@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-10-24"
+actualizado: "2026-10-29"
 historias:
   - id: US-AGE-01
     estado: terminada
@@ -30,7 +30,8 @@ historias:
   - id: US-AGE-10
     estado: no_iniciada
   - id: US-AGE-11
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "solo están el dominio y el caso de uso: faltan el repositorio, la pantalla en /admin/citas con día anterior y siguiente, el indicador de primera vez y los enlaces al expediente; la morosidad espera a US-MOR-01 (diferido) y cerrar la cita está propuesto para US-AGE-12 (pendiente del PO)"
   - id: US-AGE-12
     estado: no_iniciada
 flags: []
@@ -148,6 +149,12 @@ En `/admin/citas/disponibilidad` (`src/app/admin/citas/disponibilidad/page.tsx`,
 - Criterio 4 frente al criterio 5 de US-AGE-01 (entregado en US-AGE-05): bloquear espacios, cerrar un día y quitar un bloque semanal con citas activas se rechazan igual y piden resolver las citas antes (rechazarlas o cancelarlas), sin «Confirmar de todos modos»: los tres caminos se ven y se comportan igual. Los tres los rechaza la base. Aprobado por el PO el 2026-10-23 (`docs/process/DEPENDENCIES.md`, registro del 2026-10-23).
 - Criterio 2: lo bloqueado ya entra en `scheduling_busy_ranges(recurso, fecha)` (US-AGE-02), así que el calendario de la clienta lo muestra ocupado y, desbloqueado, libre en la siguiente lectura (pgTAP de arriba, con un horario abierto sembrado porque la función recorta a él).
 - Revisión previa al PR de cierre (US-AGE-07): quitar un bloque semanal con un error que no es de citas ni de bloque inexistente ya no responde «Bloque quitado», sino `weekly.removeFailed` sin revalidar, con prueba en `ui/availability/__tests__/availability-actions.test.ts`; el selector de espacios desactiva los checkboxes mientras la acción está en vuelo (`SlotPicker.test.tsx`); los imports de tres niveles de `ui/availability` que tocó la pila pasan a alias; y `availability-ports.ts` queda sin los tres comentarios de la pila. `removeClosedDateAction` conserva el mismo patrón y queda fuera de esta historia.
+
+### US-AGE-11 — agenda diaria
+
+- Dominio (`domain/daily-agenda.ts`): el día de la agenda es el día de pared del estudio pasado a UTC, `[00:00 de la fecha, 00:00 de la siguiente)` con `studioLocalToUtc` (DOM-003); una fecha que no es de calendario da `DailyAgendaInvalid`. La agenda muestra las citas `pending_approval`, `approved`, `confirmed`, `completed`, `no_show` y `rejected` (`AGENDA_APPOINTMENT_STATUSES`), sin las canceladas, ordenadas por inicio (criterio 1); a la misma hora, la rechazada va después de la que se atiende. Mostrar las rechazadas no lo pide el criterio 1 («las citas del día»): lo pidió Jose Lorenzo y lo aprobó el PO (Kenny) el 2026-10-30, en la revisión de #590 a #595 (comunicado por Jose Lorenzo). Las canceladas no se muestran. La duración es el fin menos el inicio de la cita, en minutos. El estado de pago se deriva del anticipo que la cita congeló (DOM-002): `not_required` (sin anticipo), `unpaid`, `partial` o `covered`; una cita anterior a US-AGE-05, sin snapshot, no tiene estado de pago. Es la misma regla que `depositStatusOf` de `clients` (US-CLI-02), separada en dos (`unpaid` y `partial`) donde allá dice «pendiente»; no se importa porque el dominio no importa de otra feature (ARCH-004). Pruebas: `domain/__tests__/daily-agenda.test.ts`.
+- Aplicación (`application/daily-agenda.ts`): `getDailyAgenda({ repo })(fecha)` valida la fecha antes de tocar la base y pide las citas del rango por el puerto `DailyAgendaRepository.listBetween` (`application/ports.ts`). Pruebas: `application/__tests__/daily-agenda.test.ts`.
+- Faltan los datos (repositorio Supabase), la pantalla en `/admin/citas` con día anterior y siguiente, el indicador de primera vez y los enlaces al expediente. La morosidad espera a US-MOR-01 (criterio diferido) y cerrar la cita está propuesto para trasladar a US-AGE-12 (ítem 10 de «Criterios trasladados», pendiente del PO).
 
 ## Faltantes de US-AGE-05
 

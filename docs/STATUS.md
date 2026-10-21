@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-28.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-29.
 
 ## Features
 
@@ -19,7 +19,7 @@
 | notifications | pendiente | en_progreso | 1 / 0 / 0 / 0 / 8 |
 | payments | pendiente | terminada | 1 / 0 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
-| scheduling | pendiente | en_progreso | 7 / 0 / 0 / 0 / 4 |
+| scheduling | pendiente | en_progreso | 7 / 1 / 0 / 0 / 3 |
 | store | pendiente | en_progreso | 3 / 0 / 0 / 0 / 1 |
 
 ## Detalle por feature
@@ -84,7 +84,7 @@
 
 ### platform (actualizado: 2026-09-16)
 
-### scheduling (actualizado: 2026-10-24)
+### scheduling (actualizado: 2026-10-29)
 - US-AGE-01 — terminada — PR de cierre us/US-AGE-01 a main, con las piezas 1 a 13 apiladas hacia la rama de la historia. Criterios 1, 2 y 3 demostrados en /admin/citas/disponibilidad; los criterios 4 y 5 se trasladaron a US-AGE-02 y US-AGE-05 con aprobación del PO el 2026-10-14 (docs/process/DEPENDENCIES.md); tests: weekly-availability.test.ts (domain y application), closed-dates.test.ts (domain y application), manual-blocks.test.ts (domain y application), los tres *-repository.test.ts, studio-time.test.ts, availability-schema.test.ts, availability-actions.test.ts, availability-format.test.ts, AdminAvailabilityView.test.tsx, __tests__/availability-rls-isolation.test.ts (SEC-002) y pgTAP scheduling_weekly_availability.test.sql y scheduling_closed_dates_and_manual_blocks.test.sql
 - US-AGE-02 — terminada — PR de cierre us/US-AGE-02 a main (#403), con las piezas 1 a 12 apiladas hacia la rama de la historia (#387 a #392 y la pila de correcciones de la revisión #397 a #402). SLOT_INTERVAL_MIN = 30 confirmado por el PO el 2026-10-18. Criterios 1 a 5 y el criterio 4 recibido de US-AGE-01 con prueba unitaria; tests: domain/__tests__/day-slots.test.ts (criterios 1, 2, 3 y 5), domain/__tests__/service-option.test.ts (criterio 5), application/__tests__/day-slots.test.ts (criterio 4 de US-AGE-01), db/__tests__/day-availability-repository.test.ts, ui/client-calendar/__tests__/ClientCalendarView.test.tsx (criterios 1, 3 y 4), ui/client-calendar/__tests__/load-client-calendar.test.ts, ui/client-calendar/__tests__/calendar-params.test.ts, ui/client-calendar/__tests__/client-calendar-format.test.ts, ui/__tests__/TechniqueSelector.test.tsx (enlace desde el selector de US-AGE-03), shared/__tests__/studio-time.test.ts (addCalendarDays), __tests__/availability-rls-isolation.test.ts (las dos funciones con tokens reales, SEC-002), pgTAP supabase/tests/database/scheduling_client_day_view.test.sql (criterios 2 y 3 en la base, RLS intacta, anon sin acceso y criterio 4 de US-AGE-01), corrida en local el 2026-10-18; verificada en navegador el 2026-10-17 con Playwright contra Supabase local (escritorio y 375 px, capturas en el PR de la pieza 6)
 - US-AGE-03 — terminada — criterios 1, 3 y 4 demostrados; el criterio 2 se trasladó a US-AGE-05 con aprobación del PO (líder del proyecto), comunicado por Erick Duran el 2026-10-17 (docs/process/DEPENDENCIES.md, Criterios trasladados, ítem 6); tests: technique-selection.test.ts, select-technique.test.ts, load-technique-selection-page.test.ts, TechniqueSelectionPageView.test.tsx
@@ -94,7 +94,7 @@
 - US-AGE-07 — terminada — PR de cierre us/US-AGE-07 a main, con las piezas #460 a #466, #499 y #547 a #555; criterios 1 a 4 con prueba; tests: domain/__tests__/manual-block-selection.test.ts (criterio 1), application/__tests__/block-slots.test.ts (criterios 1, 3 y 4), db/__tests__/manual-block-repository.test.ts (criterios 1, 3 y 4), ui/availability/__tests__/block-slots-actions.test.ts (criterios 1, 3 y 4), ui/availability/__tests__/availability-actions.test.ts (criterio 4 en cerrar un día, quitar un bloque semanal y bloquear por rango), ui/availability/__tests__/release-slots-actions.test.ts (criterio 3), application/__tests__/release-slots.test.ts (criterio 3), ui/availability/__tests__/SlotPicker.test.tsx (criterios 1 y 4), ui/availability/__tests__/AdminAvailabilityView.test.tsx (criterio 3), ui/availability/__tests__/slot-picker-date.test.ts, ui/availability/__tests__/availability-format.test.ts, domain/__tests__/manual-blocks.test.ts y ui/availability/__tests__/availability-schema.test.ts (tope del motivo), db/__tests__/block-vs-booking-concurrency.integration.test.ts (criterio 4 con reservas a la vez), pgTAP supabase/tests/database/scheduling_manual_blocks_unblock.test.sql (criterios 2, 3 y 4 en la base), scheduling_manual_blocks_release.test.sql (criterio 3) y scheduling_reductions_reject_appointments.test.sql (criterio 4 al cerrar un día y quitar un bloque semanal) y scheduling_manual_blocks_reason_length.test.sql (tope del motivo), pgTAP corrido por el autor en local, con los resultados pegados en #554 y #555, y no repetido al preparar el cierre (sin Docker); capturas con Playwright contra Supabase local del selector de espacios y del rechazo al cerrar un día o bloquear con una cita en #552
 - US-AGE-09 — terminada — criterios 1 a 4 y el flujo de aprobación (ADR-0003) demostrados; tests: supabase/tests/database/scheduling_no_overlap.test.sql (criterios 1 a 3), db/__tests__/appointment-concurrency.integration.test.ts (criterio 4, 10 reservas simultáneas por ronda, 3 rondas), supabase/tests/database/scheduling_create_appointment.test.sql, supabase/tests/database/scheduling_decide_appointment.test.sql, application/__tests__/create-appointment.test.ts, application/__tests__/decide-appointment.test.ts, db/__tests__/appointment-repository.test.ts, db/__tests__/appointment-decision-repository.test.ts, ui/approval-queue/__tests__/approval-queue-actions.test.ts, ui/approval-queue/__tests__/ApprovalQueue.test.tsx, __tests__/rls-isolation.test.ts. Criterio 5, parte de código: error tipado SpaceNotAvailable y evento scheduling.appointment_overlap_rejected (db/appointment-repository.ts). La alerta real se traslada a US-AGE-05 (docs/process/DEPENDENCIES.md, Criterios trasladados, ítem 4)
 - US-AGE-10 — no_iniciada
-- US-AGE-11 — no_iniciada
+- US-AGE-11 — en_progreso — falta: solo están el dominio y el caso de uso: faltan el repositorio, la pantalla en /admin/citas con día anterior y siguiente, el indicador de primera vez y los enlaces al expediente; la morosidad espera a US-MOR-01 (diferido) y cerrar la cita está propuesto para US-AGE-12 (pendiente del PO)
 - US-AGE-12 — no_iniciada
 
 ### store (actualizado: 2026-10-24)
