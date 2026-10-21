@@ -2,7 +2,7 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-20
+actualizado: 2026-10-21
 historias:
   - id: US-NOT-01
     estado: no_iniciada
@@ -10,7 +10,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-03
     estado: en_progreso
-    falta: "provisión operativa fuera del código: cuenta Twilio con WhatsApp Business verificado y plantillas aprobadas por Meta (sin ellas el canal primario se declara no configurado, ADR-0006), dominio verificado en Resend, y la cuenta de staff del cron (NOTIFICATIONS_CRON_EMAIL/NOTIFICATIONS_CRON_PASSWORD) creada a mano en Supabase con rol admin/superadmin, igual que la cuenta de la administradora (US-AUTH-01). Verificación end-to-end contra un número de WhatsApp real, pendiente."
+    falta: "el negocio todavía no tiene número de WhatsApp Business ni dominio de email propios (2026-10-21): activarlos es solo completar TWILIO_ACCOUNT_SID/AUTH_TOKEN/WHATSAPP_FROM, TWILIO_CONTENT_SID (con la plantilla de 2 variables aprobada por Meta, ver domain/reminder-message.ts) y RESEND_API_KEY/FROM_ADDRESS, sin tocar código (ADR-0006). También falta la cuenta de staff del cron (NOTIFICATIONS_CRON_EMAIL/NOTIFICATIONS_CRON_PASSWORD), creada a mano en Supabase con rol admin/superadmin igual que la cuenta de la administradora (US-AUTH-01) — no depende del negocio y se puede crear ya. Verificación end-to-end contra un número de WhatsApp real, pendiente."
   - id: US-NOT-04
     estado: no_iniciada
   - id: US-NOT-05
@@ -77,9 +77,17 @@ lo reusa vía el puerto que US-NOT-08 exige.
   corridas contra Supabase local el 2026-10-20.
 - Canales (`channels/`): `twilio-whatsapp-channel.ts` y `resend-email-channel.ts`, REST directo con
   `fetch` (sin SDK nuevo) detrás de variables de entorno; sin configurar, el canal se declara
-  `channelNotConfigured` en vez de fallar en producción por sorpresa (SEC-003/004). Pruebas:
-  `channels/__tests__/twilio-whatsapp-channel.test.ts` y `resend-email-channel.test.ts` (mock de
-  `fetch`).
+  `channelNotConfigured` en vez de fallar en producción por sorpresa (SEC-003/004). El negocio
+  todavía no tiene número de WhatsApp ni dominio de email propios (2026-10-21): hasta tenerlos,
+  ambos canales quedan listos para que activarlos sea solo completar variables de entorno, sin
+  tocar código. Para WhatsApp en concreto: sin `TWILIO_CONTENT_SID`, manda el mensaje como texto
+  libre (sirve en el sandbox de Twilio); con un número de WhatsApp Business real, Meta exige una
+  plantilla aprobada para que el negocio le escriba primero a la clienta (que es justo lo que hace
+  un recordatorio) — `domain/reminder-message.ts` expone `buildReminderTemplateVariables` con las
+  2 variables en el orden que esa plantilla debe declarar (técnica, fecha y hora); con
+  `TWILIO_CONTENT_SID` configurado, el canal manda `ContentSid` + `ContentVariables` en vez de
+  `Body`. Pruebas: `channels/__tests__/twilio-whatsapp-channel.test.ts` (sin plantilla y con
+  plantilla) y `resend-email-channel.test.ts` (mock de `fetch`).
 - Disparo (`http/cron-handler.ts`, `src/app/api/cron/notifications-reminders/route.ts`, `vercel.json`):
   Vercel Cron llama cada 15 minutos con `Authorization: Bearer <CRON_SECRET>`; sin ese secreto
   configurado el endpoint se niega siempre (fail-closed). Sin sesión de usuario (sin cookies): el

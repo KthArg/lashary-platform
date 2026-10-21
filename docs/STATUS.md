@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-20.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-21.
 
 ## Features
 
@@ -68,10 +68,10 @@
 ### loyalty (actualizado: 2026-08-28)
 - US-LAND-06 — no_iniciada
 
-### notifications (actualizado: 2026-10-20)
+### notifications (actualizado: 2026-10-21)
 - US-NOT-01 — no_iniciada
 - US-NOT-02 — no_iniciada
-- US-NOT-03 — en_progreso — falta: provisión operativa fuera del código: cuenta Twilio con WhatsApp Business verificado y plantillas aprobadas por Meta (sin ellas el canal primario se declara no configurado, ADR-0006), dominio verificado en Resend, y la cuenta de staff del cron (NOTIFICATIONS_CRON_EMAIL/NOTIFICATIONS_CRON_PASSWORD) creada a mano en Supabase con rol admin/superadmin, igual que la cuenta de la administradora (US-AUTH-01). Verificación end-to-end contra un número de WhatsApp real, pendiente.
+- US-NOT-03 — en_progreso — falta: el negocio todavía no tiene número de WhatsApp Business ni dominio de email propios (2026-10-21): activarlos es solo completar TWILIO_ACCOUNT_SID/AUTH_TOKEN/WHATSAPP_FROM, TWILIO_CONTENT_SID (con la plantilla de 2 variables aprobada por Meta, ver domain/reminder-message.ts) y RESEND_API_KEY/FROM_ADDRESS, sin tocar código (ADR-0006). También falta la cuenta de staff del cron (NOTIFICATIONS_CRON_EMAIL/NOTIFICATIONS_CRON_PASSWORD), creada a mano en Supabase con rol admin/superadmin igual que la cuenta de la administradora (US-AUTH-01) — no depende del negocio y se puede crear ya. Verificación end-to-end contra un número de WhatsApp real, pendiente.
 - US-NOT-04 — no_iniciada
 - US-NOT-05 — no_iniciada
 - US-NOT-06 — no_iniciada

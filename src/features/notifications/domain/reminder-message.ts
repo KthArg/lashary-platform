@@ -31,3 +31,7 @@ export function buildReminderMessage(input: ReminderMessageInput): string {
     `${REMINDER_MESSAGE_TEXTS.whenLabel}: ${formatStudioDateTime(input.startsAt)}`,
   ].join('\n')
 }
+
+export function buildReminderTemplateVariables(input: ReminderMessageInput): string[] {
+  return [input.techniqueName, formatStudioDateTime(input.startsAt)]
+}
