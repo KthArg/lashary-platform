@@ -3,6 +3,8 @@
 > **Estado:** aceptado. **Fecha:** 2026-08-27. **Decisores:** PO + bootstrap. **Historias:** US-NOT-03 (portadora del canal, ADR-0007), US-NOT-07, US-NOT-08, US-CLI-06, US-NOT-04, US-NOT-05.
 >
 > **Registro de la decisión (2026-10-20):** el PO eligió Resend como proveedor de email de respaldo, resolviendo el pendiente del ítem de Consecuencias. `notifications/channels/resend-email-channel.ts` lo implementa detrás del puerto `NotificationChannel`.
+>
+> **Registro de la decisión (2026-10-21):** el negocio todavía no tiene número de WhatsApp Business ni dominio de email propios. `twilio-whatsapp-channel.ts` queda listo para activarse solo con variables de entorno: sin `TWILIO_CONTENT_SID` manda texto libre (sandbox de Twilio); con un número real, Meta exige plantilla aprobada — el canal manda `ContentSid`/`ContentVariables` en vez de `Body` cuando esa variable está presente. La plantilla a pedir en Meta debe declarar exactamente 2 variables, en este orden: técnica reservada, fecha y hora de la cita (`domain/reminder-message.ts`, `buildReminderTemplateVariables`).
 
 ## Contexto
 
