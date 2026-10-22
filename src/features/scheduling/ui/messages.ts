@@ -91,6 +91,14 @@ export const schedulingMessages = {
       unblock: 'Desbloquear',
       unblockLabel: (date: string, range: string) => `Desbloquear el ${date} de ${range}`,
       removedOk: 'Espacio desbloqueado.',
+      release: {
+        buttonLabel: (date: string, range: string) => `Liberar final del bloqueo del ${date} de ${range}`,
+        sliderLabel: 'Cuánto liberar',
+        until: (time: string) => `Liberar hasta las ${time}`,
+        submit: 'Liberar final',
+        savedOk: 'Final del bloqueo liberado.',
+        stale: 'El bloqueo cambió o ya no existe. Revisá la lista actualizada e intentá de nuevo.',
+      },
     },
     picker: {
       title: 'Bloquear varios espacios',
@@ -115,6 +123,7 @@ export const schedulingMessages = {
       kind: 'Elegí si es no laborable o feriado.',
       startBeforeEnd: 'La hora de inicio debe ser anterior a la de fin.',
       pickSlot: 'Marcá al menos un espacio.',
+      releaseSteps: 'Elegí cuánto liberar.',
       reasonTooLong: 'El motivo puede tener hasta 500 caracteres.',
     },
   },

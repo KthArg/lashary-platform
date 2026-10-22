@@ -10,6 +10,7 @@ import {
   RemoveWeeklyBlockButton,
   WeeklyBlockForm,
 } from './AvailabilityForms'
+import { ReleaseBlockForm } from './ReleaseBlockForm'
 import { SlotPicker } from './SlotPicker'
 import { SlotPickerDayForm } from './SlotPickerDayForm'
 
@@ -113,6 +114,12 @@ export function AdminAvailabilityView({ weeklyDays, closedDates, manualBlocks, s
                   </span>
                   {block.reason && <span className={STYLES.rowDetail}>{block.reason}</span>}
                 </div>
+                <ReleaseBlockForm
+                  id={block.id}
+                  label={availabilityMessages.blocks.release.buttonLabel(block.date, block.range)}
+                  endsAtIso={block.endsAtIso}
+                  releaseEnds={block.releaseEnds}
+                />
                 <RemoveManualBlockButton
                   id={block.id}
                   label={availabilityMessages.blocks.unblockLabel(block.date, block.range)}

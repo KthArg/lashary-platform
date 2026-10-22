@@ -63,6 +63,33 @@ describe('availability-format', () => {
     expect(view.date).toMatch(/20 de octubre/)
   })
 
+  it('toManualBlockViews da el fin actual y la hora que quedaría al liberar 1, 2, … espacios (US-AGE-07)', () => {
+    const [view] = toManualBlockViews([
+      {
+        id: 'm',
+        resourceId: 'r',
+        startsAt: new Date('2026-10-20T14:00:00Z'),
+        endsAt: new Date('2026-10-20T17:00:00Z'),
+        reason: null,
+      },
+    ])
+    expect(view.endsAtIso).toBe('2026-10-20T17:00:00.000Z')
+    expect(view.releaseEnds).toEqual(['10:30', '10:00', '09:30', '09:00', '08:30'])
+  })
+
+  it('toManualBlockViews no ofrece liberar nada en un bloqueo de un solo espacio', () => {
+    const [view] = toManualBlockViews([
+      {
+        id: 'm',
+        resourceId: 'r',
+        startsAt: new Date('2026-10-20T14:00:00Z'),
+        endsAt: new Date('2026-10-20T14:30:00Z'),
+        reason: null,
+      },
+    ])
+    expect(view.releaseEnds).toEqual([])
+  })
+
   it('toSlotPickerView da a cada espacio su horario y si está ocupado (US-AGE-07)', () => {
     expect(
       toSlotPickerView('2026-10-19', [

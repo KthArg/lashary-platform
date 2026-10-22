@@ -18,11 +18,12 @@ import {
   blockSlotsFormSchema,
   closedDateFormSchema,
   manualBlockFormSchema,
+  releaseBlockFormSchema,
   removeFormSchema,
   weeklyBlockFormSchema,
 } from '../validation/availability-schema'
 import type { AvailabilityActionState } from '../types/availability-action-state'
-import { AVAILABILITY_PATH, BLOCK_SLOTS_FIELDS } from '../constants/availability.constants'
+import { AVAILABILITY_PATH, BLOCK_SLOTS_FIELDS, RELEASE_BLOCK_FIELDS } from '../constants/availability.constants'
 
 // Las acciones revisan el rol para dar un mensaje amable; la frontera real es RLS (SEC-001).
 
@@ -170,6 +171,26 @@ export async function blockSlotsAction(
     return { status: 'conflict', message: availabilityMessages.picker.stale }
   }
   return done(availabilityMessages.picker.savedOk)
+}
+
+export async function releaseManualBlockAction(
+  _prev: AvailabilityActionState,
+  formData: FormData,
+): Promise<AvailabilityActionState> {
+  if (!(await isStaff())) return forbidden()
+  const parsed = releaseBlockFormSchema.safeParse({
+    id: formData.get(RELEASE_BLOCK_FIELDS.id) ?? undefined,
+    steps: formData.get(RELEASE_BLOCK_FIELDS.steps) ?? undefined,
+    expectedEndsAt: formData.get(RELEASE_BLOCK_FIELDS.expectedEndsAt) ?? undefined,
+  })
+  if (!parsed.success) return fromZod(parsed.error)
+
+  const result = await availabilityService.releaseManualBlockTail(parsed.data)
+  if (isErr(result)) {
+    revalidatePath(AVAILABILITY_PATH)
+    return { status: 'conflict', message: availabilityMessages.blocks.release.stale }
+  }
+  return done(availabilityMessages.blocks.release.savedOk)
 }
 
 export async function removeManualBlockAction(

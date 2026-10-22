@@ -2,6 +2,7 @@ import { STUDIO_TIME_ZONE } from '@/shared/studio-time'
 import type { WeeklyBlock } from '../../../domain/weekly-availability'
 import type { ClosedDate } from '../../../domain/closed-dates'
 import type { ManualBlock } from '../../../domain/manual-blocks'
+import { maxReleaseSteps, shortenedEndMs } from '../../../domain/manual-block-release'
 import type { DaySlot } from '../../../domain/day-slots'
 import { schedulingMessages } from '../../messages'
 import type { SlotPickerView } from '../types/slot-picker.types'
@@ -84,7 +85,22 @@ export const toSlotPickerView = (date: string, slots: readonly DaySlot[]): SlotP
   })),
 })
 
-export type ManualBlockView = { id: string; date: string; range: string; reason: string | null }
+export type ManualBlockView = {
+  id: string
+  date: string
+  range: string
+  reason: string | null
+  // Fin actual en ISO: viaja con el formulario de liberar para detectar un bloqueo que cambió.
+  endsAtIso: string
+  // Hora de fin que quedaría al liberar 1, 2, … espacios, ya formateada en la zona del estudio.
+  releaseEnds: string[]
+}
+
+const releaseEndsOf = (block: ManualBlock): string[] =>
+  Array.from({ length: maxReleaseSteps(block) }, (_, index) => {
+    const endMs = shortenedEndMs(block, index + 1)
+    return endMs.ok ? timeFormatter.format(new Date(endMs.value)) : ''
+  })
 
 export const toManualBlockViews = (blocks: readonly ManualBlock[]): ManualBlockView[] =>
   blocks.map((block) => ({
@@ -92,4 +108,6 @@ export const toManualBlockViews = (blocks: readonly ManualBlock[]): ManualBlockV
     date: instantDateFormatter.format(block.startsAt),
     range: `${timeFormatter.format(block.startsAt)}–${timeFormatter.format(block.endsAt)}`,
     reason: block.reason,
+    endsAtIso: block.endsAt.toISOString(),
+    releaseEnds: releaseEndsOf(block),
   }))

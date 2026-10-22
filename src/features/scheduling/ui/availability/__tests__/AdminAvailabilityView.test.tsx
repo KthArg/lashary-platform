@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
-import { render, screen, cleanup, within } from '@testing-library/react'
+import { render, screen, cleanup, within, fireEvent } from '@testing-library/react'
 import type { ComponentProps } from 'react'
 import { schedulingMessages } from '../../messages'
 import { toSlotPickerView, toWeeklyDays } from '../utils/availability-format'
@@ -11,6 +11,7 @@ vi.mock('../actions/availability-actions', () => ({
   removeClosedDateAction: vi.fn(),
   addManualBlockAction: vi.fn(),
   blockSlotsAction: vi.fn(),
+  releaseManualBlockAction: vi.fn(),
   removeManualBlockAction: vi.fn(),
 }))
 vi.mock('next/form', () => ({ default: (props: ComponentProps<'form'>) => <form {...props} /> }))
@@ -81,7 +82,9 @@ describe('AdminAvailabilityView — US-AGE-01', () => {
 
   it('criterio 3: los espacios bloqueados muestran fecha, horario y motivo', () => {
     renderView({
-      manualBlocks: [{ id: 'm', date: 'martes, 20 de octubre', range: '09:00–11:00', reason: 'banco' }],
+      manualBlocks: [
+        { id: 'm', date: 'martes, 20 de octubre', range: '09:00–11:00', reason: 'banco', endsAtIso: '2026-10-20T17:00:00.000Z', releaseEnds: [] },
+      ],
     })
 
     const blocks = screen.getByRole('region', { name: availabilityMessages.blocks.title })
@@ -103,7 +106,9 @@ describe('AdminAvailabilityView — US-AGE-01', () => {
 describe('AdminAvailabilityView — US-AGE-07', () => {
   it('criterio 3: cada espacio bloqueado tiene su botón para desbloquear', () => {
     renderView({
-      manualBlocks: [{ id: 'b-1', date: 'lunes, 19 de octubre', range: '09:00–10:00', reason: null }],
+      manualBlocks: [
+        { id: 'b-1', date: 'lunes, 19 de octubre', range: '09:00–10:00', reason: null, endsAtIso: '2026-10-19T16:00:00.000Z', releaseEnds: [] },
+      ],
     })
 
     const blocks = screen.getByRole('region', { name: availabilityMessages.blocks.title })
@@ -112,6 +117,59 @@ describe('AdminAvailabilityView — US-AGE-07', () => {
     })
     expect(unblock.textContent).toBe(availabilityMessages.blocks.unblock)
     expect(unblock.getAttribute('aria-label')).toContain(availabilityMessages.blocks.unblock)
+  })
+
+  describe('criterio 3: liberar el final de un bloqueo con un deslizador', () => {
+    const threeHourBlock = {
+      id: 'b-3h',
+      date: 'lunes, 19 de octubre',
+      range: '08:00–11:00',
+      reason: null,
+      endsAtIso: '2026-10-19T17:00:00.000Z',
+      releaseEnds: ['10:30', '10:00', '09:30', '09:00', '08:30'],
+    }
+    const releaseMessages = availabilityMessages.blocks.release
+
+    it('se elige con un deslizador de pasos enteros, no se escribe', () => {
+      renderView({ manualBlocks: [threeHourBlock] })
+      const slider = screen.getByLabelText(releaseMessages.sliderLabel) as HTMLInputElement
+
+      expect(slider.type).toBe('range')
+      expect([slider.min, slider.max, slider.step, slider.value]).toEqual(['1', '5', '1', '1'])
+      expect(slider.name).toBe('steps')
+    })
+
+    it('cada paso dice la hora en que quedaría el bloqueo, también para lectores de pantalla (UI-004)', () => {
+      renderView({ manualBlocks: [threeHourBlock] })
+      const slider = screen.getByLabelText(releaseMessages.sliderLabel) as HTMLInputElement
+      expect(slider.getAttribute('aria-valuetext')).toBe(releaseMessages.until('10:30'))
+
+      fireEvent.change(slider, { target: { value: '3' } })
+      expect(slider.getAttribute('aria-valuetext')).toBe(releaseMessages.until('09:30'))
+      expect(screen.getByText(releaseMessages.until('09:30'))).toBeTruthy()
+    })
+
+    it('el formulario manda el bloqueo y el fin que se vio, y el botón nombra el bloqueo', () => {
+      const { container } = renderView({ manualBlocks: [threeHourBlock] })
+
+      expect((container.querySelector('input[type="hidden"][name="id"][value="b-3h"]') as HTMLInputElement)).toBeTruthy()
+      expect(
+        (container.querySelector('input[type="hidden"][name="expectedEndsAt"]') as HTMLInputElement).value,
+      ).toBe('2026-10-19T17:00:00.000Z')
+      const submit = screen.getByRole('button', {
+        name: releaseMessages.buttonLabel('lunes, 19 de octubre', '08:00–11:00'),
+      })
+      expect(submit.textContent).toBe(releaseMessages.submit)
+      expect(submit.getAttribute('aria-label')).toContain(releaseMessages.submit)
+    })
+
+    it('un bloqueo de un solo espacio no ofrece deslizador: solo se desbloquea', () => {
+      renderView({
+        manualBlocks: [{ ...threeHourBlock, range: '08:00–08:30', releaseEnds: [] }],
+      })
+      expect(screen.queryByLabelText(releaseMessages.sliderLabel)).toBeNull()
+      expect(screen.getByRole('button', { name: /Desbloquear/ })).toBeTruthy()
+    })
   })
 
   it('el selector de espacios tiene su sección y el día elegido viaja en el selector de día', () => {

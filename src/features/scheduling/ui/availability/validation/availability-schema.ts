@@ -72,4 +72,17 @@ export const blockSlotsFormSchema = z.object({
   reason: optionalReason,
 })
 
+// El fin que la administradora vio viaja con el formulario para que el servidor sepa si el bloqueo
+// cambió; un valor que no es una fecha cuenta como bloqueo cambiado.
+const expectedEndField = z
+  .string()
+  .refine((value) => !Number.isNaN(Date.parse(value)), validationMessages.releaseSteps)
+  .transform((value) => new Date(value))
+
+export const releaseBlockFormSchema = z.object({
+  id: z.string().min(1),
+  steps: z.string().regex(/^\d+$/, validationMessages.releaseSteps).transform(Number),
+  expectedEndsAt: expectedEndField,
+})
+
 export const removeFormSchema = z.object({ id: z.string().min(1) })

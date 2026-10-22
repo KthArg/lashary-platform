@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '../../../domain/manual-blocks.constants'
 import {
   blockSlotsFormSchema,
+  releaseBlockFormSchema,
   closedDateFormSchema,
   manualBlockFormSchema,
   timeToMinutes,
@@ -65,6 +66,20 @@ describe('availability-schema', () => {
     expect(parsed.slotStartMinutes).toHaveLength(48)
     expect(parsed.slotStartMinutes[1]).toBe(30)
     expect(blockSlotsFormSchema.safeParse({ date: '2026-10-20', slotStartMinutes: [...slotsOfADay, '0'] }).success).toBe(false)
+  })
+
+  it('liberar: convierte los espacios a número y el fin que se vio a fecha', () => {
+    const parsed = releaseBlockFormSchema.parse({ id: 'b-1', steps: '2', expectedEndsAt: '2026-10-19T17:00:00.000Z' })
+    expect(parsed.id).toBe('b-1')
+    expect(parsed.steps).toBe(2)
+    expect(parsed.expectedEndsAt.toISOString()).toBe('2026-10-19T17:00:00.000Z')
+  })
+
+  it('liberar: un campo vacío, no numérico o sin fecha válida se rechaza', () => {
+    const base = { id: 'b-1', steps: '1', expectedEndsAt: '2026-10-19T17:00:00.000Z' }
+    for (const changes of [{ steps: '' }, { steps: 'x' }, { steps: '-1' }, { expectedEndsAt: 'ayer' }, { id: '' }]) {
+      expect(releaseBlockFormSchema.safeParse({ ...base, ...changes }).success).toBe(false)
+    }
   })
 
   it('bloqueos: el motivo llega hasta el tope en los dos formularios (US-AGE-07)', () => {

@@ -11,6 +11,7 @@ import {
   listUpcomingManualBlocks,
   removeManualBlock,
 } from '../../../application/manual-blocks'
+import { releaseManualBlockTail } from '../../../application/release-manual-block'
 import { getDaySlots } from '../../../application/day-slots'
 import { SLOT_INTERVAL_MIN } from '../../../domain/day-slots'
 import { dayAvailabilityRepository } from '../../../db/day-availability-repository'
@@ -87,6 +88,10 @@ export const availabilityService = {
       newId,
       clock: systemClock,
     })({ resourceId, ...input })
+  },
+
+  async releaseManualBlockTail(input: { id: string; steps: number; expectedEndsAt: Date }) {
+    return releaseManualBlockTail({ repo: await manualBlockRepository() })(input)
   },
 
   async removeManualBlock(id: string) {
