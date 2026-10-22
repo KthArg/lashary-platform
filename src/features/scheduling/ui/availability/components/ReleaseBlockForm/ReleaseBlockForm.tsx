@@ -19,7 +19,9 @@ export function ReleaseBlockForm({ id, label, endsAtIso, releaseEnds }: ReleaseB
   const sliderId = useId()
   if (releaseEnds.length === 0) return null
 
-  const untilLabel = releaseMessages.until(releaseEnds[steps - 1])
+  // Tras liberar, el bloqueo es más corto y el valor elegido puede quedar por encima del máximo.
+  const selectedSteps = Math.min(steps, releaseEnds.length)
+  const untilLabel = releaseMessages.until(releaseEnds[selectedSteps - 1])
   return (
     <>
       <form action={formAction} className={STYLES.form}>
@@ -35,7 +37,7 @@ export function ReleaseBlockForm({ id, label, endsAtIso, releaseEnds }: ReleaseB
           min={1}
           max={releaseEnds.length}
           step={1}
-          value={steps}
+          value={selectedSteps}
           onChange={(event) => setSteps(Number(event.target.value))}
           aria-valuetext={untilLabel}
           className={STYLES.slider}

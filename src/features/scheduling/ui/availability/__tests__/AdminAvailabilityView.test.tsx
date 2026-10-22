@@ -163,6 +163,27 @@ describe('AdminAvailabilityView — US-AGE-07', () => {
       expect(submit.getAttribute('aria-label')).toContain(releaseMessages.submit)
     })
 
+    it('tras liberar, si el bloqueo queda más corto el deslizador no se pasa del nuevo máximo', () => {
+      const { rerender } = renderView({ manualBlocks: [threeHourBlock] })
+      const slider = screen.getByLabelText(releaseMessages.sliderLabel) as HTMLInputElement
+      fireEvent.change(slider, { target: { value: '5' } })
+      expect(slider.getAttribute('aria-valuetext')).toBe(releaseMessages.until('08:30'))
+
+      const shorterBlock = { ...threeHourBlock, range: '08:00–09:30', releaseEnds: ['09:00', '08:30'] }
+      rerender(
+        <AdminAvailabilityView
+          weeklyDays={emptyWeek}
+          closedDates={[]}
+          manualBlocks={[shorterBlock]}
+          slotPicker={dayWithoutSlots}
+        />,
+      )
+      const sameSlider = screen.getByLabelText(releaseMessages.sliderLabel) as HTMLInputElement
+      expect(sameSlider.value).toBe('2')
+      expect(sameSlider.getAttribute('aria-valuetext')).toBe(releaseMessages.until('08:30'))
+      expect(screen.queryByText(/undefined/)).toBeNull()
+    })
+
     it('un bloqueo de un solo espacio no ofrece deslizador: solo se desbloquea', () => {
       renderView({
         manualBlocks: [{ ...threeHourBlock, range: '08:00–08:30', releaseEnds: [] }],
