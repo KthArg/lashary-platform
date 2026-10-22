@@ -73,6 +73,20 @@ export interface TooManyPendingAppointments {
   readonly message: string
 }
 
+export type CancellationInputField = 'startsAtMs' | 'nowMs' | 'windowHours' | 'depositRequired'
+
+export interface AppointmentNotCancellable {
+  readonly code: 'SCHEDULING_APPOINTMENT_NOT_CANCELLABLE'
+  readonly appointmentId: string
+  readonly message: string
+}
+
+export interface InvalidCancellationInput {
+  readonly code: 'SCHEDULING_INVALID_CANCELLATION_INPUT'
+  readonly field: CancellationInputField
+  readonly message: string
+}
+
 export type SchedulingError =
   | SlotNotOffered
   | TooManyPendingAppointments
@@ -86,6 +100,8 @@ export type SchedulingError =
   | InvalidDecisionReason
   | StorageFailed
   | AuditNotRecorded
+  | AppointmentNotCancellable
+  | InvalidCancellationInput
 
 export const techniqueNotSelectable = (
   techniqueId: string,
@@ -165,4 +181,18 @@ export const storageFailed = (detail: string): StorageFailed => ({
 export const auditNotRecorded = (): AuditNotRecorded => ({
   code: 'SCHEDULING_AUDIT_NOT_RECORDED',
   message: 'la decisión quedó guardada pero no se pudo registrar en la bitácora',
+})
+
+export const appointmentNotCancellable = (appointmentId: string): AppointmentNotCancellable => ({
+  code: 'SCHEDULING_APPOINTMENT_NOT_CANCELLABLE',
+  appointmentId,
+  message: `la cita ${appointmentId} no existe, ya pasó o no está en un estado que se pueda cancelar`,
+})
+
+export const invalidCancellationInput = (
+  field: CancellationInputField,
+): InvalidCancellationInput => ({
+  code: 'SCHEDULING_INVALID_CANCELLATION_INPUT',
+  field,
+  message: `el valor de ${field} no es válido para evaluar la cancelación`,
 })
