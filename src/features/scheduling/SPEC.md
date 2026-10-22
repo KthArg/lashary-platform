@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-10-20"
+actualizado: "2026-10-21"
 historias:
   - id: US-AGE-01
     estado: terminada
@@ -173,3 +173,4 @@ Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el
 - `clientCalendarMessages` — textos del calendario de la clienta: en `index.ts` para el título de `src/app/portal/citas/calendario/page.tsx` y en `client.ts` para su `error.tsx`.
 - `ApprovalQueue`, `listPendingAppointmentsAction` y `APPROVAL_QUEUE_LABELS` — componen `/admin/citas`. Consumidor: `src/app/admin/citas/page.tsx`. No están en `client.ts`.
 - Dominio y aplicación (`selectTechnique`, puertos) son superficie interna: ninguna otra feature los consume todavía.
+- `listClientAppointments` — **acordado, sin implementar.** Las citas de una clienta por páginas, de la más reciente a la más antigua, con servicio, fecha, estado y anticipo congelados. Contrato en `docs/contracts/scheduling-api.md` (INT-003), pedido por `clients` para US-CLI-02; lo implementa la pieza 2 de esa historia, sin migración. Consumidor: `src/features/clients/http/`.
