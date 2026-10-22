@@ -3,6 +3,7 @@ import type { SelectableTechnique } from '../domain/technique-selection'
 import type { AppointmentDecision } from '../domain/appointment-decision.constants'
 import type { SchedulingAlert } from '../domain/alert'
 import type {
+  AppointmentNotCancellable,
   AppointmentNotPending,
   ClientNotRegistered,
   TooManyPendingAppointments,
@@ -87,6 +88,27 @@ export type QuoteBookingError = ClientNotRegistered | TechniqueNotAvailable | St
 
 export interface BookingQuoteRepository {
   quote(input: QuoteBookingInput): Promise<Result<BookingQuote, QuoteBookingError>>
+}
+
+export type CancellationQuote = {
+  startsAtMs: number
+  techniqueName: string
+  withinWindow: boolean
+  windowHours: number
+  forfeitedDeposit: number
+}
+
+export type CancelledAppointment = {
+  appointmentId: string
+  withinWindow: boolean
+  forfeitedDeposit: number
+}
+
+export type CancellationError = ClientNotRegistered | AppointmentNotCancellable | StorageFailed
+
+export interface CancellationRepository {
+  quote(appointmentId: string): Promise<Result<CancellationQuote, CancellationError>>
+  cancel(appointmentId: string): Promise<Result<CancelledAppointment, CancellationError>>
 }
 
 export interface DelinquencyPort {
