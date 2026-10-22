@@ -2,7 +2,7 @@
 -- Correr con: npx supabase test db
 
 BEGIN;
-SELECT plan(29);
+SELECT plan(33);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -22,39 +22,49 @@ VALUES
 
 INSERT INTO public.scheduling_appointments
   (id, resource_id, status, starts_at, ends_at, occupied_range, client_id, technique_id, technique_name,
-   is_first_time, service_price, deposit_required, decided_by, decided_at)
+   is_first_time, service_price, deposit_required, deposit_registered, decided_by, decided_at)
 VALUES
   ('00000000-0000-0000-0000-00000000ca01', '00000000-0000-0000-0000-000000000a01', 'approved',
-   '2027-09-10 15:00+00', '2027-09-10 16:00+00', tstzrange('2027-09-10 15:00+00', '2027-09-10 16:00+00'),
+   (now() + interval '30 days'), (now() + interval '30 days 1 hour'), tstzrange((now() + interval '30 days'), (now() + interval '30 days 1 hour')),
    '00000000-0000-0000-0000-000000000bc6', '00000000-0000-0000-0000-000000000bf4', 'zz-test cancelar',
-   true, 35000, 10000, '00000000-0000-0000-0000-000000000b05', '2027-01-01 00:00+00'),
+   true, 35000, 10000, 10000, '00000000-0000-0000-0000-000000000b05', (now() - interval '1 day')),
   ('00000000-0000-0000-0000-00000000ca02', '00000000-0000-0000-0000-000000000a01', 'approved',
    now() + interval '10 hours', now() + interval '11 hours',
    tstzrange(now() + interval '10 hours', now() + interval '11 hours'),
    '00000000-0000-0000-0000-000000000bc6', '00000000-0000-0000-0000-000000000bf4', 'zz-test cancelar',
-   true, 35000, 10000, NULL, NULL),
+   true, 35000, 10000, 10000, NULL, NULL),
   ('00000000-0000-0000-0000-00000000ca03', '00000000-0000-0000-0000-000000000a01', 'pending_approval',
    now() + interval '13 hours', now() + interval '14 hours',
    tstzrange(now() + interval '13 hours', now() + interval '14 hours'),
    '00000000-0000-0000-0000-000000000bc6', '00000000-0000-0000-0000-000000000bf4', 'zz-test cancelar',
-   true, 35000, 10000, NULL, NULL),
+   true, 35000, 10000, 10000, NULL, NULL),
   ('00000000-0000-0000-0000-00000000ca04', '00000000-0000-0000-0000-000000000a01', 'approved',
-   '2027-09-11 15:00+00', '2027-09-11 16:00+00', tstzrange('2027-09-11 15:00+00', '2027-09-11 16:00+00'),
+   (now() + interval '31 days'), (now() + interval '31 days 1 hour'), tstzrange((now() + interval '31 days'), (now() + interval '31 days 1 hour')),
    '00000000-0000-0000-0000-000000000bc7', '00000000-0000-0000-0000-000000000bf4', 'zz-test cancelar',
-   true, 35000, 10000, NULL, NULL),
+   true, 35000, 10000, 10000, NULL, NULL),
   ('00000000-0000-0000-0000-00000000ca05', '00000000-0000-0000-0000-000000000a01', 'rejected',
-   '2027-09-10 15:00+00', '2027-09-10 16:00+00', tstzrange('2027-09-10 15:00+00', '2027-09-10 16:00+00'),
+   (now() + interval '30 days'), (now() + interval '30 days 1 hour'), tstzrange((now() + interval '30 days'), (now() + interval '30 days 1 hour')),
    '00000000-0000-0000-0000-000000000bc6', '00000000-0000-0000-0000-000000000bf4', 'zz-test cancelar',
-   true, 35000, 10000, NULL, NULL),
+   true, 35000, 10000, 10000, NULL, NULL),
   ('00000000-0000-0000-0000-00000000ca06', '00000000-0000-0000-0000-000000000a01', 'approved',
    now() - interval '3 hours', now() - interval '2 hours',
    tstzrange(now() - interval '3 hours', now() - interval '2 hours'),
    '00000000-0000-0000-0000-000000000bc6', '00000000-0000-0000-0000-000000000bf4', 'zz-test cancelar',
-   true, 35000, 10000, NULL, NULL),
+   true, 35000, 10000, 10000, NULL, NULL),
   ('00000000-0000-0000-0000-00000000ca07', '00000000-0000-0000-0000-000000000a01', 'approved',
-   '2027-09-12 15:00+00', '2027-09-12 16:00+00', tstzrange('2027-09-12 15:00+00', '2027-09-12 16:00+00'),
+   (now() + interval '32 days'), (now() + interval '32 days 1 hour'), tstzrange((now() + interval '32 days'), (now() + interval '32 days 1 hour')),
    '00000000-0000-0000-0000-000000000bc6', '00000000-0000-0000-0000-000000000bf4', 'zz-test cancelar',
-   true, 35000, 10000, NULL, NULL);
+   true, 35000, 10000, 10000, NULL, NULL),
+  ('00000000-0000-0000-0000-00000000ca08', '00000000-0000-0000-0000-000000000a01', 'approved',
+   now() + interval '20 hours', now() + interval '21 hours',
+   tstzrange(now() + interval '20 hours', now() + interval '21 hours'),
+   '00000000-0000-0000-0000-000000000bc6', '00000000-0000-0000-0000-000000000bf4', 'zz-test cancelar',
+   true, 35000, 10000, 4000, NULL, NULL),
+  ('00000000-0000-0000-0000-00000000ca09', '00000000-0000-0000-0000-000000000a01', 'approved',
+   now() + interval '22 hours', now() + interval '23 hours',
+   tstzrange(now() + interval '22 hours', now() + interval '23 hours'),
+   '00000000-0000-0000-0000-000000000bc6', '00000000-0000-0000-0000-000000000bf4', 'zz-test cancelar',
+   true, 35000, 10000, 0, NULL, NULL);
 
 SELECT results_eq(
   $$SELECT cancellable, within_window, forfeited_deposit, window_hours
@@ -104,8 +114,8 @@ SELECT is((SELECT decided_by FROM public.scheduling_appointments WHERE id = '000
 SELECT lives_ok(
   $$INSERT INTO public.scheduling_appointments (resource_id, status, starts_at, ends_at, occupied_range)
     VALUES ('00000000-0000-0000-0000-000000000a01', 'approved',
-            '2027-09-10 15:00+00', '2027-09-10 16:00+00',
-            tstzrange('2027-09-10 15:00+00', '2027-09-10 16:00+00'))$$,
+            (now() + interval '30 days'), (now() + interval '30 days 1 hour'),
+            tstzrange((now() + interval '30 days'), (now() + interval '30 days 1 hour')))$$,
   'el espacio cancelado quedó libre para otra cita (criterio 4)');
 
 SET LOCAL ROLE authenticated;
@@ -137,6 +147,32 @@ SELECT is((SELECT payload->>'depositRequired' FROM public.audit_events
 SELECT is((SELECT payload->>'previousStatus' FROM public.audit_events
             WHERE entity_id = '00000000-0000-0000-0000-00000000ca02'), 'approved',
   'el evento registra el estado que tenía la cita');
+
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-0000-0000-000000000b02","role":"authenticated"}', true);
+
+SELECT results_eq(
+  $$SELECT within_window, forfeited_deposit
+      FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca08')$$,
+  $$VALUES (false, 4000::bigint)$$,
+  'si la clienta pagó menos que el requerido, solo pierde lo que el estudio registró');
+
+SELECT results_eq(
+  $$SELECT within_window, forfeited_deposit
+      FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca09')$$,
+  $$VALUES (false, 0::bigint)$$,
+  'si no hay anticipo registrado, cancelar tarde no pierde nada aunque el requerido sea mayor');
+
+RESET ROLE;
+
+SELECT is((SELECT payload->>'depositRegistered' FROM public.audit_events
+            WHERE entity_id = '00000000-0000-0000-0000-00000000ca08'), '4000',
+  'el evento registra el anticipo registrado de la cita');
+
+SELECT is((SELECT payload->>'forfeitedDeposit' FROM public.audit_events
+            WHERE entity_id = '00000000-0000-0000-0000-00000000ca09'), '0',
+  'el evento dice que no se perdió nada cuando no había anticipo registrado');
 
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claims',
