@@ -10,7 +10,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-03
     estado: en_progreso
-    falta: "el negocio todavía no tiene número de WhatsApp Business ni dominio de email propios (2026-10-21): activarlos es solo completar META_WHATSAPP_ACCESS_TOKEN/PHONE_NUMBER_ID, META_WHATSAPP_TEMPLATE_NAME (con la plantilla de 2 variables aprobada por Meta, ver domain/reminder-message.ts) y RESEND_API_KEY/FROM_ADDRESS, sin tocar código (ADR-0006). También falta la cuenta de staff del cron (NOTIFICATIONS_CRON_EMAIL/NOTIFICATIONS_CRON_PASSWORD), creada a mano en Supabase con rol admin/superadmin igual que la cuenta de la administradora (US-AUTH-01) — no depende del negocio y se puede crear ya. Verificación end-to-end contra un número de WhatsApp real, pendiente."
+    falta: "código completo y probado con credenciales reales (WhatsApp vía Graph API de Meta y Resend), pero no funcionando para una clienta real todavía — decisión del líder del proyecto, comunicada el 2026-10-21: queda en_progreso hasta que lo de abajo esté resuelto, aunque las 13 piezas ya se mergean a main. Ver la sección «Falta para producción» de este SPEC para el detalle y el porqué de cada punto: (1) plantilla de WhatsApp aprobada por Meta + número de WhatsApp Business real; (2) contenido del mensaje decidido por la dueña del negocio; (3) dominio propio verificado en Resend; (4) probar el ciclo automático completo (criterios 1 y 3) contra una base con scheduling, cosa que lashary-pruebas no tiene; (5) disparo automático en producción vía GitHub Actions (Vercel Hobby no sirve, solo corre cron una vez al día); (6) cuenta de staff del cron en producción, deliberadamente no creada todavía — sin WhatsApp/email reales los envíos fallarían igual a los 5 intentos (MAX_REMINDER_ATTEMPTS)."
   - id: US-NOT-04
     estado: no_iniciada
   - id: US-NOT-05
@@ -107,6 +107,46 @@ US-NOT-03 (ADR-0007); el resto lo reusa vía el puerto que US-NOT-08 exige.
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
   mano. No lo pide ningún criterio de US-NOT-03.
 - US-NOT-01, 02, 04 a 08 y US-CLI-06 reusan el canal pero no están construidas.
+
+## Falta para producción
+
+Decisión del líder del proyecto, comunicada el 2026-10-21: el código está completo y probado con
+credenciales reales, pero la historia queda `en_progreso` — no `terminada` — hasta que lo de abajo
+esté resuelto. Las 13 piezas se mergean a `main` igual; lo que falta es configuración y decisiones
+de negocio, no código.
+
+1. **Plantilla de WhatsApp aprobada por Meta + número de WhatsApp Business real.** Probado hoy
+   (2026-10-21) contra el número de prueba de Meta: el canal manda y la clienta de prueba lo
+   recibe, pero solo como texto libre y solo porque la sesión de 24h estaba abierta (la clienta le
+   escribió primero al número). Con un número de WhatsApp Business real, Meta **no deja que el
+   negocio le escriba primero a una clienta con texto libre** — exige una plantilla revisada y
+   aprobada por Meta. El código ya soporta esto (`META_WHATSAPP_TEMPLATE_NAME`,
+   `buildReminderTemplateVariables`, 2 variables en orden técnica → fecha y hora); falta crear esa
+   plantilla en WhatsApp Manager, que la aprueben, y poner su nombre e idioma en las variables de
+   entorno. Sin esto, un recordatorio a una clienta que nunca escribió primero se rechaza.
+2. **Contenido del mensaje, decidido por la dueña del negocio.** El texto que usamos en las
+   pruebas (`domain/reminder-message.ts`) es provisional. La plantilla que se somete a Meta para
+   aprobación debe llevar el texto real que la dueña quiera — cambiarlo después de aprobado exige
+   pedir una aprobación nueva, así que conviene decidirlo antes de crear la plantilla.
+3. **Dominio propio verificado en Resend.** Hoy usa `onboarding@resend.dev`, el dominio de prueba
+   de Resend: llega de forma confiable solo a la cuenta que creó la API key, no a cualquier
+   clienta. Falta el dominio real del negocio y sus registros DNS (SPF/DKIM) verificados en Resend.
+4. **Probar el ciclo automático completo (criterios 1 y 3).** Lo probado hasta ahora es
+   `sendDueReminders` (criterios 2 y 4: enviar, reintentar, marcar estado) contra `lashary-pruebas`,
+   con una cuenta de staff y un cliente reales — pero esa base no tiene `scheduling_appointments`,
+   así que `discoverReminders` (criterio 1: detectar la cita 24h antes) y `reconcileReminders`
+   (criterio 3: cancelar o reprogramar si la cita cambia) nunca se corrieron contra datos reales,
+   solo contra dobles de prueba en los tests unitarios. Hace falta un entorno con `scheduling`
+   completo para esa prueba de punta a punta.
+5. **Disparo automático en producción.** `vercel.json` pide una corrida cada 15 minutos, pero el
+   plan Hobby de Vercel solo permite cron jobs una vez al día. Decisión del líder (2026-10-21): se
+   resuelve con GitHub Actions cuando el proyecto se despliegue, no ahora.
+6. **Cuenta de staff del cron en producción — deliberadamente no creada.** Decisión del líder
+   (2026-10-21): sin número de WhatsApp ni dominio de email reales, cualquier recordatorio que el
+   cron intentara mandar en producción fallaría en los dos canales y, tras `MAX_REMINDER_ATTEMPTS`
+   (5) intentos, quedaría en `failed` sin llegarle nunca a la clienta. Se creó la cuenta equivalente
+   solo en `lashary-pruebas` (base de pruebas) para validar el código; la de producción se crea
+   cuando los puntos 1 a 3 estén resueltos.
 
 ## Contrato público (`index.ts`, ARCH-003)
 
