@@ -1,6 +1,7 @@
 import type { Result } from '@/shared/result'
 import type { SelectableTechnique } from '../domain/technique-selection'
 import type { AppointmentDecision } from '../domain/appointment-decision.constants'
+import type { CancellableStatus } from '../domain/appointment-cancellation'
 import type { SchedulingAlert } from '../domain/alert'
 import type {
   AppointmentNotCancellable,
@@ -109,6 +110,21 @@ export type CancellationError = ClientNotRegistered | AppointmentNotCancellable 
 export interface CancellationRepository {
   quote(appointmentId: string): Promise<Result<CancellationQuote, CancellationError>>
   cancel(appointmentId: string): Promise<Result<CancelledAppointment, CancellationError>>
+}
+
+export type MyAppointment = {
+  id: string
+  startsAtMs: number
+  endsAtMs: number
+  techniqueName: string
+  status: CancellableStatus
+  isFirstTime: boolean
+  servicePrice: number
+  depositRequired: number
+}
+
+export interface MyAppointmentsRepository {
+  listUpcoming(nowMs: number): Promise<Result<MyAppointment[], StorageFailed>>
 }
 
 export interface DelinquencyPort {
