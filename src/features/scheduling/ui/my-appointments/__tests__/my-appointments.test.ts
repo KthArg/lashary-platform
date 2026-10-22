@@ -3,8 +3,8 @@ import { err, ok } from '@/shared/result'
 import { Money } from '@/shared/money'
 import { storageFailed } from '../../../domain/errors'
 import type { MyAppointment } from '../../../application/ports'
-import { APPROVAL_QUEUE_CHOICE } from '../../approval-queue/constants/approval-queue.labels'
-import { formatAppointmentSlot } from '../../approval-queue/utils/format-appointment-slot'
+import { APPOINTMENT_DISPLAY_CHOICE } from '../../appointment-display/constants/appointment-display.constants'
+import { formatAppointmentSlot } from '../../appointment-display/utils/format-appointment-slot'
 import { myAppointmentsMessages } from '../constants/my-appointments-strings'
 import { loadMyAppointments, type MyAppointmentsDeps } from '../utils/load-my-appointments'
 import { toMyAppointmentsView, toMyAppointmentView } from '../utils/my-appointments-format'
@@ -56,10 +56,10 @@ describe('toMyAppointmentView', () => {
     expect(view).toEqual({
       id: 'cita-1',
       service: 'Clásicas',
-      kind: APPROVAL_QUEUE_CHOICE.firstTime,
+      kind: APPOINTMENT_DISPLAY_CHOICE.firstTime,
       slot: formatAppointmentSlot(STARTS_AT_MS, ENDS_AT_MS),
       status: myAppointmentsMessages.status.approved,
-      amounts: APPROVAL_QUEUE_CHOICE.priceAndDeposit(price(35000), price(10000)),
+      amounts: APPOINTMENT_DISPLAY_CHOICE.priceAndDeposit(price(35000), price(10000)),
     })
     expect(view.slot).toContain('9:00')
   })
@@ -67,8 +67,8 @@ describe('toMyAppointmentView', () => {
   it('un retoque sin anticipo se rotula así y dice «sin anticipo»', () => {
     const view = toMyAppointmentView({ ...appointment, isFirstTime: false, depositRequired: 0, status: 'pending_approval' })
 
-    expect(view.kind).toBe(APPROVAL_QUEUE_CHOICE.retouch)
-    expect(view.amounts).toBe(APPROVAL_QUEUE_CHOICE.priceNoDeposit(price(35000)))
+    expect(view.kind).toBe(APPOINTMENT_DISPLAY_CHOICE.retouch)
+    expect(view.amounts).toBe(APPOINTMENT_DISPLAY_CHOICE.priceNoDeposit(price(35000)))
     expect(view.status).toBe(myAppointmentsMessages.status.pending_approval)
   })
 })

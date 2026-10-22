@@ -1,6 +1,6 @@
-export const MY_APPOINTMENTS_PATH = '/portal/citas/mis-citas'
-
 export const BOOK_APPOINTMENT_PATH = '/portal/citas'
+
+export const MY_APPOINTMENTS_PATH = `${BOOK_APPOINTMENT_PATH}/mis-citas`
 
 export const myAppointmentsMessages = {
   title: 'Mis citas',
