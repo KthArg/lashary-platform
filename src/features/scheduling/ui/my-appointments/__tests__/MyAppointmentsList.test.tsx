@@ -14,7 +14,8 @@ const mockCancel = vi.fn()
 
 vi.mock('../actions/cancel-appointment-actions', () => ({
   quoteCancellationAction: (appointmentId: string) => mockQuote(appointmentId),
-  cancelAppointmentAction: (appointmentId: string) => mockCancel(appointmentId),
+  cancelAppointmentAction: (appointmentId: string, expectedForfeitedDeposit: number) =>
+    mockCancel(appointmentId, expectedForfeitedDeposit),
 }))
 
 beforeEach(() => {
@@ -35,30 +36,28 @@ const appointments = [appointment(FIRST_ID, 'martes, 12 de abril'), appointment(
 
 describe('MyAppointmentsList', () => {
   it('cada cita trae su propio botón para cancelar', () => {
-    render(<MyAppointmentsList appointments={appointments} />)
+    render(<MyAppointmentsList appointments={appointments} onCancelled={vi.fn()} />)
 
     const items = within(screen.getByRole('list', { name: myAppointmentsMessages.listLabel })).getAllByRole('listitem')
     expect(items).toHaveLength(2)
     for (const item of items) expect(within(item).getByRole('button', { name: /^Cancelar la cita del/ })).toBeTruthy()
   })
 
-  it('cancela solo la cita elegida y deja el aviso en la lista', async () => {
-    mockQuote.mockResolvedValue({ ok: true, quote: { appointmentId: SECOND_ID, consequence: copy.withinWindow, losesDeposit: false } })
+  it('cancela solo la cita elegida y avisa con el mensaje', async () => {
+    mockQuote.mockResolvedValue({
+      ok: true,
+      quote: { appointmentId: SECOND_ID, consequence: copy.withinWindow, losesDeposit: false, forfeitedDeposit: 0 },
+    })
     mockCancel.mockResolvedValue({ ok: true, message: copy.cancelled })
-    render(<MyAppointmentsList appointments={appointments} />)
+    const onCancelled = vi.fn()
+    render(<MyAppointmentsList appointments={appointments} onCancelled={onCancelled} />)
 
     fireEvent.click(screen.getByRole('button', { name: copy.cancelButtonLabel('martes, 19 de abril') }))
     fireEvent.click(await screen.findByRole('button', { name: copy.confirmYes }))
 
-    await waitFor(() => expect(screen.getByRole('status').textContent).toBe(copy.cancelled))
+    await waitFor(() => expect(onCancelled).toHaveBeenCalledWith(copy.cancelled))
     expect(mockQuote).toHaveBeenCalledWith(SECOND_ID)
-    expect(mockCancel).toHaveBeenCalledWith(SECOND_ID)
+    expect(mockCancel).toHaveBeenCalledWith(SECOND_ID, 0)
     expect(mockCancel).toHaveBeenCalledTimes(1)
-  })
-
-  it('sin cancelar nada no hay ningún aviso', () => {
-    render(<MyAppointmentsList appointments={appointments} />)
-
-    expect(screen.queryByRole('status')).toBeNull()
   })
 })

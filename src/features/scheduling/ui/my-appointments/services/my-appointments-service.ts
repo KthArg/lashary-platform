@@ -5,10 +5,10 @@ import { listMyAppointments } from '../../../application/list-my-appointments'
 import { createSupabaseMyAppointmentsRepository } from '../../../db/my-appointments-repository'
 import { loadMyAppointments } from '../utils/load-my-appointments'
 import { toMyAppointmentsView } from '../utils/my-appointments-format'
-import type { MyAppointmentsView } from '../types/my-appointments.types'
+import type { MyAppointmentsScreen } from '../types/my-appointments.types'
 
 export const myAppointmentsService = {
-  async load(): Promise<MyAppointmentsView> {
+  async load(): Promise<MyAppointmentsScreen> {
     const data = await loadMyAppointments({
       isClient: async () => {
         const session = await getAuthSession()
