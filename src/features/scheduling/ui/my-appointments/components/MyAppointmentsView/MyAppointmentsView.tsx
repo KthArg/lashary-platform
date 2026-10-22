@@ -4,7 +4,7 @@ import {
   MY_APPOINTMENTS_PATH,
   myAppointmentsMessages,
 } from '../../constants/my-appointments-strings'
-import { MyAppointmentCard } from '../MyAppointmentCard'
+import { MyAppointmentsList } from '../MyAppointmentsList'
 import { myAppointmentsViewStyles as STYLES } from './MyAppointmentsView.styles'
 import type { MyAppointmentsViewProps } from './MyAppointmentsView.types'
 
@@ -37,13 +37,7 @@ function AppointmentsBody({ view }: MyAppointmentsViewProps) {
         </section>
       )
     case 'ready':
-      return (
-        <ul aria-label={copy.listLabel} className={STYLES.list}>
-          {view.appointments.map((appointment) => (
-            <MyAppointmentCard key={appointment.id} appointment={appointment} />
-          ))}
-        </ul>
-      )
+      return <MyAppointmentsList appointments={view.appointments} />
   }
 }
 
