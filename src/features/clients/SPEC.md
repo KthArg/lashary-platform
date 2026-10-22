@@ -413,13 +413,15 @@ También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el e
   `scheduling_appointments_select_staff`. **Consecuencia asumida:** esa política es de personal
   (`auth_is_staff()`), no solo de la administradora; el historial no es dato sensible (SEC-006 rige el
   expediente) y la página exige `requireAdminSession()`.
-- **2026-10-21 — US-CLI-02 se entrega en 6 piezas apiladas sobre `main` (INT-002).** 1/6 el contrato
-  y estos registros (solo documentación); 2/6 `listClientAppointments` en `scheduling` con sus pruebas;
-  3/6 dominio, caso de uso, adaptador en `http/` y lectura en `ui/admin-history/queries/`; 4/6 la ruta
-  `src/app/admin/clients/[id]/citas/`, la pestaña **Citas** y la tabla con sus tres estados (UI-003);
-  5/6 la paginación en la URL y el enlace desde cada fila del listado; 6/6 el cierre, cuando US-AGE-11
-  enlace al historial. Si una pieza estima más de 400 líneas, se parte antes de escribirla y se
-  retitulan todas.
+- **2026-10-21 — US-CLI-02 se entrega en 5 piezas apiladas sobre `main` (INT-002) y un cierre aparte,
+  por decisión de José Loría.** 1/5 el contrato y estos registros (solo documentación); 2/5
+  `listClientAppointments` en `scheduling` con sus pruebas; 3/5 dominio, caso de uso, adaptador en
+  `http/` y lectura en `ui/admin-history/queries/`; 4/5 la ruta `src/app/admin/clients/[id]/citas/`, la
+  pestaña **Citas** y la tabla con sus tres estados (UI-003); 5/5 la paginación en la URL y el enlace
+  desde cada fila del listado. La 5/5 deja la historia `en_progreso` por el criterio diferido. El cierre
+  no cuenta como pieza: es el PR `us/US-CLI-02` → `main`, con título `(US-CLI-02)`, cuando US-AGE-11
+  enlace al historial, y trae la `evidencia:` y `terminada` (EST-007). Si una pieza estima más de 400
+  líneas, se parte antes de escribirla y se retitulan todas.
 
 ## Contrato para scheduling (US-AGE-05)
 
