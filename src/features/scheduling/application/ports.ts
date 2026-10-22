@@ -120,6 +120,11 @@ export interface CancellationRepository {
   ): Promise<Result<CancelledAppointment, CancellationError>>
 }
 
+export interface CancellationPolicyRepository {
+  getWindowHours(): Promise<Result<number, StorageFailed>>
+  setWindowHours(hours: number): Promise<Result<void, StorageFailed>>
+}
+
 export type MyAppointment = {
   id: string
   startsAtMs: number

@@ -79,6 +79,12 @@ export interface CancellationConsequenceChanged {
   readonly message: string
 }
 
+export interface InvalidCancellationWindow {
+  readonly code: 'SCHEDULING_INVALID_CANCELLATION_WINDOW'
+  readonly hours: number
+  readonly message: string
+}
+
 export type CancellationInputField = 'startsAtMs' | 'nowMs' | 'windowHours' | 'depositRequired'
 
 export interface AppointmentNotCancellable {
@@ -109,6 +115,7 @@ export type SchedulingError =
   | AppointmentNotCancellable
   | CancellationConsequenceChanged
   | InvalidCancellationInput
+  | InvalidCancellationWindow
 
 export const techniqueNotSelectable = (
   techniqueId: string,
@@ -200,6 +207,12 @@ export const cancellationConsequenceChanged = (appointmentId: string): Cancellat
   code: 'SCHEDULING_CANCELLATION_CONSEQUENCE_CHANGED',
   appointmentId,
   message: `la consecuencia de cancelar la cita ${appointmentId} cambió desde que la clienta la vio`,
+})
+
+export const invalidCancellationWindow = (hours: number): InvalidCancellationWindow => ({
+  code: 'SCHEDULING_INVALID_CANCELLATION_WINDOW',
+  hours,
+  message: `la ventana de cancelación debe ser un número entero de horas, no negativo y de hasta 30 días: ${hours}`,
 })
 
 export const invalidCancellationInput = (
