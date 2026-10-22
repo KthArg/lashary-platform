@@ -4,7 +4,8 @@ import { Money } from '@/shared/money'
 import { ApprovalQueue } from '../components/ApprovalQueue'
 import { APPROVAL_QUEUE_ARIA, APPROVAL_QUEUE_CHOICE, APPROVAL_QUEUE_CLIENT, APPROVAL_QUEUE_LABELS } from '../constants/approval-queue.labels'
 import { APPROVAL_QUEUE_ERRORS } from '../constants/approval-queue.constants'
-import { formatAppointmentSlot } from '../utils/format-appointment-slot'
+import { APPOINTMENT_DISPLAY_CHOICE } from '../../appointment-display/constants/appointment-display.constants'
+import { formatAppointmentSlot } from '../../appointment-display/utils/format-appointment-slot'
 
 const mockRefresh = vi.fn()
 const mockApprove = vi.fn()
@@ -101,8 +102,8 @@ describe('ApprovalQueue: lo que eligió la clienta', () => {
     render(<ApprovalQueue appointments={[FIRST_APPOINTMENT]} />)
 
     expect(screen.getByText('Clásicas')).toBeTruthy()
-    expect(screen.getByText(APPROVAL_QUEUE_CHOICE.firstTime)).toBeTruthy()
-    const amounts = APPROVAL_QUEUE_CHOICE.priceAndDeposit(Money.fromColones(35000).toString(), Money.fromColones(10000).toString())
+    expect(screen.getByText(APPOINTMENT_DISPLAY_CHOICE.firstTime)).toBeTruthy()
+    const amounts = APPOINTMENT_DISPLAY_CHOICE.priceAndDeposit(Money.fromColones(35000).toString(), Money.fromColones(10000).toString())
     expect(screen.getByText((_, element) => element?.tagName === 'P' && element.textContent === amounts)).toBeTruthy()
   })
 
@@ -122,7 +123,7 @@ describe('ApprovalQueue: lo que eligió la clienta', () => {
   it('una cita sin elección guardada lo dice y no inventa montos', () => {
     render(<ApprovalQueue appointments={[SECOND_APPOINTMENT]} />)
 
-    expect(screen.getByText(APPROVAL_QUEUE_CHOICE.noService)).toBeTruthy()
+    expect(screen.getByText(APPOINTMENT_DISPLAY_CHOICE.noService)).toBeTruthy()
     expect(screen.queryByText(/Precio/)).toBeNull()
   })
 })
