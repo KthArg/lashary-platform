@@ -110,28 +110,28 @@ describe('manual-block-repository', () => {
           return { error }
         },
       }) as unknown as SupabaseClient
-    const newEndsAt = new Date('2026-10-20T16:00:00.000Z')
+    const newEndsAtMs = Date.parse('2026-10-20T16:00:00.000Z')
 
-    expect(await createSupabaseManualBlockRepository(rpcDb(null)).shorten(block.id, newEndsAt)).toBe(true)
+    expect(await createSupabaseManualBlockRepository(rpcDb(null)).shorten(block.id, newEndsAtMs)).toBe(true)
     expect(calls).toEqual([
       ['scheduling_shorten_manual_block', { p_block_id: block.id, p_new_ends_at: '2026-10-20T16:00:00.000Z' }],
     ])
     expect(
       await createSupabaseManualBlockRepository(rpcDb({ code: 'P0002', message: 'scheduling_manual_block_not_found' })).shorten(
         block.id,
-        newEndsAt,
+        newEndsAtMs,
       ),
     ).toBe(false)
     await expect(
       createSupabaseManualBlockRepository(rpcDb({ code: '22023', message: 'scheduling_manual_block_not_shortened' })).shorten(
         block.id,
-        newEndsAt,
+        newEndsAtMs,
       ),
     ).rejects.toThrow('scheduling_manual_block_not_shortened')
   })
 
   it('shorten con un id que no es UUID no consulta la base', async () => {
-    expect(await createSupabaseManualBlockRepository({} as SupabaseClient).shorten('no-es-uuid', new Date())).toBe(false)
+    expect(await createSupabaseManualBlockRepository({} as SupabaseClient).shorten('no-es-uuid', Date.now())).toBe(false)
   })
 
   it('remove devuelve si borró una fila', async () => {

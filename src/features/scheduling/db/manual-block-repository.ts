@@ -69,9 +69,9 @@ export function createSupabaseManualBlockRepository(db: SupabaseClient): ManualB
       return data ? rowToManualBlock(data as ManualBlockRow) : null
     },
 
-    async shorten(id, newEndsAt) {
+    async shorten(id, newEndsAtMs) {
       if (!UUID.test(id)) return false
-      const { error } = await db.rpc(SHORTEN_FUNCTION, { p_block_id: id, p_new_ends_at: newEndsAt.toISOString() })
+      const { error } = await db.rpc(SHORTEN_FUNCTION, { p_block_id: id, p_new_ends_at: new Date(newEndsAtMs).toISOString() })
       if (!error) return true
       if (error.code === NOT_FOUND_CODE) return false
       throw new Error(`${SHORTEN_FUNCTION}: ${error.message}`)

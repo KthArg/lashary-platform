@@ -45,8 +45,8 @@ export interface DayAvailabilityRepository {
 
 export interface ManualBlockRepository {
   findById(id: string): Promise<ManualBlock | null>
-  // Acorta el bloqueo a un fin anterior, conservando su inicio y su motivo. false si ya no existe.
-  shorten(id: string, newEndsAt: Date): Promise<boolean>
+  // Acorta el bloqueo a un fin anterior (ms UTC), conservando su inicio y su motivo. false si ya no existe.
+  shorten(id: string, newEndsAtMs: number): Promise<boolean>
   // Bloqueos que terminan después de `after`, por inicio ascendente.
   listEndingAfter(resourceId: string, after: Date, limit: number): Promise<ManualBlock[]>
   insert(block: ManualBlock): Promise<Result<void, ManualBlockOverlap | ManualBlockHasAppointment>>
