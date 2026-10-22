@@ -1,7 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { err, ok } from '@/shared/result'
-import { CANCELLABLE_STATUSES } from '../domain/appointment-cancellation.constants'
-import type { CancellableStatus } from '../domain/appointment-cancellation'
+import { CANCELLABLE_STATUSES, type CancellableStatus } from '../domain/appointment-cancellation.constants'
 import { storageFailed } from '../domain/errors'
 import type { MyAppointment, MyAppointmentsRepository } from '../application/ports'
 import { APPOINTMENTS_TABLE } from './appointment-repository.constants'
