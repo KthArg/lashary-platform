@@ -9,8 +9,11 @@ export async function quoteCancellationAction(appointmentId: string): Promise<Qu
   return cancellationService.quote(appointmentId)
 }
 
-export async function cancelAppointmentAction(appointmentId: string): Promise<CancelAppointmentResult> {
-  const result = await cancellationService.cancel(appointmentId)
+export async function cancelAppointmentAction(
+  appointmentId: string,
+  expectedForfeitedDeposit: number,
+): Promise<CancelAppointmentResult> {
+  const result = await cancellationService.cancel(appointmentId, expectedForfeitedDeposit)
   if (result.ok) revalidatePath(MY_APPOINTMENTS_PATH)
   return result
 }

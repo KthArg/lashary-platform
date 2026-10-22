@@ -8,5 +8,6 @@ export const cancelAppointmentStyles = {
   cancelButton: 'btn btn-outline btn-sm',
   confirmButton: 'btn btn-error btn-sm',
   backButton: 'btn btn-outline btn-sm',
+  notice: 'alert alert-info text-sm',
   alertError: 'alert alert-error text-sm',
 }

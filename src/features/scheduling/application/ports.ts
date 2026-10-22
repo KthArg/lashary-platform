@@ -6,6 +6,7 @@ import type { SchedulingAlert } from '../domain/alert'
 import type {
   AppointmentNotCancellable,
   AppointmentNotPending,
+  CancellationConsequenceChanged,
   ClientNotRegistered,
   TooManyPendingAppointments,
   SlotNotOffered,
@@ -105,11 +106,18 @@ export type CancelledAppointment = {
   forfeitedDeposit: number
 }
 
-export type CancellationError = ClientNotRegistered | AppointmentNotCancellable | StorageFailed
+export type CancellationError =
+  | ClientNotRegistered
+  | AppointmentNotCancellable
+  | CancellationConsequenceChanged
+  | StorageFailed
 
 export interface CancellationRepository {
   quote(appointmentId: string): Promise<Result<CancellationQuote, CancellationError>>
-  cancel(appointmentId: string): Promise<Result<CancelledAppointment, CancellationError>>
+  cancel(
+    appointmentId: string,
+    expectedForfeitedDeposit: number,
+  ): Promise<Result<CancelledAppointment, CancellationError>>
 }
 
 export type MyAppointment = {

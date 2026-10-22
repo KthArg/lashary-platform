@@ -22,7 +22,7 @@ export const cancellationService = {
     return performQuoteCancellation(appointmentId, await createDeps())
   },
 
-  async cancel(appointmentId: unknown): Promise<CancelAppointmentResult> {
-    return performCancelAppointment(appointmentId, await createDeps())
+  async cancel(appointmentId: unknown, expectedForfeitedDeposit: unknown): Promise<CancelAppointmentResult> {
+    return performCancelAppointment(appointmentId, expectedForfeitedDeposit, await createDeps())
   },
 }

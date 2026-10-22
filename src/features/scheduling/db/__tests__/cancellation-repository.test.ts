@@ -38,6 +38,10 @@ const databaseErrors = [
     CANCELLATION_ERROR_MESSAGES.appointmentNotCancellable,
     { code: 'SCHEDULING_APPOINTMENT_NOT_CANCELLABLE', appointmentId: APPOINTMENT_ID },
   ],
+  [
+    CANCELLATION_ERROR_MESSAGES.consequenceChanged,
+    { code: 'SCHEDULING_CANCELLATION_CONSEQUENCE_CHANGED', appointmentId: APPOINTMENT_ID },
+  ],
   ['connection refused', { code: 'SCHEDULING_STORAGE_FAILED' }],
 ] as const
 
@@ -80,12 +84,15 @@ describe('createSupabaseCancellationRepository', () => {
   })
 
   describe('cancel', () => {
-    it('llama a la función SQL solo con la cita, nunca con la clienta, y devuelve la consecuencia', async () => {
+    it('llama a la función SQL con la cita y el anticipo que la clienta vio, nunca con la clienta, y devuelve la consecuencia', async () => {
       const { db, calls } = createFakeDb({ data: [cancelRow], error: null })
-      const result = await createSupabaseCancellationRepository(db).cancel(APPOINTMENT_ID)
+      const result = await createSupabaseCancellationRepository(db).cancel(APPOINTMENT_ID, 10000)
 
       expect(calls).toEqual([
-        { functionName: CANCEL_APPOINTMENT_FUNCTION, args: { p_appointment_id: APPOINTMENT_ID } },
+        {
+          functionName: CANCEL_APPOINTMENT_FUNCTION,
+          args: { p_appointment_id: APPOINTMENT_ID, p_expected_forfeited_deposit: 10000 },
+        },
       ])
       expect(isOk(result)).toBe(true)
       if (isOk(result)) {
@@ -101,7 +108,7 @@ describe('createSupabaseCancellationRepository', () => {
       'el mensaje %s de la base llega como su error tipado, sin lanzar',
       async (message, expectedError) => {
         const { db } = createFakeDb({ data: null, error: { code: 'P0001', message } })
-        const result = await createSupabaseCancellationRepository(db).cancel(APPOINTMENT_ID)
+        const result = await createSupabaseCancellationRepository(db).cancel(APPOINTMENT_ID, 0)
         expect(isErr(result)).toBe(true)
         if (isErr(result)) expect(result.error).toMatchObject(expectedError)
       },
@@ -109,7 +116,7 @@ describe('createSupabaseCancellationRepository', () => {
 
     it('sin filas → StorageFailed', async () => {
       const { db } = createFakeDb({ data: [], error: null })
-      const result = await createSupabaseCancellationRepository(db).cancel(APPOINTMENT_ID)
+      const result = await createSupabaseCancellationRepository(db).cancel(APPOINTMENT_ID, 0)
       expect(isErr(result) && result.error.code).toBe('SCHEDULING_STORAGE_FAILED')
     })
   })

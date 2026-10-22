@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { err, ok } from '@/shared/result'
 import {
   appointmentNotCancellable,
+  cancellationConsequenceChanged,
   clientNotRegistered,
   storageFailed,
 } from '../domain/errors'
@@ -38,6 +39,8 @@ function toCancellationError(message: string, appointmentId: string): Cancellati
       return clientNotRegistered()
     case CANCELLATION_ERROR_MESSAGES.appointmentNotCancellable:
       return appointmentNotCancellable(appointmentId)
+    case CANCELLATION_ERROR_MESSAGES.consequenceChanged:
+      return cancellationConsequenceChanged(appointmentId)
     default:
       return storageFailed(message)
   }
@@ -74,9 +77,10 @@ export function createSupabaseCancellationRepository(db: SupabaseClient): Cancel
       return ok(toCancellationQuote(row))
     },
 
-    async cancel(appointmentId) {
+    async cancel(appointmentId, expectedForfeitedDeposit) {
       const { data, error } = await db.rpc(CANCEL_APPOINTMENT_FUNCTION, {
         p_appointment_id: appointmentId,
+        p_expected_forfeited_deposit: expectedForfeitedDeposit,
       })
 
       if (error) return err(toCancellationError(error.message, appointmentId))
