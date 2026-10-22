@@ -2,6 +2,8 @@ export const CANCELLATION_POLICY_PATH = '/admin/citas/cancelacion'
 
 export const CANCELLATION_WINDOW_FIELD = 'hours'
 
+export const CANCELLATION_WINDOW_HINT_ID = 'cancellation-window-hint'
+
 const pluralizeHours = (hours: number): string => `${hours} ${hours === 1 ? 'hora' : 'horas'}`
 
 export const cancellationPolicyMessages = {
