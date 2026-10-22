@@ -1,0 +1,25 @@
+export const MY_APPOINTMENTS_PATH = '/portal/citas/mis-citas'
+
+export const BOOK_APPOINTMENT_PATH = '/portal/citas'
+
+export const myAppointmentsMessages = {
+  title: 'Mis citas',
+  subtitle: 'Tus próximas citas y el estado de cada una.',
+  empty: 'No tenés citas próximas.',
+  bookCta: 'Reservar una cita',
+  accessDenied: 'Iniciá sesión como clienta para ver tus citas.',
+  loadFailed: 'No pudimos cargar tus citas. Intentá de nuevo.',
+  reload: 'Reintentar',
+  loading: 'Cargando tus citas…',
+  listLabel: 'Próximas citas',
+  status: {
+    pending_approval: 'Pendiente de aprobación',
+    approved: 'Aprobada',
+    confirmed: 'Confirmada',
+  },
+  error: {
+    title: 'No se pudieron cargar tus citas',
+    body: 'Ocurrió un error al preparar la pantalla.',
+    retry: 'Reintentar',
+  },
+} as const
