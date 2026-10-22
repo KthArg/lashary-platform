@@ -26,7 +26,7 @@
 
 ### account (actualizado: 2026-08-29)
 
-### audit (actualizado: 2026-09-30)
+### audit (actualizado: 2026-10-20)
 
 ### auth (actualizado: 2026-10-14)
 - US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
