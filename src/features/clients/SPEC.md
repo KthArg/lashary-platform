@@ -9,7 +9,7 @@ historias:
     falta: "las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)"
   - id: US-CLI-02
     estado: en_progreso
-    falta: "solo existe el contrato docs/contracts/scheduling-api.md: la lectura en scheduling, el caso de uso y la pestana Citas no existen; el acceso desde la vista diaria espera a US-AGE-11 (criterio diferido)"
+    falta: "existe la lectura listClientAppointments de scheduling, pero nadie la llama: el caso de uso de clients y la pestana Citas no existen; el acceso desde la vista diaria espera a US-AGE-11 (criterio diferido)"
   - id: US-CLI-03
     estado: no_iniciada
   - id: US-CLI-04
@@ -136,9 +136,9 @@ registra con Google, además del alta de esta feature. Le falta lo que US-CLI-05
 El listado con filtros y paginación **no pertenece a esta historia**: es US-CLI-01, que depende de
 esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
-**No hay historial de citas (US-CLI-02).** Solo existe su contrato con `scheduling`,
-`docs/contracts/scheduling-api.md` (`listClientAppointments`). No existen la lectura en `scheduling`, el
-caso de uso de `clients`, la ruta `/admin/clients/<id>/citas` ni la pestaña **Citas**. El plan y lo que
+**No hay historial de citas (US-CLI-02).** `scheduling` ya expone `listClientAppointments`
+(contrato en `docs/contracts/scheduling-api.md`), pero `clients` todavía no lo llama: no existen el caso
+de uso de `clients`, la ruta `/admin/clients/<id>/citas` ni la pestaña **Citas**. El plan y lo que
 entrega cada pieza están en la decisión del 2026-10-21.
 
 ## Contrato público (`src/features/clients/index.ts`)

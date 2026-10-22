@@ -1,6 +1,6 @@
 # Contrato — API pública de citas
 
-> **Autoridad:** qué expone la feature `scheduling` a las demás features y bajo qué garantías. Es un contrato **de demanda**: nace de lo que necesita `clients` para el historial de citas de una clienta (US-CLI-02). Se versiona aquí antes de cualquier cambio de forma (INT-003). **Lectores:** feature `clients`. **Estado:** acordado, sin implementar — lo implementa la pieza 2 de US-CLI-02. **Actualizado:** 2026-10-21.
+> **Autoridad:** qué expone la feature `scheduling` a las demás features y bajo qué garantías. Es un contrato **de demanda**: nace de lo que necesita `clients` para el historial de citas de una clienta (US-CLI-02). Se versiona aquí antes de cualquier cambio de forma (INT-003). **Lectores:** feature `clients`. **Estado:** implementado en la pieza 2 de US-CLI-02 (`application/list-client-appointments.ts` y `db/client-appointments-repository.ts`). **Actualizado:** 2026-10-21.
 
 ## Qué es
 
@@ -70,7 +70,7 @@ Consumidor: **US-CLI-02**, la pestaña "Citas" de la ficha de la clienta en `/ad
 
 ## Pruebas
 
-Las agrega la pieza 2 de US-CLI-02: la del caso de uso (página y tamaño saneados, el fallo de la base como `StorageFailed`) y la del repositorio (columnas pedidas, filtro por clienta, orden, rango de la página y conteo). El aislamiento de la RLS ya lo prueban `scheduling_appointment_client_snapshot.test.sql` y `__tests__/rls-isolation.test.ts` (SEC-002).
+`src/features/scheduling/application/__tests__/list-client-appointments.test.ts` (página y tamaño saneados, el fallo de la base como `StorageFailed`) y `src/features/scheduling/db/__tests__/client-appointments-repository.test.ts` (columnas pedidas, filtro por clienta, orden, rango de la página y conteo). El aislamiento de la RLS ya lo prueban `scheduling_appointment_client_snapshot.test.sql` y `__tests__/rls-isolation.test.ts` (SEC-002).
 
 ## Eventos de dominio
 
