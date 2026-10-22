@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { Client as PgClient } from 'pg'
-import { isOk } from '@/shared/result'
+import { isErr, isOk } from '@/shared/result'
 import { createSupabaseMyAppointmentsRepository } from '../my-appointments-repository'
 
 const API_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
@@ -116,10 +116,10 @@ describe.skipIf(!reachable)('«mis citas» solo devuelve las citas de la clienta
     }
   })
 
-  it('una sesión anónima no ve ninguna cita', async () => {
+  it('una sesión anónima no puede leer: la función no se le ejecuta y no se confunde con «sin citas»', async () => {
     const anon = createClient(API_URL, ANON_KEY, CLIENT_OPTIONS)
     const result = await createSupabaseMyAppointmentsRepository(anon).listUpcoming(NOW_MS)
 
-    expect(isOk(result) && result.value).toEqual([])
+    expect(isErr(result) && result.error.code).toBe('SCHEDULING_STORAGE_FAILED')
   })
 })

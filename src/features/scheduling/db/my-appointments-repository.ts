@@ -1,10 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { err, ok } from '@/shared/result'
-import { CANCELLABLE_STATUSES, type CancellableStatus } from '../domain/appointment-cancellation.constants'
+import type { CancellableStatus } from '../domain/appointment-cancellation.constants'
 import { storageFailed } from '../domain/errors'
 import type { MyAppointment, MyAppointmentsRepository } from '../application/ports'
-import { APPOINTMENTS_TABLE } from './appointment-repository.constants'
-import { MY_APPOINTMENT_COLUMNS, MY_APPOINTMENTS_LIMIT } from './my-appointments-repository.constants'
+import { LIST_MY_APPOINTMENTS_FUNCTION, MY_APPOINTMENTS_LIMIT } from './my-appointments-repository.constants'
 
 type MyAppointmentRow = {
   id: string
@@ -35,14 +34,10 @@ function toMyAppointment(row: MyAppointmentRow): MyAppointment {
 export function createSupabaseMyAppointmentsRepository(db: SupabaseClient): MyAppointmentsRepository {
   return {
     async listUpcoming(nowMs) {
-      const { data, error } = await db
-        .from(APPOINTMENTS_TABLE)
-        .select(MY_APPOINTMENT_COLUMNS)
-        .in('status', [...CANCELLABLE_STATUSES])
-        .gt('starts_at', toIso(nowMs))
-        .not('client_id', 'is', null)
-        .order('starts_at', { ascending: true })
-        .limit(MY_APPOINTMENTS_LIMIT)
+      const { data, error } = await db.rpc(LIST_MY_APPOINTMENTS_FUNCTION, {
+        p_now: toIso(nowMs),
+        p_limit: MY_APPOINTMENTS_LIMIT,
+      })
 
       if (error) return err(storageFailed(error.message))
       return ok(((data ?? []) as MyAppointmentRow[]).map(toMyAppointment))
