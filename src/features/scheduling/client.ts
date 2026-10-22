@@ -4,3 +4,5 @@ export { ClientCalendarLoading } from './ui/client-calendar/components/ClientCal
 export { bookingConfirmMessages } from './ui/booking-confirm/constants/booking-confirm-strings'
 export { BookingConfirmLoading } from './ui/booking-confirm/components/BookingConfirmLoading'
 export { alertsMessages } from './ui/alerts/constants/alerts-strings'
+export { myAppointmentsMessages } from './ui/my-appointments/constants/my-appointments-strings'
+export { MyAppointmentsLoading } from './ui/my-appointments/components/MyAppointmentsLoading'
