@@ -114,7 +114,7 @@ SELECT results_eq(
   $$SELECT within_window, forfeited_deposit
       FROM public.scheduling_quote_cancellation('00000000-0000-0000-0000-00000000cd02')$$,
   $$SELECT within_window, forfeited_deposit
-      FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000cd02')$$,
+      FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000cd02', 10000)$$,
   'lo que se muestra antes es exactamente lo que después se registra');
 
 SELECT set_config('request.jwt.claims',
