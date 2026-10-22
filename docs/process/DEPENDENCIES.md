@@ -47,11 +47,11 @@ El backlog se mantiene en sus 51 historias; estas capacidades se construyen **de
 | US-AGE-09 aprobación + constraint | US-AGE-13 (bitácora para rechazos) | dos entregables: flujo de aprobación (ADR-0003) y exclusion constraint con prueba de concurrencia (ADR-0002). Pendiente **ocupa** espacio |
 | US-AGE-05 reservar | US-AUTH-02, US-AGE-02, US-AGE-03, US-AGE-09, US-AGE-13 | **terminada**; criterio de morosidad **trasladado** a US-MOR-02 (ítem 7 de «Criterios trasladados»); criterios 7 y 10 entregados parciales (registro del 2026-10-19); hereda la alerta del constraint de US-AGE-09 y el criterio de primera vez/re-aplicación de US-AGE-03 (criterios trasladados, ver abajo) |
 | US-AGE-06 cancelar | US-AGE-05 | bitácora (de AGE-13); dispara US-NOT-02 |
-| US-AGE-07 bloquear espacios | US-AGE-01 | el selector usa el cálculo del día de US-AGE-02 (terminada); el criterio 4 cambia, para los bloqueos manuales, la advertencia que US-AGE-05 entregó por el criterio 5 de US-AGE-01 (registro del 2026-10-20, pendiente del PO) |
-| US-AGE-10 reagendar | US-AGE-05 | atómico (DOM-011) |
+| US-AGE-07 bloquear espacios | US-AGE-01 | **US-AGE-04 y US-AGE-10 deben revisar los bloqueos manuales al crear citas**: `scheduling_create_appointment` no lo hace (SPEC de `scheduling`); el selector usa el cálculo del día de US-AGE-02 (terminada); el criterio 4 cambia, para los bloqueos manuales, la advertencia que US-AGE-05 entregó por el criterio 5 de US-AGE-01 (registro del 2026-10-20, pendiente del PO) |
+| US-AGE-10 reagendar | US-AGE-05 | atómico (DOM-011); debe revisar los bloqueos manuales al crear la cita nueva: `scheduling_create_appointment` no lo hace (US-AGE-07) |
 | US-AGE-11 agenda diaria | US-AGE-05, US-CLI-05 | indicador de morosidad **diferido** hasta US-MOR-01; destaca pendientes de US-AGE-09 |
 | US-AGE-12 cerrar cita | US-AGE-11 | **porta el ledger** (el cargo del cierre es su primer asiento) |
-| US-AGE-04 agendar paquete | US-PROD-01, US-AGE-05 | |
+| US-AGE-04 agendar paquete | US-PROD-01, US-AGE-05 | debe revisar los bloqueos manuales al crear las citas: `scheduling_create_appointment` no lo hace (US-AGE-07) |
 | US-PROD-01 paquetes | US-AGE-08 | |
 | US-PROM-01 promociones | US-AGE-08, US-PROD-01 | precio congelado (DOM-002) |
 | US-PROM-02 ver paquetes/promos | US-PROM-01 | |

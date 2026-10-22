@@ -3,7 +3,7 @@ import type { Clock } from '@/shared/clock'
 import { isCalendarDate, studioLocalToUtc } from '@/shared/studio-time'
 import { createManualBlock, type ManualBlock } from '../domain/manual-blocks'
 import { selectedSlotsToRanges } from '../domain/manual-block-selection'
-import { SLOT_INTERVAL_MIN } from '../domain/day-slots'
+import { computeDaySlots, SLOT_INTERVAL_MIN } from '../domain/day-slots'
 import {
   availabilityEntryNotFound,
   manualBlockInvalid,
@@ -12,7 +12,7 @@ import {
   type ManualBlockInvalid,
   type ManualBlockOverlap,
 } from '../domain/availability-errors'
-import { MAX_MANUAL_BLOCKS, type ManualBlockRepository } from './availability-ports'
+import { MAX_MANUAL_BLOCKS, type DayAvailabilityRepository, type ManualBlockRepository } from './availability-ports'
 
 export type ManualBlocksDeps = {
   repo: ManualBlockRepository
@@ -58,12 +58,30 @@ export type BlockSlotsInput = {
 
 export type BlockSlotsError = ManualBlockInvalid | ManualBlockOverlap | ManualBlockHasAppointment
 
+export type BlockSlotsDeps = ManualBlocksDeps & { day: Pick<DayAvailabilityRepository, 'listOpenHours'> }
+
+// Los espacios elegidos tienen que ser de la misma grilla que ve la clienta y que valida la
+// reserva (computeDaySlots): parte del inicio de cada bloque abierto, no de la medianoche. Se
+// calcula sin descartar los que ya empezaron; el que ya terminó lo rechaza la comprobación de abajo.
 export const blockSlots =
-  (deps: ManualBlocksDeps) =>
+  (deps: BlockSlotsDeps) =>
   async (input: BlockSlotsInput): Promise<Result<ManualBlock[], BlockSlotsError>> => {
     if (!isCalendarDate(input.date)) return err(manualBlockInvalid(['la fecha no es válida']))
     const ranges = selectedSlotsToRanges(input.slotStartMinutes, SLOT_INTERVAL_MIN)
     if (isErr(ranges)) return ranges
+
+    const grid = computeDaySlots({
+      date: input.date,
+      durationMin: SLOT_INTERVAL_MIN,
+      openHours: await deps.day.listOpenHours(input.resourceId, input.date),
+      busy: [],
+      now: studioLocalToUtc(input.date, 0),
+    })
+    if (isErr(grid)) return err(manualBlockInvalid(['la fecha no es válida']))
+    const offeredStarts = new Set(grid.value.map((slot) => slot.startMin))
+    if (input.slotStartMinutes.some((startMinute) => !offeredStarts.has(startMinute))) {
+      return err(manualBlockInvalid(['un espacio elegido no se ofrece ese día']))
+    }
 
     const now = deps.clock()
     const blocks: ManualBlock[] = []

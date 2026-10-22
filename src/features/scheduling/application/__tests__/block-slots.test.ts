@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest'
 import { ok, err, isErr, isOk } from '@/shared/result'
 import { fixedClock, fixedDate } from '@/shared/testing/fixed-clock'
 import { blockSlots, removeManualBlock } from '../manual-blocks'
-import type { ManualBlockRepository } from '../availability-ports'
+import type { DayAvailabilityRepository, ManualBlockRepository } from '../availability-ports'
+import type { OpenHours } from '../../domain/day-slots'
 import type { ManualBlock } from '../../domain/manual-blocks'
 import {
   isAvailabilityEntryNotFound,
@@ -52,6 +53,14 @@ function createFakeManualBlockRepository(initialBlocks: ManualBlock[] = [], acti
   return { repo, blocks, insertManyCalls }
 }
 
+const fakeDayAvailability = (openHours: OpenHours[]): Pick<DayAvailabilityRepository, 'listOpenHours'> => ({
+  async listOpenHours() {
+    return openHours
+  },
+})
+
+const day = fakeDayAvailability([{ startMin: minuteOfDay(8), endMin: minuteOfDay(18) }])
+
 let generatedIds = 0
 const newId = () => `new-${++generatedIds}`
 const mondayEightAm = fixedClock('2026-10-19T14:00:00Z')
@@ -67,7 +76,7 @@ const blockOf = (id: string, from: string, to: string): ManualBlock => ({
 describe('blockSlots — US-AGE-07', () => {
   it('bloquea varios espacios de un día; los seguidos quedan en un solo bloqueo (criterio 1)', async () => {
     const { repo, blocks, insertManyCalls } = createFakeManualBlockRepository()
-    const result = await blockSlots({ repo, newId, clock: mondayEightAm })({
+    const result = await blockSlots({ repo, day, newId, clock: mondayEightAm })({
       resourceId: RESOURCE_ID,
       date: MONDAY,
       slotStartMinutes: [minuteOfDay(9), minuteOfDay(9, 30), minuteOfDay(14)],
@@ -85,7 +94,7 @@ describe('blockSlots — US-AGE-07', () => {
   it('un espacio con una cita activa no se bloquea, ni ninguno de la selección (criterio 4)', async () => {
     const appointment = { startsAt: fixedDate('2026-10-19T17:00:00Z'), endsAt: fixedDate('2026-10-19T18:15:00Z') }
     const { repo, blocks } = createFakeManualBlockRepository([], [appointment])
-    const result = await blockSlots({ repo, newId, clock: mondayEightAm })({
+    const result = await blockSlots({ repo, day, newId, clock: mondayEightAm })({
       resourceId: RESOURCE_ID,
       date: MONDAY,
       slotStartMinutes: [minuteOfDay(9), minuteOfDay(12)],
@@ -98,7 +107,7 @@ describe('blockSlots — US-AGE-07', () => {
   it('un espacio ya bloqueado devuelve solape', async () => {
     const existing = blockOf('b-1', '2026-10-19T15:00:00Z', '2026-10-19T15:30:00Z')
     const { repo } = createFakeManualBlockRepository([existing])
-    const result = await blockSlots({ repo, newId, clock: mondayEightAm })({
+    const result = await blockSlots({ repo, day, newId, clock: mondayEightAm })({
       resourceId: RESOURCE_ID,
       date: MONDAY,
       slotStartMinutes: [minuteOfDay(9)],
@@ -113,7 +122,7 @@ describe('blockSlots — US-AGE-07', () => {
       { date: MONDAY, slotStartMinutes: [] },
     ]
     for (const input of invalidInputs) {
-      const result = await blockSlots({ repo, newId, clock: mondayEightAm })({ resourceId: RESOURCE_ID, ...input })
+      const result = await blockSlots({ repo, day, newId, clock: mondayEightAm })({ resourceId: RESOURCE_ID, ...input })
       expect(isErr(result) && isManualBlockInvalid(result.error)).toBe(true)
     }
     expect(insertManyCalls).toEqual([])
@@ -127,17 +136,59 @@ describe('blockSlots — US-AGE-07', () => {
       { date: MONDAY, slotStartMinutes: [minuteOfDay(9, 30), minuteOfDay(11)] },
     ]
     for (const input of selectionsWithPastSlot) {
-      const result = await blockSlots({ repo, newId, clock: mondayTenPastTen })({ resourceId: RESOURCE_ID, ...input })
+      const result = await blockSlots({ repo, day, newId, clock: mondayTenPastTen })({ resourceId: RESOURCE_ID, ...input })
       expect(isErr(result) && isManualBlockInvalid(result.error)).toBe(true)
     }
     expect(insertManyCalls).toEqual([])
 
-    const slotInProgress = await blockSlots({ repo, newId, clock: mondayTenPastTen })({
+    const slotInProgress = await blockSlots({ repo, day, newId, clock: mondayTenPastTen })({
       resourceId: RESOURCE_ID,
       date: MONDAY,
       slotStartMinutes: [minuteOfDay(10)],
     })
     expect(isOk(slotInProgress)).toBe(true)
+  })
+})
+
+describe('blockSlots — la grilla es la del calendario, no la de la medianoche', () => {
+  const openingAtQuarterPast = fakeDayAvailability([{ startMin: minuteOfDay(9, 15), endMin: minuteOfDay(11, 15) }])
+
+  it('un bloque abierto a las 09:15 ofrece 09:15 y 09:45, y se pueden bloquear (criterio 1)', async () => {
+    const { repo, blocks } = createFakeManualBlockRepository()
+    const result = await blockSlots({ repo, day: openingAtQuarterPast, newId, clock: mondayEightAm })({
+      resourceId: RESOURCE_ID,
+      date: MONDAY,
+      slotStartMinutes: [minuteOfDay(9, 15), minuteOfDay(9, 45)],
+    })
+
+    expect(isOk(result)).toBe(true)
+    expect(blocks.map((block) => [block.startsAt.toISOString(), block.endsAt.toISOString()])).toEqual([
+      ['2026-10-19T15:15:00.000Z', '2026-10-19T16:15:00.000Z'],
+    ])
+  })
+
+  it('un espacio de la grilla de la medianoche que ese día no se ofrece se rechaza, y ninguno de la selección se guarda', async () => {
+    const { repo, insertManyCalls } = createFakeManualBlockRepository()
+    for (const slotStartMinutes of [[minuteOfDay(9)], [minuteOfDay(9, 15), minuteOfDay(9, 30)]]) {
+      const result = await blockSlots({ repo, day: openingAtQuarterPast, newId, clock: mondayEightAm })({
+        resourceId: RESOURCE_ID,
+        date: MONDAY,
+        slotStartMinutes,
+      })
+      expect(isErr(result) && isManualBlockInvalid(result.error)).toBe(true)
+    }
+    expect(insertManyCalls).toEqual([])
+  })
+
+  it('un día sin horario abierto no ofrece ningún espacio', async () => {
+    const { repo, insertManyCalls } = createFakeManualBlockRepository()
+    const result = await blockSlots({ repo, day: fakeDayAvailability([]), newId, clock: mondayEightAm })({
+      resourceId: RESOURCE_ID,
+      date: MONDAY,
+      slotStartMinutes: [minuteOfDay(9)],
+    })
+    expect(isErr(result) && isManualBlockInvalid(result.error)).toBe(true)
+    expect(insertManyCalls).toEqual([])
   })
 })
 

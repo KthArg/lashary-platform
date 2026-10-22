@@ -40,6 +40,12 @@ describe('selectedSlotsToRanges — US-AGE-07, criterio 1', () => {
     expect(rangesOf([minuteOfDay(23, 30)])).toEqual([{ startMin: minuteOfDay(23, 30), endMin: 1440 }])
   })
 
+  it('no impone la grilla de la medianoche: un espacio a las 09:15 es un rango de 09:15 a 09:45', () => {
+    expect(rangesOf([minuteOfDay(9, 15), minuteOfDay(9, 45)])).toEqual([
+      { startMin: minuteOfDay(9, 15), endMin: minuteOfDay(10, 15) },
+    ])
+  })
+
   it('rechaza una selección vacía y espacios fuera del día, no enteros o fuera del intervalo', () => {
     const invalidSelections = [
       [],
@@ -47,8 +53,6 @@ describe('selectedSlotsToRanges — US-AGE-07, criterio 1', () => {
       [minuteOfDay(23, 45)],
       [minuteOfDay(9) + 0.5],
       [Number.NaN],
-      [minuteOfDay(9, 15)],
-      [minuteOfDay(9), minuteOfDay(10, 5)],
     ]
     for (const slotStartMinutes of invalidSelections) {
       const result = selectedSlotsToRanges(slotStartMinutes, SLOT_LENGTH_MIN)
