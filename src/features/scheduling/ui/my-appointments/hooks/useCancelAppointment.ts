@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { cancelAppointmentAction, quoteCancellationAction } from '../actions/cancel-appointment-actions'
 import { cancellationMessages } from '../constants/cancellation-strings'
 import type { CancellationQuoteView } from '../types/cancellation-results'
@@ -14,6 +14,21 @@ const IDLE: CancelAppointmentState = { status: 'idle' }
 
 export function useCancelAppointment(appointmentId: string, onCancelled: (message: string) => void) {
   const [state, setState] = useState<CancelAppointmentState>(IDLE)
+  const confirmBoxRef = useRef<HTMLDivElement>(null)
+  const startButtonRef = useRef<HTMLButtonElement>(null)
+  const returnFocusToStart = useRef(false)
+  const confirmationNotice = state.status === 'confirming' ? state.notice : undefined
+
+  useEffect(() => {
+    if (state.status === 'confirming') confirmBoxRef.current?.focus()
+  }, [state.status, confirmationNotice])
+
+  useEffect(() => {
+    if (state.status === 'idle' && returnFocusToStart.current) {
+      returnFocusToStart.current = false
+      startButtonRef.current?.focus()
+    }
+  }, [state.status])
 
   async function start() {
     setState({ status: 'quoting' })
@@ -39,8 +54,9 @@ export function useCancelAppointment(appointmentId: string, onCancelled: (messag
   }
 
   function back() {
+    returnFocusToStart.current = true
     setState(IDLE)
   }
 
-  return { state, start, confirm, back }
+  return { state, start, confirm, back, confirmBoxRef, startButtonRef }
 }

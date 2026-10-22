@@ -1,6 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export function useMyAppointmentsNotice() {
   const [notice, setNotice] = useState<string | null>(null)
-  return { notice, showNotice: setNotice }
+  const noticeRef = useRef<HTMLParagraphElement>(null)
+
+  useEffect(() => {
+    if (notice) noticeRef.current?.focus()
+  }, [notice])
+
+  return { notice, noticeRef, showNotice: setNotice }
 }
