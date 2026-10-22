@@ -10,6 +10,8 @@ const COLUMNS = 'id, resource_id, starts_at, ends_at, reason'
 const EXCLUSION_VIOLATION = '23P01'
 const CHECK_VIOLATION = '23514'
 const ACTIVE_APPOINTMENT_MESSAGE = 'scheduling_manual_blocks_active_appointment'
+const SHORTEN_FUNCTION = 'scheduling_shorten_manual_block'
+const NOT_FOUND_CODE = 'P0002'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export type ManualBlockRow = {
@@ -58,6 +60,21 @@ export function createSupabaseManualBlockRepository(db: SupabaseClient): ManualB
         .limit(limit)
       if (error) throw new Error(`${TABLE}.listEndingAfter: ${error.message}`)
       return (data ?? []).map((row) => rowToManualBlock(row as ManualBlockRow))
+    },
+
+    async findById(id) {
+      if (!UUID.test(id)) return null
+      const { data, error } = await db.from(TABLE).select(COLUMNS).eq('id', id).maybeSingle()
+      if (error) throw new Error(`${TABLE}.findById: ${error.message}`)
+      return data ? rowToManualBlock(data as ManualBlockRow) : null
+    },
+
+    async shorten(id, newEndsAt) {
+      if (!UUID.test(id)) return false
+      const { error } = await db.rpc(SHORTEN_FUNCTION, { p_block_id: id, p_new_ends_at: newEndsAt.toISOString() })
+      if (!error) return true
+      if (error.code === NOT_FOUND_CODE) return false
+      throw new Error(`${SHORTEN_FUNCTION}: ${error.message}`)
     },
 
     insert: (block) => insertMany([block]),

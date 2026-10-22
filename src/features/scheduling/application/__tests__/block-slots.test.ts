@@ -29,6 +29,15 @@ function createFakeManualBlockRepository(initialBlocks: ManualBlock[] = [], acti
     async listEndingAfter() {
       return blocks
     },
+    async findById(id) {
+      return blocks.find((stored) => stored.id === id) ?? null
+    },
+    async shorten(id, newEndsAt) {
+      const index = blocks.findIndex((stored) => stored.id === id)
+      if (index === -1) return false
+      blocks[index] = { ...blocks[index], endsAt: newEndsAt }
+      return true
+    },
     async insert(block) {
       return repo.insertMany([block])
     },

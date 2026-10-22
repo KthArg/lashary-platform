@@ -91,6 +91,49 @@ describe('manual-block-repository', () => {
     expect(await repo.remove('no-es-uuid')).toBe(false)
   })
 
+  it('findById con un id que no es UUID no consulta la base y uno desconocido da null', async () => {
+    expect(await createSupabaseManualBlockRepository({} as SupabaseClient).findById('no-es-uuid')).toBeNull()
+    const readingDb = (data: unknown) =>
+      ({
+        from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data, error: null }) }) }) }),
+      }) as unknown as SupabaseClient
+    expect(await createSupabaseManualBlockRepository(readingDb(null)).findById(block.id)).toBeNull()
+    expect(await createSupabaseManualBlockRepository(readingDb(manualBlockToRow(block))).findById(block.id)).toEqual(block)
+  })
+
+  it('shorten llama a la función de la base con el fin nuevo en UTC (US-AGE-07, criterio 3)', async () => {
+    const calls: unknown[][] = []
+    const rpcDb = (error: { code: string; message: string } | null) =>
+      ({
+        rpc: async (...args: unknown[]) => {
+          calls.push(args)
+          return { error }
+        },
+      }) as unknown as SupabaseClient
+    const newEndsAt = new Date('2026-10-20T16:00:00.000Z')
+
+    expect(await createSupabaseManualBlockRepository(rpcDb(null)).shorten(block.id, newEndsAt)).toBe(true)
+    expect(calls).toEqual([
+      ['scheduling_shorten_manual_block', { p_block_id: block.id, p_new_ends_at: '2026-10-20T16:00:00.000Z' }],
+    ])
+    expect(
+      await createSupabaseManualBlockRepository(rpcDb({ code: 'P0002', message: 'scheduling_manual_block_not_found' })).shorten(
+        block.id,
+        newEndsAt,
+      ),
+    ).toBe(false)
+    await expect(
+      createSupabaseManualBlockRepository(rpcDb({ code: '22023', message: 'scheduling_manual_block_not_shortened' })).shorten(
+        block.id,
+        newEndsAt,
+      ),
+    ).rejects.toThrow('scheduling_manual_block_not_shortened')
+  })
+
+  it('shorten con un id que no es UUID no consulta la base', async () => {
+    expect(await createSupabaseManualBlockRepository({} as SupabaseClient).shorten('no-es-uuid', new Date())).toBe(false)
+  })
+
   it('remove devuelve si borró una fila', async () => {
     const deletingDb = (deletedRows: unknown[]) =>
       ({
