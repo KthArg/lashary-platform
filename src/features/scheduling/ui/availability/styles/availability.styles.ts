@@ -1,7 +1,6 @@
 // Clases de DaisyUI y tokens del tema (UI-001, UI-002). El encabezado repite el de las demás
 // secciones del panel (catalog.styles.ts).
 export const availabilityStyles = {
-  confirmation: 'flex flex-col gap-3',
   main: 'mx-auto flex max-w-4xl flex-col gap-8 p-4 sm:p-6',
   header: 'border-b border-brand-border pb-4',
   title: 'font-serif text-2xl md:text-3xl font-bold text-brand-dark',

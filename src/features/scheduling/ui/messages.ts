@@ -39,9 +39,10 @@ export const schedulingMessages = {
     validationTitle: 'Revisá estos campos:',
     notFound: 'Ese elemento ya no existe. Recargá la página.',
     affected: {
-      warning: (count: number) =>
-        `${count === 1 ? 'Hay 1 cita agendada' : `Hay ${count} citas agendadas`} en ese horario. No se cancelan: siguen existiendo, pero quedan fuera de la disponibilidad. ¿Querés continuar?`,
-      confirm: 'Confirmar de todos modos',
+      mustResolve: (count: number) =>
+        count === 1
+          ? 'Hay 1 cita agendada en ese horario. Rechazala o cancelala antes de continuar; no se hizo ningún cambio.'
+          : `Hay ${count} citas agendadas en ese horario. Rechazalas o cancelalas antes de continuar; no se hizo ningún cambio.`,
       countFailed: 'No pudimos revisar si hay citas agendadas en ese horario. No se hizo ningún cambio: intentá de nuevo.',
     },
     remove: 'Quitar',
