@@ -47,7 +47,7 @@ El backlog se mantiene en sus 51 historias; estas capacidades se construyen **de
 | US-AGE-09 aprobación + constraint | US-AGE-13 (bitácora para rechazos) | dos entregables: flujo de aprobación (ADR-0003) y exclusion constraint con prueba de concurrencia (ADR-0002). Pendiente **ocupa** espacio |
 | US-AGE-05 reservar | US-AUTH-02, US-AGE-02, US-AGE-03, US-AGE-09, US-AGE-13 | **terminada**; criterio de morosidad **trasladado** a US-MOR-02 (ítem 7 de «Criterios trasladados»); criterios 7 y 10 entregados parciales (registro del 2026-10-19); hereda la alerta del constraint de US-AGE-09 y el criterio de primera vez/re-aplicación de US-AGE-03 (criterios trasladados, ver abajo) |
 | US-AGE-06 cancelar | US-AGE-05 | bitácora (de AGE-13); dispara US-NOT-02 |
-| US-AGE-07 bloquear espacios | US-AGE-01 | |
+| US-AGE-07 bloquear espacios | US-AGE-01 | el selector usa el cálculo del día de US-AGE-02 (terminada); el criterio 4 cambia, para los bloqueos manuales, la advertencia que US-AGE-05 entregó por el criterio 5 de US-AGE-01 (registro del 2026-10-20, pendiente del PO) |
 | US-AGE-10 reagendar | US-AGE-05 | atómico (DOM-011) |
 | US-AGE-11 agenda diaria | US-AGE-05, US-CLI-05 | indicador de morosidad **diferido** hasta US-MOR-01; destaca pendientes de US-AGE-09 |
 | US-AGE-12 cerrar cita | US-AGE-11 | **porta el ledger** (el cargo del cierre es su primer asiento) |
@@ -105,6 +105,8 @@ A diferencia de un criterio diferido, un criterio trasladado **cambia de histori
 **Registro de la decisión (2026-10-14):** el PO (KthArg) aprobó en la conversación de trabajo de US-AGE-01 el traslado del criterio 4 de US-AGE-01 a US-AGE-02 y del criterio 5 a US-AGE-05 (ítem 5). El backlog CSV y el SPEC de `scheduling` reflejan ese alcance; los requisitos siguen obligatorios en las historias de destino. US-AGE-01 conserva los criterios 1 a 3 y queda `terminada` con su PR de cierre.
 
 **Registro de la decisión (2026-10-17):** el líder del proyecto aprobó, comunicado por Erick Duran, el traslado del criterio 2 de US-AGE-03 a US-AGE-05 (ítem 6) — la tabla mínima de `scheduling_appointments` que trajo US-AGE-09 no tiene el vínculo cliente↔cita que ese criterio necesita, y agregarlo es alcance de US-AGE-05. El backlog CSV y el SPEC de `scheduling` reflejan ese alcance; el requisito sigue obligatorio en US-AGE-05. US-AGE-03 conserva los criterios 1, 3 y 4 (demostrados) y queda `terminada`.
+
+**Registro de la decisión (2026-10-20), pendiente de la aprobación del PO:** el criterio 4 de US-AGE-07 («bloquear un espacio que ya tiene una cita agendada no es posible sin resolver primero esa cita») choca con lo que US-AGE-05 entregó por el criterio 5 de US-AGE-01 (ítem 5): bloquear un espacio con citas advertía y, con «Confirmar de todos modos», bloqueaba igual. El autor de US-AGE-07 propone que, solo para los bloqueos manuales, gane el criterio 4: la base rechaza el bloqueo y el panel pide resolver la cita antes, sin botón de confirmar. Cerrar un día y quitar un bloque semanal conservan la advertencia de US-AGE-05. Ninguna cita se cancela ni cambia (DOM-012). El PR de cierre de US-AGE-07 no se abre sin esta aprobación.
 
 ## FK cross-feature y archivado de clientas (ADR-0009 aceptado)
 
