@@ -40,6 +40,8 @@ describe('formatAppointmentSlot', () => {
     const startsAtMs = Date.parse('2027-09-10T15:00:00Z')
     const endsAtMs = Date.parse('2027-09-10T16:00:00Z')
 
-    expect(formatAppointmentSlot(startsAtMs, endsAtMs)).toBe('viernes, 10 de septiembre de 2027 · 9:00 a. m. – 10:00 a. m.')
+    const slot = formatAppointmentSlot(startsAtMs, endsAtMs).replace(/\s/g, ' ')
+
+    expect(slot).toBe('viernes, 10 de septiembre de 2027 · 9:00 a. m. – 10:00 a. m.')
   })
 })
