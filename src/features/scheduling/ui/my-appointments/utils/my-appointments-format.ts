@@ -1,23 +1,22 @@
 import type { MyAppointment } from '../../../application/ports'
-import { formatAppointmentChoice } from '../../approval-queue/utils/format-appointment-choice'
-import { formatAppointmentSlot } from '../../approval-queue/utils/format-appointment-slot'
+import { formatAppointmentSlot } from '../../appointment-display/utils/format-appointment-slot'
+import { formatAppointmentSummary } from '../../appointment-display/utils/format-appointment-summary'
 import { myAppointmentsMessages } from '../constants/my-appointments-strings'
 import type { MyAppointmentsData, MyAppointmentView, MyAppointmentsScreen } from '../types/my-appointments.types'
 
 export function toMyAppointmentView(appointment: MyAppointment): MyAppointmentView {
-  const choice = formatAppointmentChoice({
+  const summary = formatAppointmentSummary({
     techniqueName: appointment.techniqueName,
     isFirstTime: appointment.isFirstTime,
-    detectedFirstTime: null,
     servicePrice: appointment.servicePrice,
     depositRequired: appointment.depositRequired,
   })
 
   return {
     id: appointment.id,
-    service: choice.service,
-    kind: choice.kind,
-    amounts: choice.amounts,
+    service: summary.service,
+    kind: summary.kind,
+    amounts: summary.amounts,
     slot: formatAppointmentSlot(appointment.startsAtMs, appointment.endsAtMs),
     status: myAppointmentsMessages.status[appointment.status],
   }
