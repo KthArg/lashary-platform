@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react'
 import { schedulingMessages } from '../../messages'
+import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '../../../domain/manual-blocks.constants'
 import { CONFIRM_FIELD, CONFIRM_VALUE } from '../constants/confirm-reduction.constants'
 import { availabilityStyles as STYLES } from '../styles/availability.styles'
 import {
@@ -156,7 +157,7 @@ export function ManualBlockForm() {
           <input type="time" name="end" className={STYLES.input} required />
         </Field>
         <Field label={availabilityMessages.blocks.reasonLabel}>
-          <input type="text" name="reason" className={STYLES.input} />
+          <input type="text" name="reason" maxLength={MAX_MANUAL_BLOCK_REASON_LENGTH} className={STYLES.input} />
         </Field>
         <button type="submit" className={STYLES.submit} disabled={pending}>
           {availabilityMessages.blocks.submit}

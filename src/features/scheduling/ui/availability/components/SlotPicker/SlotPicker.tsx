@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '../../../../domain/manual-blocks.constants'
 import { schedulingMessages } from '../../../messages'
 import { blockSlotsAction } from '../../actions/availability-actions'
 import { BLOCK_SLOTS_FIELDS } from '../../constants/availability.constants'
@@ -48,7 +49,13 @@ export function SlotPicker({ picker }: SlotPickerProps) {
         </fieldset>
         <label htmlFor={reasonInputId} className={STYLES.field}>
           <span className={STYLES.labelText}>{pickerMessages.reasonLabel}</span>
-          <input id={reasonInputId} type="text" name={BLOCK_SLOTS_FIELDS.reason} className={STYLES.input} />
+          <input
+            id={reasonInputId}
+            type="text"
+            name={BLOCK_SLOTS_FIELDS.reason}
+            maxLength={MAX_MANUAL_BLOCK_REASON_LENGTH}
+            className={STYLES.input}
+          />
         </label>
         <button type="submit" className={STYLES.submit} disabled={pending}>
           {pickerMessages.submit}

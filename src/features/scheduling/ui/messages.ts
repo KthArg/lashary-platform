@@ -115,6 +115,7 @@ export const schedulingMessages = {
       kind: 'Elegí si es no laborable o feriado.',
       startBeforeEnd: 'La hora de inicio debe ser anterior a la de fin.',
       pickSlot: 'Marcá al menos un espacio.',
+      reasonTooLong: 'El motivo puede tener hasta 500 caracteres.',
     },
   },
 } as const
