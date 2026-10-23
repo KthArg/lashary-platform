@@ -1,7 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isErr, isOk } from '@/shared/result'
-import { isManualBlockHasAppointment, isManualBlockOverlap } from '../../domain/availability-errors'
+import {
+  isManualBlockHasAppointment,
+  isManualBlockNotBlocked,
+  isManualBlockOverlap,
+} from '../../domain/availability-errors'
 import {
   createSupabaseManualBlockRepository,
   manualBlockToRow,
@@ -89,6 +93,61 @@ describe('manual-block-repository', () => {
   it('remove con un id que no es UUID no consulta la base (US-AGE-07, criterio 3)', async () => {
     const repo = createSupabaseManualBlockRepository({} as SupabaseClient)
     expect(await repo.remove('no-es-uuid')).toBe(false)
+  })
+
+  describe('releaseRanges — US-AGE-07, criterio 3', () => {
+    const resourceId = '00000000-0000-4000-8000-000000000001'
+    const ranges = [
+      { fromMs: Date.parse('2026-10-20T15:00:00.000Z'), toMs: Date.parse('2026-10-20T15:30:00.000Z') },
+      { fromMs: Date.parse('2026-10-20T16:30:00.000Z'), toMs: Date.parse('2026-10-20T17:00:00.000Z') },
+    ]
+    const rpcDb = (error: { code: string; message: string } | null, calls: unknown[][] = []) =>
+      ({
+        rpc: async (...args: unknown[]) => {
+          calls.push(args)
+          return { error }
+        },
+      }) as unknown as SupabaseClient
+
+    it('manda todos los rangos en una sola llamada, en UTC y en el mismo orden', async () => {
+      const calls: unknown[][] = []
+      const result = await createSupabaseManualBlockRepository(rpcDb(null, calls)).releaseRanges(resourceId, ranges)
+
+      expect(isOk(result)).toBe(true)
+      expect(calls).toEqual([
+        [
+          'scheduling_release_manual_ranges',
+          {
+            p_resource_id: resourceId,
+            p_from: ['2026-10-20T15:00:00.000Z', '2026-10-20T16:30:00.000Z'],
+            p_to: ['2026-10-20T15:30:00.000Z', '2026-10-20T17:00:00.000Z'],
+          },
+        ],
+      ])
+    })
+
+    it('P0002 (un espacio que ya no está bloqueado) se devuelve como error tipado, no se lanza', async () => {
+      const repo = createSupabaseManualBlockRepository(
+        rpcDb({ code: 'P0002', message: 'scheduling_manual_block_not_found' }),
+      )
+      const result = await repo.releaseRanges(resourceId, ranges)
+      expect(isErr(result) && isManualBlockNotBlocked(result.error)).toBe(true)
+    })
+
+    it('el rechazo del trigger por una cita activa se devuelve como error tipado', async () => {
+      const repo = createSupabaseManualBlockRepository(
+        rpcDb({ code: '23514', message: 'scheduling_manual_blocks_active_appointment' }),
+      )
+      const result = await repo.releaseRanges(resourceId, ranges)
+      expect(isErr(result) && isManualBlockHasAppointment(result.error)).toBe(true)
+    })
+
+    it('cualquier otro error de la base se lanza', async () => {
+      const repo = createSupabaseManualBlockRepository(
+        rpcDb({ code: '42501', message: 'permission denied' }),
+      )
+      await expect(repo.releaseRanges(resourceId, ranges)).rejects.toThrow('permission denied')
+    })
   })
 
   it('remove devuelve si borró una fila', async () => {

@@ -29,6 +29,9 @@ function createFakeManualBlockRepository(initialBlocks: ManualBlock[] = [], acti
     async listEndingAfter() {
       return blocks
     },
+    async releaseRanges() {
+      return ok(undefined)
+    },
     async insert(block) {
       return repo.insertMany([block])
     },

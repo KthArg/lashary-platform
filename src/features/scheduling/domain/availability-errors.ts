@@ -47,6 +47,11 @@ export interface ManualBlockHasAppointment {
   readonly message: string
 }
 
+export interface ManualBlockNotBlocked {
+  readonly code: 'SCHEDULING_MANUAL_BLOCK_NOT_BLOCKED'
+  readonly message: string
+}
+
 export interface DaySlotsInvalid {
   readonly code: 'SCHEDULING_DAY_SLOTS_INVALID'
   readonly problems: readonly string[]
@@ -85,6 +90,11 @@ export const manualBlockOverlap = (): ManualBlockOverlap => ({
 export const manualBlockHasAppointment = (): ManualBlockHasAppointment => ({
   code: 'SCHEDULING_MANUAL_BLOCK_HAS_APPOINTMENT',
   message: 'el espacio tiene una cita activa; hay que resolverla antes de bloquearlo',
+})
+
+export const manualBlockNotBlocked = (): ManualBlockNotBlocked => ({
+  code: 'SCHEDULING_MANUAL_BLOCK_NOT_BLOCKED',
+  message: 'alguno de los espacios elegidos ya no está bloqueado',
 })
 
 export const weeklyBlockInvalid = (problems: readonly string[]): WeeklyBlockInvalid => ({
@@ -130,6 +140,9 @@ export const isManualBlockInvalid = (error: unknown): error is ManualBlockInvali
 
 export const isManualBlockOverlap = (error: unknown): error is ManualBlockOverlap =>
   hasCode(error, 'SCHEDULING_MANUAL_BLOCK_OVERLAP')
+
+export const isManualBlockNotBlocked = (error: unknown): error is ManualBlockNotBlocked =>
+  hasCode(error, 'SCHEDULING_MANUAL_BLOCK_NOT_BLOCKED')
 
 export const isManualBlockHasAppointment = (error: unknown): error is ManualBlockHasAppointment =>
   hasCode(error, 'SCHEDULING_MANUAL_BLOCK_HAS_APPOINTMENT')
