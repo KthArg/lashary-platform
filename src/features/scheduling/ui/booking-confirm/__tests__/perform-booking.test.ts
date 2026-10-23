@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { err, ok } from '@/shared/result'
-import { Money } from '@/shared/money'
+import { moneyFromColones, formatMoney } from '@/shared/money'
 import {
   clientHasActiveDelinquency,
   clientNotRegistered,
@@ -78,8 +78,8 @@ describe('performBooking — US-AGE-05', () => {
         summary: {
           service: 'Clásicas — primera vez',
           duration: '60 min',
-          price: Money.fromColones(BOOKED.servicePrice).toString(),
-          deposit: Money.fromColones(BOOKED.depositRequired).toString(),
+          price: formatMoney(moneyFromColones(BOOKED.servicePrice)),
+          deposit: formatMoney(moneyFromColones(BOOKED.depositRequired)),
         },
       },
     })

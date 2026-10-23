@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { err, ok } from '@/shared/result'
-import { Money } from '@/shared/money'
+import { moneyFromColones, formatMoney } from '@/shared/money'
 import { techniqueNotAvailable } from '../../../domain/errors'
 import { bookingConfirmMessages } from '../constants/booking-confirm-strings'
 import { loadBookingConfirm, type BookingConfirmDeps } from '../utils/load-booking-confirm'
@@ -114,8 +114,8 @@ describe('toBookingConfirmView — criterio 7', () => {
       summary: {
         service: 'Clásicas — primera vez',
         duration: '60 min',
-        price: Money.fromColones(QUOTE.servicePrice).toString(),
-        deposit: Money.fromColones(QUOTE.depositDue).toString(),
+        price: formatMoney(moneyFromColones(QUOTE.servicePrice)),
+        deposit: formatMoney(moneyFromColones(QUOTE.depositDue)),
         depositNotice: bookingConfirmMessages.depositNotice,
       },
     })
