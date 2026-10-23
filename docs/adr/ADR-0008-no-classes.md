@@ -39,7 +39,7 @@ Los built-ins de JavaScript (`Error`, `Map`, `Set`, `Date`) se siguen usando: la
 | Historia | Archivos | Clases |
 |---|---|---|
 | US-LAND-01 | `content/domain/errors.ts` | `CmsUnavailable` |
-| — (`shared/`) | `shared/domain-error.ts` | `DomainError` — eliminada: ninguna feature la extendía. `Money` queda para su propia pieza. |
+| — (`shared/`) | `shared/money.ts`, `shared/domain-error.ts` | `Money` pasó a `interface` con funciones y `DomainError` se eliminó: ninguna feature la extendía. Ya no queda ninguna `class` en el código. |
 
 - **Lecciones de #134, para quien migre:**
   - Un cambio de interfaz **no se parte por capas**: cambiar los exports de `domain/` en un PR y sus consumidores (`application/`, `db/`, `ui/`) en otro deja el primero sin compilar. Si todo junto supera las ~400 líneas de INT-002, se pide la excepción (`excepcion-proceso`) en vez de partirlo.
