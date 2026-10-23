@@ -173,7 +173,7 @@ Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el
 - `clientCalendarMessages` — textos del calendario de la clienta: en `index.ts` para el título de `src/app/portal/citas/calendario/page.tsx` y en `client.ts` para su `error.tsx`.
 - `ApprovalQueue`, `listPendingAppointmentsAction` y `APPROVAL_QUEUE_LABELS` — componen `/admin/citas`. Consumidor: `src/app/admin/citas/page.tsx`. No están en `client.ts`.
 - Dominio y aplicación (`selectTechnique`, puertos) son superficie interna: ninguna otra feature los consume todavía.
-- `listClientAppointments`, sus tipos (`ClientAppointmentView`, `ClientAppointmentsPage`, `ClientAppointmentStatus`, `ListClientAppointmentsQuery`) y `CLIENT_APPOINTMENTS_DEFAULT_PAGE_SIZE` / `CLIENT_APPOINTMENTS_MAX_PAGE_SIZE` — las citas de una clienta por páginas. Contrato en `docs/contracts/scheduling-api.md` (INT-003), pedido por `clients` para US-CLI-02. Consumidor previsto: `src/features/clients/http/` (pieza 3 de US-CLI-02); hoy nadie lo llama.
+- `listClientAppointments`, sus tipos (`ClientAppointmentView`, `ClientAppointmentsPage`, `ClientAppointmentStatus`, `ListClientAppointmentsQuery`) y `CLIENT_APPOINTMENTS_DEFAULT_PAGE_SIZE` / `CLIENT_APPOINTMENTS_MAX_PAGE_SIZE` — las citas de una clienta por páginas. Contrato en `docs/contracts/scheduling-api.md` (INT-003), pedido por `clients` para US-CLI-02. Consumidor: `src/features/clients/http/history/history-gateways.ts` (US-CLI-02).
 
 ### Historial de citas de una clienta (para US-CLI-02 de `clients`)
 

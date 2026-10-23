@@ -9,7 +9,7 @@ historias:
     falta: "las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)"
   - id: US-CLI-02
     estado: en_progreso
-    falta: "existe la lectura listClientAppointments de scheduling, pero nadie la llama: el caso de uso de clients y la pestana Citas no existen; el acceso desde la vista diaria espera a US-AGE-11 (criterio diferido)"
+    falta: "existe la lectura readAppointmentHistory, pero ninguna pagina la usa: la ruta /admin/clients/<id>/citas, la pestana Citas y la paginacion no existen; el acceso desde la vista diaria espera a US-AGE-11 (criterio diferido)"
   - id: US-CLI-03
     estado: no_iniciada
   - id: US-CLI-04
@@ -136,9 +136,15 @@ registra con Google, además del alta de esta feature. Le falta lo que US-CLI-05
 El listado con filtros y paginación **no pertenece a esta historia**: es US-CLI-01, que depende de
 esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
-**No hay historial de citas (US-CLI-02).** `scheduling` ya expone `listClientAppointments`
-(contrato en `docs/contracts/scheduling-api.md`), pero `clients` todavía no lo llama: no existen el caso
-de uso de `clients`, la ruta `/admin/clients/<id>/citas` ni la pestaña **Citas**. El plan y lo que
+**No hay pantalla de historial de citas (US-CLI-02).** Existe la lectura, pero ninguna página la
+usa: no existen la ruta `/admin/clients/<id>/citas` ni la pestaña **Citas**. Existe
+`readAppointmentHistory(clientId, page)` (`ui/admin-history/queries/`, en `index.ts`, sin `'use server'`):
+exige `requireAdminSession()`, comprueba que la clienta exista (SEC-005) y pide sus citas a `scheduling`
+por `http/history/history-gateways.ts` (ARCH-005), que traduce cada una y lee un fallo o una excepción
+como `history-unavailable`, nunca como historial vacío. `viewAppointmentHistory` (`application/history/`)
+le pone a cada cita `depositStatusOf()` (`domain/history/`): `none`, `registered` o `pending`, también a
+medias. Pruebas: `deposit-status.test.ts`, `view-appointment-history.test.ts`, `history-gateways.test.ts`
+y `history-queries.test.ts`. El plan y lo que
 entrega cada pieza están en la decisión del 2026-10-21.
 
 ## Contrato público (`src/features/clients/index.ts`)
