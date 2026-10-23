@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { err, ok } from '@/shared/result'
-import { Money } from '@/shared/money'
+import { moneyFromColones, formatMoney } from '@/shared/money'
 import { storageFailed } from '../../../domain/errors'
 import type { MyAppointment } from '../../../application/ports'
 import { APPOINTMENT_DISPLAY_CHOICE } from '../../appointment-display/constants/appointment-display.constants'
@@ -11,7 +11,7 @@ import { toMyAppointmentsView, toMyAppointmentView } from '../utils/my-appointme
 
 const STARTS_AT_MS = Date.parse('2027-09-10T15:00:00Z')
 const ENDS_AT_MS = Date.parse('2027-09-10T16:00:00Z')
-const price = (colones: number) => Money.fromColones(colones).toString()
+const price = (colones: number) => formatMoney(moneyFromColones(colones))
 const appointment: MyAppointment = {
   id: 'cita-1',
   startsAtMs: STARTS_AT_MS,

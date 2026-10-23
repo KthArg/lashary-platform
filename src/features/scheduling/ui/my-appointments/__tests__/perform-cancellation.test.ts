@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { err, ok } from '@/shared/result'
-import { Money } from '@/shared/money'
+import { moneyFromColones, formatMoney } from '@/shared/money'
 import {
   appointmentNotCancellable,
   cancellationConsequenceChanged,
@@ -14,7 +14,7 @@ import { performCancelAppointment, performQuoteCancellation, type CancellationDe
 const APPOINTMENT_ID = '00000000-0000-0000-0000-00000000ca01'
 const WINDOW_HOURS = 48
 const DEPOSIT = 10000
-const deposit = Money.fromColones(DEPOSIT).toString()
+const deposit = formatMoney(moneyFromColones(DEPOSIT))
 const quote: CancellationQuote = {
   startsAtMs: Date.parse('2027-09-10T15:00:00Z'),
   techniqueName: 'Clásicas',
