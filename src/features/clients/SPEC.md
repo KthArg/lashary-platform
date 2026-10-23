@@ -9,7 +9,7 @@ historias:
     falta: "las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)"
   - id: US-CLI-02
     estado: en_progreso
-    falta: "existe la lectura readAppointmentHistory, pero ninguna pagina la usa: la ruta /admin/clients/<id>/citas, la pestana Citas y la paginacion no existen; el acceso desde la vista diaria espera a US-AGE-11 (criterio diferido)"
+    falta: "la pestana Citas muestra solo la primera pagina: la paginacion y el enlace desde cada fila del listado no existen; el acceso desde la vista diaria espera a US-AGE-11 (criterio diferido)"
   - id: US-CLI-03
     estado: no_iniciada
   - id: US-CLI-04
@@ -119,6 +119,21 @@ expediente no se muestra. Capas: `domain/record/` (el contenido y sus cambios),
 escritura, lecturas en `queries/`, textos y componentes); la ruta vive en `src/app/admin/clients/[id]/`. Crear categorías nuevas desde el menú
 quedó fuera del plan por decisión de José Loría.
 
+### Historial de citas (US-CLI-02)
+
+La pestaña **Citas** de la ficha (`/admin/clients/<id>/citas`, `clientAppointmentsPath`) muestra
+`AppointmentHistory`: una tabla con fecha (en la hora del estudio, `formatAppointmentDate`), servicio,
+estado, pago (el estado del anticipo) y anotaciones (`HISTORY_LABELS.pendingValue` hasta US-CLI-03), en
+el orden en que llegan, de la más reciente a la más antigua; sin citas, un texto vacío. La página lee con
+`readAppointmentHistory(clientId, page)` (`ui/admin-history/queries/`, sin `'use server'`): exige
+`requireAdminSession()`, comprueba que la clienta exista (SEC-005) y pide las citas a `scheduling` por
+`http/history/history-gateways.ts` (ARCH-005), que lee un fallo o una excepción como
+`history-unavailable`, nunca como historial vacío. `viewAppointmentHistory` (`application/history/`) le
+pone a cada cita `depositStatusOf()` (`domain/history/`): `none`, `registered` o `pending`, también a
+medias. Carga en `loading.tsx`, error con `LoadError` y `error.tsx` (UI-003). Pruebas:
+`deposit-status.test.ts`, `view-appointment-history.test.ts`, `history-gateways.test.ts`,
+`history-queries.test.ts`, `appointment-history.test.tsx` y `src/app/admin/clients/[id]/layout.test.tsx`.
+
 ## Qué no hace todavía
 
 No existe un flujo de archivado o borrado de clientas en esta rama. `docs/adr/ADR-0009-client-archival-and-exemptions.md` recoge el acuerdo de archivar sin eliminar el perfil ni sus referencias, comunicado por Bayron el 2026-10-05. Antes de implementarlo deben acordarse permisos, búsquedas y reservas, citas existentes y restauración. La pieza 21 de US-AGE-13 implementa y prueba la migración de `payments` a `ON DELETE RESTRICT`; bloquea el borrado de perfiles con exoneraciones activas o históricas, incluso desde `auth.users`. Su integración sigue pendiente. Reactivar un perfil deberá revisar la vigencia de su exoneración antes de aplicarla. Este cambio de documentación no implementa archivado ni completa una historia de `clients`.
@@ -136,16 +151,8 @@ registra con Google, además del alta de esta feature. Le falta lo que US-CLI-05
 El listado con filtros y paginación **no pertenece a esta historia**: es US-CLI-01, que depende de
 esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
-**No hay pantalla de historial de citas (US-CLI-02).** Existe la lectura, pero ninguna página la
-usa: no existen la ruta `/admin/clients/<id>/citas` ni la pestaña **Citas**. Existe
-`readAppointmentHistory(clientId, page)` (`ui/admin-history/queries/`, en `index.ts`, sin `'use server'`):
-exige `requireAdminSession()`, comprueba que la clienta exista (SEC-005) y pide sus citas a `scheduling`
-por `http/history/history-gateways.ts` (ARCH-005), que traduce cada una y lee un fallo o una excepción
-como `history-unavailable`, nunca como historial vacío. `viewAppointmentHistory` (`application/history/`)
-le pone a cada cita `depositStatusOf()` (`domain/history/`): `none`, `registered` o `pending`, también a
-medias. Pruebas: `deposit-status.test.ts`, `view-appointment-history.test.ts`, `history-gateways.test.ts`
-y `history-queries.test.ts`. El plan y lo que
-entrega cada pieza están en la decisión del 2026-10-21.
+**El historial de citas (US-CLI-02) muestra solo la primera página** (25 citas): no hay paginación ni
+enlace desde cada fila del listado; el plan está en la decisión del 2026-10-21.
 
 ## Contrato público (`src/features/clients/index.ts`)
 
@@ -156,9 +163,11 @@ entrega cada pieza están en la decisión del 2026-10-21.
 textos y límites, entre ellas `CLIENTS_LIST_LIMITS`, `CLIENTS_TABLE_HEADERS`, `CLIENTS_TABLE_TEXTS` , `CLIENTS_PAGINATION_TEXTS` y `CLIENTS_FILTER_TEXTS` (DOM-009).
 También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el expediente (US-CLI-04):
 `getClientAction`, `CLIENTS_PATH`, `clientRecordPath`, `CLIENT_PROFILE_LABELS`, `RecordView`,
-`RecordLoadError`, `readRecord`, `readTechniqueOptions`, `readCategoryOptions`, `RECORD_LABELS` y
-`STUDY_FORM_LABELS`. `src/features/clients/client.ts` es la entrada para código del navegador
-(`error.tsx`): solo `RecordLoadError` y `RECORD_LABELS`, sin nada de servidor.
+`LoadError`, `readRecord`, `readTechniqueOptions`, `readCategoryOptions`, `RECORD_LABELS` y
+`STUDY_FORM_LABELS`. Para el historial (US-CLI-02): `clientAppointmentsPath`, `AppointmentHistory`,
+`readAppointmentHistory` con `ReadAppointmentHistoryResult` y `HISTORY_LABELS`.
+`src/features/clients/client.ts` es la entrada para código del navegador (`error.tsx`): solo
+`LoadError`, `RECORD_LABELS` y `HISTORY_LABELS`, sin nada de servidor.
 
 ## Invariantes
 
@@ -428,6 +437,10 @@ También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el e
   no cuenta como pieza: es el PR `us/US-CLI-02` → `main`, con título `(US-CLI-02)`, cuando US-AGE-11
   enlace al historial, y trae la `evidencia:` y `terminada` (EST-007). Si una pieza estima más de 400
   líneas, se parte antes de escribirla y se retitulan todas.
+- **2026-10-22 — `RecordLoadError` pasa a `ui/shared/components/LoadError`, por decisión de José
+  Loría.** El expediente y el historial muestran el mismo aviso con *Reintentar*; lo que comparten dos
+  áreas va a `ui/shared/` (lección de US-CLI-04). Como `ConfirmDialog`, no trae textos: recibe
+  `retryLabel` y cada área pasa el suyo (`RECORD_LABELS.retry`, `HISTORY_LABELS.retry`, DOM-009).
 
 ## Contrato para scheduling (US-AGE-05)
 

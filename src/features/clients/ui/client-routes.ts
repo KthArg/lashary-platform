@@ -5,3 +5,5 @@ export const isUuid = (value: unknown): value is string => typeof value === 'str
 export const CLIENTS_PATH = '/admin/clients'
 
 export const clientRecordPath = (clientId: string): string => `${CLIENTS_PATH}/${clientId}/expediente`
+
+export const clientAppointmentsPath = (clientId: string): string => `${CLIENTS_PATH}/${clientId}/citas`

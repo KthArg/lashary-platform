@@ -71,4 +71,5 @@ export const CLIENT_PROFILE_LABELS = {
   backToClients: 'Volver a clientas',
   tabsLabel: 'Secciones de la clienta',
   recordTab: 'Expediente',
+  appointmentsTab: 'Citas',
 } as const
