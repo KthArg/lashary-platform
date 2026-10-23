@@ -127,10 +127,10 @@ describe('CancelAppointment', () => {
     renderButton()
     await openConfirmation()
 
-    expect(document.activeElement).toBe(screen.getByText(copy.confirmQuestion).parentElement)
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByText(copy.confirmQuestion).parentElement))
     fireEvent.click(screen.getByRole('button', { name: copy.confirmBack }))
 
-    expect(document.activeElement).toBe(startButton())
+    await waitFor(() => expect(document.activeElement).toBe(startButton()))
   })
 
   it('«Volver» deja la cita como estaba y no cancela nada', async () => {

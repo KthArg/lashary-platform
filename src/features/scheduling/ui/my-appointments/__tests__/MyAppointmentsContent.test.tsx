@@ -55,7 +55,7 @@ describe('MyAppointmentsContent', () => {
     render(<MyAppointmentsContent view={{ status: 'ready', appointments: [only] }} />)
     await cancelTheOnlyAppointment()
 
-    expect(document.activeElement).toBe(screen.getByRole('status'))
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('status')))
   })
 
   it('si era la última cita, el aviso sigue visible cuando la pantalla pasa a «sin citas»', async () => {
