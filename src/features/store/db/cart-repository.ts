@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { Money } from '@/shared/money'
+import { moneyFromColones } from '@/shared/money'
 import { isOk } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import { buildCartLine, type CartLine } from '../domain/cart'
@@ -30,7 +30,7 @@ function rowToLine(row: CartLineRow): CartLine {
       slug: product.slug,
       name: product.nombre,
       imageUrl: sanitizeUrl(product.url_imagen),
-      unitPrice: Money.fromColones(Number(product.precio_crc)),
+      unitPrice: moneyFromColones(Number(product.precio_crc)),
     },
     row.cantidad,
   )
