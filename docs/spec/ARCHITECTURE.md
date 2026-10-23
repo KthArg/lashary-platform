@@ -90,7 +90,7 @@ Features: `platform`, `audit`, `auth`, `content`, `landing`, `catalog`, `schedul
 **Cumplimiento.** L3 sin políticas de UPDATE/DELETE sobre el ledger + L1 lint de migraciones (F4).
 
 ### DOM-006 — Errores tipados, mapeo único
-**Regla.** Un `DomainError` base con subtipos específicos. Nada lanza strings ni errores pelados desde domain o application. Resultados de negocio **esperados** (espacio ocupado, morosidad activa) se retornan como valores (`Result`), no se lanzan. El mapeo a HTTP status ocurre en exactamente un lugar. Sin catch silencioso.
+**Regla.** Cada feature define sus errores como `interface` con `code` literal, fábrica y guarda (ADR-0008). Nada lanza strings ni errores pelados desde domain o application. Resultados de negocio **esperados** (espacio ocupado, morosidad activa) se retornan como valores (`Result`), no se lanzan. El mapeo a HTTP status ocurre en exactamente un lugar. Sin catch silencioso.
 **Racional.** Errores sin tipo obligan a adivinar por mensaje; el catch silencioso convierte bugs en misterios sin stack trace.
 **Cumplimiento.** L4 skills + L5 review.
 
