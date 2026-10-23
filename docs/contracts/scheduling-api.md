@@ -63,7 +63,7 @@ Consumidor: **US-CLI-02**, la pestaña "Citas" de la ficha de la clienta en `/ad
 
 1. **La forma de la fila es contrato:** un cambio de campos o de firma se versiona aquí antes del cambio (INT-003).
 2. **La RLS es la frontera de acceso (SEC-001):** el caso de uso lee con la sesión de quien llama. El personal ve las citas de cualquier clienta; una clienta solo ve las suyas (`scheduling_appointments_select_own`), así que con el `id` de otra recibe una página vacía.
-3. **No comprueba que la clienta exista.** Un `clientId` sin citas o inexistente devuelve `items` vacío y `total` 0. Comprobar que el recurso existe es de quien llama (SEC-005); en el panel lo hace el layout de la ficha con `getClientAction`.
+3. **No comprueba que la clienta exista.** Un `clientId` sin citas o inexistente devuelve `items` vacío y `total` 0. Una página más allá de la última devuelve `items` vacío con el `total` real: PostgREST responde `PGRST103` y el repositorio cuenta aparte, para que quien llama pueda volver a la primera página. Comprobar que el recurso existe es de quien llama (SEC-005); en el panel lo hace el layout de la ficha con `getClientAction`.
 4. **Un fallo de la base es `StorageFailed`**, nunca una página vacía: un historial vacío por error se leería como "esta clienta nunca vino". El caso de uso no lanza.
 5. **Una sola lectura por página:** una consulta con `count: 'exact'`, sin consultas por fila (PERF-005).
 6. **El `id` de la cita es estable**, para que `clients` le cuelgue sus anotaciones y las pida para toda la página en una sola consulta.

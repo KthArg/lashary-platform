@@ -31,4 +31,6 @@ export { RECORD_LABELS, STUDY_FORM_LABELS } from './ui/admin-record/constants/re
 export { readAppointmentHistory } from './ui/admin-history/queries/history-queries'
 export type { ReadAppointmentHistoryResult } from './ui/admin-history/types/history-results'
 export { AppointmentHistory } from './ui/admin-history/components/AppointmentHistory'
-export { HISTORY_LABELS } from './ui/admin-history/constants/history-strings'
+export { HISTORY_LABELS, HISTORY_PAGINATION_TEXTS } from './ui/admin-history/constants/history-strings'
+export { AppointmentHistoryPagination } from './ui/admin-history/components/AppointmentHistoryPagination'
+export { appointmentHistoryUrl, parseHistoryPage } from './ui/admin-history/appointment-history-url'
