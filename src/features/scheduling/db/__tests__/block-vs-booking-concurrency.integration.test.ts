@@ -12,6 +12,7 @@ import { isManualBlockHasAppointment } from '../../domain/availability-errors'
 import { MS_PER_MINUTE } from '../../domain/appointment-window.constants'
 import { createSupabaseBookingRepository } from '../booking-repository'
 import { createSupabaseManualBlockRepository } from '../manual-block-repository'
+import { createSupabaseDayAvailabilityRepository } from '../day-availability-repository'
 import type { BookingRepository } from '../../application/ports'
 
 const API_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
@@ -27,7 +28,7 @@ const ROUND_TIMEOUT_MS = 20_000
 const SETUP_TIMEOUT_MS = 60_000
 const WEDNESDAY_ISO_WEEKDAY = 3
 const OPEN_FROM_MIN = 120
-const FIRST_WEDNESDAY_OPENING_MS = Date.parse('2043-01-07T08:00:00Z')
+const FIRST_WEDNESDAY_OPENING_MS = Date.parse('2045-01-04T08:00:00Z')
 const MS_PER_WEEK = 7 * 24 * 60 * MS_PER_MINUTE
 const RUN_OFFSET_WEEKS_SPREAD = 40
 const SPARE_MINUTES_IN_BLOCK = 60
@@ -150,28 +151,30 @@ describe.skipIf(!reachable)('US-AGE-07 criterio 4 — la administradora bloquea 
       const startsAtMs = FIRST_WEDNESDAY_OPENING_MS + (runOffsetWeeks + round) * MS_PER_WEEK
       const blockOpeningSlot = blockSlots({
         repo: createSupabaseManualBlockRepository(staff.client),
+        day: createSupabaseDayAvailabilityRepository(staff.client),
         newId: randomUUID,
         clock: systemClock,
       })
 
-      const bookingAttempts = clientas.map((clienta) =>
+      const attemptBooking = (clienta: Clienta) =>
         bookAppointment({ bookings: clienta.repository, delinquency: noDelinquencyYet })({
           resourceId: STUDIO_RESOURCE_ID,
           startsAtMs,
           techniqueId,
           isFirstTime: true,
-        }),
-      )
-      const middle = Math.floor(bookingAttempts.length / 2)
+        })
+      const half = Math.floor(clientas.length / 2)
+      const bookingsBeforeBlock = clientas.slice(0, half).map(attemptBooking)
       const blockAttempt = blockOpeningSlot({
         resourceId: STUDIO_RESOURCE_ID,
         date: studioDateOf(new Date(startsAtMs)),
         slotStartMinutes: [OPEN_FROM_MIN],
       })
+      const bookingsAfterBlock = clientas.slice(half).map(attemptBooking)
       const [blockResult, ...bookingResults] = await Promise.all([
         blockAttempt,
-        ...bookingAttempts.slice(0, middle),
-        ...bookingAttempts.slice(middle),
+        ...bookingsBeforeBlock,
+        ...bookingsAfterBlock,
       ])
 
       const bookingWinners = bookingResults.filter(isOk)

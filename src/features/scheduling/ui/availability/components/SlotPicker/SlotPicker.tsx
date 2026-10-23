@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
-import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '../../../../domain/manual-blocks.constants'
+import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '@/features/scheduling/domain/manual-blocks.constants'
 import { schedulingMessages } from '../../../messages'
 import { blockSlotsAction } from '../../actions/availability-actions'
 import { BLOCK_SLOTS_FIELDS } from '../../constants/availability.constants'
