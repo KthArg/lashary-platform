@@ -2,8 +2,7 @@ import { describe, it, expect } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isErr, isOk } from '@/shared/result'
 import { createSupabaseMyAppointmentsRepository } from '../my-appointments-repository'
-import { APPOINTMENTS_TABLE } from '../appointment-repository.constants'
-import { MY_APPOINTMENT_COLUMNS, MY_APPOINTMENTS_LIMIT } from '../my-appointments-repository.constants'
+import { LIST_MY_APPOINTMENTS_FUNCTION, MY_APPOINTMENTS_LIMIT } from '../my-appointments-repository.constants'
 
 const NOW_MS = Date.parse('2027-09-01T12:00:00Z')
 const row = {
@@ -20,32 +19,23 @@ const row = {
 type FakeResponse = { data: unknown; error: { message: string } | null }
 
 function createFakeDb(response: FakeResponse) {
-  const calls: Array<[string, ...unknown[]]> = []
-  const query = {
-    select: (columns: string) => (calls.push(['select', columns]), query),
-    in: (column: string, values: unknown) => (calls.push(['in', column, values]), query),
-    gt: (column: string, value: unknown) => (calls.push(['gt', column, value]), query),
-    not: (column: string, operator: string, value: unknown) => (calls.push(['not', column, operator, value]), query),
-    order: (column: string, options: unknown) => (calls.push(['order', column, options]), query),
-    limit: async (count: number) => (calls.push(['limit', count]), response),
-  }
-  const db = { from: (table: string) => (calls.push(['from', table]), query) } as unknown as SupabaseClient
+  const calls: Array<{ functionName: string; args: unknown }> = []
+  const db = {
+    rpc: async (functionName: string, args: unknown) => (calls.push({ functionName, args }), response),
+  } as unknown as SupabaseClient
   return { db, calls }
 }
 
 describe('createSupabaseMyAppointmentsRepository', () => {
-  it('pide solo las citas activas que no empezaron, las más próximas primero y con tope', async () => {
+  it('llama a la función SQL con la hora y el tope, nunca con la clienta, y devuelve sus citas', async () => {
     const { db, calls } = createFakeDb({ data: [row], error: null })
     const result = await createSupabaseMyAppointmentsRepository(db).listUpcoming(NOW_MS)
 
     expect(calls).toEqual([
-      ['from', APPOINTMENTS_TABLE],
-      ['select', MY_APPOINTMENT_COLUMNS],
-      ['in', 'status', ['pending_approval', 'approved', 'confirmed']],
-      ['gt', 'starts_at', '2027-09-01T12:00:00.000Z'],
-      ['not', 'client_id', 'is', null],
-      ['order', 'starts_at', { ascending: true }],
-      ['limit', MY_APPOINTMENTS_LIMIT],
+      {
+        functionName: LIST_MY_APPOINTMENTS_FUNCTION,
+        args: { p_now: '2027-09-01T12:00:00.000Z', p_limit: MY_APPOINTMENTS_LIMIT },
+      },
     ])
     expect(isOk(result) && result.value).toEqual([
       {
