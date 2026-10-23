@@ -1,12 +1,7 @@
-// Hora del estudio. La disponibilidad se configura en horas de pared de la zona del estudio y
-// los instantes se guardan en UTC (DOM-003): estas funciones puras hacen el puente, sin reglas de
-// negocio (ARCH-007). Reciben el instante como parámetro; nunca leen el reloj (DOM-004).
-
 export const STUDIO_TIME_ZONE = 'America/Costa_Rica'
 
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/
 
-// Fecha de calendario real con formato AAAA-MM-DD (rechaza 2026-02-30).
 export function isCalendarDate(value: string): boolean {
   const match = ISO_DATE.exec(value)
   if (!match) return false
@@ -39,14 +34,12 @@ function zonedParts(instant: Date): Record<string, number> {
   )
 }
 
-// Fecha de calendario (AAAA-MM-DD) que marca el estudio en ese instante.
 export function studioDateOf(instant: Date): string {
   const { year, month, day } = zonedParts(instant)
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
-// Instante UTC de una fecha y hora de pared del estudio. Calcula la diferencia de la zona en
-// ese momento, así que no asume un desfase fijo.
+// Calcula el desfase de la zona en ese instante; no asume uno fijo
 export function studioLocalToUtc(date: string, minuteOfDay: number): Date {
   const [year, month, day] = date.split('-').map(Number)
   const asIfUtc = Date.UTC(year, month - 1, day, 0, minuteOfDay)
