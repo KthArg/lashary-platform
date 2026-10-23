@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { Money } from '@/shared/money'
+import { moneyFromColones, formatMoney } from '@/shared/money'
 import { ApprovalQueue } from '../components/ApprovalQueue'
 import { APPROVAL_QUEUE_ARIA, APPROVAL_QUEUE_CHOICE, APPROVAL_QUEUE_CLIENT, APPROVAL_QUEUE_LABELS } from '../constants/approval-queue.labels'
 import { APPROVAL_QUEUE_ERRORS } from '../constants/approval-queue.constants'
@@ -103,7 +103,7 @@ describe('ApprovalQueue: lo que eligió la clienta', () => {
 
     expect(screen.getByText('Clásicas')).toBeTruthy()
     expect(screen.getByText(APPOINTMENT_DISPLAY_CHOICE.firstTime)).toBeTruthy()
-    const amounts = APPOINTMENT_DISPLAY_CHOICE.priceAndDeposit(Money.fromColones(35000).toString(), Money.fromColones(10000).toString())
+    const amounts = APPOINTMENT_DISPLAY_CHOICE.priceAndDeposit(formatMoney(moneyFromColones(35000)), formatMoney(moneyFromColones(10000)))
     expect(screen.getByText((_, element) => element?.tagName === 'P' && element.textContent === amounts)).toBeTruthy()
   })
 

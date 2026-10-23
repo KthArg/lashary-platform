@@ -1,9 +1,9 @@
-import { Money } from '@/shared/money'
+import { moneyFromColones, formatMoney } from '@/shared/money'
 import type { CancellationQuote } from '../../../application/ports'
 import { cancellationMessages } from '../constants/cancellation-strings'
 import type { CancellationQuoteView } from '../types/cancellation-results'
 
-const money = (colones: number): string => Money.fromColones(colones).toString()
+const money = (colones: number): string => formatMoney(moneyFromColones(colones))
 
 function describeConsequence(quote: CancellationQuote): string {
   const copy = cancellationMessages
