@@ -40,7 +40,7 @@ defectos: []
 
 # scheduling
 
-El código de `scheduling` usa `Money` por sus funciones (`moneyFromColones`, `formatMoney`) y no por sus métodos, como paso previo a quitar la `class` (ADR-0008); el comportamiento es el mismo.
+`Money` (`shared/money.ts`) ya no es una `class`: es una `interface` con marca `unique symbol` y funciones (`moneyFromColones`, `formatMoney`, ADR-0008); el comportamiento es el mismo.
 
 Agenda completa. US-AGE-09 cubre el flujo de aprobacion manual (su texto original, ADR-0003) Y el constraint de no-solape (sus criterios, ADR-0002); recurso explicito (ADR-0005). Agendar en nombre de una clienta: clausula de US-MOR-02 (ADR-0007).
 
