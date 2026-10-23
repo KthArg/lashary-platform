@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { Money } from '@/shared/money'
+import { moneyFromColones } from '@/shared/money'
 import { ok, err, isOk, type Result } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import { buildPackage, packageToView, type Package } from '../../domain/packages/package'
@@ -38,8 +38,8 @@ function rowToDomain(row: Row): PackageWithDuration {
     id: row.id,
     name: row.name,
     techniqueIds,
-    price: Money.fromColones(Number(row.price)),
-    deposit: Money.fromColones(Number(row.deposit)),
+    price: moneyFromColones(Number(row.price)),
+    deposit: moneyFromColones(Number(row.deposit)),
     isActive: row.is_active,
   })
   if (!isOk(built)) {
