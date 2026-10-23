@@ -9,11 +9,13 @@ const SLOT = 'martes, 12 de abril de 2044 · 9:00 a. m. – 10:00 a. m.'
 const copy = cancellationMessages
 
 const mockQuote = vi.fn<(appointmentId: string) => Promise<QuoteCancellationResult>>()
-const mockCancel = vi.fn<(appointmentId: string) => Promise<CancelAppointmentResult>>()
+const FORFEITED_DEPOSIT = 10000
+const mockCancel = vi.fn<(appointmentId: string, expectedForfeitedDeposit: number) => Promise<CancelAppointmentResult>>()
 
 vi.mock('../actions/cancel-appointment-actions', () => ({
   quoteCancellationAction: (appointmentId: string) => mockQuote(appointmentId),
-  cancelAppointmentAction: (appointmentId: string) => mockCancel(appointmentId),
+  cancelAppointmentAction: (appointmentId: string, expectedForfeitedDeposit: number) =>
+    mockCancel(appointmentId, expectedForfeitedDeposit),
 }))
 
 beforeEach(() => {
@@ -24,7 +26,7 @@ afterEach(cleanup)
 
 const quoted = (consequence: string, losesDeposit: boolean): QuoteCancellationResult => ({
   ok: true,
-  quote: { appointmentId: APPOINTMENT_ID, consequence, losesDeposit },
+  quote: { appointmentId: APPOINTMENT_ID, consequence, losesDeposit, forfeitedDeposit: losesDeposit ? FORFEITED_DEPOSIT : 0 },
 })
 const startButton = () => screen.getByRole('button', { name: copy.cancelButtonLabel(SLOT) })
 const renderButton = (onCancelled = vi.fn()) => {
@@ -76,7 +78,37 @@ describe('CancelAppointment', () => {
     fireEvent.click(screen.getByRole('button', { name: copy.confirmYes }))
 
     await waitFor(() => expect(onCancelled).toHaveBeenCalledWith(copy.cancelled))
-    expect(mockCancel).toHaveBeenCalledWith(APPOINTMENT_ID)
+    expect(mockCancel).toHaveBeenCalledWith(APPOINTMENT_ID, 0)
+  })
+
+  it('al confirmar manda el anticipo perdido que la clienta vio', async () => {
+    renderButton()
+    await openConfirmation(copy.outsideWindowLosesDeposit('48 horas', '₡10 000'), true)
+    mockCancel.mockResolvedValue({ ok: true, message: copy.cancelledLosingDeposit })
+    fireEvent.click(screen.getByRole('button', { name: copy.confirmYes }))
+
+    await waitFor(() => expect(mockCancel).toHaveBeenCalledWith(APPOINTMENT_ID, FORFEITED_DEPOSIT))
+  })
+
+  it('si la consecuencia cambió, no da la cita por cancelada: muestra la nueva y pide confirmar de nuevo', async () => {
+    const onCancelled = renderButton()
+    await openConfirmation()
+    const losing = copy.outsideWindowLosesDeposit('48 horas', '₡10 000')
+    mockCancel.mockResolvedValueOnce({
+      ok: false,
+      message: copy.consequenceChanged,
+      changedQuote: { appointmentId: APPOINTMENT_ID, consequence: losing, losesDeposit: true, forfeitedDeposit: FORFEITED_DEPOSIT },
+    })
+    fireEvent.click(screen.getByRole('button', { name: copy.confirmYes }))
+
+    expect((await screen.findByRole('alert')).textContent).toContain(copy.consequenceChanged)
+    expect(screen.getByRole('note').textContent).toBe(losing)
+    expect(onCancelled).not.toHaveBeenCalled()
+
+    mockCancel.mockResolvedValueOnce({ ok: true, message: copy.cancelledLosingDeposit })
+    fireEvent.click(screen.getByRole('button', { name: copy.confirmYes }))
+    await waitFor(() => expect(onCancelled).toHaveBeenCalledWith(copy.cancelledLosingDeposit))
+    expect(mockCancel).toHaveBeenLastCalledWith(APPOINTMENT_ID, FORFEITED_DEPOSIT)
   })
 
   it('mientras cancela no deja volver ni confirmar otra vez', async () => {

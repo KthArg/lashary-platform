@@ -20,5 +20,6 @@ export function toCancellationQuoteView(appointmentId: string, quote: Cancellati
     appointmentId,
     consequence: describeConsequence(quote),
     losesDeposit: quote.forfeitedDeposit > 0,
+    forfeitedDeposit: quote.forfeitedDeposit,
   }
 }

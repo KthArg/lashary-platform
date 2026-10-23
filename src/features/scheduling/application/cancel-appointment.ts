@@ -15,7 +15,8 @@ export function quoteCancellation(cancellations: CancellationRepository) {
 export function cancelAppointment(cancellations: CancellationRepository) {
   return function cancel(
     appointmentId: string,
+    expectedForfeitedDeposit: number,
   ): Promise<Result<CancelledAppointment, CancellationError>> {
-    return cancellations.cancel(appointmentId)
+    return cancellations.cancel(appointmentId, expectedForfeitedDeposit)
   }
 }

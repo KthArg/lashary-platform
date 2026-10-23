@@ -10,6 +10,7 @@ export const cancellationMessages = {
   invalidAppointment: 'Esa cita no es válida.',
   clientNotRegistered: 'Completá tu perfil de clienta para gestionar tus citas.',
   notCancellable: 'Esta cita ya no se puede cancelar.',
+  consequenceChanged: 'Lo que pasaría al cancelar cambió desde que lo viste. Revisalo y confirmá de nuevo.',
   failed: 'No pudimos procesar tu solicitud. Intentá de nuevo.',
   cancelled: 'Tu cita fue cancelada.',
   cancelledLosingDeposit: 'Tu cita fue cancelada y el anticipo se dio por perdido.',

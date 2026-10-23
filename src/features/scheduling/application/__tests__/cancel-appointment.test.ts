@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { err, isErr, isOk, ok } from '@/shared/result'
-import { appointmentNotCancellable } from '../../domain/errors'
+import { appointmentNotCancellable, cancellationConsequenceChanged } from '../../domain/errors'
 import { cancelAppointment, quoteCancellation } from '../cancel-appointment'
 import type { CancellationQuote, CancellationRepository, CancelledAppointment } from '../ports'
 
@@ -25,8 +25,8 @@ function createFakeRepository(overrides: Partial<CancellationRepository> = {}) {
       requested.push(`quote:${appointmentId}`)
       return ok(quote)
     },
-    cancel: async (appointmentId) => {
-      requested.push(`cancel:${appointmentId}`)
+    cancel: async (appointmentId, expectedForfeitedDeposit) => {
+      requested.push(`cancel:${appointmentId}:${expectedForfeitedDeposit}`)
       return ok(cancelled)
     },
     ...overrides,
@@ -54,20 +54,29 @@ describe('quoteCancellation', () => {
 })
 
 describe('cancelAppointment', () => {
-  it('cancela esa cita y devuelve la consecuencia registrada', async () => {
+  it('cancela esa cita diciendo qué anticipo perdido vio la clienta y devuelve la consecuencia registrada', async () => {
     const { repository, requested } = createFakeRepository()
-    const result = await cancelAppointment(repository)(APPOINTMENT_ID)
+    const result = await cancelAppointment(repository)(APPOINTMENT_ID, 10000)
 
     expect(isOk(result) && result.value).toEqual(cancelled)
-    expect(requested).toEqual([`cancel:${APPOINTMENT_ID}`])
+    expect(requested).toEqual([`cancel:${APPOINTMENT_ID}:10000`])
   })
 
   it('devuelve el error tipado del repositorio, sin lanzar', async () => {
     const { repository } = createFakeRepository({
       cancel: async () => err(appointmentNotCancellable(APPOINTMENT_ID)),
     })
-    const result = await cancelAppointment(repository)(APPOINTMENT_ID)
+    const result = await cancelAppointment(repository)(APPOINTMENT_ID, 0)
 
     expect(isErr(result) && result.error.code).toBe('SCHEDULING_APPOINTMENT_NOT_CANCELLABLE')
+  })
+
+  it('si la consecuencia cambió devuelve ese error tipado, sin lanzar', async () => {
+    const { repository } = createFakeRepository({
+      cancel: async () => err(cancellationConsequenceChanged(APPOINTMENT_ID)),
+    })
+    const result = await cancelAppointment(repository)(APPOINTMENT_ID, 0)
+
+    expect(isErr(result) && result.error.code).toBe('SCHEDULING_CANCELLATION_CONSEQUENCE_CHANGED')
   })
 })

@@ -13,6 +13,11 @@ export function CancelAppointment({ appointmentId, slot, onCancelled }: CancelAp
     const isCancelling = state.status === 'cancelling'
     return (
       <div className={STYLES.confirmBox}>
+        {state.status === 'confirming' && state.notice && (
+          <div role="alert" className={STYLES.notice}>
+            <span>{state.notice}</span>
+          </div>
+        )}
         <p className={STYLES.question}>{copy.confirmQuestion}</p>
         <p role="note" className={state.quote.losesDeposit ? STYLES.consequenceWarning : STYLES.consequence}>
           {state.quote.consequence}

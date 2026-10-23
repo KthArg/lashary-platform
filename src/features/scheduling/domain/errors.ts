@@ -73,6 +73,12 @@ export interface TooManyPendingAppointments {
   readonly message: string
 }
 
+export interface CancellationConsequenceChanged {
+  readonly code: 'SCHEDULING_CANCELLATION_CONSEQUENCE_CHANGED'
+  readonly appointmentId: string
+  readonly message: string
+}
+
 export type CancellationInputField = 'startsAtMs' | 'nowMs' | 'windowHours' | 'depositRequired'
 
 export interface AppointmentNotCancellable {
@@ -101,6 +107,7 @@ export type SchedulingError =
   | StorageFailed
   | AuditNotRecorded
   | AppointmentNotCancellable
+  | CancellationConsequenceChanged
   | InvalidCancellationInput
 
 export const techniqueNotSelectable = (
@@ -187,6 +194,12 @@ export const appointmentNotCancellable = (appointmentId: string): AppointmentNot
   code: 'SCHEDULING_APPOINTMENT_NOT_CANCELLABLE',
   appointmentId,
   message: `la cita ${appointmentId} no existe, ya pasó o no está en un estado que se pueda cancelar`,
+})
+
+export const cancellationConsequenceChanged = (appointmentId: string): CancellationConsequenceChanged => ({
+  code: 'SCHEDULING_CANCELLATION_CONSEQUENCE_CHANGED',
+  appointmentId,
+  message: `la consecuencia de cancelar la cita ${appointmentId} cambió desde que la clienta la vio`,
 })
 
 export const invalidCancellationInput = (
