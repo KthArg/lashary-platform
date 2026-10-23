@@ -150,6 +150,7 @@ US-AGE-05 queda `terminada` con estos faltantes aprobados por el PO, cada uno co
 - Cancelar y aprobar la misma cita a la vez (US-AGE-06, corrección de la revisión de Kenny): `db/__tests__/cancel-vs-approve-concurrency.integration.test.ts`, contra Supabase local con tokens reales (una clienta y una administradora de prueba, que se reutilizan porque la bitácora impide borrar a quien tiene eventos). Dos casos deterministas —si gana la aprobación, la clienta que vio «sin pérdida» no cancela porque la consecuencia cambió (la cita sigue aprobada y sin evento); si gana la cancelación, la aprobación ya no encuentra una cita pendiente— y 12 rondas simultáneas con una cita pendiente cada una, a horas distintas dentro de las próximas 48 h, donde nunca ganan las dos, la cita queda aprobada o cancelada y el evento de bitácora coincide con lo que pasó (uno, con el estado previo, si se canceló; ninguno si no). Lo garantiza el `FOR UPDATE` de `scheduling_cancel_appointment` junto con el `WHERE status = 'pending_approval'` de la aprobación. Verificada por mutación: sin el `FOR UPDATE` la prueba simultánea cae en 3 de 3 corridas.
 - Cambiar la ventana de cancelación, por una función de SQL (US-AGE-06, corrección de la revisión de Kenny; migración `20261023000000_scheduling_change_cancellation_window_fn.sql`): el tope, el evento de auditoría y el valor «anterior» los garantizaba solo TypeScript, y quien llamara PostgREST con la sesión de la administradora podía poner 100000 horas sin dejar rastro (INT-003 pide que los eventos salgan desde SQL). Ahora la tabla lleva el tope como `CHECK` (0 a 720 horas) y `scheduling_change_cancellation_window(horas)` valida, lee el valor anterior con `FOR UPDATE` (dos cambios a la vez no registran un «anterior» que ya no era el vigente), actualiza y deja `scheduling.cancellation_window.changed` con `previousHours` y `newHours` en la misma transacción: si la bitácora falla, el cambio también; repetir la misma cifra no deja evento. Se quitó el `UPDATE` directo (el `GRANT` de la columna y su política): la función es el único camino. Es `SECURITY DEFINER` y no `INVOKER`, porque sin el `UPDATE` directo quien llama ya no tiene permiso sobre la tabla; exige a la administradora con `auth_is_admin()`. Esta pieza es solo la base de datos; el repositorio y el caso de uso que la usan vienen en la pieza siguiente, y las dos deben mergearse seguidas. Pruebas: pgTAP `scheduling_cancellation_policy.test.sql` (el tope aun con un `UPDATE` de superusuario, ni la administradora por `UPDATE` directo, clienta y anónimo no ejecutan, el evento con la actora y de cuánto a cuánto, sin evento si no cambia, la bitácora caída tumba el cambio), verificada por mutación (sin quitar el `UPDATE` directo ni exigir administradora caen 5 pruebas).
 - Cambiar la ventana de cancelación, el lado de la aplicación del cambio por SQL (US-AGE-06, corrección de la revisión de Kenny): el repositorio llama a la función y el caso de uso ya no escribe la bitácora ni lee el valor anterior (lo hace la función, en la misma transacción); desaparecen los estados `warning` («se guardó sin registro», que ya no puede pasar: si la bitácora falla, el cambio también) y `forbidden` (`requireAdminSession` y la función de SQL ya cierran el paso). Verificado en un navegador real contra Supabase local: cambió de 48 a 24 horas y la bitácora registró el evento desde SQL. Pruebas: las de la lógica de la pantalla, el caso de uso y el repositorio, y la de acceso contra Supabase local.
+- Enlace a «Mis citas» (US-AGE-06, pedido para la demo al cliente; `ui/TechniqueSelectionPageView.tsx`): la pantalla `/portal/citas` (agendar una cita) trae un botón «Mis citas» arriba a la derecha que lleva a `/portal/citas/mis-citas`, desde donde se cancela, para no escribir la URL. Se ve con o sin técnicas; quien no es clienta no lo ve. El ítem «Mis Citas» del menú lateral del portal sigue apuntando a `/portal/citas` (el selector): cambiarlo es del menú de `auth`, ver «Límites de la demo y deuda de US-AGE-06». Verificado en un navegador real contra Supabase local con una clienta sembrada (el botón se ve y lleva a su lista; capturas en el PR). Prueba: `ui/__tests__/TechniqueSelectionPageView.test.tsx`.
 
 ## Decisiones del PO sobre US-AGE-06
 
@@ -166,6 +167,32 @@ US-AGE-06 queda `terminada` con estos pendientes, cada uno con su dueño:
 - Notificación a la administradora al cancelar: US-NOT-02.
 - Pantalla para cambiar la ventana de cancelación: sin historia asignada.
 - Barra lateral del portal en 375 px, que deja unos 119 px al contenido y afecta a «Mis citas» y al calendario: layout del portal, feature `auth`.
+
+## Límites de la demo y deuda de US-AGE-06
+
+Lo que se puede y no se puede demostrar hoy de esta historia, lo que no se probó y lo que se asumió. Se actualiza cuando cambie alguno.
+
+**Hecho y probado:** la clienta ve sus citas próximas, cancela una con confirmación que le dice antes si pierde el anticipo, el espacio se libera y la cancelación queda en la bitácora; la administradora cambia la ventana desde «Citas → Cancelación». Probado con pgTAP, pruebas unitarias, pruebas de integración con tokens reales (aislamiento entre clientas, acceso a la política, cancelar contra aprobar a la vez) y de punta a punta en un navegador real contra Supabase local.
+
+**No se puede demostrar aún con datos reales:**
+- *Perder el anticipo.* El anticipo registrado nace en 0 hasta US-MOR-03 (la administradora aún no puede registrarlo al aprobar). Mientras tanto, cancelar tarde dice «no perdés ningún anticipo». El aviso «perdés ₡…» solo se ve sembrando `deposit_registered` a mano, como se hizo en las capturas.
+- *Que se mueva dinero.* «Perder el anticipo» es solo un registro en la bitácora (decisión del PO, DOM-012); la devolución o retención real la cubren US-AGE-12 y US-MOR-03.
+- *El aviso a la administradora.* El criterio 5 se trasladó a US-NOT-02: el evento `scheduling.appointment.cancelled` ya se escribe, pero nadie lo consume todavía.
+- *Ver quién cambió la ventana.* El evento `scheduling.cancellation_window.changed` queda en la bitácora, pero no hay pantalla de auditoría que lo muestre.
+
+**No se probó:** en un teléfono real ni en navegadores distintos de Chrome de escritorio; con muchas citas (la lista tiene tope de 50, PERF-002, y no pagina); la prueba de carga de la ventana ni de cancelaciones simultáneas de muchas clientas (sí se probó una cancelación contra una aprobación).
+
+**Riesgos asumidos:**
+- Las 7 migraciones de la historia se aplicaron a producción con el merge y son irreversibles (forward-only). La última quita el `UPDATE` directo de la ventana; si una versión de la aplicación anterior intentara cambiarla así, fallaría.
+- El tope de la ventana (720 horas) está en dos sitios: el `CHECK` de la tabla y la función de SQL son la fuente de verdad, y `domain/cancellation-window.constants.ts` lo repite para el formulario. Si se cambia uno, hay que cambiar el otro.
+- El tope de la lista de «Mis citas» (50) está en `MY_APPOINTMENTS_LIMIT` y la función de SQL lo acota a 100.
+
+**Deuda, con dueño:**
+- Menú lateral del portal: «Mis Citas» apunta al selector de técnica y no a la lista; hoy se llega a ella por el botón «Mis citas» de esa pantalla. Cambiarlo es del menú de `auth`. Dueño: `auth`.
+- A 375 px la barra lateral del portal y la del panel dejan poco ancho al contenido (afecta a «Mis citas», al calendario y a la pantalla de la ventana). Dueño: `auth`.
+- `CLIENT_PORTAL_ROUTES` de `auth` no se puede usar desde componentes cliente (no hay entry point cliente-seguro), por eso las rutas de scheduling repiten el prefijo `/portal/citas`. Dueño: `auth`.
+- Aviso de la cifra de la ventana en la reserva: el aviso del anticipo sigue genérico. Sin historia asignada.
+- Notificar a la administradora al cancelar: US-NOT-02, que sigue bloqueada además por US-AGE-10 (reagendar).
 
 ## Criterios recibidos de US-AGE-01
 
