@@ -10,6 +10,6 @@ export async function changeCancellationWindowAction(
   formData: FormData,
 ): Promise<CancellationPolicyActionState> {
   const result = await cancellationPolicyService.change(Object.fromEntries(formData))
-  if (result.status === 'ok' || result.status === 'warning') revalidatePath(CANCELLATION_POLICY_PATH)
+  if (result.status === 'ok') revalidatePath(CANCELLATION_POLICY_PATH)
   return result
 }
