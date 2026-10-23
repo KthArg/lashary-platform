@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { requireAdminSession } from '@/features/auth'
-import { RecordLoadError, RecordView, readCategoryOptions, readRecord, readTechniqueOptions } from '@/features/clients'
+import { LoadError, RECORD_LABELS, RecordView, readCategoryOptions, readRecord, readTechniqueOptions } from '@/features/clients'
 import type { AdminRecordPageProps } from './expediente.types'
 
 export const metadata = {
@@ -17,7 +17,7 @@ export default async function AdminRecordPage({ params }: AdminRecordPageProps) 
     readCategoryOptions(),
   ])
   if (!result.ok && result.notFound) notFound()
-  if (!result.ok) return <RecordLoadError message={result.error} />
+  if (!result.ok) return <LoadError message={result.error} retryLabel={RECORD_LABELS.retry} />
   return (
     <RecordView clientId={id} current={result.current} history={result.history} initial={result.initial}
       techniques={techniqueOptions.ok ? techniqueOptions.techniques : []}
