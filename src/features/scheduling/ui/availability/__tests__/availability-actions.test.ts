@@ -164,7 +164,11 @@ describe('addManualBlockAction — criterio 3', () => {
       idle,
       form({ date: '2026-10-20', start: '09:00', end: '11:00', [CONFIRM_FIELD]: CONFIRM_VALUE }),
     )
-    expect(state).toEqual({ status: 'conflict', message: availabilityMessages.blocks.hasAppointment })
+    expect(state).toEqual({
+      status: 'conflict',
+      message: availabilityMessages.blocks.hasAppointment,
+      link: { href: '/admin/citas', label: availabilityMessages.picker.goToAppointments },
+    })
     expect(mocks.service.countAffectedInRange).not.toHaveBeenCalled()
     expect(mocks.revalidatePath).not.toHaveBeenCalled()
   })

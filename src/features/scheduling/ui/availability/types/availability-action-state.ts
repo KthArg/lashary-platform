@@ -4,6 +4,7 @@ export type AvailabilityActionState = {
   problems?: string[]
   affected?: number
   fields?: Record<string, string>
+  link?: { href: string; label: string }
 }
 
 export const initialAvailabilityActionState: AvailabilityActionState = { status: 'idle' }

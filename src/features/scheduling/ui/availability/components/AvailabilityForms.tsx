@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useActionState } from 'react'
 import { schedulingMessages } from '../../messages'
 import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '../../../domain/manual-blocks.constants'
@@ -67,6 +68,11 @@ export function AvailabilityFeedback({ state, formAction, pending }: FeedbackPro
   return (
     <div role="alert" className={STYLES.alertWarning}>
       <span>{state.message}</span>
+      {state.link && (
+        <Link href={state.link.href} className={STYLES.alertLink}>
+          {state.link.label}
+        </Link>
+      )}
     </div>
   )
 }
