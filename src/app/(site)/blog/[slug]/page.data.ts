@@ -1,9 +1,6 @@
 import type { Metadata } from 'next'
 import { blogMessages, type BlogArticleLookup } from '@/features/content'
 
-// Los metadatos de la página de una publicación (US-BLOG-03, criterio 2). Sin publicación que
-// describir (no existe, o no se pudo leer el CMS) quedan los del blog, y los buscadores no la
-// indexan: no hay contenido propio que mostrar.
 export function articleMetadata({ article }: BlogArticleLookup): Metadata {
   if (article === null) {
     return {
