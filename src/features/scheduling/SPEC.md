@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-10-21"
+actualizado: "2026-10-23"
 historias:
   - id: US-AGE-01
     estado: terminada
@@ -231,6 +231,8 @@ Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el
 
 - Criterio 2 de US-AGE-03: el sistema determina si es primera vez o re-aplicación según el historial del cliente, permitiendo corregirlo manualmente. Requiere el vínculo cliente↔cita que esta historia agrega sobre `scheduling_appointments` — la tabla mínima de US-AGE-09 no tiene `client_id` ni `technique_id`, por eso el puerto no se puede implementar de verdad antes de esta historia.
 - Evidencia: `ClientHistoryPort` implementado contra el historial de citas completadas de la clienta (`db/client-history-repository.ts` y la función SQL `scheduling_has_completed_appointment`); pruebas: pgTAP `scheduling_client_history.test.sql`, `db/__tests__/client-history-repository.test.ts` y `application/__tests__/select-technique.test.ts`. La corrección manual sigue ganando sobre la detección. **Entrega parcial** (criterio 10, aprobada por el PO): la detección no tiene citas completadas hasta US-AGE-12 y la administradora no puede editar el anticipo antes de aprobar (US-MOR-03); la cola le muestra lo elegido, lo detectado y de quién es la cita.
+
+Las pruebas de `ui/my-appointments` usan ids de cita con forma de UUID válido por RFC (`00000000-0000-4000-8000-00000000ca01`), porque `appointmentIdSchema` usa `z.string().uuid()` y zod 4 lo valida de forma estricta, con versión y variante. En producción no cambia nada: los ids vienen de `gen_random_uuid()`. El esquema no se toca y se comporta igual con `zod@3.25` y con `zod@4.6`.
 
 ## Contrato público (`index.ts`, ARCH-003)
 

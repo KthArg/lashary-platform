@@ -5,8 +5,8 @@ import { myAppointmentsMessages } from '../constants/my-appointments-strings'
 import { MyAppointmentsList } from '../components/MyAppointmentsList'
 import type { MyAppointmentView } from '../types/my-appointments.types'
 
-const FIRST_ID = '00000000-0000-0000-0000-00000000ca01'
-const SECOND_ID = '00000000-0000-0000-0000-00000000ca02'
+const FIRST_ID = '00000000-0000-4000-8000-00000000ca01'
+const SECOND_ID = '00000000-0000-4000-8000-00000000ca02'
 const copy = cancellationMessages
 
 const mockQuote = vi.fn()

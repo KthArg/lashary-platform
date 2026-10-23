@@ -5,7 +5,7 @@ import { myAppointmentsMessages } from '../constants/my-appointments-strings'
 import { MyAppointmentsContent } from '../components/MyAppointmentsContent'
 import type { MyAppointmentView } from '../types/my-appointments.types'
 
-const APPOINTMENT_ID = '00000000-0000-0000-0000-00000000ca01'
+const APPOINTMENT_ID = '00000000-0000-4000-8000-00000000ca01'
 const SLOT = 'martes, 12 de abril'
 const copy = cancellationMessages
 
