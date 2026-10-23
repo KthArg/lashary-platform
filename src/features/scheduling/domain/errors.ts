@@ -73,6 +73,24 @@ export interface TooManyPendingAppointments {
   readonly message: string
 }
 
+export interface CancellationConsequenceChanged {
+  readonly code: 'SCHEDULING_CANCELLATION_CONSEQUENCE_CHANGED'
+  readonly appointmentId: string
+  readonly message: string
+}
+
+export interface InvalidCancellationWindow {
+  readonly code: 'SCHEDULING_INVALID_CANCELLATION_WINDOW'
+  readonly hours: number
+  readonly message: string
+}
+
+export interface AppointmentNotCancellable {
+  readonly code: 'SCHEDULING_APPOINTMENT_NOT_CANCELLABLE'
+  readonly appointmentId: string
+  readonly message: string
+}
+
 export type SchedulingError =
   | SlotNotOffered
   | TooManyPendingAppointments
@@ -86,6 +104,9 @@ export type SchedulingError =
   | InvalidDecisionReason
   | StorageFailed
   | AuditNotRecorded
+  | AppointmentNotCancellable
+  | CancellationConsequenceChanged
+  | InvalidCancellationWindow
 
 export const techniqueNotSelectable = (
   techniqueId: string,
@@ -165,4 +186,22 @@ export const storageFailed = (detail: string): StorageFailed => ({
 export const auditNotRecorded = (): AuditNotRecorded => ({
   code: 'SCHEDULING_AUDIT_NOT_RECORDED',
   message: 'la decisión quedó guardada pero no se pudo registrar en la bitácora',
+})
+
+export const appointmentNotCancellable = (appointmentId: string): AppointmentNotCancellable => ({
+  code: 'SCHEDULING_APPOINTMENT_NOT_CANCELLABLE',
+  appointmentId,
+  message: `la cita ${appointmentId} no existe, ya pasó o no está en un estado que se pueda cancelar`,
+})
+
+export const cancellationConsequenceChanged = (appointmentId: string): CancellationConsequenceChanged => ({
+  code: 'SCHEDULING_CANCELLATION_CONSEQUENCE_CHANGED',
+  appointmentId,
+  message: `la consecuencia de cancelar la cita ${appointmentId} cambió desde que la clienta la vio`,
+})
+
+export const invalidCancellationWindow = (hours: number): InvalidCancellationWindow => ({
+  code: 'SCHEDULING_INVALID_CANCELLATION_WINDOW',
+  hours,
+  message: `la ventana de cancelación debe ser un número entero de horas, no negativo y de hasta 30 días: ${hours}`,
 })
