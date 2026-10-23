@@ -30,20 +30,12 @@ describe('CancellationPolicyForm', () => {
     expect(mockAction.mock.calls[0][1].get('hours')).toBe('24')
   })
 
-  it.each(['invalid', 'failed', 'forbidden'] as const)('con el estado %s avisa con role=alert', async (status) => {
+  it.each(['invalid', 'failed'] as const)('con el estado %s avisa con role=alert', async (status) => {
     mockAction.mockResolvedValue({ status, message: 'No se pudo.' })
     render(<CancellationPolicyForm hours={48} />)
     submitWith('24')
 
     expect((await screen.findByRole('alert')).textContent).toContain('No se pudo.')
-  })
-
-  it('si se guardó pero la bitácora falló lo dice como advertencia', async () => {
-    mockAction.mockResolvedValue({ status: 'warning', message: copy.savedWithoutAudit })
-    render(<CancellationPolicyForm hours={48} />)
-    submitWith('24')
-
-    expect((await screen.findByRole('alert')).textContent).toContain(copy.savedWithoutAudit)
   })
 
   it('mientras guarda deshabilita el botón y lo dice', async () => {

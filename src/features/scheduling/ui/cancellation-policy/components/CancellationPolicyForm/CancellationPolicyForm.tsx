@@ -44,12 +44,7 @@ export function CancellationPolicyForm({ hours }: CancellationPolicyFormProps) {
           <span>{state.message}</span>
         </div>
       )}
-      {state.status === 'warning' && (
-        <div role="alert" className={STYLES.alertWarning}>
-          <span>{state.message}</span>
-        </div>
-      )}
-      {(state.status === 'invalid' || state.status === 'failed' || state.status === 'forbidden') && (
+      {(state.status === 'invalid' || state.status === 'failed') && (
         <div role="alert" className={STYLES.alertError}>
           <span>{state.message}</span>
         </div>

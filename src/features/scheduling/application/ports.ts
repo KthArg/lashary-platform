@@ -8,6 +8,7 @@ import type {
   AppointmentNotPending,
   CancellationConsequenceChanged,
   ClientNotRegistered,
+  InvalidCancellationWindow,
   TooManyPendingAppointments,
   SlotNotOffered,
   SpaceNotAvailable,
@@ -120,9 +121,11 @@ export interface CancellationRepository {
   ): Promise<Result<CancelledAppointment, CancellationError>>
 }
 
+export type CancellationWindowChange = { previousHours: number; newHours: number }
+
 export interface CancellationPolicyRepository {
   getWindowHours(): Promise<Result<number, StorageFailed>>
-  setWindowHours(hours: number): Promise<Result<void, StorageFailed>>
+  changeWindowHours(hours: number): Promise<Result<CancellationWindowChange, StorageFailed | InvalidCancellationWindow>>
 }
 
 export type MyAppointment = {

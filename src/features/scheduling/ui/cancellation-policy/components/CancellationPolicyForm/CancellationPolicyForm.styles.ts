@@ -6,6 +6,5 @@ export const cancellationPolicyFormStyles = {
   submit: 'btn btn-primary',
   hint: 'text-sm text-brand-muted',
   alertSuccess: 'alert alert-success text-sm',
-  alertWarning: 'alert alert-warning text-sm',
   alertError: 'alert alert-error text-sm',
 }

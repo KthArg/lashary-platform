@@ -11,6 +11,7 @@ const DB_URL = process.env.SUPABASE_DB_URL || DEFAULT_LOCAL_DB_URL
 const LOCAL_HOSTS = ['127.0.0.1', 'localhost']
 const SETUP_TIMEOUT_MS = 60_000
 const CLIENT_OPTIONS = { auth: { persistSession: false, autoRefreshToken: false } }
+const OUT_OF_RANGE_HOURS = 100_000
 const ROLES = { admin: 'admin', client: 'cliente' } as const
 
 const isLocalHost = (rawUrl: string): boolean => {
@@ -81,26 +82,41 @@ describe.skipIf(!reachable)('la ventana de cancelación solo la cambia la admini
     await pg.end()
   })
 
-  it('la administradora lee la ventana y la guarda (con la misma cifra, para no mover una tabla compartida)', async () => {
+  it('la administradora lee la ventana y la guarda por la función (con la misma cifra, para no mover una tabla compartida)', async () => {
     const policy = createSupabaseCancellationPolicyRepository(adminDb)
     const current = await policy.getWindowHours()
 
     expect(isOk(current)).toBe(true)
     if (!isOk(current)) return
-    expect(isOk(await policy.setWindowHours(current.value))).toBe(true)
+    const changed = await policy.changeWindowHours(current.value)
+    expect(isOk(changed) && changed.value).toEqual({ previousHours: current.value, newHours: current.value })
+  })
+
+  it('ni la administradora cambia la ventana con un UPDATE directo ni con una cifra fuera del tope', async () => {
+    const before = await currentWindowHours()
+    const direct = await adminDb
+      .from('scheduling_cancellation_policy')
+      .update({ cancellation_window_hours: OUT_OF_RANGE_HOURS })
+      .eq('singleton', true)
+      .select('cancellation_window_hours')
+    const outOfRange = await createSupabaseCancellationPolicyRepository(adminDb).changeWindowHours(OUT_OF_RANGE_HOURS)
+
+    expect(direct.error).not.toBeNull()
+    expect(isErr(outOfRange) && outOfRange.error.code).toBe('SCHEDULING_INVALID_CANCELLATION_WINDOW')
+    expect(await currentWindowHours()).toBe(before)
   })
 
   it('una clienta no la lee ni la cambia, y no lo da por guardado', async () => {
     const policy = createSupabaseCancellationPolicyRepository(clientDb)
 
     expect(isErr(await policy.getWindowHours())).toBe(true)
-    expect(isErr(await policy.setWindowHours(await currentWindowHours()))).toBe(true)
+    expect(isErr(await policy.changeWindowHours(await currentWindowHours()))).toBe(true)
   })
 
   it('una sesión anónima tampoco', async () => {
     const policy = createSupabaseCancellationPolicyRepository(createClient(API_URL, ANON_KEY, CLIENT_OPTIONS))
 
     expect(isErr(await policy.getWindowHours())).toBe(true)
-    expect(isErr(await policy.setWindowHours(await currentWindowHours()))).toBe(true)
+    expect(isErr(await policy.changeWindowHours(await currentWindowHours()))).toBe(true)
   })
 })

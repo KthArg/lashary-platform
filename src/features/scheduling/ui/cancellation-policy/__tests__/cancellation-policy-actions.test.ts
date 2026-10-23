@@ -32,15 +32,15 @@ describe('changeCancellationWindowAction', () => {
     expect(mockChange).toHaveBeenCalledWith({ hours: '24' })
   })
 
-  it.each(['ok', 'warning'] as const)('con el estado %s refresca la pantalla de la política', async (status) => {
-    serviceResult = { status, message: 'x' }
+  it('si se guardó refresca la pantalla de la política', async () => {
+    serviceResult = { status: 'ok', message: 'x' }
 
     await changeCancellationWindowAction(IDLE, formWith('24'))
 
     expect(mockRevalidatePath).toHaveBeenCalledWith(CANCELLATION_POLICY_PATH)
   })
 
-  it.each(['invalid', 'failed', 'forbidden'] as const)('con el estado %s no refresca nada', async (status) => {
+  it.each(['invalid', 'failed'] as const)('con el estado %s no refresca nada', async (status) => {
     serviceResult = { status, message: 'x' }
 
     await changeCancellationWindowAction(IDLE, formWith('24'))

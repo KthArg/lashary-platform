@@ -1,5 +1,4 @@
 import { requireAdminSession } from '@/features/auth'
-import { record } from '@/features/audit'
 import { createClient } from '@/shared/lib/supabase/server'
 import { changeCancellationWindow, getCancellationWindow } from '../../../application/cancellation-window'
 import { createSupabaseCancellationPolicyRepository } from '../../../db/cancellation-policy-repository'
@@ -15,11 +14,10 @@ export const cancellationPolicyService = {
   },
 
   async change(rawFields: Record<string, unknown>): Promise<CancellationPolicyActionState> {
-    const session = await requireAdminSession()
+    await requireAdminSession()
     const policy = createSupabaseCancellationPolicyRepository(await createClient())
     return performChangeCancellationWindow(rawFields, {
-      currentActorId: async () => session.user.id,
-      change: (input) => changeCancellationWindow({ policy, recordAuditEvent: record }, input),
+      change: changeCancellationWindow(policy),
     })
   },
 }
