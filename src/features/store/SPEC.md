@@ -2,7 +2,7 @@
 feature: store
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-14
+actualizado: 2026-10-23
 historias:
   - id: US-PROD-02
     estado: terminada
@@ -52,7 +52,7 @@ Panel admin (criterio 3, "administrables desde el panel") en `/admin/catalog/pro
 - Errores tipados (`domain/product-errors.ts`): `InvalidProduct`, `ProductNotFound`, `DuplicateProductSlug` (DOM-006), objetos discriminados por `kind` con su type guard en vez de `instanceof`
 - Casos de uso (`application/admin-products/queries.ts`, `application/admin-products/commands.ts`): listar paginado, obtener, crear, actualizar, desactivar — sobre el puerto `AdminProductRepository` (`application/admin-products/ports.ts`), probados con repositorio fake (`application/admin-products/__tests__/`)
 - Adaptador de escritura (`db/admin-product-repository.ts`): CRUD contra `store_products` vía Supabase, mapea `23505` (slug duplicado) a error de dominio; sin clase, función factory con closures — `db/public-products.ts` y `http/products-cms-catalog.ts` (lectura pública) siguen el mismo patrón
-- Server actions (`ui/admin-products/actions/product-actions.ts`) con validación de formato en el borde (`ui/admin-products/validation/product-schema.ts`, `productSchema`, Zod) y chequeo de rol amable (`ui/admin-products/actions/staff-permission.ts`, `isStaff`) — la autorización real la hace RLS
+- Server actions (`ui/admin-products/actions/product-actions.ts`) con validación de formato en el borde (`ui/admin-products/validation/product-schema.ts`, `productSchema`, Zod) y chequeo de rol amable (`ui/admin-products/actions/staff-permission.ts`, `isStaff`, que decide con `isStaffRole` de `auth` en vez de repetir la lista de roles) — la autorización real la hace RLS
 - Lógica de formulario separada del render en `ui/admin-products/hooks/useProductForm.ts` (mismo patrón que `auth/hooks/useAdminLoginForm`)
 - Textos y rutas del panel externalizados en `ui/admin-products/constants/product-strings.ts` (`productStrings`) y `product-routes.ts` (`productRoutes`) (DOM-009)
 - Componentes (`ProductForm`, `ProductsAdminTable` y `ProductsAdminPanel` en `ui/admin-products/components/`): listado, alta, edición y desactivación (no hay borrado físico) con estados vacío/carga/error (UI-003) y feedback accesible por rol `alert`/`status` (UI-004) — cada decisión de qué pintar sale precalculada de un `.data.ts` o un hook; los `.tsx` solo despachan por tabla o pintan, sin `if`/`?:`/`&&`
