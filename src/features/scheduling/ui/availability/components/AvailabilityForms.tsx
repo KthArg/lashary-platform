@@ -13,6 +13,7 @@ import {
   addManualBlockAction,
   addWeeklyBlockAction,
   removeClosedDateAction,
+  removeManualBlockAction,
   removeWeeklyBlockAction,
 } from '../actions/availability-actions'
 
@@ -193,4 +194,8 @@ export function RemoveWeeklyBlockButton({ id, label }: { id: string; label: stri
 
 export function RemoveClosedDateButton({ id, label }: { id: string; label: string }) {
   return <RemoveButton action={removeClosedDateAction} id={id} label={label} text={availabilityMessages.closed.reopen} />
+}
+
+export function RemoveManualBlockButton({ id, label }: { id: string; label: string }) {
+  return <RemoveButton action={removeManualBlockAction} id={id} label={label} text={availabilityMessages.blocks.unblock} />
 }
