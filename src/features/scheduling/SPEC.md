@@ -21,7 +21,8 @@ historias:
   - id: US-AGE-06
     estado: no_iniciada
   - id: US-AGE-07
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "bloquear uno o varios espacios, desbloquear y no bloquear sobre una cita activa, en la base y en el panel (piezas 1 a 7); el cambio del criterio 4 frente a la advertencia que entregó US-AGE-05 espera la aprobación del PO"
   - id: US-AGE-09
     estado: terminada
     evidencia: "criterios 1 a 4 y el flujo de aprobación (ADR-0003) demostrados; tests: supabase/tests/database/scheduling_no_overlap.test.sql (criterios 1 a 3), db/__tests__/appointment-concurrency.integration.test.ts (criterio 4, 10 reservas simultáneas por ronda, 3 rondas), supabase/tests/database/scheduling_create_appointment.test.sql, supabase/tests/database/scheduling_decide_appointment.test.sql, application/__tests__/create-appointment.test.ts, application/__tests__/decide-appointment.test.ts, db/__tests__/appointment-repository.test.ts, db/__tests__/appointment-decision-repository.test.ts, ui/approval-queue/__tests__/approval-queue-actions.test.ts, ui/approval-queue/__tests__/ApprovalQueue.test.tsx, __tests__/rls-isolation.test.ts. Criterio 5, parte de código: error tipado SpaceNotAvailable y evento scheduling.appointment_overlap_rejected (db/appointment-repository.ts). La alerta real se traslada a US-AGE-05 (docs/process/DEPENDENCIES.md, Criterios trasladados, ítem 4)"
