@@ -63,18 +63,20 @@ describe('availability-format', () => {
     expect(view.date).toMatch(/20 de octubre/)
   })
 
-  it('toSlotPickerView da a cada espacio su horario y si está ocupado (US-AGE-07)', () => {
+  it('toSlotPickerView da a cada espacio su horario y si está libre, ocupado o bloqueado (US-AGE-07)', () => {
     expect(
       toSlotPickerView('2026-10-19', [
         { startMin: 540, endMin: 570, status: 'free' },
         { startMin: 570, endMin: 600, status: 'busy' },
+        { startMin: 600, endMin: 630, status: 'blocked' },
       ]),
     ).toEqual({
       date: '2026-10-19',
       dateLabel: 'lunes, 19 de octubre de 2026',
       slots: [
-        { startMin: 540, range: '09:00–09:30', busy: false },
-        { startMin: 570, range: '09:30–10:00', busy: true },
+        { startMin: 540, range: '09:00–09:30', status: 'free' },
+        { startMin: 570, range: '09:30–10:00', status: 'busy' },
+        { startMin: 600, range: '10:00–10:30', status: 'blocked' },
       ],
     })
   })

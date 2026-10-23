@@ -103,7 +103,6 @@ export const schedulingMessages = {
       busy: 'Ocupado',
       blocked: 'Bloqueado',
       reasonLabel: 'Motivo de los marcados (opcional, solo lo ves vos)',
-      submit: 'Bloquear los marcados',
       submitIdle: 'Marcá espacios',
       submitBlock: (count: number) => `Bloquear ${count}`,
       submitRelease: (count: number) => `Liberar ${count}`,

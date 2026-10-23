@@ -13,7 +13,7 @@ export async function AdminAvailabilityPage({ searchParams }: { searchParams: Av
   const slotPickerDate = readSlotPickerDate(searchParams, studioDateOf(systemClock()))
   const [{ weeklyBlocks, closedDates, manualBlocks }, daySlots] = await Promise.all([
     availabilityService.loadAll(),
-    availabilityService.loadDaySlots(slotPickerDate),
+    availabilityService.loadPickerSlots(slotPickerDate),
   ])
 
   return (
