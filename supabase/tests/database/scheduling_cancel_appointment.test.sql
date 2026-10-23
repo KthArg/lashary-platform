@@ -2,7 +2,7 @@
 -- Correr con: npx supabase test db
 
 BEGIN;
-SELECT plan(33);
+SELECT plan(36);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -64,7 +64,12 @@ VALUES
    now() + interval '22 hours', now() + interval '23 hours',
    tstzrange(now() + interval '22 hours', now() + interval '23 hours'),
    '00000000-0000-0000-0000-000000000bc6', '00000000-0000-0000-0000-000000000bf4', 'zz-test cancelar',
-   true, 35000, 10000, 0, NULL, NULL);
+   true, 35000, 10000, 0, NULL, NULL),
+  ('00000000-0000-0000-0000-00000000ca10', '00000000-0000-0000-0000-000000000a01', 'approved',
+   now() + interval '24 hours', now() + interval '25 hours',
+   tstzrange(now() + interval '24 hours', now() + interval '25 hours'),
+   '00000000-0000-0000-0000-000000000bc6', '00000000-0000-0000-0000-000000000bf4', 'zz-test cancelar',
+   true, 35000, 10000, 10000, NULL, NULL);
 
 SELECT results_eq(
   $$SELECT cancellable, within_window, forfeited_deposit, window_hours
@@ -84,7 +89,7 @@ SELECT set_config('request.jwt.claims',
 
 SELECT results_eq(
   $$SELECT within_window, forfeited_deposit
-      FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca01')$$,
+      FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca01', 0)$$,
   $$VALUES (true, 0::bigint)$$,
   'cancelar con más antelación que la ventana no pierde el anticipo');
 
@@ -124,13 +129,13 @@ SELECT set_config('request.jwt.claims',
 
 SELECT results_eq(
   $$SELECT within_window, forfeited_deposit
-      FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca02')$$,
+      FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca02', 10000)$$,
   $$VALUES (false, 10000::bigint)$$,
   'cancelar una aprobada fuera de la ventana pierde el anticipo congelado');
 
 SELECT results_eq(
   $$SELECT within_window, forfeited_deposit
-      FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca03')$$,
+      FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca03', 0)$$,
   $$VALUES (false, 0::bigint)$$,
   'cancelar una pendiente fuera de la ventana no pierde nada');
 
@@ -154,13 +159,13 @@ SELECT set_config('request.jwt.claims',
 
 SELECT results_eq(
   $$SELECT within_window, forfeited_deposit
-      FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca08')$$,
+      FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca08', 4000)$$,
   $$VALUES (false, 4000::bigint)$$,
   'si la clienta pagó menos que el requerido, solo pierde lo que el estudio registró');
 
 SELECT results_eq(
   $$SELECT within_window, forfeited_deposit
-      FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca09')$$,
+      FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca09', 0)$$,
   $$VALUES (false, 0::bigint)$$,
   'si no hay anticipo registrado, cancelar tarde no pierde nada aunque el requerido sea mayor');
 
@@ -179,27 +184,27 @@ SELECT set_config('request.jwt.claims',
   '{"sub":"00000000-0000-0000-0000-000000000b02","role":"authenticated"}', true);
 
 SELECT throws_ok(
-  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca04')$$,
+  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca04', 0)$$,
   'P0001', 'scheduling_appointment_not_cancellable',
   'una clienta no cancela la cita de otra');
 
 SELECT throws_ok(
-  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca05')$$,
+  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca05', 0)$$,
   'P0001', 'scheduling_appointment_not_cancellable',
   'una cita rechazada no se cancela');
 
 SELECT throws_ok(
-  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca06')$$,
+  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca06', 0)$$,
   'P0001', 'scheduling_appointment_not_cancellable',
   'una cita que ya pasó no se cancela');
 
 SELECT throws_ok(
-  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca01')$$,
+  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca01', 0)$$,
   'P0001', 'scheduling_appointment_not_cancellable',
   'una cita ya cancelada no se cancela otra vez');
 
 SELECT throws_ok(
-  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ffff')$$,
+  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ffff', 0)$$,
   'P0001', 'scheduling_appointment_not_cancellable',
   'una cita inexistente da el mismo error que la de otra clienta');
 
@@ -229,7 +234,7 @@ SELECT set_config('request.jwt.claims',
   '{"sub":"00000000-0000-0000-0000-000000000b02","role":"authenticated"}', true);
 
 SELECT throws_ok(
-  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca07')$$,
+  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca07', 0)$$,
   'P0001', 'bitacora caida',
   'si la bitácora falla, la cancelación falla');
 
@@ -261,7 +266,7 @@ SELECT set_config('request.jwt.claims',
   '{"sub":"00000000-0000-0000-0000-000000000b05","role":"authenticated"}', true);
 
 SELECT throws_ok(
-  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca07')$$,
+  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca07', 10000)$$,
   'P0001', 'scheduling_client_not_registered',
   'una administradora sin perfil de clienta no usa esta función');
 
@@ -269,7 +274,7 @@ RESET ROLE;
 SET LOCAL ROLE anon;
 
 SELECT throws_ok(
-  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca07')$$,
+  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca07', 10000)$$,
   '42501', NULL, 'un anónimo no ejecuta la cancelación');
 
 RESET ROLE;
@@ -278,6 +283,36 @@ SELECT is((SELECT count(*) FROM public.audit_events WHERE action = 'scheduling.a
             AND entity_id IN ('00000000-0000-0000-0000-00000000ca01', '00000000-0000-0000-0000-00000000ca02',
                               '00000000-0000-0000-0000-00000000ca03')), 3::bigint,
   'las tres cancelaciones válidas dejaron exactamente un evento cada una');
+
+UPDATE public.scheduling_cancellation_policy SET cancellation_window_hours = 48;
+
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-0000-0000-000000000b02","role":"authenticated"}', true);
+
+SELECT throws_ok(
+  $$SELECT * FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca10', 0)$$,
+  'P0001', 'scheduling_cancellation_consequence_changed',
+  'si la clienta vio que no perdía nada y ahora perdería el anticipo, no se cancela');
+
+RESET ROLE;
+
+SELECT is((SELECT count(*) FROM public.audit_events WHERE entity_id = '00000000-0000-0000-0000-00000000ca10')
+          + (SELECT count(*) FROM public.scheduling_appointments
+              WHERE id = '00000000-0000-0000-0000-00000000ca10' AND status = 'approved'), 1::bigint,
+  'la cita sigue aprobada y no quedó evento de una cancelación que no ocurrió');
+
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-0000-0000-000000000b02","role":"authenticated"}', true);
+
+SELECT results_eq(
+  $$SELECT within_window, forfeited_deposit
+      FROM public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca10', 10000)$$,
+  $$VALUES (false, 10000::bigint)$$,
+  'al confirmar de nuevo con la cifra correcta, cancela');
+
+RESET ROLE;
 
 SELECT * FROM finish();
 ROLLBACK;
