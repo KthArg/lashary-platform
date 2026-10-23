@@ -16,9 +16,7 @@ const optionalPositiveInt = z
 export const techniqueFormSchema = z
   .object({
     name: z.string().trim().min(1, validationMessages.name),
-    family: z.enum(SERVICE_FAMILIES, {
-      errorMap: () => ({ message: validationMessages.family }),
-    }),
+    family: z.enum(SERVICE_FAMILIES, { message: validationMessages.family }),
     priceFirstTime: requiredInt.positive(validationMessages.priceFirstTime),
     priceRetouch: optionalPositiveInt,
     durationFirstTimeMin: requiredInt.positive(validationMessages.durationFirstTimeMin),
