@@ -196,6 +196,8 @@ Lo que se puede y no se puede demostrar hoy de esta historia, lo que no se prob�
 - Aviso de la cifra de la ventana en la reserva: el aviso del anticipo sigue genérico. Sin historia asignada.
 - Notificar a la administradora al cancelar: US-NOT-02, que sigue bloqueada además por US-AGE-10 (reagendar).
 
+Las pruebas de `ui/my-appointments` usan ids de cita con forma de UUID válido por RFC (`00000000-0000-4000-8000-00000000ca01`), porque `appointmentIdSchema` usa `z.string().uuid()` y zod 4 lo valida de forma estricta, con versión y variante. En producción no cambia nada: los ids vienen de `gen_random_uuid()`. El esquema no se toca y se comporta igual con `zod@3.25` y con `zod@4.6`.
+
 ## Criterios recibidos de US-AGE-01
 
 Traslado aprobado por el PO el 2026-10-14 y registrado en `docs/process/DEPENDENCIES.md`.
