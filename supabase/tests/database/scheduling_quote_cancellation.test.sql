@@ -2,7 +2,7 @@
 -- Correr con: npx supabase test db
 
 BEGIN;
-SELECT plan(14);
+SELECT plan(15);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -22,35 +22,40 @@ VALUES
 
 INSERT INTO public.scheduling_appointments
   (id, resource_id, status, starts_at, ends_at, occupied_range, client_id, technique_id, technique_name,
-   is_first_time, service_price, deposit_required)
+   is_first_time, service_price, deposit_required, deposit_registered)
 VALUES
   ('00000000-0000-0000-0000-00000000cd01', '00000000-0000-0000-0000-000000000a01', 'approved',
-   '2027-09-10 15:00+00', '2027-09-10 16:00+00', tstzrange('2027-09-10 15:00+00', '2027-09-10 16:00+00'),
+   (now() + interval '30 days'), (now() + interval '30 days 1 hour'), tstzrange((now() + interval '30 days'), (now() + interval '30 days 1 hour')),
    '00000000-0000-0000-0000-000000000cc6', '00000000-0000-0000-0000-000000000cf4', 'zz-test cotizar',
-   true, 35000, 10000),
+   true, 35000, 10000, 10000),
   ('00000000-0000-0000-0000-00000000cd02', '00000000-0000-0000-0000-000000000a01', 'approved',
    now() + interval '10 hours', now() + interval '11 hours',
    tstzrange(now() + interval '10 hours', now() + interval '11 hours'),
    '00000000-0000-0000-0000-000000000cc6', '00000000-0000-0000-0000-000000000cf4', 'zz-test cotizar',
-   true, 35000, 10000),
+   true, 35000, 10000, 10000),
   ('00000000-0000-0000-0000-00000000cd03', '00000000-0000-0000-0000-000000000a01', 'pending_approval',
    now() + interval '13 hours', now() + interval '14 hours',
    tstzrange(now() + interval '13 hours', now() + interval '14 hours'),
    '00000000-0000-0000-0000-000000000cc6', '00000000-0000-0000-0000-000000000cf4', 'zz-test cotizar',
-   true, 35000, 10000),
+   true, 35000, 10000, 10000),
   ('00000000-0000-0000-0000-00000000cd04', '00000000-0000-0000-0000-000000000a01', 'approved',
-   '2027-09-11 15:00+00', '2027-09-11 16:00+00', tstzrange('2027-09-11 15:00+00', '2027-09-11 16:00+00'),
+   (now() + interval '31 days'), (now() + interval '31 days 1 hour'), tstzrange((now() + interval '31 days'), (now() + interval '31 days 1 hour')),
    '00000000-0000-0000-0000-000000000cc7', '00000000-0000-0000-0000-000000000cf4', 'zz-test cotizar',
-   true, 35000, 10000),
+   true, 35000, 10000, 10000),
   ('00000000-0000-0000-0000-00000000cd05', '00000000-0000-0000-0000-000000000a01', 'rejected',
-   '2027-09-10 15:00+00', '2027-09-10 16:00+00', tstzrange('2027-09-10 15:00+00', '2027-09-10 16:00+00'),
+   (now() + interval '30 days'), (now() + interval '30 days 1 hour'), tstzrange((now() + interval '30 days'), (now() + interval '30 days 1 hour')),
    '00000000-0000-0000-0000-000000000cc6', '00000000-0000-0000-0000-000000000cf4', 'zz-test cotizar',
-   true, 35000, 10000),
+   true, 35000, 10000, 10000),
   ('00000000-0000-0000-0000-00000000cd06', '00000000-0000-0000-0000-000000000a01', 'approved',
    now() - interval '3 hours', now() - interval '2 hours',
    tstzrange(now() - interval '3 hours', now() - interval '2 hours'),
    '00000000-0000-0000-0000-000000000cc6', '00000000-0000-0000-0000-000000000cf4', 'zz-test cotizar',
-   true, 35000, 10000);
+   true, 35000, 10000, 10000),
+  ('00000000-0000-0000-0000-00000000cd07', '00000000-0000-0000-0000-000000000a01', 'approved',
+   now() + interval '20 hours', now() + interval '21 hours',
+   tstzrange(now() + interval '20 hours', now() + interval '21 hours'),
+   '00000000-0000-0000-0000-000000000cc6', '00000000-0000-0000-0000-000000000cf4', 'zz-test cotizar',
+   true, 35000, 10000, 4000);
 
 SELECT is((SELECT within_window FROM public.scheduling_evaluate_cancellation('approved', now() + interval '48 hours', 10000)), true,
   'con justo la antelación de la ventana todavía no se pierde (el límite es inclusivo)');
@@ -79,6 +84,12 @@ SELECT results_eq(
       FROM public.scheduling_quote_cancellation('00000000-0000-0000-0000-00000000cd03')$$,
   $$VALUES (false, 0::bigint)$$,
   'una pendiente fuera de la ventana no pierde nada');
+
+SELECT results_eq(
+  $$SELECT within_window, forfeited_deposit
+      FROM public.scheduling_quote_cancellation('00000000-0000-0000-0000-00000000cd07')$$,
+  $$VALUES (false, 4000::bigint)$$,
+  'avisa solo lo que el estudio registró como pagado, no el requerido');
 
 SELECT is((SELECT technique_name FROM public.scheduling_quote_cancellation('00000000-0000-0000-0000-00000000cd01')),
   'zz-test cotizar', 'devuelve el nombre de la técnica congelado en la cita');
