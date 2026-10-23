@@ -5,7 +5,15 @@ import { addCalendarDays, studioLocalToUtc } from '@/shared/studio-time'
 import { DEFAULT_RESOURCE_ID } from '../../../application/availability-ports'
 import { addWeeklyBlock, listWeeklyBlocks, removeWeeklyBlock } from '../../../application/weekly-availability'
 import { addClosedDate, listUpcomingClosedDates, removeClosedDate } from '../../../application/closed-dates'
-import { addManualBlock, listUpcomingManualBlocks } from '../../../application/manual-blocks'
+import {
+  addManualBlock,
+  blockSlots,
+  listUpcomingManualBlocks,
+  removeManualBlock,
+} from '../../../application/manual-blocks'
+import { getDaySlots } from '../../../application/day-slots'
+import { SLOT_INTERVAL_MIN } from '../../../domain/day-slots'
+import { dayAvailabilityRepository } from '../../../db/day-availability-repository'
 import { weeklyAvailabilityRepository } from '../../../db/weekly-availability-repository'
 import { closedDateRepository } from '../../../db/closed-date-repository'
 import { manualBlockRepository } from '../../../db/manual-block-repository'
@@ -65,5 +73,18 @@ export const availabilityService = {
 
   async addManualBlock(input: { startsAt: Date; endsAt: Date; reason: string | null }) {
     return addManualBlock({ repo: await manualBlockRepository(), newId })({ resourceId, ...input })
+  },
+
+  async loadDaySlots(date: string) {
+    const repo = await dayAvailabilityRepository()
+    return getDaySlots({ repo, clock: systemClock })({ resourceId, date, durationMin: SLOT_INTERVAL_MIN })
+  },
+
+  async blockSlots(input: { date: string; slotStartMinutes: number[]; reason: string | null }) {
+    return blockSlots({ repo: await manualBlockRepository(), newId, clock: systemClock })({ resourceId, ...input })
+  },
+
+  async removeManualBlock(id: string) {
+    return removeManualBlock({ repo: await manualBlockRepository() })(id)
   },
 }

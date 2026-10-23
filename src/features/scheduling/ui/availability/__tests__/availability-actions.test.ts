@@ -3,6 +3,7 @@ import { ok, err } from '@/shared/result'
 import {
   availabilityEntryNotFound,
   closedDateAlreadyExists,
+  manualBlockHasAppointment,
   manualBlockOverlap,
   weeklyBlockInvalid,
   weeklyBlockOverlap,
@@ -156,6 +157,17 @@ describe('addManualBlockAction — criterio 3', () => {
       message: availabilityMessages.blocks.overlap,
     })
   })
+
+  it('un espacio con una cita no pide confirmación: avisa que hay que resolverla (US-AGE-07, criterio 4)', async () => {
+    mocks.service.addManualBlock.mockResolvedValue(err(manualBlockHasAppointment()))
+    const state = await addManualBlockAction(
+      idle,
+      form({ date: '2026-10-20', start: '09:00', end: '11:00', [CONFIRM_FIELD]: CONFIRM_VALUE }),
+    )
+    expect(state).toEqual({ status: 'conflict', message: availabilityMessages.blocks.hasAppointment })
+    expect(mocks.service.countAffectedInRange).not.toHaveBeenCalled()
+    expect(mocks.revalidatePath).not.toHaveBeenCalled()
+  })
 })
 
 describe('reducir la disponibilidad con citas agendadas — criterio 9', () => {
@@ -174,14 +186,6 @@ describe('reducir la disponibilidad con citas agendadas — criterio 9', () => {
       count: mocks.service.countAffectedOnDate,
       apply: mocks.service.addClosedDate,
       fields: { date: '2026-12-25', kind: 'holiday' },
-    },
-    {
-      name: 'bloquear un espacio',
-      run: (extra: Record<string, string> = {}) =>
-        addManualBlockAction(idle, form({ date: '2026-10-20', start: '09:00', end: '11:00', ...extra })),
-      count: mocks.service.countAffectedInRange,
-      apply: mocks.service.addManualBlock,
-      fields: { date: '2026-10-20', start: '09:00', end: '11:00' },
     },
   ]
 
