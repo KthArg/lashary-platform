@@ -1,4 +1,4 @@
-import { Money } from '@/shared/money'
+import { type Money, moneyFromColones } from '@/shared/money'
 import { ok, err, isErr, type Result } from '@/shared/result'
 import {
   buildTechnique,
@@ -24,7 +24,7 @@ export type CommandDeps = {
 
 const toMoney = (value: number): Money | null => {
   try {
-    return Money.fromColones(value)
+    return moneyFromColones(value)
   } catch {
     return null
   }
