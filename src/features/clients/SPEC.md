@@ -9,7 +9,7 @@ historias:
     falta: "las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)"
   - id: US-CLI-02
     estado: en_progreso
-    falta: "la pestana Citas muestra solo la primera pagina: la paginacion y el enlace desde cada fila del listado no existen; el acceso desde la vista diaria espera a US-AGE-11 (criterio diferido)"
+    falta: "el acceso desde la vista diaria espera a US-AGE-11 (criterio diferido): la agenda diaria no existe y no enlaza a clientAppointmentsPath"
   - id: US-CLI-03
     estado: no_iniciada
   - id: US-CLI-04
@@ -134,6 +134,16 @@ medias. Carga en `loading.tsx`, error con `LoadError` y `error.tsx` (UI-003). Pr
 `deposit-status.test.ts`, `view-appointment-history.test.ts`, `history-gateways.test.ts`,
 `history-queries.test.ts`, `appointment-history.test.tsx` y `src/app/admin/clients/[id]/layout.test.tsx`.
 
+La página va en la URL (`?page`, desde 0; `parseHistoryPage` lee cualquier otro valor como 0 y
+`appointmentHistoryUrl` no escribe `?page` en la primera), como el listado (decisión del 2026-09-20).
+`AppointmentHistoryPagination` muestra "Página X de Y · N citas" y *Anterior*/*Siguiente* como enlaces,
+o como texto cuando no aplican; sin citas no se dibuja. Es un componente de servidor: no tiene selector
+de tamaño, así que no necesita `router.push`. Una página más allá de la última redirige a la primera en
+vez de decir que la clienta no tiene citas. Cada fila del listado tiene, junto al expediente, un enlace
+de solo icono a su historial con `aria-label` que la nombra (UI-004). Pruebas:
+`appointment-history-pagination.test.tsx`, `src/app/admin/clients/[id]/citas/page.test.tsx` y
+`clients-list.test.tsx`.
+
 ## Qué no hace todavía
 
 No existe un flujo de archivado o borrado de clientas en esta rama. `docs/adr/ADR-0009-client-archival-and-exemptions.md` recoge el acuerdo de archivar sin eliminar el perfil ni sus referencias, comunicado por Bayron el 2026-10-05. Antes de implementarlo deben acordarse permisos, búsquedas y reservas, citas existentes y restauración. La pieza 21 de US-AGE-13 implementa y prueba la migración de `payments` a `ON DELETE RESTRICT`; bloquea el borrado de perfiles con exoneraciones activas o históricas, incluso desde `auth.users`. Su integración sigue pendiente. Reactivar un perfil deberá revisar la vigencia de su exoneración antes de aplicarla. Este cambio de documentación no implementa archivado ni completa una historia de `clients`.
@@ -151,8 +161,8 @@ registra con Google, además del alta de esta feature. Le falta lo que US-CLI-05
 El listado con filtros y paginación **no pertenece a esta historia**: es US-CLI-01, que depende de
 esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
-**El historial de citas (US-CLI-02) muestra solo la primera página** (25 citas): no hay paginación ni
-enlace desde cada fila del listado; el plan está en la decisión del 2026-10-21.
+**Al historial de citas (US-CLI-02) no se llega desde la vista diaria:** US-AGE-11 no existe todavía
+(criterio diferido, decisión del 2026-10-21). Las anotaciones dicen "Sin dato" hasta US-CLI-03.
 
 ## Contrato público (`src/features/clients/index.ts`)
 

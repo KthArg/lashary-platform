@@ -8,7 +8,7 @@ import type {
   ClientAppointmentsRepository,
 } from '../application/client-appointments-ports'
 import { APPOINTMENTS_TABLE } from './appointment-repository.constants'
-import { CLIENT_APPOINTMENT_COLUMNS } from './client-appointments-repository.constants'
+import { CLIENT_APPOINTMENT_COLUMNS, RANGE_NOT_SATISFIABLE_CODE } from './client-appointments-repository.constants'
 
 type ClientAppointmentRow = {
   id: string
@@ -29,6 +29,15 @@ const toClientAppointment = (row: ClientAppointmentRow): ClientAppointmentView =
 })
 
 export function createSupabaseClientAppointmentsRepository(db: SupabaseClient): ClientAppointmentsRepository {
+  async function countClientAppointments(clientId: string) {
+    const { error, count } = await db
+      .from(APPOINTMENTS_TABLE)
+      .select('id', { count: 'exact', head: true })
+      .eq('client_id', clientId)
+    if (error) return err(storageFailed(error.message))
+    return ok({ items: [], total: count ?? 0 })
+  }
+
   return {
     async listByClient({ clientId, offset, limit }) {
       const { data, error, count } = await db
@@ -39,6 +48,7 @@ export function createSupabaseClientAppointmentsRepository(db: SupabaseClient): 
         .order('id', { ascending: false })
         .range(offset, offset + limit - 1)
 
+      if (error?.code === RANGE_NOT_SATISFIABLE_CODE) return countClientAppointments(clientId)
       if (error) return err(storageFailed(error.message))
       return ok({
         items: ((data ?? []) as ClientAppointmentRow[]).map(toClientAppointment),

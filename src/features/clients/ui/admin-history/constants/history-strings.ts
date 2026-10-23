@@ -37,3 +37,11 @@ export const DEPOSIT_STATUS_LABELS: Record<DepositStatus, string> = {
   pending: 'Anticipo pendiente',
   registered: 'Anticipo registrado',
 }
+
+export const HISTORY_PAGINATION_TEXTS = {
+  navLabel: 'Paginación del historial de citas',
+  previous: 'Anterior',
+  next: 'Siguiente',
+  pageStatus: (page: number, totalPages: number) => `Página ${page} de ${totalPages}`,
+  totalCount: (total: number) => (total === 1 ? '1 cita' : `${total} citas`),
+} as const
