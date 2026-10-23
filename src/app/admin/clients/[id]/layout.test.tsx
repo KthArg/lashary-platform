@@ -22,7 +22,7 @@ vi.mock('@/features/clients', async (importOriginal) => ({
 }))
 
 import ClientProfileLayout from './layout'
-import { CLIENT_PROFILE_LABELS, CLIENTS_PATH, clientRecordPath } from '@/features/clients'
+import { CLIENT_PROFILE_LABELS, CLIENTS_PATH, clientAppointmentsPath, clientRecordPath } from '@/features/clients'
 
 const renderLayout = async () =>
   render(await ClientProfileLayout({ children: <div>contenido</div>, params: Promise.resolve({ id: CLIENT_ID }) }))
@@ -53,6 +53,15 @@ describe('/admin/clients/<id>: la ficha de la clienta', () => {
     expect(nav.contains(tab)).toBe(true)
     expect(tab.getAttribute('href')).toBe(clientRecordPath(CLIENT_ID))
     expect(tab.getAttribute('aria-current')).toBe('page')
+  })
+
+  it('la pestaña Citas apunta al historial de la clienta y se marca activa en su ruta', async () => {
+    mocks.pathname = clientAppointmentsPath(CLIENT_ID)
+    await renderLayout()
+    const tab = screen.getByRole('link', { name: CLIENT_PROFILE_LABELS.appointmentsTab })
+    expect(tab.getAttribute('href')).toBe(clientAppointmentsPath(CLIENT_ID))
+    expect(tab.getAttribute('aria-current')).toBe('page')
+    expect(screen.getByRole('link', { name: CLIENT_PROFILE_LABELS.recordTab }).getAttribute('aria-current')).toBeNull()
   })
 
   it('una clienta que no existe lleva a la página de no encontrada', async () => {

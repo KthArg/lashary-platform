@@ -65,10 +65,12 @@ export const CLIENTS_CONFIRM_MESSAGES = {
 export const CLIENTS_ARIA_LABELS = {
   editClient: (fullName: string) => `Editar a ${fullName}`,
   openRecord: (fullName: string) => `Ver expediente de ${fullName}`,
+  openAppointments: (fullName: string) => `Ver historial de citas de ${fullName}`,
 } as const
 
 export const CLIENT_PROFILE_LABELS = {
   backToClients: 'Volver a clientas',
   tabsLabel: 'Secciones de la clienta',
   recordTab: 'Expediente',
+  appointmentsTab: 'Citas',
 } as const
