@@ -149,9 +149,11 @@ describe.skipIf(!reachable)('US-AGE-07 criterio 4 — la administradora bloquea 
     'ronda %i: gana el bloqueo o una sola reserva, nunca los dos',
     async (round) => {
       const startsAtMs = FIRST_WEDNESDAY_OPENING_MS + (runOffsetWeeks + round) * MS_PER_WEEK
+      const date = studioDateOf(new Date(startsAtMs))
+      const openHours = await createSupabaseDayAvailabilityRepository(staff.client).listOpenHours(STUDIO_RESOURCE_ID, date)
       const blockOpeningSlot = blockSlots({
         repo: createSupabaseManualBlockRepository(staff.client),
-        day: createSupabaseDayAvailabilityRepository(staff.client),
+        day: { listOpenHours: async () => openHours },
         newId: randomUUID,
         clock: systemClock,
       })
@@ -167,7 +169,7 @@ describe.skipIf(!reachable)('US-AGE-07 criterio 4 — la administradora bloquea 
       const bookingsBeforeBlock = clientas.slice(0, half).map(attemptBooking)
       const blockAttempt = blockOpeningSlot({
         resourceId: STUDIO_RESOURCE_ID,
-        date: studioDateOf(new Date(startsAtMs)),
+        date,
         slotStartMinutes: [OPEN_FROM_MIN],
       })
       const bookingsAfterBlock = clientas.slice(half).map(attemptBooking)

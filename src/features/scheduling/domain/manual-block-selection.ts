@@ -7,8 +7,6 @@ export interface SelectedBlockRange {
   readonly endMin: number
 }
 
-// Aquí solo se exige que el espacio quepa en el día. Qué horas se ofrecen lo define la grilla de
-// computeDaySlots, que parte del inicio de cada bloque abierto: la comprueba blockSlots.
 const isSlotStart = (startMinute: number, slotLengthMin: number): boolean =>
   Number.isInteger(startMinute) && startMinute >= 0 && startMinute + slotLengthMin <= MINUTES_PER_DAY
 

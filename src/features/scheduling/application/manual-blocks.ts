@@ -60,9 +60,6 @@ export type BlockSlotsError = ManualBlockInvalid | ManualBlockOverlap | ManualBl
 
 export type BlockSlotsDeps = ManualBlocksDeps & { day: Pick<DayAvailabilityRepository, 'listOpenHours'> }
 
-// Los espacios elegidos tienen que ser de la misma grilla que ve la clienta y que valida la
-// reserva (computeDaySlots): parte del inicio de cada bloque abierto, no de la medianoche. Se
-// calcula sin descartar los que ya empezaron; el que ya terminó lo rechaza la comprobación de abajo.
 export const blockSlots =
   (deps: BlockSlotsDeps) =>
   async (input: BlockSlotsInput): Promise<Result<ManualBlock[], BlockSlotsError>> => {
