@@ -2,7 +2,7 @@
 feature: store
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-14
+actualizado: 2026-10-23
 historias:
   - id: US-PROD-02
     estado: terminada
@@ -96,6 +96,8 @@ Pieza 7/8 (US-SHOP-01): cada línea tiene botones para restar, sumar y quitar. `
 Pieza 8/8 (US-SHOP-01, cierra la historia): el botón "Agregar al carrito" del detalle (`/productos/[slug]`) tiene acción. `PublicProductDetail` gana `id`, que lee `db/public-product-detail.ts`, porque `addToCartAction` recibe el uuid del producto. La página pide en paralelo el detalle y `getPurchaseAccess()` (`ui/public-detail/purchase-access.ts`): `customer` si hay sesión con rol `cliente`, `guest` en cualquier otro caso. `toProductDetailView` resuelve el modo y `ProductDetail` despacha por tabla: `AddToCartForm` (cliente, `useActionState` con `addToCartAction`, el mensaje en `role="status"` y el enlace "Ver carrito" a `CLIENT_PORTAL_ROUTES.carrito`), `SignInToBuyForm` (sin sesión: el mismo botón dentro de un `<form action="/login">`, con "Inicia sesión para comprar.") y `SoldOutButton` (agotado, deshabilitado, gana aunque haya sesión). Para el visitante anónimo se mantuvo un `<button>` y no un enlace, porque el criterio 2 de US-PROD-03 (actor: cliente anónimo) pide que exista el botón; funciona sin JavaScript. La ruta del carrito llega como prop desde el servidor, para no cargar el contrato de `auth` en el bundle de la página pública (PERF-004); `auth` no expone una constante para `/login`, así que vive en `publicDetailRoutes.signIn`. Después del login, `auth` lleva a `/portal/citas`, no de vuelta al producto. Lo demuestra `__tests__/add-to-cart-from-detail.test.tsx`: la clienta agrega y ve la confirmación, sin sesión el botón lleva al login, agotado gana a la sesión, y la ruta elige el modo según la sesión; las pruebas de US-PROD-03 en `product-detail-page.test.tsx` siguen pasando sin cambiar sus aserciones.
 
 La capa de presentación se organiza por área en `ui/<area>/` (`admin-products`, `public-grid`, `public-detail`), cada una con `components/<Componente>/` (`.tsx`, `.styles.ts`, `.types.ts`, `index.ts`), `hooks/`, `actions/`, `constants/`, `types/`, `validation/` y `__tests__/`; `domain/`, `application/`, `db/`, `http/` son la arquitectura DDD (ARCH-002/DOM-006/007) y no se solapan con esta convención.
+
+El esquema del formulario de productos (`product-schema.ts`) usa solo la API común de zod 3 y zod 4: el campo de existencias pasa `{ message }` en lugar de `required_error` y convierte con `.transform(Number)` antes de `.pipe(z.number()...)`, porque zod 4 eliminó `required_error` y no admite `z.coerce` dentro de `.pipe`. Los mensajes y los casos que rechaza no cambian, con `zod@3.25` y `zod@4.6`.
 
 ## Contrato público
 

@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-21.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-23.
 
 ## Features
 
@@ -32,7 +32,7 @@
 - US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
 - US-AUTH-02 — terminada — PR #3, PR #18, tests: auth-client.test.tsx, rls-isolation.test.ts
 
-### catalog (actualizado: 2026-10-18)
+### catalog (actualizado: 2026-10-23)
 - US-AGE-08 — terminada — PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx
 - US-PROD-01 — terminada — PRs #98 a #107, #134, #157 a #168 (pila) y el cierre us/US-PROD-01 a main; tests: package.test.ts, package-commands.test.ts, package-queries.test.ts, package-actions.test.ts, package-schema.test.ts, package-inactive-techniques.test.tsx, package-pagination.test.tsx, package-repository.integration.test.ts, package-rls-isolation.test.ts, catalog_package_staff_write.test.sql; UI probada a mano contra lashary-pruebas (2026-10-03)
 - US-PROM-01 — no_iniciada
@@ -97,7 +97,7 @@
 - US-AGE-11 — no_iniciada
 - US-AGE-12 — no_iniciada
 
-### store (actualizado: 2026-10-14)
+### store (actualizado: 2026-10-23)
 - US-PROD-02 — terminada — PRs #92, #93 (grid publico), #123 a #133 (panel admin, criterio 3) y el PR de cierre us/US-PROD-02 a main (prueba del criterio 2); tests: store.test.tsx (criterios 1 y 2), product.test.ts, commands.test.ts, queries.test.ts, product-schema.test.ts, product-actions.test.ts, layout.test.tsx, products-admin-rls.test.ts (omitida sin Supabase local, ver deuda)
 - US-PROD-03 — terminada — PR #271 (pieza 8/8, cierra la historia) y las piezas #198, #200, #265, #266, #267, #269 y #270; tests: product-detail-page.test.tsx (criterios 1, 2 y 3: imagen, nombre, descripcion, precio, boton de agregar al carrito y aviso Agotado con la compra deshabilitada), store.test.tsx (enlace desde el grid), product-detail.test.ts, get-public-product-detail.test.ts, public-product-detail-db.test.ts, product-image.test.ts, product-images.test.ts, product-actions.test.ts, product-images-storage-rls.test.ts (omitida sin Supabase local, ver deuda)
 - US-SHOP-01 — terminada — PR de la pieza 8/8 (cierra la historia) y las piezas #306, #308, #310, #323, #324, #339 y #340; tests: add-to-cart-from-detail.test.tsx y cart-contents.test.tsx (criterio 1: agregar desde el detalle, sumar, restar y quitar), cart-contents.test.tsx (criterio 2: cantidad, total y subtotal cambian antes de que responda el servidor), cart-repository-db.test.ts (criterio 3: el carrito persiste entre conexiones de la misma clienta), cart-page.test.tsx, cart-actions.test.ts, cart-use-cases.test.ts, cart.test.ts, cart-items-rls.test.ts y store_cart_items_active_product.test.sql (SEC-002)
