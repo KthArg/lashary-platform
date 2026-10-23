@@ -2,13 +2,14 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-19
+actualizado: 2026-10-21
 historias:
   - id: US-CLI-01
     estado: en_progreso
     falta: "las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)"
   - id: US-CLI-02
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "solo existe el contrato docs/contracts/scheduling-api.md: la lectura en scheduling, el caso de uso y la pestana Citas no existen; el acceso desde la vista diaria espera a US-AGE-11 (criterio diferido)"
   - id: US-CLI-03
     estado: no_iniciada
   - id: US-CLI-04
@@ -134,6 +135,11 @@ registra con Google, además del alta de esta feature. Le falta lo que US-CLI-05
 
 El listado con filtros y paginación **no pertenece a esta historia**: es US-CLI-01, que depende de
 esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
+
+**No hay historial de citas (US-CLI-02).** Solo existe su contrato con `scheduling`,
+`docs/contracts/scheduling-api.md` (`listClientAppointments`). No existen la lectura en `scheduling`, el
+caso de uso de `clients`, la ruta `/admin/clients/<id>/citas` ni la pestaña **Citas**. El plan y lo que
+entrega cada pieza están en la decisión del 2026-10-21.
 
 ## Contrato público (`src/features/clients/index.ts`)
 
@@ -382,6 +388,40 @@ También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el e
   con `ImageViewer` (flechas, Escape, devuelve el foco).
 - **2026-10-19 — Imports con `@/` y piezas compartidas en `ui/shared/` (B1).** `ConfirmDialog` y
   `useFocusTrap` los usan `admin-clients` y `admin-record`.
+- **2026-10-21 — Alcance de US-CLI-02, aprobado por el PO y comunicado por José Loría.** Tres puntos
+  del criterio 1 y del 3, registrados en `docs/process/DEPENDENCIES.md`:
+  1. *Las anotaciones* se trasladan a US-CLI-03 (ítem 8 de «Criterios trasladados»): las crea esa
+     historia, que depende de esta, así que dejarlas aquí sería un ciclo. El criterio 2 de US-CLI-03
+     ya pide verlas dentro del historial. CLI-02 dibuja la columna **Anotaciones** con
+     `pendingColumnValue`, como las columnas diferidas de US-CLI-01.
+  2. *El estado de pago* de cada cita es el estado del anticipo: sin anticipo, pendiente o
+     registrado, desde `depositRequired` y `depositRegistered`, que la cita congeló al reservar
+     (DOM-002). Con eso el criterio se cumple. El pago completo de la cita ("pagada", "con saldo")
+     necesita el libro contable de US-AGE-12; si se pide después, entra con su propio contrato y el
+     `id` de cada cita, sin cambiar la forma de `scheduling-api.md`.
+  3. *El acceso desde la vista diaria* es un criterio diferido hasta US-AGE-11 (ítem 5 de «Criterios
+     diferidos»): no hay ciclo, porque US-AGE-11 no depende de esta historia. CLI-02 exporta la ruta de
+     la pestaña en `index.ts` para que la vista diaria enlace a ella. **Consecuencia asumida:** CLI-02
+     queda `en_progreso` hasta que exista US-AGE-11, y US-CLI-03 y US-LAND-06, que dependen de ella, no
+     se pueden empezar hasta entonces (INT-007).
+- **2026-10-21 — US-CLI-02 lee las citas por un caso de uso público de `scheduling`, sin migración.**
+  ARCH-005 prohíbe leer `scheduling_appointments` desde `clients`, así que `scheduling` expone
+  `listClientAppointments` (contrato en `docs/contracts/scheduling-api.md`, INT-003). Se descartó una
+  función SQL como las de `clients-api.md`: aquella existe porque la clienta llama por PostgREST, y el
+  historial lo lee una página del panel en el servidor. La base ya tiene lo necesario: las columnas de
+  US-AGE-05, el índice `(client_id, starts_at)` para el orden y la política
+  `scheduling_appointments_select_staff`. **Consecuencia asumida:** esa política es de personal
+  (`auth_is_staff()`), no solo de la administradora; el historial no es dato sensible (SEC-006 rige el
+  expediente) y la página exige `requireAdminSession()`.
+- **2026-10-21 — US-CLI-02 se entrega en 5 piezas apiladas sobre `main` (INT-002) y un cierre aparte,
+  por decisión de José Loría.** 1/5 el contrato y estos registros (solo documentación); 2/5
+  `listClientAppointments` en `scheduling` con sus pruebas; 3/5 dominio, caso de uso, adaptador en
+  `http/` y lectura en `ui/admin-history/queries/`; 4/5 la ruta `src/app/admin/clients/[id]/citas/`, la
+  pestaña **Citas** y la tabla con sus tres estados (UI-003); 5/5 la paginación en la URL y el enlace
+  desde cada fila del listado. La 5/5 deja la historia `en_progreso` por el criterio diferido. El cierre
+  no cuenta como pieza: es el PR `us/US-CLI-02` → `main`, con título `(US-CLI-02)`, cuando US-AGE-11
+  enlace al historial, y trae la `evidencia:` y `terminada` (EST-007). Si una pieza estima más de 400
+  líneas, se parte antes de escribirla y se retitulan todas.
 
 ## Contrato para scheduling (US-AGE-05)
 
