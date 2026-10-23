@@ -1,4 +1,4 @@
-import { Money } from '@/shared/money'
+import { addMoney, type Money, moneyFromColones, zeroMoney } from '@/shared/money'
 import { ok, err, isErr, type Result } from '@/shared/result'
 import { createInvalidCartQuantity, type InvalidCartQuantity } from './cart-errors'
 
@@ -43,10 +43,10 @@ export function buildCartLine(
 }
 
 export function lineTotal(line: CartLine): Money {
-  return Money.fromColones(line.product.unitPrice.colones * line.quantity)
+  return moneyFromColones(line.product.unitPrice.colones * line.quantity)
 }
 
 export function buildCart(lines: readonly CartLine[]): Cart {
-  const subtotal = lines.reduce((total, line) => total.plus(lineTotal(line)), Money.zero())
+  const subtotal = lines.reduce((total, line) => addMoney(total, lineTotal(line)), zeroMoney())
   return { lines, subtotal }
 }

@@ -1,4 +1,4 @@
-import { Money } from '@/shared/money'
+import { addMoney, type Money, moneyFromColones, zeroMoney } from '@/shared/money'
 import { MAX_CART_QUANTITY, MIN_CART_QUANTITY } from '../../../../domain/cart'
 import { formatPriceCrc } from '../../../../domain/product'
 import { CART_PAGE_STRINGS } from '../../constants/cart-page-strings'
@@ -25,11 +25,11 @@ export function applyCartLineChange(lines: CartLineView[], change: CartLineChang
 }
 
 function lineTotal(line: CartLineView): Money {
-  return Money.fromColones(line.unitPriceColones * line.quantity)
+  return moneyFromColones(line.unitPriceColones * line.quantity)
 }
 
 export function cartSubtotalLabel(lines: CartLineView[]): string {
-  const subtotal = lines.reduce((total, line) => total.plus(lineTotal(line)), Money.zero())
+  const subtotal = lines.reduce((total, line) => addMoney(total, lineTotal(line)), zeroMoney())
   return formatPriceCrc(subtotal.colones)
 }
 
