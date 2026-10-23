@@ -190,7 +190,9 @@ Acceptance Criteria:
 • Cancelar fuera de la ventana informa claramente antes de confirmar que se pierde el anticipo, segun la politica vigente.
 • El espacio cancelado vuelve a estar disponible inmediatamente.
 • Se dispara la notificacion de cancelacion hacia la administradora.
-• La cancelacion y su consecuencia economica quedan en la bitacora de auditoria.","7","US-AGE-06","Cliente Registrado","Cliente Registrado","High","5","To Do","","","Cliente-Registrado"
+• La cancelacion y su consecuencia economica quedan en la bitacora de auditoria.
+
+Decision de alcance aprobada por el PO el 2026-10-20, comunicada por Bayron: la ventana es de 48 horas; el anticipo solo se pierde en citas aprobadas o confirmadas canceladas fuera de la ventana, como registro en la bitacora y sin mover dinero; el criterio 5 (notificar a la administradora) se traslada a US-NOT-02 (docs/process/DEPENDENCIES.md).","7","US-AGE-06","Cliente Registrado","Cliente Registrado","High","5","To Do","","","Cliente-Registrado"
 "34","Story","Enviar indicaciones de cuidado post-tratamiento","User Story:
 Como cliente, quiero recibir las indicaciones de cuidado correspondientes a la tecnica que me aplicaron, para conservar el resultado y cuidar la salud de mis pestanas naturales.
 
