@@ -2,7 +2,7 @@ import type { MyAppointment } from '../../../application/ports'
 import { formatAppointmentChoice } from '../../approval-queue/utils/format-appointment-choice'
 import { formatAppointmentSlot } from '../../approval-queue/utils/format-appointment-slot'
 import { myAppointmentsMessages } from '../constants/my-appointments-strings'
-import type { MyAppointmentsData, MyAppointmentView, MyAppointmentsView } from '../types/my-appointments.types'
+import type { MyAppointmentsData, MyAppointmentView, MyAppointmentsScreen } from '../types/my-appointments.types'
 
 export function toMyAppointmentView(appointment: MyAppointment): MyAppointmentView {
   const choice = formatAppointmentChoice({
@@ -23,7 +23,7 @@ export function toMyAppointmentView(appointment: MyAppointment): MyAppointmentVi
   }
 }
 
-export function toMyAppointmentsView(data: MyAppointmentsData): MyAppointmentsView {
+export function toMyAppointmentsView(data: MyAppointmentsData): MyAppointmentsScreen {
   if (data.status !== 'ready') return data
   if (data.appointments.length === 0) return { status: 'empty' }
   return { status: 'ready', appointments: data.appointments.map(toMyAppointmentView) }

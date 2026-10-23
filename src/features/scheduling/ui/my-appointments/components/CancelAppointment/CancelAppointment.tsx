@@ -7,12 +7,12 @@ import type { CancelAppointmentProps } from './CancelAppointment.types'
 
 export function CancelAppointment({ appointmentId, slot, onCancelled }: CancelAppointmentProps) {
   const copy = cancellationMessages
-  const { state, start, confirm, back } = useCancelAppointment(appointmentId, onCancelled)
+  const { state, start, confirm, back, confirmBoxRef, startButtonRef } = useCancelAppointment(appointmentId, onCancelled)
 
   if (state.status === 'confirming' || state.status === 'cancelling') {
     const isCancelling = state.status === 'cancelling'
     return (
-      <div className={STYLES.confirmBox}>
+      <div ref={confirmBoxRef} tabIndex={-1} className={STYLES.confirmBox}>
         {state.status === 'confirming' && state.notice && (
           <div role="alert" className={STYLES.notice}>
             <span>{state.notice}</span>
@@ -42,6 +42,7 @@ export function CancelAppointment({ appointmentId, slot, onCancelled }: CancelAp
         </div>
       )}
       <button
+        ref={startButtonRef}
         type="button"
         disabled={state.status === 'quoting'}
         aria-label={copy.cancelButtonLabel(slot)}

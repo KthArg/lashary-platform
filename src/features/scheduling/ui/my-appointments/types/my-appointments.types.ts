@@ -14,7 +14,7 @@ export type MyAppointmentView = {
   amounts: string | null
 }
 
-export type MyAppointmentsView =
+export type MyAppointmentsScreen =
   | { status: 'forbidden' }
   | { status: 'error' }
   | { status: 'empty' }

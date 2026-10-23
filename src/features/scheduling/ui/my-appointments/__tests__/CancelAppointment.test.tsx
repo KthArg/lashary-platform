@@ -123,6 +123,16 @@ describe('CancelAppointment', () => {
     expect(mockCancel).toHaveBeenCalledTimes(1)
   })
 
+  it('al abrir la confirmación el foco pasa a ella, y al volver regresa al botón de cancelar', async () => {
+    renderButton()
+    await openConfirmation()
+
+    expect(document.activeElement).toBe(screen.getByText(copy.confirmQuestion).parentElement)
+    fireEvent.click(screen.getByRole('button', { name: copy.confirmBack }))
+
+    expect(document.activeElement).toBe(startButton())
+  })
+
   it('«Volver» deja la cita como estaba y no cancela nada', async () => {
     renderButton()
     await openConfirmation()
