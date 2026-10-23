@@ -6,6 +6,7 @@ import type { ManualBlock } from '../domain/manual-blocks'
 import type { BusyRange, OpenHours } from '../domain/day-slots'
 import type {
   ClosedDateAlreadyExists,
+  ManualBlockHasAppointment,
   ManualBlockOverlap,
   WeeklyBlockOverlap,
 } from '../domain/availability-errors'
@@ -45,7 +46,9 @@ export interface DayAvailabilityRepository {
 export interface ManualBlockRepository {
   // Bloqueos que terminan después de `after`, por inicio ascendente.
   listEndingAfter(resourceId: string, after: Date, limit: number): Promise<ManualBlock[]>
-  insert(block: ManualBlock): Promise<Result<void, ManualBlockOverlap>>
+  insert(block: ManualBlock): Promise<Result<void, ManualBlockOverlap | ManualBlockHasAppointment>>
+  insertMany(blocks: readonly ManualBlock[]): Promise<Result<void, ManualBlockOverlap | ManualBlockHasAppointment>>
+  remove(id: string): Promise<boolean>
 }
 
 export type AppointmentsInRange = {
