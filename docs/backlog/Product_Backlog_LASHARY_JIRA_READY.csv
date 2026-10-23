@@ -259,14 +259,18 @@ Como administradora del negocio, quiero ver el historial completo de citas de un
 Acceptance Criteria:
 • El historial muestra por cada cita el servicio, la fecha, el estado de la cita, el estado de pago y las anotaciones.
 • Las citas se ordenan de mas reciente a mas antigua.
-• Se accede desde el listado general y desde la vista diaria.","9","US-CLI-02","Administración","Administrador","High","5","To Do","","","Administracion"
+• Se accede desde el listado general y desde la vista diaria.
+
+Decision de alcance aprobada por el PO, comunicada por Jose Loria el 2026-10-21: la parte ""las anotaciones"" del criterio 1 se traslada a US-CLI-03, porque las crea esa historia y depende de esta; el estado de pago de cada cita es el estado de su anticipo; el acceso desde la vista diaria queda diferido hasta US-AGE-11 (docs/process/DEPENDENCIES.md).","9","US-CLI-02","Administración","Administrador","High","5","To Do","","","Administracion"
 "42","Story","Agregar anotaciones a cada cita del cliente","User Story:
 Como administradora del negocio, quiero agregar anotaciones a cada cita, para llevar un registro tipo expediente de observaciones relevantes.
 
 Acceptance Criteria:
 • Puedo agregar, editar y eliminar anotaciones asociadas a una cita.
 • Las anotaciones quedan visibles dentro del historial del cliente.
-• Cada anotacion registra fecha de creacion y de modificacion.","9","US-CLI-03","Administración","Administrador","High","3","To Do","","","Administracion"
+• Cada anotacion registra fecha de creacion y de modificacion.
+
+Parte ""las anotaciones"" del criterio 1 recibida de US-CLI-02, traslado aprobado por el PO y comunicado por Jose Loria el 2026-10-21; pendiente de implementacion y pruebas (docs/process/DEPENDENCIES.md).","9","US-CLI-03","Administración","Administrador","High","3","To Do","","","Administracion"
 "43","Story","Registrar estudio inicial y expediente de la clienta","User Story:
 Como administradora del negocio, quiero registrar el estudio inicial de las caracteristicas de la clienta y la tecnica recomendada, para documentar la base de su expediente y guiar futuras decisiones de tratamiento.
 
