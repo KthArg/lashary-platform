@@ -1,7 +1,7 @@
 import type { Result } from '@/shared/result'
 import type { SelectableTechnique } from '../domain/technique-selection'
 import type { AppointmentDecision } from '../domain/appointment-decision.constants'
-import type { CancellableStatus } from '../domain/appointment-cancellation'
+import type { CancellableStatus } from '../domain/appointment-cancellation.constants'
 import type { SchedulingAlert } from '../domain/alert'
 import type {
   AppointmentNotCancellable,

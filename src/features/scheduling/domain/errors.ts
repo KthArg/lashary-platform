@@ -85,17 +85,9 @@ export interface InvalidCancellationWindow {
   readonly message: string
 }
 
-export type CancellationInputField = 'startsAtMs' | 'nowMs' | 'windowHours' | 'depositRequired'
-
 export interface AppointmentNotCancellable {
   readonly code: 'SCHEDULING_APPOINTMENT_NOT_CANCELLABLE'
   readonly appointmentId: string
-  readonly message: string
-}
-
-export interface InvalidCancellationInput {
-  readonly code: 'SCHEDULING_INVALID_CANCELLATION_INPUT'
-  readonly field: CancellationInputField
   readonly message: string
 }
 
@@ -114,7 +106,6 @@ export type SchedulingError =
   | AuditNotRecorded
   | AppointmentNotCancellable
   | CancellationConsequenceChanged
-  | InvalidCancellationInput
   | InvalidCancellationWindow
 
 export const techniqueNotSelectable = (
@@ -213,12 +204,4 @@ export const invalidCancellationWindow = (hours: number): InvalidCancellationWin
   code: 'SCHEDULING_INVALID_CANCELLATION_WINDOW',
   hours,
   message: `la ventana de cancelación debe ser un número entero de horas, no negativo y de hasta 30 días: ${hours}`,
-})
-
-export const invalidCancellationInput = (
-  field: CancellationInputField,
-): InvalidCancellationInput => ({
-  code: 'SCHEDULING_INVALID_CANCELLATION_INPUT',
-  field,
-  message: `el valor de ${field} no es válido para evaluar la cancelación`,
 })
