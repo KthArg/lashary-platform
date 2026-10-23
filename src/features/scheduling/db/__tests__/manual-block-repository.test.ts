@@ -150,6 +150,29 @@ describe('manual-block-repository', () => {
     })
   })
 
+  it('listInRange pide los bloqueos que se cruzan con el rango y los convierte a dominio', async () => {
+    const filters: Array<[string, string, unknown]> = []
+    const builder = {
+      select: () => builder,
+      eq: (column: string, value: unknown) => (filters.push(['eq', column, value]), builder),
+      lt: (column: string, value: unknown) => (filters.push(['lt', column, value]), builder),
+      gt: (column: string, value: unknown) => (filters.push(['gt', column, value]), builder),
+      order: async () => ({ data: [manualBlockToRow(block)], error: null }),
+    }
+    const db = { from: () => builder } as unknown as SupabaseClient
+    const fromMs = Date.parse('2026-10-20T06:00:00.000Z')
+    const untilMs = Date.parse('2026-10-21T06:00:00.000Z')
+
+    const found = await createSupabaseManualBlockRepository(db).listInRange(block.resourceId, fromMs, untilMs)
+
+    expect(found).toEqual([block])
+    expect(filters).toEqual([
+      ['eq', 'resource_id', block.resourceId],
+      ['lt', 'starts_at', '2026-10-21T06:00:00.000Z'],
+      ['gt', 'ends_at', '2026-10-20T06:00:00.000Z'],
+    ])
+  })
+
   it('remove devuelve si borró una fila', async () => {
     const deletingDb = (deletedRows: unknown[]) =>
       ({

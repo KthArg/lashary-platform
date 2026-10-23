@@ -24,6 +24,9 @@ function createFakeManualBlockRepository(initial: ManualBlock[] = []) {
         .sort((left, right) => left.startsAt.getTime() - right.startsAt.getTime())
         .slice(0, limit)
     },
+    async listInRange() {
+      return blocks
+    },
     async releaseRanges() {
       return ok(undefined)
     },

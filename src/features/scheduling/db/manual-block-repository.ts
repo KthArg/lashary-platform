@@ -62,6 +62,18 @@ export function createSupabaseManualBlockRepository(db: SupabaseClient): ManualB
       return (data ?? []).map((row) => rowToManualBlock(row as ManualBlockRow))
     },
 
+    async listInRange(resourceId, fromMs, untilMs) {
+      const { data, error } = await db
+        .from(TABLE)
+        .select(COLUMNS)
+        .eq('resource_id', resourceId)
+        .lt('starts_at', new Date(untilMs).toISOString())
+        .gt('ends_at', new Date(fromMs).toISOString())
+        .order('starts_at', { ascending: true })
+      if (error) throw new Error(`${TABLE}.listInRange: ${error.message}`)
+      return (data ?? []).map((row) => rowToManualBlock(row as ManualBlockRow))
+    },
+
     async releaseRanges(resourceId, ranges) {
       const { error } = await db.rpc(RELEASE_FUNCTION, {
         p_resource_id: resourceId,
