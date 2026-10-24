@@ -177,6 +177,26 @@ habría exigido un shim de compatibilidad temporal, que el proyecto evita.
 - **M5 (la lectura de contacto traía `notes`):** `getClientContactForReminders` ahora hace su
   propia consulta a `clients_profiles` pidiendo solo `phone, email`, en vez de reusar `getClient`
   (que trae todas las columnas, incluida `notes`, y las descartaba después de leerlas).
+- **B2 (comentario suelto):** `scheduling/index.ts` tenía un comentario de dos líneas que
+  sobrevivió a la pasada de "sin comentarios" de la pieza 10; se quita porque el SPEC.md de
+  `scheduling` ya documenta la misma razón.
+- **B9 (ADR-0006 contradictorio):** los dos registros del 2026-10-21 (uno deja Twilio activable,
+  el siguiente lo retira del todo) se contradicen a simple lectura; se anota el primero como
+  superado por el segundo.
+
+Con la pieza 19 (B2, B9) se cierran todos los hallazgos de `AUDIT.md` que el código puede resolver
+sin una decisión del líder/PO. Quedan explícitamente sin resolver por código, con su razón: A1
+(renombrar la migración — instrucción del líder, no tocar todavía), A4 (rol dedicado del cron en
+vez de cuenta admin — decisión de arquitectura, pendiente de ADR), A6 (pruebas de integración de
+`db/reminder-repository.ts`, `clients/reminders-api.ts` y
+`scheduling/db/reminder-snapshots-repository.ts` contra Supabase local — deuda ya registrada,
+costo estimado, sin bloquear el cierre), A7 (rebase de `us/US-NOT-03` contra `main` — mecánico,
+se hace al cerrar la historia, no en una pieza intermedia), M4 (resto: *n+1* de
+`scheduling/db/reminder-snapshots-repository.ts` al reconciliar uno por uno — exige una API de
+lote nueva en `scheduling`, cambio de contrato cross-feature que no cabe en una pieza de
+corrección), M6 (Twilio construido y luego retirado en la misma pila — señal de proceso, no un
+defecto de código: ya documentado en ADR-0006 y STATUS.md), B5, B6 y B8 (requieren una decisión
+del líder/PO sobre el mensaje a la clienta y el número real de WhatsApp Business, no código).
 
 ## Falta para producción
 
