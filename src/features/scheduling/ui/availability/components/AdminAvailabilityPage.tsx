@@ -1,19 +1,29 @@
 import { requireAdminSession } from '@/features/auth'
+import { isOk } from '@/shared/result'
+import { systemClock } from '@/shared/clock'
+import { studioDateOf } from '@/shared/studio-time'
 import { availabilityService } from '../services/availability-service'
-import { toClosedDateViews, toManualBlockViews, toWeeklyDays } from '../utils/availability-format'
+import { toClosedDateViews, toManualBlockViews, toSlotPickerView, toWeeklyDays } from '../utils/availability-format'
+import { readSlotPickerDate } from '../utils/slot-picker-date'
+import type { AvailabilitySearchParams } from '../types/slot-picker.types'
 import { AdminAvailabilityView } from './AdminAvailabilityView'
 
 // Compone /admin/citas: sesión de staff, carga de las tres listas y render de la vista. Un error
 // de lectura sube a error.tsx de la ruta (UI-003).
-export async function AdminAvailabilityPage() {
+export async function AdminAvailabilityPage({ searchParams }: { searchParams: AvailabilitySearchParams }) {
   await requireAdminSession()
-  const { weeklyBlocks, closedDates, manualBlocks } = await availabilityService.loadAll()
+  const slotPickerDate = readSlotPickerDate(searchParams, studioDateOf(systemClock()))
+  const [{ weeklyBlocks, closedDates, manualBlocks }, daySlots] = await Promise.all([
+    availabilityService.loadAll(),
+    availabilityService.loadDaySlots(slotPickerDate),
+  ])
 
   return (
     <AdminAvailabilityView
       weeklyDays={toWeeklyDays(weeklyBlocks)}
       closedDates={toClosedDateViews(closedDates)}
       manualBlocks={toManualBlockViews(manualBlocks)}
+      slotPicker={toSlotPickerView(slotPickerDate, isOk(daySlots) ? daySlots.value : [])}
     />
   )
 }
