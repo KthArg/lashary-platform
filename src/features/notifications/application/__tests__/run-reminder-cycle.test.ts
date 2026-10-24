@@ -16,14 +16,14 @@ describe('runReminderCycle', () => {
 
     const result = await runReminderCycle({
       listUpcoming: async () => ok([newAppointment]),
-      insertIfAbsent: async (reminderUpsert) => { inserted.push(reminderUpsert); return ok(undefined) },
+      insertIfAbsent: async (reminderUpsert) => { inserted.push(reminderUpsert); return ok({ inserted: true }) },
       newId: () => 'rem-1',
       clock: fixedClock('2026-11-01T10:00:00Z'),
       listPending: async () => ok([]),
       getAppointmentSnapshot: async () => ok(null),
       reschedulePending: async () => ok(undefined),
       cancelPending: async () => ok(undefined),
-      listDuePending: async () => ok([]),
+      claimDuePending: async () => ok([]),
       getContact: async () => ok(contact),
       markSent: async () => ok(undefined),
       markRetry: async () => ok(undefined),

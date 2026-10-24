@@ -35,18 +35,22 @@ export type ReminderUpsert = {
 
 export type ReminderReschedule = { appointmentId: string; startsAt: Date; techniqueName: string; sendAt: Date }
 
+export type InsertOutcome = { inserted: boolean }
+
 export interface ReminderRepository {
-  insertIfAbsent(reminder: ReminderUpsert): Promise<Result<void, RepositoryFailure>>
+  insertIfAbsent(reminder: ReminderUpsert): Promise<Result<InsertOutcome, RepositoryFailure>>
   listPending(): Promise<Result<ReminderSnapshot[], RepositoryFailure>>
   reschedulePending(reschedule: ReminderReschedule): Promise<Result<void, RepositoryFailure>>
   cancelPending(appointmentId: string): Promise<Result<void, RepositoryFailure>>
-  listDuePending(now: Date): Promise<Result<ReminderSnapshot[], RepositoryFailure>>
+  // Transición atómica pending -> claimed (una sola instrucción UPDATE...WHERE status='pending'):
+  // dos corridas superpuestas del cron no pueden reclamar la misma fila.
+  claimDuePending(now: Date): Promise<Result<ReminderSnapshot[], RepositoryFailure>>
   markSent(id: string, channel: ReminderChannelKind, sentAt: Date): Promise<Result<void, RepositoryFailure>>
   markRetry(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
   markExhausted(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
 }
 
-export type ChannelSendInput = { contact: ContactInfo; message: string; templateVariables: string[] }
+export type ChannelSendInput = { reminderId: string; contact: ContactInfo; message: string; templateVariables: string[] }
 
 export interface NotificationChannel {
   readonly kind: ReminderChannelKind

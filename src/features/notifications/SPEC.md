@@ -2,7 +2,7 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-21
+actualizado: 2026-10-23
 historias:
   - id: US-NOT-01
     estado: no_iniciada
@@ -107,6 +107,39 @@ US-NOT-03 (ADR-0007); el resto lo reusa vía el puerto que US-NOT-08 exige.
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
   mano. No lo pide ningún criterio de US-NOT-03.
 - US-NOT-01, 02, 04 a 08 y US-CLI-06 reusan el canal pero no están construidas.
+
+## Correcciones de la auditoría del 2026-10-23 (AUDIT.md, líder del proyecto)
+
+El líder auditó la pila completa antes del cierre a `main` y encontró hallazgos de distinta
+severidad. Lo que se corrigió, pieza por pieza (no se renombra `20261020000000_notifications_reminders.sql`:
+INT-008 prohíbe editar una migración ya existente, así que los cambios de esquema van en una
+migración nueva hacia adelante). Esta pieza cubre A2, B1 y la mitad mecánica de B4/M2; A3, M1 y
+M3 quedan en la siguiente pieza porque dependen de este mismo cambio de contrato
+(`InsertOutcome`, `claimDuePending`) y de los predicados que agrega aquí.
+
+- **A2 (reclamo atómico):** `domain/reminder.ts` agrega el estado `claimed`; `claimDuePending`
+  (antes `listDuePending`) reclama en una sola instrucción `UPDATE ... WHERE status='pending'`, así
+  que dos corridas del cron superpuestas no pueden mandar el mismo recordatorio dos veces.
+  Migración `20261020000001_notifications_reminders_claim_and_index.sql`.
+- **B1 (índice redundante):** la misma migración quita `idx_notifications_reminders_appointment`
+  — el `UNIQUE` sobre `appointment_id` ya crea ese índice.
+- **B4 (código muerto, parcial):** se quita `isReminderDue` (nadie la usaba fuera de su prueba) y
+  se agrega `hasAppointmentAlreadyStarted`, el predicado que la siguiente pieza usa para A3
+  (cancelar un recordatorio cuya cita ya pasó). Aquí solo se agrega el predicado y su prueba de
+  dominio; `reconcileReminders` todavía no lo llama — ese cableado es A3, en la siguiente pieza.
+- **M2 (`discovered` engañoso, parcial):** `insertIfAbsent` ahora informa si insertó de verdad o
+  si ya existía (`23505`, `InsertOutcome.inserted`); `discoverReminders` ya usa ese dato para que
+  `discovered` solo cuente inserciones reales. El resto de M2 (contadores de fallo por fila) es
+  parte de M1 y queda en la siguiente pieza.
+
+Pendientes explícitos de esta pieza, ya resueltos en la siguiente (`piece/US-NOT-03-16`): A3
+(cancelar recordatorio de cita ya pasada), M1 (aislar fallos por fila en discover/reconcile/send)
+y M3 (no gastar reintentos cuando ningún canal está configurado + acotar `last_error`). No se
+dividieron más allá de esto porque `claimDuePending`/`InsertOutcome`/`ChannelSendInput.reminderId`
+son un solo cambio de contrato: toda pieza que lo introduce debe ajustar mecánicamente cada
+consumidor (si no, esa pieza no compila de forma aislada, que es justo lo que falló en el primer
+intento de esta corrección — ver PR para el detalle). Separar más el contrato de sus consumidores
+habría exigido un shim de compatibilidad temporal, que el proyecto evita.
 
 ## Falta para producción
 
