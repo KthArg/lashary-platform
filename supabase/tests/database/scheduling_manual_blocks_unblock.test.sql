@@ -1,14 +1,5 @@
--- scheduling_manual_blocks_unblock.test.sql
--- US-AGE-07 · feature scheduling — staff desbloquea (criterio 3) y la clienta no; un bloqueo sobre
--- una cita activa se rechaza y, resuelta la cita, se acepta (criterio 4); lo bloqueado y lo
--- desbloqueado se ve en la siguiente lectura del calendario de la clienta (criterio 2). Una clienta
--- que intenta bloquear recibe siempre el rechazo de RLS, nunca el del trigger (SEC-001).
---
--- Complementa __tests__/availability-rls-isolation.test.ts (SEC-002). El rol se siembra como
--- superusuario local dentro de la transacción; no se usa la service-role key (SEC-003) y todo se
--- deshace con ROLLBACK.
---
--- Correr con: npx supabase test db   (requiere `supabase start`)
+-- scheduling_manual_blocks_unblock.test.sql — US-AGE-07, criterios 2, 3 y 4 (SEC-001, SEC-002).
+-- Correr con: npx supabase test db
 
 BEGIN;
 SELECT plan(13);

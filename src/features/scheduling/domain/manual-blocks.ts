@@ -2,8 +2,6 @@ import { ok, err, type Result } from '@/shared/result'
 import { manualBlockInvalid, type ManualBlockInvalid } from './availability-errors'
 import { MAX_MANUAL_BLOCK_REASON_LENGTH } from './manual-blocks.constants'
 
-// Bloqueo manual puntual de un espacio (US-AGE-01, criterio 3). Instantes en UTC (DOM-003);
-// la conversión desde la hora del estudio ocurre en el borde.
 export interface ManualBlock {
   readonly id: string
   readonly resourceId: string
