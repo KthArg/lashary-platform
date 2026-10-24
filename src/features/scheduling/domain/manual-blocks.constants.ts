@@ -1,0 +1,1 @@
+export const MAX_MANUAL_BLOCK_REASON_LENGTH = 500

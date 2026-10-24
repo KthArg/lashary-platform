@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
+import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '../../../domain/manual-blocks.constants'
 import {
+  blockSlotsFormSchema,
   closedDateFormSchema,
   manualBlockFormSchema,
   timeToMinutes,
@@ -47,5 +49,19 @@ describe('availability-schema', () => {
     expect(
       manualBlockFormSchema.parse({ date: '2026-10-20', start: '09:00', end: '11:00', reason: ' banco ' }),
     ).toEqual({ date: '2026-10-20', start: 540, end: 660, reason: 'banco' })
+  })
+
+  it('bloqueos: el motivo llega hasta el tope en los dos formularios (US-AGE-07)', () => {
+    const longestReason = 'a'.repeat(MAX_MANUAL_BLOCK_REASON_LENGTH)
+    const forms = [
+      { schema: manualBlockFormSchema, fields: { date: '2026-10-20', start: '09:00', end: '11:00' } },
+      { schema: blockSlotsFormSchema, fields: { date: '2026-10-20', slotStartMinutes: ['540'] } },
+    ]
+    for (const { schema, fields } of forms) {
+      expect(schema.safeParse({ ...fields, reason: longestReason }).success).toBe(true)
+      const tooLong = schema.safeParse({ ...fields, reason: `${longestReason}a` })
+      expect(tooLong.success).toBe(false)
+      expect(tooLong.error?.issues.map((issue) => issue.message)).toEqual([validationMessages.reasonTooLong])
+    }
   })
 })
