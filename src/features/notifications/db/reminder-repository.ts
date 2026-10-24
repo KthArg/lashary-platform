@@ -6,6 +6,10 @@ import type { ReminderRepository, ReminderUpsert, ReminderReschedule } from '../
 
 const TABLE = 'notifications_reminders'
 const FAILED = 'repository-failed' as const
+const DUPLICATE_KEY_CODE = '23505'
+
+const REMINDER_COLUMNS =
+  'id, appointment_id, client_id, starts_at, technique_name, send_at, status, attempts, last_error, last_channel, sent_at'
 
 interface ReminderRow {
   id: string
@@ -47,13 +51,16 @@ export async function reminderRepository(db?: SupabaseClient): Promise<ReminderR
         starts_at: reminder.startsAt.toISOString(),
         technique_name: reminder.techniqueName,
         send_at: reminder.sendAt.toISOString(),
-      }).select().maybeSingle()
-      if (error && error.code !== '23505') return err(FAILED)
-      return ok(undefined)
+      }).select(REMINDER_COLUMNS).maybeSingle()
+      if (error) {
+        if (error.code === DUPLICATE_KEY_CODE) return ok({ inserted: false })
+        return err(FAILED)
+      }
+      return ok({ inserted: true })
     },
 
     async listPending() {
-      const { data, error } = await supabase.from(TABLE).select('*').eq('status', 'pending')
+      const { data, error } = await supabase.from(TABLE).select(REMINDER_COLUMNS).eq('status', 'pending')
       if (error || !data) return err(FAILED)
       return ok((data as ReminderRow[]).map(toSnapshot))
     },
@@ -75,9 +82,12 @@ export async function reminderRepository(db?: SupabaseClient): Promise<ReminderR
       return ok(undefined)
     },
 
-    async listDuePending(now: Date) {
-      const { data, error } = await supabase.from(TABLE).select('*')
-        .eq('status', 'pending').lte('send_at', now.toISOString())
+    async claimDuePending(now: Date) {
+      const { data, error } = await supabase.from(TABLE)
+        .update({ status: 'claimed' })
+        .eq('status', 'pending')
+        .lte('send_at', now.toISOString())
+        .select(REMINDER_COLUMNS)
       if (error || !data) return err(FAILED)
       return ok((data as ReminderRow[]).map(toSnapshot))
     },
@@ -85,20 +95,23 @@ export async function reminderRepository(db?: SupabaseClient): Promise<ReminderR
     async markSent(id: string, channel: ReminderChannelKind, sentAt: Date) {
       const { error } = await supabase.from(TABLE).update({
         status: 'sent', last_channel: channel, sent_at: sentAt.toISOString(),
-      }).eq('id', id)
+      }).eq('id', id).eq('status', 'claimed')
       if (error) return err(FAILED)
       return ok(undefined)
     },
 
     async markRetry(id: string, attempts: number, lastError: string) {
-      const { error } = await supabase.from(TABLE).update({ attempts, last_error: lastError }).eq('id', id)
+      const { error } = await supabase.from(TABLE)
+        .update({ status: 'pending', attempts, last_error: lastError })
+        .eq('id', id).eq('status', 'claimed')
       if (error) return err(FAILED)
       return ok(undefined)
     },
 
     async markExhausted(id: string, attempts: number, lastError: string) {
       const { error } = await supabase.from(TABLE)
-        .update({ status: 'failed', attempts, last_error: lastError }).eq('id', id)
+        .update({ status: 'failed', attempts, last_error: lastError })
+        .eq('id', id).eq('status', 'claimed')
       if (error) return err(FAILED)
       return ok(undefined)
     },
