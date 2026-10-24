@@ -29,7 +29,7 @@ export const availabilityStyles = {
   empty: 'rounded-box bg-base-200 p-4 text-sm',
   alertSuccess: 'alert alert-success',
   alertWarning: 'alert alert-warning',
-  alertLink: 'link font-medium',
+  alertLink: 'link shrink-0 whitespace-nowrap font-medium',
   alertError: 'alert alert-error',
   feedbackTitle: 'font-medium',
   feedbackList: 'list-disc pl-5',
