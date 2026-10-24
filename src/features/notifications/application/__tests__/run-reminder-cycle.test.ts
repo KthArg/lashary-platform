@@ -34,7 +34,10 @@ describe('runReminderCycle', () => {
 
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
-    expect(result.value).toEqual({ discovered: 1, cancelled: 0, rescheduled: 0, sent: 0, retried: 0, exhausted: 0 })
+    expect(result.value).toEqual({
+      discovered: 1, discoverFailed: 0, cancelled: 0, rescheduled: 0, reconcileFailed: 0,
+      sent: 0, retried: 0, exhausted: 0, sendErrored: 0,
+    })
     expect(inserted).toHaveLength(1)
   })
 })
