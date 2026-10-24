@@ -5,7 +5,7 @@ import { buildReminderMessage, buildReminderTemplateVariables } from '../domain/
 import type { ClientContactPort, NotificationChannel, ReminderRepository, RepositoryFailure } from './ports'
 
 export type SendDueRemindersDeps = {
-  listDuePending: ReminderRepository['listDuePending']
+  claimDuePending: ReminderRepository['claimDuePending']
   getContact: ClientContactPort['getContact']
   markSent: ReminderRepository['markSent']
   markRetry: ReminderRepository['markRetry']
@@ -32,14 +32,14 @@ const sendOne = async (
   const message = buildReminderMessage(reminderMessageInput)
   const templateVariables = buildReminderTemplateVariables(reminderMessageInput)
 
-  const primary = await deps.primaryChannel.send({ contact: contact.value, message, templateVariables })
+  const primary = await deps.primaryChannel.send({ reminderId: reminder.id, contact: contact.value, message, templateVariables })
   if (isOk(primary)) {
     const marked = await deps.markSent(reminder.id, deps.primaryChannel.kind, now)
     if (isErr(marked)) return marked
     return ok('sent')
   }
 
-  const backup = await deps.backupChannel.send({ contact: contact.value, message, templateVariables })
+  const backup = await deps.backupChannel.send({ reminderId: reminder.id, contact: contact.value, message, templateVariables })
   if (isOk(backup)) {
     const marked = await deps.markSent(reminder.id, deps.backupChannel.kind, now)
     if (isErr(marked)) return marked
@@ -69,7 +69,7 @@ export const sendDueReminders =
   (deps: SendDueRemindersDeps) =>
   async (): Promise<Result<SendDueRemindersSummary, RepositoryFailure>> => {
     const now = deps.clock()
-    const due = await deps.listDuePending(now)
+    const due = await deps.claimDuePending(now)
     if (isErr(due)) return due
 
     const summary: SendDueRemindersSummary = { sent: 0, retried: 0, exhausted: 0 }

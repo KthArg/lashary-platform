@@ -38,7 +38,7 @@ export const discoverReminders =
         sendAt: built.value.sendAt,
       })
       if (isErr(inserted)) return inserted
-      discovered += 1
+      if (inserted.value.inserted) discovered += 1
     }
 
     return ok({ discovered })

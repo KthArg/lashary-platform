@@ -47,7 +47,7 @@ export async function runNotificationsReminderCycle(): Promise<
     getAppointmentSnapshot,
     reschedulePending: repo.reschedulePending,
     cancelPending: repo.cancelPending,
-    listDuePending: repo.listDuePending,
+    claimDuePending: repo.claimDuePending,
     getContact,
     markSent: repo.markSent,
     markRetry: repo.markRetry,

@@ -4,8 +4,8 @@ import { fixedDate } from '@/shared/testing/fixed-clock'
 import {
   buildReminder,
   computeReminderSendAt,
+  hasAppointmentAlreadyStarted,
   hasExhaustedRetries,
-  isReminderDue,
   reminderToSnapshot,
   MAX_REMINDER_ATTEMPTS,
 } from '../reminder'
@@ -55,24 +55,14 @@ describe('buildReminder', () => {
   })
 })
 
-describe('isReminderDue', () => {
-  const snapshot = {
-    id: 'rem-1', appointmentId: 'appt-1', clientId: 'client-1',
-    startsAt: fixedDate('2026-11-02T15:00:00Z'), techniqueName: 'Técnica',
-    sendAt: fixedDate('2026-11-01T15:00:00Z'), status: 'pending' as const,
-    attempts: 0, lastError: null, lastChannel: null, sentAt: null,
-  }
-
-  it('está vencido cuando ya pasó la hora de envío y sigue pendiente', () => {
-    expect(isReminderDue(snapshot, fixedDate('2026-11-01T15:00:01Z'))).toBe(true)
+describe('hasAppointmentAlreadyStarted', () => {
+  it('ya empezó cuando startsAt es anterior o igual a ahora', () => {
+    expect(hasAppointmentAlreadyStarted({ startsAt: fixedDate('2026-11-02T15:00:00Z') }, fixedDate('2026-11-02T15:00:00Z'))).toBe(true)
+    expect(hasAppointmentAlreadyStarted({ startsAt: fixedDate('2026-11-02T15:00:00Z') }, fixedDate('2026-11-02T15:00:01Z'))).toBe(true)
   })
 
-  it('no está vencido antes de la hora de envío', () => {
-    expect(isReminderDue(snapshot, fixedDate('2026-11-01T14:59:59Z'))).toBe(false)
-  })
-
-  it('no está vencido si ya no está pendiente', () => {
-    expect(isReminderDue({ ...snapshot, status: 'sent' }, fixedDate('2026-11-01T16:00:00Z'))).toBe(false)
+  it('no empezó si startsAt sigue en el futuro', () => {
+    expect(hasAppointmentAlreadyStarted({ startsAt: fixedDate('2026-11-02T15:00:00Z') }, fixedDate('2026-11-02T14:59:59Z'))).toBe(false)
   })
 })
 

@@ -34,7 +34,7 @@ function buildDeps(options: {
   const exhaustedCalls: unknown[] = []
   return {
     deps: {
-      listDuePending: async () => ok([reminder]),
+      claimDuePending: async () => ok([reminder]),
       getContact: async () => ok(options.hasContact === false ? null : contact),
       markSent: async (id: string, channel: string, sentAt: Date) => {
         sentCalls.push({ id, channel, sentAt })
