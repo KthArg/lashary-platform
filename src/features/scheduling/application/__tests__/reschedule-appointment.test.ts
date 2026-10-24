@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { err, isErr, isOk, ok } from '@/shared/result'
-import { rescheduleLimitReached } from '../../domain/errors'
-import { rescheduleAppointment } from '../reschedule-appointment'
-import type { RescheduledAppointment, RescheduleInput, RescheduleRepository } from '../ports'
+import { appointmentNotReschedulable, rescheduleLimitReached } from '../../domain/errors'
+import { quoteReschedule, rescheduleAppointment } from '../reschedule-appointment'
+import type { RescheduledAppointment, RescheduleInput, RescheduleQuote, RescheduleRepository } from '../ports'
 
 const APPOINTMENT_ID = 'cita-1'
 const ONE_HOUR_MS = 60 * 60 * 1000
@@ -18,16 +18,33 @@ const rescheduled: RescheduledAppointment = {
   rescheduleCount: 1,
 }
 
+const quote: RescheduleQuote = {
+  startsAtMs: Date.parse('2027-09-06T15:00:00Z'),
+  endsAtMs: Date.parse('2027-09-06T16:00:00Z'),
+  occupiedMinutes: 75,
+  techniqueName: 'Clásicas',
+  status: 'approved',
+  rescheduleCount: 0,
+  maxReschedules: 1,
+  windowHours: 48,
+  blockedBy: null,
+}
+
 function createFakeRepository(overrides: Partial<RescheduleRepository> = {}) {
   const requested: RescheduleInput[] = []
+  const quoted: string[] = []
   const repository: RescheduleRepository = {
+    quote: async (appointmentId) => {
+      quoted.push(appointmentId)
+      return ok(quote)
+    },
     reschedule: async (requestedInput) => {
       requested.push(requestedInput)
       return ok(rescheduled)
     },
     ...overrides,
   }
-  return { repository, requested }
+  return { repository, requested, quoted }
 }
 
 describe('rescheduleAppointment', () => {
@@ -47,5 +64,26 @@ describe('rescheduleAppointment', () => {
 
     expect(isErr(result)).toBe(true)
     if (isErr(result)) expect(result.error.code).toBe('SCHEDULING_RESCHEDULE_LIMIT_REACHED')
+  })
+})
+
+describe('quoteReschedule', () => {
+  it('pide al repositorio lo que se puede hacer con esa cita, sin moverla', async () => {
+    const { repository, requested, quoted } = createFakeRepository()
+    const result = await quoteReschedule(repository)(APPOINTMENT_ID)
+
+    expect(isOk(result) && result.value).toEqual(quote)
+    expect(quoted).toEqual([APPOINTMENT_ID])
+    expect(requested).toEqual([])
+  })
+
+  it('devuelve el error tipado del repositorio, sin lanzar', async () => {
+    const { repository } = createFakeRepository({
+      quote: async () => err(appointmentNotReschedulable(APPOINTMENT_ID)),
+    })
+    const result = await quoteReschedule(repository)(APPOINTMENT_ID)
+
+    expect(isErr(result)).toBe(true)
+    if (isErr(result)) expect(result.error.code).toBe('SCHEDULING_APPOINTMENT_NOT_RESCHEDULABLE')
   })
 })
