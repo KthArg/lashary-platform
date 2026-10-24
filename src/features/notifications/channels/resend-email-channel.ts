@@ -5,6 +5,8 @@ import type { NotificationChannel } from '../application/ports'
 
 export type ResendEmailConfig = { apiKey: string; fromAddress: string; subject: string }
 
+const SEND_TIMEOUT_MS = 10_000
+
 export function readResendEmailConfigFromEnv(env: Record<string, string | undefined>): ResendEmailConfig | null {
   const apiKey = env.RESEND_API_KEY
   const fromAddress = env.RESEND_FROM_ADDRESS
@@ -15,7 +17,7 @@ export function readResendEmailConfigFromEnv(env: Record<string, string | undefi
 export function resendEmailChannel(config: ResendEmailConfig | null): NotificationChannel {
   return {
     kind: 'email',
-    async send({ contact, message }) {
+    async send({ reminderId, contact, message }) {
       if (config === null) return err(channelNotConfigured('email'))
 
       try {
@@ -24,6 +26,7 @@ export function resendEmailChannel(config: ResendEmailConfig | null): Notificati
           headers: {
             Authorization: `Bearer ${config.apiKey}`,
             'Content-Type': 'application/json',
+            'Idempotency-Key': `notifications-reminder-${reminderId}`,
           },
           body: JSON.stringify({
             from: config.fromAddress,
@@ -31,6 +34,7 @@ export function resendEmailChannel(config: ResendEmailConfig | null): Notificati
             subject: config.subject,
             text: message,
           }),
+          signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
         })
         if (!response.ok) {
           return err(channelSendFailed('email', `Resend respondió ${response.status}`))

@@ -17,4 +17,8 @@ describe('isAuthorizedCronRequest', () => {
   it('rechaza si no hay header', () => {
     expect(isAuthorizedCronRequest({ authorizationHeader: null, secret: 'abc123' })).toBe(false)
   })
+
+  it('rechaza sin lanzar cuando el header y el secreto tienen longitudes distintas', () => {
+    expect(isAuthorizedCronRequest({ authorizationHeader: 'Bearer corto', secret: 'placeholder-de-ejemplo-mas-largo' })).toBe(false)
+  })
 })

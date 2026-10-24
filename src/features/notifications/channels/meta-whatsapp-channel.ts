@@ -7,10 +7,12 @@ export type MetaWhatsAppConfig = {
   phoneNumberId: string
   templateName: string | null
   templateLanguage: string
+  graphApiVersion: string
 }
 
 const DEFAULT_TEMPLATE_LANGUAGE = 'es'
-const GRAPH_API_VERSION = 'v21.0'
+const DEFAULT_GRAPH_API_VERSION = 'v21.0'
+const SEND_TIMEOUT_MS = 10_000
 
 export function readMetaWhatsAppConfigFromEnv(env: Record<string, string | undefined>): MetaWhatsAppConfig | null {
   const accessToken = env.META_WHATSAPP_ACCESS_TOKEN
@@ -21,6 +23,7 @@ export function readMetaWhatsAppConfigFromEnv(env: Record<string, string | undef
     phoneNumberId,
     templateName: env.META_WHATSAPP_TEMPLATE_NAME ?? null,
     templateLanguage: env.META_WHATSAPP_TEMPLATE_LANGUAGE ?? DEFAULT_TEMPLATE_LANGUAGE,
+    graphApiVersion: env.META_WHATSAPP_GRAPH_API_VERSION ?? DEFAULT_GRAPH_API_VERSION,
   }
 }
 
@@ -70,7 +73,7 @@ export function metaWhatsAppChannel(config: MetaWhatsAppConfig | null): Notifica
     async send({ contact, message, templateVariables }) {
       if (config === null) return err(channelNotConfigured('whatsapp'))
 
-      const url = `https://graph.facebook.com/${GRAPH_API_VERSION}/${config.phoneNumberId}/messages`
+      const url = `https://graph.facebook.com/${config.graphApiVersion}/${config.phoneNumberId}/messages`
       const requestBody = config.templateName
         ? buildTemplateBody(config, contact.phone, templateVariables)
         : buildFreeTextBody(contact.phone, message)
@@ -83,6 +86,7 @@ export function metaWhatsAppChannel(config: MetaWhatsAppConfig | null): Notifica
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(requestBody),
+          signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
         })
         if (!response.ok) {
           return err(channelSendFailed('whatsapp', await readErrorMessage(response)))
