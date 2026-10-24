@@ -2,12 +2,15 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { ok, err } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import type { ManualBlock } from '../domain/manual-blocks'
-import { manualBlockOverlap } from '../domain/availability-errors'
+import { manualBlockHasAppointment, manualBlockOverlap } from '../domain/availability-errors'
 import type { ManualBlockRepository } from '../application/availability-ports'
 
 const TABLE = 'scheduling_manual_blocks'
 const COLUMNS = 'id, resource_id, starts_at, ends_at, reason'
 const EXCLUSION_VIOLATION = '23P01'
+const CHECK_VIOLATION = '23514'
+const ACTIVE_APPOINTMENT_MESSAGE = 'scheduling_manual_blocks_active_appointment'
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export type ManualBlockRow = {
   id: string
@@ -34,6 +37,16 @@ export const manualBlockToRow = (block: ManualBlock): ManualBlockRow => ({
 })
 
 export function createSupabaseManualBlockRepository(db: SupabaseClient): ManualBlockRepository {
+  async function insertMany(blocks: readonly ManualBlock[]) {
+    const { error } = await db.from(TABLE).insert(blocks.map(manualBlockToRow))
+    if (!error) return ok(undefined)
+    if (error.code === EXCLUSION_VIOLATION) return err(manualBlockOverlap())
+    if (error.code === CHECK_VIOLATION && error.message === ACTIVE_APPOINTMENT_MESSAGE) {
+      return err(manualBlockHasAppointment())
+    }
+    throw new Error(`${TABLE}.insert: ${error.message}`)
+  }
+
   return {
     async listEndingAfter(resourceId, after, limit) {
       const { data, error } = await db
@@ -47,11 +60,15 @@ export function createSupabaseManualBlockRepository(db: SupabaseClient): ManualB
       return (data ?? []).map((row) => rowToManualBlock(row as ManualBlockRow))
     },
 
-    async insert(block) {
-      const { error } = await db.from(TABLE).insert(manualBlockToRow(block))
-      if (!error) return ok(undefined)
-      if (error.code === EXCLUSION_VIOLATION) return err(manualBlockOverlap())
-      throw new Error(`${TABLE}.insert: ${error.message}`)
+    insert: (block) => insertMany([block]),
+
+    insertMany,
+
+    async remove(id) {
+      if (!UUID.test(id)) return false
+      const { data, error } = await db.from(TABLE).delete().eq('id', id).select('id')
+      if (error) throw new Error(`${TABLE}.remove: ${error.message}`)
+      return (data ?? []).length > 0
     },
   }
 }

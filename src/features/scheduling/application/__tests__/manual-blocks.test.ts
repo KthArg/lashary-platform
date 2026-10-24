@@ -32,6 +32,12 @@ function createFakeManualBlockRepository(initial: ManualBlock[] = []) {
       blocks.push(block)
       return ok(undefined)
     },
+    async insertMany() {
+      throw new Error('no usado en estas pruebas')
+    },
+    async remove() {
+      throw new Error('no usado en estas pruebas')
+    },
   }
   return { repo, blocks, listCalls }
 }
