@@ -6,9 +6,15 @@ import type { SchedulingAlert } from '../domain/alert'
 import type {
   AppointmentNotCancellable,
   AppointmentNotPending,
+  AppointmentNotReschedulable,
   CancellationConsequenceChanged,
   ClientNotRegistered,
   InvalidCancellationWindow,
+  RescheduleLimitReached,
+  RescheduleOutsideWindow,
+  RescheduleSlotNotOffered,
+  RescheduleSlotTaken,
+  RescheduleStateChanged,
   TooManyPendingAppointments,
   SlotNotOffered,
   SpaceNotAvailable,
@@ -119,6 +125,34 @@ export interface CancellationRepository {
     appointmentId: string,
     expectedForfeitedDeposit: number,
   ): Promise<Result<CancelledAppointment, CancellationError>>
+}
+
+export type RescheduleInput = {
+  appointmentId: string
+  newStartsAtMs: number
+  expectedStatus: CancellableStatus
+}
+
+export type RescheduledAppointment = {
+  appointmentId: string
+  startsAtMs: number
+  endsAtMs: number
+  rescheduleCount: number
+}
+
+export type RescheduleError =
+  | ClientNotRegistered
+  | AppointmentNotReschedulable
+  | RescheduleOutsideWindow
+  | RescheduleLimitReached
+  | RescheduleStateChanged
+  | RescheduleSlotNotOffered
+  | RescheduleSlotTaken
+  | TooManyPendingAppointments
+  | StorageFailed
+
+export interface RescheduleRepository {
+  reschedule(input: RescheduleInput): Promise<Result<RescheduledAppointment, RescheduleError>>
 }
 
 export type CancellationWindowChange = { previousHours: number; newHours: number }
