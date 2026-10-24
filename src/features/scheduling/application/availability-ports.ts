@@ -39,7 +39,7 @@ export const MAX_MANUAL_BLOCKS = 100
 
 export interface DayAvailabilityRepository {
   listOpenHours(resourceId: string, date: string): Promise<OpenHours[]>
-  listBusyRanges(resourceId: string, date: string): Promise<BusyRange[]>
+  listBusyRanges(resourceId: string, date: string, ignoreAppointmentId?: string): Promise<BusyRange[]>
 }
 
 export interface ManualBlockRepository {
