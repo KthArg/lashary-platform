@@ -2,6 +2,7 @@ import type { Result } from '@/shared/result'
 import type { SelectableTechnique } from '../domain/technique-selection'
 import type { AppointmentDecision } from '../domain/appointment-decision.constants'
 import type { CancellableStatus } from '../domain/appointment-cancellation.constants'
+import type { RescheduleBlock } from '../domain/appointment-reschedule.constants'
 import type { SchedulingAlert } from '../domain/alert'
 import type {
   AppointmentNotCancellable,
@@ -167,7 +168,22 @@ export type RescheduleError =
   | TooManyPendingAppointments
   | StorageFailed
 
+export type RescheduleQuote = {
+  startsAtMs: number
+  endsAtMs: number
+  occupiedMinutes: number
+  techniqueName: string
+  status: CancellableStatus
+  rescheduleCount: number
+  maxReschedules: number
+  windowHours: number
+  blockedBy: RescheduleBlock | null
+}
+
+export type RescheduleQuoteError = ClientNotRegistered | AppointmentNotReschedulable | StorageFailed
+
 export interface RescheduleRepository {
+  quote(appointmentId: string): Promise<Result<RescheduleQuote, RescheduleQuoteError>>
   reschedule(input: RescheduleInput): Promise<Result<RescheduledAppointment, RescheduleError>>
 }
 
