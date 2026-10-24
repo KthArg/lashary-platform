@@ -16,7 +16,7 @@ describe('readMetaWhatsAppConfigFromEnv', () => {
   it('lee la configuración completa, sin plantilla y en español por defecto', () => {
     expect(readMetaWhatsAppConfigFromEnv({
       META_WHATSAPP_ACCESS_TOKEN: 'token', META_WHATSAPP_PHONE_NUMBER_ID: '123456',
-    })).toEqual({ accessToken: 'token', phoneNumberId: '123456', templateName: null, templateLanguage: 'es' })
+    })).toEqual({ accessToken: 'token', phoneNumberId: '123456', templateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0' })
   })
 
   it('lee la plantilla y el idioma cuando están presentes', () => {
@@ -27,13 +27,20 @@ describe('readMetaWhatsAppConfigFromEnv', () => {
     expect(config?.templateName).toBe('recordatorio_cita')
     expect(config?.templateLanguage).toBe('es_CR')
   })
+
+  it('lee una versión de la Graph API distinta de la por defecto cuando está presente (B7)', () => {
+    const config = readMetaWhatsAppConfigFromEnv({
+      META_WHATSAPP_ACCESS_TOKEN: 'token', META_WHATSAPP_PHONE_NUMBER_ID: '123456',
+      META_WHATSAPP_GRAPH_API_VERSION: 'v22.0',
+    })
+    expect(config?.graphApiVersion).toBe('v22.0')
+  })
 })
 
 describe('metaWhatsAppChannel', () => {
   it('reporta el canal sin configurar cuando no hay credenciales', async () => {
     const result = await metaWhatsAppChannel(null).send({
-      reminderId: 'reminder-1',
-      contact: { phone: '+50688887777', email: 'a@b.com' }, message: 'hola', templateVariables: [],
+      reminderId: 'rem-1', contact: { phone: '+50688887777', email: 'a@b.com' }, message: 'hola', templateVariables: [],
     })
     expect(isErr(result)).toBe(true)
     if (!isErr(result)) return
@@ -45,8 +52,8 @@ describe('metaWhatsAppChannel', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     const result = await metaWhatsAppChannel({
-      accessToken: 'token', phoneNumberId: '123456', templateName: null, templateLanguage: 'es',
-    }).send({ reminderId: 'reminder-1', contact: { phone: '+506 8888-7777', email: 'a@b.com' }, message: 'hola clienta', templateVariables: [] })
+      accessToken: 'token', phoneNumberId: '123456', templateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0',
+    }).send({ reminderId: 'rem-1', contact: { phone: '+506 8888-7777', email: 'a@b.com' }, message: 'hola clienta', templateVariables: [] })
 
     expect(isOk(result)).toBe(true)
     expect(fetchMock).toHaveBeenCalledOnce()
@@ -64,10 +71,9 @@ describe('metaWhatsAppChannel', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     const result = await metaWhatsAppChannel({
-      accessToken: 'token', phoneNumberId: '123456', templateName: 'recordatorio_cita', templateLanguage: 'es',
+      accessToken: 'token', phoneNumberId: '123456', templateName: 'recordatorio_cita', templateLanguage: 'es', graphApiVersion: 'v21.0',
     }).send({
-      reminderId: 'reminder-1',
-      contact: { phone: '+50688887777', email: 'a@b.com' }, message: 'hola clienta',
+      reminderId: 'rem-1', contact: { phone: '+50688887777', email: 'a@b.com' }, message: 'hola clienta',
       templateVariables: ['Técnica A', 'hoy 3pm'],
     })
 
@@ -92,8 +98,8 @@ describe('metaWhatsAppChannel', () => {
     }))
 
     const result = await metaWhatsAppChannel({
-      accessToken: 'token', phoneNumberId: '123456', templateName: null, templateLanguage: 'es',
-    }).send({ reminderId: 'reminder-1', contact: { phone: '+50688887777', email: 'a@b.com' }, message: 'hola', templateVariables: [] })
+      accessToken: 'token', phoneNumberId: '123456', templateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0',
+    }).send({ reminderId: 'rem-1', contact: { phone: '+50688887777', email: 'a@b.com' }, message: 'hola', templateVariables: [] })
 
     expect(isErr(result)).toBe(true)
     if (!isErr(result)) return

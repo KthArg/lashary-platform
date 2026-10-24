@@ -165,6 +165,22 @@ habría exigido un shim de compatibilidad temporal, que el proyecto evita.
   los 5 intentos — un canal sin configurar no se arregla solo en 15 minutos. Si solo uno de los
   dos está sin configurar, sigue como transitorio (reintenta). También se acota `last_error` a
   500 caracteres antes de guardarlo.
+- **A2 (parte 2, timeout e idempotencia):** los dos canales mandan `fetch` con
+  `AbortSignal.timeout` (10s) — un proveedor colgado ya no agota la función sin marcar nada.
+  `resendEmailChannel` manda `Idempotency-Key: notifications-reminder-<id>`: un reintento del
+  mismo recordatorio no duplica el correo si Resend ya lo procesó. La Graph API de Meta no
+  ofrece un mecanismo de idempotencia equivalente para mensajes de WhatsApp — sigue como
+  limitación conocida.
+- **A4 (mínimo, sin ADR):** `createSystemClient` devuelve `Result` en vez de lanzar;
+  `runNotificationsReminderCycle` cierra la sesión (`signOut`) al terminar, con `try/finally`, así
+  no se acumula una sesión nueva por cada corrida del cron. La decisión de fondo (rol dedicado en
+  vez de una cuenta admin completa) sigue pendiente del líder/PO — ver «Falta para producción».
+- **M1 (resto):** `cron-handler.ts` ahora envuelve la corrida en `try/catch`: una excepción
+  inesperada ya no tira un 500 genérico sin registro, deja un `console.error` con la causa.
+- **B3:** la comparación del secreto del cron usa `timingSafeEqual` en vez de `===`; la ruta solo
+  acepta `POST` (ya no `GET`, que era solo para Vercel Cron — ver A5).
+- **B7:** la versión de la Graph API (`v21.0`) ahora se puede fijar con
+  `META_WHATSAPP_GRAPH_API_VERSION`; sigue con ese valor por defecto.
 
 ## Falta para producción
 
