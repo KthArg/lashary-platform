@@ -1,5 +1,7 @@
 export const RESCHEDULE_APPOINTMENT_FUNCTION = 'scheduling_reschedule_appointment'
 
+export const QUOTE_RESCHEDULE_FUNCTION = 'scheduling_quote_reschedule'
+
 export const RESCHEDULE_ERROR_MESSAGES = {
   clientNotRegistered: 'scheduling_client_not_registered',
   appointmentNotReschedulable: 'scheduling_appointment_not_reschedulable',
