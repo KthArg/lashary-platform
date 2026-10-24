@@ -8,11 +8,14 @@ export type RunReminderCycleDeps = DiscoverRemindersDeps & ReconcileRemindersDep
 
 export type RunReminderCycleSummary = {
   discovered: number
+  discoverFailed: number
   cancelled: number
   rescheduled: number
+  reconcileFailed: number
   sent: number
   retried: number
   exhausted: number
+  sendErrored: number
 }
 
 export const runReminderCycle =
@@ -29,10 +32,13 @@ export const runReminderCycle =
 
     return ok({
       discovered: discovery.value.discovered,
+      discoverFailed: discovery.value.failed,
       cancelled: reconciliation.value.cancelled,
       rescheduled: reconciliation.value.rescheduled,
+      reconcileFailed: reconciliation.value.failed,
       sent: sending.value.sent,
       retried: sending.value.retried,
       exhausted: sending.value.exhausted,
+      sendErrored: sending.value.errored,
     })
   }
