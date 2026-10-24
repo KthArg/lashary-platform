@@ -170,6 +170,13 @@ habría exigido un shim de compatibilidad temporal, que el proyecto evita.
   acepta `POST` (ya no `GET`, que era solo para Vercel Cron — ver A5).
 - **B7:** la versión de la Graph API (`v21.0`) ahora se puede fijar con
   `META_WHATSAPP_GRAPH_API_VERSION`; sigue con ese valor por defecto.
+- **A5 (el disparo entregado contradecía al SPEC):** se quita `vercel.json` — el plan Hobby de
+  Vercel solo permite cron diario, y el disparo real queda para GitHub Actions cuando se
+  despliegue (decisión del líder, 2026-10-21, ya en «Falta para producción» nº 5). La ruta del
+  cron ya no acepta `GET` (B3): GitHub Actions llama por `POST`.
+- **M5 (la lectura de contacto traía `notes`):** `getClientContactForReminders` ahora hace su
+  propia consulta a `clients_profiles` pidiendo solo `phone, email`, en vez de reusar `getClient`
+  (que trae todas las columnas, incluida `notes`, y las descartaba después de leerlas).
 
 ## Falta para producción
 
