@@ -13,7 +13,7 @@ export type DiscoverRemindersDeps = {
   clock: Clock
 }
 
-export type DiscoverRemindersSummary = { discovered: number }
+export type DiscoverRemindersSummary = { discovered: number; failed: number }
 
 export const discoverReminders =
   (deps: DiscoverRemindersDeps) =>
@@ -25,6 +25,7 @@ export const discoverReminders =
     if (isErr(upcoming)) return upcoming
 
     let discovered = 0
+    let failed = 0
     for (const appointment of upcoming.value) {
       const built = buildReminder(deps.newId(), { ...appointment, createdAt: now })
       if (isErr(built)) continue
@@ -37,9 +38,13 @@ export const discoverReminders =
         techniqueName: built.value.techniqueName,
         sendAt: built.value.sendAt,
       })
-      if (isErr(inserted)) return inserted
+      if (isErr(inserted)) {
+        console.error(`[notifications] no se pudo programar el recordatorio de la cita ${built.value.appointmentId}: ${inserted.error}`)
+        failed += 1
+        continue
+      }
       if (inserted.value.inserted) discovered += 1
     }
 
-    return ok({ discovered })
+    return ok({ discovered, failed })
   }
