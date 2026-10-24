@@ -1,7 +1,9 @@
 import { z } from 'zod'
 import { isCalendarDate } from '@/shared/studio-time'
 import { CLOSED_DATE_KINDS } from '../../../domain/closed-dates'
+import { SLOT_INTERVAL_MIN } from '../../../domain/day-slots'
 import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '../../../domain/manual-blocks.constants'
+import { MINUTES_PER_DAY } from '../../../domain/weekly-availability'
 import { schedulingMessages } from '../../messages'
 
 // Validación de formato en el borde, una sola vez (DOM-007). Las horas llegan como HH:MM del
@@ -55,9 +57,18 @@ export const manualBlockFormSchema = z.object({
   reason: optionalReason,
 })
 
+// Un campo vacío no es el minuto 0: z.coerce.number() lo convertiría en 00:00 y bloquearía la
+// medianoche. Se exigen dígitos antes de convertir.
+const slotStartField = z.string().regex(/^\d+$/, validationMessages.pickSlot).transform(Number)
+
+const MAX_SLOTS_PER_DAY = MINUTES_PER_DAY / SLOT_INTERVAL_MIN
+
 export const blockSlotsFormSchema = z.object({
   date: dateField,
-  slotStartMinutes: z.array(z.coerce.number().int(validationMessages.pickSlot)).min(1, validationMessages.pickSlot),
+  slotStartMinutes: z
+    .array(slotStartField)
+    .min(1, validationMessages.pickSlot)
+    .max(MAX_SLOTS_PER_DAY, validationMessages.pickSlot),
   reason: optionalReason,
 })
 

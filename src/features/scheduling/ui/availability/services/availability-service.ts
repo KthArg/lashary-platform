@@ -81,7 +81,12 @@ export const availabilityService = {
   },
 
   async blockSlots(input: { date: string; slotStartMinutes: number[]; reason: string | null }) {
-    return blockSlots({ repo: await manualBlockRepository(), newId, clock: systemClock })({ resourceId, ...input })
+    return blockSlots({
+      repo: await manualBlockRepository(),
+      day: await dayAvailabilityRepository(),
+      newId,
+      clock: systemClock,
+    })({ resourceId, ...input })
   },
 
   async removeManualBlock(id: string) {

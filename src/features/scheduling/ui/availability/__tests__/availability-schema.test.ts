@@ -51,6 +51,22 @@ describe('availability-schema', () => {
     ).toEqual({ date: '2026-10-20', start: 540, end: 660, reason: 'banco' })
   })
 
+  it('espacios: un campo vacío o no numérico no se convierte en el minuto 0', () => {
+    for (const slot of ['', ' ', '-30', '9.5', 'abc']) {
+      const parsed = blockSlotsFormSchema.safeParse({ date: '2026-10-20', slotStartMinutes: [slot] })
+      expect(parsed.success).toBe(false)
+      expect(parsed.error?.issues.map((issue) => issue.message)).toEqual([validationMessages.pickSlot])
+    }
+  })
+
+  it('espacios: convierte los minutos y admite hasta los 48 espacios de un día', () => {
+    const slotsOfADay = Array.from({ length: 48 }, (_, index) => String(index * 30))
+    const parsed = blockSlotsFormSchema.parse({ date: '2026-10-20', slotStartMinutes: slotsOfADay })
+    expect(parsed.slotStartMinutes).toHaveLength(48)
+    expect(parsed.slotStartMinutes[1]).toBe(30)
+    expect(blockSlotsFormSchema.safeParse({ date: '2026-10-20', slotStartMinutes: [...slotsOfADay, '0'] }).success).toBe(false)
+  })
+
   it('bloqueos: el motivo llega hasta el tope en los dos formularios (US-AGE-07)', () => {
     const longestReason = 'a'.repeat(MAX_MANUAL_BLOCK_REASON_LENGTH)
     const forms = [
