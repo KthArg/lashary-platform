@@ -3,8 +3,10 @@ import { ok, err } from '@/shared/result'
 import {
   availabilityEntryNotFound,
   closedDateAlreadyExists,
+  closedDateHasAppointment,
   manualBlockHasAppointment,
   manualBlockOverlap,
+  weeklyBlockHasAppointment,
   weeklyBlockInvalid,
   weeklyBlockOverlap,
 } from '../../../domain/availability-errors'
@@ -105,6 +107,16 @@ describe('addWeeklyBlockAction — criterio 1', () => {
     expect(mocks.revalidatePath).not.toHaveBeenCalled()
   })
 
+  it('si entre el conteo y el borrado entra una cita, la base lo rechaza y la acción lo muestra igual, con enlace', async () => {
+    mocks.service.removeWeeklyBlock.mockResolvedValue(err(weeklyBlockHasAppointment()))
+    expect(await removeWeeklyBlockAction(idle, form({ id: 'a' }))).toEqual({
+      status: 'conflict',
+      message: availabilityMessages.affected.mustResolveSome,
+      link: { href: '/admin/citas', label: availabilityMessages.picker.goToAppointments },
+    })
+    expect(mocks.revalidatePath).not.toHaveBeenCalled()
+  })
+
   it('quitar un bloque que ya no existe avisa en vez de fallar', async () => {
     mocks.service.removeWeeklyBlock.mockResolvedValue(err(availabilityEntryNotFound('a')))
     expect(await removeWeeklyBlockAction(idle, form({ id: 'a' }))).toEqual({
@@ -128,6 +140,16 @@ describe('addClosedDateAction — criterio 2', () => {
       status: 'conflict',
       message: availabilityMessages.closed.alreadyClosed,
     })
+  })
+
+  it('si entre el conteo y el cierre entra una cita, la base lo rechaza y la acción lo muestra igual, con enlace', async () => {
+    mocks.service.addClosedDate.mockResolvedValue(err(closedDateHasAppointment()))
+    expect(await addClosedDateAction(idle, form({ date: '2026-12-25', kind: 'holiday' }))).toEqual({
+      status: 'conflict',
+      message: availabilityMessages.affected.mustResolveSome,
+      link: { href: '/admin/citas', label: availabilityMessages.picker.goToAppointments },
+    })
+    expect(mocks.revalidatePath).not.toHaveBeenCalled()
   })
 
   it('reabrir un día guarda y revalida', async () => {
