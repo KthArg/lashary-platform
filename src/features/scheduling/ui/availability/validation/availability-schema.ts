@@ -70,4 +70,12 @@ export const blockSlotsFormSchema = z.object({
   reason: optionalReason,
 })
 
+export const releaseSlotsFormSchema = z.object({
+  date: dateField,
+  slotStartMinutes: z
+    .array(slotStartField)
+    .min(1, validationMessages.pickSlot)
+    .max(MAX_SLOTS_PER_DAY, validationMessages.pickSlot),
+})
+
 export const removeFormSchema = z.object({ id: z.string().min(1) })

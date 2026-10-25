@@ -67,13 +67,18 @@ describe('blockSlotsAction — US-AGE-07', () => {
   })
 
   it.each([
-    ['un espacio con cita avisa que hay que resolverla (criterio 4)', manualBlockHasAppointment(), availabilityMessages.picker.hasAppointment],
-    ['un espacio ya bloqueado avisa el solape', manualBlockOverlap(), availabilityMessages.picker.overlap],
-    ['un espacio que ya pasó avisa', manualBlockInvalid(['un espacio elegido ya pasó']), availabilityMessages.picker.stale],
-  ])('%s y refresca los espacios', async (_label, error, message) => {
+    [
+      'un espacio con cita pide resolverla antes y enlaza a las citas (criterio 4)',
+      manualBlockHasAppointment(),
+      availabilityMessages.picker.hasAppointment,
+      { link: { href: '/admin/citas', label: availabilityMessages.picker.goToAppointments } },
+    ],
+    ['un espacio ya bloqueado avisa el solape', manualBlockOverlap(), availabilityMessages.picker.overlap, {}],
+    ['un espacio que ya pasó avisa', manualBlockInvalid(['un espacio elegido ya pasó']), availabilityMessages.picker.stale, {}],
+  ])('%s y refresca los espacios', async (_label, error, message, extra) => {
     mocks.service.blockSlots.mockResolvedValue(err(error))
     const state = await blockSlotsAction(idle, form({ date: '2026-10-19', slot: '540' }))
-    expect(state).toEqual({ status: 'conflict', message })
+    expect(state).toEqual({ status: 'conflict', message, ...extra })
     expect(mocks.revalidatePath).toHaveBeenCalledWith(AVAILABILITY_PATH)
   })
 
