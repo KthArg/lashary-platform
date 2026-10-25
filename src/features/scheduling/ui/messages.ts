@@ -61,6 +61,7 @@ export const schedulingMessages = {
       noBlocks: 'Sin atención',
       savedOk: 'Bloque agregado.',
       removedOk: 'Bloque quitado.',
+      removeFailed: 'No se pudo quitar el bloque. No se hizo ningún cambio: intentá de nuevo.',
       overlap: 'Ese bloque se cruza con otro del mismo día.',
       removeLabel: (day: string, range: string) => `Quitar el bloque del ${day} de ${range}`,
     },

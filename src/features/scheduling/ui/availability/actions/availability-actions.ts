@@ -94,6 +94,7 @@ export async function removeWeeklyBlockAction(
       return resolveAppointmentFirst(availabilityMessages.affected.mustResolveSome)
     }
     if (isAvailabilityEntryNotFound(result.error)) return { status: 'conflict', message: availabilityMessages.notFound }
+    return { status: 'conflict', message: availabilityMessages.weekly.removeFailed }
   }
   return done(availabilityMessages.weekly.removedOk)
 }
