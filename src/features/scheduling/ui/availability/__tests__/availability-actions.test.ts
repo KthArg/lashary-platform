@@ -10,7 +10,6 @@ import {
 } from '../../../domain/availability-errors'
 import { storageFailed } from '../../../domain/errors'
 import { schedulingMessages } from '../../messages'
-import { CONFIRM_FIELD, CONFIRM_VALUE } from '../constants/confirm-reduction.constants'
 
 const mocks = vi.hoisted(() => ({
   getAuthSession: vi.fn(),
@@ -158,12 +157,9 @@ describe('addManualBlockAction — criterio 3', () => {
     })
   })
 
-  it('un espacio con una cita no pide confirmación: avisa que hay que resolverla (US-AGE-07, criterio 4)', async () => {
+  it('un espacio con una cita se rechaza: avisa que hay que resolverla (US-AGE-07, criterio 4)', async () => {
     mocks.service.addManualBlock.mockResolvedValue(err(manualBlockHasAppointment()))
-    const state = await addManualBlockAction(
-      idle,
-      form({ date: '2026-10-20', start: '09:00', end: '11:00', [CONFIRM_FIELD]: CONFIRM_VALUE }),
-    )
+    const state = await addManualBlockAction(idle, form({ date: '2026-10-20', start: '09:00', end: '11:00' }))
     expect(state).toEqual({
       status: 'conflict',
       message: availabilityMessages.blocks.hasAppointment,
@@ -174,14 +170,13 @@ describe('addManualBlockAction — criterio 3', () => {
   })
 })
 
-describe('reducir la disponibilidad con citas agendadas — criterio 9', () => {
+describe('reducir la disponibilidad con citas agendadas — criterio 4 de US-AGE-07, igual que bloquear un espacio', () => {
   const reductions = [
     {
       name: 'quitar un bloque semanal',
       run: (extra: Record<string, string> = {}) => removeWeeklyBlockAction(idle, form({ id: 'b-1', ...extra })),
       count: mocks.service.countAffectedByWeeklyBlock,
       apply: mocks.service.removeWeeklyBlock,
-      fields: { id: 'b-1' },
     },
     {
       name: 'cerrar un día',
@@ -189,31 +184,27 @@ describe('reducir la disponibilidad con citas agendadas — criterio 9', () => {
         addClosedDateAction(idle, form({ date: '2026-12-25', kind: 'holiday', ...extra })),
       count: mocks.service.countAffectedOnDate,
       apply: mocks.service.addClosedDate,
-      fields: { date: '2026-12-25', kind: 'holiday' },
     },
   ]
 
-  it.each(reductions)('$name con citas afectadas: advierte con el número y no aplica nada', async ({ run, count, apply, fields }) => {
+  it.each(reductions)('$name con citas afectadas: se rechaza, pide resolverlas y enlaza a las citas', async ({ run, count, apply }) => {
     count.mockResolvedValue(ok(3))
     expect(await run()).toEqual({
-      status: 'needsConfirmation',
-      message: availabilityMessages.affected.warning(3),
-      affected: 3,
-      fields,
+      status: 'conflict',
+      message: availabilityMessages.affected.mustResolve(3),
+      link: { href: '/admin/citas', label: availabilityMessages.picker.goToAppointments },
     })
     expect(apply).not.toHaveBeenCalled()
     expect(mocks.revalidatePath).not.toHaveBeenCalled()
   })
 
-  it.each(reductions)('$name confirmado: aplica sin volver a contar', async ({ run, count, apply }) => {
+  it.each(reductions)('$name: ya no hay confirmación, un envío con confirmar=si tampoco aplica', async ({ run, count, apply }) => {
     count.mockResolvedValue(ok(3))
-    apply.mockResolvedValue(ok({}))
-    expect((await run({ [CONFIRM_FIELD]: CONFIRM_VALUE })).status).toBe('ok')
-    expect(apply).toHaveBeenCalledTimes(1)
-    expect(count).not.toHaveBeenCalled()
+    expect((await run({ confirmar: 'si' })).status).toBe('conflict')
+    expect(apply).not.toHaveBeenCalled()
   })
 
-  it.each(reductions)('$name sin citas afectadas: aplica sin pedir confirmación', async ({ run, apply }) => {
+  it.each(reductions)('$name sin citas afectadas: aplica directo', async ({ run, apply }) => {
     apply.mockResolvedValue(ok({}))
     expect((await run()).status).toBe('ok')
     expect(apply).toHaveBeenCalledTimes(1)
@@ -226,7 +217,9 @@ describe('reducir la disponibilidad con citas agendadas — criterio 9', () => {
   })
 
   it('el aviso usa singular cuando es una sola cita', () => {
-    expect(availabilityMessages.affected.warning(1)).toContain('Hay 1 cita agendada')
-    expect(availabilityMessages.affected.warning(2)).toContain('Hay 2 citas agendadas')
+    expect(availabilityMessages.affected.mustResolve(1)).toContain('Hay 1 cita agendada')
+    expect(availabilityMessages.affected.mustResolve(1)).toContain('Rechazala o cancelala')
+    expect(availabilityMessages.affected.mustResolve(2)).toContain('Hay 2 citas agendadas')
+    expect(availabilityMessages.affected.mustResolve(2)).toContain('Rechazalas o cancelalas')
   })
 })

@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useActionState } from 'react'
 import { schedulingMessages } from '../../messages'
 import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '../../../domain/manual-blocks.constants'
-import { CONFIRM_FIELD, CONFIRM_VALUE } from '../constants/confirm-reduction.constants'
 import { availabilityStyles as STYLES } from '../styles/availability.styles'
 import {
   initialAvailabilityActionState,
@@ -23,27 +22,8 @@ const availabilityMessages = schedulingMessages.availability
 
 type Action = (prev: AvailabilityActionState, formData: FormData) => Promise<AvailabilityActionState>
 
-type FeedbackProps = { state: AvailabilityActionState; formAction?: (formData: FormData) => void; pending?: boolean }
-
-function ReductionConfirmation({ state, formAction, pending }: FeedbackProps) {
-  return (
-    <form action={formAction} className={STYLES.confirmation}>
-      <div role="alert" className={STYLES.alertWarning}>
-        <span>{state.message}</span>
-      </div>
-      {Object.entries(state.fields ?? {}).map(([name, value]) => (
-        <input key={name} type="hidden" name={name} value={value} />
-      ))}
-      <button type="submit" name={CONFIRM_FIELD} value={CONFIRM_VALUE} className={STYLES.submit} disabled={pending}>
-        {availabilityMessages.affected.confirm}
-      </button>
-    </form>
-  )
-}
-
-export function AvailabilityFeedback({ state, formAction, pending }: FeedbackProps) {
+export function AvailabilityFeedback({ state }: { state: AvailabilityActionState }) {
   if (state.status === 'idle') return null
-  if (state.status === 'needsConfirmation') return <ReductionConfirmation state={state} formAction={formAction} pending={pending} />
   if (state.status === 'ok') {
     return (
       <div role="status" className={STYLES.alertSuccess}>
@@ -143,7 +123,7 @@ export function ClosedDateForm() {
           {availabilityMessages.closed.submit}
         </button>
       </form>
-      <AvailabilityFeedback state={state} formAction={formAction} pending={pending} />
+      <AvailabilityFeedback state={state} />
     </>
   )
 }
@@ -169,7 +149,7 @@ export function ManualBlockForm() {
           {availabilityMessages.blocks.submit}
         </button>
       </form>
-      <AvailabilityFeedback state={state} formAction={formAction} pending={pending} />
+      <AvailabilityFeedback state={state} />
     </>
   )
 }
@@ -188,7 +168,7 @@ function RemoveButton({ action, id, label, text }: { action: Action; id: string;
       </form>
       {state.status !== 'ok' && state.status !== 'idle' && (
         <div className={STYLES.removeFeedback}>
-          <AvailabilityFeedback state={state} formAction={formAction} pending={pending} />
+          <AvailabilityFeedback state={state} />
         </div>
       )}
     </>

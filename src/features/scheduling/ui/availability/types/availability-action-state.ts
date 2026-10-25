@@ -1,9 +1,7 @@
 export type AvailabilityActionState = {
-  status: 'idle' | 'ok' | 'invalid' | 'forbidden' | 'conflict' | 'needsConfirmation'
+  status: 'idle' | 'ok' | 'invalid' | 'forbidden' | 'conflict'
   message?: string
   problems?: string[]
-  affected?: number
-  fields?: Record<string, string>
   link?: { href: string; label: string }
 }
 

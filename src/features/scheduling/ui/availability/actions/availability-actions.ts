@@ -14,7 +14,7 @@ import {
 } from '../../../domain/availability-errors'
 import { schedulingMessages } from '../../messages'
 import { availabilityService } from '../services/availability-service'
-import { confirmationNeeded } from '../utils/confirm-reduction'
+import { rejectIfAppointments } from '../utils/appointments-guard'
 import {
   blockSlotsFormSchema,
   closedDateFormSchema,
@@ -83,10 +83,8 @@ export async function removeWeeklyBlockAction(
   const parsed = removeFormSchema.safeParse(fields(formData))
   if (!parsed.success) return { status: 'conflict', message: availabilityMessages.notFound }
 
-  const needsConfirmation = await confirmationNeeded(formData, () =>
-    availabilityService.countAffectedByWeeklyBlock(parsed.data.id),
-  )
-  if (needsConfirmation) return needsConfirmation
+  const rejected = await rejectIfAppointments(() => availabilityService.countAffectedByWeeklyBlock(parsed.data.id))
+  if (rejected) return rejected
 
   const result = await availabilityService.removeWeeklyBlock(parsed.data.id)
   if (isErr(result) && isAvailabilityEntryNotFound(result.error)) {
@@ -103,10 +101,8 @@ export async function addClosedDateAction(
   const parsed = closedDateFormSchema.safeParse(fields(formData))
   if (!parsed.success) return fromZod(parsed.error)
 
-  const needsConfirmation = await confirmationNeeded(formData, () =>
-    availabilityService.countAffectedOnDate(parsed.data.date),
-  )
-  if (needsConfirmation) return needsConfirmation
+  const rejected = await rejectIfAppointments(() => availabilityService.countAffectedOnDate(parsed.data.date))
+  if (rejected) return rejected
 
   const result = await availabilityService.addClosedDate(parsed.data)
   if (isErr(result)) {
