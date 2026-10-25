@@ -18,10 +18,11 @@ export const productSchema = z
     priceCrc: z.coerce.number().int().positive(validationMessages.priceCrc),
     displayOrder: z.coerce.number().int().min(0, validationMessages.displayOrder),
     stock: z
-      .string({ required_error: validationMessages.stockRequired })
+      .string({ message: validationMessages.stockRequired })
       .trim()
       .min(1, validationMessages.stockRequired)
-      .pipe(z.coerce.number().int(validationMessages.stock).min(0, validationMessages.stock)),
+      .transform(Number)
+      .pipe(z.number().int(validationMessages.stock).min(0, validationMessages.stock)),
   })
   .transform(
     (data): ProductFormFields => ({

@@ -3,7 +3,7 @@ import { MY_APPOINTMENTS_PATH } from '../constants/my-appointments-strings'
 import { cancelAppointmentAction, quoteCancellationAction } from '../actions/cancel-appointment-actions'
 import type { CancelAppointmentResult, QuoteCancellationResult } from '../types/cancellation-results'
 
-const APPOINTMENT_ID = '00000000-0000-0000-0000-00000000ca01'
+const APPOINTMENT_ID = '00000000-0000-4000-8000-00000000ca01'
 
 let quoteResult: QuoteCancellationResult
 let cancelResult: CancelAppointmentResult

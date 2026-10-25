@@ -4,7 +4,7 @@ import { cancellationMessages } from '../constants/cancellation-strings'
 import { CancelAppointment } from '../components/CancelAppointment'
 import type { CancelAppointmentResult, QuoteCancellationResult } from '../types/cancellation-results'
 
-const APPOINTMENT_ID = '00000000-0000-0000-0000-00000000ca01'
+const APPOINTMENT_ID = '00000000-0000-4000-8000-00000000ca01'
 const SLOT = 'martes, 12 de abril de 2044 · 9:00 a. m. – 10:00 a. m.'
 const copy = cancellationMessages
 
