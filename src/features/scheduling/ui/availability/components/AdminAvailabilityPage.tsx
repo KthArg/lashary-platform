@@ -8,8 +8,6 @@ import { readSlotPickerDate } from '../utils/slot-picker-date'
 import type { AvailabilitySearchParams } from '../types/slot-picker.types'
 import { AdminAvailabilityView } from './AdminAvailabilityView'
 
-// Compone /admin/citas: sesión de staff, carga de las tres listas y render de la vista. Un error
-// de lectura sube a error.tsx de la ruta (UI-003).
 export async function AdminAvailabilityPage({ searchParams }: { searchParams: AvailabilitySearchParams }) {
   await requireAdminSession()
   const slotPickerDate = readSlotPickerDate(searchParams, studioDateOf(systemClock()))

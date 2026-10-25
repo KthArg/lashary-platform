@@ -36,8 +36,6 @@ function Section(props: { id: string; title: string; subtitle: string; children:
   )
 }
 
-// Vista sin datos propios: recibe las listas ya cargadas y formateadas (UI-003: el vacío de cada
-// lista vive aquí; carga y error son loading.tsx y error.tsx de la ruta).
 export function AdminAvailabilityView({ weeklyDays, closedDates, manualBlocks, slotPicker }: AdminAvailabilityViewProps) {
   const hasWeekly = weeklyDays.some((day) => day.blocks.length > 0)
 
