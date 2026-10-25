@@ -9,6 +9,7 @@ const MAX_LAST_ERROR_LENGTH = 500
 
 export type SendDueRemindersDeps = {
   claimDuePending: ReminderRepository['claimDuePending']
+  releaseToPending: ReminderRepository['releaseToPending']
   getContact: ClientContactPort['getContact']
   markSent: ReminderRepository['markSent']
   markRetry: ReminderRepository['markRetry']
@@ -47,6 +48,8 @@ const sendOne = async (deps: SendDueRemindersDeps, reminder: ReminderSnapshot, n
   const contact = await deps.getContact(reminder.clientId)
   if (isErr(contact)) {
     console.error(`[notifications] no se pudo leer el contacto de ${reminder.clientId} para el recordatorio ${reminder.id}: ${contact.error}`)
+    const released = await deps.releaseToPending(reminder.id)
+    if (isErr(released)) console.error(`[notifications] no se pudo liberar a pending el recordatorio ${reminder.id} tras el fallo de contacto: ${released.error}`)
     return 'errored'
   }
   if (contact.value === null) {

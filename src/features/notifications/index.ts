@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { ok, err, isErr, type Result } from '@/shared/result'
 import { systemClock } from '@/shared/clock'
-import { createSystemClient, readSystemClientConfigFromEnv, type SystemClientFailure } from '@/shared/lib/supabase/system'
+import { createSystemClient, closeSystemClient, readSystemClientConfigFromEnv, type SystemClientFailure } from '@/shared/lib/supabase/system'
 import { listSchedulingAppointmentsForReminders, getSchedulingAppointmentForReminder } from '@/features/scheduling'
 import { getClientContactForReminders } from '@/features/clients'
 import { reminderRepository } from './db/reminder-repository'
@@ -52,6 +52,7 @@ export async function runNotificationsReminderCycle(): Promise<
       reschedulePending: repo.reschedulePending,
       cancelPending: repo.cancelPending,
       claimDuePending: repo.claimDuePending,
+      releaseToPending: repo.releaseToPending,
       getContact,
       markSent: repo.markSent,
       markRetry: repo.markRetry,
@@ -60,7 +61,7 @@ export async function runNotificationsReminderCycle(): Promise<
       backupChannel: resendEmailChannel(readResendEmailConfigFromEnv(process.env)),
     })()
   } finally {
-    await db.auth.signOut()
+    await closeSystemClient(db)
   }
 }
 

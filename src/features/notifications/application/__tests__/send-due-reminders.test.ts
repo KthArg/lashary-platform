@@ -29,6 +29,7 @@ function fakeChannel(kind: 'whatsapp' | 'email', outcome: 'ok' | 'send-failed' |
 function buildDeps(options: {
   reminder?: ReminderSnapshot
   hasContact?: boolean
+  contactReadFails?: boolean
   primary?: 'ok' | 'send-failed' | 'not-configured'
   backup?: 'ok' | 'send-failed' | 'not-configured'
 }) {
@@ -36,9 +37,17 @@ function buildDeps(options: {
   const sentCalls: unknown[] = []
   const retryCalls: unknown[] = []
   const exhaustedCalls: unknown[] = []
+  const releasedIds: string[] = []
   const deps: SendDueRemindersDeps = {
       claimDuePending: async () => ok([reminder]),
-      getContact: async () => ok(options.hasContact === false ? null : contact),
+      releaseToPending: async (id: string) => {
+        releasedIds.push(id)
+        return ok(undefined)
+      },
+      getContact: async () => {
+        if (options.contactReadFails) return err('repository-failed' as const)
+        return ok(options.hasContact === false ? null : contact)
+      },
       markSent: async (id: string, channel: string, sentAt: Date) => {
         sentCalls.push({ id, channel, sentAt })
         return ok(undefined)
@@ -55,7 +64,7 @@ function buildDeps(options: {
       backupChannel: fakeChannel('email', options.backup ?? 'ok'),
       clock: fixedClock('2026-11-01T15:00:01Z'),
   }
-  return { deps, sentCalls, retryCalls, exhaustedCalls }
+  return { deps, sentCalls, retryCalls, exhaustedCalls, releasedIds }
 }
 
 describe('sendDueReminders', () => {
@@ -154,6 +163,19 @@ describe('sendDueReminders', () => {
     expect(retryCalls).toHaveLength(1)
     const [{ error }] = retryCalls as { error: string }[]
     expect(error.length).toBeLessThanOrEqual(501)
+  })
+
+  it('libera a pending (sin gastar intentos) si falla la lectura del contacto (corrección del líder, 2026-10-24)', async () => {
+    const { deps, releasedIds, retryCalls, exhaustedCalls } = buildDeps({ contactReadFails: true })
+
+    const result = await sendDueReminders(deps)()
+
+    expect(isOk(result)).toBe(true)
+    if (!isOk(result)) return
+    expect(result.value).toEqual({ sent: 0, retried: 0, exhausted: 0, errored: 1 })
+    expect(releasedIds).toEqual(['rem-1'])
+    expect(retryCalls).toHaveLength(0)
+    expect(exhaustedCalls).toHaveLength(0)
   })
 
   it('cuenta como "errored" sin romper la corrida si no se pudo marcar el envío', async () => {

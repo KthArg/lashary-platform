@@ -24,6 +24,7 @@ describe('runReminderCycle', () => {
       reschedulePending: async () => ok(undefined),
       cancelPending: async () => ok(undefined),
       claimDuePending: async () => ok([]),
+      releaseToPending: async () => ok(undefined),
       getContact: async () => ok(contact),
       markSent: async () => ok(undefined),
       markRetry: async () => ok(undefined),
