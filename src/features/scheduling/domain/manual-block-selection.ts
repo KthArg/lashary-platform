@@ -1,5 +1,8 @@
 import { ok, err, type Result } from '@/shared/result'
+import { studioLocalToUtc } from '@/shared/studio-time'
 import { manualBlockInvalid, type ManualBlockInvalid } from './availability-errors'
+import type { DaySlot } from './day-slots'
+import type { ManualBlock } from './manual-blocks'
 import { MINUTES_PER_DAY } from './weekly-availability'
 
 export interface SelectedBlockRange {
@@ -30,4 +33,26 @@ export function selectedSlotsToRanges(
     }
   }
   return ok(ranges)
+}
+
+export type PickerSlotStatus = 'free' | 'busy' | 'blocked'
+
+export interface PickerSlot {
+  readonly startMin: number
+  readonly endMin: number
+  readonly status: PickerSlotStatus
+}
+
+export function markManualBlocks(
+  date: string,
+  slots: readonly DaySlot[],
+  blocks: readonly Pick<ManualBlock, 'startsAt' | 'endsAt'>[],
+): PickerSlot[] {
+  return slots.map((slot) => {
+    if (slot.status === 'free') return { startMin: slot.startMin, endMin: slot.endMin, status: 'free' }
+    const fromMs = studioLocalToUtc(date, slot.startMin).getTime()
+    const toMs = studioLocalToUtc(date, slot.endMin).getTime()
+    const insideManualBlock = blocks.some((block) => block.startsAt.getTime() <= fromMs && toMs <= block.endsAt.getTime())
+    return { startMin: slot.startMin, endMin: slot.endMin, status: insideManualBlock ? 'blocked' : 'busy' }
+  })
 }

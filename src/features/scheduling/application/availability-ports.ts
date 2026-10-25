@@ -47,6 +47,8 @@ export interface DayAvailabilityRepository {
 export type MsRange = { fromMs: number; toMs: number }
 
 export interface ManualBlockRepository {
+  // Bloqueos que se cruzan con [fromMs, untilMs), por inicio ascendente.
+  listInRange(resourceId: string, fromMs: number, untilMs: number): Promise<ManualBlock[]>
   // Resta los rangos de los bloqueos que los cubren, todo o nada. ManualBlockNotBlocked si un rango no toca ningún bloqueo.
   releaseRanges(
     resourceId: string,

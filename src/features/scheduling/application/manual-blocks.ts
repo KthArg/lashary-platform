@@ -2,7 +2,7 @@ import { ok, err, isErr, type Result } from '@/shared/result'
 import type { Clock } from '@/shared/clock'
 import { isCalendarDate, studioLocalToUtc } from '@/shared/studio-time'
 import { createManualBlock, type ManualBlock } from '../domain/manual-blocks'
-import { selectedSlotsToRanges } from '../domain/manual-block-selection'
+import { selectedSlotsToRanges, type SelectedBlockRange } from '../domain/manual-block-selection'
 import { computeDaySlots, SLOT_INTERVAL_MIN } from '../domain/day-slots'
 import {
   availabilityEntryNotFound,
@@ -10,6 +10,7 @@ import {
   type AvailabilityEntryNotFound,
   type ManualBlockHasAppointment,
   type ManualBlockInvalid,
+  type ManualBlockNotBlocked,
   type ManualBlockOverlap,
 } from '../domain/availability-errors'
 import { MAX_MANUAL_BLOCKS, type DayAvailabilityRepository, type ManualBlockRepository } from './availability-ports'
@@ -60,25 +61,36 @@ export type BlockSlotsError = ManualBlockInvalid | ManualBlockOverlap | ManualBl
 
 export type BlockSlotsDeps = ManualBlocksDeps & { day: Pick<DayAvailabilityRepository, 'listOpenHours'> }
 
+type SlotSelection = Pick<BlockSlotsInput, 'resourceId' | 'date' | 'slotStartMinutes'>
+
+async function selectedRanges(
+  day: BlockSlotsDeps['day'],
+  input: SlotSelection,
+): Promise<Result<SelectedBlockRange[], ManualBlockInvalid>> {
+  if (!isCalendarDate(input.date)) return err(manualBlockInvalid(['la fecha no es válida']))
+  const ranges = selectedSlotsToRanges(input.slotStartMinutes, SLOT_INTERVAL_MIN)
+  if (isErr(ranges)) return ranges
+
+  const grid = computeDaySlots({
+    date: input.date,
+    durationMin: SLOT_INTERVAL_MIN,
+    openHours: await day.listOpenHours(input.resourceId, input.date),
+    busy: [],
+    now: studioLocalToUtc(input.date, 0),
+  })
+  if (isErr(grid)) return err(manualBlockInvalid(['la fecha no es válida']))
+  const offeredStarts = new Set(grid.value.map((slot) => slot.startMin))
+  if (input.slotStartMinutes.some((startMinute) => !offeredStarts.has(startMinute))) {
+    return err(manualBlockInvalid(['un espacio elegido no se ofrece ese día']))
+  }
+  return ranges
+}
+
 export const blockSlots =
   (deps: BlockSlotsDeps) =>
   async (input: BlockSlotsInput): Promise<Result<ManualBlock[], BlockSlotsError>> => {
-    if (!isCalendarDate(input.date)) return err(manualBlockInvalid(['la fecha no es válida']))
-    const ranges = selectedSlotsToRanges(input.slotStartMinutes, SLOT_INTERVAL_MIN)
+    const ranges = await selectedRanges(deps.day, input)
     if (isErr(ranges)) return ranges
-
-    const grid = computeDaySlots({
-      date: input.date,
-      durationMin: SLOT_INTERVAL_MIN,
-      openHours: await deps.day.listOpenHours(input.resourceId, input.date),
-      busy: [],
-      now: studioLocalToUtc(input.date, 0),
-    })
-    if (isErr(grid)) return err(manualBlockInvalid(['la fecha no es válida']))
-    const offeredStarts = new Set(grid.value.map((slot) => slot.startMin))
-    if (input.slotStartMinutes.some((startMinute) => !offeredStarts.has(startMinute))) {
-      return err(manualBlockInvalid(['un espacio elegido no se ofrece ese día']))
-    }
 
     const now = deps.clock()
     const blocks: ManualBlock[] = []
@@ -100,6 +112,23 @@ export const blockSlots =
     if (isErr(saved)) return saved
 
     return ok(blocks)
+  }
+
+export type ReleaseSlotsError = ManualBlockInvalid | ManualBlockNotBlocked | ManualBlockHasAppointment
+
+export const releaseSlots =
+  (deps: { repo: Pick<ManualBlockRepository, 'releaseRanges'>; day: BlockSlotsDeps['day'] }) =>
+  async (input: SlotSelection): Promise<Result<void, ReleaseSlotsError>> => {
+    const ranges = await selectedRanges(deps.day, input)
+    if (isErr(ranges)) return ranges
+
+    return deps.repo.releaseRanges(
+      input.resourceId,
+      ranges.value.map((range) => ({
+        fromMs: studioLocalToUtc(input.date, range.startMin).getTime(),
+        toMs: studioLocalToUtc(input.date, range.endMin).getTime(),
+      })),
+    )
   }
 
 export const removeManualBlock =

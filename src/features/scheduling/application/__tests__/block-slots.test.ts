@@ -29,6 +29,9 @@ function createFakeManualBlockRepository(initialBlocks: ManualBlock[] = [], acti
     async listEndingAfter() {
       return blocks
     },
+    async listInRange(_resourceId, fromMs, untilMs) {
+      return blocks.filter((stored) => stored.startsAt.getTime() < untilMs && stored.endsAt.getTime() > fromMs)
+    },
     async releaseRanges() {
       return ok(undefined)
     },
