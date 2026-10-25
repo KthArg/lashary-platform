@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "oxlint src e2e",
     "test": "vitest run",
     "test:e2e": "playwright test"
   },
@@ -44,6 +44,7 @@
     "daisyui": "^4.12.24",
     "happy-dom": "^21.0.4",
     "jsdom": "^30.0.1",
+    "oxlint": "^1.89.0",
     "pg": "8.23.1",
     "postcss": "^8.5.26",
     "supabase": "2.116.0",

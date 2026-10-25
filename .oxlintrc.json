@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "typescript"
+  ],
+  "categories": {
+    "correctness": "warn"
+  },
+  "ignorePatterns": [
+    ".next",
+    "node_modules",
+    "coverage",
+    "playwright-report",
+    "src/features/_template"
+  ],
+  "rules": {
+    "typescript/no-explicit-any": "warn",
+    "no-console": "warn",
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": [
+              "../../../**"
+            ],
+            "message": "Al subir 3 o más niveles usa el alias @/…"
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/__tests__/**",
+        "e2e/**"
+      ],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
+}
