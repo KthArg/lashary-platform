@@ -1,4 +1,4 @@
-import { Money } from '@/shared/money'
+import { isNegativeMoney, isPositiveMoney, type Money, zeroMoney } from '@/shared/money'
 import { ok, err, type Result } from '@/shared/result'
 import { packageValidationError, type PackageValidationError } from './errors'
 
@@ -46,11 +46,11 @@ export function buildPackage(input: PackageInput): Result<Package, PackageValida
     problems.push('un paquete necesita al menos dos técnicas')
   }
 
-  if (!input.price.isPositive()) {
+  if (!isPositiveMoney(input.price)) {
     problems.push('el precio del paquete debe ser mayor que cero')
   }
-  const deposit = input.deposit ?? Money.zero()
-  if (deposit.isNegative() || !Number.isSafeInteger(deposit.colones)) {
+  const deposit = input.deposit ?? zeroMoney()
+  if (isNegativeMoney(deposit) || !Number.isSafeInteger(deposit.colones)) {
     problems.push('el anticipo debe ser un entero no negativo dentro del rango seguro')
   }
 

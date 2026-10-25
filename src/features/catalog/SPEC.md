@@ -21,6 +21,8 @@ defectos: []
 
 # catalog
 
+El código de `catalog` usa `Money` por sus funciones (`moneyFromColones`, `zeroMoney`, `isPositiveMoney`, `isNegativeMoney`) y no por sus métodos, como paso previo a quitar la `class` (ADR-0008); el comportamiento es el mismo.
+
 Lo que se vende: técnicas con tiempos y precios, paquetes, promociones. Precio y anticipo se congelan en la cita (DOM-002).
 
 ## Qué hace hoy
