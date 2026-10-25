@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
 import { render, screen, cleanup, within, fireEvent, waitFor } from '@testing-library/react'
 import { schedulingMessages } from '../../messages'
 import { toSlotPickerView } from '../utils/availability-format'
+import type { AvailabilityActionState } from '../types/availability-action-state'
 
 vi.mock('../actions/availability-actions', () => ({
   addWeeklyBlockAction: vi.fn(),
@@ -85,6 +86,23 @@ describe('SlotPicker — US-AGE-07, criterio 1: bloquear espacios', () => {
     expect(blockSlotsAction).toHaveBeenCalledTimes(1)
     expect(releaseSlotsAction).not.toHaveBeenCalled()
     await waitFor(() => expect(submitButton().textContent).toBe(pickerMessages.submitIdle))
+  })
+
+  it('mientras la acción está en vuelo se desactivan los checkboxes y el botón, y al terminar vuelven', async () => {
+    let finish: (state: AvailabilityActionState) => void = () => undefined
+    vi.mocked(blockSlotsAction).mockReturnValueOnce(new Promise<AvailabilityActionState>((resolve) => (finish = resolve)))
+    render(<SlotPicker picker={mondayPicker} />)
+    fireEvent.click(slotCheckbox('09:00–09:30'))
+    fireEvent.click(submitButton())
+
+    try {
+      await waitFor(() => expect(slotCheckbox('11:00–11:30').disabled).toBe(true))
+      expect(slotCheckbox('09:00–09:30').disabled).toBe(true)
+      expect(submitButton().disabled).toBe(true)
+    } finally {
+      finish({ status: 'conflict', message: pickerMessages.hasAppointment })
+    }
+    await waitFor(() => expect(slotCheckbox('11:00–11:30').disabled).toBe(false))
   })
 
   it('la región de estado existe aunque no haya nada que anunciar y aunque el día no tenga espacios (UI-003)', () => {

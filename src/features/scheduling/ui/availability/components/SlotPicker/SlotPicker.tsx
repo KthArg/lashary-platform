@@ -94,7 +94,7 @@ export function SlotPicker({ picker }: SlotPickerProps) {
                         value={slot.startMin}
                         checked={selected.has(slot.startMin)}
                         onChange={() => toggle(slot.startMin)}
-                        disabled={disabled}
+                        disabled={disabled || pending}
                         className={STYLES.checkbox}
                       />
                       <span className={STYLES.time}>{slot.range}</span>
