@@ -2,7 +2,7 @@ import { STUDIO_TIME_ZONE } from '@/shared/studio-time'
 import type { WeeklyBlock } from '../../../domain/weekly-availability'
 import type { ClosedDate } from '../../../domain/closed-dates'
 import type { ManualBlock } from '../../../domain/manual-blocks'
-import type { DaySlot } from '../../../domain/day-slots'
+import type { PickerSlot } from '@/features/scheduling/domain/manual-block-selection'
 import { schedulingMessages } from '../../messages'
 import type { SlotPickerView } from '../types/slot-picker.types'
 
@@ -74,13 +74,13 @@ export const toClosedDateViews = (dates: readonly ClosedDate[]): ClosedDateView[
     label: closed.label,
   }))
 
-export const toSlotPickerView = (date: string, slots: readonly DaySlot[]): SlotPickerView => ({
+export const toSlotPickerView = (date: string, slots: readonly PickerSlot[]): SlotPickerView => ({
   date,
   dateLabel: formatCalendarDate(date),
   slots: slots.map((slot) => ({
     startMin: slot.startMin,
     range: `${minutesToTime(slot.startMin)}–${minutesToTime(slot.endMin)}`,
-    busy: slot.status === 'busy',
+    status: slot.status,
   })),
 })
 

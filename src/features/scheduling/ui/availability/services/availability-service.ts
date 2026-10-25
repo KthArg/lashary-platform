@@ -12,9 +12,7 @@ import {
   releaseSlots,
   removeManualBlock,
 } from '../../../application/manual-blocks'
-import { getDaySlots } from '../../../application/day-slots'
 import { getPickerSlots } from '../../../application/picker-slots'
-import { SLOT_INTERVAL_MIN } from '../../../domain/day-slots'
 import { dayAvailabilityRepository } from '../../../db/day-availability-repository'
 import { weeklyAvailabilityRepository } from '../../../db/weekly-availability-repository'
 import { closedDateRepository } from '../../../db/closed-date-repository'
@@ -75,11 +73,6 @@ export const availabilityService = {
 
   async addManualBlock(input: { startsAt: Date; endsAt: Date; reason: string | null }) {
     return addManualBlock({ repo: await manualBlockRepository(), newId })({ resourceId, ...input })
-  },
-
-  async loadDaySlots(date: string) {
-    const repo = await dayAvailabilityRepository()
-    return getDaySlots({ repo, clock: systemClock })({ resourceId, date, durationMin: SLOT_INTERVAL_MIN })
   },
 
   async loadPickerSlots(date: string) {
