@@ -7,6 +7,7 @@ import type { PhoneRegistrationModalProps } from './PhoneRegistrationModal.types
 
 export function PhoneRegistrationModal({ isOpen }: PhoneRegistrationModalProps) {
   const { state, formAction, isPending } = usePhoneRegistration()
+  const errorMessage = state && !state.success ? state.error : undefined
   if (!isOpen) return null
   return (
     <div className={STYLES.backdrop} role="dialog" aria-modal="true">
@@ -20,9 +21,9 @@ export function PhoneRegistrationModal({ isOpen }: PhoneRegistrationModalProps) 
         <form action={formAction} className={STYLES.form}>
           <div>
             <label className={STYLES.label} htmlFor="phone-input">{AUTH_LABELS.phoneInput}</label>
-            <input id="phone-input" name="phone" type="tel" placeholder="+506 8888 8888" required pattern="[0-9+ ]{8,20}" className={STYLES.input} aria-describedby={state?.error ? 'phone-error' : undefined} autoFocus />
+            <input id="phone-input" name="phone" type="tel" placeholder="+506 8888 8888" required pattern="[0-9+ ]{8,20}" className={STYLES.input} aria-describedby={errorMessage ? 'phone-error' : undefined} autoFocus />
           </div>
-          {state?.error && <div id="phone-error" className={STYLES.error} role="alert"><span>{state.error}</span></div>}
+          {errorMessage && <div id="phone-error" className={STYLES.error} role="alert"><span>{errorMessage}</span></div>}
           <div className="pt-2">
             <button type="submit" disabled={isPending} className={STYLES.submitBtn}>
               {isPending ? <span className={STYLES.spinner} /> : <span>{AUTH_BUTTON_TEXTS.completeRegistration} &rarr;</span>}

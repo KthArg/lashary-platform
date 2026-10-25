@@ -2,7 +2,7 @@
 feature: auth
 dri: pendiente
 estado: terminada
-actualizado: "2026-10-14"
+actualizado: "2026-10-24"
 historias:
   - id: US-AUTH-01
     estado: terminada
@@ -43,6 +43,7 @@ Completadas las historias `US-AUTH-01` y `US-AUTH-02`.
 - `findRole` y `findClientProfile` solo tratan como "sin fila" el código `PGRST116`; cualquier otro error de lectura lanza, así una caída de la base no se confunde con una usuaria sin rol ni niega el acceso sin dejar rastro.
 - Textos y etiquetas de interfaz completamente externalizados en constantes (`auth-strings.ts`, DOM-009).
 - Separación atómica de componentes UI, hooks dedicados (`useGoogleSignIn`, `usePhoneRegistration`, `useAdminLoginForm`, `useInactivityTimeout`), estilos e interfaces.
+- El estado del formulario de teléfono se tipa con `PhoneRegistrationState` (`ui/client-login/types/`), una unión `{ success: true } | { success: false; error: string }` que no admite estados imposibles; `updateClientPhoneAction` devuelve ese tipo y `usePhoneRegistration` no usa `any`.
 - `clientCitasTitle` / `clientCitasSubtitle` / `clientCitasPlaceholder` retirados de `auth-strings.ts`: la ruta `/portal/citas` que los usaba como placeholder ahora la compone `scheduling` (`US-AGE-03`).
 
 ## Contrato público (`src/features/auth/index.ts`)
