@@ -25,7 +25,6 @@ export const MAX_WEEKLY_BLOCKS = 100
 export interface WeeklyAvailabilityRepository {
   listByResource(resourceId: string, limit: number): Promise<WeeklyBlock[]>
   insert(block: WeeklyBlock): Promise<Result<void, WeeklyBlockOverlap>>
-  // ok(false) si el bloque ya no existe; WeeklyBlockHasAppointment si la base lo rechaza por citas activas.
   remove(id: string): Promise<Result<boolean, WeeklyBlockHasAppointment>>
 }
 
@@ -50,9 +49,7 @@ export interface DayAvailabilityRepository {
 export type MsRange = { fromMs: number; toMs: number }
 
 export interface ManualBlockRepository {
-  // Bloqueos que se cruzan con [fromMs, untilMs), por inicio ascendente.
   listInRange(resourceId: string, fromMs: number, untilMs: number): Promise<ManualBlock[]>
-  // Resta los rangos de los bloqueos que los cubren, todo o nada. ManualBlockNotBlocked si un rango no toca ningún bloqueo.
   releaseRanges(
     resourceId: string,
     ranges: readonly MsRange[],
