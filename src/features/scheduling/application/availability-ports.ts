@@ -7,6 +7,7 @@ import type { BusyRange, OpenHours } from '../domain/day-slots'
 import type {
   ClosedDateAlreadyExists,
   ManualBlockHasAppointment,
+  ManualBlockNotBlocked,
   ManualBlockOverlap,
   WeeklyBlockOverlap,
 } from '../domain/availability-errors'
@@ -43,7 +44,14 @@ export interface DayAvailabilityRepository {
   listBusyRanges(resourceId: string, date: string): Promise<BusyRange[]>
 }
 
+export type MsRange = { fromMs: number; toMs: number }
+
 export interface ManualBlockRepository {
+  // Resta los rangos de los bloqueos que los cubren, todo o nada. ManualBlockNotBlocked si un rango no toca ningún bloqueo.
+  releaseRanges(
+    resourceId: string,
+    ranges: readonly MsRange[],
+  ): Promise<Result<void, ManualBlockNotBlocked | ManualBlockHasAppointment>>
   // Bloqueos que terminan después de `after`, por inicio ascendente.
   listEndingAfter(resourceId: string, after: Date, limit: number): Promise<ManualBlock[]>
   insert(block: ManualBlock): Promise<Result<void, ManualBlockOverlap | ManualBlockHasAppointment>>

@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { ok, err } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import type { ManualBlock } from '../domain/manual-blocks'
-import { manualBlockHasAppointment, manualBlockOverlap } from '../domain/availability-errors'
+import { manualBlockHasAppointment, manualBlockNotBlocked, manualBlockOverlap } from '../domain/availability-errors'
 import type { ManualBlockRepository } from '../application/availability-ports'
 
 const TABLE = 'scheduling_manual_blocks'
@@ -10,6 +10,8 @@ const COLUMNS = 'id, resource_id, starts_at, ends_at, reason'
 const EXCLUSION_VIOLATION = '23P01'
 const CHECK_VIOLATION = '23514'
 const ACTIVE_APPOINTMENT_MESSAGE = 'scheduling_manual_blocks_active_appointment'
+const RELEASE_FUNCTION = 'scheduling_release_manual_ranges'
+const NOT_FOUND_CODE = 'P0002'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export type ManualBlockRow = {
@@ -58,6 +60,20 @@ export function createSupabaseManualBlockRepository(db: SupabaseClient): ManualB
         .limit(limit)
       if (error) throw new Error(`${TABLE}.listEndingAfter: ${error.message}`)
       return (data ?? []).map((row) => rowToManualBlock(row as ManualBlockRow))
+    },
+
+    async releaseRanges(resourceId, ranges) {
+      const { error } = await db.rpc(RELEASE_FUNCTION, {
+        p_resource_id: resourceId,
+        p_from: ranges.map((range) => new Date(range.fromMs).toISOString()),
+        p_to: ranges.map((range) => new Date(range.toMs).toISOString()),
+      })
+      if (!error) return ok(undefined)
+      if (error.code === NOT_FOUND_CODE) return err(manualBlockNotBlocked())
+      if (error.code === CHECK_VIOLATION && error.message === ACTIVE_APPOINTMENT_MESSAGE) {
+        return err(manualBlockHasAppointment())
+      }
+      throw new Error(`${RELEASE_FUNCTION}: ${error.message}`)
     },
 
     insert: (block) => insertMany([block]),

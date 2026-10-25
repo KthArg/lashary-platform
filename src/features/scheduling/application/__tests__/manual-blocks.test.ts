@@ -24,6 +24,9 @@ function createFakeManualBlockRepository(initial: ManualBlock[] = []) {
         .sort((left, right) => left.startsAt.getTime() - right.startsAt.getTime())
         .slice(0, limit)
     },
+    async releaseRanges() {
+      return ok(undefined)
+    },
     async insert(block) {
       const overlaps = blocks.some(
         (stored) => stored.resourceId === block.resourceId && stored.startsAt < block.endsAt && block.startsAt < stored.endsAt,
