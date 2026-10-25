@@ -1,4 +1,4 @@
--- 20261024000002_scheduling_manual_blocks_release_ranges.sql
+-- 20261025000002_scheduling_manual_blocks_release_ranges.sql
 -- US-AGE-07 · desbloquear espacios sueltos (criterio 3): resta rangos de los bloqueos manuales que
 -- los cubren. Sin UPDATE: borra el bloqueo y reinserta lo que sobra, en una transacción (SEC-001,
 -- SEC-002, DOM-010, INT-008).
