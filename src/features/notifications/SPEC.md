@@ -24,10 +24,7 @@ historias:
   - id: US-CLI-06
     estado: no_iniciada
 flags: []
-deuda:
-  - que: "db/reminder-repository.ts no tiene prueba de integración propia contra Supabase local (a diferencia de scheduling/payments); su contrato real (insertIfAbsent idempotente, reschedulePending/cancelPending solo sobre pending, markRetry/markExhausted) se verificó manualmente aplicando la migración y corriendo supabase/tests/database/notifications_reminders_staff_access.test.sql, pero ese pgTAP no ejercita el repositorio TypeScript, solo SQL+RLS directo"
-    aceptada_en: "PR de cierre us/US-NOT-03 a main"
-    costo: "2h: *.integration.test.ts con pg para promover una sesión de prueba a staff (igual que scheduling/payments) y ejercitar las siete operaciones del repositorio contra una base real"
+deuda: []
 defectos: []
 ---
 
@@ -217,7 +214,8 @@ debía fusionarse en vez de solo renombrarse.
   la fila `claimed` — no gasta un intento, el siguiente ciclo la vuelve a ver `pending`. Probado a
   mano contra Supabase local (TTL vencido se reclama, TTL vigente no, tope de tanda respetado) y
   con pruebas unitarias de `releaseToPending` en `send-due-reminders.test.ts`; la prueba de
-  integración del reclamo en sí (con `claimed` real) es parte de A6 (ver abajo).
+  integración del reclamo en sí (con `claimed` real, incluido el reclamo doble simultáneo) es
+  parte de A6, pagada en la siguiente pieza (ver abajo).
 - **`db.auth.signOut()` cerraba todas las sesiones de la cuenta del cron:** el scope por defecto
   es `global` (todas las sesiones del usuario en todos los dispositivos/procesos), así que dos
   corridas del cron solapadas se tumbaban una a la otra a mitad de ciclo. `closeSystemClient`
@@ -231,9 +229,28 @@ cuenta admin — decisión de arquitectura, pendiente de ADR), A7 (rebase de `us
 lote nueva en `scheduling`, cambio de contrato cross-feature que no cabe en una pieza de
 corrección), M6 (Twilio construido y luego retirado en la misma pila — señal de proceso, no un
 defecto de código: ya documentado en ADR-0006 y STATUS.md), B5, B6 y B8 (requieren una decisión
-del líder/PO sobre el mensaje a la clienta y el número real de WhatsApp Business, no código). A6
-(pruebas de integración) se paga en la siguiente pieza — el líder pidió explícitamente que no
-quede como deuda aceptada en el cierre.
+del líder/PO sobre el mensaje a la clienta y el número real de WhatsApp Business, no código).
+
+## A6, parte de notifications (pieza 21): prueba de integración del repositorio
+
+El líder pidió explícitamente que esta deuda no quedara aceptada en el cierre. Esta pieza paga la
+parte que le toca a `notifications`; las lecturas de `scheduling` y la de contacto de `clients`
+son la siguiente pieza (INT-002: una pieza no puede tocar 3 features).
+
+`notifications/db/__tests__/reminder-repository.integration.test.ts` (patrón de
+`scheduling`/`payments`: `pg` solo para promover una sesión de prueba a staff vía
+`auth_user_roles` y limpiar; se omite sola si Supabase local no está arriba) ejercita las siete
+operaciones del repositorio contra una base real: `insertIfAbsent` idempotente (`23505` sin
+duplicar), `listPending`, `reschedulePending`/`cancelPending` solo sobre `pending`,
+`markSent`/`markRetry`/`markExhausted` solo sobre `claimed` (la guarda no actúa si la fila sigue
+`pending`), `releaseToPending`, y **el reclamo real**: `claimDuePending` reclama lo vencido por
+`send_at`, no lo que no vence, vuelve a reclamar un `claimed` cuyo TTL venció y no uno vigente (la
+corrección del líder del 2026-10-24), y dos reclamos simultáneos (`Promise.all`) nunca reclaman la
+misma fila dos veces (`FOR UPDATE SKIP LOCKED` probado de punta a punta, no solo a mano contra
+SQL, como en la pieza 20). También RLS: anon no lee ni escribe.
+
+Corrida contra Supabase local el 2026-10-24: 12/12 en verde, suite completa del proyecto y pgTAP
+sin romper nada. `deuda` del frontmatter de `notifications` queda vacío — era justo esta prueba.
 
 ## Falta para producción
 
