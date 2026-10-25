@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useActionState } from 'react'
 import { schedulingMessages } from '../../messages'
-import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '../../../domain/manual-blocks.constants'
+import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '@/features/scheduling/domain/manual-blocks.constants'
 import { availabilityStyles as STYLES } from '../styles/availability.styles'
 import {
   initialAvailabilityActionState,

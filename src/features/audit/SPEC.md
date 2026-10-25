@@ -2,7 +2,7 @@
 feature: audit
 dri: pendiente
 estado: terminada
-actualizado: 2026-09-30
+actualizado: 2026-10-20
 historias:
   []
 flags: []
@@ -34,6 +34,10 @@ Capa `db/`: `createSupabaseAuditEventRepository(db)`, función fábrica que devu
 
 - **`actor_id` sin `ON DELETE`** (`NO ACTION`): borrar una fila de `auth.users` que ya generó eventos falla por la FK. Es coherente con una bitácora append-only, pero hoy no hay flujo de borrado de usuarios; si aparece, se decide en una migración forward (p.ej. anonimizar el actor) y no con `CASCADE`, que borraría evidencia.
 - **Fallo al registrar: `record()` no lo absorbe.** Si Supabase rechaza el `insert` (RLS, red), `record()` lanza `Error` genérico; si el evento es inválido, devuelve `err(auditEventValidationError)`. Qué hacer ante el fallo lo decide quien llama. Hoy el único consumidor, `payments.exemptClient`, lo propaga: la exoneración ya quedó guardada y el error avisa que falta su evento (fail-closed hacia quien llama, no best-effort silencioso).
+
+## Eventos escritos desde SQL
+
+La bitácora solo admite INSERT de staff por RLS, y hay acciones de una clienta que deben quedar registradas sin que ella pueda escribir ahí. Contrato (INT-003): una función `SECURITY DEFINER` de la feature dueña de la acción inserta en `audit_events` en la misma transacción que el cambio, con `actor_id = auth.uid()`, y si el INSERT falla el cambio también (fail-closed). Hoy lo hace `scheduling_cancel_appointment` (US-AGE-06) con `scheduling.appointment.cancelled` sobre `scheduling_appointment`; el `payload` lo define `scheduling` (ver su SPEC) y la tabla sigue sin conocer el esquema de quien escribe. No se agregó ninguna política ni permiso a `audit_events`.
 
 ## Fuera de alcance por ahora
 

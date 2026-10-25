@@ -1,4 +1,4 @@
-import { Money } from '@/shared/money'
+import { moneyFromColones } from '@/shared/money'
 import { isOk } from '@/shared/result'
 import { buildCartLine, type CartLine, type CartProduct } from '@/features/store/domain/cart'
 import type { CartRepository } from '@/features/store/application/cart/ports'
@@ -13,7 +13,7 @@ export function makeCartProduct(overrides: Partial<FakeCartProduct> = {}): FakeC
     slug: 'serum-nutritivo-lashary',
     name: 'Serum nutritivo Lashary',
     imageUrl: '/productos/serum-nutritivo.jpg',
-    unitPrice: Money.fromColones(18000),
+    unitPrice: moneyFromColones(18000),
     isActive: true,
     ...overrides,
   }

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, within } from '@testing-library/react'
-import { RECORD_LABELS, RecordLoadError, RecordView } from '@/features/clients'
+import { LoadError, RECORD_LABELS, RecordView } from '@/features/clients'
 import { RECORD_CHANGE_TEXTS } from '../constants/record-strings'
 import { formatRecordDate } from '../record-history'
 import { ALLERGY, SENSITIVITY } from '@/features/clients/domain/record/__tests__/record-fixtures'
@@ -54,9 +54,9 @@ describe('RecordView — la pestaña Expediente (criterios 1, 2 y 4)', () => {
   })
 })
 
-describe('RecordLoadError — el estado de error con reintento (UI-003)', () => {
+describe('LoadError — el estado de error con reintento (UI-003)', () => {
   it('anuncia el error y Reintentar vuelve a pedir la página', () => {
-    render(<RecordLoadError message={RECORD_LABELS.unexpectedError} />)
+    render(<LoadError message={RECORD_LABELS.unexpectedError} retryLabel={RECORD_LABELS.retry} />)
     expect(screen.getByRole('alert').textContent).toContain(RECORD_LABELS.unexpectedError)
     fireEvent.click(screen.getByRole('button', { name: RECORD_LABELS.retry }))
     expect(mockRefresh).toHaveBeenCalled()
@@ -64,7 +64,7 @@ describe('RecordLoadError — el estado de error con reintento (UI-003)', () => 
 
   it('usa el reintento que le pasen, como el reset del límite de error', () => {
     const onRetry = vi.fn()
-    render(<RecordLoadError message={RECORD_LABELS.unexpectedError} onRetry={onRetry} />)
+    render(<LoadError message={RECORD_LABELS.unexpectedError} retryLabel={RECORD_LABELS.retry} onRetry={onRetry} />)
     fireEvent.click(screen.getByRole('button', { name: RECORD_LABELS.retry }))
     expect(onRetry).toHaveBeenCalled()
     expect(mockRefresh).not.toHaveBeenCalled()

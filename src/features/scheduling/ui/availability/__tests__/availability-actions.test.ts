@@ -124,6 +124,14 @@ describe('addWeeklyBlockAction — criterio 1', () => {
       message: availabilityMessages.notFound,
     })
   })
+
+  it('un error no previsto al quitar el bloque no devuelve ok ni revalida', async () => {
+    mocks.service.removeWeeklyBlock.mockResolvedValue(err(storageFailed('base caída')))
+    const state = await removeWeeklyBlockAction(idle, form({ id: 'a' }))
+    expect(state).toEqual({ status: 'conflict', message: availabilityMessages.weekly.removeFailed })
+    expect(state.status).not.toBe('ok')
+    expect(mocks.revalidatePath).not.toHaveBeenCalled()
+  })
 })
 
 describe('addClosedDateAction — criterio 2', () => {

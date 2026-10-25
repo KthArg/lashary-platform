@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { Money } from '@/shared/money'
 import { APPROVAL_QUEUE_CHOICE } from '../constants/approval-queue.labels'
+import { APPOINTMENT_DISPLAY_CHOICE } from '../../appointment-display/constants/appointment-display.constants'
 import { formatAppointmentChoice } from '../utils/format-appointment-choice'
 
 const CHOICE = {
@@ -16,28 +17,28 @@ describe('formatAppointmentChoice', () => {
   it('muestra el servicio, que es primera vez, y el precio con el anticipo', () => {
     expect(formatAppointmentChoice(CHOICE)).toEqual({
       service: 'Clásicas',
-      kind: APPROVAL_QUEUE_CHOICE.firstTime,
-      amounts: APPROVAL_QUEUE_CHOICE.priceAndDeposit(price(35000), price(10000)),
+      kind: APPOINTMENT_DISPLAY_CHOICE.firstTime,
+      amounts: APPOINTMENT_DISPLAY_CHOICE.priceAndDeposit(price(35000), price(10000)),
       warning: null,
     })
   })
 
   it('un retoque se rotula como retoque, para que la administradora vea si la clienta se equivocó', () => {
     expect(formatAppointmentChoice({ ...CHOICE, isFirstTime: false, detectedFirstTime: false, servicePrice: 25000 })).toMatchObject({
-      kind: APPROVAL_QUEUE_CHOICE.retouch,
-      amounts: APPROVAL_QUEUE_CHOICE.priceAndDeposit(price(25000), price(10000)),
+      kind: APPOINTMENT_DISPLAY_CHOICE.retouch,
+      amounts: APPOINTMENT_DISPLAY_CHOICE.priceAndDeposit(price(25000), price(10000)),
     })
   })
 
   it('sin anticipo lo dice en vez de mostrar cero colones', () => {
     expect(formatAppointmentChoice({ ...CHOICE, depositRequired: 0 }).amounts).toBe(
-      APPROVAL_QUEUE_CHOICE.priceNoDeposit(price(35000)),
+      APPOINTMENT_DISPLAY_CHOICE.priceNoDeposit(price(35000)),
     )
   })
 
   it('una cita sin elección guardada dice que el servicio no está registrado', () => {
     expect(formatAppointmentChoice(null)).toEqual({
-      service: APPROVAL_QUEUE_CHOICE.noService,
+      service: APPOINTMENT_DISPLAY_CHOICE.noService,
       kind: null,
       amounts: null,
       warning: null,

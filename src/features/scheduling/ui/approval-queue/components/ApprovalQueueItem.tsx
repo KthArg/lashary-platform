@@ -7,7 +7,7 @@ import {
 import { approvalQueueStyles as STYLES } from '../styles/approval-queue.styles'
 import { formatAppointmentChoice } from '../utils/format-appointment-choice'
 import { formatClientName } from '../utils/format-client-name'
-import { formatAppointmentSlot } from '../utils/format-appointment-slot'
+import { formatAppointmentSlot } from '../../appointment-display/utils/format-appointment-slot'
 import type { ApprovalQueueItemProps } from '../types/approval-queue.types'
 
 export function ApprovalQueueItem({ appointment, queue }: ApprovalQueueItemProps) {

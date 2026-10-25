@@ -1,10 +1,14 @@
 import type { Result } from '@/shared/result'
 import type { SelectableTechnique } from '../domain/technique-selection'
 import type { AppointmentDecision } from '../domain/appointment-decision.constants'
+import type { CancellableStatus } from '../domain/appointment-cancellation.constants'
 import type { SchedulingAlert } from '../domain/alert'
 import type {
+  AppointmentNotCancellable,
   AppointmentNotPending,
+  CancellationConsequenceChanged,
   ClientNotRegistered,
+  InvalidCancellationWindow,
   TooManyPendingAppointments,
   SlotNotOffered,
   SpaceNotAvailable,
@@ -87,6 +91,56 @@ export type QuoteBookingError = ClientNotRegistered | TechniqueNotAvailable | St
 
 export interface BookingQuoteRepository {
   quote(input: QuoteBookingInput): Promise<Result<BookingQuote, QuoteBookingError>>
+}
+
+export type CancellationQuote = {
+  startsAtMs: number
+  techniqueName: string
+  withinWindow: boolean
+  windowHours: number
+  forfeitedDeposit: number
+}
+
+export type CancelledAppointment = {
+  appointmentId: string
+  withinWindow: boolean
+  forfeitedDeposit: number
+}
+
+export type CancellationError =
+  | ClientNotRegistered
+  | AppointmentNotCancellable
+  | CancellationConsequenceChanged
+  | StorageFailed
+
+export interface CancellationRepository {
+  quote(appointmentId: string): Promise<Result<CancellationQuote, CancellationError>>
+  cancel(
+    appointmentId: string,
+    expectedForfeitedDeposit: number,
+  ): Promise<Result<CancelledAppointment, CancellationError>>
+}
+
+export type CancellationWindowChange = { previousHours: number; newHours: number }
+
+export interface CancellationPolicyRepository {
+  getWindowHours(): Promise<Result<number, StorageFailed>>
+  changeWindowHours(hours: number): Promise<Result<CancellationWindowChange, StorageFailed | InvalidCancellationWindow>>
+}
+
+export type MyAppointment = {
+  id: string
+  startsAtMs: number
+  endsAtMs: number
+  techniqueName: string
+  status: CancellableStatus
+  isFirstTime: boolean
+  servicePrice: number
+  depositRequired: number
+}
+
+export interface MyAppointmentsRepository {
+  listUpcoming(nowMs: number): Promise<Result<MyAppointment[], StorageFailed>>
 }
 
 export interface DelinquencyPort {

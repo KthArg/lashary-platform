@@ -3,6 +3,7 @@ export const schedulingMessages = {
     title: 'Agendar una cita',
     subtitle: 'Elegí la técnica que querés agendar. La duración incluye preparación y limpieza.',
     empty: 'Todavía no hay técnicas activas para agendar. Volvé a intentarlo más tarde.',
+    myAppointments: 'Mis citas',
     loading: 'Cargando las técnicas disponibles…',
     error: {
       title: 'No se pudo cargar el catálogo',
@@ -60,6 +61,7 @@ export const schedulingMessages = {
       noBlocks: 'Sin atención',
       savedOk: 'Bloque agregado.',
       removedOk: 'Bloque quitado.',
+      removeFailed: 'No se pudo quitar el bloque. No se hizo ningún cambio: intentá de nuevo.',
       overlap: 'Ese bloque se cruza con otro del mismo día.',
       removeLabel: (day: string, range: string) => `Quitar el bloque del ${day} de ${range}`,
     },

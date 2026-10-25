@@ -1,4 +1,4 @@
-import { Money } from '@/shared/money'
+import { type Money, moneyFromColones } from '@/shared/money'
 import { ok, err, isErr, type Result } from '@/shared/result'
 import {
   buildPackage,
@@ -54,13 +54,13 @@ function buildFromModel(
 ): Result<Package, PackageValidationError> {
   let price: Money
   try {
-    price = Money.fromColones(model.price)
+    price = moneyFromColones(model.price)
   } catch {
     return err(packageValidationError([packageCommandMessages.invalidPrice]))
   }
   let deposit: Money
   try {
-    deposit = Money.fromColones(model.deposit === undefined ? 0 : model.deposit)
+    deposit = moneyFromColones(model.deposit === undefined ? 0 : model.deposit)
   } catch {
     return err(packageValidationError([packageCommandMessages.invalidDeposit]))
   }

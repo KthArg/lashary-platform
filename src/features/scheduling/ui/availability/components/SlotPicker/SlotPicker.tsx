@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from 'react'
 import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '@/features/scheduling/domain/manual-blocks.constants'
-import { schedulingMessages } from '../../../messages'
+import { schedulingMessages } from '@/features/scheduling/ui/messages'
 import { blockSlotsAction, releaseSlotsAction } from '../../actions/availability-actions'
 import { BLOCK_SLOTS_FIELDS } from '../../constants/availability.constants'
 import { initialAvailabilityActionState, type AvailabilityActionState } from '../../types/availability-action-state'
@@ -94,7 +94,7 @@ export function SlotPicker({ picker }: SlotPickerProps) {
                         value={slot.startMin}
                         checked={selected.has(slot.startMin)}
                         onChange={() => toggle(slot.startMin)}
-                        disabled={disabled}
+                        disabled={disabled || pending}
                         className={STYLES.checkbox}
                       />
                       <span className={STYLES.time}>{slot.range}</span>
