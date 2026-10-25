@@ -1,5 +1,5 @@
 import { isErr, type Result } from '@/shared/result'
-import type { StorageFailed } from '../../../domain/errors'
+import type { StorageFailed } from '@/features/scheduling/domain/errors'
 import { schedulingMessages } from '../../messages'
 import { APPOINTMENTS_PATH } from '../constants/availability.constants'
 import type { AvailabilityActionState } from '../types/availability-action-state'

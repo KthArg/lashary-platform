@@ -13,7 +13,7 @@ import {
   isManualBlockOverlap,
   isWeeklyBlockHasAppointment,
   isWeeklyBlockOverlap,
-} from '../../../domain/availability-errors'
+} from '@/features/scheduling/domain/availability-errors'
 import { schedulingMessages } from '../../messages'
 import { availabilityService } from '../services/availability-service'
 import { rejectIfAppointments } from '../utils/appointments-guard'

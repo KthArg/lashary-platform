@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState } from 'react'
 import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '@/features/scheduling/domain/manual-blocks.constants'
-import { schedulingMessages } from '../../../messages'
+import { schedulingMessages } from '@/features/scheduling/ui/messages'
 import { blockSlotsAction, releaseSlotsAction } from '../../actions/availability-actions'
 import { BLOCK_SLOTS_FIELDS } from '../../constants/availability.constants'
 import { initialAvailabilityActionState, type AvailabilityActionState } from '../../types/availability-action-state'

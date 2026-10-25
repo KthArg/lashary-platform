@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import { isCalendarDate } from '@/shared/studio-time'
-import { CLOSED_DATE_KINDS } from '../../../domain/closed-dates'
+import { CLOSED_DATE_KINDS } from '@/features/scheduling/domain/closed-dates'
 import { SLOT_INTERVAL_MIN } from '@/features/scheduling/domain/day-slots'
-import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '../../../domain/manual-blocks.constants'
+import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '@/features/scheduling/domain/manual-blocks.constants'
 import { MINUTES_PER_DAY } from '@/features/scheduling/domain/weekly-availability'
 import { schedulingMessages } from '../../messages'
 
