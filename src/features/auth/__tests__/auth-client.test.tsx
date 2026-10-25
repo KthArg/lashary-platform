@@ -60,13 +60,13 @@ describe('US-AUTH-02: Autenticación de Clientas con Google y Teléfono', () => 
   })
   it('Criterio 3: Validación de formato de teléfono rechaza < 8 dígitos o caracteres no numéricos', async () => {
     const fd1 = new FormData(); fd1.append('phone', '123')
-    expect((await updateClientPhoneAction(fd1))?.error).toBe('El número de teléfono debe tener al menos 8 dígitos')
+    expect(await updateClientPhoneAction(fd1)).toEqual({ success: false, error: 'El número de teléfono debe tener al menos 8 dígitos' })
     const fd2 = new FormData(); fd2.append('phone', 'invalidphone')
-    expect((await updateClientPhoneAction(fd2))?.error).toBe('El teléfono solo debe contener números, espacios o el símbolo +')
+    expect(await updateClientPhoneAction(fd2)).toEqual({ success: false, error: 'El teléfono solo debe contener números, espacios o el símbolo +' })
   })
   it('Criterio 4: Guarda exitosamente el teléfono en clients_profiles', async () => {
     const fd = new FormData(); fd.append('phone', '88887777')
-    expect((await updateClientPhoneAction(fd))?.success).toBe(true)
+    expect(await updateClientPhoneAction(fd)).toEqual({ success: true })
   })
 
   it('Criterio 5: Renderiza ClientSidebar con navegación (Citas, Carrito, Cuenta), usuario y cerrar sesión', () => {

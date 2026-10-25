@@ -1,4 +1,3 @@
-export interface PhoneRegistrationState {
-  error?: string
-  success?: boolean
-}
+export type PhoneRegistrationState =
+  | { success: true }
+  | { success: false; error: string }
