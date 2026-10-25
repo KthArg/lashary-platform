@@ -114,4 +114,13 @@ describe('productSchema (DOM-007 — validación en el borde)', () => {
     expect(productSchema.safeParse({ ...validForm, stock: '-1' }).success).toBe(false)
     expect(productSchema.safeParse({ ...validForm, stock: '2.5' }).success).toBe(false)
   })
+
+  it('las existencias negativas dan el mensaje de existencias', () => {
+    const parsed = productSchema.safeParse({ ...validForm, stock: '-1' })
+    expect(parsed.success).toBe(false)
+    if (parsed.success) return
+    expect(parsed.error.issues.map((issue) => issue.message)).toContain(
+      productStrings.form.validation.stock,
+    )
+  })
 })

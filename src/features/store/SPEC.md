@@ -99,6 +99,8 @@ Pieza 8/8 (US-SHOP-01, cierra la historia): el botón "Agregar al carrito" del d
 
 La capa de presentación se organiza por área en `ui/<area>/` (`admin-products`, `public-grid`, `public-detail`), cada una con `components/<Componente>/` (`.tsx`, `.styles.ts`, `.types.ts`, `index.ts`), `hooks/`, `actions/`, `constants/`, `types/`, `validation/` y `__tests__/`; `domain/`, `application/`, `db/`, `http/` son la arquitectura DDD (ARCH-002/DOM-006/007) y no se solapan con esta convención.
 
+El esquema del formulario de productos (`product-schema.ts`) usa solo la API común de zod 3 y zod 4: el campo de existencias pasa `{ message }` en lugar de `required_error` y convierte con `.transform(Number)` antes de `.pipe(z.number()...)`, porque zod 4 eliminó `required_error` y no admite `z.coerce` dentro de `.pipe`. Los mensajes y los casos que rechaza no cambian, con `zod@3.25` y `zod@4.6`.
+
 ## Contrato público
 
 `index.ts` exporta el contrato completo para listar productos, renderizar grid, consultar catálogos, leer y pintar el detalle público por slug (`getPublicProductDetail`, `publicProductDetailDb`, `ProductDetail`) y administrar productos (ARCH-003). `client.ts` expone solo textos y rutas, para los boundaries de ruta que corren en el cliente.
