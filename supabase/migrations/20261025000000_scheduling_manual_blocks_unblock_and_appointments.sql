@@ -1,4 +1,4 @@
--- 20261020000000_scheduling_manual_blocks_unblock_and_appointments.sql
+-- 20261025000000_scheduling_manual_blocks_unblock_and_appointments.sql
 -- US-AGE-07 · feature scheduling — desbloquear un espacio (criterio 3) y no bloquear un espacio
 -- que tiene una cita activa sin resolverla primero (criterio 4).
 -- Se apoya en 20261015000000_scheduling_availability.sql (US-AGE-01), que dejó

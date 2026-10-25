@@ -1,4 +1,4 @@
--- 20261020000001_scheduling_manual_blocks_reason_length.sql
+-- 20261025000001_scheduling_manual_blocks_reason_length.sql
 -- US-AGE-07 · feature scheduling — tope de 500 caracteres al motivo de un bloqueo manual, el
 -- mismo que tiene el motivo de una decisión de cita (20261014000002). La UI y el dominio ya lo
 -- aplican (MAX_MANUAL_BLOCK_REASON_LENGTH); la base lo garantiza para cualquier otro camino.
