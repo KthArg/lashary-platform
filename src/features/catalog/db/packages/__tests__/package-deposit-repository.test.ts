@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { Money } from '@/shared/money'
+import { moneyFromColones } from '@/shared/money'
 import { isOk } from '@/shared/result'
 import { buildPackage } from '../../../domain/packages/package'
 import { createSupabasePackageRepository } from '../package-repository'
@@ -32,7 +32,7 @@ describe('persistencia del anticipo por paquete', () => {
     const repo = createSupabasePackageRepository(db)
     const built = buildPackage({
       id, name: row.name, techniqueIds: ['t1', 't2'],
-      price: Money.fromColones(30000), deposit: Money.fromColones(9000),
+      price: moneyFromColones(30000), deposit: moneyFromColones(9000),
     })
     if (!isOk(built)) throw new Error('paquete inválido')
     await repo.save(built.value)
