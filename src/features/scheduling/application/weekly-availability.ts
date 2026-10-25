@@ -9,6 +9,7 @@ import {
   availabilityEntryNotFound,
   weeklyBlockOverlap,
   type AvailabilityEntryNotFound,
+  type WeeklyBlockHasAppointment,
   type WeeklyBlockInvalid,
   type WeeklyBlockOverlap,
 } from '../domain/availability-errors'
@@ -53,5 +54,8 @@ export const addWeeklyBlock =
 
 export const removeWeeklyBlock =
   (deps: Pick<WeeklyAvailabilityDeps, 'repo'>) =>
-  async (id: string): Promise<Result<void, AvailabilityEntryNotFound>> =>
-    (await deps.repo.remove(id)) ? ok(undefined) : err(availabilityEntryNotFound(id))
+  async (id: string): Promise<Result<void, AvailabilityEntryNotFound | WeeklyBlockHasAppointment>> => {
+    const removed = await deps.repo.remove(id)
+    if (isErr(removed)) return removed
+    return removed.value ? ok(undefined) : err(availabilityEntryNotFound(id))
+  }

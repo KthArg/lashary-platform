@@ -43,6 +43,8 @@ export const schedulingMessages = {
         count === 1
           ? 'Hay 1 cita agendada en ese horario. Rechazala o cancelala antes de continuar; no se hizo ningún cambio.'
           : `Hay ${count} citas agendadas en ese horario. Rechazalas o cancelalas antes de continuar; no se hizo ningún cambio.`,
+      mustResolveSome:
+        'Hay citas agendadas en ese horario. Rechazalas o cancelalas antes de continuar; no se hizo ningún cambio.',
       countFailed: 'No pudimos revisar si hay citas agendadas en ese horario. No se hizo ningún cambio: intentá de nuevo.',
     },
     remove: 'Quitar',

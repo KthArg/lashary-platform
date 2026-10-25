@@ -7,9 +7,11 @@ import { studioLocalToUtc } from '@/shared/studio-time'
 import {
   isAvailabilityEntryNotFound,
   isClosedDateAlreadyExists,
+  isClosedDateHasAppointment,
   isManualBlockHasAppointment,
   isManualBlockNotBlocked,
   isManualBlockOverlap,
+  isWeeklyBlockHasAppointment,
   isWeeklyBlockOverlap,
 } from '../../../domain/availability-errors'
 import { schedulingMessages } from '../../messages'
@@ -87,8 +89,11 @@ export async function removeWeeklyBlockAction(
   if (rejected) return rejected
 
   const result = await availabilityService.removeWeeklyBlock(parsed.data.id)
-  if (isErr(result) && isAvailabilityEntryNotFound(result.error)) {
-    return { status: 'conflict', message: availabilityMessages.notFound }
+  if (isErr(result)) {
+    if (isWeeklyBlockHasAppointment(result.error)) {
+      return resolveAppointmentFirst(availabilityMessages.affected.mustResolveSome)
+    }
+    if (isAvailabilityEntryNotFound(result.error)) return { status: 'conflict', message: availabilityMessages.notFound }
   }
   return done(availabilityMessages.weekly.removedOk)
 }
@@ -107,6 +112,9 @@ export async function addClosedDateAction(
   const result = await availabilityService.addClosedDate(parsed.data)
   if (isErr(result)) {
     if (isClosedDateAlreadyExists(result.error)) return { status: 'conflict', message: availabilityMessages.closed.alreadyClosed }
+    if (isClosedDateHasAppointment(result.error)) {
+      return resolveAppointmentFirst(availabilityMessages.affected.mustResolveSome)
+    }
     return invalid([availabilityMessages.validation.date])
   }
   return done(availabilityMessages.closed.savedOk)

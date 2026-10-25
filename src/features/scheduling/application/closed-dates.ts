@@ -6,6 +6,7 @@ import {
   availabilityEntryNotFound,
   type AvailabilityEntryNotFound,
   type ClosedDateAlreadyExists,
+  type ClosedDateHasAppointment,
   type ClosedDateInvalid,
 } from '../domain/availability-errors'
 import { MAX_CLOSED_DATES, type ClosedDateRepository } from './availability-ports'
@@ -34,7 +35,7 @@ export const addClosedDate =
   (deps: Pick<ClosedDatesDeps, 'repo' | 'newId'>) =>
   async (
     input: AddClosedDateInput,
-  ): Promise<Result<ClosedDate, ClosedDateInvalid | ClosedDateAlreadyExists>> => {
+  ): Promise<Result<ClosedDate, ClosedDateInvalid | ClosedDateAlreadyExists | ClosedDateHasAppointment>> => {
     const built = createClosedDate({ id: deps.newId(), ...input })
     if (isErr(built)) return built
 
