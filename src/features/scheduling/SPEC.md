@@ -225,7 +225,7 @@ Aprobadas por el PO el 2026-10-23, comunicado por Bayron con la revisión de Ken
 - Al reagendar, la cita vuelve a `pending_approval` y la administradora la confirma de nuevo. El anticipo registrado se queda como está y el precio y la duración siguen congelados (DOM-002).
 - El tope de reagendados es global, en una tabla de política como la de cancelación, con un contador por cita, valor por defecto 1 y un `CHECK` de máximo. La administradora lo cambia.
 - El espacio nuevo se revisa como una reserva, incluidos los bloqueos manuales de US-AGE-07, y el cambio es una sola función de SQL con `FOR UPDATE` y el evento de la bitácora en la misma transacción (DOM-011).
-- El criterio 4 (notificar a la administradora) se traslada a US-NOT-02, que consume el evento `scheduling.appointment.rescheduled` con el horario anterior y el nuevo. El traslado espera el visto bueno de KthArg.
+- El criterio 4 (notificar a la administradora) se traslada a US-NOT-02, que consume el evento `scheduling.appointment.rescheduled` con el horario anterior y el nuevo. El traslado tiene el visto bueno de KthArg, comunicado por Bayron el 2026-10-25.
 
 ## Criterios recibidos de US-AGE-01
 
