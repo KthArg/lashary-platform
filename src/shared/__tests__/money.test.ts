@@ -1,5 +1,16 @@
 import { describe, it, expect } from 'vitest'
-import { Money } from '@/shared/money'
+import {
+  addMoney,
+  formatMoney,
+  isNegativeMoney,
+  isPositiveMoney,
+  isZeroMoney,
+  Money,
+  moneyEquals,
+  moneyFromColones,
+  subtractMoney,
+  zeroMoney,
+} from '@/shared/money'
 
 describe('Money — DOM-001: entero de colones, float prohibido', () => {
   it('crea un monto desde un entero de colones', () => {
@@ -46,5 +57,40 @@ describe('Money — DOM-001: entero de colones, float prohibido', () => {
 
   it('se formatea en colones para display', () => {
     expect(Money.fromColones(15000).toString()).toContain('15')
+  })
+})
+
+describe('Money — funciones que delegan en la clase', () => {
+  it('moneyFromColones y zeroMoney crean el mismo monto que la clase', () => {
+    expect(moneyFromColones(15000).colones).toBe(15000)
+    expect(zeroMoney().colones).toBe(0)
+  })
+
+  it('moneyFromColones rechaza un float igual que la clase', () => {
+    expect(() => moneyFromColones(15000.5)).toThrow(RangeError)
+  })
+
+  it('addMoney suma y subtractMoney resta', () => {
+    expect(addMoney(moneyFromColones(10000), moneyFromColones(2500)).colones).toBe(12500)
+    expect(subtractMoney(moneyFromColones(10000), moneyFromColones(2500)).colones).toBe(7500)
+  })
+
+  it('moneyEquals compara por valor', () => {
+    expect(moneyEquals(moneyFromColones(100), moneyFromColones(100))).toBe(true)
+    expect(moneyEquals(moneyFromColones(100), moneyFromColones(101))).toBe(false)
+  })
+
+  it('isZeroMoney, isPositiveMoney e isNegativeMoney distinguen el signo', () => {
+    expect(isZeroMoney(zeroMoney())).toBe(true)
+    expect(isZeroMoney(moneyFromColones(1))).toBe(false)
+    expect(isPositiveMoney(moneyFromColones(1))).toBe(true)
+    expect(isPositiveMoney(zeroMoney())).toBe(false)
+    expect(isNegativeMoney(moneyFromColones(-1))).toBe(true)
+    expect(isNegativeMoney(zeroMoney())).toBe(false)
+  })
+
+  it('formatMoney da el mismo texto que toString', () => {
+    const amount = moneyFromColones(15000)
+    expect(formatMoney(amount)).toBe(amount.toString())
   })
 })
