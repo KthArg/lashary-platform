@@ -11,7 +11,7 @@ import type { CancellationQuote } from '../../../application/ports'
 import { cancellationMessages } from '../constants/cancellation-strings'
 import { performCancelAppointment, performQuoteCancellation, type CancellationDeps } from '../utils/perform-cancellation'
 
-const APPOINTMENT_ID = '00000000-0000-0000-0000-00000000ca01'
+const APPOINTMENT_ID = '00000000-0000-4000-8000-00000000ca01'
 const WINDOW_HOURS = 48
 const DEPOSIT = 10000
 const deposit = Money.fromColones(DEPOSIT).toString()
