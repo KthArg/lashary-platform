@@ -67,6 +67,6 @@ describe('buildCart', () => {
   })
 
   it('un carrito vacío tiene subtotal cero', () => {
-    expect(buildCart([]).subtotal.colones === 0).toBe(true)
+    expect(buildCart([]).subtotal.colones).toBe(0)
   })
 })

@@ -2,7 +2,7 @@
 feature: catalog
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-23
+actualizado: 2026-10-24
 historias:
   - id: US-AGE-08
     estado: terminada
@@ -21,7 +21,7 @@ defectos: []
 
 # catalog
 
-`Money` (`shared/money.ts`) ya no es una `class`: es una `interface` con marca `unique symbol` y funciones (`moneyFromColones`, `zeroMoney`, `addMoney`, `formatMoney`, ADR-0008); el comportamiento es el mismo.
+`Money` (`shared/money.ts`) ya no es una `class`: es una `interface` con marca `unique symbol` y funciones (`moneyFromColones`, `zeroMoney`, `isPositiveMoney`, `isNegativeMoney`, ADR-0008); el comportamiento es el mismo.
 
 Lo que se vende: técnicas con tiempos y precios, paquetes, promociones. Precio y anticipo se congelan en la cita (DOM-002).
 
@@ -118,7 +118,7 @@ Detalle y garantías: [docs/contracts/catalog-api.md](../../../docs/contracts/ca
 - **D5 — `aftercare_text` obligatorio y no vacío.** El criterio 6 dice "cada técnica define su texto de cuidados".
 - **D10 — `price_retouch` y `duration_retouch_min` van juntas o ninguna.** Un retoque necesita precio y duración; lo valida `buildTechnique`.
 - **Auth es canónica en su propia rama** (US-AUTH-01/02). Esta rama consume su contrato (`getAuthSession`, `requireAdminSession`, `auth_user_roles`) y aporta `public.auth_is_staff()` de forma provisional en su migración forward, hasta que `auth` la exponga.
-- **D-SIN-CLASE — el código nuevo de paquetes evita `class`.** `Package` (`domain/packages/package.ts`) es una `interface`, construida solo por `buildPackage()` (DOM-007); `markPackageInactive()`/`packageToView()` son funciones puras en vez de métodos. Los errores de paquete (`domain/packages/errors.ts`) son interfaces con función fábrica y guardas de tipo (`isPackageValidationError`, etc., sobre las constantes `PACKAGE_ERROR_CODES` y una guarda genérica `hasCode`), no extienden `DomainError`; los errores de `Technique` siguen el mismo patrón en `domain/techniques/errors.ts`. `db/packages/package-repository.ts` y el fake de tests son funciones fábrica (`createSupabasePackageRepository`, `createFakePackageRepository`) que devuelven un objeto que implementa `PackageRepository`, no clases con `implements`. `save()` devuelve `Result<void, PackageNameConflict>` (el 23505 de Postgres se mapea a `err`, sin `throw` de objetos planos; solo las fallas de infra lanzan `Error`). `Package` lleva una marca (`unique symbol` no exportado) que solo `buildPackage()` pone, así que un literal con la misma forma no pasa como `Package` (revisión de BayronAQ99 en #134). Los errores de `Technique` (`TECHNIQUE_ERROR_CODES`, fábricas `technique*` y guardas `isTechnique*`) y su `save()` con `Result` siguen el mismo patrón desde 2026-10-09, y `Technique` es `interface` con `buildTechnique` y la marca `techniqueBrand`, y `createSupabaseTechniqueRepository` y `createFakeTechniqueRepository` son funciones fábrica; `Money`, `DomainError` y `CmsUnavailable` (`content`) siguen siendo clases, pendientes de una regla de equipo aún no escrita en `rules.yaml`.
+- **D-SIN-CLASE — el código nuevo de paquetes evita `class`.** `Package` (`domain/packages/package.ts`) es una `interface`, construida solo por `buildPackage()` (DOM-007); `markPackageInactive()`/`packageToView()` son funciones puras en vez de métodos. Los errores de paquete (`domain/packages/errors.ts`) son interfaces con función fábrica y guardas de tipo (`isPackageValidationError`, etc., sobre las constantes `PACKAGE_ERROR_CODES` y una guarda genérica `hasCode`), no extienden `DomainError`; los errores de `Technique` siguen el mismo patrón en `domain/techniques/errors.ts`. `db/packages/package-repository.ts` y el fake de tests son funciones fábrica (`createSupabasePackageRepository`, `createFakePackageRepository`) que devuelven un objeto que implementa `PackageRepository`, no clases con `implements`. `save()` devuelve `Result<void, PackageNameConflict>` (el 23505 de Postgres se mapea a `err`, sin `throw` de objetos planos; solo las fallas de infra lanzan `Error`). `Package` lleva una marca (`unique symbol` no exportado) que solo `buildPackage()` pone, así que un literal con la misma forma no pasa como `Package` (revisión de BayronAQ99 en #134). Los errores de `Technique` (`TECHNIQUE_ERROR_CODES`, fábricas `technique*` y guardas `isTechnique*`) y su `save()` con `Result` siguen el mismo patrón desde 2026-10-09, y `Technique` es `interface` con `buildTechnique` y la marca `techniqueBrand`, y `createSupabaseTechniqueRepository` y `createFakeTechniqueRepository` son funciones fábrica; ya no queda ninguna `class` en `src` (ADR-0008).
 - Sin ADR: el congelamiento de precio ya lo fija DOM-002; el resto son decisiones locales de la feature.
 
 ## Flags

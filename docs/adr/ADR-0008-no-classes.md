@@ -34,11 +34,11 @@ Los built-ins de JavaScript (`Error`, `Map`, `Set`, `Date`) se siguen usando: la
 - **Ganamos:** un solo estilo en todo el repo, el mismo de `result.ts`; entidades que son datos planos serializables; narrowing de errores sin depender de la cadena de prototipos.
 - **Perdemos / aceptamos:** un `throw` de un error que ya no es clase lanza un objeto plano — sin `stack` y sin `instanceof Error`. Donde se lanza a propósito (hoy solo `PackageNameConflict`, que mapea el `23505` de Postgres), se atrapa en el mismo borde de `application/` y se convierte a `Result`, así que no se pierde información útil.
 - **Obligatorio desde hoy:** ningún PR agrega una `class` nueva.
-- **Migración pendiente.** Las clases que ya existían se migran cuando se trabaje su historia, no en un PR aparte que toque todo:
+- **Migración completada.** Las clases que ya existían se migraron y ya no queda ninguna `class` en `src`:
 
 | Historia | Archivos | Clases |
 |---|---|---|
-| US-LAND-01 | `content/domain/errors.ts` | `CmsUnavailable` |
+| US-LAND-01 | `content/domain/errors.ts` | `CmsUnavailable` pasó a `interface` con fábrica y guarda (#378). |
 | — (`shared/`) | `shared/money.ts`, `shared/domain-error.ts` | `Money` pasó a `interface` con funciones y `DomainError` se eliminó: ninguna feature la extendía. Ya no queda ninguna `class` en el código. |
 
 - **Lecciones de #134, para quien migre:**

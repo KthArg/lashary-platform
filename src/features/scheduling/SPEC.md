@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-10-23"
+actualizado: "2026-10-24"
 historias:
   - id: US-AGE-01
     estado: terminada
@@ -39,7 +39,7 @@ defectos: []
 
 # scheduling
 
-`Money` (`shared/money.ts`) ya no es una `class`: es una `interface` con marca `unique symbol` y funciones (`moneyFromColones`, `zeroMoney`, `addMoney`, `formatMoney`, ADR-0008); el comportamiento es el mismo.
+`Money` (`shared/money.ts`) ya no es una `class`: es una `interface` con marca `unique symbol` y funciones (`moneyFromColones`, `formatMoney`, ADR-0008); el comportamiento es el mismo.
 
 Agenda completa. US-AGE-09 cubre el flujo de aprobacion manual (su texto original, ADR-0003) Y el constraint de no-solape (sus criterios, ADR-0002); recurso explicito (ADR-0005). Agendar en nombre de una clienta: clausula de US-MOR-02 (ADR-0007).
 
