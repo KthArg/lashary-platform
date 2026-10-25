@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Money } from '@/shared/money'
+import { moneyFromColones } from '@/shared/money'
 import { isErr, isOk } from '@/shared/result'
 import { MAX_CART_QUANTITY, MIN_CART_QUANTITY } from '@/features/store/domain/cart'
 import {
@@ -18,7 +18,7 @@ const brush = makeCartProduct({
   id: 'producto-cepillo',
   slug: 'cepillo-limpiador-lashary',
   name: 'Cepillo limpiador Lashary',
-  unitPrice: Money.fromColones(12000),
+  unitPrice: moneyFromColones(12000),
 })
 const retired = makeCartProduct({ id: 'producto-retirado', isActive: false })
 
