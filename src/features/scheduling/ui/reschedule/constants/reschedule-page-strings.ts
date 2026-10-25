@@ -22,6 +22,13 @@ export const reschedulePageMessages = {
       ? 'Por ahora no se pueden reagendar citas.'
       : `Esta cita ya se reagendó ${max === 1 ? '1 vez' : `${max} veces`}, el máximo permitido.`,
   backToAppointments: 'Volver a mis citas',
+  rescheduleButton: 'Reagendar',
+  rescheduleButtonLabel: (slot: string) => `Reagendar la cita del ${slot}`,
+  backToPending: 'Al reagendar, tu cita vuelve a quedar pendiente de aprobación y la administradora tiene que aprobarla de nuevo. Conservás tu anticipo.',
+  keepsPending: 'Tu cita sigue pendiente de aprobación con el nuevo horario.',
+  chooseSlot: 'Elegí un espacio para continuar.',
+  confirmButton: 'Confirmar el nuevo horario',
+  submitting: 'Reagendando…',
   error: {
     title: 'No se pudo cargar la pantalla de reagendar',
     body: 'Ocurrió un error al consultar tu cita y la disponibilidad.',

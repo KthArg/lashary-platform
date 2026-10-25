@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup, within } from '@testing-library/react'
 import { clientCalendarMessages } from '../../client-calendar/constants/client-calendar-strings'
 import { MY_APPOINTMENTS_PATH } from '../../my-appointments/constants/my-appointments-strings'
@@ -7,6 +7,8 @@ import { reschedulePageMessages, reschedulePath } from '../constants/reschedule-
 import type { RescheduleView as RescheduleViewModel } from '../types/reschedule-view.types'
 
 const copy = reschedulePageMessages
+
+vi.mock('../actions/reschedule-appointment-action', () => ({ rescheduleAppointmentAction: vi.fn() }))
 const APPOINTMENT_ID = 'cita-1'
 const CURRENT = 'Clásicas · viernes, 10 de septiembre de 2027 · 9:00 a. m. – 10:00 a. m.'
 const day = {
@@ -55,12 +57,15 @@ describe('RescheduleView', () => {
       <RescheduleView
         view={{
           status: 'ready',
+          appointmentId: APPOINTMENT_ID,
+          expectedStatus: 'approved',
           current: CURRENT,
           remaining: copy.remaining(1),
+          consequence: copy.backToPending,
           day,
           slots: [
-            { startMin: 540, range: '09:00–10:15', busy: false },
-            { startMin: 570, range: '09:30–10:45', busy: true },
+            { startMin: 540, range: '09:00–10:15', busy: false, startsAtMs: 1 },
+            { startMin: 570, range: '09:30–10:45', busy: true, startsAtMs: 2 },
           ],
         }}
       />,
@@ -78,7 +83,20 @@ describe('RescheduleView', () => {
   })
 
   it('un día sin espacios lo dice', () => {
-    render(<RescheduleView view={{ status: 'ready', current: CURRENT, remaining: copy.remaining(1), day, slots: [] }} />)
+    render(
+      <RescheduleView
+        view={{
+          status: 'ready',
+          appointmentId: APPOINTMENT_ID,
+          expectedStatus: 'approved',
+          current: CURRENT,
+          remaining: copy.remaining(1),
+          consequence: copy.backToPending,
+          day,
+          slots: [],
+        }}
+      />,
+    )
 
     expect(screen.getByText(clientCalendarMessages.noSlots)).toBeTruthy()
     expect(screen.queryByRole('radio')).toBeNull()
