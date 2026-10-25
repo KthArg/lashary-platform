@@ -8,3 +8,4 @@ export { cancellationPolicyMessages } from './ui/cancellation-policy/constants/c
 export { CancellationPolicyLoading } from './ui/cancellation-policy/components/CancellationPolicyLoading'
 export { myAppointmentsMessages } from './ui/my-appointments/constants/my-appointments-strings'
 export { MyAppointmentsLoading } from './ui/my-appointments/components/MyAppointmentsLoading'
+export { reschedulePageMessages } from './ui/reschedule/constants/reschedule-page-strings'
