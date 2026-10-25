@@ -1,7 +1,5 @@
 export const BOOKING_CONFIRM_PATH = '/portal/citas/calendario/confirmar'
 
-export const PORTAL_CITAS_PATH = '/portal/citas'
-
 export const MAX_CONFIRM_SERVICES = 100
 
 export const bookingConfirmMessages = {

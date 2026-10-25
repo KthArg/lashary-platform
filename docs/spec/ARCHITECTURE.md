@@ -38,6 +38,7 @@ Features: `platform`, `audit`, `auth`, `content`, `landing`, `catalog`, `schedul
 ### ARCH-003 — Imports solo por entry point
 **Regla.** Una feature importa de otra únicamente vía su `index.ts` público. Import a rutas internas ajenas (`features/x/domain/...`) prohibido.
 **Racional.** Sin esta frontera todo acoplamiento es legal y ninguna feature puede refactorizarse por dentro sin romper vecinos.
+**Entry point cliente-seguro.** Los `loading.tsx` y `error.tsx` de `src/app` son componentes de cliente (`'use client'`). Importan los textos de `@/features/<feature>/client`, no del `index.ts`: el `index.ts` reexporta el acceso a datos de servidor (`next/headers`) y lo arrastraría al bundle del navegador. `client.ts` solo exporta textos, constantes y rutas.
 **Cumplimiento.** L3 ESLint `no-restricted-imports` + L1 script (F4).
 
 ### ARCH-004 — Domain no importa de otras features
@@ -90,7 +91,7 @@ Features: `platform`, `audit`, `auth`, `content`, `landing`, `catalog`, `schedul
 **Cumplimiento.** L3 sin políticas de UPDATE/DELETE sobre el ledger + L1 lint de migraciones (F4).
 
 ### DOM-006 — Errores tipados, mapeo único
-**Regla.** Un `DomainError` base con subtipos específicos. Nada lanza strings ni errores pelados desde domain o application. Resultados de negocio **esperados** (espacio ocupado, morosidad activa) se retornan como valores (`Result`), no se lanzan. El mapeo a HTTP status ocurre en exactamente un lugar. Sin catch silencioso.
+**Regla.** Cada feature define sus errores como `interface` con `code` literal, fábrica y guarda (ADR-0008). Nada lanza strings ni errores pelados desde domain o application. Resultados de negocio **esperados** (espacio ocupado, morosidad activa) se retornan como valores (`Result`), no se lanzan. El mapeo a HTTP status ocurre en exactamente un lugar. Sin catch silencioso.
 **Racional.** Errores sin tipo obligan a adivinar por mensaje; el catch silencioso convierte bugs en misterios sin stack trace.
 **Cumplimiento.** L4 skills + L5 review.
 

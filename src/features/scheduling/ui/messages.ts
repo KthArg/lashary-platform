@@ -3,6 +3,7 @@ export const schedulingMessages = {
     title: 'Agendar una cita',
     subtitle: 'Elegí la técnica que querés agendar. La duración incluye preparación y limpieza.',
     empty: 'Todavía no hay técnicas activas para agendar. Volvé a intentarlo más tarde.',
+    myAppointments: 'Mis citas',
     loading: 'Cargando las técnicas disponibles…',
     error: {
       title: 'No se pudo cargar el catálogo',

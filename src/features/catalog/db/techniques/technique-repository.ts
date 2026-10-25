@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { Money } from '@/shared/money'
+import { moneyFromColones } from '@/shared/money'
 import { ok, err, isOk, type Result } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import { buildTechnique, techniqueToView, type Technique, type ServiceFamily } from '../../domain/techniques/technique'
@@ -30,16 +30,16 @@ function rowToDomain(row: Row): Technique {
     id: row.id,
     name: row.name,
     family: row.family,
-    priceFirstTime: Money.fromColones(Number(row.price_first_time)),
+    priceFirstTime: moneyFromColones(Number(row.price_first_time)),
     priceRetouch:
       row.price_retouch === null
         ? null
-        : Money.fromColones(Number(row.price_retouch)),
+        : moneyFromColones(Number(row.price_retouch)),
     durationFirstTimeMin: row.duration_first_time_min,
     durationRetouchMin: row.duration_retouch_min,
     bufferMin: row.buffer_min,
     reapplicationIntervalDays: row.reapplication_interval_days,
-    deposit: Money.fromColones(Number(row.deposit)),
+    deposit: moneyFromColones(Number(row.deposit)),
     aftercareText: row.aftercare_text,
     isActive: row.is_active,
   })

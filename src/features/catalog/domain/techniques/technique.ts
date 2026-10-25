@@ -1,4 +1,4 @@
-import { Money } from '@/shared/money'
+import { isNegativeMoney, isPositiveMoney, type Money } from '@/shared/money'
 import { ok, err, type Result } from '@/shared/result'
 import { techniqueValidationError, type TechniqueValidationError } from './errors'
 
@@ -91,12 +91,12 @@ export function buildTechnique(
     problems.push(`familia inválida: ${String(input.family)}`)
   }
 
-  if (!input.priceFirstTime.isPositive()) {
+  if (!isPositiveMoney(input.priceFirstTime)) {
     problems.push('el precio de primera vez debe ser mayor que cero')
   }
 
   const priceRetouch = input.priceRetouch ?? null
-  if (priceRetouch !== null && !priceRetouch.isPositive()) {
+  if (priceRetouch !== null && !isPositiveMoney(priceRetouch)) {
     problems.push('el precio de retoque debe ser mayor que cero')
   }
 
@@ -118,7 +118,7 @@ export function buildTechnique(
     problems.push('el intervalo de re-aplicación debe ser un entero de días mayor que cero')
   }
 
-  if (input.deposit.isNegative()) {
+  if (isNegativeMoney(input.deposit)) {
     problems.push('el anticipo no puede ser negativo')
   }
 
