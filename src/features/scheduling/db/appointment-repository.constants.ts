@@ -9,6 +9,10 @@ export const RANGE_UPPER_BOUND = ')'
 
 export const DECIDE_APPOINTMENT_FUNCTION = 'scheduling_decide_appointment'
 
+export const SCHEDULE_CHANGED_MESSAGE = 'scheduling_appointment_schedule_changed'
+
+export const SCHEDULE_DETAIL_SEPARATOR = '|'
+
 export const APPOINTMENTS_TABLE = 'scheduling_appointments'
 
 export const PENDING_APPOINTMENTS_LIMIT = 100
