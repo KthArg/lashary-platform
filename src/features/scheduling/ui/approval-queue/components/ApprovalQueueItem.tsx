@@ -57,7 +57,7 @@ export function ApprovalQueueItem({ appointment, queue }: ApprovalQueueItemProps
         </div>
       ) : (
         <div className={STYLES.actions}>
-          <button type="button" className={STYLES.primaryButton} disabled={isBusy} aria-label={APPROVAL_QUEUE_ARIA.approve(slot)} onClick={() => queue.approve(appointment.id)}>
+          <button type="button" className={STYLES.primaryButton} disabled={isBusy} aria-label={APPROVAL_QUEUE_ARIA.approve(slot)} onClick={() => queue.approve(appointment.id, appointment.startsAtMs)}>
             {isBusy ? APPROVAL_QUEUE_LABELS.saving : APPROVAL_QUEUE_LABELS.approve}
           </button>
           <button type="button" className={STYLES.secondaryButton} disabled={isBusy} aria-label={APPROVAL_QUEUE_ARIA.reject(slot)} onClick={() => queue.startReject(appointment.id)}>

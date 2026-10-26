@@ -85,6 +85,14 @@ export interface InvalidCancellationWindow {
   readonly message: string
 }
 
+export interface AppointmentScheduleChanged {
+  readonly code: 'SCHEDULING_APPOINTMENT_SCHEDULE_CHANGED'
+  readonly appointmentId: string
+  readonly startsAtMs: number
+  readonly endsAtMs: number
+  readonly message: string
+}
+
 export interface InvalidRescheduleLimit {
   readonly code: 'SCHEDULING_INVALID_RESCHEDULE_LIMIT'
   readonly max: number
@@ -150,6 +158,7 @@ export type SchedulingError =
   | CancellationConsequenceChanged
   | InvalidCancellationWindow
   | InvalidRescheduleLimit
+  | AppointmentScheduleChanged
   | AppointmentNotReschedulable
   | RescheduleOutsideWindow
   | RescheduleLimitReached
@@ -295,4 +304,16 @@ export const invalidRescheduleLimit = (max: number): InvalidRescheduleLimit => (
   code: 'SCHEDULING_INVALID_RESCHEDULE_LIMIT',
   max,
   message: `el tope de reagendados debe ser un número entero entre 0 y 3: ${max}`,
+})
+
+export const appointmentScheduleChanged = (
+  appointmentId: string,
+  startsAtMs: number,
+  endsAtMs: number,
+): AppointmentScheduleChanged => ({
+  code: 'SCHEDULING_APPOINTMENT_SCHEDULE_CHANGED',
+  appointmentId,
+  startsAtMs,
+  endsAtMs,
+  message: `el horario de la cita ${appointmentId} cambió desde que la administradora lo vio`,
 })
