@@ -10,6 +10,7 @@ const CITAS_TABS = [
   { label: CITAS_SECTION.tabs.availability, href: CITAS_ROUTES.availability },
   { label: CITAS_SECTION.tabs.alerts, href: CITAS_ROUTES.alerts },
   { label: CITAS_SECTION.tabs.cancellation, href: CITAS_ROUTES.cancellation },
+  { label: CITAS_SECTION.tabs.reschedule, href: CITAS_ROUTES.reschedule },
 ]
 
 export function CitasTabs() {
