@@ -9,8 +9,8 @@ import {
   weeklyBlockHasAppointment,
   weeklyBlockInvalid,
   weeklyBlockOverlap,
-} from '../../../domain/availability-errors'
-import { storageFailed } from '../../../domain/errors'
+} from '@/features/scheduling/domain/availability-errors'
+import { storageFailed } from '@/features/scheduling/domain/errors'
 import { schedulingMessages } from '../../messages'
 
 const mocks = vi.hoisted(() => ({

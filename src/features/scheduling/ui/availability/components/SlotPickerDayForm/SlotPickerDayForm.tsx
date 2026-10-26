@@ -1,5 +1,5 @@
 import Form from 'next/form'
-import { schedulingMessages } from '../../../messages'
+import { schedulingMessages } from '@/features/scheduling/ui/messages'
 import { AVAILABILITY_PATH, SLOT_PICKER_DATE_PARAM } from '../../constants/availability.constants'
 import { slotPickerDayFormStyles as STYLES } from './SlotPickerDayForm.styles'
 import type { SlotPickerDayFormProps } from './SlotPickerDayForm.types'
