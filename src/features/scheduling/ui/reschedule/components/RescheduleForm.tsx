@@ -1,5 +1,6 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { MY_APPOINTMENTS_PATH } from '../../my-appointments/constants/my-appointments-strings'
 import { reschedulePageMessages } from '../constants/reschedule-page-strings'
@@ -10,7 +11,7 @@ import { RescheduleSlotList } from './RescheduleSlotList'
 
 type ReadyView = Extract<RescheduleView, { status: 'ready' }>
 
-export function RescheduleForm({ view }: { view: ReadyView }) {
+export function RescheduleForm({ view, intro }: { view: ReadyView; intro: ReactNode }) {
   const copy = reschedulePageMessages
   const { selectedStartsAtMs, state, select, submit } = useRescheduleForm(view.appointmentId, view.expectedStatus)
 
@@ -35,6 +36,7 @@ export function RescheduleForm({ view }: { view: ReadyView }) {
         submit()
       }}
     >
+      {intro}
       <RescheduleSlotList slots={view.slots} selectedStartsAtMs={selectedStartsAtMs} onSelect={select} />
       <p role="note" className={STYLES.consequence}>
         {view.consequence}
