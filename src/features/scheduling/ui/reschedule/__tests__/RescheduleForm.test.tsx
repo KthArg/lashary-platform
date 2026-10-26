@@ -11,6 +11,7 @@ const APPOINTMENT_ID = '00000000-0000-0000-0000-00000000ea01'
 const FREE_STARTS_AT_MS = Date.parse('2027-09-06T15:00:00Z')
 const OTHER_FREE_STARTS_AT_MS = Date.parse('2027-09-06T16:00:00Z')
 const BUSY_STARTS_AT_MS = Date.parse('2027-09-06T15:30:00Z')
+const INTRO = 'Tu cita actual: lunes'
 
 const mockReschedule = vi.fn()
 vi.mock('../actions/reschedule-appointment-action', () => ({
@@ -42,20 +43,20 @@ const chooseFirstFreeSlot = () => fireEvent.click(screen.getAllByRole('radio')[0
 
 describe('RescheduleForm', () => {
   it('antes de elegir un espacio avisa qué hacer y no deja confirmar', () => {
-    render(<RescheduleForm view={view} />)
+    render(<RescheduleForm view={view} intro={null} />)
 
     expect(screen.getByText(copy.chooseSlot)).toBeTruthy()
     expect(submitButton().disabled).toBe(true)
   })
 
   it('dice antes de confirmar que la cita vuelve a pendiente y que se conserva el anticipo', () => {
-    render(<RescheduleForm view={view} />)
+    render(<RescheduleForm view={view} intro={<p>{INTRO}</p>} />)
 
     expect(screen.getByRole('note').textContent).toBe(copy.backToPending)
   })
 
   it('al elegir un espacio libre deja confirmar', () => {
-    render(<RescheduleForm view={view} />)
+    render(<RescheduleForm view={view} intro={<p>{INTRO}</p>} />)
     chooseFirstFreeSlot()
 
     expect((screen.getAllByRole('radio')[0] as HTMLInputElement).checked).toBe(true)
@@ -65,7 +66,7 @@ describe('RescheduleForm', () => {
 
   it('confirmar manda la cita, el horario elegido y el estado que vio la clienta', async () => {
     mockReschedule.mockResolvedValue({ ok: true, message: rescheduleMessages.rescheduled })
-    render(<RescheduleForm view={view} />)
+    render(<RescheduleForm view={view} intro={<p>{INTRO}</p>} />)
     chooseFirstFreeSlot()
     fireEvent.click(submitButton())
 
@@ -77,11 +78,12 @@ describe('RescheduleForm', () => {
     })
     expect(screen.getByRole('link', { name: copy.backToAppointments }).getAttribute('href')).toBe(MY_APPOINTMENTS_PATH)
     expect(screen.queryByRole('radio')).toBeNull()
+    expect(screen.queryByText(INTRO)).toBeNull()
   })
 
   it('si la base lo rechaza muestra el mensaje y deja elegir otro espacio', async () => {
     mockReschedule.mockResolvedValue({ ok: false, message: rescheduleMessages.slotTaken })
-    render(<RescheduleForm view={view} />)
+    render(<RescheduleForm view={view} intro={<p>{INTRO}</p>} />)
     chooseFirstFreeSlot()
     fireEvent.click(submitButton())
 
@@ -95,7 +97,7 @@ describe('RescheduleForm', () => {
     mockReschedule.mockImplementation(async () => {
       throw new Error('network')
     })
-    render(<RescheduleForm view={view} />)
+    render(<RescheduleForm view={view} intro={<p>{INTRO}</p>} />)
     chooseFirstFreeSlot()
     fireEvent.click(submitButton())
 
@@ -104,7 +106,7 @@ describe('RescheduleForm', () => {
 
   it('mientras envía no deja confirmar dos veces', async () => {
     mockReschedule.mockImplementation(() => new Promise(() => undefined))
-    render(<RescheduleForm view={view} />)
+    render(<RescheduleForm view={view} intro={<p>{INTRO}</p>} />)
     chooseFirstFreeSlot()
     fireEvent.click(submitButton())
 

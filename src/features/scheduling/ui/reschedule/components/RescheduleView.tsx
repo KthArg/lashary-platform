@@ -71,10 +71,16 @@ function RescheduleBody({ view }: { view: RescheduleViewModel }) {
     case 'ready':
       return (
         <section className={STYLES.card}>
-          <CurrentAppointment current={view.current} />
-          <p className={STYLES.remaining}>{view.remaining}</p>
-          <DayNavigator day={view.day} />
-          <RescheduleForm view={view} />
+          <RescheduleForm
+            view={view}
+            intro={
+              <>
+                <CurrentAppointment current={view.current} />
+                <p className={STYLES.remaining}>{view.remaining}</p>
+                <DayNavigator day={view.day} />
+              </>
+            }
+          />
         </section>
       )
   }
