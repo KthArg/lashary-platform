@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isErr, isOk } from '@/shared/result'
-import { isClosedDateAlreadyExists } from '../../domain/availability-errors'
+import { isClosedDateAlreadyExists, isClosedDateHasAppointment } from '../../domain/availability-errors'
 import {
   closedDateToRow,
   createSupabaseClosedDateRepository,
@@ -35,6 +35,19 @@ describe('closed-date-repository', () => {
     )
     const result = await repo.insert(closedDate)
     expect(isErr(result) && isClosedDateAlreadyExists(result.error)).toBe(true)
+  })
+
+  it('el rechazo de la base por una cita activa (23514) se devuelve como error tipado, sin lanzar', async () => {
+    const repo = createSupabaseClosedDateRepository(
+      dbReturning({ code: '23514', message: 'scheduling_closed_dates_active_appointment' }),
+    )
+    const result = await repo.insert(closedDate)
+    expect(isErr(result) && isClosedDateHasAppointment(result.error)).toBe(true)
+  })
+
+  it('otro 23514 no se confunde con la cita activa y se lanza', async () => {
+    const repo = createSupabaseClosedDateRepository(dbReturning({ code: '23514', message: 'violates check constraint' }))
+    await expect(repo.insert(closedDate)).rejects.toThrow('violates check constraint')
   })
 
   it('cualquier otro error de la base se lanza', async () => {

@@ -1,11 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { isErr, isOk } from '@/shared/result'
+import { err, isErr, isOk } from '@/shared/result'
 import { addWeeklyBlock, listWeeklyBlocks, removeWeeklyBlock } from '../weekly-availability'
 import { MAX_WEEKLY_BLOCKS } from '../availability-ports'
 import {
   isAvailabilityEntryNotFound,
+  isWeeklyBlockHasAppointment,
   isWeeklyBlockInvalid,
   isWeeklyBlockOverlap,
+  weeklyBlockHasAppointment,
 } from '../../domain/availability-errors'
 import type { WeeklyBlock } from '../../domain/weekly-availability'
 import { createFakeWeeklyAvailabilityRepository } from './availability-fakes'
@@ -95,6 +97,14 @@ describe('removeWeeklyBlock', () => {
     const { repo, deps } = setup([monday('a', 540, 720)])
     expect(isOk(await removeWeeklyBlock(deps)('a'))).toBe(true)
     expect(repo.blocks).toHaveLength(0)
+  })
+
+  it('si la base lo rechaza por citas activas, lo devuelve tipado y no borra nada', async () => {
+    const { repo, deps } = setup([monday('a', 540, 720)])
+    const rejecting = { ...deps, repo: { ...repo, remove: async () => err(weeklyBlockHasAppointment()) } }
+    const result = await removeWeeklyBlock(rejecting)('a')
+    expect(isErr(result) && isWeeklyBlockHasAppointment(result.error)).toBe(true)
+    expect(repo.blocks).toHaveLength(1)
   })
 
   it('reporta no encontrado si el bloque no existe', async () => {

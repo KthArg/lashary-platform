@@ -30,9 +30,9 @@ export function createFakeWeeklyAvailabilityRepository(
     },
     async remove(id) {
       const index = blocks.findIndex((stored) => stored.id === id)
-      if (index === -1) return false
+      if (index === -1) return ok(false)
       blocks.splice(index, 1)
-      return true
+      return ok(true)
     },
   }
 }

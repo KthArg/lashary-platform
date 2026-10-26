@@ -1,6 +1,9 @@
 import { z } from 'zod'
 import { isCalendarDate } from '@/shared/studio-time'
-import { CLOSED_DATE_KINDS } from '../../../domain/closed-dates'
+import { CLOSED_DATE_KINDS } from '@/features/scheduling/domain/closed-dates'
+import { SLOT_INTERVAL_MIN } from '@/features/scheduling/domain/day-slots'
+import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '@/features/scheduling/domain/manual-blocks.constants'
+import { MINUTES_PER_DAY } from '@/features/scheduling/domain/weekly-availability'
 import { schedulingMessages } from '../../messages'
 
 // Validación de formato en el borde, una sola vez (DOM-007). Las horas llegan como HH:MM del
@@ -30,6 +33,11 @@ const optionalText = z
   .optional()
   .transform((value) => value?.trim() || null)
 
+const optionalReason = optionalText.refine(
+  (reason) => reason === null || reason.length <= MAX_MANUAL_BLOCK_REASON_LENGTH,
+  validationMessages.reasonTooLong,
+)
+
 export const weeklyBlockFormSchema = z.object({
   weekday: z.coerce.number().int(validationMessages.weekday).min(1, validationMessages.weekday).max(7, validationMessages.weekday),
   start: timeField,
@@ -46,7 +54,28 @@ export const manualBlockFormSchema = z.object({
   date: dateField,
   start: timeField,
   end: endTimeField,
-  reason: optionalText,
+  reason: optionalReason,
+})
+
+const slotStartField = z.string().regex(/^\d+$/, validationMessages.pickSlot).transform(Number)
+
+const MAX_SLOTS_PER_DAY = MINUTES_PER_DAY / SLOT_INTERVAL_MIN
+
+export const blockSlotsFormSchema = z.object({
+  date: dateField,
+  slotStartMinutes: z
+    .array(slotStartField)
+    .min(1, validationMessages.pickSlot)
+    .max(MAX_SLOTS_PER_DAY, validationMessages.pickSlot),
+  reason: optionalReason,
+})
+
+export const releaseSlotsFormSchema = z.object({
+  date: dateField,
+  slotStartMinutes: z
+    .array(slotStartField)
+    .min(1, validationMessages.pickSlot)
+    .max(MAX_SLOTS_PER_DAY, validationMessages.pickSlot),
 })
 
 export const removeFormSchema = z.object({ id: z.string().min(1) })

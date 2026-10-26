@@ -40,9 +40,12 @@ export const schedulingMessages = {
     validationTitle: 'Revisá estos campos:',
     notFound: 'Ese elemento ya no existe. Recargá la página.',
     affected: {
-      warning: (count: number) =>
-        `${count === 1 ? 'Hay 1 cita agendada' : `Hay ${count} citas agendadas`} en ese horario. No se cancelan: siguen existiendo, pero quedan fuera de la disponibilidad. ¿Querés continuar?`,
-      confirm: 'Confirmar de todos modos',
+      mustResolve: (count: number) =>
+        count === 1
+          ? 'Hay 1 cita agendada en ese horario. Rechazala o cancelala antes de continuar; no se hizo ningún cambio.'
+          : `Hay ${count} citas agendadas en ese horario. Rechazalas o cancelalas antes de continuar; no se hizo ningún cambio.`,
+      mustResolveSome:
+        'Hay citas agendadas en ese horario. Rechazalas o cancelalas antes de continuar; no se hizo ningún cambio.',
       countFailed: 'No pudimos revisar si hay citas agendadas en ese horario. No se hizo ningún cambio: intentá de nuevo.',
     },
     remove: 'Quitar',
@@ -58,6 +61,7 @@ export const schedulingMessages = {
       noBlocks: 'Sin atención',
       savedOk: 'Bloque agregado.',
       removedOk: 'Bloque quitado.',
+      removeFailed: 'No se pudo quitar el bloque. No se hizo ningún cambio: intentá de nuevo.',
       overlap: 'Ese bloque se cruza con otro del mismo día.',
       removeLabel: (day: string, range: string) => `Quitar el bloque del ${day} de ${range}`,
     },
@@ -88,6 +92,38 @@ export const schedulingMessages = {
       empty: 'No hay espacios bloqueados próximos.',
       savedOk: 'Espacio bloqueado.',
       overlap: 'Ese espacio se cruza con otro bloqueo.',
+      hasAppointment: 'Hay una cita activa en ese espacio. Rechazala o cancelala antes de bloquearlo.',
+      unblock: 'Desbloquear',
+      unblockLabel: (date: string, range: string) => `Desbloquear el ${date} de ${range}`,
+      removedOk: 'Espacio desbloqueado.',
+    },
+    picker: {
+      title: 'Bloquear o liberar espacios',
+      subtitle:
+        'Elegí un día y marcá espacios de 30 minutos, seguidos o no. Marcá espacios libres para bloquearlos o espacios bloqueados para liberarlos; no se pueden mezclar. Los que ocupa una cita no se pueden marcar.',
+      dayLabel: 'Fecha de los espacios',
+      showDay: 'Ver espacios',
+      slotsLegend: (date: string) => `Espacios del ${date}`,
+      free: 'Libre',
+      busy: 'Ocupado',
+      blocked: 'Bloqueado',
+      reasonLabel: 'Motivo de los marcados (opcional, solo lo ves vos)',
+      submitIdle: 'Marcá espacios',
+      submitBlock: (count: number) => `Bloquear ${count}`,
+      submitRelease: (count: number) => `Liberar ${count}`,
+      clearSelection: 'Limpiar selección',
+      noSlots: 'Ese día no tiene espacios en el horario. Elegí otro día.',
+      savedOk: 'Espacios bloqueados.',
+      releasedOk: 'Espacios liberados.',
+      alreadyReleased: 'Alguno de esos espacios ya estaba liberado; no se liberó ninguno. Revisá los espacios actualizados.',
+      releaseStale: 'Alguno de esos espacios ya no se ofrece o no es válido; no se liberó ninguno. Revisá los espacios actualizados.',
+      releaseHasAppointment:
+        'Al liberar quedaría bloqueado un tramo con una cita activa; no se liberó ninguno. Rechazá o cancelá la cita primero.',
+      overlap: 'Alguno de esos espacios ya está bloqueado; no se bloqueó ninguno. Revisá los espacios actualizados.',
+      stale: 'Alguno de esos espacios ya pasó o no es válido; no se bloqueó ninguno. Revisá los espacios actualizados.',
+      hasAppointment:
+        'Hay una cita activa en alguno de esos espacios. Rechazala o cancelala antes de bloquearlo; no se bloqueó ninguno.',
+      goToAppointments: 'Ir a las citas',
     },
     validation: {
       weekday: 'Elegí un día de la semana.',
@@ -95,6 +131,8 @@ export const schedulingMessages = {
       date: 'Elegí una fecha válida.',
       kind: 'Elegí si es no laborable o feriado.',
       startBeforeEnd: 'La hora de inicio debe ser anterior a la de fin.',
+      pickSlot: 'Marcá al menos un espacio.',
+      reasonTooLong: 'El motivo puede tener hasta 500 caracteres.',
     },
   },
 } as const

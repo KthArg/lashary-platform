@@ -1,8 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import { useActionState } from 'react'
 import { schedulingMessages } from '../../messages'
-import { CONFIRM_FIELD, CONFIRM_VALUE } from '../constants/confirm-reduction.constants'
+import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '@/features/scheduling/domain/manual-blocks.constants'
 import { availabilityStyles as STYLES } from '../styles/availability.styles'
 import {
   initialAvailabilityActionState,
@@ -13,6 +14,7 @@ import {
   addManualBlockAction,
   addWeeklyBlockAction,
   removeClosedDateAction,
+  removeManualBlockAction,
   removeWeeklyBlockAction,
 } from '../actions/availability-actions'
 
@@ -20,27 +22,8 @@ const availabilityMessages = schedulingMessages.availability
 
 type Action = (prev: AvailabilityActionState, formData: FormData) => Promise<AvailabilityActionState>
 
-type FeedbackProps = { state: AvailabilityActionState; formAction?: (formData: FormData) => void; pending?: boolean }
-
-function ReductionConfirmation({ state, formAction, pending }: FeedbackProps) {
-  return (
-    <form action={formAction} className={STYLES.confirmation}>
-      <div role="alert" className={STYLES.alertWarning}>
-        <span>{state.message}</span>
-      </div>
-      {Object.entries(state.fields ?? {}).map(([name, value]) => (
-        <input key={name} type="hidden" name={name} value={value} />
-      ))}
-      <button type="submit" name={CONFIRM_FIELD} value={CONFIRM_VALUE} className={STYLES.submit} disabled={pending}>
-        {availabilityMessages.affected.confirm}
-      </button>
-    </form>
-  )
-}
-
-export function AvailabilityFeedback({ state, formAction, pending }: FeedbackProps) {
+export function AvailabilityFeedback({ state }: { state: AvailabilityActionState }) {
   if (state.status === 'idle') return null
-  if (state.status === 'needsConfirmation') return <ReductionConfirmation state={state} formAction={formAction} pending={pending} />
   if (state.status === 'ok') {
     return (
       <div role="status" className={STYLES.alertSuccess}>
@@ -65,6 +48,11 @@ export function AvailabilityFeedback({ state, formAction, pending }: FeedbackPro
   return (
     <div role="alert" className={STYLES.alertWarning}>
       <span>{state.message}</span>
+      {state.link && (
+        <Link href={state.link.href} className={STYLES.alertLink}>
+          {state.link.label}
+        </Link>
+      )}
     </div>
   )
 }
@@ -135,7 +123,7 @@ export function ClosedDateForm() {
           {availabilityMessages.closed.submit}
         </button>
       </form>
-      <AvailabilityFeedback state={state} formAction={formAction} pending={pending} />
+      <AvailabilityFeedback state={state} />
     </>
   )
 }
@@ -155,13 +143,13 @@ export function ManualBlockForm() {
           <input type="time" name="end" className={STYLES.input} required />
         </Field>
         <Field label={availabilityMessages.blocks.reasonLabel}>
-          <input type="text" name="reason" className={STYLES.input} />
+          <input type="text" name="reason" maxLength={MAX_MANUAL_BLOCK_REASON_LENGTH} className={STYLES.input} />
         </Field>
         <button type="submit" className={STYLES.submit} disabled={pending}>
           {availabilityMessages.blocks.submit}
         </button>
       </form>
-      <AvailabilityFeedback state={state} formAction={formAction} pending={pending} />
+      <AvailabilityFeedback state={state} />
     </>
   )
 }
@@ -180,7 +168,7 @@ function RemoveButton({ action, id, label, text }: { action: Action; id: string;
       </form>
       {state.status !== 'ok' && state.status !== 'idle' && (
         <div className={STYLES.removeFeedback}>
-          <AvailabilityFeedback state={state} formAction={formAction} pending={pending} />
+          <AvailabilityFeedback state={state} />
         </div>
       )}
     </>
@@ -193,4 +181,8 @@ export function RemoveWeeklyBlockButton({ id, label }: { id: string; label: stri
 
 export function RemoveClosedDateButton({ id, label }: { id: string; label: string }) {
   return <RemoveButton action={removeClosedDateAction} id={id} label={label} text={availabilityMessages.closed.reopen} />
+}
+
+export function RemoveManualBlockButton({ id, label }: { id: string; label: string }) {
+  return <RemoveButton action={removeManualBlockAction} id={id} label={label} text={availabilityMessages.blocks.unblock} />
 }

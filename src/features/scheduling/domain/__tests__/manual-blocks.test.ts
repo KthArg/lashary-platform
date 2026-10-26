@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { isErr, isOk } from '@/shared/result'
 import { fixedDate } from '@/shared/testing/fixed-clock'
 import { createManualBlock } from '../manual-blocks'
+import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '../manual-blocks.constants'
 import { isManualBlockInvalid } from '../availability-errors'
 
 const base = {
@@ -34,5 +35,16 @@ describe('createManualBlock — US-AGE-01, criterio 3', () => {
   it('rechaza instantes inválidos', () => {
     const result = createManualBlock({ ...base, startsAt: fixedDate('no es fecha') })
     expect(isErr(result) && result.error.problems).toEqual(['el inicio no es válido'])
+  })
+
+  it('el motivo llega hasta el tope, contado después de recortar (US-AGE-07)', () => {
+    const longestReason = 'a'.repeat(MAX_MANUAL_BLOCK_REASON_LENGTH)
+    const accepted = createManualBlock({ ...base, reason: `  ${longestReason}  ` })
+    expect(isOk(accepted) && accepted.value.reason).toBe(longestReason)
+
+    const rejected = createManualBlock({ ...base, reason: `${longestReason}a` })
+    expect(isErr(rejected) && isManualBlockInvalid(rejected.error) && rejected.error.problems).toEqual([
+      `el motivo supera los ${MAX_MANUAL_BLOCK_REASON_LENGTH} caracteres`,
+    ])
   })
 })
