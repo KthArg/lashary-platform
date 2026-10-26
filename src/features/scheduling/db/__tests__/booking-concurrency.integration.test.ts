@@ -86,6 +86,20 @@ describe.skipIf(!reachable)('US-AGE-05 criterio 4 — clientas reservando el mis
   let clientas: Clienta[] = []
   const runOffsetWeeks = Math.floor(Math.random() * RUN_OFFSET_WEEKS_SPREAD)
 
+  // El trigger que impide quitar un bloque con citas cuenta por día y hora, no por fecha: una cita de otra
+  // prueba en paralelo, de otro año, bastaría para rechazar el borrado. Sin triggers solo en esta transacción.
+  const deleteWeeklyBlock = async () => {
+    await admin.query('BEGIN')
+    try {
+      await admin.query('SET LOCAL session_replication_role = replica')
+      await admin.query('DELETE FROM public.scheduling_weekly_availability WHERE id = $1', [weeklyBlockId])
+      await admin.query('COMMIT')
+    } catch (error) {
+      await admin.query('ROLLBACK')
+      throw error
+    }
+  }
+
   beforeAll(async () => {
     admin = new PgClient({ connectionString: DB_URL })
     await admin.connect()
@@ -134,7 +148,7 @@ describe.skipIf(!reachable)('US-AGE-05 criterio 4 — clientas reservando el mis
         [userIds],
       )
     }
-    if (weeklyBlockId) await admin.query('DELETE FROM public.scheduling_weekly_availability WHERE id = $1', [weeklyBlockId])
+    if (weeklyBlockId) await deleteWeeklyBlock()
     if (userIds.length > 0) await admin.query('DELETE FROM auth.users WHERE id = ANY($1::uuid[])', [userIds])
     await admin.end()
   })

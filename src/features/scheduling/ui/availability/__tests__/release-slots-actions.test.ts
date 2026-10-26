@@ -4,7 +4,7 @@ import {
   manualBlockHasAppointment,
   manualBlockInvalid,
   manualBlockNotBlocked,
-} from '../../../domain/availability-errors'
+} from '@/features/scheduling/domain/availability-errors'
 import { schedulingMessages } from '../../messages'
 
 const mocks = vi.hoisted(() => ({
