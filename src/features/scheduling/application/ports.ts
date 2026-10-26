@@ -11,6 +11,7 @@ import type {
   CancellationConsequenceChanged,
   ClientNotRegistered,
   InvalidCancellationWindow,
+  InvalidRescheduleLimit,
   RescheduleLimitReached,
   RescheduleOutsideWindow,
   RescheduleSlotNotOffered,
@@ -192,6 +193,13 @@ export type CancellationWindowChange = { previousHours: number; newHours: number
 export interface CancellationPolicyRepository {
   getWindowHours(): Promise<Result<number, StorageFailed>>
   changeWindowHours(hours: number): Promise<Result<CancellationWindowChange, StorageFailed | InvalidCancellationWindow>>
+}
+
+export type RescheduleLimitChange = { previousMax: number; newMax: number }
+
+export interface ReschedulePolicyRepository {
+  getMaxReschedules(): Promise<Result<number, StorageFailed>>
+  changeMaxReschedules(max: number): Promise<Result<RescheduleLimitChange, StorageFailed | InvalidRescheduleLimit>>
 }
 
 export type MyAppointment = {
