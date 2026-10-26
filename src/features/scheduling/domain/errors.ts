@@ -294,5 +294,5 @@ export const rescheduleSlotTaken = (appointmentId: string): RescheduleSlotTaken 
 export const invalidRescheduleLimit = (max: number): InvalidRescheduleLimit => ({
   code: 'SCHEDULING_INVALID_RESCHEDULE_LIMIT',
   max,
-  message: `el tope de reagendados debe ser un número entero entre 0 y 10: ${max}`,
+  message: `el tope de reagendados debe ser un número entero entre 0 y 3: ${max}`,
 })
