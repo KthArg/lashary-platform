@@ -85,6 +85,12 @@ export interface InvalidCancellationWindow {
   readonly message: string
 }
 
+export interface InvalidRescheduleLimit {
+  readonly code: 'SCHEDULING_INVALID_RESCHEDULE_LIMIT'
+  readonly max: number
+  readonly message: string
+}
+
 export interface AppointmentNotCancellable {
   readonly code: 'SCHEDULING_APPOINTMENT_NOT_CANCELLABLE'
   readonly appointmentId: string
@@ -143,6 +149,7 @@ export type SchedulingError =
   | AppointmentNotCancellable
   | CancellationConsequenceChanged
   | InvalidCancellationWindow
+  | InvalidRescheduleLimit
   | AppointmentNotReschedulable
   | RescheduleOutsideWindow
   | RescheduleLimitReached
@@ -282,4 +289,10 @@ export const rescheduleSlotTaken = (appointmentId: string): RescheduleSlotTaken 
   code: 'SCHEDULING_RESCHEDULE_SLOT_TAKEN',
   appointmentId,
   message: `el horario nuevo de la cita ${appointmentId} ya está ocupado`,
+})
+
+export const invalidRescheduleLimit = (max: number): InvalidRescheduleLimit => ({
+  code: 'SCHEDULING_INVALID_RESCHEDULE_LIMIT',
+  max,
+  message: `el tope de reagendados debe ser un número entero entre 0 y 10: ${max}`,
 })
