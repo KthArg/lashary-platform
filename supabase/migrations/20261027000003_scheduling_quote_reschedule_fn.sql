@@ -1,4 +1,4 @@
--- 20261024000003_scheduling_quote_reschedule_fn.sql
+-- 20261027000003_scheduling_quote_reschedule_fn.sql
 -- US-AGE-10 · feature scheduling — qué ve la clienta antes de elegir un horario para reagendar: la cita,
 -- cuánto espacio ocupa (con la limpieza, para calcular los espacios del calendario), cuántas veces
 -- se puede reagendar todavía y, si no se puede, por qué. No escribe nada.
