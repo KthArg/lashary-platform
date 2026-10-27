@@ -1,7 +1,7 @@
 import { ok, isErr, isOk, type Result } from '@/shared/result'
 import type { Clock } from '@/shared/clock'
 import { hasExhaustedRetries, type ReminderSnapshot } from '../domain/reminder'
-import { buildReminderMessage } from '../domain/reminder-message'
+import { buildReminderMessage, buildReminderTemplateVariables } from '../domain/reminder-message'
 import type { ClientContactPort, NotificationChannel, ReminderRepository, RepositoryFailure } from './ports'
 
 export type SendDueRemindersDeps = {
@@ -28,16 +28,18 @@ const sendOne = async (
     return registerFailure(deps, reminder, 'sin contacto registrado para la clienta')
   }
 
-  const message = buildReminderMessage({ techniqueName: reminder.techniqueName, startsAt: reminder.startsAt })
+  const reminderMessageInput = { techniqueName: reminder.techniqueName, startsAt: reminder.startsAt }
+  const message = buildReminderMessage(reminderMessageInput)
+  const templateVariables = buildReminderTemplateVariables(reminderMessageInput)
 
-  const primary = await deps.primaryChannel.send({ contact: contact.value, message })
+  const primary = await deps.primaryChannel.send({ contact: contact.value, message, templateVariables })
   if (isOk(primary)) {
     const marked = await deps.markSent(reminder.id, deps.primaryChannel.kind, now)
     if (isErr(marked)) return marked
     return ok('sent')
   }
 
-  const backup = await deps.backupChannel.send({ contact: contact.value, message })
+  const backup = await deps.backupChannel.send({ contact: contact.value, message, templateVariables })
   if (isOk(backup)) {
     const marked = await deps.markSent(reminder.id, deps.backupChannel.kind, now)
     if (isErr(marked)) return marked
