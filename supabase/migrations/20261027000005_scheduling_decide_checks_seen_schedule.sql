@@ -1,4 +1,4 @@
--- 20261026000001_scheduling_decide_checks_seen_schedule.sql
+-- 20261027000005_scheduling_decide_checks_seen_schedule.sql
 -- US-AGE-10 · feature scheduling — decisión del PO: al aprobar una cita, la administradora aprueba el
 -- horario que vio. Si la clienta reagendó justo antes, la cita no se aprueba y la pantalla le avisa el
 -- horario nuevo (lo encontró la prueba de concurrencia de reagendar contra aprobar a la vez).
