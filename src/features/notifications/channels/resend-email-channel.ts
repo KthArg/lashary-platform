@@ -1,16 +1,15 @@
 import { ok, err } from '@/shared/result'
 import { channelNotConfigured, channelSendFailed } from '../domain/errors'
+import { REMINDER_MESSAGE_TEXTS } from '../domain/reminder-message'
 import type { NotificationChannel } from '../application/ports'
 
-// ADR-0006: Resend es el respaldo por email (decisión del PO, 2026-10-20). REST directo (sin
-// SDK) por la misma razón que el canal de WhatsApp: una sola llamada no justifica una dependencia.
 export type ResendEmailConfig = { apiKey: string; fromAddress: string; subject: string }
 
 export function readResendEmailConfigFromEnv(env: Record<string, string | undefined>): ResendEmailConfig | null {
   const apiKey = env.RESEND_API_KEY
   const fromAddress = env.RESEND_FROM_ADDRESS
   if (!apiKey || !fromAddress) return null
-  return { apiKey, fromAddress, subject: 'Recordatorio de tu cita en LASHARY' }
+  return { apiKey, fromAddress, subject: REMINDER_MESSAGE_TEXTS.emailSubject }
 }
 
 export function resendEmailChannel(config: ResendEmailConfig | null): NotificationChannel {

@@ -35,7 +35,6 @@ const toSnapshot = (row: ReminderRow): ReminderSnapshot => ({
   sentAt: row.sent_at ? new Date(row.sent_at) : null,
 })
 
-// db inyectable: el cron (sin cookies) pasa su propio cliente ya autenticado como staff.
 export async function reminderRepository(db?: SupabaseClient): Promise<ReminderRepository> {
   const supabase = db ?? (await createClient())
 
@@ -49,8 +48,6 @@ export async function reminderRepository(db?: SupabaseClient): Promise<ReminderR
         technique_name: reminder.techniqueName,
         send_at: reminder.sendAt.toISOString(),
       }).select().maybeSingle()
-      // Ya existe un recordatorio para esta cita (notifications_reminders_one_per_appointment):
-      // idempotente, no es un fallo.
       if (error && error.code !== '23505') return err(FAILED)
       return ok(undefined)
     },

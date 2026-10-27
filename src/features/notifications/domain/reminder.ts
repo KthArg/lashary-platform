@@ -47,7 +47,6 @@ export interface Reminder {
   readonly sentAt: Date | null
 }
 
-// El recordatorio sale 24h antes de la hora agendada (criterio 1 de US-NOT-03).
 export function computeReminderSendAt(startsAt: Date): Date {
   return addHours(startsAt, -REMINDER_WINDOW_HOURS)
 }

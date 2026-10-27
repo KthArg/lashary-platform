@@ -4,8 +4,6 @@ import { addHours } from '@/shared/date-math'
 import { buildReminder, REMINDER_WINDOW_HOURS } from '../domain/reminder'
 import type { SchedulingReadPort, ReminderRepository, RepositoryFailure } from './ports'
 
-// Margen sobre las 24h exactas (criterio 1): una corrida que se atrase un rato igual encuentra
-// las citas que ya están entrando a la ventana del recordatorio.
 const DISCOVERY_MARGIN_HOURS = 2
 
 export type DiscoverRemindersDeps = {
@@ -17,7 +15,6 @@ export type DiscoverRemindersDeps = {
 
 export type DiscoverRemindersSummary = { discovered: number }
 
-// Encuentra citas activas que entran a la ventana de 24h y todavía no tienen recordatorio.
 export const discoverReminders =
   (deps: DiscoverRemindersDeps) =>
   async (): Promise<Result<DiscoverRemindersSummary, RepositoryFailure>> => {
