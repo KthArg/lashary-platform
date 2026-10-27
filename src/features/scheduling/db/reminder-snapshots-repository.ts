@@ -4,9 +4,7 @@ import { storageFailed } from '../domain/errors'
 import type { AppointmentReminderSnapshot, ReminderSnapshotsRepository, ReminderSnapshotsWindow } from '../application/ports'
 import { APPOINTMENTS_TABLE } from './appointment-repository.constants'
 
-// Estados en los que la cita realmente va a ocurrir (CHECK de scheduling_appointments): no
-// pending_approval (puede rechazarse) ni ninguno de los estados terminales.
-const ACTIVE_STATUSES = ['approved', 'confirmed']
+const ACTIVE_APPOINTMENT_STATUSES = ['approved', 'confirmed']
 
 const REMINDER_SNAPSHOT_COLUMNS = 'id, client_id, starts_at, technique_name'
 
@@ -33,7 +31,7 @@ export function createSupabaseReminderSnapshotsRepository(db: SupabaseClient): R
       const { data, error } = await db
         .from(APPOINTMENTS_TABLE)
         .select(REMINDER_SNAPSHOT_COLUMNS)
-        .in('status', ACTIVE_STATUSES)
+        .in('status', ACTIVE_APPOINTMENT_STATUSES)
         .gte('starts_at', window.from.toISOString())
         .lte('starts_at', window.to.toISOString())
 
@@ -47,7 +45,7 @@ export function createSupabaseReminderSnapshotsRepository(db: SupabaseClient): R
         .from(APPOINTMENTS_TABLE)
         .select(REMINDER_SNAPSHOT_COLUMNS)
         .eq('id', appointmentId)
-        .in('status', ACTIVE_STATUSES)
+        .in('status', ACTIVE_APPOINTMENT_STATUSES)
         .maybeSingle()
 
       if (error) return err(storageFailed(error.message))

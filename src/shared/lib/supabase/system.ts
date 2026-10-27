@@ -1,8 +1,5 @@
 import { createClient as createSupabaseJsClient, type SupabaseClient } from '@supabase/supabase-js'
 
-// Cliente para procesos sin sesión de usuario (cron de notifications, US-NOT-03): se autentica
-// con las credenciales de una cuenta de staff guardadas en variables de entorno (SEC-003/004,
-// nunca la service-role key) y queda sujeto a RLS igual que cualquier sesión real (SEC-001).
 export type SystemClientConfig = { email: string; password: string }
 
 export function readSystemClientConfigFromEnv(env: Record<string, string | undefined>): SystemClientConfig | null {

@@ -5,10 +5,6 @@ import { getClient } from './application/queries'
 
 export type ClientContactForReminders = { phone: string; email: string }
 
-// Lectura pública para notifications (US-NOT-03, ARCH-005): sin requireAdminSession (eso es
-// autenticación web por cookies; el cron llama con su propia sesión de staff, inyectada acá, y
-// la RLS de clients_profiles es quien realmente decide, SEC-001). Solo expone lo que el canal
-// necesita, nunca notes (dato más sensible que el contacto).
 export async function getClientContactForReminders(
   clientId: string,
   db?: SupabaseClient,

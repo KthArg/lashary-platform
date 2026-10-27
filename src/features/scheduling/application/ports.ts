@@ -39,8 +39,6 @@ export interface AppointmentRepository {
   create(appointment: NewAppointment): Promise<Result<CreatedAppointment, SpaceNotAvailable | StorageFailed>>
 }
 
-// Lo que notifications necesita de una cita para su canal de recordatorios (US-NOT-03, ARCH-005):
-// solo lectura, nunca escribe en scheduling_appointments.
 export type AppointmentReminderSnapshot = {
   appointmentId: string
   clientId: string
