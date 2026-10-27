@@ -4,6 +4,7 @@ import { computeReminderSendAt, hasAppointmentAlreadyStarted } from '../domain/r
 import type { SchedulingReadPort, ReminderRepository, RepositoryFailure } from './ports'
 
 export type ReconcileRemindersDeps = {
+  releaseExpiredClaims: ReminderRepository['releaseExpiredClaims']
   listPending: ReminderRepository['listPending']
   getAppointmentSnapshot: SchedulingReadPort['getAppointmentSnapshot']
   reschedulePending: ReminderRepository['reschedulePending']
@@ -11,7 +12,12 @@ export type ReconcileRemindersDeps = {
   clock: Clock
 }
 
-export type ReconcileRemindersSummary = { cancelled: number; rescheduled: number; failed: number }
+export type ReconcileRemindersSummary = {
+  releasedExpiredClaims: number
+  cancelled: number
+  rescheduled: number
+  failed: number
+}
 
 const sameInstant = (firstInstant: Date, secondInstant: Date): boolean =>
   firstInstant.getTime() === secondInstant.getTime()
@@ -19,10 +25,14 @@ const sameInstant = (firstInstant: Date, secondInstant: Date): boolean =>
 export const reconcileReminders =
   (deps: ReconcileRemindersDeps) =>
   async (): Promise<Result<ReconcileRemindersSummary, RepositoryFailure>> => {
+    const now = deps.clock()
+
+    const released = await deps.releaseExpiredClaims(now)
+    if (isErr(released)) return released
+
     const pending = await deps.listPending()
     if (isErr(pending)) return pending
 
-    const now = deps.clock()
     let cancelled = 0
     let rescheduled = 0
     let failed = 0
@@ -67,5 +77,5 @@ export const reconcileReminders =
       rescheduled += 1
     }
 
-    return ok({ cancelled, rescheduled, failed })
+    return ok({ releasedExpiredClaims: released.value.length, cancelled, rescheduled, failed })
   }

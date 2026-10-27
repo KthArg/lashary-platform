@@ -2,10 +2,9 @@ import { ok, err } from '@/shared/result'
 import { channelNotConfigured, channelSendFailed } from '../domain/errors'
 import { REMINDER_MESSAGE_TEXTS } from '../domain/reminder-message'
 import type { NotificationChannel } from '../application/ports'
+import { CHANNEL_SEND_TIMEOUT_MS } from './send-timeout'
 
 export type ResendEmailConfig = { apiKey: string; fromAddress: string; subject: string }
-
-const SEND_TIMEOUT_MS = 10_000
 
 export function readResendEmailConfigFromEnv(env: Record<string, string | undefined>): ResendEmailConfig | null {
   const apiKey = env.RESEND_API_KEY
@@ -34,7 +33,7 @@ export function resendEmailChannel(config: ResendEmailConfig | null): Notificati
             subject: config.subject,
             text: message,
           }),
-          signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
+          signal: AbortSignal.timeout(CHANNEL_SEND_TIMEOUT_MS),
         })
         if (!response.ok) {
           return err(channelSendFailed('email', `Resend respondió ${response.status}`))

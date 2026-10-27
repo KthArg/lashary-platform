@@ -19,6 +19,7 @@ describe('runReminderCycle', () => {
       insertIfAbsent: async (reminderUpsert) => { inserted.push(reminderUpsert); return ok({ inserted: true }) },
       newId: () => 'rem-1',
       clock: fixedClock('2026-11-01T10:00:00Z'),
+      releaseExpiredClaims: async () => ok([]),
       listPending: async () => ok([]),
       getAppointmentSnapshot: async () => ok(null),
       reschedulePending: async () => ok(undefined),
@@ -36,7 +37,7 @@ describe('runReminderCycle', () => {
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
     expect(result.value).toEqual({
-      discovered: 1, discoverFailed: 0, cancelled: 0, rescheduled: 0, reconcileFailed: 0,
+      discovered: 1, discoverFailed: 0, releasedExpiredClaims: 0, cancelled: 0, rescheduled: 0, reconcileFailed: 0,
       sent: 0, retried: 0, exhausted: 0, sendErrored: 0,
     })
     expect(inserted).toHaveLength(1)

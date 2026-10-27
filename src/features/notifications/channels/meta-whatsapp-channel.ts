@@ -1,6 +1,7 @@
 import { ok, err } from '@/shared/result'
 import { channelNotConfigured, channelSendFailed } from '../domain/errors'
 import type { NotificationChannel } from '../application/ports'
+import { CHANNEL_SEND_TIMEOUT_MS } from './send-timeout'
 
 export type MetaWhatsAppConfig = {
   accessToken: string
@@ -12,7 +13,6 @@ export type MetaWhatsAppConfig = {
 
 const DEFAULT_TEMPLATE_LANGUAGE = 'es'
 const DEFAULT_GRAPH_API_VERSION = 'v21.0'
-const SEND_TIMEOUT_MS = 10_000
 
 export function readMetaWhatsAppConfigFromEnv(env: Record<string, string | undefined>): MetaWhatsAppConfig | null {
   const accessToken = env.META_WHATSAPP_ACCESS_TOKEN
@@ -86,7 +86,7 @@ export function metaWhatsAppChannel(config: MetaWhatsAppConfig | null): Notifica
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(requestBody),
-          signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
+          signal: AbortSignal.timeout(CHANNEL_SEND_TIMEOUT_MS),
         })
         if (!response.ok) {
           return err(channelSendFailed('whatsapp', await readErrorMessage(response)))

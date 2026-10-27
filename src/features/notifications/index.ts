@@ -47,6 +47,7 @@ export async function runNotificationsReminderCycle(): Promise<
       insertIfAbsent: repo.insertIfAbsent,
       newId: () => randomUUID(),
       clock: systemClock,
+      releaseExpiredClaims: repo.releaseExpiredClaims,
       listPending: repo.listPending,
       getAppointmentSnapshot,
       reschedulePending: repo.reschedulePending,
