@@ -5,7 +5,7 @@ import { reminderValidationError, type ReminderValidationError } from './errors'
 export const REMINDER_WINDOW_HOURS = 24
 export const MAX_REMINDER_ATTEMPTS = 5
 
-export type ReminderStatus = 'pending' | 'sent' | 'cancelled' | 'failed'
+export type ReminderStatus = 'pending' | 'claimed' | 'sent' | 'cancelled' | 'failed'
 export type ReminderChannelKind = 'whatsapp' | 'email'
 
 export type ReminderInput = {
@@ -90,8 +90,8 @@ export function reminderToSnapshot(reminder: Reminder): ReminderSnapshot {
   return snapshot
 }
 
-export function isReminderDue(reminder: ReminderSnapshot, now: Date): boolean {
-  return reminder.status === 'pending' && reminder.sendAt.getTime() <= now.getTime()
+export function hasAppointmentAlreadyStarted(appointment: { startsAt: Date }, now: Date): boolean {
+  return appointment.startsAt.getTime() <= now.getTime()
 }
 
 export function hasExhaustedRetries(reminder: ReminderSnapshot): boolean {

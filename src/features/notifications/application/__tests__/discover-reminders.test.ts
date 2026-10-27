@@ -4,7 +4,7 @@ import { fixedClock, fixedDate } from '@/shared/testing/fixed-clock'
 import { discoverReminders } from '../discover-reminders'
 import type { AppointmentSnapshot, ReminderUpsert } from '../ports'
 
-function buildDeps(appointments: AppointmentSnapshot[]) {
+function buildDeps(appointments: AppointmentSnapshot[], options: { duplicateAppointmentId?: string } = {}) {
   const inserted: ReminderUpsert[] = []
   let counter = 0
   return {
@@ -12,7 +12,7 @@ function buildDeps(appointments: AppointmentSnapshot[]) {
       listUpcoming: async () => ok(appointments),
       insertIfAbsent: async (reminder: ReminderUpsert) => {
         inserted.push(reminder)
-        return ok(undefined)
+        return ok({ inserted: reminder.appointmentId !== options.duplicateAppointmentId })
       },
       newId: () => `rem-${++counter}`,
       clock: fixedClock('2026-11-01T10:00:00Z'),
@@ -50,5 +50,17 @@ describe('discoverReminders', () => {
     if (!isOk(result)) return
     expect(result.value.discovered).toBe(0)
     expect(inserted).toHaveLength(0)
+  })
+
+  it('no cuenta como descubierta una cita que ya tenía recordatorio (reclamo atómico, A2)', async () => {
+    const { deps } = buildDeps([
+      { appointmentId: 'appt-1', clientId: 'client-1', startsAt: fixedDate('2026-11-02T10:00:00Z'), techniqueName: 'Técnica A' },
+    ], { duplicateAppointmentId: 'appt-1' })
+
+    const result = await discoverReminders(deps)()
+
+    expect(isOk(result)).toBe(true)
+    if (!isOk(result)) return
+    expect(result.value.discovered).toBe(0)
   })
 })
