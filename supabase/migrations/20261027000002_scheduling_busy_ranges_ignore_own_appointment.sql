@@ -1,4 +1,4 @@
--- 20261024000002_scheduling_busy_ranges_ignore_own_appointment.sql
+-- 20261027000002_scheduling_busy_ranges_ignore_own_appointment.sql
 -- US-AGE-10 · feature scheduling — el calendario de la clienta que reagenda no debe marcar como
 -- ocupado el rango de la cita que está moviendo: una cita ocupa más de un espacio de la grilla, así
 -- que sin esto no podría pedir «una hora más tarde» aunque
