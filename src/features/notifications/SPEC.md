@@ -10,7 +10,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-03
     estado: en_progreso
-    falta: "código completo y probado con credenciales reales (WhatsApp vía Graph API de Meta y Resend), pero no funcionando para una clienta real todavía — decisión del líder del proyecto, comunicada el 2026-10-21: queda en_progreso hasta que lo de abajo esté resuelto, aunque las 13 piezas ya se mergean a main. Ver la sección «Falta para producción» de este SPEC para el detalle y el porqué de cada punto: (1) plantilla de WhatsApp aprobada por Meta + número de WhatsApp Business real; (2) contenido del mensaje decidido por la dueña del negocio; (3) dominio propio verificado en Resend; (4) probar el ciclo automático completo (criterios 1 y 3) contra una base con scheduling, cosa que lashary-pruebas no tiene; (5) disparo automático en producción vía GitHub Actions (Vercel Hobby no sirve, solo corre cron una vez al día); (6) cuenta de staff del cron en producción, deliberadamente no creada todavía — sin WhatsApp/email reales los envíos fallarían igual a los 5 intentos (MAX_REMINDER_ATTEMPTS)."
+    falta: "código completo y probado con credenciales reales (WhatsApp vía Graph API de Meta y Resend), pero no funcionando para una clienta real todavía — decisión del líder del proyecto, comunicada el 2026-10-21: queda en_progreso hasta que lo de abajo esté resuelto, aunque las 23 piezas ya se mergean a main. Ver la sección «Falta para producción» de este SPEC para el detalle y el porqué de cada punto: (1) plantilla de WhatsApp aprobada por Meta + número de WhatsApp Business real; (2) contenido del mensaje decidido por la dueña del negocio; (3) dominio propio verificado en Resend; (4) probar el ciclo automático completo (criterios 1 y 3) contra una base con scheduling, cosa que lashary-pruebas no tiene; (5) disparo automático en producción vía GitHub Actions (Vercel Hobby no sirve, solo corre cron una vez al día); (6) cuenta de staff del cron en producción, deliberadamente no creada todavía — sin WhatsApp/email reales los envíos fallarían igual a los 5 intentos (MAX_REMINDER_ATTEMPTS)."
   - id: US-NOT-04
     estado: no_iniciada
   - id: US-NOT-05
@@ -304,7 +304,7 @@ parámetro `db` sin uso.
 
 Decisión del líder del proyecto, comunicada el 2026-10-21: el código está completo y probado con
 credenciales reales, pero la historia queda `en_progreso` — no `terminada` — hasta que lo de abajo
-esté resuelto. Las 13 piezas se mergean a `main` igual; lo que falta es configuración y decisiones
+esté resuelto. Las 23 piezas se mergean a `main` igual; lo que falta es configuración y decisiones
 de negocio, no código.
 
 1. **Plantilla de WhatsApp aprobada por Meta + número de WhatsApp Business real.** Probado hoy
