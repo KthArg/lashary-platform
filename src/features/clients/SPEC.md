@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-23
+actualizado: 2026-10-24
 historias:
   - id: US-CLI-01
     estado: en_progreso
@@ -157,6 +157,10 @@ la feature) y las descartaba después de leerlas; ahora `notes` ni se pide. Sin
 frontera real (SEC-001). Sin comentarios en el código: el porqué vive aquí. `clientRepository`
 acepta un `SupabaseClient` inyectable para que
 el cron pase su propia sesión en vez de la de cookies. Consumidor: `notifications/index.ts`.
+Prueba de integración contra Supabase local (A6 de la auditoría, 2026-10-24):
+`__tests__/reminders-api.integration.test.ts` — trae `phone`/`email` de una clienta real sembrada
+con una nota clínica real (prueba que `notes` nunca sale), `null` para una clienta inexistente, y
+anon no lee ningún contacto (SEC-002).
 
 ## Invariantes
 
