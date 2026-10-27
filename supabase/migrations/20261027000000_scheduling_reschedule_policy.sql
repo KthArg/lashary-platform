@@ -1,4 +1,4 @@
--- 20261024000000_scheduling_reschedule_policy.sql
+-- 20261027000000_scheduling_reschedule_policy.sql
 -- US-AGE-10 · feature scheduling — tope de reagendados por cita (criterio 5) y su contador.
 -- El tope es global y lo cambia la administradora; el contador es de cada cita y lo sube la función
 -- de reagendar de la pieza siguiente. Arranca en 1 reagendado por cita (decisión del PO, 2026-10-23);

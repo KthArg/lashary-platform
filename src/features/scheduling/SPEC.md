@@ -179,7 +179,7 @@ US-AGE-05 queda `terminada` con estos faltantes aprobados por el PO, cada uno co
 
 En progreso. Lo que existe hoy:
 
-- **Tope de reagendados** (migración `20261024000000_scheduling_reschedule_policy.sql`): `scheduling_reschedule_policy`, una sola fila con `max_reschedules` (arranca en 1; 0 desactiva reagendar; máximo 10 por `CHECK`). Solo staff la lee. No hay `UPDATE` directo: el único camino es `scheduling_change_reschedule_limit`, que exige a la administradora, valida, lee el valor anterior con `FOR UPDATE`, actualiza y deja `scheduling.reschedule_limit.changed` en la bitácora en la misma transacción (INT-003). Agrega `scheduling_appointments.reschedule_count` (entero, 0 al crear, no negativo), que nadie con rol de usuario puede cambiar por `UPDATE` directo. Prueba: `supabase/tests/database/scheduling_reschedule_policy.test.sql`.
+- **Tope de reagendados** (migración `20261027000000_scheduling_reschedule_policy.sql`): `scheduling_reschedule_policy`, una sola fila con `max_reschedules` (arranca en 1; 0 desactiva reagendar; máximo 10 por `CHECK`). Solo staff la lee. No hay `UPDATE` directo: el único camino es `scheduling_change_reschedule_limit`, que exige a la administradora, valida, lee el valor anterior con `FOR UPDATE`, actualiza y deja `scheduling.reschedule_limit.changed` en la bitácora en la misma transacción (INT-003). Agrega `scheduling_appointments.reschedule_count` (entero, 0 al crear, no negativo), que nadie con rol de usuario puede cambiar por `UPDATE` directo. Prueba: `supabase/tests/database/scheduling_reschedule_policy.test.sql`.
 
 ## Decisiones del PO sobre US-AGE-06
 
