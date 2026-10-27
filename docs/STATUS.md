@@ -19,7 +19,7 @@
 | notifications | pendiente | en_progreso | 1 / 0 / 0 / 0 / 8 |
 | payments | pendiente | terminada | 1 / 0 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
-| scheduling | pendiente | en_progreso | 7 / 0 / 0 / 0 / 4 |
+| scheduling | pendiente | en_progreso | 8 / 0 / 0 / 0 / 3 |
 | store | pendiente | en_progreso | 3 / 0 / 0 / 0 / 1 |
 
 ## Detalle por feature
