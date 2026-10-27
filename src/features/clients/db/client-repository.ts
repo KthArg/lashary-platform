@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { ok, err } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import type { ClientRecord } from '../domain/client.types'
@@ -25,8 +26,10 @@ const toLiteralNamePattern = (name: string | null): string | null => {
   return term ? `%${term}%` : null
 }
 
-export async function clientRepository(): Promise<ClientRepository> {
-  const supabase = await createClient()
+// db inyectable: la sesión por cookies (createClient) sirve a las server actions del panel; el
+// cron de notifications (sin cookies, US-NOT-03) pasa su propio cliente ya autenticado como staff.
+export async function clientRepository(db?: SupabaseClient): Promise<ClientRepository> {
+  const supabase = db ?? (await createClient())
 
   return {
     async findById(id) {

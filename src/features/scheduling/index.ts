@@ -9,3 +9,11 @@ export { APPROVAL_QUEUE_LABELS } from './ui/approval-queue/constants/approval-qu
 export { BookingConfirmPage } from './ui/booking-confirm/components/BookingConfirmPage'
 export { bookingConfirmMessages } from './ui/booking-confirm/constants/booking-confirm-strings'
 export { AlertsPage } from './ui/alerts/components/AlertsPage'
+
+// Lectura pública para notifications (US-NOT-03, ARCH-005): nunca una consulta directa a
+// scheduling_appointments desde otra feature.
+export {
+  listAppointmentsForReminders as listSchedulingAppointmentsForReminders,
+  getAppointmentForReminder as getSchedulingAppointmentForReminder,
+} from './reminders-api'
+export type { AppointmentReminderSnapshot, ReminderSnapshotsWindow } from './application/ports'
