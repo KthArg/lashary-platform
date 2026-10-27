@@ -152,6 +152,20 @@ consumidor (si no, esa pieza no compila de forma aislada, que es justo lo que fa
 intento de esta corrección — ver PR para el detalle). Separar más el contrato de sus consumidores
 habría exigido un shim de compatibilidad temporal, que el proyecto evita.
 
+- **A3 (recordatorio de una cita ya pasada):** `reconcileReminders` ahora recibe `clock`; si la
+  cita sigue activa pero `startsAt` ya pasó (`hasAppointmentAlreadyStarted`, agregado en la pieza
+  anterior), cancela el recordatorio en vez de dejarlo pendiente (antes solo cancelaba si la cita
+  dejaba de estar activa). Cubre el caso del cron caído o una cita que no se cerró a tiempo
+  (US-AGE-12 no existe todavía).
+- **M1 (un error corta todo el lote):** `discoverReminders`, `reconcileReminders` y
+  `sendDueReminders` ya no abortan la corrida completa por el error de una sola fila — cuentan el
+  fallo (`failed`/`errored` en el resumen, con `console.error`) y siguen con las demás.
+- **M3 (reintentos sin distinguir error permanente de transitorio):** si **ambos** canales
+  reportan `channelNotConfigured`, el recordatorio queda `failed` de inmediato en vez de gastar
+  los 5 intentos — un canal sin configurar no se arregla solo en 15 minutos. Si solo uno de los
+  dos está sin configurar, sigue como transitorio (reintenta). También se acota `last_error` a
+  500 caracteres antes de guardarlo.
+
 ## Falta para producción
 
 Decisión del líder del proyecto, comunicada el 2026-10-21: el código está completo y probado con

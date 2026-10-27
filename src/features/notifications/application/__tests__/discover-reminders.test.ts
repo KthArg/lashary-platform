@@ -1,16 +1,17 @@
 import { describe, it, expect } from 'vitest'
-import { ok, isOk } from '@/shared/result'
+import { ok, err, isOk } from '@/shared/result'
 import { fixedClock, fixedDate } from '@/shared/testing/fixed-clock'
 import { discoverReminders } from '../discover-reminders'
 import type { AppointmentSnapshot, ReminderUpsert } from '../ports'
 
-function buildDeps(appointments: AppointmentSnapshot[], options: { duplicateAppointmentId?: string } = {}) {
+function buildDeps(appointments: AppointmentSnapshot[], options: { failAppointmentId?: string; duplicateAppointmentId?: string } = {}) {
   const inserted: ReminderUpsert[] = []
   let counter = 0
   return {
     deps: {
       listUpcoming: async () => ok(appointments),
       insertIfAbsent: async (reminder: ReminderUpsert) => {
+        if (reminder.appointmentId === options.failAppointmentId) return err('repository-failed' as const)
         inserted.push(reminder)
         return ok({ inserted: reminder.appointmentId !== options.duplicateAppointmentId })
       },
@@ -31,7 +32,7 @@ describe('discoverReminders', () => {
 
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
-    expect(result.value.discovered).toBe(1)
+    expect(result.value).toEqual({ discovered: 1, failed: 0 })
     expect(inserted).toEqual([{
       id: 'rem-1', appointmentId: 'appt-1', clientId: 'client-1',
       startsAt: fixedDate('2026-11-02T10:00:00Z'), techniqueName: 'Técnica A',
@@ -48,11 +49,11 @@ describe('discoverReminders', () => {
 
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
-    expect(result.value.discovered).toBe(0)
+    expect(result.value).toEqual({ discovered: 0, failed: 0 })
     expect(inserted).toHaveLength(0)
   })
 
-  it('no cuenta como descubierta una cita que ya tenía recordatorio (reclamo atómico, A2)', async () => {
+  it('no cuenta como descubierta una cita que ya tenía recordatorio (M2)', async () => {
     const { deps } = buildDeps([
       { appointmentId: 'appt-1', clientId: 'client-1', startsAt: fixedDate('2026-11-02T10:00:00Z'), techniqueName: 'Técnica A' },
     ], { duplicateAppointmentId: 'appt-1' })
@@ -61,6 +62,21 @@ describe('discoverReminders', () => {
 
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
-    expect(result.value.discovered).toBe(0)
+    expect(result.value).toEqual({ discovered: 0, failed: 0 })
+  })
+
+  it('una cita que falla al insertar no corta las demás de la corrida (M1)', async () => {
+    const { deps, inserted } = buildDeps([
+      { appointmentId: 'appt-1', clientId: 'client-1', startsAt: fixedDate('2026-11-02T10:00:00Z'), techniqueName: 'Técnica A' },
+      { appointmentId: 'appt-2', clientId: 'client-2', startsAt: fixedDate('2026-11-02T11:00:00Z'), techniqueName: 'Técnica B' },
+    ], { failAppointmentId: 'appt-1' })
+
+    const result = await discoverReminders(deps)()
+
+    expect(isOk(result)).toBe(true)
+    if (!isOk(result)) return
+    expect(result.value).toEqual({ discovered: 1, failed: 1 })
+    expect(inserted).toHaveLength(1)
+    expect(inserted[0].appointmentId).toBe('appt-2')
   })
 })
