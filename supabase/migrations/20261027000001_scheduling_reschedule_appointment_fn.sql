@@ -1,4 +1,4 @@
--- 20261024000001_scheduling_reschedule_appointment_fn.sql
+-- 20261027000001_scheduling_reschedule_appointment_fn.sql
 -- US-AGE-10 · feature scheduling — la clienta mueve una cita suya a otro espacio (criterios 1 a 3 y 5).
 -- Una sola función, `scheduling_reschedule_appointment`, hace todo en una transacción (DOM-011):
 -- toma la cita con `FOR UPDATE`, valida, comprueba el espacio nuevo como una reserva y lo ocupa,
