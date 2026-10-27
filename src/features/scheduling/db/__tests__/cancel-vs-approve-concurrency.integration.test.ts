@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { Client as PgClient } from 'pg'
 import { isErr, isOk } from '@/shared/result'
+import { addCalendarDays, studioDateOf, studioLocalToUtc } from '@/shared/studio-time'
 import { createSupabaseAppointmentDecisionRepository } from '../appointment-decision-repository'
 import { createSupabaseCancellationRepository } from '../cancellation-repository'
 
@@ -22,9 +23,10 @@ const TEST_PASSWORD = `pw-${ANON_KEY.slice(-PASSWORD_KEY_SUFFIX_LENGTH)}`
 const CLIENT_PHONE = '+50688990099'
 const ADMIN_ROLE = 'admin'
 const TECHNIQUE_NAME = 'zz-test cancelar contra aprobar'
-const MS_PER_HOUR = 3_600_000
-const FIRST_SLOT_HOURS_AHEAD = 4
-const HOURS_BETWEEN_SLOTS = 3
+const MS_PER_MINUTE = 60_000
+const TOMORROW = 1
+const EVENING_FIRST_SLOT_MIN = 20 * 60
+const SLOT_MINUTES = 15
 const SERVICE_PRICE = 35_000
 const DEPOSIT = 10_000
 const SAW_NO_LOSS = 0
@@ -81,10 +83,12 @@ describe.skipIf(!reachable)('cancelar y aprobar la misma cita a la vez (Supabase
   }
 
   async function insertPendingAppointment(): Promise<string> {
-    const startsAtMs = Date.now() + (FIRST_SLOT_HOURS_AHEAD + slotIndex * HOURS_BETWEEN_SLOTS) * MS_PER_HOUR
+    const tomorrow = addCalendarDays(studioDateOf(new Date()), TOMORROW)
+    const startsAtMs =
+      studioLocalToUtc(tomorrow, EVENING_FIRST_SLOT_MIN).getTime() + slotIndex * SLOT_MINUTES * MS_PER_MINUTE
     slotIndex += 1
     const startsAt = new Date(startsAtMs).toISOString()
-    const endsAt = new Date(startsAtMs + MS_PER_HOUR).toISOString()
+    const endsAt = new Date(startsAtMs + SLOT_MINUTES * MS_PER_MINUTE).toISOString()
     const inserted = await pg.query(
       `INSERT INTO public.scheduling_appointments
          (resource_id, status, starts_at, ends_at, occupied_range, client_id, technique_id, technique_name,
