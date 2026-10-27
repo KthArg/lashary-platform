@@ -10,7 +10,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-03
     estado: en_progreso
-    falta: "dominio, aplicación y persistencia completos; faltan los canales reales (Twilio/Resend) y el disparo del cron"
+    falta: "dominio, aplicación, persistencia y canales completos; falta el disparo del cron y la provisión operativa de las cuentas reales"
   - id: US-NOT-04
     estado: no_iniciada
   - id: US-NOT-05
@@ -88,9 +88,15 @@ posterior a todo lo usado en cualquier rama remota a esta fecha. El estado `clai
 esta pieza antes de que llegara a `main`: INT-008 prohíbe editar una migración ya mergeada, no
 reescribir una que todavía no salió de draft.
 
+Canales (`channels/`): `twilio-whatsapp-channel.ts` y `resend-email-channel.ts`, REST directo con
+`fetch` (sin SDK nuevo) detrás de variables de entorno; sin configurar, el canal se declara
+`channelNotConfigured` en vez de fallar en producción por sorpresa (SEC-003/004). Pruebas:
+`channels/__tests__/twilio-whatsapp-channel.test.ts` y `resend-email-channel.test.ts` (mock de
+`fetch`).
+
 ## Qué no hace todavía
 
-Canales reales (Twilio/Resend, ADR-0006) y el disparo del cron: siguientes piezas de US-NOT-03.
+El disparo del cron: siguiente pieza de US-NOT-03.
 
 ## Contrato público (`index.ts`, ARCH-003)
 
