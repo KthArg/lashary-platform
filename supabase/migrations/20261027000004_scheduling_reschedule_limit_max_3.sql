@@ -1,4 +1,4 @@
--- 20261026000000_scheduling_reschedule_limit_max_3.sql
+-- 20261027000004_scheduling_reschedule_limit_max_3.sql
 -- US-AGE-10 · feature scheduling — el PO fijó en 3 el máximo del tope de reagendados por cita
 -- (antes estaba en 10, una cifra puesta por el equipo). La administradora puede elegir de 0 a 3.
 -- Forward-only: no se edita la migración anterior. Sube el valor vigente a 3 como mucho (si alguien lo
