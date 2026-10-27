@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-10-20"
+actualizado: "2026-10-23"
 historias:
   - id: US-AGE-01
     estado: terminada
@@ -171,5 +171,5 @@ Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el
 - `schedulingMessages` — también en `client.ts` para `loading.tsx`/`error.tsx`.
 - `clientCalendarMessages` — textos del calendario de la clienta: en `index.ts` para el título de `src/app/portal/citas/calendario/page.tsx` y en `client.ts` para su `error.tsx`.
 - `ApprovalQueue`, `listPendingAppointmentsAction` y `APPROVAL_QUEUE_LABELS` — componen `/admin/citas`. Consumidor: `src/app/admin/citas/page.tsx`. No están en `client.ts`.
-- `listSchedulingAppointmentsForReminders` y `getSchedulingAppointmentForReminder` (US-NOT-03, ARCH-005): lectura pública sobre `scheduling_appointments` (`appointmentId`, `clientId`, `startsAt`, `techniqueName` de citas `approved`/`confirmed`) para que `notifications` nunca consulte la tabla directo. `db/reminder-snapshots-repository.ts` acepta un `SupabaseClient` inyectado para que el cron de `notifications` (sin cookies) pase su propia sesión. Sin comentarios en el código (igual que el resto de la feature): el porqué de cada decisión vive aquí. Consumidor: `notifications/index.ts`.
+- `listSchedulingAppointmentsForReminders` y `getSchedulingAppointmentForReminder` (US-NOT-03, ARCH-005): lectura pública sobre `scheduling_appointments` (`appointmentId`, `clientId`, `startsAt`, `techniqueName` de citas `approved`/`confirmed`) para que `notifications` nunca consulte la tabla directo. `db/reminder-snapshots-repository.ts` acepta un `SupabaseClient` inyectado para que el cron de `notifications` (sin cookies) pase su propia sesión. Sin comentarios en el código (igual que el resto de la feature): el porqué de cada decisión vive aquí. Consumidor: `notifications/index.ts`. (Hallazgo B2 de la auditoría del 2026-10-23: `index.ts` seguía teniendo un comentario de dos líneas con esta misma explicación, resto de antes de la pasada de "sin comentarios" de la pieza 10 — se quitó; esta entrada del SPEC ya lo cubre.)
 - Dominio y aplicación (`selectTechnique`, puertos) son superficie interna: ninguna otra feature los consume todavía, salvo el puerto de solo lectura anterior.
