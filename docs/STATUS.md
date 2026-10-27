@@ -16,7 +16,7 @@
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | landing | pendiente | terminada | 6 / 0 / 0 / 0 / 0 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
-| notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
+| notifications | pendiente | en_progreso | 0 / 1 / 0 / 0 / 8 |
 | payments | pendiente | terminada | 1 / 0 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | scheduling | pendiente | en_progreso | 5 / 0 / 0 / 0 / 6 |
@@ -68,10 +68,10 @@
 ### loyalty (actualizado: 2026-08-28)
 - US-LAND-06 — no_iniciada
 
-### notifications (actualizado: 2026-08-29)
+### notifications (actualizado: 2026-10-20)
 - US-NOT-01 — no_iniciada
 - US-NOT-02 — no_iniciada
-- US-NOT-03 — no_iniciada
+- US-NOT-03 — en_progreso — falta: solo el dominio (criterios 1 y 2) está construido; faltan aplicación, persistencia, canales y el disparo del cron
 - US-NOT-04 — no_iniciada
 - US-NOT-05 — no_iniciada
 - US-NOT-06 — no_iniciada
