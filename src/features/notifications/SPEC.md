@@ -99,9 +99,10 @@ US-NOT-03 (ADR-0007); el resto lo reusa vía el puerto que US-NOT-08 exige.
   recordatorio) — `domain/reminder-message.ts` expone `buildReminderTemplateVariables` con las 2
   variables en el orden que esa plantilla debe declarar (técnica, fecha y hora); con
   `META_WHATSAPP_TEMPLATE_NAME` configurado, el canal manda `type: "template"` con esas variables
-  en `components[0].parameters` en vez de texto libre. Pruebas:
-  `channels/__tests__/meta-whatsapp-channel.test.ts` (sin plantilla y con plantilla) y
-  `resend-email-channel.test.ts` (mock de `fetch`).
+  en `components[0].parameters` en vez de texto libre. `twilio-whatsapp-channel.ts` se retiró del
+  todo (reemplazado por `meta-whatsapp-channel.ts` y cableado en `index.ts`); no queda código de
+  Twilio en la feature. Pruebas: `channels/__tests__/meta-whatsapp-channel.test.ts` (sin plantilla
+  y con plantilla) y `resend-email-channel.test.ts` (mock de `fetch`).
 - Disparo (`http/cron-handler.ts`, `src/app/api/cron/notifications-reminders/route.ts`, `vercel.json`):
   Vercel Cron llama cada 15 minutos con `Authorization: Bearer <CRON_SECRET>`; sin ese secreto
   configurado el endpoint se niega siempre (fail-closed). Sin sesión de usuario (sin cookies): el

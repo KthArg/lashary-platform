@@ -7,7 +7,7 @@ import { getClientContactForReminders } from '@/features/clients'
 import { reminderRepository } from './db/reminder-repository'
 import { runReminderCycle, type RunReminderCycleSummary } from './application/run-reminder-cycle'
 import type { AppointmentSnapshot, ContactInfo, RepositoryFailure } from './application/ports'
-import { twilioWhatsAppChannel, readTwilioWhatsAppConfigFromEnv } from './channels/twilio-whatsapp-channel'
+import { metaWhatsAppChannel, readMetaWhatsAppConfigFromEnv } from './channels/meta-whatsapp-channel'
 import { resendEmailChannel, readResendEmailConfigFromEnv } from './channels/resend-email-channel'
 
 const REPOSITORY_FAILURE: RepositoryFailure = 'repository-failed'
@@ -52,7 +52,7 @@ export async function runNotificationsReminderCycle(): Promise<
     markSent: repo.markSent,
     markRetry: repo.markRetry,
     markExhausted: repo.markExhausted,
-    primaryChannel: twilioWhatsAppChannel(readTwilioWhatsAppConfigFromEnv(process.env)),
+    primaryChannel: metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env)),
     backupChannel: resendEmailChannel(readResendEmailConfigFromEnv(process.env)),
   })()
 }
