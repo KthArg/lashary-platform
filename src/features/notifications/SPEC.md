@@ -195,19 +195,45 @@ habría exigido un shim de compatibilidad temporal, que el proyecto evita.
   el siguiente lo retira del todo) se contradicen a simple lectura; se anota el primero como
   superado por el segundo.
 
-Con la pieza 19 (B2, B9) se cierran todos los hallazgos de `AUDIT.md` que el código puede resolver
-sin una decisión del líder/PO. Quedan explícitamente sin resolver por código, con su razón: A1
-(renombrar la migración — instrucción del líder, no tocar todavía), A4 (rol dedicado del cron en
-vez de cuenta admin — decisión de arquitectura, pendiente de ADR), A6 (pruebas de integración de
-`db/reminder-repository.ts`, `clients/reminders-api.ts` y
-`scheduling/db/reminder-snapshots-repository.ts` contra Supabase local — deuda ya registrada,
-costo estimado, sin bloquear el cierre), A7 (rebase de `us/US-NOT-03` contra `main` — mecánico,
-se hace al cerrar la historia, no en una pieza intermedia), M4 (resto: *n+1* de
+## Segunda revisión del líder (2026-10-24), sobre la corrección anterior
+
+El líder revisó la corrección de la auditoría del 2026-10-23 y encontró dos fallos reales en el
+reclamo atómico (A2) que esa corrección introdujo, más la confirmación de que la migración de A1
+debía fusionarse en vez de solo renombrarse.
+
+- **Migración (A1):** `20261020000000` y `20261020000001` (las dos que usó esta historia) quedaron
+  ocupadas en `main` (por US-AGE-06, #443) y en ramas abiertas de US-AGE-07; ninguna de las dos de
+  notifications había llegado nunca a `main`. Se fusionaron en una sola
+  (`20261026000000_notifications_reminders.sql`, pieza 4 reescrita) con fecha posterior a todo lo
+  usado en cualquier rama remota a esta fecha. Detalle completo en la pieza 4 (PR #452, etiqueta
+  `excepcion-proceso`) y en el párrafo de "Persistencia" más arriba.
+- **El reclamo no tenía vida limitada:** si el cron moría a mitad de lote, o `markSent` fallaba
+  después de un envío exitoso, la fila quedaba `claimed` para siempre — nadie la volvía a intentar
+  y tampoco avisaba. `notifications_claim_due_reminders` (función SQL,
+  `20261026000001_notifications_claim_due_reminders_fn.sql`) reclama con `FOR UPDATE SKIP LOCKED`
+  en tandas de `CLAIM_BATCH_SIZE` (50) en vez de reclamar todo de una vez, y vuelve a reclamar lo
+  que lleva más de `CLAIM_TTL_MINUTES` (10) en `claimed` sin resolverse. Además, si falla la
+  lectura del contacto (`getContact`), `sendOne` ahora llama a `releaseToPending` en vez de dejar
+  la fila `claimed` — no gasta un intento, el siguiente ciclo la vuelve a ver `pending`. Probado a
+  mano contra Supabase local (TTL vencido se reclama, TTL vigente no, tope de tanda respetado) y
+  con pruebas unitarias de `releaseToPending` en `send-due-reminders.test.ts`; la prueba de
+  integración del reclamo en sí (con `claimed` real) es parte de A6 (ver abajo).
+- **`db.auth.signOut()` cerraba todas las sesiones de la cuenta del cron:** el scope por defecto
+  es `global` (todas las sesiones del usuario en todos los dispositivos/procesos), así que dos
+  corridas del cron solapadas se tumbaban una a la otra a mitad de ciclo. `closeSystemClient`
+  (`shared/lib/supabase/system.ts`) ahora llama `signOut({ scope: 'local' })` — solo cierra la
+  sesión de esa corrida. Prueba: `shared/lib/supabase/__tests__/system.test.ts`.
+
+Quedan explícitamente sin resolver por código, con su razón: A4 (rol dedicado del cron en vez de
+cuenta admin — decisión de arquitectura, pendiente de ADR), A7 (rebase de `us/US-NOT-03` contra
+`main` — mecánico, se hace al cerrar la historia, no en una pieza intermedia), M4 (resto: *n+1* de
 `scheduling/db/reminder-snapshots-repository.ts` al reconciliar uno por uno — exige una API de
 lote nueva en `scheduling`, cambio de contrato cross-feature que no cabe en una pieza de
 corrección), M6 (Twilio construido y luego retirado en la misma pila — señal de proceso, no un
 defecto de código: ya documentado en ADR-0006 y STATUS.md), B5, B6 y B8 (requieren una decisión
-del líder/PO sobre el mensaje a la clienta y el número real de WhatsApp Business, no código).
+del líder/PO sobre el mensaje a la clienta y el número real de WhatsApp Business, no código). A6
+(pruebas de integración) se paga en la siguiente pieza — el líder pidió explícitamente que no
+quede como deuda aceptada en el cierre.
 
 ## Falta para producción
 

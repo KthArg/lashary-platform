@@ -5,8 +5,11 @@ import type { ReminderChannelKind, ReminderSnapshot, ReminderStatus } from '../d
 import type { ReminderRepository, ReminderUpsert, ReminderReschedule } from '../application/ports'
 
 const TABLE = 'notifications_reminders'
+const CLAIM_FUNCTION = 'notifications_claim_due_reminders'
 const FAILED = 'repository-failed' as const
 const DUPLICATE_KEY_CODE = '23505'
+const CLAIM_TTL_MINUTES = 10
+const CLAIM_BATCH_SIZE = 50
 
 const REMINDER_COLUMNS =
   'id, appointment_id, client_id, starts_at, technique_name, send_at, status, attempts, last_error, last_channel, sent_at'
@@ -83,13 +86,21 @@ export async function reminderRepository(db?: SupabaseClient): Promise<ReminderR
     },
 
     async claimDuePending(now: Date) {
-      const { data, error } = await supabase.from(TABLE)
-        .update({ status: 'claimed' })
-        .eq('status', 'pending')
-        .lte('send_at', now.toISOString())
-        .select(REMINDER_COLUMNS)
+      const { data, error } = await supabase.rpc(CLAIM_FUNCTION, {
+        p_now: now.toISOString(),
+        p_claim_ttl_minutes: CLAIM_TTL_MINUTES,
+        p_batch_size: CLAIM_BATCH_SIZE,
+      })
       if (error || !data) return err(FAILED)
       return ok((data as ReminderRow[]).map(toSnapshot))
+    },
+
+    async releaseToPending(id: string) {
+      const { error } = await supabase.from(TABLE)
+        .update({ status: 'pending', claimed_at: null })
+        .eq('id', id).eq('status', 'claimed')
+      if (error) return err(FAILED)
+      return ok(undefined)
     },
 
     async markSent(id: string, channel: ReminderChannelKind, sentAt: Date) {

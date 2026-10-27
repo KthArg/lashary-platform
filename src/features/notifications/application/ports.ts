@@ -42,9 +42,8 @@ export interface ReminderRepository {
   listPending(): Promise<Result<ReminderSnapshot[], RepositoryFailure>>
   reschedulePending(reschedule: ReminderReschedule): Promise<Result<void, RepositoryFailure>>
   cancelPending(appointmentId: string): Promise<Result<void, RepositoryFailure>>
-  // Transición atómica pending -> claimed (una sola instrucción UPDATE...WHERE status='pending'):
-  // dos corridas superpuestas del cron no pueden reclamar la misma fila.
   claimDuePending(now: Date): Promise<Result<ReminderSnapshot[], RepositoryFailure>>
+  releaseToPending(id: string): Promise<Result<void, RepositoryFailure>>
   markSent(id: string, channel: ReminderChannelKind, sentAt: Date): Promise<Result<void, RepositoryFailure>>
   markRetry(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
   markExhausted(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>

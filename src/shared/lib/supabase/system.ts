@@ -20,3 +20,7 @@ export async function createSystemClient(config: SystemClientConfig): Promise<Re
   if (error) return err('system-client-sign-in-failed')
   return ok(client)
 }
+
+export async function closeSystemClient(client: SupabaseClient): Promise<void> {
+  await client.auth.signOut({ scope: 'local' })
+}
