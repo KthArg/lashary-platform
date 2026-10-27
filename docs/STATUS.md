@@ -38,7 +38,7 @@
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
-### clients (actualizado: 2026-10-19)
+### clients (actualizado: 2026-10-20)
 - US-CLI-01 — en_progreso — falta: las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)
 - US-CLI-02 — no_iniciada
 - US-CLI-03 — no_iniciada
@@ -71,7 +71,7 @@
 ### notifications (actualizado: 2026-10-24)
 - US-NOT-01 — no_iniciada
 - US-NOT-02 — no_iniciada
-- US-NOT-03 — en_progreso — falta: dominio, aplicación, persistencia y canales completos; falta el disparo del cron y la provisión operativa de las cuentas reales
+- US-NOT-03 — en_progreso — falta: provisión operativa fuera del código: cuenta Twilio con WhatsApp Business verificado y plantillas aprobadas por Meta (sin ellas el canal primario se declara no configurado, ADR-0006), dominio verificado en Resend, y la cuenta de staff del cron (NOTIFICATIONS_CRON_EMAIL/NOTIFICATIONS_CRON_PASSWORD) creada a mano en Supabase con rol admin/superadmin, igual que la cuenta de la administradora (US-AUTH-01). Verificación end-to-end contra un número de WhatsApp real, pendiente.
 - US-NOT-04 — no_iniciada
 - US-NOT-05 — no_iniciada
 - US-NOT-06 — no_iniciada
