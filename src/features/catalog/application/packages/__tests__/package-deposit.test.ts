@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Money } from '@/shared/money'
+import { moneyFromColones } from '@/shared/money'
 import { isOk, isErr } from '@/shared/result'
 import { buildPackage, packageToView } from '../../../domain/packages/package'
 import { createPackage, updatePackage, deactivatePackage } from '../commands'
@@ -13,7 +13,7 @@ const techniques = createFakeTechniqueRepository([
   makeTechnique({ id: 't1' }),
   makeTechnique({ id: 't2' }),
 ])
-const domainInput = { ...model, id: 'p1', price: Money.fromColones(model.price) }
+const domainInput = { ...model, id: 'p1', price: moneyFromColones(model.price) }
 
 describe('anticipo propio del paquete (US-AGE-13)', () => {
   it('expone el anticipo elegido y lo conserva al desactivar', async () => {
@@ -54,6 +54,6 @@ describe('anticipo propio del paquete (US-AGE-13)', () => {
   })
 
   it('el dominio rechaza dinero negativo para el anticipo', () => {
-    expect(isErr(buildPackage({ ...domainInput, deposit: Money.fromColones(-1) }))).toBe(true)
+    expect(isErr(buildPackage({ ...domainInput, deposit: moneyFromColones(-1) }))).toBe(true)
   })
 })

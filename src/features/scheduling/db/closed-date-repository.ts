@@ -2,12 +2,14 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { ok, err } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import type { ClosedDate, ClosedDateKind } from '../domain/closed-dates'
-import { closedDateAlreadyExists } from '../domain/availability-errors'
+import { closedDateAlreadyExists, closedDateHasAppointment } from '../domain/availability-errors'
 import type { ClosedDateRepository } from '../application/availability-ports'
 
 const TABLE = 'scheduling_closed_dates'
 const COLUMNS = 'id, resource_id, closed_on, kind, label'
 const UNIQUE_VIOLATION = '23505'
+const CHECK_VIOLATION = '23514'
+const ACTIVE_APPOINTMENT_MESSAGE = 'scheduling_closed_dates_active_appointment'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export type ClosedDateRow = {
@@ -52,6 +54,9 @@ export function createSupabaseClosedDateRepository(db: SupabaseClient): ClosedDa
       const { error } = await db.from(TABLE).insert(closedDateToRow(closedDate))
       if (!error) return ok(undefined)
       if (error.code === UNIQUE_VIOLATION) return err(closedDateAlreadyExists(closedDate.date))
+      if (error.code === CHECK_VIOLATION && error.message === ACTIVE_APPOINTMENT_MESSAGE) {
+        return err(closedDateHasAppointment())
+      }
       throw new Error(`${TABLE}.insert: ${error.message}`)
     },
 

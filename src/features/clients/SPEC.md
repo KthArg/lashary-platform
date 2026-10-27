@@ -8,7 +8,8 @@ historias:
     estado: en_progreso
     falta: "las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)"
   - id: US-CLI-02
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "el acceso desde la vista diaria espera a US-AGE-11 (criterio diferido): la agenda diaria no existe y no enlaza a clientAppointmentsPath"
   - id: US-CLI-03
     estado: no_iniciada
   - id: US-CLI-04
@@ -118,6 +119,31 @@ expediente no se muestra. Capas: `domain/record/` (el contenido y sus cambios),
 escritura, lecturas en `queries/`, textos y componentes); la ruta vive en `src/app/admin/clients/[id]/`. Crear categorías nuevas desde el menú
 quedó fuera del plan por decisión de José Loría.
 
+### Historial de citas (US-CLI-02)
+
+La pestaña **Citas** de la ficha (`/admin/clients/<id>/citas`, `clientAppointmentsPath`) muestra
+`AppointmentHistory`: una tabla con fecha (en la hora del estudio, `formatAppointmentDate`), servicio,
+estado, pago (el estado del anticipo) y anotaciones (`HISTORY_LABELS.pendingValue` hasta US-CLI-03), en
+el orden en que llegan, de la más reciente a la más antigua; sin citas, un texto vacío. La página lee con
+`readAppointmentHistory(clientId, page)` (`ui/admin-history/queries/`, sin `'use server'`): exige
+`requireAdminSession()`, comprueba que la clienta exista (SEC-005) y pide las citas a `scheduling` por
+`http/history/history-gateways.ts` (ARCH-005), que lee un fallo o una excepción como
+`history-unavailable`, nunca como historial vacío. `viewAppointmentHistory` (`application/history/`) le
+pone a cada cita `depositStatusOf()` (`domain/history/`): `none`, `registered` o `pending`, también a
+medias. Carga en `loading.tsx`, error con `LoadError` y `error.tsx` (UI-003). Pruebas:
+`deposit-status.test.ts`, `view-appointment-history.test.ts`, `history-gateways.test.ts`,
+`history-queries.test.ts`, `appointment-history.test.tsx` y `src/app/admin/clients/[id]/layout.test.tsx`.
+
+La página va en la URL (`?page`, desde 0; `parseHistoryPage` lee cualquier otro valor como 0 y
+`appointmentHistoryUrl` no escribe `?page` en la primera), como el listado (decisión del 2026-09-20).
+`AppointmentHistoryPagination` muestra "Página X de Y · N citas" y *Anterior*/*Siguiente* como enlaces,
+o como texto cuando no aplican; sin citas no se dibuja. Es un componente de servidor: no tiene selector
+de tamaño, así que no necesita `router.push`. Una página más allá de la última redirige a la primera en
+vez de decir que la clienta no tiene citas. Cada fila del listado tiene, junto al expediente, un enlace
+de solo icono a su historial con `aria-label` que la nombra (UI-004). Pruebas:
+`appointment-history-pagination.test.tsx`, `src/app/admin/clients/[id]/citas/page.test.tsx` y
+`clients-list.test.tsx`.
+
 ## Qué no hace todavía
 
 No existe un flujo de archivado o borrado de clientas en esta rama. `docs/adr/ADR-0009-client-archival-and-exemptions.md` recoge el acuerdo de archivar sin eliminar el perfil ni sus referencias, comunicado por Bayron el 2026-10-05. Antes de implementarlo deben acordarse permisos, búsquedas y reservas, citas existentes y restauración. La pieza 21 de US-AGE-13 implementa y prueba la migración de `payments` a `ON DELETE RESTRICT`; bloquea el borrado de perfiles con exoneraciones activas o históricas, incluso desde `auth.users`. Su integración sigue pendiente. Reactivar un perfil deberá revisar la vigencia de su exoneración antes de aplicarla. Este cambio de documentación no implementa archivado ni completa una historia de `clients`.
@@ -135,6 +161,9 @@ registra con Google, además del alta de esta feature. Le falta lo que US-CLI-05
 El listado con filtros y paginación **no pertenece a esta historia**: es US-CLI-01, que depende de
 esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
+**Al historial de citas (US-CLI-02) no se llega desde la vista diaria:** US-AGE-11 no existe todavía
+(criterio diferido, decisión del 2026-10-21). Las anotaciones dicen "Sin dato" hasta US-CLI-03.
+
 ## Contrato público (`src/features/clients/index.ts`)
 
 Único punto de entrada (ARCH-003). Exporta `AddClientDialog` —lo que monta la ruta—, el modal, el
@@ -144,9 +173,11 @@ esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 textos y límites, entre ellas `CLIENTS_LIST_LIMITS`, `CLIENTS_TABLE_HEADERS`, `CLIENTS_TABLE_TEXTS` , `CLIENTS_PAGINATION_TEXTS` y `CLIENTS_FILTER_TEXTS` (DOM-009).
 También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el expediente (US-CLI-04):
 `getClientAction`, `CLIENTS_PATH`, `clientRecordPath`, `CLIENT_PROFILE_LABELS`, `RecordView`,
-`RecordLoadError`, `readRecord`, `readTechniqueOptions`, `readCategoryOptions`, `RECORD_LABELS` y
-`STUDY_FORM_LABELS`. `src/features/clients/client.ts` es la entrada para código del navegador
-(`error.tsx`): solo `RecordLoadError` y `RECORD_LABELS`, sin nada de servidor.
+`LoadError`, `readRecord`, `readTechniqueOptions`, `readCategoryOptions`, `RECORD_LABELS` y
+`STUDY_FORM_LABELS`. Para el historial (US-CLI-02): `clientAppointmentsPath`, `AppointmentHistory`,
+`readAppointmentHistory` con `ReadAppointmentHistoryResult` y `HISTORY_LABELS`.
+`src/features/clients/client.ts` es la entrada para código del navegador (`error.tsx`): solo
+`LoadError`, `RECORD_LABELS` y `HISTORY_LABELS`, sin nada de servidor.
 
 `getClientContactForReminders` (US-NOT-03, ARCH-005): lectura pública de solo teléfono y email
 para que `notifications` nunca consulte `clients_profiles` directo. Hace su propia consulta
@@ -400,6 +431,44 @@ anon no lee ningún contacto (SEC-002).
   con `ImageViewer` (flechas, Escape, devuelve el foco).
 - **2026-10-19 — Imports con `@/` y piezas compartidas en `ui/shared/` (B1).** `ConfirmDialog` y
   `useFocusTrap` los usan `admin-clients` y `admin-record`.
+- **2026-10-21 — Alcance de US-CLI-02, aprobado por el PO y comunicado por José Loría.** Tres puntos
+  del criterio 1 y del 3, registrados en `docs/process/DEPENDENCIES.md`:
+  1. *Las anotaciones* se trasladan a US-CLI-03 (ítem 8 de «Criterios trasladados»): las crea esa
+     historia, que depende de esta, así que dejarlas aquí sería un ciclo. El criterio 2 de US-CLI-03
+     ya pide verlas dentro del historial. CLI-02 dibuja la columna **Anotaciones** con
+     `pendingColumnValue`, como las columnas diferidas de US-CLI-01.
+  2. *El estado de pago* de cada cita es el estado del anticipo: sin anticipo, pendiente o
+     registrado, desde `depositRequired` y `depositRegistered`, que la cita congeló al reservar
+     (DOM-002). Con eso el criterio se cumple. El pago completo de la cita ("pagada", "con saldo")
+     necesita el libro contable de US-AGE-12; si se pide después, entra con su propio contrato y el
+     `id` de cada cita, sin cambiar la forma de `scheduling-api.md`.
+  3. *El acceso desde la vista diaria* es un criterio diferido hasta US-AGE-11 (ítem 5 de «Criterios
+     diferidos»): no hay ciclo, porque US-AGE-11 no depende de esta historia. CLI-02 exporta la ruta de
+     la pestaña en `index.ts` para que la vista diaria enlace a ella. **Consecuencia asumida:** CLI-02
+     queda `en_progreso` hasta que exista US-AGE-11, y US-CLI-03 y US-LAND-06, que dependen de ella, no
+     se pueden empezar hasta entonces (INT-007).
+- **2026-10-21 — US-CLI-02 lee las citas por un caso de uso público de `scheduling`, sin migración.**
+  ARCH-005 prohíbe leer `scheduling_appointments` desde `clients`, así que `scheduling` expone
+  `listClientAppointments` (contrato en `docs/contracts/scheduling-api.md`, INT-003). Se descartó una
+  función SQL como las de `clients-api.md`: aquella existe porque la clienta llama por PostgREST, y el
+  historial lo lee una página del panel en el servidor. La base ya tiene lo necesario: las columnas de
+  US-AGE-05, el índice `(client_id, starts_at)` para el orden y la política
+  `scheduling_appointments_select_staff`. **Consecuencia asumida:** esa política es de personal
+  (`auth_is_staff()`), no solo de la administradora; el historial no es dato sensible (SEC-006 rige el
+  expediente) y la página exige `requireAdminSession()`.
+- **2026-10-21 — US-CLI-02 se entrega en 5 piezas apiladas sobre `main` (INT-002) y un cierre aparte,
+  por decisión de José Loría.** 1/5 el contrato y estos registros (solo documentación); 2/5
+  `listClientAppointments` en `scheduling` con sus pruebas; 3/5 dominio, caso de uso, adaptador en
+  `http/` y lectura en `ui/admin-history/queries/`; 4/5 la ruta `src/app/admin/clients/[id]/citas/`, la
+  pestaña **Citas** y la tabla con sus tres estados (UI-003); 5/5 la paginación en la URL y el enlace
+  desde cada fila del listado. La 5/5 deja la historia `en_progreso` por el criterio diferido. El cierre
+  no cuenta como pieza: es el PR `us/US-CLI-02` → `main`, con título `(US-CLI-02)`, cuando US-AGE-11
+  enlace al historial, y trae la `evidencia:` y `terminada` (EST-007). Si una pieza estima más de 400
+  líneas, se parte antes de escribirla y se retitulan todas.
+- **2026-10-22 — `RecordLoadError` pasa a `ui/shared/components/LoadError`, por decisión de José
+  Loría.** El expediente y el historial muestran el mismo aviso con *Reintentar*; lo que comparten dos
+  áreas va a `ui/shared/` (lección de US-CLI-04). Como `ConfirmDialog`, no trae textos: recibe
+  `retryLabel` y cada área pasa el suyo (`RECORD_LABELS.retry`, `HISTORY_LABELS.retry`, DOM-009).
 
 ## Contrato para scheduling (US-AGE-05)
 

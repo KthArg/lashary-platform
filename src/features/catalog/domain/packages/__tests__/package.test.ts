@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Money } from '@/shared/money'
+import { moneyFromColones, zeroMoney } from '@/shared/money'
 import { isErr, isOk } from '@/shared/result'
 import { buildPackage, markPackageInactive, packageToView } from '@/features/catalog/domain/packages/package'
 import { isPackageValidationError } from '@/features/catalog/domain/packages/errors'
@@ -11,7 +11,7 @@ const validInput = () => ({
     '11111111-1111-1111-1111-111111111111',
     '33333333-3333-3333-3333-333333333333',
   ],
-  price: Money.fromColones(30000),
+  price: moneyFromColones(30000),
 })
 
 describe('buildPackage — invariantes de dominio (DOM-007, criterio 1)', () => {
@@ -75,9 +75,9 @@ describe('buildPackage — invariantes de dominio (DOM-007, criterio 1)', () => 
   })
 
   it('rechaza precio no positivo', () => {
-    expect(isErr(buildPackage({ ...validInput(), price: Money.zero() }))).toBe(true)
+    expect(isErr(buildPackage({ ...validInput(), price: zeroMoney() }))).toBe(true)
     expect(
-      isErr(buildPackage({ ...validInput(), price: Money.fromColones(-1000) })),
+      isErr(buildPackage({ ...validInput(), price: moneyFromColones(-1000) })),
     ).toBe(true)
   })
 
@@ -86,7 +86,7 @@ describe('buildPackage — invariantes de dominio (DOM-007, criterio 1)', () => 
       ...validInput(),
       name: '',
       techniqueIds: [],
-      price: Money.zero(),
+      price: zeroMoney(),
     })
     expect(isErr(result)).toBe(true)
     if (!isErr(result)) return

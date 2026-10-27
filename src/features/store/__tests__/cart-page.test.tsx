@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { Money } from '@/shared/money'
+import { moneyFromColones } from '@/shared/money'
 import {
   createFakeCartRepository,
   makeCartProduct,
@@ -32,12 +32,12 @@ const SERUM_PRICE = 18000
 const BRUSH_PRICE = 12000
 const SERUM_QUANTITY = 2
 
-const serum = makeCartProduct({ unitPrice: Money.fromColones(SERUM_PRICE) })
+const serum = makeCartProduct({ unitPrice: moneyFromColones(SERUM_PRICE) })
 const brush = makeCartProduct({
   id: 'producto-cepillo',
   slug: 'cepillo-limpiador-lashary',
   name: 'Cepillo limpiador Lashary',
-  unitPrice: Money.fromColones(BRUSH_PRICE),
+  unitPrice: moneyFromColones(BRUSH_PRICE),
 })
 
 async function renderCartRoute(): Promise<string> {

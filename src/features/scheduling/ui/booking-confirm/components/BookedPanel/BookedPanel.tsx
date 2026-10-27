@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { bookingConfirmMessages, PORTAL_CITAS_PATH } from '../../constants/booking-confirm-strings'
+import { MY_APPOINTMENTS_PATH } from '../../../my-appointments/constants/my-appointments-strings'
+import { bookingConfirmMessages } from '../../constants/booking-confirm-strings'
 import { SummaryList } from '../SummaryList'
 import { bookedPanelStyles as STYLES } from './BookedPanel.styles'
 import type { BookedPanelProps } from './BookedPanel.types'
@@ -14,7 +15,7 @@ export function BookedPanel({ booked }: BookedPanelProps) {
         {booked.status}
       </p>
       <SummaryList summary={booked.summary} />
-      <Link href={PORTAL_CITAS_PATH} className={STYLES.link}>
+      <Link href={MY_APPOINTMENTS_PATH} className={STYLES.link}>
         {copy.backToCitas}
       </Link>
     </div>

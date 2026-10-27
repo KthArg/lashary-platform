@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isErr, isOk } from '@/shared/result'
-import { isWeeklyBlockOverlap } from '../../domain/availability-errors'
+import { isWeeklyBlockHasAppointment, isWeeklyBlockOverlap } from '../../domain/availability-errors'
 import {
   createSupabaseWeeklyAvailabilityRepository,
   rowToWeeklyBlock,
@@ -45,8 +45,44 @@ describe('weekly-availability-repository', () => {
     await expect(repo.insert(block)).rejects.toThrow('permission denied')
   })
 
-  it('remove con un id que no es UUID no consulta la base', async () => {
-    const repo = createSupabaseWeeklyAvailabilityRepository({} as SupabaseClient)
-    expect(await repo.remove('no-es-uuid')).toBe(false)
+  describe('remove', () => {
+    const deletingDb = (result: { data?: unknown[]; error?: { code: string; message: string } | null }) =>
+      ({
+        from: () => ({
+          delete: () => ({ eq: () => ({ select: async () => ({ data: result.data ?? null, error: result.error ?? null }) }) }),
+        }),
+      }) as unknown as SupabaseClient
+
+    it('con un id que no es UUID no consulta la base y dice que no existía', async () => {
+      const repo = createSupabaseWeeklyAvailabilityRepository({} as SupabaseClient)
+      const result = await repo.remove('no-es-uuid')
+      expect(isOk(result) && result.value).toBe(false)
+    })
+
+    it('devuelve si borró una fila', async () => {
+      const removed = await createSupabaseWeeklyAvailabilityRepository(deletingDb({ data: [{ id: block.id }] })).remove(block.id)
+      const missing = await createSupabaseWeeklyAvailabilityRepository(deletingDb({ data: [] })).remove(block.id)
+      expect(isOk(removed) && removed.value).toBe(true)
+      expect(isOk(missing) && missing.value).toBe(false)
+    })
+
+    it('el rechazo de la base por citas activas (23514) se devuelve como error tipado, sin lanzar', async () => {
+      const repo = createSupabaseWeeklyAvailabilityRepository(
+        deletingDb({ error: { code: '23514', message: 'scheduling_weekly_availability_active_appointments' } }),
+      )
+      const result = await repo.remove(block.id)
+      expect(isErr(result) && isWeeklyBlockHasAppointment(result.error)).toBe(true)
+    })
+
+    it('otro 23514 o cualquier otro error de la base se lanza', async () => {
+      for (const error of [
+        { code: '23514', message: 'violates check constraint' },
+        { code: '42501', message: 'permission denied' },
+      ]) {
+        await expect(createSupabaseWeeklyAvailabilityRepository(deletingDb({ error })).remove(block.id)).rejects.toThrow(
+          error.message,
+        )
+      }
+    })
   })
 })

@@ -8,6 +8,8 @@ import {
   closedDateAlreadyExists,
   isAvailabilityEntryNotFound,
   isClosedDateAlreadyExists,
+  isClosedDateHasAppointment,
+  closedDateHasAppointment,
   isClosedDateInvalid,
 } from '../../domain/availability-errors'
 
@@ -85,6 +87,14 @@ describe('addClosedDate — US-AGE-01, criterio 2', () => {
       kind: 'non_working',
     })
     expect(isErr(result) && isClosedDateAlreadyExists(result.error)).toBe(true)
+  })
+
+  it('si la base lo rechaza por una cita activa, lo devuelve tipado y no guarda nada', async () => {
+    const { repo, dates } = createFakeClosedDateRepository()
+    const rejecting = { ...repo, insert: async () => err(closedDateHasAppointment()) }
+    const result = await addClosedDate(deps(rejecting))({ resourceId: RESOURCE, date: '2026-12-25', kind: 'holiday' })
+    expect(isErr(result) && isClosedDateHasAppointment(result.error)).toBe(true)
+    expect(dates).toHaveLength(0)
   })
 })
 

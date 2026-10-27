@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { techniqueFormSchema } from '@/features/catalog/ui/techniques/validation/technique-schema'
+import { catalogMessages } from '@/features/catalog/ui/techniques/constants/technique-strings'
 
 const validForm = {
   name: 'Set volumen',
@@ -68,6 +69,13 @@ describe('techniqueFormSchema (DOM-007 — validación en el borde)', () => {
     expect(parsed.success).toBe(false)
     if (parsed.success) return
     expect(parsed.error.issues.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('una familia inválida da el mensaje de la familia', () => {
+    const parsed = techniqueFormSchema.safeParse({ ...validForm, family: 'tattoo' })
+    expect(parsed.success).toBe(false)
+    if (parsed.success) return
+    expect(parsed.error.issues.map((issue) => issue.message)).toContain(catalogMessages.form.validation.family)
   })
 
   it('acepta buffer y anticipo en cero', () => {

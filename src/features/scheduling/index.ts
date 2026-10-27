@@ -1,3 +1,7 @@
+import { listClientAppointments as listClientAppointmentsUseCase } from './application/list-client-appointments'
+import { clientAppointmentsRepository } from './db/client-appointments-repository'
+import type { ListClientAppointmentsQuery } from './application/client-appointments-ports'
+
 export { ClientTechniqueSelectionPage } from './ui/ClientTechniqueSelectionPage'
 export { AdminAvailabilityPage } from './ui/availability/components/AdminAvailabilityPage'
 export { ClientCalendarPage } from './ui/client-calendar/components/ClientCalendarPage'
@@ -9,6 +13,23 @@ export { APPROVAL_QUEUE_LABELS } from './ui/approval-queue/constants/approval-qu
 export { BookingConfirmPage } from './ui/booking-confirm/components/BookingConfirmPage'
 export { bookingConfirmMessages } from './ui/booking-confirm/constants/booking-confirm-strings'
 export { AlertsPage } from './ui/alerts/components/AlertsPage'
+export { CancellationPolicyPage } from './ui/cancellation-policy/components/CancellationPolicyPage'
+export { MyAppointmentsPage } from './ui/my-appointments/components/MyAppointmentsPage'
+export { myAppointmentsMessages } from './ui/my-appointments/constants/my-appointments-strings'
+export type {
+  ClientAppointmentStatus,
+  ClientAppointmentView,
+  ClientAppointmentsPage,
+  ListClientAppointmentsQuery,
+} from './application/client-appointments-ports'
+export {
+  CLIENT_APPOINTMENTS_DEFAULT_PAGE_SIZE,
+  CLIENT_APPOINTMENTS_MAX_PAGE_SIZE,
+} from './application/list-client-appointments'
+
+export async function listClientAppointments(query: ListClientAppointmentsQuery) {
+  return listClientAppointmentsUseCase(await clientAppointmentsRepository())(query)
+}
 
 export {
   listAppointmentsForReminders as listSchedulingAppointmentsForReminders,

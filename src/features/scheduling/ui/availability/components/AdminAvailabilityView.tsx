@@ -1,13 +1,17 @@
 import { schedulingMessages } from '../../messages'
 import { availabilityStyles as STYLES } from '../styles/availability.styles'
 import type { ClosedDateView, ManualBlockView, WeeklyDayView } from '../utils/availability-format'
+import type { SlotPickerView } from '../types/slot-picker.types'
 import {
   ClosedDateForm,
   ManualBlockForm,
   RemoveClosedDateButton,
+  RemoveManualBlockButton,
   RemoveWeeklyBlockButton,
   WeeklyBlockForm,
 } from './AvailabilityForms'
+import { SlotPicker } from './SlotPicker'
+import { SlotPickerDayForm } from './SlotPickerDayForm'
 
 const availabilityMessages = schedulingMessages.availability
 
@@ -15,6 +19,7 @@ export type AdminAvailabilityViewProps = {
   weeklyDays: WeeklyDayView[]
   closedDates: ClosedDateView[]
   manualBlocks: ManualBlockView[]
+  slotPicker: SlotPickerView
 }
 
 function Section(props: { id: string; title: string; subtitle: string; children: React.ReactNode }) {
@@ -31,9 +36,7 @@ function Section(props: { id: string; title: string; subtitle: string; children:
   )
 }
 
-// Vista sin datos propios: recibe las listas ya cargadas y formateadas (UI-003: el vacío de cada
-// lista vive aquí; carga y error son loading.tsx y error.tsx de la ruta).
-export function AdminAvailabilityView({ weeklyDays, closedDates, manualBlocks }: AdminAvailabilityViewProps) {
+export function AdminAvailabilityView({ weeklyDays, closedDates, manualBlocks, slotPicker }: AdminAvailabilityViewProps) {
   const hasWeekly = weeklyDays.some((day) => day.blocks.length > 0)
 
   return (
@@ -91,6 +94,11 @@ export function AdminAvailabilityView({ weeklyDays, closedDates, manualBlocks }:
         )}
       </Section>
 
+      <Section id="picker-title" title={availabilityMessages.picker.title} subtitle={availabilityMessages.picker.subtitle}>
+        <SlotPickerDayForm date={slotPicker.date} />
+        <SlotPicker key={slotPicker.date} picker={slotPicker} />
+      </Section>
+
       <Section id="blocks-title" title={availabilityMessages.blocks.title} subtitle={availabilityMessages.blocks.subtitle}>
         <ManualBlockForm />
         {manualBlocks.length > 0 ? (
@@ -103,6 +111,10 @@ export function AdminAvailabilityView({ weeklyDays, closedDates, manualBlocks }:
                   </span>
                   {block.reason && <span className={STYLES.rowDetail}>{block.reason}</span>}
                 </div>
+                <RemoveManualBlockButton
+                  id={block.id}
+                  label={availabilityMessages.blocks.unblockLabel(block.date, block.range)}
+                />
               </li>
             ))}
           </ul>

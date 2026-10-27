@@ -1,8 +1,10 @@
 import { STUDIO_TIME_ZONE } from '@/shared/studio-time'
-import type { WeeklyBlock } from '../../../domain/weekly-availability'
-import type { ClosedDate } from '../../../domain/closed-dates'
-import type { ManualBlock } from '../../../domain/manual-blocks'
+import type { WeeklyBlock } from '@/features/scheduling/domain/weekly-availability'
+import type { ClosedDate } from '@/features/scheduling/domain/closed-dates'
+import type { ManualBlock } from '@/features/scheduling/domain/manual-blocks'
+import type { PickerSlot } from '@/features/scheduling/domain/manual-block-selection'
 import { schedulingMessages } from '../../messages'
+import type { SlotPickerView } from '../types/slot-picker.types'
 
 // Vistas ya formateadas en el servidor, en la zona del estudio: el navegador no reinterpreta
 // fechas con su propia zona y el HTML del servidor coincide con el del cliente.
@@ -71,6 +73,16 @@ export const toClosedDateViews = (dates: readonly ClosedDate[]): ClosedDateView[
     kind: availabilityMessages.closed.kinds[closed.kind],
     label: closed.label,
   }))
+
+export const toSlotPickerView = (date: string, slots: readonly PickerSlot[]): SlotPickerView => ({
+  date,
+  dateLabel: formatCalendarDate(date),
+  slots: slots.map((slot) => ({
+    startMin: slot.startMin,
+    range: `${minutesToTime(slot.startMin)}–${minutesToTime(slot.endMin)}`,
+    status: slot.status,
+  })),
+})
 
 export type ManualBlockView = { id: string; date: string; range: string; reason: string | null }
 

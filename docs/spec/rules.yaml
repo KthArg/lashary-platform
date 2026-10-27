@@ -123,7 +123,7 @@ rules:
     anchor: "#dom-005"
   - id: DOM-006
     title: Errores tipados, mapeo único
-    statement: Un error base de dominio con subtipos; nada lanza strings; resultados de negocio esperados se retornan como valores; mapeo HTTP en un solo lugar; sin catch silencioso.
+    statement: Cada feature define sus errores como interface con code literal, fábrica y guarda (ADR-0008); nada lanza strings; resultados de negocio esperados se retornan como valores; mapeo HTTP en un solo lugar; sin catch silencioso.
     rationale: Errores sin tipo obligan a adivinar por mensaje, y el catch silencioso convierte bugs en misterios.
     severity: alta
     layers: [ai, human]
