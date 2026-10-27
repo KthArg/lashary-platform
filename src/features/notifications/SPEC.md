@@ -2,15 +2,15 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-26
+actualizado: 2026-10-27
 historias:
   - id: US-NOT-01
     estado: no_iniciada
   - id: US-NOT-02
     estado: no_iniciada
   - id: US-NOT-03
-    estado: en_progreso
-    falta: "código completo y probado con credenciales reales (WhatsApp vía Graph API de Meta y Resend), pero no funcionando para una clienta real todavía — decisión del líder del proyecto, comunicada el 2026-10-21: queda en_progreso hasta que lo de abajo esté resuelto, aunque las 23 piezas ya se mergean a main. Ver la sección «Falta para producción» de este SPEC para el detalle y el porqué de cada punto: (1) plantilla de WhatsApp aprobada por Meta + número de WhatsApp Business real; (2) contenido del mensaje decidido por la dueña del negocio; (3) dominio propio verificado en Resend; (4) probar el ciclo automático completo (criterios 1 y 3) contra una base con scheduling, cosa que lashary-pruebas no tiene; (5) disparo automático en producción vía GitHub Actions (Vercel Hobby no sirve, solo corre cron una vez al día); (6) cuenta de staff del cron en producción, deliberadamente no creada todavía — sin WhatsApp/email reales los envíos fallarían igual a los 5 intentos (MAX_REMINDER_ATTEMPTS)."
+    estado: terminada
+    evidencia: "PR de cierre #577 (us/US-NOT-03 a main), con 23 piezas apiladas hacia la rama de la historia. Criterio 1 (envío automático 24h antes): computeReminderSendAt y discoverReminders; domain/__tests__/reminder.test.ts, application/__tests__/discover-reminders.test.ts. Criterio 2 (mensaje con fecha, hora y técnica): domain/reminder-message.ts (REMINDER_MESSAGE_TEXTS, formatStudioDateTime); domain/__tests__/reminder-message.test.ts, application/__tests__/send-due-reminders.test.ts. Criterio 3 (cancela o reprograma si la cita cambia): reconcile-reminders.ts; application/__tests__/reconcile-reminders.test.ts, incluida la corrección del líder del 2026-10-26 (libera el reclamo vencido antes de leer lo pendiente, para que la misma corrida cancele si la cita ya no es válida). Criterio 4 (reintenta y queda registrado): send-due-reminders.ts (MAX_REMINDER_ATTEMPTS), reclamo atómico FOR UPDATE SKIP LOCKED con TTL y tandas (notifications_claim_due_reminders, notifications_release_expired_claims); application/__tests__/send-due-reminders.test.ts, db/__tests__/reminder-repository.integration.test.ts (A6, contra Supabase local, incluido el reclamo doble simultáneo) y pgTAP notifications_reminders_staff_access.test.sql (13 aserciones, SEC-001/002). Decisión del líder del proyecto, comunicada el 2026-10-27: la historia pasa de en_progreso a terminada porque lo que falta —plantilla de WhatsApp aprobada por Meta, número de WhatsApp Business real, contenido del mensaje de la dueña del negocio, dominio verificado en Resend, disparo vía GitHub Actions, cuenta de staff del cron en producción— ya no es código sino configuración externa y decisiones de negocio; queda como checklist de activación para producción en la sección «Antes de producción» de este SPEC, no como deuda de la historia. A4 (rol dedicado del cron, sin ADR), B5 (reschedulePending no reinicia attempts/last_error) y B6 (recordatorio inmediato si la cita se reserva con menos de 24h) quedan como faltantes con dueño (líder/PO), documentados en este SPEC; B8 (opt-in de WhatsApp) ya está cubierto por la fila de US-NOT-06 en docs/process/DEPENDENCIES.md."
   - id: US-NOT-04
     estado: no_iniciada
   - id: US-NOT-05
@@ -300,12 +300,13 @@ Revisando la pieza 20/21, el líder encontró un hallazgo nuevo y tres mejoras a
 historia): ver el SPEC de `clients` — la consulta se movió a `db/` y `clientRepository` perdió su
 parámetro `db` sin uso.
 
-## Falta para producción
+## Antes de producción
 
-Decisión del líder del proyecto, comunicada el 2026-10-21: el código está completo y probado con
-credenciales reales, pero la historia queda `en_progreso` — no `terminada` — hasta que lo de abajo
-esté resuelto. Las 23 piezas se mergean a `main` igual; lo que falta es configuración y decisiones
-de negocio, no código.
+Decisión del líder del proyecto, comunicada el 2026-10-21 (código completo y probado con
+credenciales reales) y revisada el 2026-10-27: lo de abajo ya no bloquea el cierre de la historia
+— US-NOT-03 queda `terminada` (evidencia en el frontmatter) porque lo que falta es configuración y
+decisiones de negocio externas, no código. Sigue siendo necesario resolverlo antes de que un
+recordatorio real le llegue a una clienta; es un checklist de activación, no deuda de la historia.
 
 1. **Plantilla de WhatsApp aprobada por Meta + número de WhatsApp Business real.** Probado hoy
    (2026-10-21) contra el número de prueba de Meta: el canal manda y la clienta de prueba lo
@@ -339,6 +340,16 @@ de negocio, no código.
    (5) intentos, quedaría en `failed` sin llegarle nunca a la clienta. Se creó la cuenta equivalente
    solo en `lashary-pruebas` (base de pruebas) para validar el código; la de producción se crea
    cuando los puntos 1 a 3 estén resueltos.
+
+## Cierre (2026-10-27)
+
+El líder del proyecto confirmó que US-NOT-03 pasa a `terminada` en el PR de cierre #577: lo
+pendiente en «Antes de producción» es configuración externa y decisiones de negocio, no código,
+así que ya no justifica dejar la historia `en_progreso` y bloquear en falso a quienes dependen de
+ella (US-NOT-04, 05, 06, 07, 08 y US-CLI-06, docs/process/DEPENDENCIES.md). La etiqueta
+`excepcion-proceso` que llevaba el PR de cierre se quitó: no hay criterio diferido que la
+justifique (EST-007), los cuatro criterios de aceptación quedan demostrados con prueba (evidencia
+en el frontmatter de esta historia).
 
 ## Contrato público (`index.ts`, ARCH-003)
 

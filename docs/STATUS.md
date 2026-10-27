@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-26.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-27.
 
 ## Features
 
@@ -16,7 +16,7 @@
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | landing | pendiente | terminada | 6 / 0 / 0 / 0 / 0 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
-| notifications | pendiente | en_progreso | 0 / 1 / 0 / 0 / 8 |
+| notifications | pendiente | en_progreso | 1 / 0 / 0 / 0 / 8 |
 | payments | pendiente | terminada | 1 / 0 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | scheduling | pendiente | en_progreso | 7 / 0 / 0 / 0 / 4 |
@@ -68,10 +68,10 @@
 ### loyalty (actualizado: 2026-08-28)
 - US-LAND-06 — no_iniciada
 
-### notifications (actualizado: 2026-10-26)
+### notifications (actualizado: 2026-10-27)
 - US-NOT-01 — no_iniciada
 - US-NOT-02 — no_iniciada
-- US-NOT-03 — en_progreso — falta: código completo y probado con credenciales reales (WhatsApp vía Graph API de Meta y Resend), pero no funcionando para una clienta real todavía — decisión del líder del proyecto, comunicada el 2026-10-21: queda en_progreso hasta que lo de abajo esté resuelto, aunque las 23 piezas ya se mergean a main. Ver la sección «Falta para producción» de este SPEC para el detalle y el porqué de cada punto: (1) plantilla de WhatsApp aprobada por Meta + número de WhatsApp Business real; (2) contenido del mensaje decidido por la dueña del negocio; (3) dominio propio verificado en Resend; (4) probar el ciclo automático completo (criterios 1 y 3) contra una base con scheduling, cosa que lashary-pruebas no tiene; (5) disparo automático en producción vía GitHub Actions (Vercel Hobby no sirve, solo corre cron una vez al día); (6) cuenta de staff del cron en producción, deliberadamente no creada todavía — sin WhatsApp/email reales los envíos fallarían igual a los 5 intentos (MAX_REMINDER_ATTEMPTS).
+- US-NOT-03 — terminada — PR de cierre #577 (us/US-NOT-03 a main), con 23 piezas apiladas hacia la rama de la historia. Criterio 1 (envío automático 24h antes): computeReminderSendAt y discoverReminders; domain/__tests__/reminder.test.ts, application/__tests__/discover-reminders.test.ts. Criterio 2 (mensaje con fecha, hora y técnica): domain/reminder-message.ts (REMINDER_MESSAGE_TEXTS, formatStudioDateTime); domain/__tests__/reminder-message.test.ts, application/__tests__/send-due-reminders.test.ts. Criterio 3 (cancela o reprograma si la cita cambia): reconcile-reminders.ts; application/__tests__/reconcile-reminders.test.ts, incluida la corrección del líder del 2026-10-26 (libera el reclamo vencido antes de leer lo pendiente, para que la misma corrida cancele si la cita ya no es válida). Criterio 4 (reintenta y queda registrado): send-due-reminders.ts (MAX_REMINDER_ATTEMPTS), reclamo atómico FOR UPDATE SKIP LOCKED con TTL y tandas (notifications_claim_due_reminders, notifications_release_expired_claims); application/__tests__/send-due-reminders.test.ts, db/__tests__/reminder-repository.integration.test.ts (A6, contra Supabase local, incluido el reclamo doble simultáneo) y pgTAP notifications_reminders_staff_access.test.sql (13 aserciones, SEC-001/002). Decisión del líder del proyecto, comunicada el 2026-10-27: la historia pasa de en_progreso a terminada porque lo que falta —plantilla de WhatsApp aprobada por Meta, número de WhatsApp Business real, contenido del mensaje de la dueña del negocio, dominio verificado en Resend, disparo vía GitHub Actions, cuenta de staff del cron en producción— ya no es código sino configuración externa y decisiones de negocio; queda como checklist de activación para producción en la sección «Antes de producción» de este SPEC, no como deuda de la historia. A4 (rol dedicado del cron, sin ADR), B5 (reschedulePending no reinicia attempts/last_error) y B6 (recordatorio inmediato si la cita se reserva con menos de 24h) quedan como faltantes con dueño (líder/PO), documentados en este SPEC; B8 (opt-in de WhatsApp) ya está cubierto por la fila de US-NOT-06 en docs/process/DEPENDENCIES.md.
 - US-NOT-04 — no_iniciada
 - US-NOT-05 — no_iniciada
 - US-NOT-06 — no_iniciada
