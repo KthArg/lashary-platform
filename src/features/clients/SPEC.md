@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-20
+actualizado: 2026-10-23
 historias:
   - id: US-CLI-01
     estado: en_progreso
@@ -149,10 +149,13 @@ También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el e
 (`error.tsx`): solo `RecordLoadError` y `RECORD_LABELS`, sin nada de servidor.
 
 `getClientContactForReminders` (US-NOT-03, ARCH-005): lectura pública de solo teléfono y email
-(nunca `notes`) para que `notifications` nunca consulte `clients_profiles` directo. Sin
+para que `notifications` nunca consulte `clients_profiles` directo. Hace su propia consulta
+pidiendo solo `phone, email` — corregido en la auditoría del líder del 2026-10-23 (hallazgo M5):
+antes reusaba `getClient`, que trae todas las columnas (incluida `notes`, el dato más sensible de
+la feature) y las descartaba después de leerlas; ahora `notes` ni se pide. Sin
 `requireAdminSession` — es para el cron, sin cookies; la RLS de `clients_profiles` sigue siendo la
 frontera real (SEC-001). Sin comentarios en el código: el porqué vive aquí. `clientRepository`
-ahora acepta un `SupabaseClient` inyectable para que
+acepta un `SupabaseClient` inyectable para que
 el cron pase su propia sesión en vez de la de cookies. Consumidor: `notifications/index.ts`.
 
 ## Invariantes
