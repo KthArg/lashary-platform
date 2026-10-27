@@ -182,14 +182,12 @@ describe.skipIf(!reachable)('reminderRepository (Supabase local)', () => {
     expect(data?.claimed_at).not.toBeNull()
   })
 
-  it('claimDuePending vuelve a reclamar una fila claimed cuyo reclamo ya venció (corrección del líder, 2026-10-24)', async () => {
+  it('claimDuePending nunca reclama una fila claimed, aunque su reclamo esté vencido (ya no es su trabajo, corrección del líder, 2026-10-26)', async () => {
     const upsert = newUpsert({ sendAt: new Date('2030-01-01T00:00:00Z') })
     track(upsert.id)
     await repo.insertIfAbsent(upsert)
     const now = new Date('2042-06-15T00:00:00Z')
-    const firstClaim = await repo.claimDuePending(now)
-    expect(isOk(firstClaim)).toBe(true)
-    if (isOk(firstClaim)) expect(firstClaim.value.map((r) => r.id)).toContain(upsert.id)
+    await repo.claimDuePending(now)
 
     const expiredClaimedAt = new Date(now.getTime() - (CLAIM_TTL_MINUTES + 1) * 60_000)
     await admin.query(`UPDATE public.${TABLE} SET claimed_at = $1 WHERE id = $2`, [expiredClaimedAt.toISOString(), upsert.id])
@@ -197,21 +195,39 @@ describe.skipIf(!reachable)('reminderRepository (Supabase local)', () => {
     const secondClaim = await repo.claimDuePending(now)
     expect(isOk(secondClaim)).toBe(true)
     if (!isOk(secondClaim)) return
-    expect(secondClaim.value.map((r) => r.id)).toContain(upsert.id)
+    expect(secondClaim.value.map((r) => r.id)).not.toContain(upsert.id)
   })
 
-  it('claimDuePending no reclama una fila claimed cuyo reclamo sigue vigente', async () => {
-    const upsert = newUpsert({ sendAt: new Date('2030-01-01T00:00:00Z') })
-    track(upsert.id)
-    await repo.insertIfAbsent(upsert)
+  it('releaseExpiredClaims vuelve a pending lo que lleva claimed más del TTL, y no toca lo vigente (corrección del líder, 2026-10-26)', async () => {
+    const expiredUpsert = newUpsert({ sendAt: new Date('2030-01-01T00:00:00Z') })
+    track(expiredUpsert.id)
+    await repo.insertIfAbsent(expiredUpsert)
+
+    const freshUpsert = newUpsert({ sendAt: new Date('2030-01-01T00:00:00Z') })
+    track(freshUpsert.id)
+    await repo.insertIfAbsent(freshUpsert)
+
     const now = new Date('2042-06-15T00:00:00Z')
     await repo.claimDuePending(now)
 
-    const fiveMinutesLater = new Date(now.getTime() + 5 * 60_000)
-    const secondClaim = await repo.claimDuePending(fiveMinutesLater)
-    expect(isOk(secondClaim)).toBe(true)
-    if (!isOk(secondClaim)) return
-    expect(secondClaim.value.map((r) => r.id)).not.toContain(upsert.id)
+    const expiredClaimedAt = new Date(now.getTime() - (CLAIM_TTL_MINUTES + 1) * 60_000)
+    await admin.query(`UPDATE public.${TABLE} SET claimed_at = $1 WHERE id = $2`, [expiredClaimedAt.toISOString(), expiredUpsert.id])
+
+    const released = await repo.releaseExpiredClaims(now)
+    expect(isOk(released)).toBe(true)
+    if (!isOk(released)) return
+    const releasedIds = released.value.map((r) => r.id)
+    expect(releasedIds).toContain(expiredUpsert.id)
+    expect(releasedIds).not.toContain(freshUpsert.id)
+
+    const { data: expiredRow } = await staffClient.from(TABLE).select('status, claimed_at').eq('id', expiredUpsert.id).single()
+    expect(expiredRow?.status).toBe('pending')
+    expect(expiredRow?.claimed_at).toBeNull()
+
+    const { data: freshRow } = await staffClient.from(TABLE).select('status').eq('id', freshUpsert.id).single()
+    expect(freshRow?.status).toBe('claimed')
+
+    await repo.cancelPending(expiredUpsert.appointmentId)
   })
 
   it('dos reclamos simultáneos nunca reclaman la misma fila dos veces (FOR UPDATE SKIP LOCKED)', async () => {
@@ -231,7 +247,11 @@ describe.skipIf(!reachable)('reminderRepository (Supabase local)', () => {
     const secondIds = second.value.map((reminder) => reminder.id)
     const overlap = firstIds.filter((id) => secondIds.includes(id))
     expect(overlap).toHaveLength(0)
-    expect(firstIds.length + secondIds.length).toBe(upserts.length)
+
+    const upsertIds = upserts.map((upsert) => upsert.id)
+    const claimedFromOurs = [...firstIds, ...secondIds].filter((id) => upsertIds.includes(id))
+    expect(new Set(claimedFromOurs).size).toBe(upsertIds.length)
+    expect(claimedFromOurs).toHaveLength(upsertIds.length)
   })
 
   it('releaseToPending vuelve a pending una fila claimed y limpia claimed_at', async () => {

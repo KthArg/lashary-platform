@@ -6,7 +6,7 @@
 -- Correr con: npx supabase test db   (requiere `supabase start`)
 
 BEGIN;
-SELECT plan(9);
+SELECT plan(13);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -47,6 +47,13 @@ SELECT is(
   (SELECT status FROM public.notifications_reminders WHERE id = '00000000-0000-0000-0000-00000000f001'),
   'sent', 'staff: UPDATE modifica la fila');
 
+SELECT lives_ok(
+  $$SELECT * FROM public.notifications_claim_due_reminders(now(), 10)$$,
+  'staff: EXECUTE de notifications_claim_due_reminders permitido');
+SELECT lives_ok(
+  $$SELECT * FROM public.notifications_release_expired_claims(now(), 10)$$,
+  'staff: EXECUTE de notifications_release_expired_claims permitido');
+
 -- ── Como clienta (contraste: es su propia cita y aun así no entra) ──────────
 SELECT set_config('request.jwt.claims',
   '{"sub":"00000000-0000-0000-0000-0000000000c1","role":"authenticated"}', true);
@@ -61,6 +68,16 @@ SELECT throws_ok(
     VALUES ('00000000-0000-0000-0000-00000000a003', '00000000-0000-0000-0000-0000000000c1',
             now() + interval '4 days', 'zz-test clienta', now() + interval '3 days')$$,
   '42501', NULL, 'clienta: INSERT denegado por RLS');
+
+-- El EXECUTE en sí lo tiene cualquier authenticated (SEC-001: la RLS es la frontera real, no un
+-- rol de SQL aparte); como clienta, el UPDATE de adentro no lanza 42501 (eso solo pasa con el
+-- WITH CHECK de un INSERT) — la RLS simplemente no le deja ver ni afectar ninguna fila.
+SELECT is(
+  (SELECT count(*)::int FROM public.notifications_claim_due_reminders(now(), 10)),
+  0, 'clienta: notifications_claim_due_reminders no reclama nada (RLS)');
+SELECT is(
+  (SELECT count(*)::int FROM public.notifications_release_expired_claims(now(), 10)),
+  0, 'clienta: notifications_release_expired_claims no libera nada (RLS)');
 
 -- Sin política de SELECT para la clienta, la fila es invisible para ella: UPDATE y DELETE no
 -- lanzan 42501 (eso solo pasa con el WITH CHECK de un INSERT), simplemente no afectan ninguna

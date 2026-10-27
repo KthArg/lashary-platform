@@ -43,6 +43,7 @@ export interface ReminderRepository {
   reschedulePending(reschedule: ReminderReschedule): Promise<Result<void, RepositoryFailure>>
   cancelPending(appointmentId: string): Promise<Result<void, RepositoryFailure>>
   claimDuePending(now: Date): Promise<Result<ReminderSnapshot[], RepositoryFailure>>
+  releaseExpiredClaims(now: Date): Promise<Result<ReminderSnapshot[], RepositoryFailure>>
   releaseToPending(id: string): Promise<Result<void, RepositoryFailure>>
   markSent(id: string, channel: ReminderChannelKind, sentAt: Date): Promise<Result<void, RepositoryFailure>>
   markRetry(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>

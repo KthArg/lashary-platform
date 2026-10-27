@@ -2,7 +2,7 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-24
+actualizado: 2026-10-26
 historias:
   - id: US-NOT-01
     estado: no_iniciada
@@ -251,6 +251,54 @@ SQL, como en la pieza 20). También RLS: anon no lee ni escribe.
 
 Corrida contra Supabase local el 2026-10-24: 12/12 en verde, suite completa del proyecto y pgTAP
 sin romper nada. `deuda` del frontmatter de `notifications` queda vacío — era justo esta prueba.
+
+## Tercera revisión del líder (2026-10-26): el reclamo se separa en dos, y se asegura el acceso
+
+Revisando la pieza 20/21, el líder encontró un hallazgo nuevo y tres mejoras a
+`notifications_claim_due_reminders`.
+
+- **La reconciliación no revisaba lo reclamado por TTL vencido (hallazgo nuevo).** Cuando
+  `claimDuePending` reclamaba una fila `claimed` cuyo TTL venció, el ciclo la mandaba a enviar
+  directo — nunca pasaba otra vez por `reconcileReminders`, así que si la clienta había cancelado
+  la cita o esta ya pasó mientras la fila estuvo atascada en `claimed`, se reenviaba igual sin
+  revisar. Se corrige separando el reclamo en dos funciones SQL:
+  - `notifications_release_expired_claims(p_now, p_claim_ttl_minutes)` — `claimed` vencido vuelve
+    a `pending`. `reconcileReminders` la llama primero, antes de `listPending()`, así que la misma
+    corrida revalida esas filas contra la cita (se cancelan si ya no es válida) antes de que
+    `sendDueReminders` las pueda enviar. Prueba: `reconcile-reminders.test.ts` (ordena las llamadas
+    y verifica que una fila liberada con cita cancelada se cancela, no se envía) y
+    `reminder-repository.integration.test.ts` (TTL vencido se libera, TTL vigente no).
+  - `notifications_claim_due_reminders(p_now, p_batch_size)` — ya sin TTL: solo reclama `pending`
+    vencido por `send_at`, en tandas, con lock (sin cambios de fondo en su lógica, solo perdió el
+    parámetro que ya no necesita).
+- **`REVOKE ALL ... FROM PUBLIC, anon`** en ambas funciones, igual que el resto de funciones SQL
+  del repo (p. ej. `catalog_delete_package`). El `EXECUTE` en sí lo tiene cualquier `authenticated`
+  (SEC-001: la RLS es la frontera real); como clienta, el `UPDATE` de adentro no lanza `42501`
+  (eso solo pasa con el `WITH CHECK` de un INSERT) — la RLS simplemente no le deja afectar ninguna
+  fila. Prueba pgTAP en `notifications_reminders_staff_access.test.sql`: `lives_ok` como staff,
+  `count = 0` como clienta, para las dos funciones.
+- **`p_batch_size` NULL ya no deja el reclamo sin tope.** `LIMIT NULL` en Postgres es "sin límite"
+  — con la tabla creciendo, un `NULL` por error reclamaría todo de una vez. Ambas funciones ahora
+  son `LANGUAGE plpgsql` con un `RAISE EXCEPTION` si su entero llega `NULL` o `<= 0`, en vez de
+  `LANGUAGE sql` sin guarda.
+- **`make_interval` en vez de concatenar texto** (`p_claim_ttl_minutes || ' minutes'`) para armar
+  el intervalo del TTL — más seguro, no depende de que Postgres interprete bien un texto armado a
+  mano.
+- **El lote (`CLAIM_BATCH_SIZE`) y el TTL (`CLAIM_TTL_MINUTES`) eran números sueltos que podían
+  contradecirse:** con 50 filas y hasta 10s por canal (`CHANNEL_SEND_TIMEOUT_MS`, ahora compartida
+  entre los dos canales en `channels/send-timeout.ts`, antes duplicada), el peor caso de una tanda
+  (primario + respaldo agotan su tiempo en cada una) es 50 × 20s ≈ 16.7 minutos — más que los 10
+  minutos del TTL. Si una corrida de verdad tardara eso, otra corrida solapada podría reclamar sus
+  mismas filas antes de que termine, justo lo que el TTL existe para evitar. `CLAIM_BATCH_SIZE`
+  ahora se calcula a partir de `CLAIM_TTL_MINUTES` y `CHANNEL_SEND_TIMEOUT_MS` (con un margen de
+  seguridad de 2×) en vez de ser un número aparte: queda en 15, con un peor caso de ~5 minutos, la
+  mitad del TTL. La ruta del cron (`src/app/api/cron/notifications-reminders/route.ts`) declara
+  `maxDuration = 300` (segundos) a juego con ese mismo peor caso, para que Vercel corte una
+  corrida colgada antes de que el TTL de otra la alcance.
+
+`getClientContactForReminders` (`clients`) y `clientRepository` (`clients`, sin relación con esta
+historia): ver el SPEC de `clients` — la consulta se movió a `db/` y `clientRepository` perdió su
+parámetro `db` sin uso.
 
 ## Falta para producción
 

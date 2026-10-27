@@ -1,4 +1,3 @@
-import type { SupabaseClient } from '@supabase/supabase-js'
 import { ok, err } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import type { ClientRecord } from '../domain/client.types'
@@ -26,8 +25,8 @@ const toLiteralNamePattern = (name: string | null): string | null => {
   return term ? `%${term}%` : null
 }
 
-export async function clientRepository(db?: SupabaseClient): Promise<ClientRepository> {
-  const supabase = db ?? (await createClient())
+export async function clientRepository(): Promise<ClientRepository> {
+  const supabase = await createClient()
 
   return {
     async findById(id) {

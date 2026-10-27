@@ -17,6 +17,7 @@ function buildDeps(live: AppointmentSnapshot | null, options: { now?: string; sn
   const cancelledIds: string[] = []
   return {
     deps: {
+      releaseExpiredClaims: async () => ok([]),
       listPending: async () => ok([pendingReminder]),
       getAppointmentSnapshot: async () => (options.snapshotFails ? err('repository-failed' as const) : ok(live)),
       reschedulePending: async (reschedule: ReminderReschedule) => {
@@ -42,7 +43,7 @@ describe('reconcileReminders', () => {
 
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
-    expect(result.value).toEqual({ cancelled: 1, rescheduled: 0, failed: 0 })
+    expect(result.value).toEqual({ releasedExpiredClaims: 0, cancelled: 1, rescheduled: 0, failed: 0 })
     expect(cancelledIds).toEqual(['appt-1'])
     expect(rescheduled).toHaveLength(0)
   })
@@ -56,7 +57,7 @@ describe('reconcileReminders', () => {
 
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
-    expect(result.value).toEqual({ cancelled: 0, rescheduled: 1, failed: 0 })
+    expect(result.value).toEqual({ releasedExpiredClaims: 0, cancelled: 0, rescheduled: 1, failed: 0 })
     expect(rescheduled).toEqual([{
       appointmentId: 'appt-1', startsAt: fixedDate('2026-11-03T09:00:00Z'), techniqueName: 'Técnica A',
       sendAt: fixedDate('2026-11-02T09:00:00Z'),
@@ -73,7 +74,7 @@ describe('reconcileReminders', () => {
 
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
-    expect(result.value).toEqual({ cancelled: 0, rescheduled: 0, failed: 0 })
+    expect(result.value).toEqual({ releasedExpiredClaims: 0, cancelled: 0, rescheduled: 0, failed: 0 })
     expect(rescheduled).toHaveLength(0)
     expect(cancelledIds).toHaveLength(0)
   })
@@ -88,7 +89,7 @@ describe('reconcileReminders', () => {
 
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
-    expect(result.value).toEqual({ cancelled: 1, rescheduled: 0, failed: 0 })
+    expect(result.value).toEqual({ releasedExpiredClaims: 0, cancelled: 1, rescheduled: 0, failed: 0 })
     expect(cancelledIds).toEqual(['appt-1'])
     expect(rescheduled).toHaveLength(0)
   })
@@ -100,8 +101,43 @@ describe('reconcileReminders', () => {
 
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
-    expect(result.value).toEqual({ cancelled: 0, rescheduled: 0, failed: 1 })
+    expect(result.value).toEqual({ releasedExpiredClaims: 0, cancelled: 0, rescheduled: 0, failed: 1 })
     expect(cancelledIds).toHaveLength(0)
     expect(rescheduled).toHaveLength(0)
+  })
+
+  it('libera un reclamo vencido antes de leer lo pendiente, así la misma corrida lo cancela si la cita ya no es válida (corrección del líder, 2026-10-26)', async () => {
+    const callOrder: string[] = []
+    const releasedReminder: ReminderSnapshot = {
+      ...pendingReminder, id: 'rem-2', appointmentId: 'appt-2', status: 'pending',
+    }
+    const cancelledIds: string[] = []
+
+    const deps = {
+      releaseExpiredClaims: async () => {
+        callOrder.push('releaseExpiredClaims')
+        return ok([releasedReminder])
+      },
+      listPending: async () => {
+        callOrder.push('listPending')
+        return ok([pendingReminder, releasedReminder])
+      },
+      getAppointmentSnapshot: async (appointmentId: string) =>
+        ok(appointmentId === 'appt-2' ? null : {
+          appointmentId: 'appt-1', clientId: 'client-1',
+          startsAt: pendingReminder.startsAt, techniqueName: pendingReminder.techniqueName,
+        }),
+      reschedulePending: async () => ok(undefined),
+      cancelPending: async (appointmentId: string) => { cancelledIds.push(appointmentId); return ok(undefined) },
+      clock: fixedClock('2026-11-01T16:00:00Z'),
+    }
+
+    const result = await reconcileReminders(deps)()
+
+    expect(isOk(result)).toBe(true)
+    if (!isOk(result)) return
+    expect(callOrder).toEqual(['releaseExpiredClaims', 'listPending'])
+    expect(result.value).toEqual({ releasedExpiredClaims: 1, cancelled: 1, rescheduled: 0, failed: 0 })
+    expect(cancelledIds).toEqual(['appt-2'])
   })
 })
