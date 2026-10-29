@@ -1,0 +1,1 @@
+export { PromotionTable } from './PromotionTable'
