@@ -256,12 +256,18 @@ export type AppointmentChoice = {
   depositRequired: number
 }
 
+export type HeldSchedule = {
+  startsAtMs: number
+  endsAtMs: number
+}
+
 export type PendingAppointment = {
   id: string
   startsAtMs: number
   endsAtMs: number
   clientName: string | null
   choice: AppointmentChoice | null
+  heldSchedule: HeldSchedule | null
 }
 
 export interface PendingAppointmentsRepository {
