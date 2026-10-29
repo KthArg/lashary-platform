@@ -145,8 +145,9 @@ La aprobación del traslado de criterios está registrada en `docs/process/DEPEN
 
 ### `public.catalog_booking_terms(p_technique_id uuid, p_is_first_time boolean)`
 
-Devuelve una fila `(technique_id, name, price, duration_min, buffer_min, deposit)` con las condiciones aplicables: precio y duración de la primera vez o del retoque según `p_is_first_time`; `buffer_min` y `deposit` son los de la técnica. No devuelve ninguna fila si la técnica no existe, está desactivada, o se pide retoque y no lo ofrece. Con un argumento nulo tampoco devuelve nada.
+Devuelve una fila `(technique_id, name, price, duration_min, buffer_min, deposit, promotion_id, discount_percent)` con las condiciones aplicables: precio y duración de la primera vez o del retoque según `p_is_first_time`; `buffer_min` y `deposit` son los de la técnica. No devuelve ninguna fila si la técnica no existe, está desactivada, o se pide retoque y no lo ofrece. Con un argumento nulo tampoco devuelve nada.
 
+- **`promotion_id`/`discount_percent` (US-PROM-01, desde `20261026000002_catalog_promotions_in_booking.sql`):** si hay una promoción vigente sobre esta técnica (`catalog_promotions`, activa y dentro de su ventana), `price` ya viene con el descuento aplicado (redondeado al colón, DOM-001) y estas dos columnas identifican cuál promoción fue y su porcentaje; si no hay ninguna, ambas son `NULL` y `price` es el de catálogo sin tocar. Si hay más de una promoción vigente a la vez sobre la misma técnica, gana la de mayor descuento (empate: la que vence primero) — D-PROM-3 en `src/features/catalog/SPEC.md`. Solo técnicas por ahora: una promoción sobre un paquete no la consulta esta función (paquetes, US-AGE-04, diferido — ver `docs/process/DEPENDENCIES.md`).
 - Solo `authenticated` la ejecuta; `anon` no. Corre con los permisos de quien llama (`SECURITY INVOKER`): el catálogo ya es público.
 - La forma de la fila es contrato: un cambio se versiona aquí antes del cambio (INT-003).
 - Prueba: pgTAP `supabase/tests/database/catalog_booking_terms.test.sql`.
