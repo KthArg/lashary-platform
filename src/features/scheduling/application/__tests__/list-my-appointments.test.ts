@@ -17,6 +17,7 @@ const appointment: MyAppointment = {
   isFirstTime: true,
   servicePrice: 35000,
   depositRequired: 10000,
+  heldSchedule: null,
 }
 
 describe('listMyAppointments', () => {
