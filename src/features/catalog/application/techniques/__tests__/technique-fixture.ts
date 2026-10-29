@@ -1,4 +1,4 @@
-import { Money } from '@/shared/money'
+import { moneyFromColones } from '@/shared/money'
 import { isOk } from '@/shared/result'
 import { buildTechnique, type Technique, type ServiceFamily } from '@/features/catalog/domain/techniques/technique'
 
@@ -19,13 +19,13 @@ export function makeTechnique(overrides: Partial<{
     id: overrides.id ?? `t-${counter}`,
     name: overrides.name ?? `Técnica ${counter}`,
     family: overrides.family ?? 'lash_classic',
-    priceFirstTime: Money.fromColones(overrides.priceFirstTime ?? 25000),
+    priceFirstTime: moneyFromColones(overrides.priceFirstTime ?? 25000),
     priceRetouch:
       overrides.priceRetouch === undefined
-        ? Money.fromColones(15000)
+        ? moneyFromColones(15000)
         : overrides.priceRetouch === null
           ? null
-          : Money.fromColones(overrides.priceRetouch),
+          : moneyFromColones(overrides.priceRetouch),
     durationFirstTimeMin: 120,
     durationRetouchMin:
       overrides.durationRetouchMin === undefined
@@ -36,7 +36,7 @@ export function makeTechnique(overrides: Partial<{
       overrides.reapplicationIntervalDays === undefined
         ? 21
         : overrides.reapplicationIntervalDays,
-    deposit: Money.fromColones(10000),
+    deposit: moneyFromColones(10000),
     aftercareText: 'No mojar por 24 horas.',
     isActive: overrides.isActive ?? true,
   })

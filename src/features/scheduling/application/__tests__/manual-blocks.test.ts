@@ -24,6 +24,12 @@ function createFakeManualBlockRepository(initial: ManualBlock[] = []) {
         .sort((left, right) => left.startsAt.getTime() - right.startsAt.getTime())
         .slice(0, limit)
     },
+    async listInRange() {
+      return blocks
+    },
+    async releaseRanges() {
+      return ok(undefined)
+    },
     async insert(block) {
       const overlaps = blocks.some(
         (stored) => stored.resourceId === block.resourceId && stored.startsAt < block.endsAt && block.startsAt < stored.endsAt,
@@ -31,6 +37,12 @@ function createFakeManualBlockRepository(initial: ManualBlock[] = []) {
       if (overlaps) return err(manualBlockOverlap())
       blocks.push(block)
       return ok(undefined)
+    },
+    async insertMany() {
+      throw new Error('no usado en estas pruebas')
+    },
+    async remove() {
+      throw new Error('no usado en estas pruebas')
     },
   }
   return { repo, blocks, listCalls }

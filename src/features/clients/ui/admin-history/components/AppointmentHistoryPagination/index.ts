@@ -1,0 +1,1 @@
+export { AppointmentHistoryPagination } from './AppointmentHistoryPagination'

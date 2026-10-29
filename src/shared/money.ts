@@ -47,3 +47,39 @@ export class Money {
     return `₡${this.colones.toLocaleString('es-CR')}`
   }
 }
+
+export function moneyFromColones(value: number): Money {
+  return Money.fromColones(value)
+}
+
+export function zeroMoney(): Money {
+  return Money.zero()
+}
+
+export function addMoney(left: Money, right: Money): Money {
+  return left.plus(right)
+}
+
+export function subtractMoney(left: Money, right: Money): Money {
+  return left.minus(right)
+}
+
+export function moneyEquals(left: Money, right: Money): boolean {
+  return left.equals(right)
+}
+
+export function isZeroMoney(money: Money): boolean {
+  return money.isZero()
+}
+
+export function isPositiveMoney(money: Money): boolean {
+  return money.isPositive()
+}
+
+export function isNegativeMoney(money: Money): boolean {
+  return money.isNegative()
+}
+
+export function formatMoney(money: Money): string {
+  return money.toString()
+}

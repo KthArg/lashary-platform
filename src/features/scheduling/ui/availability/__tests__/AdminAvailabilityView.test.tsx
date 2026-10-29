@@ -1,7 +1,8 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup, within } from '@testing-library/react'
+import type { ComponentProps } from 'react'
 import { schedulingMessages } from '../../messages'
-import { toWeeklyDays } from '../utils/availability-format'
+import { toSlotPickerView, toWeeklyDays } from '../utils/availability-format'
 
 vi.mock('../actions/availability-actions', () => ({
   addWeeklyBlockAction: vi.fn(),
@@ -9,7 +10,10 @@ vi.mock('../actions/availability-actions', () => ({
   addClosedDateAction: vi.fn(),
   removeClosedDateAction: vi.fn(),
   addManualBlockAction: vi.fn(),
+  blockSlotsAction: vi.fn(),
+  removeManualBlockAction: vi.fn(),
 }))
+vi.mock('next/form', () => ({ default: (props: ComponentProps<'form'>) => <form {...props} /> }))
 
 import { AdminAvailabilityView } from '../components/AdminAvailabilityView'
 
@@ -17,10 +21,22 @@ afterEach(cleanup)
 
 const availabilityMessages = schedulingMessages.availability
 const emptyWeek = toWeeklyDays([])
+const dayWithoutSlots = toSlotPickerView('2026-10-19', [])
+
+const renderView = (overrides: Partial<ComponentProps<typeof AdminAvailabilityView>> = {}) =>
+  render(
+    <AdminAvailabilityView
+      weeklyDays={emptyWeek}
+      closedDates={[]}
+      manualBlocks={[]}
+      slotPicker={dayWithoutSlots}
+      {...overrides}
+    />,
+  )
 
 describe('AdminAvailabilityView — US-AGE-01', () => {
   it('sin datos: las tres listas muestran su estado vacío (UI-003) y los formularios siguen', () => {
-    render(<AdminAvailabilityView weeklyDays={emptyWeek} closedDates={[]} manualBlocks={[]} />)
+    renderView()
 
     expect(screen.getByText(availabilityMessages.weekly.empty)).toBeTruthy()
     expect(screen.getByText(availabilityMessages.closed.empty)).toBeTruthy()
@@ -35,7 +51,7 @@ describe('AdminAvailabilityView — US-AGE-01', () => {
       { id: 'a', resourceId: 'r', weekday: 1, startMin: 540, endMin: 720 },
       { id: 'b', resourceId: 'r', weekday: 1, startMin: 780, endMin: 1020 },
     ])
-    render(<AdminAvailabilityView weeklyDays={weeklyDays} closedDates={[]} manualBlocks={[]} />)
+    renderView({ weeklyDays })
 
     const weekly = screen.getByRole('region', { name: availabilityMessages.weekly.title })
     expect(within(weekly).getByText('09:00–12:00')).toBeTruthy()
@@ -49,13 +65,9 @@ describe('AdminAvailabilityView — US-AGE-01', () => {
   })
 
   it('criterio 2: los días cerrados muestran fecha, tipo y nombre, con botón para reabrir', () => {
-    render(
-      <AdminAvailabilityView
-        weeklyDays={emptyWeek}
-        closedDates={[{ id: 'c', date: 'viernes, 25 de diciembre de 2026', kind: 'Feriado', label: 'Navidad' }]}
-        manualBlocks={[]}
-      />,
-    )
+    renderView({
+      closedDates: [{ id: 'c', date: 'viernes, 25 de diciembre de 2026', kind: 'Feriado', label: 'Navidad' }],
+    })
 
     const closed = screen.getByRole('region', { name: availabilityMessages.closed.title })
     expect(within(closed).getByText('Feriado · Navidad')).toBeTruthy()
@@ -68,13 +80,9 @@ describe('AdminAvailabilityView — US-AGE-01', () => {
   })
 
   it('criterio 3: los espacios bloqueados muestran fecha, horario y motivo', () => {
-    render(
-      <AdminAvailabilityView
-        weeklyDays={emptyWeek}
-        closedDates={[]}
-        manualBlocks={[{ id: 'm', date: 'martes, 20 de octubre', range: '09:00–11:00', reason: 'banco' }]}
-      />,
-    )
+    renderView({
+      manualBlocks: [{ id: 'm', date: 'martes, 20 de octubre', range: '09:00–11:00', reason: 'banco' }],
+    })
 
     const blocks = screen.getByRole('region', { name: availabilityMessages.blocks.title })
     expect(within(blocks).getByText('martes, 20 de octubre · 09:00–11:00')).toBeTruthy()
@@ -82,12 +90,37 @@ describe('AdminAvailabilityView — US-AGE-01', () => {
   })
 
   it('UI-004: cada campo de los formularios tiene label', () => {
-    render(<AdminAvailabilityView weeklyDays={emptyWeek} closedDates={[]} manualBlocks={[]} />)
+    renderView()
 
-    for (const label of [availabilityMessages.weekly.weekdayLabel, availabilityMessages.closed.kindLabel, availabilityMessages.closed.labelLabel, availabilityMessages.blocks.reasonLabel]) {
+    for (const label of [availabilityMessages.weekly.weekdayLabel, availabilityMessages.closed.kindLabel, availabilityMessages.closed.labelLabel, availabilityMessages.blocks.reasonLabel, availabilityMessages.picker.dayLabel]) {
       expect(screen.getByLabelText(label)).toBeTruthy()
     }
     expect(screen.getAllByLabelText(availabilityMessages.weekly.startLabel)).toHaveLength(2)
     expect(screen.getAllByLabelText(availabilityMessages.closed.dateLabel)).toHaveLength(2)
+  })
+})
+
+describe('AdminAvailabilityView — US-AGE-07', () => {
+  it('criterio 3: cada espacio bloqueado tiene su botón para desbloquear', () => {
+    renderView({
+      manualBlocks: [{ id: 'b-1', date: 'lunes, 19 de octubre', range: '09:00–10:00', reason: null }],
+    })
+
+    const blocks = screen.getByRole('region', { name: availabilityMessages.blocks.title })
+    const unblock = within(blocks).getByRole('button', {
+      name: availabilityMessages.blocks.unblockLabel('lunes, 19 de octubre', '09:00–10:00'),
+    })
+    expect(unblock.textContent).toBe(availabilityMessages.blocks.unblock)
+    expect(unblock.getAttribute('aria-label')).toContain(availabilityMessages.blocks.unblock)
+  })
+
+  it('el selector de espacios tiene su sección y el día elegido viaja en el selector de día', () => {
+    renderView()
+
+    const picker = screen.getByRole('region', { name: availabilityMessages.picker.title })
+    expect((within(picker).getByLabelText(availabilityMessages.picker.dayLabel) as HTMLInputElement).value).toBe(
+      '2026-10-19',
+    )
+    expect(within(picker).getByText(availabilityMessages.picker.noSlots)).toBeTruthy()
   })
 })

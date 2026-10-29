@@ -2,12 +2,14 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { ok, err } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import type { WeeklyBlock } from '../domain/weekly-availability'
-import { weeklyBlockOverlap } from '../domain/availability-errors'
+import { weeklyBlockHasAppointment, weeklyBlockOverlap } from '../domain/availability-errors'
 import type { WeeklyAvailabilityRepository } from '../application/availability-ports'
 
 const TABLE = 'scheduling_weekly_availability'
 const COLUMNS = 'id, resource_id, weekday, start_min, end_min'
 const EXCLUSION_VIOLATION = '23P01'
+const CHECK_VIOLATION = '23514'
+const ACTIVE_APPOINTMENTS_MESSAGE = 'scheduling_weekly_availability_active_appointments'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export type WeeklyBlockRow = {
@@ -58,10 +60,13 @@ export function createSupabaseWeeklyAvailabilityRepository(
     },
 
     async remove(id) {
-      if (!UUID.test(id)) return false
+      if (!UUID.test(id)) return ok(false)
       const { data, error } = await db.from(TABLE).delete().eq('id', id).select('id')
+      if (error?.code === CHECK_VIOLATION && error.message === ACTIVE_APPOINTMENTS_MESSAGE) {
+        return err(weeklyBlockHasAppointment())
+      }
       if (error) throw new Error(`${TABLE}.remove: ${error.message}`)
-      return (data ?? []).length > 0
+      return ok((data ?? []).length > 0)
     },
   }
 }

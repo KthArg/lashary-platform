@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Money } from '@/shared/money'
+import { moneyFromColones } from '@/shared/money'
 import { isErr, isOk } from '@/shared/result'
 import {
   MAX_CART_QUANTITY,
@@ -20,7 +20,7 @@ function makeProduct(priceColones: number, id = 'producto-serum'): CartProduct {
     slug: id,
     name: 'Serum nutritivo Lashary',
     imageUrl: '/productos/serum-nutritivo.jpg',
-    unitPrice: Money.fromColones(priceColones),
+    unitPrice: moneyFromColones(priceColones),
   }
 }
 
@@ -67,6 +67,6 @@ describe('buildCart', () => {
   })
 
   it('un carrito vacío tiene subtotal cero', () => {
-    expect(buildCart([]).subtotal.isZero()).toBe(true)
+    expect(buildCart([]).subtotal.colones).toBe(0)
   })
 })

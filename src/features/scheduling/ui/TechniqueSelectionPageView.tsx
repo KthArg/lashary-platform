@@ -1,3 +1,5 @@
+import Link from 'next/link'
+import { MY_APPOINTMENTS_PATH } from './my-appointments/constants/my-appointments-strings'
 import { schedulingMessages } from './messages'
 import { TechniqueSelector } from './TechniqueSelector'
 import { clientTechniqueSelectionPageStyles as STYLES } from './ClientTechniqueSelectionPage.styles'
@@ -17,8 +19,13 @@ export function TechniqueSelectionPageView({ data }: { data: TechniqueSelectionP
   return (
     <div className={STYLES.wrapper}>
       <div className={STYLES.header}>
-        <h1 className={STYLES.title}>{pageMessages.title}</h1>
-        <p className={STYLES.subtitle}>{pageMessages.subtitle}</p>
+        <div>
+          <h1 className={STYLES.title}>{pageMessages.title}</h1>
+          <p className={STYLES.subtitle}>{pageMessages.subtitle}</p>
+        </div>
+        <Link href={MY_APPOINTMENTS_PATH} className={STYLES.myAppointmentsLink}>
+          {pageMessages.myAppointments}
+        </Link>
       </div>
 
       {data.techniques.length === 0 ? (

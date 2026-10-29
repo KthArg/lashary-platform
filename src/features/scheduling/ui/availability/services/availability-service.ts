@@ -2,14 +2,22 @@ import { randomUUID } from 'node:crypto'
 import { systemClock } from '@/shared/clock'
 import { createClient } from '@/shared/lib/supabase/server'
 import { addCalendarDays, studioLocalToUtc } from '@/shared/studio-time'
-import { DEFAULT_RESOURCE_ID } from '../../../application/availability-ports'
-import { addWeeklyBlock, listWeeklyBlocks, removeWeeklyBlock } from '../../../application/weekly-availability'
-import { addClosedDate, listUpcomingClosedDates, removeClosedDate } from '../../../application/closed-dates'
-import { addManualBlock, listUpcomingManualBlocks } from '../../../application/manual-blocks'
-import { weeklyAvailabilityRepository } from '../../../db/weekly-availability-repository'
-import { closedDateRepository } from '../../../db/closed-date-repository'
-import { manualBlockRepository } from '../../../db/manual-block-repository'
-import { createSupabaseAffectedAppointmentsRepository } from '../../../db/affected-appointments-repository'
+import { DEFAULT_RESOURCE_ID } from '@/features/scheduling/application/availability-ports'
+import { addWeeklyBlock, listWeeklyBlocks, removeWeeklyBlock } from '@/features/scheduling/application/weekly-availability'
+import { addClosedDate, listUpcomingClosedDates, removeClosedDate } from '@/features/scheduling/application/closed-dates'
+import {
+  addManualBlock,
+  blockSlots,
+  listUpcomingManualBlocks,
+  releaseSlots,
+  removeManualBlock,
+} from '@/features/scheduling/application/manual-blocks'
+import { getPickerSlots } from '@/features/scheduling/application/picker-slots'
+import { dayAvailabilityRepository } from '@/features/scheduling/db/day-availability-repository'
+import { weeklyAvailabilityRepository } from '@/features/scheduling/db/weekly-availability-repository'
+import { closedDateRepository } from '@/features/scheduling/db/closed-date-repository'
+import { manualBlockRepository } from '@/features/scheduling/db/manual-block-repository'
+import { createSupabaseAffectedAppointmentsRepository } from '@/features/scheduling/db/affected-appointments-repository'
 
 // Composición de los casos de uso de disponibilidad con sus adaptadores reales. Siempre sobre el
 // recurso por defecto: la UI no ofrece selector mientras exista uno solo (ADR-0005).
@@ -65,5 +73,33 @@ export const availabilityService = {
 
   async addManualBlock(input: { startsAt: Date; endsAt: Date; reason: string | null }) {
     return addManualBlock({ repo: await manualBlockRepository(), newId })({ resourceId, ...input })
+  },
+
+  async loadPickerSlots(date: string) {
+    return getPickerSlots({
+      day: await dayAvailabilityRepository(),
+      blocks: await manualBlockRepository(),
+      clock: systemClock,
+    })(resourceId, date)
+  },
+
+  async releaseSlots(input: { date: string; slotStartMinutes: number[] }) {
+    return releaseSlots({ repo: await manualBlockRepository(), day: await dayAvailabilityRepository() })({
+      resourceId,
+      ...input,
+    })
+  },
+
+  async blockSlots(input: { date: string; slotStartMinutes: number[]; reason: string | null }) {
+    return blockSlots({
+      repo: await manualBlockRepository(),
+      day: await dayAvailabilityRepository(),
+      newId,
+      clock: systemClock,
+    })({ resourceId, ...input })
+  },
+
+  async removeManualBlock(id: string) {
+    return removeManualBlock({ repo: await manualBlockRepository() })(id)
   },
 }

@@ -1,4 +1,4 @@
-import { Money } from '@/shared/money'
+import { moneyFromColones } from '@/shared/money'
 import { isOk } from '@/shared/result'
 import { buildPackage, type Package } from '@/features/catalog/domain/packages/package'
 
@@ -16,7 +16,7 @@ export function makePackage(overrides: Partial<{
     id: overrides.id ?? `p-${counter}`,
     name: overrides.name ?? `Paquete ${counter}`,
     techniqueIds: overrides.techniqueIds ?? [`t-${counter}-1`, `t-${counter}-2`],
-    price: Money.fromColones(overrides.price ?? 30000),
+    price: moneyFromColones(overrides.price ?? 30000),
     isActive: overrides.isActive ?? true,
   })
   if (!isOk(result)) {

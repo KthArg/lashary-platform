@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Money } from '@/shared/money'
+import { moneyFromColones, zeroMoney } from '@/shared/money'
 import { isErr, isOk } from '@/shared/result'
 import {
   buildTechnique,
@@ -13,13 +13,13 @@ const validInput = () => ({
   id: '11111111-1111-1111-1111-111111111111',
   name: 'Set clásico',
   family: 'lash_classic' as const,
-  priceFirstTime: Money.fromColones(25000),
-  priceRetouch: Money.fromColones(15000),
+  priceFirstTime: moneyFromColones(25000),
+  priceRetouch: moneyFromColones(15000),
   durationFirstTimeMin: 120,
   durationRetouchMin: 75,
   bufferMin: 15,
   reapplicationIntervalDays: 21,
-  deposit: Money.fromColones(10000),
+  deposit: moneyFromColones(10000),
   aftercareText: 'No mojar por 24 horas.',
 })
 
@@ -85,14 +85,14 @@ describe('buildTechnique — invariantes de dominio (DOM-007)', () => {
   })
 
   it('rechaza precio de primera vez no positivo', () => {
-    const result = buildTechnique({ ...validInput(), priceFirstTime: Money.zero() })
+    const result = buildTechnique({ ...validInput(), priceFirstTime: zeroMoney() })
     expect(isErr(result)).toBe(true)
   })
 
   it('rechaza precio de retoque no positivo cuando se da', () => {
     const result = buildTechnique({
       ...validInput(),
-      priceRetouch: Money.zero(),
+      priceRetouch: zeroMoney(),
       durationRetouchMin: 60,
     })
     expect(isErr(result)).toBe(true)
@@ -109,8 +109,8 @@ describe('buildTechnique — invariantes de dominio (DOM-007)', () => {
   })
 
   it('acepta anticipo cero, rechaza negativo', () => {
-    expect(isOk(buildTechnique({ ...validInput(), deposit: Money.zero() }))).toBe(true)
-    expect(isErr(buildTechnique({ ...validInput(), deposit: Money.fromColones(-1) }))).toBe(true)
+    expect(isOk(buildTechnique({ ...validInput(), deposit: zeroMoney() }))).toBe(true)
+    expect(isErr(buildTechnique({ ...validInput(), deposit: moneyFromColones(-1) }))).toBe(true)
   })
 
   it('D10 — rechaza precio de retoque sin duración de retoque', () => {
