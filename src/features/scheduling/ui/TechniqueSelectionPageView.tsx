@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { MY_APPOINTMENTS_PATH } from './my-appointments/constants/my-appointments-strings'
 import { schedulingMessages } from './messages'
 import { TechniqueSelector } from './TechniqueSelector'
+import { PackageSelector } from './PackageSelector'
 import { clientTechniqueSelectionPageStyles as STYLES } from './ClientTechniqueSelectionPage.styles'
 import type { TechniqueSelectionPageData } from './load-technique-selection-page'
 
@@ -33,6 +34,7 @@ export function TechniqueSelectionPageView({ data }: { data: TechniqueSelectionP
       ) : (
         <TechniqueSelector techniques={data.techniques} />
       )}
+      <PackageSelector packages={data.packages} />
     </div>
   )
 }
