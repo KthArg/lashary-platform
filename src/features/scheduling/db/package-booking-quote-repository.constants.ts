@@ -1,1 +1,0 @@
-export const QUOTE_PACKAGE_BOOKING_FUNCTION = 'scheduling_quote_package_booking'

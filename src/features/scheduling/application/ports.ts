@@ -141,24 +141,6 @@ export interface PackageBookingRepository {
   ): Promise<Result<BookedPackageAppointment, BookPackageAppointmentError>>
 }
 
-export type QuotePackageBookingInput = {
-  packageId: string
-}
-
-export type PackageBookingQuote = {
-  packageName: string
-  servicePrice: number
-  durationMin: number
-  bufferMin: number
-  depositDue: number
-}
-
-export type QuotePackageBookingError = ClientNotRegistered | PackageNotAvailable | StorageFailed
-
-export interface PackageBookingQuoteRepository {
-  quote(input: QuotePackageBookingInput): Promise<Result<PackageBookingQuote, QuotePackageBookingError>>
-}
-
 export type CancellationQuote = {
   startsAtMs: number
   techniqueName: string
