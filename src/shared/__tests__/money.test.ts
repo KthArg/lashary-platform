@@ -5,7 +5,6 @@ import {
   isNegativeMoney,
   isPositiveMoney,
   isZeroMoney,
-  Money,
   moneyEquals,
   moneyFromColones,
   subtractMoney,
@@ -14,83 +13,48 @@ import {
 
 describe('Money — DOM-001: entero de colones, float prohibido', () => {
   it('crea un monto desde un entero de colones', () => {
-    expect(Money.fromColones(15000).colones).toBe(15000)
+    expect(moneyFromColones(15000).colones).toBe(15000)
   })
 
   it('acepta cero', () => {
-    expect(Money.zero().colones).toBe(0)
-    expect(Money.fromColones(0).isZero()).toBe(true)
+    expect(zeroMoney().colones).toBe(0)
+    expect(isZeroMoney(moneyFromColones(0))).toBe(true)
   })
 
   it('rechaza un float — el bug de centavos perdidos queda irrepresentable', () => {
-    expect(() => Money.fromColones(15000.5)).toThrow(RangeError)
-    expect(() => Money.fromColones(0.1)).toThrow(RangeError)
+    expect(() => moneyFromColones(15000.5)).toThrow(RangeError)
+    expect(() => moneyFromColones(0.1)).toThrow(RangeError)
   })
 
   it('rechaza NaN e Infinity', () => {
-    expect(() => Money.fromColones(Number.NaN)).toThrow(RangeError)
-    expect(() => Money.fromColones(Number.POSITIVE_INFINITY)).toThrow(RangeError)
+    expect(() => moneyFromColones(Number.NaN)).toThrow(RangeError)
+    expect(() => moneyFromColones(Number.POSITIVE_INFINITY)).toThrow(RangeError)
   })
 
   it('admite montos negativos (contra-asientos del ledger, DOM-005) y los identifica', () => {
-    const m = Money.fromColones(-5000)
-    expect(m.colones).toBe(-5000)
-    expect(m.isNegative()).toBe(true)
-    expect(m.isPositive()).toBe(false)
+    const refund = moneyFromColones(-5000)
+    expect(refund.colones).toBe(-5000)
+    expect(isNegativeMoney(refund)).toBe(true)
+    expect(isPositiveMoney(refund)).toBe(false)
   })
 
   it('suma y resta manteniéndose entero', () => {
-    const total = Money.fromColones(10000).plus(Money.fromColones(2500))
+    const total = addMoney(moneyFromColones(10000), moneyFromColones(2500))
     expect(total.colones).toBe(12500)
-    expect(total.minus(Money.fromColones(500)).colones).toBe(12000)
+    expect(subtractMoney(total, moneyFromColones(500)).colones).toBe(12000)
   })
 
   it('compara por valor', () => {
-    expect(Money.fromColones(100).equals(Money.fromColones(100))).toBe(true)
-    expect(Money.fromColones(100).equals(Money.fromColones(101))).toBe(false)
-  })
-
-  it('isPositive distingue estrictamente de cero', () => {
-    expect(Money.fromColones(1).isPositive()).toBe(true)
-    expect(Money.zero().isPositive()).toBe(false)
-  })
-
-  it('se formatea en colones para display', () => {
-    expect(Money.fromColones(15000).toString()).toContain('15')
-  })
-})
-
-describe('Money — funciones que delegan en la clase', () => {
-  it('moneyFromColones y zeroMoney crean el mismo monto que la clase', () => {
-    expect(moneyFromColones(15000).colones).toBe(15000)
-    expect(zeroMoney().colones).toBe(0)
-  })
-
-  it('moneyFromColones rechaza un float igual que la clase', () => {
-    expect(() => moneyFromColones(15000.5)).toThrow(RangeError)
-  })
-
-  it('addMoney suma y subtractMoney resta', () => {
-    expect(addMoney(moneyFromColones(10000), moneyFromColones(2500)).colones).toBe(12500)
-    expect(subtractMoney(moneyFromColones(10000), moneyFromColones(2500)).colones).toBe(7500)
-  })
-
-  it('moneyEquals compara por valor', () => {
     expect(moneyEquals(moneyFromColones(100), moneyFromColones(100))).toBe(true)
     expect(moneyEquals(moneyFromColones(100), moneyFromColones(101))).toBe(false)
   })
 
-  it('isZeroMoney, isPositiveMoney e isNegativeMoney distinguen el signo', () => {
-    expect(isZeroMoney(zeroMoney())).toBe(true)
-    expect(isZeroMoney(moneyFromColones(1))).toBe(false)
+  it('isPositiveMoney distingue estrictamente de cero', () => {
     expect(isPositiveMoney(moneyFromColones(1))).toBe(true)
     expect(isPositiveMoney(zeroMoney())).toBe(false)
-    expect(isNegativeMoney(moneyFromColones(-1))).toBe(true)
-    expect(isNegativeMoney(zeroMoney())).toBe(false)
   })
 
-  it('formatMoney da el mismo texto que toString', () => {
-    const amount = moneyFromColones(15000)
-    expect(formatMoney(amount)).toBe(amount.toString())
+  it('se formatea en colones para display', () => {
+    expect(formatMoney(moneyFromColones(15000))).toContain('15')
   })
 })
