@@ -68,6 +68,10 @@ export interface ReminderSnapshotsRepository {
   getActiveById(appointmentId: string): Promise<Result<AppointmentReminderSnapshot | null, StorageFailed>>
 }
 
+export interface RescheduleExpiryRepository {
+  expireUndecided(): Promise<Result<number, StorageFailed>>
+}
+
 export type BookAppointmentInput = {
   resourceId: string
   startsAtMs: number

@@ -60,7 +60,12 @@ US-NOT-03 (ADR-0007); el resto lo reusa vía el puerto que US-NOT-08 exige.
   (`REMINDER_MESSAGE_TEXTS`, DOM-009) con fecha y hora en `America/Costa_Rica` (`formatStudioDateTime`
   de `shared/studio-time`, que también usa la bandeja, DOM-003) y la técnica reservada (criterio 2). Pruebas: `domain/__tests__/reminder.test.ts` y
   `reminder-message.test.ts`.
-- Capa `application/`: tres casos de uso encadenados por `run-reminder-cycle.ts` (lo llama el cron):
+- Capa `application/`: tres casos de uso encadenados por `run-reminder-cycle.ts` (lo llama el cron).
+  Antes de los tres, el ciclo le pide a `scheduling` que venza los reagendados que nadie decidió a
+  tiempo (puerto `SchedulingMaintenancePort`, `expireSchedulingUndecidedReschedules`; regla de
+  US-AGE-10 aprobada por el PO el 2026-10-29): la cita vuelve a su horario aprobado y el paso de
+  descubrir le crea el recordatorio en la misma corrida. Si ese paso falla, el ciclo sigue y lo cuenta
+  en `expireFailed`; el resumen trae `expiredReschedules`. Prueba: `__tests__/run-reminder-cycle.test.ts`.
   - `discover-reminders.ts` — lee de `scheduling` (puerto `SchedulingReadPort`) las citas activas
     (`approved`/`confirmed`) que entran a la ventana de 24h + 2h de margen y crea el recordatorio
     pendiente si no existe (`insertIfAbsent`, idempotente). Prueba: `__tests__/discover-reminders.test.ts`.
