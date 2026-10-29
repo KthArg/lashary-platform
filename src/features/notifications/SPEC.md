@@ -2,10 +2,11 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-28
+actualizado: 2026-10-29
 historias:
   - id: US-NOT-01
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "pieza 1 de 6: solo existe la tabla de avisos; falta el trigger que la llena al reservar, el codigo de la app y el panel lateral"
   - id: US-NOT-02
     estado: no_iniciada
   - id: US-NOT-03
@@ -121,11 +122,22 @@ US-NOT-03 (ADR-0007); el resto lo reusa vía el puerto que US-NOT-08 exige.
 - `index.ts` (`runNotificationsReminderCycle`) arma los adaptadores reales y expone la única puerta
   de entrada (ARCH-003): scheduling y clients por su índice público, los canales por ADR-0006.
 
+## US-NOT-01: bandeja de avisos de la administradora
+
+`notifications_admin_inbox` guarda un aviso por reserva (`UNIQUE (kind, appointment_id)`), con una
+copia de clienta, servicio y hora: el aviso cuenta lo que pasó al reservar aunque la cita cambie
+después, y US-NOT-02 necesita el horario anterior. `read_at` vacío es «no leído»; nunca se borra.
+
+- Lee y marca solo staff (SEC-001): `SELECT` y `UPDATE (read_at)`, nada más; sin `INSERT` ni `DELETE`.
+- Solo escribe `notifications_record_booking`, sin `EXECUTE` para `anon` ni `authenticated`: nadie
+  puede fabricar avisos por PostgREST.
+- Prueba: `supabase/tests/database/notifications_admin_inbox.test.sql` (staff, clienta y anon, SEC-002).
+
 ## Qué no hace todavía
 
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
   mano. No lo pide ningún criterio de US-NOT-03.
-- US-NOT-01, 02, 04 a 08 y US-CLI-06 reusan el canal pero no están construidas.
+- US-NOT-02, 04 a 08 y US-CLI-06 reusan el canal pero no están construidas.
 
 ## Correcciones de la auditoría del 2026-10-23 (AUDIT.md, líder del proyecto)
 
@@ -371,6 +383,9 @@ en el frontmatter de esta historia).
 - Dominio y aplicación son superficie interna; ninguna otra feature los consume.
 
 ## Decisiones
+
+- US-NOT-01, 2026-10-29: el aviso nace al reservar la clienta, no al aprobar (la historia dice
+  «cuando un cliente agende»). Pendiente de confirmar por el PO.
 
 - ADR-0006 (canal de notificaciones): WhatsApp directo contra la Graph API de Meta (sin Twilio,
   decisión del PO el 2026-10-21: lo exige quien pide el proyecto), Resend como respaldo por email
