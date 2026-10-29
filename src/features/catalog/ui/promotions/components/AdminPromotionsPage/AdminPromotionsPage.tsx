@@ -34,7 +34,7 @@ export async function AdminPromotionsPage({ searchParams }: AdminPromotionsPageP
     packageRepository(),
   ])
 
-  const now = systemClock.now()
+  const now = systemClock()
 
   const [page, activeTechniques, activePackages] = await Promise.all([
     listPromotionsUseCase(promoRepo)(now)({ page: Number(params.page) || 1 }),
