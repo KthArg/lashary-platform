@@ -218,8 +218,3 @@ export const packageHasNoTechniques = (packageId: string): PackageHasNoTechnique
   packageId,
   message: `el paquete ${packageId} no tiene ninguna técnica incluida`,
 })
-
-export const isPackageHasNoTechniques = (value: unknown): value is PackageHasNoTechniques =>
-  typeof value === 'object' &&
-  value !== null &&
-  (value as { code?: unknown }).code === 'SCHEDULING_PACKAGE_HAS_NO_TECHNIQUES'

@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { isErr, isOk } from '@/shared/result'
 import { computePackageAppointmentWindow } from '../package-window'
-import { isPackageHasNoTechniques } from '../errors'
 import { MS_PER_MINUTE } from '../appointment-window.constants'
 
 const SERVICE_START_MS = Date.parse('2027-03-01T10:00:00Z')
@@ -44,8 +43,7 @@ describe('computePackageAppointmentWindow', () => {
     })
     expect(isErr(result)).toBe(true)
     if (!isErr(result)) return
-    expect(isPackageHasNoTechniques(result.error)).toBe(true)
-    if (!isPackageHasNoTechniques(result.error)) return
+    expect(result.error.code).toBe('SCHEDULING_PACKAGE_HAS_NO_TECHNIQUES')
     expect(result.error.packageId).toBe('paquete-vacio')
   })
 
