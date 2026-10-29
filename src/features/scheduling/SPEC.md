@@ -40,6 +40,8 @@ defectos: []
 
 # scheduling
 
+El código de `scheduling` usa `Money` por sus funciones (`moneyFromColones`, `formatMoney`) y no por sus métodos, como paso previo a quitar la `class` (ADR-0008); el comportamiento es el mismo.
+
 Agenda completa. US-AGE-09 cubre el flujo de aprobacion manual (su texto original, ADR-0003) Y el constraint de no-solape (sus criterios, ADR-0002); recurso explicito (ADR-0005). Agendar en nombre de una clienta: clausula de US-MOR-02 (ADR-0007).
 
 La prueba de `formatAppointmentSlot` normaliza los espacios antes de comparar: según la versión de ICU de Node, "a. m." sale con espacio normal o con espacio duro, y la prueba fallaba en Node 20 aunque pasaba en CI (Node 24).

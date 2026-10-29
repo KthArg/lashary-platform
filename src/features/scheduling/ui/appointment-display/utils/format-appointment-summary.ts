@@ -1,8 +1,8 @@
-import { Money } from '@/shared/money'
+import { moneyFromColones, formatMoney } from '@/shared/money'
 import { APPOINTMENT_DISPLAY_CHOICE } from '../constants/appointment-display.constants'
 import type { AppointmentSummaryInput, AppointmentSummaryView } from '../types/appointment-display.types'
 
-const money = (colones: number): string => Money.fromColones(colones).toString()
+const money = (colones: number): string => formatMoney(moneyFromColones(colones))
 
 export function formatAppointmentSummary(choice: AppointmentSummaryInput | null): AppointmentSummaryView {
   const copy = APPOINTMENT_DISPLAY_CHOICE

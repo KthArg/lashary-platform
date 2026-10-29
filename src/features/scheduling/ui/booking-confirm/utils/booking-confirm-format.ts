@@ -1,9 +1,9 @@
-import { Money } from '@/shared/money'
+import { moneyFromColones, formatMoney } from '@/shared/money'
 import { formatCalendarDate, minutesToTime } from '../../availability/utils/availability-format'
 import { bookingConfirmMessages } from '../constants/booking-confirm-strings'
 import type { BookingConfirmData, BookingConfirmView, BookingSummaryView } from '../types/booking-confirm.types'
 
-const money = (colones: number): string => Money.fromColones(colones).toString()
+const money = (colones: number): string => formatMoney(moneyFromColones(colones))
 
 export type SummaryInput = {
   serviceName: string
