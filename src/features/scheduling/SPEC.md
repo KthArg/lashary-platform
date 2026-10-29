@@ -155,6 +155,8 @@ Esta pieza (11/11) cablea esos dos campos del lado TypeScript y los muestra ante
 
 Pruebas: pgTAP de la pieza 10/11 (`catalog_booking_terms.test.sql`, `scheduling_quote_booking.test.sql`, `scheduling_book_appointment.test.sql`); del lado TypeScript, `db/__tests__/booking-quote-repository.test.ts` y `db/__tests__/booking-repository.test.ts` (el mapeo de fila), `application/__tests__/quote-booking.test.ts` y `application/__tests__/book-appointment.test.ts` (los fixtures con los campos nuevos), `ui/booking-confirm/__tests__/booking-confirm.test.ts` y `perform-booking.test.ts` (el aviso antes y después de confirmar) y `BookingConfirmView.test.tsx` (el `role="note"` en pantalla).
 
+Al rebasar esta pieza contra `main` (2026-10-28), `BookedPanel.test.tsx` — escrito después, para la nueva ruta de «mis citas» — construía `BookingSummaryView` sin `promotionNotice`. Se agrega `promotionNotice: null` a su fijo; sin cambio de comportamiento.
+
 ## Faltantes de US-AGE-05
 
 US-AGE-05 queda `terminada` con estos faltantes aprobados por el PO, cada uno con su dueño:
