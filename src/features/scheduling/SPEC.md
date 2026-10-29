@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-10-29"
+actualizado: "2026-10-24"
 historias:
   - id: US-AGE-01
     estado: terminada
@@ -14,9 +14,7 @@ historias:
     estado: terminada
     evidencia: "criterios 1, 3 y 4 demostrados; el criterio 2 se trasladó a US-AGE-05 con aprobación del PO (líder del proyecto), comunicado por Erick Duran el 2026-10-17 (docs/process/DEPENDENCIES.md, Criterios trasladados, ítem 6); tests: technique-selection.test.ts, select-technique.test.ts, load-technique-selection-page.test.ts, TechniqueSelectionPageView.test.tsx"
   - id: US-AGE-04
-    estado: en_progreso
-    evidencia: "Pieza 1/N (rama us/US-AGE-04, contrato primero por INT-003): catalog_package_booking_terms(p_package_id), función SQL nueva en catalog análoga a catalog_booking_terms, documentada en docs/contracts/catalog-api.md — una fila por técnica incluida en el paquete (campos del paquete repetidos), SECURITY INVOKER, solo authenticated. Tests: pgTAP catalog_package_booking_terms.test.sql (9 aserciones); suite completa (38 archivos, 537 aserciones) en verde tras la migración."
-    falta: "ninguno de los tres criterios está demostrado todavía. Falta la migración de scheduling con el snapshot de paquete en scheduling_appointments (columnas nulables + tabla hija scheduling_appointment_package_techniques, decisión registrada el 2026-10-29), el dominio (cálculo de ventana total, criterio 2), scheduling_book_package_appointment (debe revisar los bloqueos manuales, que scheduling_create_appointment no revisa — ver nota de este SPEC), la capa application/db, y la UI de selección paquete vs técnica (criterio 1) y de confirmación con el precio del paquete (criterio 3)"
+    estado: no_iniciada
   - id: US-AGE-05
     estado: terminada
     evidencia: "PR de cierre us/US-AGE-05 a main (#411), con 25 piezas apiladas hacia la rama de la historia (#412 a #441). Criterios 1, 3, 4, 5, 6, 8 y 9, el criterio 5 recibido de US-AGE-01 y la prueba obligatoria de concurrencia demostrados. Los criterios 7 y 10 se entregan parciales, con aprobación del PO (docs/process/DEPENDENCIES.md, registro del 2026-10-19): el aviso del anticipo es genérico, sin la ventana de cancelación (cifra con US-AGE-06), y la detección contra el historial no tiene citas completadas hasta US-AGE-12 ni campo para que la administradora corrija el anticipo (US-MOR-03). El criterio 2 (morosidad) se trasladó a US-MOR-02, aprobado por el PO y por KthArg (docs/process/DEPENDENCIES.md, Criterios trasladados, ítem 7). Faltantes con dueño en la sección «Faltantes de US-AGE-05» de este SPEC. Tests: scheduling_book_appointment, scheduling_appointment_frozen_terms, scheduling_quote_booking, scheduling_detected_first_time, scheduling_booking_limits, scheduling_clients_contract, scheduling_alerts y scheduling_affected_appointments (pgTAP); booking-concurrency.integration.test.ts y booking-pending-limit.integration.test.ts; book-appointment.test.ts, perform-booking.test.ts, BookingConfirmView.test.tsx, ApprovalQueue.test.tsx, availability-actions.test.ts y alerts.test.tsx"
