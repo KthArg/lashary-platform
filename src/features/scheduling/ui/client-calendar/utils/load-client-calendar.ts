@@ -3,20 +3,13 @@ import type { Clock } from '@/shared/clock'
 import { studioDateOf } from '@/shared/studio-time'
 import { getDaySlots } from '../../../application/day-slots'
 import type { DayAvailabilityRepository } from '../../../application/availability-ports'
-import {
-  findServiceOption,
-  packageServiceOptionsOf,
-  serviceOptionsOf,
-  type NamedPackage,
-  type NamedTechnique,
-} from '../../../domain/service-option'
+import { findServiceOption, serviceOptionsOf, type NamedTechnique } from '../../../domain/service-option'
 import { readCalendarParams } from './calendar-params'
 import type { CalendarSearchParams, ClientCalendarData } from '../types/client-calendar.types'
 
 export type ClientCalendarDeps = {
   isClient: () => Promise<boolean>
   listTechniques: () => Promise<readonly NamedTechnique[]>
-  listPackages: () => Promise<readonly NamedPackage[]>
   repo: DayAvailabilityRepository
   clock: Clock
   resourceId: string
@@ -28,8 +21,7 @@ export async function loadClientCalendar(
 ): Promise<ClientCalendarData> {
   if (!(await deps.isClient())) return { status: 'forbidden' }
 
-  const [techniques, packages] = await Promise.all([deps.listTechniques(), deps.listPackages()])
-  const options = [...serviceOptionsOf(techniques), ...packageServiceOptionsOf(packages)]
+  const options = serviceOptionsOf(await deps.listTechniques())
   if (options.length === 0) return { status: 'noServices' }
 
   const today = studioDateOf(deps.clock())

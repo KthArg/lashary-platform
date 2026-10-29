@@ -1,22 +1,10 @@
 import type { Result } from '@/shared/result'
 import type { Clock } from '@/shared/clock'
 import { studioDateOf, studioLocalToUtc } from '@/shared/studio-time'
-import {
-  findServiceOption,
-  packageServiceOptionsOf,
-  serviceOptionsOf,
-  type NamedPackage,
-  type NamedTechnique,
-} from '../../../domain/service-option'
+import { findServiceOption, serviceOptionsOf, type NamedTechnique } from '../../../domain/service-option'
 import { MS_PER_MINUTE } from '../../../domain/appointment-window.constants'
-import type {
-  BookAppointmentInput,
-  BookPackageAppointmentInput,
-  BookedAppointment,
-  BookedPackageAppointment,
-} from '../../../application/ports'
+import type { BookAppointmentInput, BookedAppointment } from '../../../application/ports'
 import type { BookAppointmentFailure } from '../../../application/book-appointment'
-import type { BookPackageAppointmentFailure } from '../../../application/book-package-appointment'
 import { CALENDAR_NOTICES, type CalendarNotice } from '../../client-calendar/constants/client-calendar-strings'
 import { calendarHref } from '../../client-calendar/utils/calendar-params'
 import { bookingConfirmMessages } from '../constants/booking-confirm-strings'
@@ -34,21 +22,16 @@ export type PerformBookingDeps = {
   resourceId: string
   isClient: () => Promise<boolean>
   listTechniques: () => Promise<readonly NamedTechnique[]>
-  listPackages: () => Promise<readonly NamedPackage[]>
-  bookTechnique: (input: BookAppointmentInput) => Promise<Result<BookedAppointment, BookAppointmentFailure>>
-  bookPackage: (
-    input: BookPackageAppointmentInput,
-  ) => Promise<Result<BookedPackageAppointment, BookPackageAppointmentFailure>>
+  book: (input: BookAppointmentInput) => Promise<Result<BookedAppointment, BookAppointmentFailure>>
   clock: Clock
 }
 
-type FailureCode = (BookAppointmentFailure | BookPackageAppointmentFailure)['code']
+type FailureCode = BookAppointmentFailure['code']
 
 const failureMessages: Partial<Record<FailureCode, string>> = {
   SCHEDULING_CLIENT_NOT_REGISTERED: bookingConfirmMessages.clientNotRegistered,
   SCHEDULING_CLIENT_HAS_ACTIVE_DELINQUENCY: bookingConfirmMessages.delinquency,
   SCHEDULING_TECHNIQUE_NOT_AVAILABLE: bookingConfirmMessages.unavailable,
-  SCHEDULING_PACKAGE_NOT_AVAILABLE: bookingConfirmMessages.unavailable,
   SCHEDULING_TOO_MANY_PENDING_APPOINTMENTS: bookingConfirmMessages.tooManyPending,
 }
 
@@ -67,34 +50,25 @@ export async function performBooking(
   if (!params) return { kind: 'retry', backHref: calendarHref({ notice: CALENDAR_NOTICES.notOffered }) }
 
   const backTo = (notice?: CalendarNotice) => calendarHref({ serviceKey: params.serviceKey, date: params.date, notice })
-  const [techniques, packages] = await Promise.all([deps.listTechniques(), deps.listPackages()])
-  const options = [...serviceOptionsOf(techniques), ...packageServiceOptionsOf(packages)]
-  const selected = findServiceOption(options, params.serviceKey)
+  const selected = findServiceOption(serviceOptionsOf(await deps.listTechniques()), params.serviceKey)
   if (!selected) return { kind: 'retry', backHref: backTo(CALENDAR_NOTICES.notOffered) }
 
-  const startsAtMs = studioLocalToUtc(params.date, params.startMin).getTime()
-
-  const result =
-    selected.kind === 'package'
-      ? await deps.bookPackage({ resourceId: deps.resourceId, startsAtMs, packageId: selected.packageId })
-      : await deps.bookTechnique({
-          resourceId: deps.resourceId,
-          startsAtMs,
-          techniqueId: selected.techniqueId,
-          isFirstTime: selected.isFirstTime,
-        })
+  const result = await deps.book({
+    resourceId: deps.resourceId,
+    startsAtMs: studioLocalToUtc(params.date, params.startMin).getTime(),
+    techniqueId: selected.techniqueId,
+    isFirstTime: selected.isFirstTime,
+  })
 
   if (result.ok) {
     const booked = result.value
-    const serviceName = 'packageName' in booked ? booked.packageName : booked.techniqueName
-    const isFirstTime = 'isFirstTime' in booked ? booked.isFirstTime : null
     return {
       kind: 'booked',
       booked: {
         status: bookingConfirmMessages.pendingApproval,
         summary: toBookingSummary({
-          serviceName,
-          isFirstTime,
+          serviceName: booked.techniqueName,
+          isFirstTime: booked.isFirstTime,
           date: params.date,
           startMin: params.startMin,
           durationMin: (booked.endsAtMs - booked.startsAtMs) / MS_PER_MINUTE,

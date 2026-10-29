@@ -1,5 +1,5 @@
 import { AUTH_ROLES, getAuthSession } from '@/features/auth'
-import { listPackages, listTechniques } from '@/features/catalog'
+import { listTechniques } from '@/features/catalog'
 import { systemClock } from '@/shared/clock'
 import { DEFAULT_RESOURCE_ID } from '../../../application/availability-ports'
 import { dayAvailabilityRepository } from '../../../db/day-availability-repository'
@@ -16,7 +16,6 @@ export const clientCalendarService = {
         return Boolean(session?.user) && session?.role === AUTH_ROLES.CLIENTE
       },
       listTechniques: async () => (await listTechniques({ activeOnly: true, pageSize: MAX_CALENDAR_SERVICES })).items,
-      listPackages: async () => (await listPackages({ activeOnly: true, pageSize: MAX_CALENDAR_SERVICES })).items,
       repo: await dayAvailabilityRepository(),
       clock: systemClock,
       resourceId: DEFAULT_RESOURCE_ID,

@@ -11,14 +11,7 @@ vi.mock('next/form', () => ({ default: (props: ComponentProps<'form'>) => <form 
 
 afterEach(cleanup)
 
-const option = {
-  kind: 'technique' as const,
-  key: 't2',
-  techniqueId: 't2',
-  name: 'Diseño de cejas',
-  isFirstTime: true,
-  durationMin: 60,
-}
+const option = { key: 't2', techniqueId: 't2', name: 'Diseño de cejas', isFirstTime: true, durationMin: 60 }
 const base = { options: [option], date: '2026-10-19', today: '2026-10-19' }
 
 const ready: ClientCalendarData = {

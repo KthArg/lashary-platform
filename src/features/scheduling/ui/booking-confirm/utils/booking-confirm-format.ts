@@ -7,7 +7,7 @@ const money = (colones: number): string => formatMoney(moneyFromColones(colones)
 
 export type SummaryInput = {
   serviceName: string
-  isFirstTime: boolean | null
+  isFirstTime: boolean
   date: string
   startMin: number
   durationMin: number

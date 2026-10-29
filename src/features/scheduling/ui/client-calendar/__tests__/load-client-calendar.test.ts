@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { fixedClock } from '@/shared/testing/fixed-clock'
 import type { DayAvailabilityRepository } from '../../../application/availability-ports'
-import { packageOptionKey, type NamedPackage, type NamedTechnique } from '../../../domain/service-option'
+import type { NamedTechnique } from '../../../domain/service-option'
 import { loadClientCalendar, type ClientCalendarDeps } from '../utils/load-client-calendar'
 
 const RESOURCE = 'r-1'
@@ -13,7 +13,6 @@ const technique: NamedTechnique = {
   durationRetouchMin: null,
   bufferMin: 15,
 }
-const pkg: NamedPackage = { id: 'p1', name: 'Combo clásicas', isActive: true, durationTotalMin: 90 }
 
 function deps(overrides: Partial<ClientCalendarDeps> = {}) {
   const calls: unknown[][] = []
@@ -29,7 +28,6 @@ function deps(overrides: Partial<ClientCalendarDeps> = {}) {
   const base: ClientCalendarDeps = {
     isClient: async () => true,
     listTechniques: async () => [technique],
-    listPackages: async () => [],
     repo,
     clock: fixedClock('2026-10-19T14:00:00Z'),
     resourceId: RESOURCE,
@@ -95,18 +93,5 @@ describe('loadClientCalendar — US-AGE-02', () => {
     const data = await loadClientCalendar({ servicio: 't1', fecha: '2026-10-19' }, d)
     expect(data.status).toBe('invalid')
     expect(calls).toEqual([])
-  })
-
-  it('un paquete se puede elegir igual que una técnica, con su propio tiempo total (US-AGE-04, criterio 1)', async () => {
-    const { deps: d, calls } = deps({ listPackages: async () => [pkg] })
-    const data = await loadClientCalendar({ servicio: packageOptionKey('p1'), fecha: '2026-10-20' }, d)
-    expect(calls).toEqual([[RESOURCE, '2026-10-20']])
-    expect(data.status === 'ready' && data.selected).toEqual({
-      kind: 'package',
-      key: 'pkg:p1',
-      packageId: 'p1',
-      name: 'Combo clásicas',
-      durationMin: 90,
-    })
   })
 })
