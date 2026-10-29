@@ -43,6 +43,22 @@ export interface AppointmentRepository {
   create(appointment: NewAppointment): Promise<Result<CreatedAppointment, SpaceNotAvailable | StorageFailed>>
 }
 
+export type AppointmentReminderSnapshot = {
+  appointmentId: string
+  clientId: string
+  startsAt: Date
+  techniqueName: string
+}
+
+export type ReminderSnapshotsWindow = { from: Date; to: Date }
+
+export interface ReminderSnapshotsRepository {
+  listActiveStartingWithin(
+    window: ReminderSnapshotsWindow,
+  ): Promise<Result<AppointmentReminderSnapshot[], StorageFailed>>
+  getActiveById(appointmentId: string): Promise<Result<AppointmentReminderSnapshot | null, StorageFailed>>
+}
+
 export type BookAppointmentInput = {
   resourceId: string
   startsAtMs: number

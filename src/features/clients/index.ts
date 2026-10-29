@@ -34,3 +34,5 @@ export { AppointmentHistory } from './ui/admin-history/components/AppointmentHis
 export { HISTORY_LABELS, HISTORY_PAGINATION_TEXTS } from './ui/admin-history/constants/history-strings'
 export { AppointmentHistoryPagination } from './ui/admin-history/components/AppointmentHistoryPagination'
 export { appointmentHistoryUrl, parseHistoryPage } from './ui/admin-history/appointment-history-url'
+export { getClientContactForReminders } from './reminders-api'
+export type { ClientContactForReminders } from './reminders-api'

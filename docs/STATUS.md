@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-24.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-28.
 
 ## Features
 
@@ -16,7 +16,7 @@
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
 | landing | pendiente | terminada | 6 / 0 / 0 / 0 / 0 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
-| notifications | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 9 |
+| notifications | pendiente | en_progreso | 1 / 0 / 0 / 0 / 8 |
 | payments | pendiente | terminada | 1 / 0 / 0 / 0 / 0 |
 | platform | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | scheduling | pendiente | en_progreso | 7 / 0 / 0 / 0 / 4 |
@@ -38,7 +38,7 @@
 - US-PROM-01 — no_iniciada
 - US-PROM-02 — no_iniciada
 
-### clients (actualizado: 2026-10-21)
+### clients (actualizado: 2026-10-26)
 - US-CLI-01 — en_progreso — falta: las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)
 - US-CLI-02 — en_progreso — falta: el acceso desde la vista diaria espera a US-AGE-11 (criterio diferido): la agenda diaria no existe y no enlaza a clientAppointmentsPath
 - US-CLI-03 — no_iniciada
@@ -68,10 +68,10 @@
 ### loyalty (actualizado: 2026-08-28)
 - US-LAND-06 — no_iniciada
 
-### notifications (actualizado: 2026-08-29)
+### notifications (actualizado: 2026-10-28)
 - US-NOT-01 — no_iniciada
 - US-NOT-02 — no_iniciada
-- US-NOT-03 — no_iniciada
+- US-NOT-03 — terminada — PR de cierre #577 (us/US-NOT-03 a main), con 23 piezas apiladas hacia la rama de la historia. Criterio 1 (envío automático 24h antes): computeReminderSendAt y discoverReminders; domain/__tests__/reminder.test.ts, application/__tests__/discover-reminders.test.ts. Criterio 2 (mensaje con fecha, hora y técnica): domain/reminder-message.ts (REMINDER_MESSAGE_TEXTS, formatStudioDateTime); domain/__tests__/reminder-message.test.ts, application/__tests__/send-due-reminders.test.ts. Criterio 3 (cancela o reprograma si la cita cambia): reconcile-reminders.ts; application/__tests__/reconcile-reminders.test.ts, incluida la corrección del líder del 2026-10-26 (libera el reclamo vencido antes de leer lo pendiente, para que la misma corrida cancele si la cita ya no es válida). Criterio 4 (reintenta y queda registrado): send-due-reminders.ts (MAX_REMINDER_ATTEMPTS), reclamo atómico FOR UPDATE SKIP LOCKED con TTL y tandas (notifications_claim_due_reminders, notifications_release_expired_claims); application/__tests__/send-due-reminders.test.ts, db/__tests__/reminder-repository.integration.test.ts (A6, contra Supabase local, incluido el reclamo doble simultáneo) y pgTAP notifications_reminders_staff_access.test.sql (13 aserciones, SEC-001/002). Decisión del líder del proyecto, comunicada el 2026-10-27: la historia pasa de en_progreso a terminada porque lo que falta —plantilla de WhatsApp aprobada por Meta, número de WhatsApp Business real, contenido del mensaje de la dueña del negocio, dominio verificado en Resend, disparo vía GitHub Actions, cuenta de staff del cron en producción— ya no es código sino configuración externa y decisiones de negocio; queda como checklist de activación para producción en la sección «Antes de producción» de este SPEC, no como deuda de la historia. A4 (rol dedicado del cron, sin ADR), B5 (reschedulePending no reinicia attempts/last_error) y B6 (recordatorio inmediato si la cita se reserva con menos de 24h) quedan registrados en `deuda` del frontmatter, con dueño (líder/PO); B8 (opt-in de WhatsApp) ya está cubierto por la fila de US-NOT-06 en docs/process/DEPENDENCIES.md.
 - US-NOT-04 — no_iniciada
 - US-NOT-05 — no_iniciada
 - US-NOT-06 — no_iniciada
@@ -119,6 +119,10 @@ Ninguno registrado.
 - clients: M3 de la auditoria de US-CLI-04 (riesgo aceptado): una admin con su token puede leer clients_record_versions directo por PostgREST sin pasar por readRecord, y esa lectura no queda en la bitacora (SEC-006 se cumple solo dentro de la app) — aceptada en Auditoria del 2026-10-19, riesgo aceptado por Jose Loria — costo: 6h: quitar el SELECT directo y leer por una funcion SECURITY DEFINER que registre el acceso y devuelva las versiones, con pgTAP
 - clients: Resto de M4 de la auditoria de US-CLI-04: si guardar la version falla despues de subir la imagen (choque de versiones o caida), el archivo queda en el bucket privado sin version que lo use, y no se puede borrar porque el bucket no tiene politica de DELETE — aceptada en Auditoria del 2026-10-19, por decision de Jose Loria; el cupo de 20 ya se revisa antes de subir — costo: 3h: limpieza programada fuera de la app que borre objetos sin version de mas de un dia
 - clients: B4 de la auditoria de US-CLI-04: rowToVersion revalida cada version con las reglas vigentes; si un tope se endurece o una fila quedo rara, el expediente entero no abre — aceptada en Auditoria del 2026-10-19, por decision de Jose Loria — costo: 2h: leer el historial sin revalidar topes (solo la forma) y validar solo al escribir
+- notifications: Consultas una por una: reconcileReminders pide la cita de cada recordatorio pendiente (getActiveById en scheduling/db/reminder-snapshots-repository.ts), discoverReminders inserta de a un recordatorio (insertIfAbsent) y sendDueReminders lee el contacto de cada uno (getContact). Con muchas citas dentro de la ventana son N consultas por corrida — aceptada en Aprobada verbalmente por Kenny (code reviewer con facultad de decision por regla del PO), registrada el 2026-10-28 en docs/process/DEPENDENCIES.md; el visto bueno escrito de KthArg (PO) sigue pendiente — costo: 5h: API de lote en scheduling (cambio de contrato cross-feature, INT-003) para leer las citas por ids, insercion en lote en notifications y lectura de contactos en lote en clients, con sus pruebas de integracion
+- notifications: A4: el cron entra autenticado como una cuenta admin completa (NOTIFICATIONS_CRON_EMAIL/NOTIFICATIONS_CRON_PASSWORD) en vez de un rol dedicado con solo los permisos de notifications_reminders y las lecturas que necesita. La decision de arquitectura (rol dedicado) esta pendiente de ADR, del lider/PO — aceptada en Aprobada verbalmente por Kenny (code reviewer con facultad de decision por regla del PO), registrada el 2026-10-28 en docs/process/DEPENDENCIES.md; el visto bueno escrito de KthArg (PO) sigue pendiente — costo: 4h: ADR, rol dedicado con politicas RLS minimas, cuenta del cron con ese rol y su pgTAP de aislamiento
+- notifications: B5: reschedulePending cambia startsAt, techniqueName y sendAt pero no reinicia attempts ni last_error; un recordatorio reprogramado hereda los intentos gastados antes del cambio — aceptada en Aprobada verbalmente por Kenny (code reviewer con facultad de decision por regla del PO), registrada el 2026-10-28 en docs/process/DEPENDENCIES.md; el visto bueno escrito de KthArg (PO) sigue pendiente — costo: 1h: reiniciar attempts y last_error en reschedulePending, con prueba de integracion
+- notifications: B6: una cita reservada con menos de 24h de anticipacion manda su recordatorio en el siguiente ciclo (buildReminder solo exige que la cita empiece despues de createdAt, el recordatorio queda con sendAt en el pasado y el siguiente claim lo reclama). Si eso debe enviarse o no es regla de producto, decision del PO — aceptada en Aprobada verbalmente por Kenny (code reviewer con facultad de decision por regla del PO), registrada el 2026-10-28 en docs/process/DEPENDENCIES.md; el visto bueno escrito de KthArg (PO) sigue pendiente — costo: 3h: decision del PO (enviar de inmediato o no enviar) y ajuste de computeReminderSendAt/discoverReminders con sus pruebas
 - store: Prueba de aislamiento RLS (SEC-002) de las politicas store_products_*_admin (supabase/migrations/20260912000000_store_products.sql): src/features/store/__tests__/products-admin-rls.test.ts se omite con describe.skipIf cuando no hay Supabase local, y CI no lo levanta, asi que no demuestra que anon y una clienta sin rol de staff no puedan INSERT, UPDATE ni DELETE — aceptada en PR de cierre us/US-PROD-02 a main — costo: 1h si ya existe el arnes de Supabase local en CI de la deuda de auth (PR #3); 3h si no: arnes mas correr la suite existente en CI
 - store: Prueba de aislamiento (SEC-002) del bucket store-product-images: src/features/store/__tests__/product-images-storage-rls.test.ts se omite sin Supabase local y CI no lo levanta, asi que no demuestra que anon y una clienta no puedan subir, listar ni borrar — aceptada en PR de la pieza US-PROD-03 1/8 — costo: el mismo arnes de la deuda anterior; con el arnes, 0h extra
 - store: Las server actions de Next aceptan 1 MB por defecto y next.config.js no lo cambia: una imagen de entre ~1 MB y 2 MB pasa validateProductImage pero Next corta la peticion antes con un error generico; el formulario dice 'hasta 1 MB' — aceptada en PR de la pieza US-PROD-03 8/8 — costo: 1 linea en next.config.js (experimental.serverActions.bodySizeLimit '3mb') y cambiar el texto del campo; decision pendiente de investigar

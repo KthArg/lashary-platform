@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-21
+actualizado: 2026-10-26
 historias:
   - id: US-CLI-01
     estado: en_progreso
@@ -178,6 +178,24 @@ También exporta `ClientsPagination` y `ClientsNameFilter`. Para la ficha y el e
 `readAppointmentHistory` con `ReadAppointmentHistoryResult` y `HISTORY_LABELS`.
 `src/features/clients/client.ts` es la entrada para código del navegador (`error.tsx`): solo
 `LoadError`, `RECORD_LABELS` y `HISTORY_LABELS`, sin nada de servidor.
+
+`getClientContactForReminders` (US-NOT-03, ARCH-005): lectura pública de solo teléfono y email
+para que `notifications` nunca consulte `clients_profiles` directo. Hace su propia consulta
+pidiendo solo `phone, email` — corregido en la auditoría del líder del 2026-10-23 (hallazgo M5):
+antes reusaba `getClient`, que trae todas las columnas (incluida `notes`, el dato más sensible de
+la feature) y las descartaba después de leerlas; ahora `notes` ni se pide. Sin
+`requireAdminSession` — es para el cron, sin cookies; la RLS de `clients_profiles` sigue siendo la
+frontera real (SEC-001). Sin comentarios en el código: el porqué vive aquí. La consulta en sí vive
+en `db/reminder-contact-repository.ts` (revisión del líder del 2026-10-26: antes vivía directo en
+`reminders-api.ts`, mezclando la capa pública con la consulta a Supabase); `reminders-api.ts`
+solo resuelve el `SupabaseClient` por defecto (cookies) o usa el que el cron le pasa, y delega.
+Consumidor: `notifications/index.ts`. `clientRepository` (`db/client-repository.ts`, otra función,
+sin relación con esta lectura) perdió su parámetro `db` inyectable: nadie en el repo lo llamaba con
+un cliente real desde que esta lectura dejó de reusarlo (M5) — quedaba sin uso.
+Prueba de integración contra Supabase local (A6 de la auditoría, 2026-10-24):
+`__tests__/reminders-api.integration.test.ts` — trae `phone`/`email` de una clienta real sembrada
+con una nota clínica real (prueba que `notes` nunca sale), `null` para una clienta inexistente, y
+anon no lee ningún contacto (SEC-002).
 
 ## Invariantes
 

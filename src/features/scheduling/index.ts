@@ -30,3 +30,9 @@ export {
 export async function listClientAppointments(query: ListClientAppointmentsQuery) {
   return listClientAppointmentsUseCase(await clientAppointmentsRepository())(query)
 }
+
+export {
+  listAppointmentsForReminders as listSchedulingAppointmentsForReminders,
+  getAppointmentForReminder as getSchedulingAppointmentForReminder,
+} from './reminders-api'
+export type { AppointmentReminderSnapshot, ReminderSnapshotsWindow } from './application/ports'
