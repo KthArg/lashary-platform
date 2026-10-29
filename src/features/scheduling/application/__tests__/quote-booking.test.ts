@@ -11,6 +11,8 @@ const quote: BookingQuote = {
   durationMin: 60,
   bufferMin: 15,
   depositDue: 10000,
+  promotionId: null,
+  discountPercent: null,
 }
 
 function createFakeQuoteRepository(result: Awaited<ReturnType<BookingQuoteRepository['quote']>>) {

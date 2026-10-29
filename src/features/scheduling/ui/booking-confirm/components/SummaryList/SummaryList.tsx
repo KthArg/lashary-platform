@@ -19,6 +19,11 @@ export function SummaryList({ summary }: SummaryListProps) {
         <dt className={STYLES.term}>{copy.depositLabel}</dt>
         <dd className={STYLES.value}>{summary.deposit}</dd>
       </dl>
+      {summary.promotionNotice && (
+        <p role="note" className={STYLES.notice}>
+          {summary.promotionNotice}
+        </p>
+      )}
       {summary.depositNotice && (
         <p role="note" className={STYLES.notice}>
           {summary.depositNotice}
