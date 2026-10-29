@@ -1,6 +1,6 @@
 # Grafo de dependencias entre historias
 
-> **Autoridad:** qué historia depende de cuál, y qué infraestructura sin historia propia carga cada una (ADR-0007). Se consulta en cada planificación de sprint (INT-007); lo lee `/empezables`. **Lectores:** PO y equipo al planificar; skills. **Estado:** vigente. **Actualizado:** 2026-10-21.
+> **Autoridad:** qué historia depende de cuál, y qué infraestructura sin historia propia carga cada una (ADR-0007). Se consulta en cada planificación de sprint (INT-007); lo lee `/empezables`. **Lectores:** PO y equipo al planificar; skills. **Estado:** vigente. **Actualizado:** 2026-10-29.
 > Derivado del backlog en [../backlog/](../backlog/) (que no trae columna de dependencias). Si el backlog cambia, este archivo se revisa en el mismo PR.
 
 ## Infraestructura sin historia propia (ADR-0007)
@@ -48,7 +48,7 @@ El backlog se mantiene en sus 51 historias; estas capacidades se construyen **de
 | US-AGE-05 reservar | US-AUTH-02, US-AGE-02, US-AGE-03, US-AGE-09, US-AGE-13 | **terminada**; criterio de morosidad **trasladado** a US-MOR-02 (ítem 7 de «Criterios trasladados»); criterios 7 y 10 entregados parciales (registro del 2026-10-19); hereda la alerta del constraint de US-AGE-09 y el criterio de primera vez/re-aplicación de US-AGE-03 (criterios trasladados, ver abajo) |
 | US-AGE-06 cancelar | US-AGE-05 | **terminada**; criterio 5 (notificar a la administradora) **trasladado** a US-NOT-02 (ítem 9 de «Criterios trasladados»); bitácora (de AGE-13); dispara US-NOT-02 |
 | US-AGE-07 bloquear espacios | US-AGE-01 | **US-AGE-04 y US-AGE-10 deben revisar los bloqueos manuales al crear citas**: `scheduling_create_appointment` no lo hace (SPEC de `scheduling`); el selector usa el cálculo del día de US-AGE-02 (terminada); el criterio 4 cambia, para los bloqueos manuales, la advertencia que US-AGE-05 entregó por el criterio 5 de US-AGE-01 (registro del 2026-10-23, aprobado por Kenny, code reviewer con facultad de decisión por regla del PO) |
-| US-AGE-10 reagendar | US-AGE-05 | atómico (DOM-011); debe revisar los bloqueos manuales al crear la cita nueva: `scheduling_create_appointment` no lo hace (US-AGE-07) |
+| US-AGE-10 reagendar | US-AGE-05 | atómico (DOM-011); debe revisar los bloqueos manuales al crear la cita nueva: `scheduling_create_appointment` no lo hace (US-AGE-07); si inserta la cita nueva con clienta en `pending_approval`, el trigger de US-NOT-01 la avisa como reserva nueva: reagendar con `UPDATE` o acordarlo con `notifications` |
 | US-AGE-11 agenda diaria | US-AGE-05, US-CLI-05 | indicador de morosidad **diferido** hasta US-MOR-01; destaca pendientes de US-AGE-09 |
 | US-AGE-12 cerrar cita | US-AGE-11 | **porta el ledger** (el cargo del cierre es su primer asiento) |
 | US-AGE-04 agendar paquete | US-PROD-01, US-AGE-05 | debe revisar los bloqueos manuales al crear las citas: `scheduling_create_appointment` no lo hace (US-AGE-07) |
