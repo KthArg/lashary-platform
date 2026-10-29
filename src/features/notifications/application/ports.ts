@@ -1,5 +1,6 @@
 import type { Result } from '@/shared/result'
 import type { ReminderChannelKind, ReminderSnapshot } from '../domain/reminder'
+import type { InboxNotice } from '../domain/inbox-notice'
 import type { ChannelNotConfigured, ChannelSendFailed } from '../domain/errors'
 
 export type RepositoryFailure = 'repository-failed'
@@ -50,7 +51,17 @@ export interface ReminderRepository {
   markExhausted(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
 }
 
-export type ChannelSendInput = { reminderId: string; contact: ContactInfo; message: string; templateVariables: string[] }
+export type NoticeNotFound = 'notice-not-found'
+
+export type SetReadOutcome = { updated: boolean }
+
+export interface InboxRepository {
+  listRecent(limit: number): Promise<Result<InboxNotice[], RepositoryFailure>>
+  countUnread(): Promise<Result<number, RepositoryFailure>>
+  setReadAt(id: string, readAt: Date | null): Promise<Result<SetReadOutcome, RepositoryFailure>>
+}
+
+export type ChannelSendInput ={ reminderId: string; contact: ContactInfo; message: string; templateVariables: string[] }
 
 export interface NotificationChannel {
   readonly kind: ReminderChannelKind

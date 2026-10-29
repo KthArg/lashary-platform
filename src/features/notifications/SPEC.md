@@ -6,7 +6,7 @@ actualizado: 2026-10-29
 historias:
   - id: US-NOT-01
     estado: en_progreso
-    falta: "pieza 2 de 6: la base ya crea el aviso al reservar; falta el codigo de la app y el panel lateral"
+    falta: "pieza 3 de 6: la base crea el aviso y la app ya lo lee y lo marca; falta la action, el layout que lo carga y el panel lateral"
   - id: US-NOT-02
     estado: no_iniciada
   - id: US-NOT-03
@@ -139,6 +139,12 @@ después, y US-NOT-02 necesita el horario anterior. `read_at` vacío es «no le�
   reserva se guarda, porque la reserva importa más que el aviso. El servicio es la técnica o, en una
   cita de paquete (US-AGE-04), el paquete; un nombre vacío cae a «Clienta» o «Servicio». Prueba:
   `supabase/tests/database/scheduling_notify_booking_created.test.sql`.
+- En la app: `domain/inbox-notice.ts` (`InboxNotice`, `INBOX_LIMIT = 20`), `db/inbox-repository.ts`
+  (los 20 más recientes, conteo de no leídos sin traer filas, `setReadAt`) y `application/inbox.ts`
+  (`loadInbox`, `markNotice` con reloj inyectado, DOM-004). Si la RLS no deja tocar el aviso, el
+  `UPDATE` no afecta filas y se informa `notice-not-found`. Un fallo de la base es error, nunca una
+  bandeja vacía. Pruebas: `domain/__tests__/inbox-notice.test.ts`, `db/__tests__/inbox-repository.test.ts`
+  y `application/__tests__/inbox.test.ts`.
 
 ## Qué no hace todavía
 
