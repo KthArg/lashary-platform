@@ -26,19 +26,16 @@ historias:
 flags: []
 deuda:
   - que: "Consultas una por una: reconcileReminders pide la cita de cada recordatorio pendiente (getActiveById en scheduling/db/reminder-snapshots-repository.ts), discoverReminders inserta de a un recordatorio (insertIfAbsent) y sendDueReminders lee el contacto de cada uno (getContact). Con muchas citas dentro de la ventana son N consultas por corrida"
-    aceptada_en: "Decision del lider del proyecto, 2026-10-27, cierre de US-NOT-03 (PR #577)"
+    aceptada_en: "Aprobada verbalmente por Kenny (code reviewer con facultad de decision por regla del PO), registrada el 2026-10-28 en docs/process/DEPENDENCIES.md; el visto bueno escrito de KthArg (PO) sigue pendiente"
     costo: "5h: API de lote en scheduling (cambio de contrato cross-feature, INT-003) para leer las citas por ids, insercion en lote en notifications y lectura de contactos en lote en clients, con sus pruebas de integracion"
-  - que: "El canal de Twilio (twilio-whatsapp-channel.ts) se construyo y se retiro dentro de la misma pila: el historial de la pila conserva codigo y pruebas de un proveedor que nunca se uso. No queda codigo de Twilio en la feature"
-    aceptada_en: "Decision del lider del proyecto, 2026-10-27, cierre de US-NOT-03 (PR #577); el cambio de proveedor lo registra ADR-0006"
-    costo: "0h de codigo: es antecedente de proceso, ya documentado en ADR-0006 y STATUS.md"
-  - que: "A4: el cron entra autenticado como una cuenta admin completa (NOTIFICATIONS_CRON_EMAIL/NOTIFICATIONS_CRON_PASSWORD) en vez de un rol dedicado con solo los permisos de notifications_reminders y las lecturas que necesita"
-    aceptada_en: "Decision del lider del proyecto, 2026-10-27, cierre de US-NOT-03 (PR #577); la decision de arquitectura sigue pendiente de ADR (lider/PO)"
+  - que: "A4: el cron entra autenticado como una cuenta admin completa (NOTIFICATIONS_CRON_EMAIL/NOTIFICATIONS_CRON_PASSWORD) en vez de un rol dedicado con solo los permisos de notifications_reminders y las lecturas que necesita. La decision de arquitectura (rol dedicado) esta pendiente de ADR, del lider/PO"
+    aceptada_en: "Aprobada verbalmente por Kenny (code reviewer con facultad de decision por regla del PO), registrada el 2026-10-28 en docs/process/DEPENDENCIES.md; el visto bueno escrito de KthArg (PO) sigue pendiente"
     costo: "4h: ADR, rol dedicado con politicas RLS minimas, cuenta del cron con ese rol y su pgTAP de aislamiento"
   - que: "B5: reschedulePending cambia startsAt, techniqueName y sendAt pero no reinicia attempts ni last_error; un recordatorio reprogramado hereda los intentos gastados antes del cambio"
-    aceptada_en: "Decision del lider del proyecto, 2026-10-27, cierre de US-NOT-03 (PR #577)"
+    aceptada_en: "Aprobada verbalmente por Kenny (code reviewer con facultad de decision por regla del PO), registrada el 2026-10-28 en docs/process/DEPENDENCIES.md; el visto bueno escrito de KthArg (PO) sigue pendiente"
     costo: "1h: reiniciar attempts y last_error en reschedulePending, con prueba de integracion"
-  - que: "B6: una cita reservada con menos de 24h de anticipacion no recibe recordatorio inmediato; su sendAt ya paso al crearse y el ciclo la trata como vencida sin avisar a la clienta de que el aviso llegara tarde"
-    aceptada_en: "Decision del lider del proyecto, 2026-10-27, cierre de US-NOT-03 (PR #577); la regla de producto es del PO"
+  - que: "B6: una cita reservada con menos de 24h de anticipacion manda su recordatorio en el siguiente ciclo (buildReminder solo exige que la cita empiece despues de createdAt, el recordatorio queda con sendAt en el pasado y el siguiente claim lo reclama). Si eso debe enviarse o no es regla de producto, decision del PO"
+    aceptada_en: "Aprobada verbalmente por Kenny (code reviewer con facultad de decision por regla del PO), registrada el 2026-10-28 en docs/process/DEPENDENCIES.md; el visto bueno escrito de KthArg (PO) sigue pendiente"
     costo: "3h: decision del PO (enviar de inmediato o no enviar) y ajuste de computeReminderSendAt/discoverReminders con sus pruebas"
 defectos: []
 ---
