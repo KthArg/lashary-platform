@@ -85,12 +85,6 @@ export interface InvalidCancellationWindow {
   readonly message: string
 }
 
-export interface PackageHasNoTechniques {
-  readonly code: 'SCHEDULING_PACKAGE_HAS_NO_TECHNIQUES'
-  readonly packageId: string
-  readonly message: string
-}
-
 export interface AppointmentNotCancellable {
   readonly code: 'SCHEDULING_APPOINTMENT_NOT_CANCELLABLE'
   readonly appointmentId: string
@@ -113,7 +107,6 @@ export type SchedulingError =
   | AppointmentNotCancellable
   | CancellationConsequenceChanged
   | InvalidCancellationWindow
-  | PackageHasNoTechniques
 
 export const techniqueNotSelectable = (
   techniqueId: string,
@@ -211,10 +204,4 @@ export const invalidCancellationWindow = (hours: number): InvalidCancellationWin
   code: 'SCHEDULING_INVALID_CANCELLATION_WINDOW',
   hours,
   message: `la ventana de cancelación debe ser un número entero de horas, no negativo y de hasta 30 días: ${hours}`,
-})
-
-export const packageHasNoTechniques = (packageId: string): PackageHasNoTechniques => ({
-  code: 'SCHEDULING_PACKAGE_HAS_NO_TECHNIQUES',
-  packageId,
-  message: `el paquete ${packageId} no tiene ninguna técnica incluida`,
 })
