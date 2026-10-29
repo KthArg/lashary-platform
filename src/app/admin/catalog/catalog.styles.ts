@@ -7,7 +7,6 @@ export const catalogStyles = {
   retryButton: 'btn btn-outline btn-sm mt-4',
   loadingBox: 'flex items-center gap-3 rounded-box border border-base-300 p-10',
   spinner: 'loading loading-spinner',
-  // Encabezado de sección igual al de Dashboard, Citas y Clientas.
   sectionHeader: 'space-y-4 border-b border-brand-border',
   sectionTitle: 'font-serif text-2xl md:text-3xl font-bold text-brand-dark',
   sectionSubtitle: 'text-sm text-brand-muted mt-1',

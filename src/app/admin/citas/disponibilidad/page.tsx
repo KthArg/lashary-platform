@@ -1,4 +1,3 @@
-// La UI vive en la feature (ARCH-003); esta ruta solo la compone.
 import { AdminAvailabilityPage } from '@/features/scheduling'
 
 export const metadata = {

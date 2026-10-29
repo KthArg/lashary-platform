@@ -2,8 +2,6 @@ import { describe, it, expect } from 'vitest'
 import path from 'node:path'
 import { createRequire } from 'node:module'
 
-// UI-004: contraste WCAG AA de los pares que usa el sitio público. Si alguien cambia un color
-// del tema `lashary-site` y rompe un par, esto falla antes de que llegue a una pantalla.
 const require = createRequire(import.meta.url)
 const config = require(path.resolve(__dirname, '../../../tailwind.config.js'))
 const site: Record<string, string> = config.theme.extend.colors.site
