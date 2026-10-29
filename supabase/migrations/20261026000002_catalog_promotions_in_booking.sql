@@ -1,4 +1,4 @@
--- 20261020000000_catalog_promotions_in_booking.sql
+-- 20261026000002_catalog_promotions_in_booking.sql
 -- US-PROM-01 · features catalog y scheduling — la promoción vigente se aplica al reservar.
 -- Decisión del líder del proyecto (comunicada por Erick Duran, 2026-10-20, ver DEPENDENCIES.md):
 -- solo técnicas por ahora (paquetes queda diferido a US-AGE-04) y la cita debe guardar QUÉ
