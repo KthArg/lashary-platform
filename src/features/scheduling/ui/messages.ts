@@ -25,6 +25,9 @@ export const schedulingMessages = {
     accessDenied: 'Iniciá sesión como clienta para agendar una cita.',
     pickOne: 'Elegí una técnica de la lista.',
     seeSlots: 'Ver espacios disponibles',
+    choosePackage: 'O elegí un paquete',
+    packageDuration: (minutes: number) => `Tiempo total: ${minutes} min`,
+    seePackageSlots: 'Ver espacios disponibles',
   },
   availability: {
     title: 'Disponibilidad de la agenda',
