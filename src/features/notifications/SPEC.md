@@ -2,7 +2,7 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-27
+actualizado: 2026-10-28
 historias:
   - id: US-NOT-01
     estado: no_iniciada
@@ -10,7 +10,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-03
     estado: terminada
-    evidencia: "PR de cierre #577 (us/US-NOT-03 a main), con 23 piezas apiladas hacia la rama de la historia. Criterio 1 (envío automático 24h antes): computeReminderSendAt y discoverReminders; domain/__tests__/reminder.test.ts, application/__tests__/discover-reminders.test.ts. Criterio 2 (mensaje con fecha, hora y técnica): domain/reminder-message.ts (REMINDER_MESSAGE_TEXTS, formatStudioDateTime); domain/__tests__/reminder-message.test.ts, application/__tests__/send-due-reminders.test.ts. Criterio 3 (cancela o reprograma si la cita cambia): reconcile-reminders.ts; application/__tests__/reconcile-reminders.test.ts, incluida la corrección del líder del 2026-10-26 (libera el reclamo vencido antes de leer lo pendiente, para que la misma corrida cancele si la cita ya no es válida). Criterio 4 (reintenta y queda registrado): send-due-reminders.ts (MAX_REMINDER_ATTEMPTS), reclamo atómico FOR UPDATE SKIP LOCKED con TTL y tandas (notifications_claim_due_reminders, notifications_release_expired_claims); application/__tests__/send-due-reminders.test.ts, db/__tests__/reminder-repository.integration.test.ts (A6, contra Supabase local, incluido el reclamo doble simultáneo) y pgTAP notifications_reminders_staff_access.test.sql (13 aserciones, SEC-001/002). Decisión del líder del proyecto, comunicada el 2026-10-27: la historia pasa de en_progreso a terminada porque lo que falta —plantilla de WhatsApp aprobada por Meta, número de WhatsApp Business real, contenido del mensaje de la dueña del negocio, dominio verificado en Resend, disparo vía GitHub Actions, cuenta de staff del cron en producción— ya no es código sino configuración externa y decisiones de negocio; queda como checklist de activación para producción en la sección «Antes de producción» de este SPEC, no como deuda de la historia. A4 (rol dedicado del cron, sin ADR), B5 (reschedulePending no reinicia attempts/last_error) y B6 (recordatorio inmediato si la cita se reserva con menos de 24h) quedan como faltantes con dueño (líder/PO), documentados en este SPEC; B8 (opt-in de WhatsApp) ya está cubierto por la fila de US-NOT-06 en docs/process/DEPENDENCIES.md."
+    evidencia: "PR de cierre #577 (us/US-NOT-03 a main), con 23 piezas apiladas hacia la rama de la historia. Criterio 1 (envío automático 24h antes): computeReminderSendAt y discoverReminders; domain/__tests__/reminder.test.ts, application/__tests__/discover-reminders.test.ts. Criterio 2 (mensaje con fecha, hora y técnica): domain/reminder-message.ts (REMINDER_MESSAGE_TEXTS, formatStudioDateTime); domain/__tests__/reminder-message.test.ts, application/__tests__/send-due-reminders.test.ts. Criterio 3 (cancela o reprograma si la cita cambia): reconcile-reminders.ts; application/__tests__/reconcile-reminders.test.ts, incluida la corrección del líder del 2026-10-26 (libera el reclamo vencido antes de leer lo pendiente, para que la misma corrida cancele si la cita ya no es válida). Criterio 4 (reintenta y queda registrado): send-due-reminders.ts (MAX_REMINDER_ATTEMPTS), reclamo atómico FOR UPDATE SKIP LOCKED con TTL y tandas (notifications_claim_due_reminders, notifications_release_expired_claims); application/__tests__/send-due-reminders.test.ts, db/__tests__/reminder-repository.integration.test.ts (A6, contra Supabase local, incluido el reclamo doble simultáneo) y pgTAP notifications_reminders_staff_access.test.sql (13 aserciones, SEC-001/002). Decisión del líder del proyecto, comunicada el 2026-10-27: la historia pasa de en_progreso a terminada porque lo que falta —plantilla de WhatsApp aprobada por Meta, número de WhatsApp Business real, contenido del mensaje de la dueña del negocio, dominio verificado en Resend, disparo vía GitHub Actions, cuenta de staff del cron en producción— ya no es código sino configuración externa y decisiones de negocio; queda como checklist de activación para producción en la sección «Antes de producción» de este SPEC, no como deuda de la historia. A4 (rol dedicado del cron, sin ADR), B5 (reschedulePending no reinicia attempts/last_error) y B6 (recordatorio inmediato si la cita se reserva con menos de 24h) quedan registrados en `deuda` del frontmatter, con dueño (líder/PO); B8 (opt-in de WhatsApp) ya está cubierto por la fila de US-NOT-06 en docs/process/DEPENDENCIES.md."
   - id: US-NOT-04
     estado: no_iniciada
   - id: US-NOT-05
@@ -24,7 +24,22 @@ historias:
   - id: US-CLI-06
     estado: no_iniciada
 flags: []
-deuda: []
+deuda:
+  - que: "Consultas una por una: reconcileReminders pide la cita de cada recordatorio pendiente (getActiveById en scheduling/db/reminder-snapshots-repository.ts), discoverReminders inserta de a un recordatorio (insertIfAbsent) y sendDueReminders lee el contacto de cada uno (getContact). Con muchas citas dentro de la ventana son N consultas por corrida"
+    aceptada_en: "Decision del lider del proyecto, 2026-10-27, cierre de US-NOT-03 (PR #577)"
+    costo: "5h: API de lote en scheduling (cambio de contrato cross-feature, INT-003) para leer las citas por ids, insercion en lote en notifications y lectura de contactos en lote en clients, con sus pruebas de integracion"
+  - que: "El canal de Twilio (twilio-whatsapp-channel.ts) se construyo y se retiro dentro de la misma pila: el historial de la pila conserva codigo y pruebas de un proveedor que nunca se uso. No queda codigo de Twilio en la feature"
+    aceptada_en: "Decision del lider del proyecto, 2026-10-27, cierre de US-NOT-03 (PR #577); el cambio de proveedor lo registra ADR-0006"
+    costo: "0h de codigo: es antecedente de proceso, ya documentado en ADR-0006 y STATUS.md"
+  - que: "A4: el cron entra autenticado como una cuenta admin completa (NOTIFICATIONS_CRON_EMAIL/NOTIFICATIONS_CRON_PASSWORD) en vez de un rol dedicado con solo los permisos de notifications_reminders y las lecturas que necesita"
+    aceptada_en: "Decision del lider del proyecto, 2026-10-27, cierre de US-NOT-03 (PR #577); la decision de arquitectura sigue pendiente de ADR (lider/PO)"
+    costo: "4h: ADR, rol dedicado con politicas RLS minimas, cuenta del cron con ese rol y su pgTAP de aislamiento"
+  - que: "B5: reschedulePending cambia startsAt, techniqueName y sendAt pero no reinicia attempts ni last_error; un recordatorio reprogramado hereda los intentos gastados antes del cambio"
+    aceptada_en: "Decision del lider del proyecto, 2026-10-27, cierre de US-NOT-03 (PR #577)"
+    costo: "1h: reiniciar attempts y last_error en reschedulePending, con prueba de integracion"
+  - que: "B6: una cita reservada con menos de 24h de anticipacion no recibe recordatorio inmediato; su sendAt ya paso al crearse y el ciclo la trata como vencida sin avisar a la clienta de que el aviso llegara tarde"
+    aceptada_en: "Decision del lider del proyecto, 2026-10-27, cierre de US-NOT-03 (PR #577); la regla de producto es del PO"
+    costo: "3h: decision del PO (enviar de inmediato o no enviar) y ajuste de computeReminderSendAt/discoverReminders con sus pruebas"
 defectos: []
 ---
 
@@ -36,7 +51,7 @@ US-NOT-03 (ADR-0007); el resto lo reusa vía el puerto que US-NOT-08 exige.
 
 ## Qué hace hoy
 
-`US-NOT-03` en progreso: primer código de la feature, el canal completo.
+`US-NOT-03` terminada: el canal completo de recordatorios. Lo que queda abierto está en `deuda` del frontmatter y en «Antes de producción».
 
 - Capa `domain/` (`reminder.ts`): `buildReminder` construye el recordatorio con sus invariantes
   (campos no vacíos, la cita debe empezar después de cuándo se programa) y calcula `sendAt` 24h
@@ -250,7 +265,7 @@ misma fila dos veces (`FOR UPDATE SKIP LOCKED` probado de punta a punta, no solo
 SQL, como en la pieza 20). También RLS: anon no lee ni escribe.
 
 Corrida contra Supabase local el 2026-10-24: 12/12 en verde, suite completa del proyecto y pgTAP
-sin romper nada. `deuda` del frontmatter de `notifications` queda vacío — era justo esta prueba.
+sin romper nada. La deuda de A6 (esta prueba) queda pagada.
 
 ## Tercera revisión del líder (2026-10-26): el reclamo se separa en dos, y se asegura el acceso
 
@@ -326,11 +341,10 @@ recordatorio real le llegue a una clienta; es un checklist de activación, no de
    clienta. Falta el dominio real del negocio y sus registros DNS (SPF/DKIM) verificados en Resend.
 4. **Probar el ciclo automático completo (criterios 1 y 3).** Lo probado hasta ahora es
    `sendDueReminders` (criterios 2 y 4: enviar, reintentar, marcar estado) contra `lashary-pruebas`,
-   con una cuenta de staff y un cliente reales — pero esa base no tiene `scheduling_appointments`,
-   así que `discoverReminders` (criterio 1: detectar la cita 24h antes) y `reconcileReminders`
-   (criterio 3: cancelar o reprogramar si la cita cambia) nunca se corrieron contra datos reales,
-   solo contra dobles de prueba en los tests unitarios. Hace falta un entorno con `scheduling`
-   completo para esa prueba de punta a punta.
+   con una cuenta de staff y un cliente reales. `lashary-pruebas` ya tiene `scheduling` y las
+   migraciones de `notifications`, así que `discoverReminders` (criterio 1: detectar la cita 24h
+   antes) y `reconcileReminders` (criterio 3: cancelar o reprogramar si la cita cambia) se pueden
+   probar ahí de punta a punta; falta correr esa prueba con datos reales.
 5. **Disparo automático en producción.** `vercel.json` pide una corrida cada 15 minutos, pero el
    plan Hobby de Vercel solo permite cron jobs una vez al día. Decisión del líder (2026-10-21): se
    resuelve con GitHub Actions cuando el proyecto se despliegue, no ahora.
