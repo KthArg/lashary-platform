@@ -16,7 +16,7 @@ describe('readSystemClientConfigFromEnv', () => {
 })
 
 describe('closeSystemClient', () => {
-  it('cierra solo la sesión local, no todas las de la cuenta (corrección del líder, 2026-10-24)', async () => {
+  it('cierra solo la sesión local, no todas las de la cuenta', async () => {
     const signOut = vi.fn(async () => ({ error: null }))
     const fakeClient = { auth: { signOut } } as unknown as SupabaseClient
 

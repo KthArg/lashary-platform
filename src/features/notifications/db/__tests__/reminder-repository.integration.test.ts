@@ -182,7 +182,7 @@ describe.skipIf(!reachable)('reminderRepository (Supabase local)', () => {
     expect(data?.claimed_at).not.toBeNull()
   })
 
-  it('claimDuePending nunca reclama una fila claimed, aunque su reclamo esté vencido (ya no es su trabajo, corrección del líder, 2026-10-26)', async () => {
+  it('claimDuePending nunca reclama una fila claimed, aunque su reclamo esté vencido (ya no es su trabajo)', async () => {
     const upsert = newUpsert({ sendAt: new Date('2030-01-01T00:00:00Z') })
     track(upsert.id)
     await repo.insertIfAbsent(upsert)
@@ -198,7 +198,7 @@ describe.skipIf(!reachable)('reminderRepository (Supabase local)', () => {
     expect(secondClaim.value.map((r) => r.id)).not.toContain(upsert.id)
   })
 
-  it('releaseExpiredClaims vuelve a pending lo que lleva claimed más del TTL, y no toca lo vigente (corrección del líder, 2026-10-26)', async () => {
+  it('releaseExpiredClaims vuelve a pending lo que lleva claimed más del TTL, y no toca lo vigente', async () => {
     const expiredUpsert = newUpsert({ sendAt: new Date('2030-01-01T00:00:00Z') })
     track(expiredUpsert.id)
     await repo.insertIfAbsent(expiredUpsert)

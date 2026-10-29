@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { ok, err, isOk } from '@/shared/result'
 import { fixedClock, fixedDate } from '@/shared/testing/fixed-clock'
 import { reconcileReminders } from '../reconcile-reminders'
@@ -106,7 +106,7 @@ describe('reconcileReminders', () => {
     expect(rescheduled).toHaveLength(0)
   })
 
-  it('libera un reclamo vencido antes de leer lo pendiente, así la misma corrida lo cancela si la cita ya no es válida (corrección del líder, 2026-10-26)', async () => {
+  it('libera un reclamo vencido antes de leer lo pendiente, así la misma corrida lo cancela si la cita ya no es válida', async () => {
     const callOrder: string[] = []
     const releasedReminder: ReminderSnapshot = {
       ...pendingReminder, id: 'rem-2', appointmentId: 'appt-2', status: 'pending',
@@ -139,5 +139,19 @@ describe('reconcileReminders', () => {
     expect(callOrder).toEqual(['releaseExpiredClaims', 'listPending'])
     expect(result.value).toEqual({ releasedExpiredClaims: 1, cancelled: 1, rescheduled: 0, failed: 0 })
     expect(cancelledIds).toEqual(['appt-2'])
+  })
+
+  it('registra el motivo y aborta el ciclo si falla la liberación de reclamos vencidos', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { deps } = buildDeps(null)
+
+    const result = await reconcileReminders({
+      ...deps,
+      releaseExpiredClaims: async () => err('repository-failed' as const),
+    })()
+
+    expect(isOk(result)).toBe(false)
+    expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('repository-failed'))
+    consoleError.mockRestore()
   })
 })

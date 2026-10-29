@@ -165,7 +165,7 @@ describe('sendDueReminders', () => {
     expect(error.length).toBeLessThanOrEqual(501)
   })
 
-  it('libera a pending (sin gastar intentos) si falla la lectura del contacto (corrección del líder, 2026-10-24)', async () => {
+  it('libera a pending (sin gastar intentos) si falla la lectura del contacto', async () => {
     const { deps, releasedIds, retryCalls, exhaustedCalls } = buildDeps({ contactReadFails: true })
 
     const result = await sendDueReminders(deps)()

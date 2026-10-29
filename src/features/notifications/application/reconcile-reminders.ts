@@ -28,7 +28,10 @@ export const reconcileReminders =
     const now = deps.clock()
 
     const released = await deps.releaseExpiredClaims(now)
-    if (isErr(released)) return released
+    if (isErr(released)) {
+      console.error(`[notifications] no se pudieron liberar los reclamos vencidos, el ciclo se aborta: ${released.error}`)
+      return released
+    }
 
     const pending = await deps.listPending()
     if (isErr(pending)) return pending
