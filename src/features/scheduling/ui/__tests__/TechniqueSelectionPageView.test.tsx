@@ -21,26 +21,20 @@ describe('TechniqueSelectionPageView', () => {
   })
 
   it('ok: ofrece un enlace a mis citas, con técnicas o sin ellas, para llegar a cancelar sin escribir la URL', () => {
-    const { unmount } = render(
-      <TechniqueSelectionPageView data={{ status: 'ok', techniques: [], packages: [] }} />,
-    )
+    const { unmount } = render(<TechniqueSelectionPageView data={{ status: 'ok', techniques: [] }} />)
     expect(screen.getByRole('link', { name: schedulingMessages.page.myAppointments }).getAttribute('href')).toBe(
       MY_APPOINTMENTS_PATH,
     )
     unmount()
 
-    render(
-      <TechniqueSelectionPageView
-        data={{ status: 'ok', techniques: [{ id: 't1', name: 'Volumen ruso' }], packages: [] }}
-      />,
-    )
+    render(<TechniqueSelectionPageView data={{ status: 'ok', techniques: [{ id: 't1', name: 'Volumen ruso' }] }} />)
     expect(screen.getByRole('link', { name: schedulingMessages.page.myAppointments }).getAttribute('href')).toBe(
       MY_APPOINTMENTS_PATH,
     )
   })
 
   it('ok sin técnicas: estado vacío (UI-003)', () => {
-    render(<TechniqueSelectionPageView data={{ status: 'ok', techniques: [], packages: [] }} />)
+    render(<TechniqueSelectionPageView data={{ status: 'ok', techniques: [] }} />)
 
     expect(screen.getByText(schedulingMessages.page.empty)).toBeTruthy()
   })
@@ -48,38 +42,10 @@ describe('TechniqueSelectionPageView', () => {
   it('ok con técnicas: renderiza el selector', () => {
     render(
       <TechniqueSelectionPageView
-        data={{ status: 'ok', techniques: [{ id: 't1', name: 'Volumen ruso' }], packages: [] }}
+        data={{ status: 'ok', techniques: [{ id: 't1', name: 'Volumen ruso' }] }}
       />,
     )
 
     expect(screen.getByText('Volumen ruso')).toBeTruthy()
-  })
-
-  it('ok con paquetes: el cliente puede elegir un paquete en vez de una técnica (US-AGE-04, criterio 1)', () => {
-    render(
-      <TechniqueSelectionPageView
-        data={{
-          status: 'ok',
-          techniques: [{ id: 't1', name: 'Volumen ruso' }],
-          packages: [{ id: 'p1', name: 'Combo clásicas', durationTotalMin: 110 }],
-        }}
-      />,
-    )
-
-    expect(screen.getByText('Combo clásicas')).toBeTruthy()
-    expect(screen.getByText(schedulingMessages.selector.packageDuration(110))).toBeTruthy()
-    expect(
-      screen.getByRole('link', { name: schedulingMessages.selector.seePackageSlots }).getAttribute('href'),
-    ).toBe('/portal/citas/calendario?servicio=pkg%3Ap1')
-  })
-
-  it('sin paquetes activos, la sección de paquetes no se muestra', () => {
-    render(
-      <TechniqueSelectionPageView
-        data={{ status: 'ok', techniques: [{ id: 't1', name: 'Volumen ruso' }], packages: [] }}
-      />,
-    )
-
-    expect(screen.queryByText(schedulingMessages.selector.choosePackage)).toBeNull()
   })
 })

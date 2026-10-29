@@ -1,20 +1,14 @@
 import { getAuthSession, AUTH_ROLES } from '@/features/auth'
-import { listPackages, listTechniques } from '@/features/catalog'
+import { listTechniques } from '@/features/catalog'
 
 export type SelectableTechniqueOption = {
   id: string
   name: string
 }
 
-export type SelectablePackageOption = {
-  id: string
-  name: string
-  durationTotalMin: number
-}
-
 export type TechniqueSelectionPageData =
   | { status: 'forbidden' }
-  | { status: 'ok'; techniques: SelectableTechniqueOption[]; packages: SelectablePackageOption[] }
+  | { status: 'ok'; techniques: SelectableTechniqueOption[] }
 
 export async function loadTechniqueSelectionPageData(): Promise<TechniqueSelectionPageData> {
   const session = await getAuthSession()
@@ -22,14 +16,10 @@ export async function loadTechniqueSelectionPageData(): Promise<TechniqueSelecti
     return { status: 'forbidden' }
   }
 
-  const [{ items: techniques }, { items: packages }] = await Promise.all([
-    listTechniques({ activeOnly: true, pageSize: 100 }),
-    listPackages({ activeOnly: true, pageSize: 100 }),
-  ])
+  const { items } = await listTechniques({ activeOnly: true, pageSize: 100 })
 
   return {
     status: 'ok',
-    techniques: techniques.map((technique) => ({ id: technique.id, name: technique.name })),
-    packages: packages.map((pkg) => ({ id: pkg.id, name: pkg.name, durationTotalMin: pkg.durationTotalMin })),
+    techniques: items.map((technique) => ({ id: technique.id, name: technique.name })),
   }
 }
