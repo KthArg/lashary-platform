@@ -213,6 +213,7 @@ export interface AlertsRepository {
   listRecent(limit: number): Promise<Result<SchedulingAlert[], StorageFailed>>
 }
 
+// Devuelve hasta DAILY_AGENDA_LIMIT + 1 citas, por inicio: la de más dice que el día no cabe entero.
 export interface DailyAgendaRepository {
   listBetween(fromMs: number, untilMs: number): Promise<Result<AgendaAppointment[], StorageFailed>>
 }

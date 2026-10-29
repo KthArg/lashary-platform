@@ -45,6 +45,7 @@ describe('getDailyAgenda', () => {
     expect(repo.calls).toEqual([[Date.parse('2027-03-01T06:00:00Z'), Date.parse('2027-03-02T06:00:00Z')]])
     expect(result.value.date).toBe('2027-03-01')
     expect(result.value.entries).toHaveLength(1)
+    expect(result.value.isTruncated).toBe(false)
     expect(result.value.entries[0]).toMatchObject({ id: 'cita-1', durationMin: 60, paymentStatus: 'covered' })
   })
 

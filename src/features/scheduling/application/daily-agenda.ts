@@ -1,5 +1,5 @@
 import { isErr, ok, err, type Result } from '@/shared/result'
-import { buildAgenda, studioDayRange, type AgendaEntry } from '../domain/daily-agenda'
+import { limitAgenda, studioDayRange, type AgendaEntry } from '../domain/daily-agenda'
 import type { DailyAgendaInvalid } from '../domain/availability-errors'
 import type { StorageFailed } from '../domain/errors'
 import type { DailyAgendaRepository } from './ports'
@@ -11,6 +11,7 @@ export type DailyAgendaDeps = {
 export type DailyAgenda = {
   date: string
   entries: AgendaEntry[]
+  isTruncated: boolean
 }
 
 export const getDailyAgenda =
@@ -22,5 +23,5 @@ export const getDailyAgenda =
     const appointments = await deps.repo.listBetween(range.value.fromMs, range.value.untilMs)
     if (isErr(appointments)) return err(appointments.error)
 
-    return ok({ date, entries: buildAgenda(appointments.value) })
+    return ok({ date, ...limitAgenda(appointments.value) })
   }

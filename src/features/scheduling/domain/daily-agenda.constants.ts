@@ -23,3 +23,7 @@ export const AGENDA_APPOINTMENT_STATUSES = [
 ] as const
 
 export type AgendaAppointmentStatus = (typeof AGENDA_APPOINTMENT_STATUSES)[number]
+
+// Tope de citas que la agenda pinta en un día (PERF-002). Las rechazadas no ocupan espacio, así que un día
+// puede pasar de los 48 espacios de 30 minutos: si llegan más, la agenda lo avisa en vez de cortar callada.
+export const DAILY_AGENDA_LIMIT = 100

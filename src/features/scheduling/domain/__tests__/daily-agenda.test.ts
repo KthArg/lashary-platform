@@ -4,11 +4,12 @@ import { isDailyAgendaInvalid } from '../availability-errors'
 import {
   buildAgenda,
   derivePaymentStatus,
+  limitAgenda,
   studioDayRange,
   toAgendaEntry,
   type AgendaAppointment,
 } from '../daily-agenda'
-import { DEPOSIT_PAYMENT_STATUS } from '../daily-agenda.constants'
+import { DAILY_AGENDA_LIMIT, DEPOSIT_PAYMENT_STATUS } from '../daily-agenda.constants'
 
 const baseAppointment: AgendaAppointment = {
   id: 'cita-1',
@@ -142,5 +143,27 @@ describe('buildAgenda', () => {
 
   it('un día sin citas da una agenda vacía', () => {
     expect(buildAgenda([])).toEqual([])
+  })
+})
+
+describe('limitAgenda', () => {
+  const day = (count: number): AgendaAppointment[] =>
+    Array.from({ length: count }, (_, index) => ({
+      ...baseAppointment,
+      id: `cita-${String(index).padStart(3, '0')}`,
+      startsAtMs: baseAppointment.startsAtMs + index * 60_000,
+    }))
+
+  it('hasta el tope pinta todas y no avisa', () => {
+    const agenda = limitAgenda(day(DAILY_AGENDA_LIMIT))
+    expect(agenda.entries).toHaveLength(DAILY_AGENDA_LIMIT)
+    expect(agenda.isTruncated).toBe(false)
+  })
+
+  it('pasado el tope pinta las primeras y avisa que hay más (PERF-002)', () => {
+    const agenda = limitAgenda(day(DAILY_AGENDA_LIMIT + 1))
+    expect(agenda.entries).toHaveLength(DAILY_AGENDA_LIMIT)
+    expect(agenda.entries.at(-1)?.id).toBe(`cita-${String(DAILY_AGENDA_LIMIT - 1).padStart(3, '0')}`)
+    expect(agenda.isTruncated).toBe(true)
   })
 })

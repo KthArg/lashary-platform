@@ -2,6 +2,7 @@ import { ok, err, type Result } from '@/shared/result'
 import { addCalendarDays, isCalendarDate, studioLocalToUtc } from '@/shared/studio-time'
 import { dailyAgendaInvalid, type DailyAgendaInvalid } from './availability-errors'
 import {
+  DAILY_AGENDA_LIMIT,
   DEPOSIT_PAYMENT_STATUS,
   MS_PER_MINUTE,
   type AgendaAppointmentStatus,
@@ -87,4 +88,17 @@ export function buildAgenda(appointments: readonly AgendaAppointment[]): AgendaE
       (left, right) =>
         left.startsAtMs - right.startsAtMs || rejectedLast(left) - rejectedLast(right) || left.id.localeCompare(right.id),
     )
+}
+
+export interface DailyAgendaEntries {
+  readonly entries: AgendaEntry[]
+  readonly isTruncated: boolean
+}
+
+// Pinta hasta DAILY_AGENDA_LIMIT citas y dice si quedaron otras fuera.
+export function limitAgenda(appointments: readonly AgendaAppointment[]): DailyAgendaEntries {
+  return {
+    entries: buildAgenda(appointments).slice(0, DAILY_AGENDA_LIMIT),
+    isTruncated: appointments.length > DAILY_AGENDA_LIMIT,
+  }
 }
