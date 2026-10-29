@@ -14,6 +14,11 @@ export function MyAppointmentCard({ appointment, onCancelled }: MyAppointmentCar
       </p>
       {appointment.amounts && <p className={STYLES.amounts}>{appointment.amounts}</p>}
       <p className={STYLES.status}>{appointment.status}</p>
+      {appointment.heldNote && (
+        <p role="note" className={STYLES.heldNote}>
+          {appointment.heldNote}
+        </p>
+      )}
       <Link
         href={reschedulePath(appointment.id)}
         aria-label={reschedulePageMessages.rescheduleButtonLabel(appointment.slot)}
