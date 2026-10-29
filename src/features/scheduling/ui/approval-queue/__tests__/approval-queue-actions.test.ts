@@ -88,6 +88,7 @@ describe('listPendingAppointmentsAction', () => {
             servicePrice: 35000,
             depositRequired: 10000,
           },
+          heldSchedule: null,
         },
       ],
     })

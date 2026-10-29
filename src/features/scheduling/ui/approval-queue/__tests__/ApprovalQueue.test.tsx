@@ -2,7 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { moneyFromColones, formatMoney } from '@/shared/money'
 import { ApprovalQueue } from '../components/ApprovalQueue'
-import { APPROVAL_QUEUE_ARIA, APPROVAL_QUEUE_CHOICE, APPROVAL_QUEUE_CLIENT, APPROVAL_QUEUE_LABELS } from '../constants/approval-queue.labels'
+import {
+  APPROVAL_QUEUE_ARIA,
+  APPROVAL_QUEUE_CHOICE,
+  APPROVAL_QUEUE_CLIENT,
+  APPROVAL_QUEUE_HELD,
+  APPROVAL_QUEUE_LABELS,
+} from '../constants/approval-queue.labels'
 import { APPROVAL_QUEUE_ERRORS } from '../constants/approval-queue.constants'
 import { APPOINTMENT_DISPLAY_CHOICE } from '../../appointment-display/constants/appointment-display.constants'
 import { formatAppointmentSlot } from '../../appointment-display/utils/format-appointment-slot'
@@ -30,6 +36,7 @@ const FIRST_APPOINTMENT = {
     servicePrice: 35000,
     depositRequired: 10000,
   },
+  heldSchedule: null,
 }
 const SECOND_APPOINTMENT = {
   id: 'cita-2',
@@ -37,6 +44,7 @@ const SECOND_APPOINTMENT = {
   endsAtMs: Date.parse('2027-03-02T17:00:00Z'),
   clientName: null,
   choice: null,
+  heldSchedule: null,
 }
 const FIRST_SLOT = formatAppointmentSlot(FIRST_APPOINTMENT.startsAtMs, FIRST_APPOINTMENT.endsAtMs)
 const REJECTION_REASON = 'horario no disponible'
@@ -126,6 +134,22 @@ describe('ApprovalQueue: lo que eligió la clienta', () => {
 
     expect(screen.getByText(APPOINTMENT_DISPLAY_CHOICE.noService)).toBeTruthy()
     expect(screen.queryByText(/Precio/)).toBeNull()
+  })
+})
+
+describe('ApprovalQueue: reagendados', () => {
+  it('una cita reagendada avisa su horario aprobado y que rechazar el cambio la devuelve a él', () => {
+    const heldSchedule = {
+      startsAtMs: Date.parse('2027-02-22T16:00:00Z'),
+      endsAtMs: Date.parse('2027-02-22T17:00:00Z'),
+    }
+    render(<ApprovalQueue appointments={[{ ...FIRST_APPOINTMENT, heldSchedule }, SECOND_APPOINTMENT]} />)
+
+    const notes = screen.getAllByRole('note')
+    expect(notes).toHaveLength(1)
+    expect(notes[0].textContent).toBe(
+      APPROVAL_QUEUE_HELD.note(formatAppointmentSlot(heldSchedule.startsAtMs, heldSchedule.endsAtMs)),
+    )
   })
 })
 
