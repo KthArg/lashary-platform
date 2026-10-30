@@ -4,6 +4,7 @@ export { ClientCalendarLoading } from './ui/client-calendar/components/ClientCal
 export { bookingConfirmMessages } from './ui/booking-confirm/constants/booking-confirm-strings'
 export { BookingConfirmLoading } from './ui/booking-confirm/components/BookingConfirmLoading'
 export { alertsMessages } from './ui/alerts/constants/alerts-strings'
+export { dailyAgendaMessages } from './ui/daily-agenda/constants/daily-agenda-strings'
 export { cancellationPolicyMessages } from './ui/cancellation-policy/constants/cancellation-policy-strings'
 export { CancellationPolicyLoading } from './ui/cancellation-policy/components/CancellationPolicyLoading'
 export { myAppointmentsMessages } from './ui/my-appointments/constants/my-appointments-strings'
