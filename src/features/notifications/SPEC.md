@@ -2,7 +2,7 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-29
+actualizado: 2026-10-30
 historias:
   - id: US-NOT-01
     estado: en_progreso
@@ -148,7 +148,10 @@ después, y US-NOT-02 necesita el horario anterior. `read_at` vacío es «no le�
 - Borde (`ui/inbox/`): `loadAdminInbox` es una lectura de servidor normal, no `'use server'`; la RLS
   deja sin avisos a quien no es staff. `markNoticeAction` exige `requireAdminSession`, valida con zod
   (`id` uuid, `read` booleano), devuelve `{ ok: false, error }` en vez de lanzar, y refresca el layout
-  de `/admin` para que cambie el contador. Prueba: `ui/inbox/__tests__/inbox-actions.test.ts`.
+  de `/admin` (`ADMIN_PORTAL_ROUTES.root`) para que cambie el contador. `loadMoreNoticesAction` trae
+  la página siguiente de 20: es una lectura con `'use server'` a propósito, porque el layout no recibe
+  parámetros de la URL y «ver más» se pide desde el panel; por eso exige `requireAdminSession`, valida
+  el desplazamiento con zod y la RLS sigue detrás. Prueba: `ui/inbox/__tests__/inbox-actions.test.ts`.
 
 ## Qué no hace todavía
 

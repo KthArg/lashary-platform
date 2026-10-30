@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { markNoticeAction } from '../actions/inbox-actions'
-import { loadAdminInbox } from '../services/inbox-service'
-import { ADMIN_LAYOUT_PATH, INBOX_ERRORS } from '../constants/inbox-strings'
+import { loadMoreNoticesAction, markNoticeAction } from '@/features/notifications/ui/inbox/actions/inbox-actions'
+import { loadAdminInbox } from '@/features/notifications/ui/inbox/services/inbox-service'
+import { INBOX_ERRORS } from '@/features/notifications/ui/inbox/constants/inbox-strings'
+import { INBOX_LIMIT } from '@/features/notifications/domain/inbox-notice'
 
+const ADMIN_ROOT = '/admin'
 const NOTICE_ID = '7b0e5f8e-3c1a-4c55-9c1e-2f4a6b8d0e11'
 
 type FakeResponse = { data?: unknown; count?: number | null; error: { message: string } | null }
@@ -17,7 +19,7 @@ function nextQuery() {
   const query: Record<string, unknown> = {
     then: (resolve: (value: FakeResponse) => unknown) => resolve(response),
   }
-  for (const method of ['select', 'order', 'limit', 'is', 'eq']) {
+  for (const method of ['select', 'order', 'range', 'is', 'eq']) {
     query[method] = () => query
   }
   query.update = (values: unknown) => (updates.push(values), query)
@@ -25,7 +27,10 @@ function nextQuery() {
 }
 
 vi.mock('@/shared/lib/supabase/server', () => ({ createClient: vi.fn(async () => ({ from: () => nextQuery() })) }))
-vi.mock('@/features/auth', () => ({ requireAdminSession: () => mockRequireAdmin() }))
+vi.mock('@/features/auth', () => ({
+  requireAdminSession: () => mockRequireAdmin(),
+  ADMIN_PORTAL_ROUTES: { root: '/admin' },
+}))
 vi.mock('next/cache', () => ({ revalidatePath: (...args: unknown[]) => mockRevalidate(...args) }))
 
 beforeEach(() => {
@@ -44,7 +49,7 @@ describe('markNoticeAction', () => {
     expect(result).toEqual({ ok: true })
     expect(mockRequireAdmin).toHaveBeenCalledOnce()
     expect(updates).toHaveLength(1)
-    expect(mockRevalidate).toHaveBeenCalledWith(ADMIN_LAYOUT_PATH, 'layout')
+    expect(mockRevalidate).toHaveBeenCalledWith(ADMIN_ROOT, 'layout')
   })
 
   it('volver a no leído manda la fecha vacía', async () => {
@@ -77,6 +82,25 @@ describe('markNoticeAction', () => {
     const result = await markNoticeAction({ id: NOTICE_ID, read: true })
 
     expect(result).toEqual({ ok: false, error: INBOX_ERRORS.saveFailed })
+  })
+})
+
+describe('loadMoreNoticesAction', () => {
+  it('exige sesión de staff y devuelve la página siguiente', async () => {
+    responses = [{ data: [], error: null }]
+
+    const result = await loadMoreNoticesAction({ offset: INBOX_LIMIT })
+
+    expect(mockRequireAdmin).toHaveBeenCalledOnce()
+    expect(result).toEqual({ ok: true, page: { notices: [], hasMore: false } })
+  })
+
+  it('un desplazamiento inválido se rechaza sin tocar la base, y un fallo se informa', async () => {
+    expect(await loadMoreNoticesAction({ offset: -1 })).toEqual({ ok: false, error: INBOX_ERRORS.invalidInput })
+    expect(responses).toHaveLength(0)
+
+    responses = [{ data: null, error: { message: 'caída' } }]
+    expect(await loadMoreNoticesAction({ offset: INBOX_LIMIT })).toEqual({ ok: false, error: INBOX_ERRORS.loadMoreFailed })
   })
 })
 
