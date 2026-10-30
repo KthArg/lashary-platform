@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-26.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-28.
 
 ## Features
 
