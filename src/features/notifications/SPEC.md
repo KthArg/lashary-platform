@@ -143,8 +143,8 @@ después, y US-NOT-02 necesita el horario anterior. `read_at` vacío es «no le�
   (páginas de 20 con `range` y si hay más, conteo de todos los no leídos sin traer filas, `setReadAt`)
   y `application/inbox.ts` (`loadInbox`, `loadMoreNotices`, `markNotice` con reloj inyectado, DOM-004).
   Si la RLS no deja tocar el aviso, el `UPDATE` no afecta filas y se informa `notice-not-found`. Un
-  fallo de la base es `InboxStorageFailed` con su causa, nunca una bandeja vacía. Pruebas: `domain/__tests__/inbox-notice.test.ts`, `db/__tests__/inbox-repository.test.ts`
-  y `application/__tests__/inbox.test.ts`.
+  fallo de la base es `InboxStorageFailed` con su causa, nunca una bandeja vacía. Pruebas:
+  `domain/__tests__/inbox-notice.test.ts`, `db/__tests__/inbox-repository.test.ts` y `application/__tests__/inbox.test.ts`.
 
 ## Qué no hace todavía
 
