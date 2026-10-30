@@ -22,7 +22,7 @@ function createFakeDb(response: FakeResponse) {
   const query: Record<string, unknown> = {
     then: (resolve: (value: FakeResponse) => unknown) => resolve(response),
   }
-  for (const method of ['select', 'order', 'limit', 'is', 'update', 'eq']) {
+  for (const method of ['select', 'order', 'range', 'is', 'update', 'eq']) {
     query[method] = (...args: unknown[]) => (calls.push([method, ...args]), query)
   }
   const db = { from: (table: string) => (calls.push(['from', table]), query) } as unknown as SupabaseClient
@@ -30,35 +30,55 @@ function createFakeDb(response: FakeResponse) {
 }
 
 describe('inboxRepository', () => {
-  it('lista los avisos más recientes primero, con tope, y convierte las fechas', async () => {
+  it('lista una página de avisos, más recientes primero, y convierte las fechas', async () => {
     const { db, calls } = createFakeDb({ data: [row], error: null })
 
-    const result = await inboxRepository(db).listRecent(INBOX_LIMIT)
+    const result = await inboxRepository(db).listRecent({ offset: 0, limit: INBOX_LIMIT })
 
     expect(calls).toEqual([
       ['from', INBOX_TABLE],
       ['select', INBOX_COLUMNS],
       ['order', 'created_at', { ascending: false }],
-      ['limit', INBOX_LIMIT],
+      ['order', 'id', { ascending: false }],
+      ['range', 0, INBOX_LIMIT],
     ])
-    expect(isOk(result) && result.value).toEqual([
-      {
-        id: 'aviso-1',
-        kind: 'booking_created',
-        appointmentId: 'cita-1',
-        clientName: 'Ana Pérez',
-        serviceName: 'Lifting de pestañas',
-        startsAt: new Date('2026-11-05T15:00:00Z'),
-        readAt: null,
-        createdAt: new Date('2026-10-29T18:00:00Z'),
-      },
-    ])
+    expect(isOk(result) && result.value).toEqual({
+      notices: [
+        {
+          id: 'aviso-1',
+          kind: 'booking_created',
+          appointmentId: 'cita-1',
+          clientName: 'Ana Pérez',
+          serviceName: 'Lifting de pestañas',
+          startsAt: new Date('2026-11-05T15:00:00Z'),
+          readAt: null,
+          createdAt: new Date('2026-10-29T18:00:00Z'),
+        },
+      ],
+      hasMore: false,
+    })
   })
 
-  it('un fallo de la base al listar es un error, nunca una bandeja vacía', async () => {
-    const result = await inboxRepository(createFakeDb({ data: null, error: { message: 'caída' } }).db).listRecent(INBOX_LIMIT)
+  it('con más de 20 avisos devuelve 20 y avisa que hay más; la página siguiente empieza en el 21', async () => {
+    const twentyOneRows = Array.from({ length: INBOX_LIMIT + 1 }, (_, index) => ({ ...row, id: `aviso-${index + 1}` }))
+    const firstPage = createFakeDb({ data: twentyOneRows, error: null })
+    const secondPage = createFakeDb({ data: [], error: null })
 
-    expect(isErr(result)).toBe(true)
+    const result = await inboxRepository(firstPage.db).listRecent({ offset: 0, limit: INBOX_LIMIT })
+    await inboxRepository(secondPage.db).listRecent({ offset: INBOX_LIMIT, limit: INBOX_LIMIT })
+
+    expect(isOk(result) && result.value.notices).toHaveLength(INBOX_LIMIT)
+    expect(isOk(result) && result.value.hasMore).toBe(true)
+    expect(secondPage.calls.at(-1)).toEqual(['range', INBOX_LIMIT, INBOX_LIMIT * 2])
+  })
+
+  it('un fallo de la base al listar es un error con su causa, nunca una bandeja vacía', async () => {
+    const result = await inboxRepository(createFakeDb({ data: null, error: { message: 'caída' } }).db).listRecent({
+      offset: 0,
+      limit: INBOX_LIMIT,
+    })
+
+    expect(isErr(result) && result.error.cause).toBe('caída')
   })
 
   it('cuenta solo los avisos sin leer, sin traer las filas', async () => {

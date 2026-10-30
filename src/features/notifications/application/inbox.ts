@@ -1,10 +1,10 @@
 import { ok, err, isErr, type Result } from '@/shared/result'
 import type { Clock } from '@/shared/clock'
-import { INBOX_LIMIT, type InboxNotice } from '../domain/inbox-notice'
-import type { InboxRepository, NoticeNotFound, RepositoryFailure } from './ports'
+import { INBOX_LIMIT } from '../domain/inbox-notice'
+import type { InboxStorageFailed } from '../domain/errors'
+import type { InboxPage, InboxRepository, NoticeNotFound } from './ports'
 
-export type InboxView = {
-  notices: InboxNotice[]
+export type InboxView = InboxPage & {
   unreadCount: number
 }
 
@@ -15,19 +15,24 @@ export type MarkNoticeInput = {
 
 export const loadInbox =
   (repository: InboxRepository) =>
-  async (): Promise<Result<InboxView, RepositoryFailure>> => {
-    const [notices, unreadCount] = await Promise.all([
-      repository.listRecent(INBOX_LIMIT),
+  async (): Promise<Result<InboxView, InboxStorageFailed>> => {
+    const [firstPage, unreadCount] = await Promise.all([
+      repository.listRecent({ offset: 0, limit: INBOX_LIMIT }),
       repository.countUnread(),
     ])
-    if (isErr(notices)) return notices
+    if (isErr(firstPage)) return firstPage
     if (isErr(unreadCount)) return unreadCount
-    return ok({ notices: notices.value, unreadCount: unreadCount.value })
+    return ok({ ...firstPage.value, unreadCount: unreadCount.value })
   }
+
+export const loadMoreNotices =
+  (repository: InboxRepository) =>
+  (offset: number): Promise<Result<InboxPage, InboxStorageFailed>> =>
+    repository.listRecent({ offset, limit: INBOX_LIMIT })
 
 export const markNotice =
   (deps: { repository: InboxRepository; clock: Clock }) =>
-  async (input: MarkNoticeInput): Promise<Result<void, RepositoryFailure | NoticeNotFound>> => {
+  async (input: MarkNoticeInput): Promise<Result<void, InboxStorageFailed | NoticeNotFound>> => {
     const readAt = input.read ? deps.clock() : null
     const result = await deps.repository.setReadAt(input.id, readAt)
     if (isErr(result)) return result

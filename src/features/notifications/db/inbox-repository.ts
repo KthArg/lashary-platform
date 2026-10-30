@@ -1,11 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { ok, err } from '@/shared/result'
+import { inboxStorageFailed } from '../domain/errors'
 import type { InboxNotice, InboxNoticeKind } from '../domain/inbox-notice'
 import type { InboxRepository } from '../application/ports'
 
 export const INBOX_TABLE = 'notifications_admin_inbox'
 export const INBOX_COLUMNS = 'id, kind, appointment_id, client_name, service_name, starts_at, read_at, created_at'
-const FAILED = 'repository-failed' as const
+const MISSING_COUNT = 'la base no devolvió el conteo'
 
 type InboxRow = {
   id: string
@@ -31,14 +32,16 @@ const toNotice = (row: InboxRow): InboxNotice => ({
 
 export function inboxRepository(db: SupabaseClient): InboxRepository {
   return {
-    async listRecent(limit) {
+    async listRecent({ offset, limit }) {
       const { data, error } = await db
         .from(INBOX_TABLE)
         .select(INBOX_COLUMNS)
         .order('created_at', { ascending: false })
-        .limit(limit)
-      if (error) return err(FAILED)
-      return ok(((data ?? []) as InboxRow[]).map(toNotice))
+        .order('id', { ascending: false })
+        .range(offset, offset + limit)
+      if (error) return err(inboxStorageFailed(error.message))
+      const rows = (data ?? []) as InboxRow[]
+      return ok({ notices: rows.slice(0, limit).map(toNotice), hasMore: rows.length > limit })
     },
 
     async countUnread() {
@@ -46,7 +49,8 @@ export function inboxRepository(db: SupabaseClient): InboxRepository {
         .from(INBOX_TABLE)
         .select('id', { count: 'exact', head: true })
         .is('read_at', null)
-      if (error || count === null) return err(FAILED)
+      if (error) return err(inboxStorageFailed(error.message))
+      if (count === null) return err(inboxStorageFailed(MISSING_COUNT))
       return ok(count)
     },
 
@@ -56,7 +60,7 @@ export function inboxRepository(db: SupabaseClient): InboxRepository {
         .update({ read_at: readAt ? readAt.toISOString() : null })
         .eq('id', id)
         .select('id')
-      if (error) return err(FAILED)
+      if (error) return err(inboxStorageFailed(error.message))
       return ok({ updated: (data ?? []).length > 0 })
     },
   }
