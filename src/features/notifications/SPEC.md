@@ -5,8 +5,8 @@ estado: en_progreso
 actualizado: 2026-10-30
 historias:
   - id: US-NOT-01
-    estado: en_progreso
-    falta: "pieza 5 de 6: el panel lateral funciona y sus pruebas pasan; falta verificarlo en el navegador con capturas (INT-010) y cerrar la historia"
+    estado: terminada
+    evidencia: "Pila de 5 piezas sobre main: PRs #610 (1/5, tabla y RLS), #612 (2/5, trigger al reservar), #613 (3/5, dominio y repositorio), #615 (4/5, action y lectura) y #616 (5/5, panel lateral, cierra la historia). Criterio 1 (al reservar se genera el aviso en el panel): supabase/tests/database/scheduling_notify_booking_created.test.sql (reservar crea el aviso; una reserva fallida, una cita sin clienta o un cambio de hora no lo crean), ui/inbox/__tests__/admin-inbox.test.tsx y auth/__tests__/admin-auth.test.tsx (el layout lo carga para administradoras). Criterio 2 (clienta, servicio, fecha y hora): scheduling_notify_booking_created.test.sql, db/__tests__/inbox-repository.test.ts y admin-inbox.test.tsx. Criterio 3 (leído y no leído, persiste): supabase/tests/database/notifications_admin_inbox.test.sql (staff marca y desmarca, nadie borra ni fabrica avisos, la clienta y anon no los ven, SEC-002), application/__tests__/inbox.test.ts, inbox-repository.test.ts, ui/inbox/__tests__/inbox-actions.test.ts y admin-inbox.test.tsx. Probada a mano por José Loría en next dev contra Supabase local el 2026-10-29."
   - id: US-NOT-02
     estado: no_iniciada
   - id: US-NOT-03
@@ -413,7 +413,9 @@ en el frontmatter de esta historia).
 ## Decisiones
 
 - US-NOT-01, 2026-10-29: el aviso nace al reservar la clienta, no al aprobar (la historia dice
-  «cuando un cliente agende»). Pendiente de confirmar por el PO.
+  «cuando un cliente agende»). Acordado por el equipo, comunicado por José Loría el 2026-10-29.
+- US-NOT-01, 2026-10-29: la historia se cierra en la pieza 5 de 5, la última con código; no se abre
+  una pieza aparte solo para el cierre.
 
 - ADR-0006 (canal de notificaciones): WhatsApp directo contra la Graph API de Meta (sin Twilio,
   decisión del PO el 2026-10-21: lo exige quien pide el proyecto), Resend como respaldo por email
