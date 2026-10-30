@@ -6,7 +6,7 @@ actualizado: 2026-10-29
 historias:
   - id: US-NOT-01
     estado: en_progreso
-    falta: "pieza 1 de 6: solo existe la tabla de avisos; falta el trigger que la llena al reservar, el codigo de la app y el panel lateral"
+    falta: "pieza 2 de 6: la base ya crea el aviso al reservar; falta el codigo de la app y el panel lateral"
   - id: US-NOT-02
     estado: no_iniciada
   - id: US-NOT-03
@@ -134,6 +134,11 @@ después, y US-NOT-02 necesita el horario anterior. `read_at` vacío es «no le�
 - Prueba: `supabase/tests/database/notifications_admin_inbox.test.sql` (staff, clienta y anon, SEC-002)
   y `__tests__/rls-isolation.test.ts`, con tokens reales de clienta y anon contra PostgREST. Los
   clientes de esa prueba no guardan la sesión: si la guardaran, el anónimo heredaría la de la clienta.
+- Lo llama el trigger de `scheduling` al reservar (criterio 1), en la misma transacción: si la reserva
+  falla, no hay aviso. Al revés no: si el aviso falla, el trigger lo atrapa (`RAISE WARNING`) y la
+  reserva se guarda, porque la reserva importa más que el aviso. El servicio es la técnica o, en una
+  cita de paquete (US-AGE-04), el paquete; un nombre vacío cae a «Clienta» o «Servicio». Prueba:
+  `supabase/tests/database/scheduling_notify_booking_created.test.sql`.
 
 ## Qué no hace todavía
 
