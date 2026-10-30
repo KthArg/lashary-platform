@@ -5,6 +5,7 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 const REMINDERS_TABLE = 'notifications_reminders'
 const INBOX_TABLE = 'notifications_admin_inbox'
+const NO_SAVED_SESSION = { auth: { persistSession: false, autoRefreshToken: false } }
 
 const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
 let isSupabaseReachable = false
@@ -26,7 +27,7 @@ function itLive(name: string, fn: () => Promise<void>) {
 }
 
 async function signUpClienta(): Promise<{ clientaClient: SupabaseClient; clientId: string }> {
-  const anonClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  const anonClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, NO_SAVED_SESSION)
   const email = `rls-notifications-test-${Date.now()}-${Math.random().toString(36).slice(2)}@lashary.test`
   const { data, error } = await anonClient.auth.signUp({
     email,
@@ -124,7 +125,7 @@ describe.skipIf(!isSupabaseConfigured)('SEC-002 — aislamiento RLS de notificat
   beforeAll(async () => {
     isSupabaseReachable = await probeSupabase()
     if (!isSupabaseReachable) return
-    anonClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    anonClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, NO_SAVED_SESSION)
     clientaClient = (await signUpClienta()).clientaClient
   })
 

@@ -132,7 +132,8 @@ después, y US-NOT-02 necesita el horario anterior. `read_at` vacío es «no le�
 - Solo escribe `notifications_record_booking`, sin `EXECUTE` para `anon` ni `authenticated`: nadie
   puede fabricar avisos por PostgREST.
 - Prueba: `supabase/tests/database/notifications_admin_inbox.test.sql` (staff, clienta y anon, SEC-002)
-  y `__tests__/rls-isolation.test.ts`, con tokens reales de clienta y anon contra PostgREST.
+  y `__tests__/rls-isolation.test.ts`, con tokens reales de clienta y anon contra PostgREST. Los
+  clientes de esa prueba no guardan la sesión: si la guardaran, el anónimo heredaría la de la clienta.
 
 ## Qué no hace todavía
 
