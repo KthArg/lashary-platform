@@ -1,14 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, cleanup, fireEvent, waitFor, within } from '@testing-library/react'
 import { fixedDate } from '@/shared/testing/fixed-clock'
-import type { InboxNotice } from '../../../domain/inbox-notice'
-import { AdminInbox } from '../components/AdminInbox'
-import { INBOX_TEXTS } from '../constants/inbox-strings'
+import { INBOX_LIMIT, type InboxNotice } from '@/features/notifications/domain/inbox-notice'
+import { AdminInbox } from '@/features/notifications/ui/inbox/components/AdminInbox'
+import { INBOX_TEXTS } from '@/features/notifications/ui/inbox/constants/inbox-strings'
 
 const mockMarkNotice = vi.fn()
+const mockLoadMore = vi.fn()
 const mockRefresh = vi.fn()
 
-vi.mock('../actions/inbox-actions', () => ({ markNoticeAction: (input: unknown) => mockMarkNotice(input) }))
+vi.mock('@/features/notifications/ui/inbox/actions/inbox-actions', () => ({
+  markNoticeAction: (input: unknown) => mockMarkNotice(input),
+  loadMoreNoticesAction: (input: unknown) => mockLoadMore(input),
+}))
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: mockRefresh }) }))
 
 const unreadNotice: InboxNotice = {
@@ -41,14 +45,14 @@ afterEach(cleanup)
 
 describe('AdminInbox', () => {
   it('el botón del menú dice cuántos avisos quedan sin leer', () => {
-    render(<AdminInbox inbox={{ ok: true, inbox: { notices: [unreadNotice, readNotice], unreadCount: 1 } }} />)
+    render(<AdminInbox inbox={{ ok: true, inbox: { notices: [unreadNotice, readNotice], hasMore: false, unreadCount: 1 } }} />)
 
     const trigger = screen.getByRole('button', { name: INBOX_TEXTS.triggerLabel(1) })
     expect(within(trigger).getByText('1')).toBeDefined()
   })
 
   it('al abrirse muestra clienta, servicio, fecha y hora de cada reserva (criterios 1 y 2)', () => {
-    render(<AdminInbox inbox={{ ok: true, inbox: { notices: [unreadNotice], unreadCount: 1 } }} />)
+    render(<AdminInbox inbox={{ ok: true, inbox: { notices: [unreadNotice], hasMore: false, unreadCount: 1 } }} />)
 
     const panel = openPanel()
 
@@ -60,19 +64,21 @@ describe('AdminInbox', () => {
   })
 
   it('marca un aviso sin leer como leído, y uno leído como no leído (criterio 3)', async () => {
-    render(<AdminInbox inbox={{ ok: true, inbox: { notices: [unreadNotice, readNotice], unreadCount: 1 } }} />)
+    render(<AdminInbox inbox={{ ok: true, inbox: { notices: [unreadNotice, readNotice], hasMore: false, unreadCount: 1 } }} />)
     const panel = openPanel()
 
     fireEvent.click(within(panel).getByRole('button', { name: INBOX_TEXTS.markRead, hidden: true }))
     await waitFor(() => expect(mockMarkNotice).toHaveBeenCalledWith({ id: 'aviso-1', read: true }))
 
-    fireEvent.click(within(panel).getByRole('button', { name: INBOX_TEXTS.markUnread, hidden: true }))
+    const markUnreadButton = within(panel).getByRole('button', { name: INBOX_TEXTS.markUnread, hidden: true })
+    await waitFor(() => expect(markUnreadButton.hasAttribute('disabled')).toBe(false))
+    fireEvent.click(markUnreadButton)
     await waitFor(() => expect(mockMarkNotice).toHaveBeenCalledWith({ id: 'aviso-2', read: false }))
   })
 
   it('si no se pudo guardar, lo dice en vez de fingir que cambió', async () => {
     mockMarkNotice.mockResolvedValue({ ok: false, error: 'No se pudo guardar el cambio. Intentá de nuevo.' })
-    render(<AdminInbox inbox={{ ok: true, inbox: { notices: [unreadNotice], unreadCount: 1 } }} />)
+    render(<AdminInbox inbox={{ ok: true, inbox: { notices: [unreadNotice], hasMore: false, unreadCount: 1 } }} />)
     const panel = openPanel()
 
     fireEvent.click(within(panel).getByRole('button', { name: INBOX_TEXTS.markRead, hidden: true }))
@@ -83,7 +89,7 @@ describe('AdminInbox', () => {
   })
 
   it('sin avisos muestra el estado vacío y el botón no lleva número', () => {
-    render(<AdminInbox inbox={{ ok: true, inbox: { notices: [], unreadCount: 0 } }} />)
+    render(<AdminInbox inbox={{ ok: true, inbox: { notices: [], hasMore: false, unreadCount: 0 } }} />)
 
     const panel = openPanel()
 
@@ -100,5 +106,35 @@ describe('AdminInbox', () => {
 
     fireEvent.click(within(panel).getByRole('button', { name: INBOX_TEXTS.retry, hidden: true }))
     expect(mockRefresh).toHaveBeenCalledOnce()
+  })
+
+  it('con más de 20 avisos, «Ver más» trae los siguientes y se pueden marcar; al cerrar vuelve a los primeros 20', async () => {
+    const firstTwenty = Array.from({ length: INBOX_LIMIT }, (_, index) => ({
+      ...readNotice,
+      id: `aviso-${index + 1}`,
+      clientName: `Clienta ${index + 1}`,
+    }))
+    const olderUnread: InboxNotice = { ...unreadNotice, id: 'aviso-21', clientName: 'Clienta 21' }
+    mockLoadMore.mockResolvedValue({ ok: true, page: { notices: [olderUnread], hasMore: false } })
+    render(<AdminInbox inbox={{ ok: true, inbox: { notices: firstTwenty, hasMore: true, unreadCount: 1 } }} />)
+    const panel = openPanel()
+
+    fireEvent.click(within(panel).getByRole('button', { name: INBOX_TEXTS.loadMore, hidden: true }))
+
+    expect(await within(panel).findByText(INBOX_TEXTS.bookingCreated('Clienta 21'))).toBeDefined()
+    expect(mockLoadMore).toHaveBeenCalledWith({ offset: INBOX_LIMIT })
+    expect(within(panel).queryByRole('button', { name: INBOX_TEXTS.loadMore, hidden: true })).toBeNull()
+
+    fireEvent.click(within(panel).getByRole('button', { name: INBOX_TEXTS.markRead, hidden: true }))
+    await waitFor(() => expect(mockMarkNotice).toHaveBeenCalledWith({ id: 'aviso-21', read: true }))
+    expect(await within(panel).findAllByRole('button', { name: INBOX_TEXTS.markUnread, hidden: true })).toHaveLength(
+      INBOX_LIMIT + 1,
+    )
+
+    fireEvent.click(within(panel).getByRole('button', { name: INBOX_TEXTS.close, hidden: true }))
+    fireEvent(panel, new Event('close'))
+
+    await waitFor(() => expect(within(panel).queryByText(INBOX_TEXTS.bookingCreated('Clienta 21'))).toBeNull())
+    expect(within(panel).getByRole('button', { name: INBOX_TEXTS.loadMore, hidden: true })).toBeDefined()
   })
 })

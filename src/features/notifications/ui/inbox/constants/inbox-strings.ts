@@ -17,4 +17,6 @@ export const INBOX_TEXTS = {
   empty: 'No tenés notificaciones. Cuando una clienta reserve, el aviso aparece aquí.',
   loadFailed: 'No se pudieron cargar las notificaciones.',
   retry: 'Reintentar',
+  loadMore: 'Ver más',
+  loadingMore: 'Cargando…',
 } as const

@@ -17,4 +17,6 @@ export const adminInboxStyles = {
   dot: 'w-2 h-2 rounded-full bg-brand-gold shrink-0',
   itemDetail: 'text-sm',
   markButton: 'btn btn-ghost btn-xs mt-2 text-brand-gold',
+  loadMore: 'btn btn-outline btn-sm m-4',
+  srOnly: 'sr-only',
 }
