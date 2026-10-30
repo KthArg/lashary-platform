@@ -4,7 +4,7 @@ import { rescheduleAppointmentAction } from '../actions/reschedule-appointment-a
 import type { RescheduleAppointmentResult } from '../types/reschedule-results'
 
 const request = {
-  appointmentId: '00000000-0000-0000-0000-00000000ea01',
+  appointmentId: '00000000-0000-4000-8000-00000000ea01',
   newStartsAtMs: Date.parse('2027-09-27T15:00:00Z'),
   expectedStatus: 'approved',
 }

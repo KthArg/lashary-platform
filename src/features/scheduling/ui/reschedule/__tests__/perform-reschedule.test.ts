@@ -15,7 +15,7 @@ import type { RescheduleInput } from '../../../application/ports'
 import { rescheduleMessages } from '../constants/reschedule-strings'
 import { performRescheduleAppointment, type RescheduleDeps } from '../utils/perform-reschedule'
 
-const APPOINTMENT_ID = '00000000-0000-0000-0000-00000000ea01'
+const APPOINTMENT_ID = '00000000-0000-4000-8000-00000000ea01'
 const NEW_STARTS_AT_MS = Date.parse('2027-09-27T15:00:00Z')
 const ONE_HOUR_MS = 60 * 60 * 1000
 const request = { appointmentId: APPOINTMENT_ID, newStartsAtMs: NEW_STARTS_AT_MS, expectedStatus: 'approved' }
