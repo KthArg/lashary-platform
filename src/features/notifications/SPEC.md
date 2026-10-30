@@ -2,11 +2,11 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-29
+actualizado: 2026-10-30
 historias:
   - id: US-NOT-01
     estado: en_progreso
-    falta: "pieza 3 de 6: la base crea el aviso y la app ya lo lee y lo marca; falta la action, el layout que lo carga y el panel lateral"
+    falta: "pieza 4 de 6: la bandeja se lee y se marca desde index.ts; falta el panel lateral y el layout que la carga"
   - id: US-NOT-02
     estado: no_iniciada
   - id: US-NOT-03
@@ -57,8 +57,8 @@ US-NOT-03 (ADR-0007); el resto lo reusa vía el puerto que US-NOT-08 exige.
   — la aritmética de fechas vive en `shared/` para que `domain/`/`application/` nunca construyan un
   `Date` con aritmética (DOM-004, lo escanea `check-domain-purity.sh`). Errores tipados en
   `domain/errors.ts` (DOM-006). `domain/reminder-message.ts` arma el texto externalizado
-  (`REMINDER_MESSAGE_TEXTS`, DOM-009) con fecha y hora en `America/Costa_Rica` (`formatStudioDateTime`,
-  DOM-003) y la técnica reservada (criterio 2). Pruebas: `domain/__tests__/reminder.test.ts` y
+  (`REMINDER_MESSAGE_TEXTS`, DOM-009) con fecha y hora en `America/Costa_Rica` (`formatStudioDateTime`
+  de `shared/studio-time`, que también usa la bandeja, DOM-003) y la técnica reservada (criterio 2). Pruebas: `domain/__tests__/reminder.test.ts` y
   `reminder-message.test.ts`.
 - Capa `application/`: tres casos de uso encadenados por `run-reminder-cycle.ts` (lo llama el cron):
   - `discover-reminders.ts` — lee de `scheduling` (puerto `SchedulingReadPort`) las citas activas
@@ -145,6 +145,13 @@ después, y US-NOT-02 necesita el horario anterior. `read_at` vacío es «no le�
   Si la RLS no deja tocar el aviso, el `UPDATE` no afecta filas y se informa `notice-not-found`. Un
   fallo de la base es `InboxStorageFailed` con su causa, nunca una bandeja vacía. Pruebas:
   `domain/__tests__/inbox-notice.test.ts`, `db/__tests__/inbox-repository.test.ts` y `application/__tests__/inbox.test.ts`.
+- Borde (`ui/inbox/`): `loadAdminInbox` es una lectura de servidor normal, no `'use server'`; la RLS
+  deja sin avisos a quien no es staff. `markNoticeAction` exige `requireAdminSession`, valida con zod
+  (`id` uuid, `read` booleano), devuelve `{ ok: false, error }` en vez de lanzar, y refresca el layout
+  de `/admin` (`ADMIN_PORTAL_ROUTES.root`) para que cambie el contador. `loadMoreNoticesAction` trae
+  la página siguiente de 20: es una lectura con `'use server'` a propósito, porque el layout no recibe
+  parámetros de la URL y «ver más» se pide desde el panel; por eso exige `requireAdminSession`, valida
+  el desplazamiento con zod y la RLS sigue detrás. Prueba: `ui/inbox/__tests__/inbox-actions.test.ts`.
 
 ## Qué no hace todavía
 
@@ -393,6 +400,8 @@ en el frontmatter de esta historia).
   Consumidor: `receiveReminderCronRequest`.
 - `receiveReminderCronRequest` — handler de la ruta de cron. Consumidor:
   `src/app/api/cron/notifications-reminders/route.ts`.
+- `loadAdminInbox`, `markNoticeAction` y sus tipos (US-NOT-01). Consumidor: el layout de `/admin` y
+  el panel lateral (pieza 5 de 6).
 - Dominio y aplicación son superficie interna; ninguna otra feature los consume.
 
 ## Decisiones
