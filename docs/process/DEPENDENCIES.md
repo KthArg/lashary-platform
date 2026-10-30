@@ -1,6 +1,6 @@
 # Grafo de dependencias entre historias
 
-> **Autoridad:** qué historia depende de cuál, y qué infraestructura sin historia propia carga cada una (ADR-0007). Se consulta en cada planificación de sprint (INT-007); lo lee `/empezables`. **Lectores:** PO y equipo al planificar; skills. **Estado:** vigente. **Actualizado:** 2026-10-29.
+> **Autoridad:** qué historia depende de cuál, y qué infraestructura sin historia propia carga cada una (ADR-0007). Se consulta en cada planificación de sprint (INT-007); lo lee `/empezables`. **Lectores:** PO y equipo al planificar; skills. **Estado:** vigente. **Actualizado:** 2026-10-30.
 > Derivado del backlog en [../backlog/](../backlog/) (que no trae columna de dependencias). Si el backlog cambia, este archivo se revisa en el mismo PR.
 
 ## Infraestructura sin historia propia (ADR-0007)
@@ -68,7 +68,7 @@ El backlog se mantiene en sus 51 historias; estas capacidades se construyen **de
 | US-MOR-05 levantar/perdonar | US-MOR-01 | bitácora (de AGE-13) |
 | US-NOT-01 notif. reserva | US-AGE-05, US-AUTH-01 | el trigger usa `technique_name` o, en citas de paquete de US-AGE-04, `package_name`; lee la columna sin exigirla, así que el orden de merge entre las dos no importa |
 | US-NOT-02 notif. cancelación/reagendado | US-AGE-06, US-AGE-10 | recibe el criterio de notificar la cancelación (ítem 9) y el de notificar el reagendado (ítem 10) |
-| US-NOT-03 recordatorio 24h | US-AGE-05 | **porta el canal completo** (ADR-0006): puerto, Twilio, email fallback, registro de envíos y reintentos |
+| US-NOT-03 recordatorio 24h | US-AGE-05 | **porta el canal completo** (ADR-0006): puerto, Twilio, email fallback, registro de envíos y reintentos; desde US-AGE-10 el ciclo de recordatorios llama primero a `expireSchedulingUndecidedReschedules` de `scheduling` (pieza 31, #588), así que depende de esa función, y los reagendados sin decisión solo vencen solos cuando este cron esté activo en producción (dueño y fecha de la activación por acordar) |
 | US-NOT-07 canal alternativo | US-NOT-03 | |
 | US-NOT-08 confirmación asistencia | US-NOT-03, US-AGE-05, US-AGE-13 | |
 | US-NOT-04 recordatorio pago | US-NOT-03, US-MOR-02 | |
