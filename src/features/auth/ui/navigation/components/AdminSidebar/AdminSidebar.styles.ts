@@ -1,5 +1,5 @@
 export const sidebarStyles = {
-  aside: 'h-screen flex flex-col justify-between bg-brand-surface border-r border-brand-border transition-all duration-300 select-none shrink-0',
+  aside: 'group h-screen flex flex-col justify-between bg-brand-surface border-r border-brand-border transition-all duration-300 select-none shrink-0',
   expandedWidth: 'w-64',
   collapsedWidth: 'w-20',
   header: 'p-4 border-b border-brand-border flex items-center justify-between',

@@ -6,7 +6,7 @@ actualizado: 2026-10-30
 historias:
   - id: US-NOT-01
     estado: en_progreso
-    falta: "pieza 4 de 6: la bandeja se lee y se marca desde index.ts; falta el panel lateral y el layout que la carga"
+    falta: "pieza 5 de 6: el panel lateral funciona y sus pruebas pasan; falta verificarlo en el navegador con capturas (INT-010) y cerrar la historia"
   - id: US-NOT-02
     estado: no_iniciada
   - id: US-NOT-03
@@ -152,6 +152,12 @@ después, y US-NOT-02 necesita el horario anterior. `read_at` vacío es «no le�
   la página siguiente de 20: es una lectura con `'use server'` a propósito, porque el layout no recibe
   parámetros de la URL y «ver más» se pide desde el panel; por eso exige `requireAdminSession`, valida
   el desplazamiento con zod y la RLS sigue detrás. Prueba: `ui/inbox/__tests__/inbox-actions.test.ts`.
+- Panel (`ui/inbox/components/AdminInbox/`): botón en el menú lateral con el número de no leídos y un
+  `<dialog>` modal que sale por la izquierda; el `<dialog>` nativo da foco atrapado, Escape y vuelta del
+  foco al botón. El layout de `/admin` carga la bandeja y se la pasa a `AdminSidebar` como hueco
+  (`notifications`), así `auth` no importa nada de `notifications`. Estados: vacío, error con
+  reintento y guardado en curso (botones deshabilitados); la bandeja llega cargada con el layout.
+  Prueba: `ui/inbox/__tests__/admin-inbox.test.tsx` y `auth/__tests__/admin-auth.test.tsx` (el layout).
 
 ## Qué no hace todavía
 
@@ -400,8 +406,8 @@ en el frontmatter de esta historia).
   Consumidor: `receiveReminderCronRequest`.
 - `receiveReminderCronRequest` — handler de la ruta de cron. Consumidor:
   `src/app/api/cron/notifications-reminders/route.ts`.
-- `loadAdminInbox`, `markNoticeAction` y sus tipos (US-NOT-01). Consumidor: el layout de `/admin` y
-  el panel lateral (pieza 5 de 6).
+- `loadAdminInbox`, `AdminInbox`, `markNoticeAction` y sus tipos (US-NOT-01). Consumidor:
+  `src/app/admin/layout.tsx`.
 - Dominio y aplicación son superficie interna; ninguna otra feature los consume.
 
 ## Decisiones
