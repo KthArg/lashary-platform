@@ -5,7 +5,6 @@ import { CLIENT_NAMES_FUNCTION } from './appointment-repository.constants'
 
 type ClientNameRow = { client_id: string; full_name: string }
 
-// Los nombres los da el contrato de clients (ARCH-005), en una sola llamada por página (PERF-005).
 export async function fetchClientNames(
   db: SupabaseClient,
   clientIds: readonly (string | null)[],

@@ -1,3 +1,4 @@
+import { ok } from '@/shared/result'
 import type { DelinquencyPort, DelinquentClientsPort } from './ports'
 
 export const noDelinquencyYet: DelinquencyPort = {
@@ -8,6 +9,6 @@ export const noDelinquencyYet: DelinquencyPort = {
 
 export const noDelinquentClientsYet: DelinquentClientsPort = {
   async listWithActiveDelinquency() {
-    return new Set<string>()
+    return ok(new Set<string>())
   },
 }

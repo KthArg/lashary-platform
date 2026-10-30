@@ -26,7 +26,6 @@ const timeFormatter = new Intl.DateTimeFormat(APPOINTMENT_DISPLAY_FORMAT.locale,
   timeZone: APPOINTMENT_DISPLAY_FORMAT.timeZone,
 })
 
-// El mediodía del estudio cae siempre dentro de la fecha, así el nombre del día no se corre.
 export const formatAgendaDay = (date: string): string => dayFormatter.format(studioLocalToUtc(date, NOON_MIN))
 
 export function buildAgendaDayNav(date: string, today: string): AgendaDayNav {
@@ -50,7 +49,6 @@ const clientNameOf = (entry: AgendaEntry): string => {
   return entry.clientName ?? COPY.unnamedClient
 }
 
-// Una cita rechazada no espera anticipo: decir «pendiente» haría creer que la clienta debe algo.
 const paymentOf = (entry: AgendaEntry): string => {
   if (entry.status === APPOINTMENT_DECISION.REJECTED) return COPY.paymentNotApplicable
   return entry.paymentStatus ? COPY.payment[entry.paymentStatus] : COPY.noPayment
@@ -94,5 +92,6 @@ export function toDailyAgendaViewModel(input: {
     status: 'ready',
     entries: input.agenda.value.entries.map((entry) => toAgendaEntryView(entry, input.clientLinks)),
     truncatedNotice: input.agenda.value.isTruncated ? COPY.truncated(DAILY_AGENDA_LIMIT) : null,
+    delinquencyNotice: input.agenda.value.isDelinquencyUnavailable ? COPY.delinquencyUnavailable : null,
   }
 }

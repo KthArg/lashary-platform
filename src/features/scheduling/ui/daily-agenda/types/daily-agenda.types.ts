@@ -2,7 +2,6 @@ export type DailyAgendaSearchParams = Record<string, string | string[] | undefin
 
 export type ClientLinkTargets = { record: string; appointments: string }
 
-// Los enlaces al expediente son rutas de clients: los arma la página que compone las dos features.
 export type ClientLinks = (clientId: string) => ClientLinkTargets
 
 export type AgendaDayNav = {
@@ -32,5 +31,5 @@ export type AgendaEntryView = {
 export type DailyAgendaViewModel = { nav: AgendaDayNav } & (
   | { status: 'error' }
   | { status: 'empty' }
-  | { status: 'ready'; entries: AgendaEntryView[]; truncatedNotice: string | null }
+  | { status: 'ready'; entries: AgendaEntryView[]; truncatedNotice: string | null; delinquencyNotice: string | null }
 )

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { err, isErr, isOk, ok } from '@/shared/result'
 import { storageFailed } from '../../domain/errors'
 import { isDailyAgendaInvalid } from '../../domain/availability-errors'
@@ -36,13 +36,16 @@ function createFakeDailyAgendaRepository(
   }
 }
 
-function createFakeDelinquency(delinquent: string[]): DelinquentClientsPort & { calls: string[][] } {
+function createFakeDelinquency(
+  delinquent: string[],
+  failure?: ReturnType<typeof storageFailed>,
+): DelinquentClientsPort & { calls: string[][] } {
   const calls: string[][] = []
   return {
     calls,
     async listWithActiveDelinquency(clientIds) {
       calls.push([...clientIds])
-      return new Set(delinquent)
+      return failure ? err(failure) : ok(new Set(delinquent))
     },
   }
 }
@@ -113,5 +116,23 @@ describe('getDailyAgenda', () => {
       '2027-03-01',
     )
     expect(isOk(result) && result.value.entries.every((entry) => !entry.hasActiveDelinquency)).toBe(true)
+  })
+
+  it('si no se puede comprobar la morosidad, la agenda sale sin etiquetas y avisa que no se pudo comprobar', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const delinquency = createFakeDelinquency([], storageFailed('sin conexión'))
+    const result = await getDailyAgenda({ repo: createFakeDailyAgendaRepository([appointment]), delinquency })('2027-03-01')
+
+    expect(isOk(result)).toBe(true)
+    if (!isOk(result)) return
+    expect(result.value.isDelinquencyUnavailable).toBe(true)
+    expect(result.value.entries).toHaveLength(1)
+    expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('sin conexión'))
+    consoleError.mockRestore()
+  })
+
+  it('con la morosidad comprobada, la agenda no avisa de nada', async () => {
+    const result = await getDailyAgenda({ repo: createFakeDailyAgendaRepository([appointment]), delinquency: createFakeDelinquency([]) })('2027-03-01')
+    expect(isOk(result) && result.value.isDelinquencyUnavailable).toBe(false)
   })
 })

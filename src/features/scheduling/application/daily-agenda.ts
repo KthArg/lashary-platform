@@ -13,6 +13,7 @@ export type DailyAgenda = {
   date: string
   entries: AgendaEntry[]
   isTruncated: boolean
+  isDelinquencyUnavailable: boolean
 }
 
 export const getDailyAgenda =
@@ -26,7 +27,12 @@ export const getDailyAgenda =
 
     const { entries, isTruncated } = limitAgenda(appointments.value)
     const clientIds = agendaClientIds(entries)
-    // Una sola consulta por día, solo con las clientas que la agenda pinta (PERF-005).
-    const delinquent = clientIds.length > 0 ? await deps.delinquency.listWithActiveDelinquency(clientIds) : new Set<string>()
-    return ok({ date, entries: markDelinquent(entries, delinquent), isTruncated })
+    if (clientIds.length === 0) return ok({ date, entries, isTruncated, isDelinquencyUnavailable: false })
+
+    const delinquent = await deps.delinquency.listWithActiveDelinquency(clientIds)
+    if (isErr(delinquent)) {
+      console.error(`[scheduling] no se pudo comprobar la morosidad de la agenda del ${date}: ${delinquent.error.message}`)
+      return ok({ date, entries, isTruncated, isDelinquencyUnavailable: true })
+    }
+    return ok({ date, entries: markDelinquent(entries, delinquent.value), isTruncated, isDelinquencyUnavailable: false })
   }

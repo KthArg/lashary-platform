@@ -14,8 +14,6 @@ export interface AgendaDayRange {
   readonly untilMs: number
 }
 
-// Cita tal como la entrega el repositorio. Los campos del snapshot son null en las citas
-// anteriores a US-AGE-05, que no guardaron técnica ni anticipo.
 export interface AgendaAppointment {
   readonly id: string
   readonly status: AgendaAppointmentStatus
@@ -43,7 +41,6 @@ export interface AgendaEntry {
   readonly hasActiveDelinquency: boolean
 }
 
-// El día de la agenda es el día de pared del estudio (DOM-003): [00:00 de la fecha, 00:00 de la siguiente).
 export function studioDayRange(date: string): Result<AgendaDayRange, DailyAgendaInvalid> {
   if (!isCalendarDate(date)) return err(dailyAgendaInvalid())
   return ok({
@@ -91,7 +88,6 @@ export function markDelinquent(entries: readonly AgendaEntry[], delinquentClient
 
 const REJECTED_STATUS: AgendaAppointmentStatus = 'rejected'
 
-// A la misma hora, la rechazada va después de la que sí se atiende.
 const rejectedLast = (entry: AgendaEntry): number => (entry.status === REJECTED_STATUS ? 1 : 0)
 
 export function buildAgenda(appointments: readonly AgendaAppointment[]): AgendaEntry[] {
@@ -108,7 +104,6 @@ export interface DailyAgendaEntries {
   readonly isTruncated: boolean
 }
 
-// Pinta hasta DAILY_AGENDA_LIMIT citas y dice si quedaron otras fuera.
 export function limitAgenda(appointments: readonly AgendaAppointment[]): DailyAgendaEntries {
   return {
     entries: buildAgenda(appointments).slice(0, DAILY_AGENDA_LIMIT),

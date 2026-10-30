@@ -3,6 +3,7 @@ import { err, ok } from '@/shared/result'
 import { storageFailed } from '@/features/scheduling/domain/errors'
 import type { AgendaEntry } from '@/features/scheduling/domain/daily-agenda'
 import { buildAgendaDayNav, toDailyAgendaViewModel } from '../utils/daily-agenda-format'
+import { dailyAgendaMessages as COPY } from '../constants/daily-agenda-strings'
 import type { ClientLinks } from '../types/daily-agenda.types'
 
 const DATE = '2027-03-10'
@@ -66,7 +67,7 @@ describe('buildAgendaDayNav — US-AGE-11 criterio 4', () => {
 
 describe('toDailyAgendaViewModel — US-AGE-11', () => {
   it('deja cada cita lista para pintar: hora, clienta, técnica, duración, pago, primera vez y estado (criterios 1 y 2)', () => {
-    const view = toDailyAgendaViewModel({ date: DATE, today: TODAY, agenda: ok({ date: DATE, entries: [booked], isTruncated: false }), clientLinks })
+    const view = toDailyAgendaViewModel({ date: DATE, today: TODAY, agenda: ok({ date: DATE, entries: [booked], isTruncated: false, isDelinquencyUnavailable: false }), clientLinks })
 
     expect(view.status === 'ready' && view.entries).toEqual([
       {
@@ -84,15 +85,15 @@ describe('toDailyAgendaViewModel — US-AGE-11', () => {
         links: {
           record: '/admin/clients/perfil-ana/expediente',
           appointments: '/admin/clients/perfil-ana/citas',
-          recordLabel: 'Abrir el expediente de Ana Mora',
-          appointmentsLabel: 'Ver las citas de Ana Mora',
+          recordLabel: 'Abrir expediente de Ana Mora',
+          appointmentsLabel: 'Ver sus citas de Ana Mora',
         },
       },
     ])
   })
 
   it('una cita del estudio sin clienta ni snapshot no inventa datos ni enlaces (criterio 3)', () => {
-    const view = toDailyAgendaViewModel({ date: DATE, today: TODAY, agenda: ok({ date: DATE, entries: [studioOnly], isTruncated: false }), clientLinks })
+    const view = toDailyAgendaViewModel({ date: DATE, today: TODAY, agenda: ok({ date: DATE, entries: [studioOnly], isTruncated: false, isDelinquencyUnavailable: false }), clientLinks })
     const [entry] = view.status === 'ready' ? view.entries : []
 
     expect(entry).toMatchObject({
@@ -111,7 +112,7 @@ describe('toDailyAgendaViewModel — US-AGE-11', () => {
     const view = toDailyAgendaViewModel({
       date: DATE,
       today: TODAY,
-      agenda: ok({ date: DATE, entries: [{ ...booked, hasActiveDelinquency: true }, studioOnly], isTruncated: false }),
+      agenda: ok({ date: DATE, entries: [{ ...booked, hasActiveDelinquency: true }, studioOnly], isTruncated: false, isDelinquencyUnavailable: false }),
       clientLinks,
     })
     expect(view.status === 'ready' && view.entries.map((entry) => entry.delinquency)).toEqual(['Morosidad activa', null])
@@ -121,7 +122,7 @@ describe('toDailyAgendaViewModel — US-AGE-11', () => {
     const view = toDailyAgendaViewModel({
       date: DATE,
       today: TODAY,
-      agenda: ok({ date: DATE, entries: [{ ...booked, status: 'rejected' }], isTruncated: false }),
+      agenda: ok({ date: DATE, entries: [{ ...booked, status: 'rejected' }], isTruncated: false, isDelinquencyUnavailable: false }),
       clientLinks,
     })
     const [entry] = view.status === 'ready' ? view.entries : []
@@ -134,7 +135,7 @@ describe('toDailyAgendaViewModel — US-AGE-11', () => {
     const view = toDailyAgendaViewModel({
       date: DATE,
       today: TODAY,
-      agenda: ok({ date: DATE, entries: [{ ...booked, clientName: null, isFirstTime: false }], isTruncated: false }),
+      agenda: ok({ date: DATE, entries: [{ ...booked, clientName: null, isFirstTime: false }], isTruncated: false, isDelinquencyUnavailable: false }),
       clientLinks,
     })
     const [entry] = view.status === 'ready' ? view.entries : []
@@ -145,7 +146,7 @@ describe('toDailyAgendaViewModel — US-AGE-11', () => {
   })
 
   it('sin citas es el estado vacío y un fallo es el estado de error, los dos con la navegación del día (UI-003)', () => {
-    const empty = toDailyAgendaViewModel({ date: DATE, today: TODAY, agenda: ok({ date: DATE, entries: [], isTruncated: false }), clientLinks })
+    const empty = toDailyAgendaViewModel({ date: DATE, today: TODAY, agenda: ok({ date: DATE, entries: [], isTruncated: false, isDelinquencyUnavailable: false }), clientLinks })
     const failed = toDailyAgendaViewModel({ date: DATE, today: TODAY, agenda: err(storageFailed('caída')), clientLinks })
 
     expect(empty.status).toBe('empty')
@@ -155,12 +156,20 @@ describe('toDailyAgendaViewModel — US-AGE-11', () => {
 
   it('si el día no cabe entero, avisa cuántas muestra en vez de cortar callada (PERF-002)', () => {
     const agendaOf = (isTruncated: boolean) =>
-      toDailyAgendaViewModel({ date: DATE, today: TODAY, agenda: ok({ date: DATE, entries: [booked], isTruncated }), clientLinks })
+      toDailyAgendaViewModel({ date: DATE, today: TODAY, agenda: ok({ date: DATE, entries: [booked], isTruncated, isDelinquencyUnavailable: false }), clientLinks })
 
     expect(agendaOf(false)).toMatchObject({ status: 'ready', truncatedNotice: null })
     expect(agendaOf(true)).toMatchObject({
       status: 'ready',
       truncatedNotice: 'Este día tiene más de 100 citas: la agenda muestra las primeras 100.',
     })
+  })
+
+  it('avisa cuando no se pudo comprobar la morosidad', () => {
+    const view = toDailyAgendaViewModel({
+      date: DATE, today: TODAY, clientLinks,
+      agenda: ok({ date: DATE, entries: [booked], isTruncated: false, isDelinquencyUnavailable: true }),
+    })
+    expect(view).toMatchObject({ status: 'ready', delinquencyNotice: COPY.delinquencyUnavailable })
   })
 })

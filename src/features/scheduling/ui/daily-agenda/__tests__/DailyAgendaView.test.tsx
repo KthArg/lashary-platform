@@ -36,7 +36,7 @@ const entry = (overrides: Partial<AgendaEntry>): AgendaEntry => ({
 const renderAgenda = (entries: AgendaEntry[], isTruncated = false) =>
   render(
     <DailyAgendaView
-      view={toDailyAgendaViewModel({ date: DATE, today: TODAY, agenda: ok({ date: DATE, entries, isTruncated }), clientLinks })}
+      view={toDailyAgendaViewModel({ date: DATE, today: TODAY, agenda: ok({ date: DATE, entries, isTruncated, isDelinquencyUnavailable: false }), clientLinks })}
     />,
   )
 
@@ -60,8 +60,8 @@ describe('DailyAgendaView — US-AGE-11', () => {
   it('abre el expediente y las citas de la clienta desde la misma vista, con nombre accesible (criterio 3, UI-004)', () => {
     renderAgenda([entry({})])
 
-    const record = screen.getByRole('link', { name: 'Abrir el expediente de Ana Mora' })
-    const appointments = screen.getByRole('link', { name: 'Ver las citas de Ana Mora' })
+    const record = screen.getByRole('link', { name: 'Abrir expediente de Ana Mora' })
+    const appointments = screen.getByRole('link', { name: 'Ver sus citas de Ana Mora' })
     expect(record.getAttribute('href')).toBe('/admin/clients/perfil-ana/expediente')
     expect(appointments.getAttribute('href')).toBe('/admin/clients/perfil-ana/citas')
     expect(record.textContent).toBe(COPY.openRecord)
@@ -104,6 +104,18 @@ describe('DailyAgendaView — US-AGE-11', () => {
     cleanup()
     renderAgenda([entry({})])
     expect(screen.queryByText(COPY.truncated(100))).toBeNull()
+  })
+
+  it('avisa arriba de la lista si no se pudo comprobar la morosidad', () => {
+    render(
+      <DailyAgendaView
+        view={toDailyAgendaViewModel({
+          date: DATE, today: TODAY, clientLinks,
+          agenda: ok({ date: DATE, entries: [entry({})], isTruncated: false, isDelinquencyUnavailable: true }),
+        })}
+      />,
+    )
+    expect(screen.getByText(COPY.delinquencyUnavailable)).toBeTruthy()
   })
 
   it('se mueve al día anterior y al siguiente, y vuelve a hoy (criterio 4)', () => {

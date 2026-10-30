@@ -5,7 +5,6 @@ export const metadata = {
   title: 'Agenda del día | LASHARY Beauty Studio',
 }
 
-// La agenda es de scheduling y el expediente de clients: esta página compone las dos (ARCH-005).
 const clientLinks: ClientLinks = (clientId) => ({
   record: clientRecordPath(clientId),
   appointments: clientAppointmentsPath(clientId),

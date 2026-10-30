@@ -8,7 +8,6 @@ import type { ClientLinks, DailyAgendaViewModel } from '../types/daily-agenda.ty
 export const dailyAgendaService = {
   async load(input: { date: string; today: string; clientLinks: ClientLinks }): Promise<DailyAgendaViewModel> {
     const repo = createSupabaseDailyAgendaRepository(await createClient())
-    // Hasta US-MOR-02 ninguna clienta aparece morosa: esa historia cambia solo este adaptador.
     const agenda = await getDailyAgenda({ repo, delinquency: noDelinquentClientsYet })(input.date)
     return toDailyAgendaViewModel({ ...input, agenda })
   },

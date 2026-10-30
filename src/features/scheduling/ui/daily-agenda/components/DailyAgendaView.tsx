@@ -86,6 +86,7 @@ function AgendaBody({ view }: { view: DailyAgendaViewModel }) {
       return (
         <>
           {view.truncatedNotice ? <p className={STYLES.truncated}>{view.truncatedNotice}</p> : null}
+          {view.delinquencyNotice ? <p className={STYLES.truncated}>{view.delinquencyNotice}</p> : null}
           <ul aria-label={COPY.listLabel(view.nav.dayLabel)} className={STYLES.list}>
             {view.entries.map((entry) => (
               <AgendaItem key={entry.id} entry={entry} />

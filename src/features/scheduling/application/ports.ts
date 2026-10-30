@@ -164,9 +164,8 @@ export interface DelinquencyPort {
   hasActiveDelinquency(): Promise<boolean>
 }
 
-// Por lote: recibe las clientas del día y devuelve las que tienen morosidad activa. El adaptador real lo pone US-MOR-02.
 export interface DelinquentClientsPort {
-  listWithActiveDelinquency(clientIds: readonly string[]): Promise<ReadonlySet<string>>
+  listWithActiveDelinquency(clientIds: readonly string[]): Promise<Result<ReadonlySet<string>, StorageFailed>>
 }
 
 export type DecideAppointmentInput = {
@@ -218,7 +217,6 @@ export interface AlertsRepository {
   listRecent(limit: number): Promise<Result<SchedulingAlert[], StorageFailed>>
 }
 
-// Devuelve hasta DAILY_AGENDA_LIMIT + 1 citas, por inicio: la de más dice que el día no cabe entero.
 export interface DailyAgendaRepository {
   listBetween(fromMs: number, untilMs: number): Promise<Result<AgendaAppointment[], StorageFailed>>
 }

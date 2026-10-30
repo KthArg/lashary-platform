@@ -22,7 +22,6 @@ type DailyAgendaRow = {
   deposit_registered: number | null
 }
 
-// Lee con la sesión de la administradora: la RLS de staff (scheduling_appointments_select_staff) es la frontera.
 export function createSupabaseDailyAgendaRepository(db: SupabaseClient): DailyAgendaRepository {
   return {
     async listBetween(fromMs, untilMs) {
@@ -33,7 +32,6 @@ export function createSupabaseDailyAgendaRepository(db: SupabaseClient): DailyAg
         .gte('starts_at', new Date(fromMs).toISOString())
         .lt('starts_at', new Date(untilMs).toISOString())
         .order('starts_at', { ascending: true })
-        // Una de más: así el caso de uso sabe si el día no cabe entero en la agenda.
         .limit(DAILY_AGENDA_LIMIT + 1)
 
       if (error) return err(storageFailed(error.message))

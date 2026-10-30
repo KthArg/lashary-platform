@@ -13,7 +13,6 @@ const DB_URL = process.env.SUPABASE_DB_URL || DEFAULT_LOCAL_DB_URL
 const LOCAL_HOSTS = ['127.0.0.1', 'localhost']
 
 const STUDIO_RESOURCE_ID = '00000000-0000-0000-0000-000000000a01'
-// 2046: ningún otro archivo de integración escribe citas en ese año (SPEC de scheduling).
 const AGENDA_DATE = '2046-05-14'
 const SETUP_TIMEOUT_MS = 60_000
 const TEST_PHONE_PREFIX = '+5068200'
@@ -104,13 +103,10 @@ describe.skipIf(!reachable)('US-AGE-11 agenda diaria contra Supabase local (SEC-
       profiles[key] = row.rows[0].id
     }
 
-    // 14 de mayo de 2046 en la hora del estudio (UTC−6): 11:00, 09:00, una rechazada a las 13:00
-    // y una cancelada a las 15:00.
     await insertAppointment('eva', 'pending_approval', '2046-05-14T17:00:00Z', '2046-05-14T18:00:00Z')
     await insertAppointment('ana', 'confirmed', '2046-05-14T15:00:00Z', '2046-05-14T16:30:00Z')
     await insertAppointment('ana', 'rejected', '2046-05-14T19:00:00Z', '2046-05-14T20:00:00Z')
     await insertAppointment('ana', 'cancelled', '2046-05-14T21:00:00Z', '2046-05-14T22:00:00Z')
-    // Fuera del día del estudio: 23:30 del 13 de mayo, que en UTC ya es el 14.
     await insertAppointment('ana', 'confirmed', '2046-05-14T05:30:00Z', '2046-05-14T06:00:00Z')
   }, SETUP_TIMEOUT_MS)
 
