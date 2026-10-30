@@ -6,7 +6,7 @@ actualizado: 2026-10-29
 historias:
   - id: US-NOT-01
     estado: en_progreso
-    falta: "pieza 3 de 6: la base crea el aviso y la app ya lo lee y lo marca; falta la action, el layout que lo carga y el panel lateral"
+    falta: "pieza 4 de 6: la bandeja se lee y se marca desde index.ts; falta el panel lateral y el layout que la carga"
   - id: US-NOT-02
     estado: no_iniciada
   - id: US-NOT-03
@@ -145,6 +145,10 @@ después, y US-NOT-02 necesita el horario anterior. `read_at` vacío es «no le�
   Si la RLS no deja tocar el aviso, el `UPDATE` no afecta filas y se informa `notice-not-found`. Un
   fallo de la base es `InboxStorageFailed` con su causa, nunca una bandeja vacía. Pruebas:
   `domain/__tests__/inbox-notice.test.ts`, `db/__tests__/inbox-repository.test.ts` y `application/__tests__/inbox.test.ts`.
+- Borde (`ui/inbox/`): `loadAdminInbox` es una lectura de servidor normal, no `'use server'`; la RLS
+  deja sin avisos a quien no es staff. `markNoticeAction` exige `requireAdminSession`, valida con zod
+  (`id` uuid, `read` booleano), devuelve `{ ok: false, error }` en vez de lanzar, y refresca el layout
+  de `/admin` para que cambie el contador. Prueba: `ui/inbox/__tests__/inbox-actions.test.ts`.
 
 ## Qué no hace todavía
 
@@ -393,6 +397,8 @@ en el frontmatter de esta historia).
   Consumidor: `receiveReminderCronRequest`.
 - `receiveReminderCronRequest` — handler de la ruta de cron. Consumidor:
   `src/app/api/cron/notifications-reminders/route.ts`.
+- `loadAdminInbox`, `markNoticeAction` y sus tipos (US-NOT-01). Consumidor: el layout de `/admin` y
+  el panel lateral (pieza 5 de 6).
 - Dominio y aplicación son superficie interna; ninguna otra feature los consume.
 
 ## Decisiones
