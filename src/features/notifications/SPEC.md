@@ -131,7 +131,8 @@ después, y US-NOT-02 necesita el horario anterior. `read_at` vacío es «no le�
 - Lee y marca solo staff (SEC-001): `SELECT` y `UPDATE (read_at)`, nada más; sin `INSERT` ni `DELETE`.
 - Solo escribe `notifications_record_booking`, sin `EXECUTE` para `anon` ni `authenticated`: nadie
   puede fabricar avisos por PostgREST.
-- Prueba: `supabase/tests/database/notifications_admin_inbox.test.sql` (staff, clienta y anon, SEC-002).
+- Prueba: `supabase/tests/database/notifications_admin_inbox.test.sql` (staff, clienta y anon, SEC-002)
+  y `__tests__/rls-isolation.test.ts`, con tokens reales de clienta y anon contra PostgREST.
 
 ## Qué no hace todavía
 

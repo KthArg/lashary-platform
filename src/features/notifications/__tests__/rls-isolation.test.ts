@@ -4,6 +4,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 const REMINDERS_TABLE = 'notifications_reminders'
+const INBOX_TABLE = 'notifications_admin_inbox'
 
 const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
 let isSupabaseReachable = false
@@ -112,5 +113,47 @@ describe.skipIf(!isSupabaseConfigured)('SEC-002 — aislamiento RLS de notificat
   itLive('tras los intentos, la tabla sigue vacía para quien no es staff', async () => {
     const { data } = await anonClient.from(REMINDERS_TABLE).select('id')
     expect(data ?? []).toHaveLength(0)
+  })
+})
+
+describe.skipIf(!isSupabaseConfigured)('SEC-002 — aislamiento RLS de notifications_admin_inbox (US-NOT-01)', () => {
+  const PROBE_APPOINTMENT_ID = '00000000-0000-0000-0000-00000000b997'
+  let anonClient: SupabaseClient
+  let clientaClient: SupabaseClient
+
+  beforeAll(async () => {
+    isSupabaseReachable = await probeSupabase()
+    if (!isSupabaseReachable) return
+    anonClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    clientaClient = (await signUpClienta()).clientaClient
+  })
+
+  itLive('token anónimo no puede leer la bandeja', async () => {
+    const { error } = await anonClient.from(INBOX_TABLE).select('id')
+    expect(error).not.toBeNull()
+  })
+
+  itLive('clienta autenticada no ve ningún aviso ni puede marcarlos', async () => {
+    const read = await clientaClient.from(INBOX_TABLE).select('id')
+    expect(read.error).toBeNull()
+    expect(read.data ?? []).toHaveLength(0)
+
+    const marked = await clientaClient.from(INBOX_TABLE).update({ read_at: new Date().toISOString() }).not('id', 'is', null).select('id')
+    expect(marked.data ?? []).toHaveLength(0)
+  })
+
+  itLive('ni la clienta ni anon pueden fabricar avisos, ni por la tabla ni por la función', async () => {
+    const probe = { p_appointment_id: PROBE_APPOINTMENT_ID, p_client_name: 'Falsa', p_service_name: 'Falso', p_starts_at: new Date().toISOString() }
+
+    for (const client of [anonClient, clientaClient]) {
+      const inserted = await client
+        .from(INBOX_TABLE)
+        .insert({ kind: 'booking_created', appointment_id: PROBE_APPOINTMENT_ID, client_name: 'Falsa', service_name: 'Falso', starts_at: probe.p_starts_at })
+        .select()
+      expect(inserted.error).not.toBeNull()
+
+      const recorded = await client.rpc('notifications_record_booking', probe)
+      expect(recorded.error).not.toBeNull()
+    }
   })
 })
