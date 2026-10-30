@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { fixedDate } from '@/shared/testing/fixed-clock'
-import { buildReminderMessage, buildReminderTemplateVariables, formatStudioDateTime } from '../reminder-message'
+import { formatStudioDateTime } from '@/shared/studio-time'
+import { buildReminderMessage, buildReminderTemplateVariables } from '../reminder-message'
 
 describe('buildReminderMessage', () => {
   it('incluye la técnica y la fecha/hora en la zona del estudio (criterio 2)', () => {

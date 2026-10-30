@@ -57,8 +57,8 @@ US-NOT-03 (ADR-0007); el resto lo reusa vía el puerto que US-NOT-08 exige.
   — la aritmética de fechas vive en `shared/` para que `domain/`/`application/` nunca construyan un
   `Date` con aritmética (DOM-004, lo escanea `check-domain-purity.sh`). Errores tipados en
   `domain/errors.ts` (DOM-006). `domain/reminder-message.ts` arma el texto externalizado
-  (`REMINDER_MESSAGE_TEXTS`, DOM-009) con fecha y hora en `America/Costa_Rica` (`formatStudioDateTime`,
-  DOM-003) y la técnica reservada (criterio 2). Pruebas: `domain/__tests__/reminder.test.ts` y
+  (`REMINDER_MESSAGE_TEXTS`, DOM-009) con fecha y hora en `America/Costa_Rica` (`formatStudioDateTime`
+  de `shared/studio-time`, que también usa la bandeja, DOM-003) y la técnica reservada (criterio 2). Pruebas: `domain/__tests__/reminder.test.ts` y
   `reminder-message.test.ts`.
 - Capa `application/`: tres casos de uso encadenados por `run-reminder-cycle.ts` (lo llama el cron):
   - `discover-reminders.ts` — lee de `scheduling` (puerto `SchedulingReadPort`) las citas activas
