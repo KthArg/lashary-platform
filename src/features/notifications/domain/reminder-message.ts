@@ -1,4 +1,4 @@
-import { STUDIO_TIME_ZONE } from '@/shared/studio-time'
+import { formatStudioDateTime } from '@/shared/studio-time'
 
 export const REMINDER_MESSAGE_TEXTS = {
   greeting: 'Hola',
@@ -6,20 +6,6 @@ export const REMINDER_MESSAGE_TEXTS = {
   techniqueLabel: 'Técnica',
   whenLabel: 'Fecha y hora',
   emailSubject: 'Recordatorio de tu cita en LASHARY',
-}
-
-const dateTimeFormatter = new Intl.DateTimeFormat('es-CR', {
-  timeZone: STUDIO_TIME_ZONE,
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-  hour: 'numeric',
-  minute: '2-digit',
-  hour12: true,
-})
-
-export function formatStudioDateTime(instant: Date): string {
-  return dateTimeFormatter.format(instant)
 }
 
 export type ReminderMessageInput = { techniqueName: string; startsAt: Date }
