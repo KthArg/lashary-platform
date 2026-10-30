@@ -8,7 +8,7 @@ import { appointmentNotReschedulable, clientNotRegistered, storageFailed } from 
 import { loadReschedulePage, type ReschedulePageDeps } from '../utils/load-reschedule-page'
 
 const RESOURCE = 'r-1'
-const APPOINTMENT_ID = '00000000-0000-0000-0000-00000000ea01'
+const APPOINTMENT_ID = '00000000-0000-4000-8000-00000000ea01'
 const OCCUPIED_MINUTES = 75
 const OPEN_FROM_MIN = 540
 const OPEN_UNTIL_MIN = 660
