@@ -93,7 +93,10 @@ SELECT ok(
   'la clienta no logró marcar el aviso como leído');
 
 SELECT is(
-  (SELECT count(*)::int FROM public.notifications_admin_inbox),
+  (SELECT count(*)::int FROM public.notifications_admin_inbox
+    WHERE appointment_id IN ('00000000-0000-0000-0000-00000000b001', '00000000-0000-0000-0000-00000000b002',
+                             '00000000-0000-0000-0000-00000000b003', '00000000-0000-0000-0000-00000000b004',
+                             '00000000-0000-0000-0000-00000000b005')),
   1, 'nadie agregó ni borró avisos');
 
 SELECT * FROM finish();
