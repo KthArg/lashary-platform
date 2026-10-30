@@ -40,6 +40,7 @@ export interface AgendaEntry {
   readonly techniqueName: string | null
   readonly isFirstTime: boolean | null
   readonly paymentStatus: DepositPaymentStatus | null
+  readonly hasActiveDelinquency: boolean
 }
 
 // El día de la agenda es el día de pared del estudio (DOM-003): [00:00 de la fecha, 00:00 de la siguiente).
@@ -73,7 +74,19 @@ export function toAgendaEntry(appointment: AgendaAppointment): AgendaEntry {
     techniqueName: appointment.techniqueName,
     isFirstTime: appointment.isFirstTime,
     paymentStatus: derivePaymentStatus(appointment.depositRequired, appointment.depositRegistered),
+    hasActiveDelinquency: false,
   }
+}
+
+export const agendaClientIds = (entries: readonly AgendaEntry[]): string[] => [
+  ...new Set(entries.flatMap((entry) => (entry.clientId ? [entry.clientId] : []))),
+]
+
+export function markDelinquent(entries: readonly AgendaEntry[], delinquentClientIds: ReadonlySet<string>): AgendaEntry[] {
+  return entries.map((entry) => ({
+    ...entry,
+    hasActiveDelinquency: entry.clientId !== null && delinquentClientIds.has(entry.clientId),
+  }))
 }
 
 const REJECTED_STATUS: AgendaAppointmentStatus = 'rejected'

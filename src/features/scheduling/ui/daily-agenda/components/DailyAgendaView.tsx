@@ -47,6 +47,7 @@ function AgendaItem({ entry }: { entry: AgendaEntryView }) {
       <div className={STYLES.tags}>
         <span className={STYLES.tag}>{entry.technique}</span>
         {entry.visit ? <span className={STYLES.tag}>{entry.visit}</span> : null}
+        {entry.delinquency ? <span className={STYLES.delinquent}>{entry.delinquency}</span> : null}
       </div>
       <dl className={STYLES.meta}>
         <dt className={STYLES.term}>{COPY.labels.duration}</dt>

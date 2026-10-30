@@ -164,6 +164,11 @@ export interface DelinquencyPort {
   hasActiveDelinquency(): Promise<boolean>
 }
 
+// Por lote: recibe las clientas del día y devuelve las que tienen morosidad activa. El adaptador real lo pone US-MOR-02.
+export interface DelinquentClientsPort {
+  listWithActiveDelinquency(clientIds: readonly string[]): Promise<ReadonlySet<string>>
+}
+
 export type DecideAppointmentInput = {
   appointmentId: string
   decision: AppointmentDecision

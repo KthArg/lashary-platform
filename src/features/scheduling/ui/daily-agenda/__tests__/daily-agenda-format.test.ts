@@ -27,6 +27,7 @@ const booked: AgendaEntry = {
   techniqueName: 'Clásicas',
   isFirstTime: true,
   paymentStatus: 'partial',
+  hasActiveDelinquency: false,
 }
 
 const studioOnly: AgendaEntry = {
@@ -40,6 +41,7 @@ const studioOnly: AgendaEntry = {
   techniqueName: null,
   isFirstTime: null,
   paymentStatus: null,
+  hasActiveDelinquency: false,
 }
 
 describe('buildAgendaDayNav — US-AGE-11 criterio 4', () => {
@@ -74,6 +76,7 @@ describe('toDailyAgendaViewModel — US-AGE-11', () => {
         clientName: 'Ana Mora',
         technique: 'Clásicas',
         visit: 'Primera vez',
+        delinquency: null,
         payment: 'Anticipo parcial',
         status: 'Pendiente de aprobar',
         isPending: true,
@@ -102,6 +105,16 @@ describe('toDailyAgendaViewModel — US-AGE-11', () => {
       isRejected: false,
       links: null,
     })
+  })
+
+  it('una clienta con morosidad activa lo dice en su cita (criterio 2)', () => {
+    const view = toDailyAgendaViewModel({
+      date: DATE,
+      today: TODAY,
+      agenda: ok({ date: DATE, entries: [{ ...booked, hasActiveDelinquency: true }, studioOnly], isTruncated: false }),
+      clientLinks,
+    })
+    expect(view.status === 'ready' && view.entries.map((entry) => entry.delinquency)).toEqual(['Morosidad activa', null])
   })
 
   it('una cita rechazada se marca como tal y conserva los enlaces de su clienta', () => {

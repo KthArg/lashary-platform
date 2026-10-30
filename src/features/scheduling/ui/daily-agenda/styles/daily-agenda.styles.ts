@@ -22,6 +22,7 @@ export const dailyAgendaStyles = {
   term: 'font-medium',
   tags: 'flex flex-wrap gap-2 text-sm',
   tag: 'badge badge-ghost',
+  delinquent: 'badge badge-error',
   actions: 'flex flex-wrap gap-2',
   action: 'btn btn-outline btn-sm',
   empty: 'rounded-box bg-base-200 p-4 text-sm',

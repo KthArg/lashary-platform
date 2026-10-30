@@ -1,11 +1,12 @@
 import { isErr, ok, err, type Result } from '@/shared/result'
-import { limitAgenda, studioDayRange, type AgendaEntry } from '../domain/daily-agenda'
+import { agendaClientIds, limitAgenda, markDelinquent, studioDayRange, type AgendaEntry } from '../domain/daily-agenda'
 import type { DailyAgendaInvalid } from '../domain/availability-errors'
 import type { StorageFailed } from '../domain/errors'
-import type { DailyAgendaRepository } from './ports'
+import type { DailyAgendaRepository, DelinquentClientsPort } from './ports'
 
 export type DailyAgendaDeps = {
   repo: DailyAgendaRepository
+  delinquency: DelinquentClientsPort
 }
 
 export type DailyAgenda = {
@@ -23,5 +24,9 @@ export const getDailyAgenda =
     const appointments = await deps.repo.listBetween(range.value.fromMs, range.value.untilMs)
     if (isErr(appointments)) return err(appointments.error)
 
-    return ok({ date, ...limitAgenda(appointments.value) })
+    const { entries, isTruncated } = limitAgenda(appointments.value)
+    const clientIds = agendaClientIds(entries)
+    // Una sola consulta por día, solo con las clientas que la agenda pinta (PERF-005).
+    const delinquent = clientIds.length > 0 ? await deps.delinquency.listWithActiveDelinquency(clientIds) : new Set<string>()
+    return ok({ date, entries: markDelinquent(entries, delinquent), isTruncated })
   }

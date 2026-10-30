@@ -27,6 +27,7 @@ export const dailyAgendaMessages = {
   unnamedClient: 'Clienta sin nombre',
   noPayment: 'Sin datos de pago',
   paymentNotApplicable: 'No aplica: cita rechazada',
+  delinquent: 'Morosidad activa',
   openRecord: 'Abrir expediente',
   openRecordLabel: (name: string) => `Abrir el expediente de ${name}`,
   clientAppointments: 'Ver sus citas',

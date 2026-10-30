@@ -65,6 +65,7 @@ export function toAgendaEntryView(entry: AgendaEntry, clientLinks: ClientLinks):
     clientName,
     technique: entry.techniqueName ?? APPOINTMENT_DISPLAY_CHOICE.noService,
     visit: visitOf(entry.isFirstTime),
+    delinquency: entry.hasActiveDelinquency ? COPY.delinquent : null,
     payment: paymentOf(entry),
     status: COPY.status[entry.status],
     isPending: entry.status === PENDING_APPROVAL_STATUS,

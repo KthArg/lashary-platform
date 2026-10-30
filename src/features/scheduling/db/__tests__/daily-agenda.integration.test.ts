@@ -3,6 +3,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { Client as PgClient } from 'pg'
 import { isOk } from '@/shared/result'
 import { getDailyAgenda } from '../../application/daily-agenda'
+import { noDelinquentClientsYet } from '../../application/no-delinquency'
 import { createSupabaseDailyAgendaRepository } from '../daily-agenda-repository'
 
 const API_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
@@ -62,7 +63,7 @@ async function signUp(emailPrefix: string): Promise<SignedUpUser> {
   return { userId: data.user.id, client }
 }
 
-const agendaFor = (db: SupabaseClient) => getDailyAgenda({ repo: createSupabaseDailyAgendaRepository(db) })(AGENDA_DATE)
+const agendaFor = (db: SupabaseClient) => getDailyAgenda({ repo: createSupabaseDailyAgendaRepository(db), delinquency: noDelinquentClientsYet })(AGENDA_DATE)
 
 describe.skipIf(!reachable)('US-AGE-11 agenda diaria contra Supabase local (SEC-002)', () => {
   let admin: PgClient

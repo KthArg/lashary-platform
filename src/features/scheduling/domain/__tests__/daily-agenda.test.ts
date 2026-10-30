@@ -2,9 +2,11 @@ import { describe, it, expect } from 'vitest'
 import { isErr, isOk } from '@/shared/result'
 import { isDailyAgendaInvalid } from '../availability-errors'
 import {
+  agendaClientIds,
   buildAgenda,
   derivePaymentStatus,
   limitAgenda,
+  markDelinquent,
   studioDayRange,
   toAgendaEntry,
   type AgendaAppointment,
@@ -165,5 +167,31 @@ describe('limitAgenda', () => {
     expect(agenda.entries).toHaveLength(DAILY_AGENDA_LIMIT)
     expect(agenda.entries.at(-1)?.id).toBe(`cita-${String(DAILY_AGENDA_LIMIT - 1).padStart(3, '0')}`)
     expect(agenda.isTruncated).toBe(true)
+  })
+})
+
+describe('morosidad de las clientas del día', () => {
+  const entries = [
+    toAgendaEntry(baseAppointment),
+    toAgendaEntry({ ...baseAppointment, id: 'cita-2' }),
+    toAgendaEntry({ ...baseAppointment, id: 'cita-3', clientId: 'clienta-2' }),
+    toAgendaEntry({ ...baseAppointment, id: 'cita-4', clientId: null }),
+  ]
+
+  it('una cita nace sin morosidad marcada', () => {
+    expect(entries.every((entry) => !entry.hasActiveDelinquency)).toBe(true)
+  })
+
+  it('las clientas del día van una sola vez y sin las citas del estudio', () => {
+    expect(agendaClientIds(entries)).toEqual(['clienta-1', 'clienta-2'])
+  })
+
+  it('marca todas las citas de una clienta morosa y ninguna otra (criterio 2)', () => {
+    expect(markDelinquent(entries, new Set(['clienta-1'])).map((entry) => entry.hasActiveDelinquency)).toEqual([
+      true,
+      true,
+      false,
+      false,
+    ])
   })
 })

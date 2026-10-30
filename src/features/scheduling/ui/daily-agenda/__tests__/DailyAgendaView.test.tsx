@@ -29,6 +29,7 @@ const entry = (overrides: Partial<AgendaEntry>): AgendaEntry => ({
   techniqueName: 'Clásicas',
   isFirstTime: true,
   paymentStatus: 'covered',
+  hasActiveDelinquency: false,
   ...overrides,
 })
 
@@ -71,6 +72,14 @@ describe('DailyAgendaView — US-AGE-11', () => {
 
     expect(screen.getByText(COPY.noClient)).toBeTruthy()
     expect(screen.queryByRole('link', { name: /expediente/i })).toBeNull()
+  })
+
+  it('la morosidad activa se lee como texto en la tarjeta de esa clienta (criterio 2, UI-004)', () => {
+    renderAgenda([entry({ id: 'cita-1', hasActiveDelinquency: true }), entry({ id: 'cita-2', clientName: 'Eva Solís' })])
+
+    const items = within(screen.getByRole('list')).getAllByRole('listitem')
+    expect(within(items[0]).getByText(COPY.delinquent)).toBeTruthy()
+    expect(within(items[1]).queryByText(COPY.delinquent)).toBeNull()
   })
 
   it('una cita pendiente de aprobar se distingue con texto, no solo con color (UI-004)', () => {

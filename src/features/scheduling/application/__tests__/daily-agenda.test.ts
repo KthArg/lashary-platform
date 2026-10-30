@@ -3,8 +3,9 @@ import { err, isErr, isOk, ok } from '@/shared/result'
 import { storageFailed } from '../../domain/errors'
 import { isDailyAgendaInvalid } from '../../domain/availability-errors'
 import type { AgendaAppointment } from '../../domain/daily-agenda'
-import type { DailyAgendaRepository } from '../ports'
+import type { DailyAgendaRepository, DelinquentClientsPort } from '../ports'
 import { getDailyAgenda } from '../daily-agenda'
+import { noDelinquentClientsYet } from '../no-delinquency'
 
 const appointment: AgendaAppointment = {
   id: 'cita-1',
@@ -35,10 +36,21 @@ function createFakeDailyAgendaRepository(
   }
 }
 
+function createFakeDelinquency(delinquent: string[]): DelinquentClientsPort & { calls: string[][] } {
+  const calls: string[][] = []
+  return {
+    calls,
+    async listWithActiveDelinquency(clientIds) {
+      calls.push([...clientIds])
+      return new Set(delinquent)
+    },
+  }
+}
+
 describe('getDailyAgenda', () => {
   it('pide al repositorio el día del estudio y devuelve las citas con su estado de pago (criterio 1)', async () => {
     const repo = createFakeDailyAgendaRepository([appointment])
-    const result = await getDailyAgenda({ repo })('2027-03-01')
+    const result = await getDailyAgenda({ repo, delinquency: noDelinquentClientsYet })('2027-03-01')
 
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
@@ -51,7 +63,7 @@ describe('getDailyAgenda', () => {
 
   it('una fecha inválida se rechaza sin tocar la base', async () => {
     const repo = createFakeDailyAgendaRepository([appointment])
-    const result = await getDailyAgenda({ repo })('2027-02-30')
+    const result = await getDailyAgenda({ repo, delinquency: noDelinquentClientsYet })('2027-02-30')
 
     expect(isErr(result)).toBe(true)
     if (isErr(result)) expect(isDailyAgendaInvalid(result.error)).toBe(true)
@@ -59,15 +71,47 @@ describe('getDailyAgenda', () => {
   })
 
   it('un día sin citas es una agenda vacía, no un error', async () => {
-    const result = await getDailyAgenda({ repo: createFakeDailyAgendaRepository([]) })('2027-03-01')
+    const result = await getDailyAgenda({ repo: createFakeDailyAgendaRepository([]), delinquency: noDelinquentClientsYet })('2027-03-01')
     expect(isOk(result)).toBe(true)
     if (isOk(result)) expect(result.value.entries).toEqual([])
   })
 
   it('propaga el fallo del almacenamiento', async () => {
     const failure = storageFailed('sin conexión')
-    const result = await getDailyAgenda({ repo: createFakeDailyAgendaRepository([], failure) })('2027-03-01')
+    const result = await getDailyAgenda({ repo: createFakeDailyAgendaRepository([], failure), delinquency: noDelinquentClientsYet })('2027-03-01')
     expect(isErr(result)).toBe(true)
     if (isErr(result)) expect(result.error).toBe(failure)
+  })
+
+  it('marca la morosidad con una sola consulta por lote, con las clientas del día sin repetir (criterio 2, PERF-005)', async () => {
+    const repo = createFakeDailyAgendaRepository([
+      appointment,
+      { ...appointment, id: 'cita-2', startsAtMs: appointment.startsAtMs + 3_600_000 },
+      { ...appointment, id: 'cita-3', clientId: 'clienta-2', startsAtMs: appointment.startsAtMs + 7_200_000 },
+      { ...appointment, id: 'cita-4', clientId: null, startsAtMs: appointment.startsAtMs + 10_800_000 },
+    ])
+    const delinquency = createFakeDelinquency(['clienta-2'])
+    const result = await getDailyAgenda({ repo, delinquency })('2027-03-01')
+
+    expect(delinquency.calls).toEqual([['clienta-1', 'clienta-2']])
+    expect(isOk(result) && result.value.entries.map((entry) => [entry.id, entry.hasActiveDelinquency])).toEqual([
+      ['cita-1', false],
+      ['cita-2', false],
+      ['cita-3', true],
+      ['cita-4', false],
+    ])
+  })
+
+  it('un día sin clientas no consulta la morosidad', async () => {
+    const delinquency = createFakeDelinquency([])
+    await getDailyAgenda({ repo: createFakeDailyAgendaRepository([]), delinquency })('2027-03-01')
+    expect(delinquency.calls).toEqual([])
+  })
+
+  it('con el adaptador por defecto, hasta US-MOR-02, ninguna clienta aparece morosa', async () => {
+    const result = await getDailyAgenda({ repo: createFakeDailyAgendaRepository([appointment]), delinquency: noDelinquentClientsYet })(
+      '2027-03-01',
+    )
+    expect(isOk(result) && result.value.entries.every((entry) => !entry.hasActiveDelinquency)).toBe(true)
   })
 })

@@ -21,6 +21,7 @@ export type AgendaEntryView = {
   clientName: string
   technique: string
   visit: string | null
+  delinquency: string | null
   payment: string
   status: string
   isPending: boolean
