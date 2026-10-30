@@ -5,8 +5,8 @@ estado: en_progreso
 actualizado: 2026-10-30
 historias:
   - id: US-NOT-01
-    estado: en_progreso
-    falta: "pieza 4 de 6: la bandeja se lee y se marca desde index.ts; falta el panel lateral y el layout que la carga"
+    estado: terminada
+    evidencia: "Pila de 5 piezas sobre main: PRs #610 (1/5, tabla y RLS), #612 (2/5, trigger al reservar), #613 (3/5, dominio y repositorio), #615 (4/5, action y lectura) y #616 (5/5, panel lateral, cierra la historia). Criterio 1 (al reservar se genera el aviso en el panel): supabase/tests/database/scheduling_notify_booking_created.test.sql (reservar crea el aviso; una reserva fallida, una cita sin clienta o un cambio de hora no lo crean), ui/inbox/__tests__/admin-inbox.test.tsx y auth/__tests__/admin-auth.test.tsx (el layout lo carga para administradoras). Criterio 2 (clienta, servicio, fecha y hora): scheduling_notify_booking_created.test.sql, db/__tests__/inbox-repository.test.ts y admin-inbox.test.tsx. Criterio 3 (leído y no leído, persiste): supabase/tests/database/notifications_admin_inbox.test.sql (staff marca y desmarca, nadie borra ni fabrica avisos, la clienta y anon no los ven, SEC-002), application/__tests__/inbox.test.ts, inbox-repository.test.ts, ui/inbox/__tests__/inbox-actions.test.ts y admin-inbox.test.tsx, también con más de 20 avisos («Ver más»). Aislamiento con tokens reales de clienta y anon: __tests__/rls-isolation.test.ts. Si el aviso falla, la reserva igual se guarda, y una cita de paquete de US-AGE-04 usa el nombre del paquete: scheduling_notify_booking_created.test.sql. Probada a mano por José Loría en next dev contra Supabase local el 2026-10-29."
   - id: US-NOT-02
     estado: no_iniciada
   - id: US-NOT-03
@@ -152,6 +152,14 @@ después, y US-NOT-02 necesita el horario anterior. `read_at` vacío es «no le�
   la página siguiente de 20: es una lectura con `'use server'` a propósito, porque el layout no recibe
   parámetros de la URL y «ver más» se pide desde el panel; por eso exige `requireAdminSession`, valida
   el desplazamiento con zod y la RLS sigue detrás. Prueba: `ui/inbox/__tests__/inbox-actions.test.ts`.
+- Panel (`ui/inbox/components/AdminInbox/`): botón en el menú lateral con el número de no leídos y un
+  `<dialog>` modal que sale por la izquierda; el `<dialog>` nativo da foco atrapado, Escape y vuelta del
+  foco al botón. El layout de `/admin` carga la bandeja y se la pasa a `AdminSidebar` como hueco
+  (`notifications`), así `auth` no importa nada de `notifications`. Estados: vacío, error con
+  reintento y guardado en curso (botones deshabilitados); la bandeja llega cargada con el layout.
+  El contador cuenta todos los no leídos; si hay más de 20 avisos, «Ver más» trae los siguientes 20
+  y se pueden marcar igual. Al cerrar el panel se descarta lo cargado de más y vuelve a los primeros
+  20. Prueba: `ui/inbox/__tests__/admin-inbox.test.tsx` y `auth/__tests__/admin-auth.test.tsx` (el layout).
 
 ## Qué no hace todavía
 
@@ -400,14 +408,16 @@ en el frontmatter de esta historia).
   Consumidor: `receiveReminderCronRequest`.
 - `receiveReminderCronRequest` — handler de la ruta de cron. Consumidor:
   `src/app/api/cron/notifications-reminders/route.ts`.
-- `loadAdminInbox`, `markNoticeAction` y sus tipos (US-NOT-01). Consumidor: el layout de `/admin` y
-  el panel lateral (pieza 5 de 6).
+- `loadAdminInbox`, `AdminInbox`, `markNoticeAction` y sus tipos (US-NOT-01). Consumidor:
+  `src/app/admin/layout.tsx`.
 - Dominio y aplicación son superficie interna; ninguna otra feature los consume.
 
 ## Decisiones
 
 - US-NOT-01, 2026-10-29: el aviso nace al reservar la clienta, no al aprobar (la historia dice
-  «cuando un cliente agende»). Pendiente de confirmar por el PO.
+  «cuando un cliente agende»). Acordado por el equipo, comunicado por José Loría el 2026-10-29.
+- US-NOT-01, 2026-10-29: la historia se cierra en la pieza 5 de 5, la última con código; no se abre
+  una pieza aparte solo para el cierre.
 
 - ADR-0006 (canal de notificaciones): WhatsApp directo contra la Graph API de Meta (sin Twilio,
   decisión del PO el 2026-10-21: lo exige quien pide el proyecto), Resend como respaldo por email

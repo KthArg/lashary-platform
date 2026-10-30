@@ -8,7 +8,7 @@ import { AUTH_BUTTON_TEXTS, AUTH_LABELS, ADMIN_PORTAL_ROUTES } from '../../../co
 import { sidebarStyles as STYLES } from './AdminSidebar.styles'
 import type { AdminSidebarProps } from './AdminSidebar.types'
 
-export function AdminSidebar({ session }: AdminSidebarProps) {
+export function AdminSidebar({ session, notifications }: AdminSidebarProps) {
   const [isExpanded, setIsExpanded] = useState(true)
   const pathname = usePathname()
 
@@ -59,11 +59,28 @@ export function AdminSidebar({ session }: AdminSidebarProps) {
       ),
     },
   ]
+  const [dashboardItem, ...sectionItems] = navItems
+
+  const renderNavLink = (item: (typeof navItems)[number]) => {
+    const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`)
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        className={`${STYLES.navLink} ${isActive ? STYLES.navLinkActive : STYLES.navLinkInactive}`}
+        title={!isExpanded ? item.label : undefined}
+      >
+        {item.icon}
+        {isExpanded && <span>{item.label}</span>}
+      </Link>
+    )
+  }
 
   return (
     <aside
       className={`${STYLES.aside} ${isExpanded ? STYLES.expandedWidth : STYLES.collapsedWidth}`}
       aria-label={AUTH_LABELS.adminNavAriaLabel}
+      data-expanded={isExpanded}
     >
       <div>
         <div className={STYLES.header}>
@@ -86,20 +103,9 @@ export function AdminSidebar({ session }: AdminSidebarProps) {
         </div>
 
         <nav className={STYLES.nav}>
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`)
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`${STYLES.navLink} ${isActive ? STYLES.navLinkActive : STYLES.navLinkInactive}`}
-                title={!isExpanded ? item.label : undefined}
-              >
-                {item.icon}
-                {isExpanded && <span>{item.label}</span>}
-              </Link>
-            )
-          })}
+          {renderNavLink(dashboardItem)}
+          {notifications}
+          {sectionItems.map(renderNavLink)}
         </nav>
       </div>
 
