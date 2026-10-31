@@ -118,9 +118,10 @@ US-NOT-03 (ADR-0007); el resto lo reusa vía el puerto que US-NOT-08 exige.
   todo (reemplazado por `meta-whatsapp-channel.ts` y cableado en `index.ts`); no queda código de
   Twilio en la feature. Pruebas: `channels/__tests__/meta-whatsapp-channel.test.ts` (sin plantilla
   y con plantilla) y `resend-email-channel.test.ts` (mock de `fetch`).
-- Disparo (`http/cron-handler.ts`, `src/app/api/cron/notifications-reminders/route.ts`, `vercel.json`):
-  Vercel Cron llama cada 15 minutos con `Authorization: Bearer <CRON_SECRET>`; sin ese secreto
-  configurado el endpoint se niega siempre (fail-closed). Sin sesión de usuario (sin cookies): el
+- Disparo (`http/cron-handler.ts`, `src/app/api/cron/notifications-reminders/route.ts`): la ruta
+  recibe un `POST` con `Authorization: Bearer <CRON_SECRET>`; sin ese secreto configurado el endpoint
+  se niega siempre (fail-closed). Hoy nadie la llama: no hay `vercel.json` ni un workflow de GitHub
+  Actions que lo haga (ver «Antes de producción», punto 5, y la activación en `docs/process/DEPENDENCIES.md`). Sin sesión de usuario (sin cookies): el
   cron se autentica como una cuenta de staff (`shared/lib/supabase/system.ts`,
   `NOTIFICATIONS_CRON_EMAIL`/`NOTIFICATIONS_CRON_PASSWORD`) y queda sujeto a la misma RLS que
   cualquier sesión real — nunca la service-role key (SEC-001/003). Prueba: `http/__tests__/cron-handler.test.ts`.
@@ -387,9 +388,12 @@ recordatorio real le llegue a una clienta; es un checklist de activación, no de
    migraciones de `notifications`, así que `discoverReminders` (criterio 1: detectar la cita 24h
    antes) y `reconcileReminders` (criterio 3: cancelar o reprogramar si la cita cambia) se pueden
    probar ahí de punta a punta; falta correr esa prueba con datos reales.
-5. **Disparo automático en producción.** `vercel.json` pide una corrida cada 15 minutos, pero el
-   plan Hobby de Vercel solo permite cron jobs una vez al día. Decisión del líder (2026-10-21): se
-   resuelve con GitHub Actions cuando el proyecto se despliegue, no ahora.
+5. **Disparo automático en producción.** No existe `vercel.json` ni un workflow que llame a la ruta:
+   el plan Hobby de Vercel solo permite cron jobs una vez al día, así que el disparo cada 15 minutos
+   se resuelve con un workflow de GitHub Actions que haga `POST` con el `Bearer CRON_SECRET`
+   (decisión del líder, 2026-10-21). El workflow lo aplica un admin; dueño y fecha en «Activación del
+   cron de recordatorios» de `docs/process/DEPENDENCIES.md`. Mientras no corra, tampoco vencen solos
+   los reagendados sin decisión de US-AGE-10.
 6. **Cuenta de staff del cron en producción — deliberadamente no creada.** Decisión del líder
    (2026-10-21): sin número de WhatsApp ni dominio de email reales, cualquier recordatorio que el
    cron intentara mandar en producción fallaría en los dos canales y, tras `MAX_REMINDER_ATTEMPTS`
