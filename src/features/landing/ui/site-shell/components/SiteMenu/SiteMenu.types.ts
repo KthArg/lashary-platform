@@ -5,5 +5,6 @@ export interface SiteMenuProps {
   anchorBase?: string
   productsHref?: string
   cartHref?: string
+  hasSession?: boolean
   onClose: () => void
 }
