@@ -12,7 +12,7 @@ import type {
   SlotView,
 } from '../types/client-calendar.types'
 
-const toSlotViews = (slots: readonly DaySlot[]): SlotView[] =>
+export const toSlotViews = (slots: readonly DaySlot[]): SlotView[] =>
   slots.map((slot) => ({
     startMin: slot.startMin,
     range: `${minutesToTime(slot.startMin)}–${minutesToTime(slot.endMin)}`,

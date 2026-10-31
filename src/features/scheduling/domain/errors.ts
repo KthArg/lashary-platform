@@ -85,8 +85,58 @@ export interface InvalidCancellationWindow {
   readonly message: string
 }
 
+export interface AppointmentScheduleChanged {
+  readonly code: 'SCHEDULING_APPOINTMENT_SCHEDULE_CHANGED'
+  readonly appointmentId: string
+  readonly startsAtMs: number
+  readonly endsAtMs: number
+  readonly message: string
+}
+
+export interface InvalidRescheduleLimit {
+  readonly code: 'SCHEDULING_INVALID_RESCHEDULE_LIMIT'
+  readonly max: number
+  readonly message: string
+}
+
 export interface AppointmentNotCancellable {
   readonly code: 'SCHEDULING_APPOINTMENT_NOT_CANCELLABLE'
+  readonly appointmentId: string
+  readonly message: string
+}
+
+export interface AppointmentNotReschedulable {
+  readonly code: 'SCHEDULING_APPOINTMENT_NOT_RESCHEDULABLE'
+  readonly appointmentId: string
+  readonly message: string
+}
+
+export interface RescheduleOutsideWindow {
+  readonly code: 'SCHEDULING_RESCHEDULE_OUTSIDE_WINDOW'
+  readonly appointmentId: string
+  readonly message: string
+}
+
+export interface RescheduleLimitReached {
+  readonly code: 'SCHEDULING_RESCHEDULE_LIMIT_REACHED'
+  readonly appointmentId: string
+  readonly message: string
+}
+
+export interface RescheduleStateChanged {
+  readonly code: 'SCHEDULING_RESCHEDULE_STATE_CHANGED'
+  readonly appointmentId: string
+  readonly message: string
+}
+
+export interface RescheduleSlotNotOffered {
+  readonly code: 'SCHEDULING_RESCHEDULE_SLOT_NOT_OFFERED'
+  readonly appointmentId: string
+  readonly message: string
+}
+
+export interface RescheduleSlotTaken {
+  readonly code: 'SCHEDULING_RESCHEDULE_SLOT_TAKEN'
   readonly appointmentId: string
   readonly message: string
 }
@@ -107,6 +157,14 @@ export type SchedulingError =
   | AppointmentNotCancellable
   | CancellationConsequenceChanged
   | InvalidCancellationWindow
+  | InvalidRescheduleLimit
+  | AppointmentScheduleChanged
+  | AppointmentNotReschedulable
+  | RescheduleOutsideWindow
+  | RescheduleLimitReached
+  | RescheduleStateChanged
+  | RescheduleSlotNotOffered
+  | RescheduleSlotTaken
 
 export const techniqueNotSelectable = (
   techniqueId: string,
@@ -204,4 +262,58 @@ export const invalidCancellationWindow = (hours: number): InvalidCancellationWin
   code: 'SCHEDULING_INVALID_CANCELLATION_WINDOW',
   hours,
   message: `la ventana de cancelación debe ser un número entero de horas, no negativo y de hasta 30 días: ${hours}`,
+})
+
+export const appointmentNotReschedulable = (appointmentId: string): AppointmentNotReschedulable => ({
+  code: 'SCHEDULING_APPOINTMENT_NOT_RESCHEDULABLE',
+  appointmentId,
+  message: `la cita ${appointmentId} no existe, ya pasó o no está en un estado que se pueda reagendar`,
+})
+
+export const rescheduleOutsideWindow = (appointmentId: string): RescheduleOutsideWindow => ({
+  code: 'SCHEDULING_RESCHEDULE_OUTSIDE_WINDOW',
+  appointmentId,
+  message: `la cita ${appointmentId} está dentro de la ventana de cancelación y ya no se puede reagendar, solo cancelar`,
+})
+
+export const rescheduleLimitReached = (appointmentId: string): RescheduleLimitReached => ({
+  code: 'SCHEDULING_RESCHEDULE_LIMIT_REACHED',
+  appointmentId,
+  message: `la cita ${appointmentId} ya se reagendó el máximo de veces permitido`,
+})
+
+export const rescheduleStateChanged = (appointmentId: string): RescheduleStateChanged => ({
+  code: 'SCHEDULING_RESCHEDULE_STATE_CHANGED',
+  appointmentId,
+  message: `la cita ${appointmentId} cambió de estado desde que la clienta la vio`,
+})
+
+export const rescheduleSlotNotOffered = (appointmentId: string): RescheduleSlotNotOffered => ({
+  code: 'SCHEDULING_RESCHEDULE_SLOT_NOT_OFFERED',
+  appointmentId,
+  message: `ese horario no está entre los que ofrece el calendario`,
+})
+
+export const rescheduleSlotTaken = (appointmentId: string): RescheduleSlotTaken => ({
+  code: 'SCHEDULING_RESCHEDULE_SLOT_TAKEN',
+  appointmentId,
+  message: `el horario nuevo de la cita ${appointmentId} ya está ocupado`,
+})
+
+export const invalidRescheduleLimit = (max: number): InvalidRescheduleLimit => ({
+  code: 'SCHEDULING_INVALID_RESCHEDULE_LIMIT',
+  max,
+  message: `el tope de reagendados debe ser un número entero entre 0 y 3: ${max}`,
+})
+
+export const appointmentScheduleChanged = (
+  appointmentId: string,
+  startsAtMs: number,
+  endsAtMs: number,
+): AppointmentScheduleChanged => ({
+  code: 'SCHEDULING_APPOINTMENT_SCHEDULE_CHANGED',
+  appointmentId,
+  startsAtMs,
+  endsAtMs,
+  message: `el horario de la cita ${appointmentId} cambió desde que la administradora lo vio`,
 })

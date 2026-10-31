@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { createSupabaseDayAvailabilityRepository } from '../day-availability-repository'
 
 const RESOURCE = '00000000-0000-0000-0000-000000000a01'
+const APPOINTMENT = '00000000-0000-0000-0000-00000000ea01'
 
 function dbAnswering(answer: { data: unknown; error: { message: string } | null }) {
   const calls: unknown[][] = []
@@ -35,6 +36,16 @@ describe('day-availability-repository — US-AGE-02', () => {
       { startsAt: new Date('2026-10-19T15:00:00Z'), endsAt: new Date('2026-10-19T16:00:00Z') },
     ])
     expect(calls).toEqual([['scheduling_busy_ranges', { p_resource_id: RESOURCE, p_day: '2026-10-19' }]])
+  })
+
+  it('con una cita a ignorar se la pasa a scheduling_busy_ranges', async () => {
+    const { db, calls } = dbAnswering({ data: [], error: null })
+    const repo = createSupabaseDayAvailabilityRepository(db)
+
+    await repo.listBusyRanges(RESOURCE, '2026-10-19', APPOINTMENT)
+    expect(calls).toEqual([
+      ['scheduling_busy_ranges', { p_resource_id: RESOURCE, p_day: '2026-10-19', p_ignore_appointment_id: APPOINTMENT }],
+    ])
   })
 
   it('sin filas devuelve listas vacías', async () => {

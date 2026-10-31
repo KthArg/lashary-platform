@@ -2,7 +2,11 @@ import { randomUUID } from 'node:crypto'
 import { ok, err, isErr, type Result } from '@/shared/result'
 import { systemClock } from '@/shared/clock'
 import { createSystemClient, closeSystemClient, readSystemClientConfigFromEnv, type SystemClientFailure } from '@/shared/lib/supabase/system'
-import { listSchedulingAppointmentsForReminders, getSchedulingAppointmentForReminder } from '@/features/scheduling'
+import {
+  listSchedulingAppointmentsForReminders,
+  getSchedulingAppointmentForReminder,
+  expireSchedulingUndecidedReschedules,
+} from '@/features/scheduling'
 import { getClientContactForReminders } from '@/features/clients'
 import { reminderRepository } from './db/reminder-repository'
 import { runReminderCycle, type RunReminderCycleSummary } from './application/run-reminder-cycle'
@@ -37,12 +41,18 @@ export async function runNotificationsReminderCycle(): Promise<
       return isErr(result) ? err(REPOSITORY_FAILURE) : ok(result.value)
     }
 
+    const expireUndecidedReschedules = async (): Promise<Result<number, RepositoryFailure>> => {
+      const result = await expireSchedulingUndecidedReschedules(db)
+      return isErr(result) ? err(REPOSITORY_FAILURE) : ok(result.value)
+    }
+
     const getContact = async (clientId: string): Promise<Result<ContactInfo | null, RepositoryFailure>> => {
       const result = await getClientContactForReminders(clientId, db)
       return isErr(result) ? err(REPOSITORY_FAILURE) : ok(result.value)
     }
 
     return await runReminderCycle({
+      expireUndecidedReschedules,
       listUpcoming,
       insertIfAbsent: repo.insertIfAbsent,
       newId: () => randomUUID(),

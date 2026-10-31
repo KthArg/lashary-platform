@@ -2,11 +2,17 @@ import { ok, isErr, type Result } from '@/shared/result'
 import { discoverReminders, type DiscoverRemindersDeps } from './discover-reminders'
 import { reconcileReminders, type ReconcileRemindersDeps } from './reconcile-reminders'
 import { sendDueReminders, type SendDueRemindersDeps } from './send-due-reminders'
-import type { RepositoryFailure } from './ports'
+import type { RepositoryFailure, SchedulingMaintenancePort } from './ports'
 
-export type RunReminderCycleDeps = DiscoverRemindersDeps & ReconcileRemindersDeps & SendDueRemindersDeps
+export type RunReminderCycleDeps = DiscoverRemindersDeps &
+  ReconcileRemindersDeps &
+  SendDueRemindersDeps & {
+    expireUndecidedReschedules: SchedulingMaintenancePort['expireUndecidedReschedules']
+  }
 
 export type RunReminderCycleSummary = {
+  expiredReschedules: number
+  expireFailed: number
   discovered: number
   discoverFailed: number
   releasedExpiredClaims: number
@@ -22,6 +28,8 @@ export type RunReminderCycleSummary = {
 export const runReminderCycle =
   (deps: RunReminderCycleDeps) =>
   async (): Promise<Result<RunReminderCycleSummary, RepositoryFailure>> => {
+    const expiry = await deps.expireUndecidedReschedules()
+
     const discovery = await discoverReminders(deps)()
     if (isErr(discovery)) return discovery
 
@@ -32,6 +40,8 @@ export const runReminderCycle =
     if (isErr(sending)) return sending
 
     return ok({
+      expiredReschedules: isErr(expiry) ? 0 : expiry.value,
+      expireFailed: isErr(expiry) ? 1 : 0,
       discovered: discovery.value.discovered,
       discoverFailed: discovery.value.failed,
       releasedExpiredClaims: reconciliation.value.releasedExpiredClaims,
