@@ -7,6 +7,7 @@ import type { SchedulingAlert } from '../domain/alert'
 import type {
   AppointmentNotCancellable,
   AppointmentNotPending,
+  AppointmentScheduleChanged,
   AppointmentNotReschedulable,
   CancellationConsequenceChanged,
   ClientNotRegistered,
@@ -225,6 +226,7 @@ export type DecideAppointmentInput = {
   appointmentId: string
   decision: AppointmentDecision
   reason: string | null
+  expectedStartsAtMs?: number
 }
 
 export type DecidedAppointment = {
@@ -235,7 +237,7 @@ export type DecidedAppointment = {
 export interface AppointmentDecisionRepository {
   decide(
     input: DecideAppointmentInput,
-  ): Promise<Result<DecidedAppointment, AppointmentNotPending | StorageFailed>>
+  ): Promise<Result<DecidedAppointment, AppointmentNotPending | AppointmentScheduleChanged | StorageFailed>>
 }
 
 export type RecordAuditEvent = (input: {

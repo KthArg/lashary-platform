@@ -13,7 +13,8 @@ const mockReject = vi.fn()
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: mockRefresh }) }))
 vi.mock('../actions/approval-queue-actions', () => ({
-  approveAppointmentAction: (appointmentId: string) => mockApprove(appointmentId),
+  approveAppointmentAction: (appointmentId: string, seenStartsAtMs: number) =>
+    mockApprove(appointmentId, seenStartsAtMs),
   rejectAppointmentAction: (appointmentId: string, reason: string) => mockReject(appointmentId, reason),
 }))
 
@@ -134,7 +135,7 @@ describe('ApprovalQueue: decisiones', () => {
 
     fireEvent.click(screen.getByRole('button', { name: APPROVAL_QUEUE_ARIA.approve(FIRST_SLOT) }))
 
-    await waitFor(() => expect(mockApprove).toHaveBeenCalledWith(FIRST_APPOINTMENT.id))
+    await waitFor(() => expect(mockApprove).toHaveBeenCalledWith(FIRST_APPOINTMENT.id, FIRST_APPOINTMENT.startsAtMs))
   })
 
   it('rechazar pide el motivo opcional y llama a la acción con el id y el motivo', async () => {

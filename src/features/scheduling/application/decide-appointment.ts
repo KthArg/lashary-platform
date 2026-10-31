@@ -4,6 +4,7 @@ import { normalizeDecisionReason } from '../domain/appointment-decision'
 import {
   auditNotRecorded,
   type AppointmentNotPending,
+  type AppointmentScheduleChanged,
   type AuditNotRecorded,
   type InvalidDecisionReason,
   type StorageFailed,
@@ -20,7 +21,7 @@ export type DecideAppointmentDeps = {
   recordAuditEvent: RecordAuditEvent
 }
 
-export type ApproveAppointmentInput = { appointmentId: string }
+export type ApproveAppointmentInput = { appointmentId: string; seenStartsAtMs: number }
 
 export type RejectAppointmentInput = {
   appointmentId: string
@@ -28,7 +29,7 @@ export type RejectAppointmentInput = {
   reason?: string
 }
 
-export type ApproveAppointmentError = AppointmentNotPending | StorageFailed
+export type ApproveAppointmentError = AppointmentNotPending | AppointmentScheduleChanged | StorageFailed
 
 export type DecideAppointmentError =
   | ApproveAppointmentError
@@ -43,6 +44,7 @@ export async function approveAppointment(
     appointmentId: input.appointmentId,
     decision: APPOINTMENT_DECISION.APPROVED,
     reason: null,
+    expectedStartsAtMs: input.seenStartsAtMs,
   })
 }
 
