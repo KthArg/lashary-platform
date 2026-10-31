@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { MY_APPOINTMENTS_PATH } from '../../my-appointments/constants/my-appointments-strings'
 import { rescheduleAppointmentAction } from '../actions/reschedule-appointment-action'
 import type { RescheduleAppointmentResult } from '../types/reschedule-results'
 
@@ -11,31 +10,26 @@ const request = {
 
 let serviceResult: RescheduleAppointmentResult
 const mockReschedule = vi.fn(async (_rawRequest: unknown) => serviceResult)
-const mockRevalidatePath = vi.fn()
 
 vi.mock('../services/reschedule-service', () => ({
   rescheduleService: { reschedule: (rawRequest: unknown) => mockReschedule(rawRequest) },
 }))
-vi.mock('next/cache', () => ({ revalidatePath: (path: string) => mockRevalidatePath(path) }))
 
 beforeEach(() => {
   mockReschedule.mockClear()
-  mockRevalidatePath.mockClear()
 })
 
 describe('rescheduleAppointmentAction', () => {
-  it('entrega la solicitud al servicio y, si se movió, refresca la lista de mis citas', async () => {
+  it('entrega la solicitud al servicio y devuelve lo que responde, sin refrescar la pantalla', async () => {
     serviceResult = { ok: true, message: 'Tu cita fue movida.' }
 
     expect(await rescheduleAppointmentAction(request)).toEqual(serviceResult)
     expect(mockReschedule).toHaveBeenCalledWith(request)
-    expect(mockRevalidatePath).toHaveBeenCalledWith(MY_APPOINTMENTS_PATH)
   })
 
-  it('si falla no refresca nada y devuelve el mensaje', async () => {
+  it('si falla devuelve el mensaje', async () => {
     serviceResult = { ok: false, message: 'Alguien tomó ese horario. Elegí otro.' }
 
     expect(await rescheduleAppointmentAction(request)).toEqual(serviceResult)
-    expect(mockRevalidatePath).not.toHaveBeenCalled()
   })
 })

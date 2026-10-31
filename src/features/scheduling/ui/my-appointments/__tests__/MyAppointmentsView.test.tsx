@@ -6,6 +6,7 @@ import {
   myAppointmentsMessages,
 } from '../constants/my-appointments-strings'
 import { MyAppointmentsView } from '../components/MyAppointmentsView'
+import { reschedulePageMessages, reschedulePath } from '../../reschedule/constants/reschedule-page-strings'
 import type { MyAppointmentView } from '../types/my-appointments.types'
 
 const copy = myAppointmentsMessages
@@ -38,6 +39,14 @@ describe('MyAppointmentsView', () => {
     expect(within(items[0]).getByText(appointment.amounts as string)).toBeTruthy()
     expect(within(items[1]).getByText('Retoque')).toBeTruthy()
     expect(within(items[1]).getByText(copy.status.pending_approval)).toBeTruthy()
+  })
+
+  it('cada cita ofrece reagendar, con un enlace a su pantalla y un nombre que dice cuál cita es', () => {
+    render(<MyAppointmentsView view={{ status: 'ready', appointments: [appointment] }} />)
+
+    const link = screen.getByRole('link', { name: reschedulePageMessages.rescheduleButtonLabel(appointment.slot) })
+    expect(link.getAttribute('href')).toBe(reschedulePath(appointment.id))
+    expect(link.textContent).toBe(reschedulePageMessages.rescheduleButton)
   })
 
   it('el título identifica la pantalla', () => {

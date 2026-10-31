@@ -5,7 +5,7 @@ import { DayNavigator } from '../../client-calendar/components/DayNavigator'
 import { reschedulePageMessages } from '../constants/reschedule-page-strings'
 import { rescheduleStyles as STYLES } from '../styles/reschedule.styles'
 import type { RescheduleView as RescheduleViewModel } from '../types/reschedule-view.types'
-import { RescheduleSlotList } from './RescheduleSlotList'
+import { RescheduleForm } from './RescheduleForm'
 
 function BackLink() {
   return (
@@ -71,10 +71,16 @@ function RescheduleBody({ view }: { view: RescheduleViewModel }) {
     case 'ready':
       return (
         <section className={STYLES.card}>
-          <CurrentAppointment current={view.current} />
-          <p className={STYLES.remaining}>{view.remaining}</p>
-          <DayNavigator day={view.day} />
-          <RescheduleSlotList slots={view.slots} />
+          <RescheduleForm
+            view={view}
+            intro={
+              <>
+                <CurrentAppointment current={view.current} />
+                <p className={STYLES.remaining}>{view.remaining}</p>
+                <DayNavigator day={view.day} />
+              </>
+            }
+          />
         </section>
       )
   }

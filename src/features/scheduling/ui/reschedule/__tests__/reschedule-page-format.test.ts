@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import type { RescheduleQuote } from '../../../application/ports'
 import type { DaySlot } from '../../../domain/day-slots'
 import { cancellationMessages } from '../../my-appointments/constants/cancellation-strings'
+import { studioLocalToUtc } from '@/shared/studio-time'
 import { reschedulePageMessages, reschedulePath } from '../constants/reschedule-page-strings'
 import { toRescheduleView } from '../utils/reschedule-page-format'
 
@@ -77,12 +78,27 @@ describe('toRescheduleView', () => {
 
     expect(view).toMatchObject({
       status: 'ready',
+      appointmentId: APPOINTMENT_ID,
+      expectedStatus: 'approved',
       remaining: reschedulePageMessages.remaining(1),
       slots: [
-        { startMin: 540, range: '09:00–10:15', busy: false },
-        { startMin: 570, range: '09:30–10:45', busy: true },
+        { startMin: 540, range: '09:00–10:15', busy: false, startsAtMs: studioLocalToUtc(TODAY, 540).getTime() },
+        { startMin: 570, range: '09:30–10:45', busy: true, startsAtMs: studioLocalToUtc(TODAY, 570).getTime() },
       ],
     })
+  })
+
+  it.each([
+    ['approved', reschedulePageMessages.backToPending],
+    ['confirmed', reschedulePageMessages.backToPending],
+    ['pending_approval', reschedulePageMessages.keepsPending],
+  ] as const)('una cita %s avisa lo que pasa con su estado al reagendar', (status, consequence) => {
+    const view = toRescheduleView(
+      { status: 'ready', quote: { ...quote, status }, date: TODAY, today: TODAY, slots: [] },
+      APPOINTMENT_ID,
+    )
+
+    expect(view).toMatchObject({ status: 'ready', expectedStatus: status, consequence })
   })
 
   it('hoy no tiene día anterior; el siguiente apunta al día siguiente de la misma cita', () => {
