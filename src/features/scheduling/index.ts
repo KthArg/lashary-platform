@@ -16,6 +16,7 @@ export { AlertsPage } from './ui/alerts/components/AlertsPage'
 export { CancellationPolicyPage } from './ui/cancellation-policy/components/CancellationPolicyPage'
 export { MyAppointmentsPage } from './ui/my-appointments/components/MyAppointmentsPage'
 export { myAppointmentsMessages } from './ui/my-appointments/constants/my-appointments-strings'
+export { ReschedulePolicyPage } from './ui/reschedule-policy/components/ReschedulePolicyPage'
 export { ReschedulePage } from './ui/reschedule/components/ReschedulePage'
 export { reschedulePageMessages } from './ui/reschedule/constants/reschedule-page-strings'
 export type {
