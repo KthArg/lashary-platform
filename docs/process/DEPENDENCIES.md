@@ -57,7 +57,7 @@ El backlog se mantiene en sus 51 historias; estas capacidades se construyen **de
 | US-PROM-02 ver paquetes/promos | US-PROM-01 | |
 | US-CLI-05 crear/editar cliente | US-AUTH-01 | |
 | US-CLI-01 listado clientes | US-CLI-05 | estados de UI (UI-003) |
-| US-CLI-02 historial citas | US-CLI-05, US-AGE-05 | lee las citas por `listClientAppointments` de `scheduling` ([scheduling-api.md](../contracts/scheduling-api.md)); anotaciones **trasladadas** a US-CLI-03 (ítem 9 de «Criterios trasladados»); acceso desde la vista diaria **diferido** hasta US-AGE-11 (ítem 5 de «Criterios diferidos») |
+| US-CLI-02 historial citas | US-CLI-05, US-AGE-05 | lee las citas por `listClientAppointments` de `scheduling` ([scheduling-api.md](../contracts/scheduling-api.md)); anotaciones **trasladadas** a US-CLI-03 (ítem 9 de «Criterios trasladados»); **terminada**; acceso desde la vista diaria cerrado con US-AGE-11 (ítem 5 de «Criterios diferidos») |
 | US-CLI-03 anotaciones | US-CLI-02 | recibe de US-CLI-02 mostrar las anotaciones en el historial (ítem 9 de «Criterios trasladados») |
 | US-CLI-04 expediente | US-CLI-05, US-AGE-13 (bitácora) | dato sensible (SEC-006); test RLS obligatorio |
 | US-CLI-06 cuidados post | US-AGE-12, US-NOT-03, US-AGE-08 | **co-porta la vista de cuenta** (indicaciones visibles) |
@@ -87,7 +87,7 @@ Historias tempranas con **un criterio** que depende de una historia de fase post
 2. **US-AGE-11** — "indica si el cliente tiene morosidad activa" → trasladado a US-MOR-02 (ítem 11 de «Criterios trasladados»).
 3. **US-CLI-06** — "visible en la vista del cliente" → la vista la porta US-MOR-03 (F3); si CLI-06 se implementa antes, ese criterio queda diferido con el faltante nombrado.
 4. **US-AGE-13** — criterio 1, parte "por paquete" («puedo definir el anticipo por técnica y por paquete») → requiere US-PROD-01 (paquetes). La implementación por paquete está publicada y probada en #178–#181; #173–#175 (US-PROD-01) ya están integrados en main; integrar las cuatro piezas del anticipo siguiendo la pila unificada. La evidencia está en `US-AGE-13-EVIDENCE.md`; la integración de US-AGE-13 sigue pendiente. La parte "por técnica" ya la cubre `catalog_techniques.deposit` (US-AGE-08). US-PROD-01 depende solo de US-AGE-08, así que no hay ciclo: es un diferido normal.
-5. **US-CLI-02** — "se accede desde el listado general y desde la vista diaria", parte de la vista diaria → requiere US-AGE-11 (agenda diaria), que no depende de US-CLI-02: es un diferido normal. US-CLI-02 exporta la ruta de su pestaña **Citas** en `src/features/clients/index.ts` para que la vista diaria enlace a ella. Hasta entonces US-CLI-02 sigue `en_progreso`, y US-CLI-03 y US-LAND-06, que dependen de ella, no se pueden empezar.
+5. **US-CLI-02** — "se accede desde el listado general y desde la vista diaria", parte de la vista diaria → requiere US-AGE-11 (agenda diaria), que no depende de US-CLI-02: es un diferido normal. US-CLI-02 exporta la ruta de su pestaña **Citas** en `src/features/clients/index.ts` para que la vista diaria enlace a ella. **Hecho:** la agenda diaria de US-AGE-11 (#621) enlaza a ella con «Ver sus citas», probado en `src/app/admin/citas/agenda/page.test.tsx`; US-CLI-02 queda `terminada` con el PR de cierre `us/US-CLI-02`, y US-CLI-03 y US-LAND-06 dejan de esperarla.
 
 ## Criterios trasladados
 
