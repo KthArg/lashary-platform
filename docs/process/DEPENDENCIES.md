@@ -122,7 +122,7 @@ La ruta `/api/cron/notifications-reminders` corre el ciclo de recordatorios de U
 - **Qué falta:** un workflow de GitHub Actions que haga `POST` cada 15 minutos con `Authorization: Bearer <CRON_SECRET>`, el secreto `CRON_SECRET` y la cuenta de staff del cron en producción (`NOTIFICATIONS_CRON_EMAIL`/`NOTIFICATIONS_CRON_PASSWORD`). El workflow lo aplica un admin (el tooling de `.github/` no lo toca Claude).
 - **Dueño propuesto:** KthArg, único admin del repositorio.
 - **Fecha propuesta:** 2026-11-06, antes de mergear el cierre de US-AGE-10 a `main`.
-- **Estado:** pendiente de confirmación de KthArg (PO). Hasta que la confirme por escrito, este dueño y esta fecha son una propuesta y no una decisión. Activar el cron con el canal de WhatsApp sin configurar manda los recordatorios a `failed` tras 5 intentos (ver «Antes de producción» en el SPEC de `notifications`); decidir eso antes de activarlo.
+- **Estado:** pendiente de confirmación de Kenny (PO desde el 2026-10-30). Hasta que la confirme por escrito, este dueño y esta fecha son una propuesta y no una decisión. Activar el cron con el canal de WhatsApp sin configurar manda los recordatorios a `failed` tras 5 intentos (ver «Antes de producción» en el SPEC de `notifications`); decidir eso antes de activarlo.
 
 ## FK cross-feature y archivado de clientas (ADR-0009 aceptado)
 
