@@ -6,7 +6,7 @@ export const myAppointmentsMessages = {
   title: 'Mis citas',
   subtitle: 'Tus próximas citas y el estado de cada una.',
   empty: 'No tenés citas próximas.',
-  bookCta: 'Reservar una cita',
+  bookCta: 'Agendar cita',
   accessDenied: 'Iniciá sesión como clienta para ver tus citas.',
   loadFailed: 'No pudimos cargar tus citas. Intentá de nuevo.',
   reload: 'Reintentar',
