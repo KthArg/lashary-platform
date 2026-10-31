@@ -1,6 +1,6 @@
-import { describe, it, expect, afterEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen, cleanup, fireEvent, within } from '@testing-library/react'
-import { SiteHeader, LOGIN_ROUTE, RESERVE_ROUTE, landingMessages } from '@/features/landing'
+import { SiteHeader, LOGIN_ROUTE, PORTAL_ROUTE, RESERVE_ROUTE, landingMessages } from '@/features/landing'
 
 const pathname = vi.hoisted(() => ({ current: null as string | null }))
 vi.mock('next/navigation', () => ({ usePathname: () => pathname.current }))
@@ -199,5 +199,57 @@ describe('SiteHeader — enlace al carrito', () => {
     expect(cart.getAttribute('href')).toBe(cartHref)
     fireEvent.click(cart)
     expect(screen.queryByRole('dialog')).toBeNull()
+  })
+})
+
+describe('SiteHeader — con la sesión iniciada', () => {
+  const PROJECT_URL = 'https://proyecto.supabase.co'
+  const SESSION_COOKIE = 'sb-proyecto-auth-token'
+  const OTHER_PROJECT_COOKIE = 'sb-localhost-auth-token'
+
+  beforeEach(() => {
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', PROJECT_URL)
+  })
+
+  afterEach(() => {
+    document.cookie = `${SESSION_COOKIE}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`
+    document.cookie = `${OTHER_PROJECT_COOKIE}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`
+    vi.unstubAllEnvs()
+  })
+
+  it('con la cookie que quedó de otro proyecto, la cabecera sigue diciendo "Iniciar sesión"', () => {
+    document.cookie = `${OTHER_PROJECT_COOKIE}=sesion-vieja; path=/`
+    render(<SiteHeader sections={sections} />)
+
+    expect(screen.getByRole('link', { name: landingMessages.header.login }).getAttribute('href')).toBe(LOGIN_ROUTE)
+    expect(screen.queryByRole('link', { name: landingMessages.header.portal })).toBeNull()
+  })
+
+  it('con la cookie de sesión, la cabecera ofrece "Mi portal" en vez de "Iniciar sesión"', () => {
+    document.cookie = `${SESSION_COOKIE}=valor; path=/`
+    render(<SiteHeader sections={sections} />)
+
+    expect(screen.getByRole('link', { name: landingMessages.header.portal }).getAttribute('href')).toBe(PORTAL_ROUTE)
+    expect(screen.queryByRole('link', { name: landingMessages.header.login })).toBeNull()
+  })
+
+  it('el menú del teléfono también ofrece "Mi portal" con la sesión iniciada', () => {
+    document.cookie = `${SESSION_COOKIE}=valor; path=/`
+    openMenu()
+
+    const dialog = screen.getByRole('dialog', { name: landingMessages.menu.dialogLabel })
+    expect(within(dialog).getByRole('link', { name: landingMessages.menu.portal }).getAttribute('href')).toBe(PORTAL_ROUTE)
+    expect(within(dialog).queryByRole('link', { name: landingMessages.menu.login })).toBeNull()
+  })
+
+  it('al cerrar sesión se borra la cookie y la cabecera vuelve a "Iniciar sesión"', () => {
+    document.cookie = `${SESSION_COOKIE}=valor; path=/`
+    const { unmount } = render(<SiteHeader sections={sections} />)
+    expect(screen.getByRole('link', { name: landingMessages.header.portal })).toBeTruthy()
+    unmount()
+
+    document.cookie = `${SESSION_COOKIE}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`
+    render(<SiteHeader sections={sections} />)
+    expect(screen.getByRole('link', { name: landingMessages.header.login }).getAttribute('href')).toBe(LOGIN_ROUTE)
   })
 })

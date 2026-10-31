@@ -13,6 +13,8 @@ export { APPROVAL_QUEUE_LABELS } from './ui/approval-queue/constants/approval-qu
 export { BookingConfirmPage } from './ui/booking-confirm/components/BookingConfirmPage'
 export { bookingConfirmMessages } from './ui/booking-confirm/constants/booking-confirm-strings'
 export { AlertsPage } from './ui/alerts/components/AlertsPage'
+export { DailyAgendaPage } from './ui/daily-agenda/components/DailyAgendaPage'
+export type { ClientLinks } from './ui/daily-agenda/types/daily-agenda.types'
 export { CancellationPolicyPage } from './ui/cancellation-policy/components/CancellationPolicyPage'
 export { MyAppointmentsPage } from './ui/my-appointments/components/MyAppointmentsPage'
 export { myAppointmentsMessages } from './ui/my-appointments/constants/my-appointments-strings'

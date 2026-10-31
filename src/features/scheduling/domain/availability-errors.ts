@@ -175,3 +175,16 @@ export const isManualBlockHasAppointment = (error: unknown): error is ManualBloc
 
 export const isDaySlotsInvalid = (error: unknown): error is DaySlotsInvalid =>
   hasCode(error, 'SCHEDULING_DAY_SLOTS_INVALID')
+
+export interface DailyAgendaInvalid {
+  readonly code: 'SCHEDULING_DAILY_AGENDA_INVALID'
+  readonly message: string
+}
+
+export const dailyAgendaInvalid = (): DailyAgendaInvalid => ({
+  code: 'SCHEDULING_DAILY_AGENDA_INVALID',
+  message: 'la fecha de la agenda no es una fecha de calendario válida',
+})
+
+export const isDailyAgendaInvalid = (error: unknown): error is DailyAgendaInvalid =>
+  hasCode(error, 'SCHEDULING_DAILY_AGENDA_INVALID')

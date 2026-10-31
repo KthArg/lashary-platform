@@ -2,6 +2,12 @@ export const RESERVE_ROUTE = '/portal'
 
 export const LOGIN_ROUTE = '/login'
 
+export const PORTAL_ROUTE = '/portal'
+
+export function accountRouteFor(hasSession: boolean): string {
+  return hasSession ? PORTAL_ROUTE : LOGIN_ROUTE
+}
+
 export const HOME_ROUTE = '/'
 
 export const HOME_ANCHOR = '#inicio'
