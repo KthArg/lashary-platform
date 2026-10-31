@@ -35,7 +35,7 @@ historias:
     evidencia: "PR de cierre us/US-AGE-11 a main, con las piezas #590 a #595, #619 y #620 apiladas hacia la rama de la historia. Criterios 1 y 4, la parte de primera vez o retoque del criterio 2 y la parte de abrir el expediente del criterio 3 demostrados; la parte de morosidad activa del criterio 2 se trasladó a US-MOR-02 y la de cerrar la cita del criterio 3 a US-AGE-12, aprobado por el PO (Kenny) el 2026-10-30 (docs/process/DEPENDENCIES.md, Criterios trasladados, ítems 11 y 10), con el puerto por lote DelinquentClientsPort listo para US-MOR-02. Mostrar también las citas rechazadas lo aprobó el PO en la misma fecha. Tests: domain/__tests__/daily-agenda.test.ts (criterios 1 y 2), application/__tests__/daily-agenda.test.ts (criterio 1 y el puerto de morosidad), db/__tests__/daily-agenda-repository.test.ts y pending-appointments-repository.test.ts (criterio 1), ui/daily-agenda/__tests__/daily-agenda-format.test.ts (criterios 1 a 4), ui/daily-agenda/__tests__/DailyAgendaView.test.tsx (criterios 1 a 4), ui/daily-agenda/__tests__/agenda-date.test.ts (criterio 4), src/app/admin/citas/layout.test.tsx (pestaña Agenda) y db/__tests__/daily-agenda.integration.test.ts (SEC-002, con tokens reales contra Supabase local, corrida al preparar el cierre); verificada con Playwright contra Supabase local el 2026-10-29 (escritorio y 375 px, capturas en #594)"
   - id: US-AGE-12
     estado: en_progreso
-    falta: "el ledger de payments, cerrar la cita como completada o ausencia, el cargo, el descuento del anticipo, la bitácora del cierre y la agenda con el cierre y las citas pasadas sin cerrar destacadas (sección US-AGE-12 — cerrar la cita de este SPEC)"
+    falta: "la función SQL de cierre con su evento en la bitácora, la acción y el repositorio, y la agenda con el cierre y las citas pasadas sin cerrar destacadas (sección US-AGE-12 — cerrar la cita de este SPEC); el ledger está en payments (pieza 1) y el dominio del cierre en domain/appointment-closing.ts (pieza 2)"
 flags: []
 deuda: []
 defectos: []
@@ -301,6 +301,8 @@ Decisiones tomadas en la conversación de trabajo con Bayron el 2026-10-31. **Pe
 
 - Ausencia sin aviso (criterio 4): la clienta pierde el anticipo registrado. Es solo un registro en el evento de la bitácora; no mueve dinero ni genera cargo. Es la misma política que la cancelación fuera de ventana (US-AGE-06).
 - Servicio distinto al reservado (criterio 2): el cargo es el precio del servicio efectivamente prestado, congelado al cerrar la cita (DOM-002).
+
+Dominio del cierre (pieza 2; `domain/appointment-closing.ts`, funciones puras sin reloj propio, DOM-003): una cita espera cierre (`needsClosing`) si está `approved` o `confirmed` y su fin ya pasó; el autor fijó ese momento, a confirmar con el PO. `closeAsCompleted` calcula el cargo: el precio congelado en la cita si el servicio prestado es el reservado (DOM-002), el precio del servicio prestado si difiere; descuenta el anticipo registrado y devuelve lo que queda por pagar (negativo si el anticipo supera el cargo). `closeAsNoShow` no genera cargo y devuelve el anticipo registrado como `forfeitedDeposit`. Errores como tipos con `code` literal: `AppointmentNotClosable` y `InvalidClosingAmount` (DOM-006). Prueba: `domain/__tests__/appointment-closing.test.ts` (criterios 1, 2, 4 y 7 a nivel de dominio, y `needsClosing` para el criterio 5). Todavía no se guarda nada: eso es de las piezas siguientes.
 
 ## Criterios recibidos de US-AGE-01
 
