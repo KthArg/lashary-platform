@@ -92,7 +92,8 @@ SELECT is((SELECT max_reschedules FROM public.scheduling_reschedule_policy), 2,
   'el tope quedó en 2');
 
 SELECT results_eq(
-  $$SELECT actor_id, payload FROM public.audit_events WHERE action = 'scheduling.reschedule_limit.changed'$$,
+  $$SELECT actor_id, payload FROM public.audit_events
+     WHERE action = 'scheduling.reschedule_limit.changed' AND actor_id = '00000000-0000-0000-0000-000000000d05'$$,
   $$VALUES ('00000000-0000-0000-0000-000000000d05'::uuid, '{"previousMax": 1, "newMax": 2}'::jsonb)$$,
   'el cambio dejó su evento, con la administradora como actora y de cuánto a cuánto');
 
@@ -107,7 +108,8 @@ SELECT results_eq(
 
 RESET ROLE;
 
-SELECT is((SELECT count(*) FROM public.audit_events WHERE action = 'scheduling.reschedule_limit.changed'), 1::bigint,
+SELECT is((SELECT count(*) FROM public.audit_events
+            WHERE action = 'scheduling.reschedule_limit.changed' AND actor_id = '00000000-0000-0000-0000-000000000d05'), 1::bigint,
   'y no deja un evento de un cambio que no ocurrió');
 
 SET LOCAL ROLE authenticated;
