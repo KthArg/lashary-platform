@@ -100,14 +100,16 @@ SELECT is((SELECT count(*) FROM public.scheduling_appointments
   'el espacio viejo quedó libre');
 
 SELECT results_eq(
-  $$SELECT payload FROM public.audit_events WHERE action = 'scheduling.appointment.rescheduled'$$,
+  $$SELECT payload FROM public.audit_events
+     WHERE action = 'scheduling.appointment.rescheduled' AND entity_id = '00000000-0000-0000-0000-00000000ea01'$$,
   $$VALUES ('{"newEndsAt": "2027-09-27T16:00:00+00:00", "newStartsAt": "2027-09-27T15:00:00+00:00",
              "previousEndsAt": "2027-09-06T16:00:00+00:00", "previousStatus": "approved",
              "previousStartsAt": "2027-09-06T15:00:00+00:00", "techniqueName": "zz-test reagendar",
              "rescheduleCount": 1, "maxReschedules": 1, "depositRegistered": 10000}'::jsonb)$$,
   'el evento trae el horario anterior y el nuevo, en la misma transacción');
 
-SELECT is((SELECT actor_id FROM public.audit_events WHERE action = 'scheduling.appointment.rescheduled'),
+SELECT is((SELECT actor_id FROM public.audit_events
+            WHERE action = 'scheduling.appointment.rescheduled' AND entity_id = '00000000-0000-0000-0000-00000000ea01'),
   '00000000-0000-0000-0000-000000000e02'::uuid, 'la actora del evento es la clienta de la sesión');
 
 SET LOCAL ROLE authenticated;
