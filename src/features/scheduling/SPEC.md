@@ -264,6 +264,21 @@ Lo que se puede y no se puede demostrar hoy de esta historia, lo que no se prob�
 
 Las pruebas de `ui/my-appointments` usan ids de cita con forma de UUID válido por RFC (`00000000-0000-4000-8000-00000000ca01`), porque `appointmentIdSchema` usa `z.string().uuid()` y zod 4 lo valida de forma estricta, con versión y variante. En producción no cambia nada: los ids vienen de `gen_random_uuid()`. El esquema no se toca y se comporta igual con `zod@3.25` y con `zod@4.6`.
 
+## Decisiones del PO sobre US-AGE-10
+
+Aprobadas por el PO el 2026-10-23, comunicado por Bayron con la revisión de Kenny, y registradas en `docs/process/DEPENDENCIES.md`:
+
+- La ventana para reagendar es la de cancelación (`scheduling_cancellation_policy`) y solo aplica a citas `approved` o `confirmed`: fuera de la ventana no se puede reagendar, solo cancelar. Una cita `pending_approval` se mueve sin ventana, porque cancelarla tampoco pierde el anticipo.
+- Al reagendar, la cita vuelve a `pending_approval` y la administradora la confirma de nuevo. El anticipo registrado se queda como está y el precio y la duración siguen congelados (DOM-002).
+- El tope de reagendados es global, en una tabla de política como la de cancelación, con un contador por cita, valor por defecto 1 y un `CHECK` de máximo. La administradora lo cambia.
+- El espacio nuevo se revisa como una reserva, incluidos los bloqueos manuales de US-AGE-07, y el cambio es una sola función de SQL con `FOR UPDATE` y el evento de la bitácora en la misma transacción (DOM-011).
+- El criterio 4 (notificar a la administradora) se traslada a US-NOT-02, que consume el evento `scheduling.appointment.rescheduled` con el horario anterior y el nuevo. El traslado tiene el visto bueno de KthArg, comunicado por Bayron el 2026-10-25.
+
+Decisiones del PO del 2026-10-26, comunicadas por Bayron:
+
+- El tope de reagendados que fija la administradora va de 0 a 3.
+- Al aprobar, la base comprueba primero que la clienta no haya cambiado el horario; si lo cambió, no aprueba, avisa y muestra el horario nuevo.
+
 ## Criterios recibidos de US-AGE-01
 
 Traslado aprobado por el PO el 2026-10-14 y registrado en `docs/process/DEPENDENCIES.md`.
