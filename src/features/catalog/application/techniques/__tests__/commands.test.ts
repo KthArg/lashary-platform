@@ -4,13 +4,18 @@ import {
   createTechnique,
   updateTechnique,
   deactivateTechnique,
+  findPackagesAffectedByDeactivation,
+  deactivateTechniqueCascade,
 } from '@/features/catalog/application/techniques/commands'
 import {
+  isTechniqueAffectedPackagesChanged,
   isTechniqueNameConflict,
   isTechniqueNotFound,
   isTechniqueValidationError,
 } from '@/features/catalog/domain/techniques/errors'
 import type { TechniqueWriteModel } from '@/features/catalog/application/techniques/ports'
+import { createFakePackageRepository } from '@/features/catalog/application/packages/__tests__/fake-package-repository'
+import { makePackage } from '@/features/catalog/application/packages/__tests__/package-fixture'
 import { createFakeTechniqueRepository, type FakeTechniqueRepository } from './fake-repository'
 import { makeTechnique } from './technique-fixture'
 
@@ -153,5 +158,85 @@ describe('deactivateTechnique', () => {
     const repo = createFakeTechniqueRepository()
     const result = await deactivateTechnique(deps(repo))('nope')
     expect(isErr(result)).toBe(true)
+  })
+})
+
+describe('findPackagesAffectedByDeactivation', () => {
+  it('sin paquetes que la incluyan, la lista llega vacía', async () => {
+    const repo = createFakeTechniqueRepository([makeTechnique({ id: 'd1', isActive: true })])
+    const packageRepo = createFakePackageRepository()
+    const result = await findPackagesAffectedByDeactivation({ repo, packageRepo })('d1')
+    expect(isOk(result) && result.value).toEqual([])
+  })
+
+  it('nombra cada paquete activo que incluye la técnica, sin los inactivos', async () => {
+    const repo = createFakeTechniqueRepository([makeTechnique({ id: 'd1', isActive: true })])
+    const packageRepo = createFakePackageRepository([
+      makePackage({ id: 'p1', name: 'Combo clásicas', techniqueIds: ['d1', 'd2'], isActive: true }),
+      makePackage({ id: 'p2', name: 'Combo ya desactivado', techniqueIds: ['d1', 'd3'], isActive: false }),
+    ])
+    const result = await findPackagesAffectedByDeactivation({ repo, packageRepo })('d1')
+    expect(isOk(result) && result.value).toEqual([{ id: 'p1', name: 'Combo clásicas' }])
+  })
+
+  it('devuelve TechniqueNotFound si la técnica no existe', async () => {
+    const repo = createFakeTechniqueRepository()
+    const packageRepo = createFakePackageRepository()
+    const result = await findPackagesAffectedByDeactivation({ repo, packageRepo })('nope')
+    expect(isErr(result) && isTechniqueNotFound(result.error)).toBe(true)
+  })
+})
+
+describe('deactivateTechniqueCascade', () => {
+  it('sin paquetes confirmados, desactiva solo la técnica', async () => {
+    const repo = createFakeTechniqueRepository([makeTechnique({ id: 'd1', isActive: true })])
+    const packageRepo = createFakePackageRepository()
+    const result = await deactivateTechniqueCascade({ repo, packageRepo })('d1', [])
+    expect(isOk(result)).toBe(true)
+    if (!isOk(result)) return
+    expect(result.value.technique.isActive).toBe(false)
+    expect(result.value.deactivatedPackages).toEqual([])
+  })
+
+  it('con paquetes confirmados, desactiva la técnica y esos paquetes', async () => {
+    const repo = createFakeTechniqueRepository(
+      [makeTechnique({ id: 'd1', isActive: true })],
+      { d1: ['p1'] },
+    )
+    const packageRepo = createFakePackageRepository()
+    const confirmed = [{ id: 'p1', name: 'Combo clásicas' }]
+    const result = await deactivateTechniqueCascade({ repo, packageRepo })('d1', confirmed)
+    expect(isOk(result)).toBe(true)
+    if (!isOk(result)) return
+    expect(result.value.technique.isActive).toBe(false)
+    expect(result.value.deactivatedPackages).toEqual(confirmed)
+  })
+
+  it('si la lista de paquetes afectados cambió, no toca nada y devuelve la lista fresca', async () => {
+    const repo = createFakeTechniqueRepository(
+      [makeTechnique({ id: 'd1', isActive: true })],
+      { d1: ['p1', 'p2'] },
+    )
+    const packageRepo = createFakePackageRepository([
+      makePackage({ id: 'p1', name: 'Combo clásicas', techniqueIds: ['d1', 'd2'], isActive: true }),
+      makePackage({ id: 'p2', name: 'Combo volumen', techniqueIds: ['d1', 'd3'], isActive: true }),
+    ])
+    const stale = [{ id: 'p1', name: 'Combo clásicas' }]
+    const result = await deactivateTechniqueCascade({ repo, packageRepo })('d1', stale)
+    expect(isErr(result) && isTechniqueAffectedPackagesChanged(result.error)).toBe(true)
+    if (isErr(result) && isTechniqueAffectedPackagesChanged(result.error)) {
+      expect(result.error.affectedPackages).toEqual([
+        { id: 'p1', name: 'Combo clásicas' },
+        { id: 'p2', name: 'Combo volumen' },
+      ])
+    }
+    expect((await repo.findById('d1'))?.isActive).toBe(true)
+  })
+
+  it('devuelve TechniqueNotFound si la técnica no existe', async () => {
+    const repo = createFakeTechniqueRepository()
+    const packageRepo = createFakePackageRepository()
+    const result = await deactivateTechniqueCascade({ repo, packageRepo })('nope', [])
+    expect(isErr(result) && isTechniqueNotFound(result.error)).toBe(true)
   })
 })

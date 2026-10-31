@@ -2,6 +2,7 @@ export const TECHNIQUE_ERROR_CODES = {
   invalid: 'CATALOG_TECHNIQUE_INVALID',
   notFound: 'CATALOG_TECHNIQUE_NOT_FOUND',
   nameConflict: 'CATALOG_TECHNIQUE_NAME_CONFLICT',
+  affectedPackagesChanged: 'CATALOG_TECHNIQUE_AFFECTED_PACKAGES_CHANGED',
 } as const
 
 type TechniqueErrorCode = (typeof TECHNIQUE_ERROR_CODES)[keyof typeof TECHNIQUE_ERROR_CODES]
@@ -63,3 +64,32 @@ export function techniqueNameConflict(name: string): TechniqueNameConflict {
 
 export const isTechniqueNameConflict = (error: unknown): error is TechniqueNameConflict =>
   hasCode<TechniqueNameConflict>(error, TECHNIQUE_ERROR_CODES.nameConflict)
+
+export interface AffectedPackage {
+  readonly id: string
+  readonly name: string
+}
+
+export interface TechniqueAffectedPackagesChanged {
+  readonly code: typeof TECHNIQUE_ERROR_CODES.affectedPackagesChanged
+  readonly message: string
+  readonly techniqueId: string
+  readonly affectedPackages: AffectedPackage[]
+}
+
+export function techniqueAffectedPackagesChanged(
+  techniqueId: string,
+  affectedPackages: AffectedPackage[],
+): TechniqueAffectedPackagesChanged {
+  return {
+    code: TECHNIQUE_ERROR_CODES.affectedPackagesChanged,
+    message: 'los paquetes afectados por esta técnica cambiaron desde que se mostró el aviso',
+    techniqueId,
+    affectedPackages,
+  }
+}
+
+export const isTechniqueAffectedPackagesChanged = (
+  error: unknown,
+): error is TechniqueAffectedPackagesChanged =>
+  hasCode<TechniqueAffectedPackagesChanged>(error, TECHNIQUE_ERROR_CODES.affectedPackagesChanged)
