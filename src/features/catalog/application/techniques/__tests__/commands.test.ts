@@ -3,7 +3,6 @@ import { isErr, isOk } from '@/shared/result'
 import {
   createTechnique,
   updateTechnique,
-  deactivateTechnique,
   findPackagesAffectedByDeactivation,
   deactivateTechniqueCascade,
 } from '@/features/catalog/application/techniques/commands'
@@ -139,25 +138,6 @@ describe('updateTechnique', () => {
     })
     expect(isErr(result)).toBe(true)
     if (isErr(result)) expect(isTechniqueNameConflict(result.error)).toBe(true)
-  })
-})
-
-describe('deactivateTechnique', () => {
-  it('desactiva una técnica existente', async () => {
-    const repo = createFakeTechniqueRepository([
-      makeTechnique({ id: 'd1', isActive: true }),
-    ])
-    const result = await deactivateTechnique(deps(repo))('d1')
-    expect(isOk(result)).toBe(true)
-    if (!isOk(result)) return
-    expect(result.value.isActive).toBe(false)
-    expect((await repo.findById('d1'))?.isActive).toBe(false)
-  })
-
-  it('devuelve TechniqueNotFound si no existe', async () => {
-    const repo = createFakeTechniqueRepository()
-    const result = await deactivateTechnique(deps(repo))('nope')
-    expect(isErr(result)).toBe(true)
   })
 })
 

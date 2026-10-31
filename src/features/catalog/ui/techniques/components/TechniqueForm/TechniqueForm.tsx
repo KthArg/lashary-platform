@@ -3,15 +3,12 @@
 import { useActionState } from 'react'
 import { SERVICE_FAMILIES } from '../../../../domain/techniques/technique'
 import { catalogMessages, familyLabel } from '../../constants/technique-strings'
-import {
-  createTechniqueAction,
-  updateTechniqueAction,
-  deactivateTechniqueAction,
-} from '../../actions/technique-actions'
+import { createTechniqueAction, updateTechniqueAction } from '../../actions/technique-actions'
 import { initialActionState } from '../../types/technique-action-state'
 import { techniqueFormStyles as STYLES } from './TechniqueForm.styles'
 import { TechniqueFormField } from '../TechniqueFormField'
 import { TechniqueFormFeedback } from '../TechniqueFormFeedback'
+import { DeactivateTechniqueDialog } from '../DeactivateTechniqueDialog'
 import type { TechniqueFormProps } from './TechniqueForm.types'
 
 const formMessages = catalogMessages.form
@@ -20,10 +17,6 @@ export function TechniqueForm({ technique }: TechniqueFormProps) {
   const editing = technique !== undefined
   const [state, formAction, pending] = useActionState(
     editing ? updateTechniqueAction : createTechniqueAction,
-    initialActionState,
-  )
-  const [deactivateState, deactivateAction, deactivating] = useActionState(
-    deactivateTechniqueAction,
     initialActionState,
   )
 
@@ -84,13 +77,9 @@ export function TechniqueForm({ technique }: TechniqueFormProps) {
       </form>
 
       {editing && (
-        <form action={deactivateAction} className={STYLES.deactivateForm}>
-          <input type="hidden" name="id" value={technique.id} />
-          <TechniqueFormFeedback {...deactivateState} />
-          <button type="submit" className={STYLES.deactivateButton} disabled={deactivating}>
-            {catalogMessages.admin.rowActions.deactivate}
-          </button>
-        </form>
+        <div className={STYLES.deactivateForm}>
+          <DeactivateTechniqueDialog techniqueId={technique.id} />
+        </div>
       )}
     </section>
   )
