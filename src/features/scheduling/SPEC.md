@@ -175,6 +175,12 @@ US-AGE-05 queda `terminada` con estos faltantes aprobados por el PO, cada uno co
 - Cambiar la ventana de cancelación, el lado de la aplicación del cambio por SQL (US-AGE-06, corrección de la revisión de Kenny): el repositorio llama a la función y el caso de uso ya no escribe la bitácora ni lee el valor anterior (lo hace la función, en la misma transacción); desaparecen los estados `warning` («se guardó sin registro», que ya no puede pasar: si la bitácora falla, el cambio también) y `forbidden` (`requireAdminSession` y la función de SQL ya cierran el paso). Verificado en un navegador real contra Supabase local: cambió de 48 a 24 horas y la bitácora registró el evento desde SQL. Pruebas: las de la lógica de la pantalla, el caso de uso y el repositorio, y la de acceso contra Supabase local.
 - Enlace a «Mis citas» (US-AGE-06, pedido para la demo al cliente; `ui/TechniqueSelectionPageView.tsx`): la pantalla `/portal/citas` (agendar una cita) trae un botón «Mis citas» arriba a la derecha que lleva a `/portal/citas/mis-citas`, desde donde se cancela, para no escribir la URL. Se ve con o sin técnicas; quien no es clienta no lo ve. El ítem «Mis Citas» del menú lateral del portal sigue apuntando a `/portal/citas` (el selector): cambiarlo es del menú de `auth`, ver «Límites de la demo y deuda de US-AGE-06». Verificado en un navegador real contra Supabase local con una clienta sembrada (el botón se ve y lleva a su lista; capturas en el PR). Prueba: `ui/__tests__/TechniqueSelectionPageView.test.tsx`.
 
+## US-AGE-10 — reagendar
+
+En progreso. Lo que existe hoy:
+
+- **Tope de reagendados** (migración `20261027000000_scheduling_reschedule_policy.sql`): `scheduling_reschedule_policy`, una sola fila con `max_reschedules` (arranca en 1; 0 desactiva reagendar; máximo 10 por `CHECK`). Solo staff la lee. No hay `UPDATE` directo: el único camino es `scheduling_change_reschedule_limit`, que exige a la administradora, valida, lee el valor anterior con `FOR UPDATE`, actualiza y deja `scheduling.reschedule_limit.changed` en la bitácora en la misma transacción (INT-003). Agrega `scheduling_appointments.reschedule_count` (entero, 0 al crear, no negativo), que nadie con rol de usuario puede cambiar por `UPDATE` directo. Prueba: `supabase/tests/database/scheduling_reschedule_policy.test.sql`.
+
 ## Decisiones del PO sobre US-AGE-06
 
 Aprobadas por el PO el 2026-10-20, comunicado por Bayron, y registradas en `docs/process/DEPENDENCIES.md`:
