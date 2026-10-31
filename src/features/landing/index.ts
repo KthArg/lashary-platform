@@ -21,6 +21,6 @@ export {
   LOCATION_SECTION,
   type SiteSection,
 } from './ui/sections'
-export { LOGIN_ROUTE, RESERVE_ROUTE, reserveRouteFor, RESERVE_TECHNIQUE_PARAM } from './ui/routes'
+export { LOGIN_ROUTE, PORTAL_ROUTE, RESERVE_ROUTE,reserveRouteFor, RESERVE_TECHNIQUE_PARAM } from './ui/routes'
 export { toLandingTechnique, formatColones, type LandingTechnique } from './ui/technique-view'
 export { landingMessages } from './ui/constants/landing-strings'
