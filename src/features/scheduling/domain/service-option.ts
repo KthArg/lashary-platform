@@ -55,18 +55,15 @@ export const serviceOptionsOf = (techniques: readonly NamedTechnique[]): Techniq
     }),
   )
 
-// durationTotalMin ya viene calculado por catalog (ARCH-005): sum(duration_first_time_min +
-// buffer_min) de cada técnica incluida, la misma fórmula que usa scheduling_book_package_appointment
-// al congelar la cita. Un paquete no tiene primera vez ni retoque (catalog-api.md).
 export const packageServiceOptionsOf = (packages: readonly NamedPackage[]): PackageServiceOption[] =>
   packages
-    .filter((pkg) => pkg.isActive)
-    .map((pkg) => ({
+    .filter((servicePackage) => servicePackage.isActive)
+    .map((servicePackage) => ({
       kind: 'package' as const,
-      key: packageOptionKey(pkg.id),
-      packageId: pkg.id,
-      name: pkg.name,
-      durationMin: pkg.durationTotalMin,
+      key: packageOptionKey(servicePackage.id),
+      packageId: servicePackage.id,
+      name: servicePackage.name,
+      durationMin: servicePackage.durationTotalMin,
     }))
 
 export const findServiceOption = (

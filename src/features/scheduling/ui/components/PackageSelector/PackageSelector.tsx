@@ -16,11 +16,11 @@ export function PackageSelector({ packages }: PackageSelectorProps) {
       <h2 id={PACKAGE_SELECTOR_HEADING_ID} className={STYLES.heading}>
         {selectorMessages.choosePackage}
       </h2>
-      {packages.map((pkg) => (
-        <div key={pkg.id} className={STYLES.item}>
-          <span className={STYLES.name}>{pkg.name}</span>
-          <span className={STYLES.duration}>{selectorMessages.packageDuration(pkg.durationTotalMin)}</span>
-          <Link href={calendarHref({ serviceKey: packageOptionKey(pkg.id) })} className={STYLES.link}>
+      {packages.map((servicePackage) => (
+        <div key={servicePackage.id} className={STYLES.item}>
+          <span className={STYLES.name}>{servicePackage.name}</span>
+          <span className={STYLES.duration}>{selectorMessages.packageDuration(servicePackage.durationTotalMin)}</span>
+          <Link href={calendarHref({ serviceKey: packageOptionKey(servicePackage.id) })} className={STYLES.link}>
             {selectorMessages.seePackageSlots}
           </Link>
         </div>
