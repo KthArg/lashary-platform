@@ -2,7 +2,7 @@
 feature: payments
 dri: pendiente
 estado: terminada
-actualizado: 2026-10-19
+actualizado: 2026-10-31
 historias:
   - id: US-AGE-13
     estado: terminada
@@ -39,6 +39,8 @@ Al buscar de nuevo, el aviso del envío anterior (éxito o conflicto) se descart
 Ruta `src/app/admin/payments/`: `page.tsx` llama a `requireAdminSession()` (mensaje amable; RLS es la frontera real, SEC-001) y monta `ExemptClientForm` sin `<main>` propio (el layout de `/admin` ya aporta el landmark). Sin `loading.tsx`/`error.tsx` propios: a diferencia de `/admin/catalog`, esta página no hace una carga de datos bloqueante antes del primer render, así que no hay un estado de "cargando la página" que mostrar; si un incremento futuro agrega esa carga, entonces sí hace falta el `client.ts` que ese boundary exigiría (mismo motivo que documenta `catalog/ui/messages.ts`).
 
 Con esto el **criterio 5 de US-AGE-13 queda completo**: la administradora puede exonerar el anticipo de una clienta específica desde `/admin/payments`, y la exoneración queda en la bitácora de auditoría.
+
+Ledger (US-AGE-12, pieza 1; migración `20261031000000_payments_ledger_entries.sql`): tabla `payments_ledger_entries` con `client_id` (FK a `clients_profiles`, `RESTRICT`), `appointment_id` (sin FK por ARCH-005), `kind` (`charge` o `deposit_credit`), `amount` (el CHECK fija el signo: cargo positivo, crédito negativo) y `created_by` (lo sella un trigger desde `auth.uid()`). Un índice único por (`appointment_id`, `kind`) impide cobrar o acreditar dos veces la misma cita. RLS: `SELECT` e `INSERT` solo para staff, `INSERT` solo en las columnas de dominio; sin políticas de `UPDATE` ni `DELETE` y con esos privilegios revocados (DOM-005). Funciones SQL para `scheduling` (ARCH-005): `payments_record_close_entries(cliente, cita, cargo, anticipo)` inserta el cargo y el crédito del anticipo y devuelve lo que queda por pagar de la cita; `payments_client_balance(cliente)` devuelve la suma de los asientos. Pruebas: pgTAP `payments_ledger_entries.test.sql` y `__tests__/ledger-rls-isolation.test.ts` (SEC-002, anon y una clienta con token real). Todavía no hay quien las llame: las usa el cierre de cita de `scheduling` en la siguiente pieza.
 
 ## Qué no hace todavía
 
