@@ -212,6 +212,7 @@ export type MyAppointment = {
   isFirstTime: boolean
   servicePrice: number
   depositRequired: number
+  heldSchedule: HeldSchedule | null
 }
 
 export interface MyAppointmentsRepository {

@@ -31,10 +31,20 @@ const appointment = (id: string, slot: string): MyAppointmentView => ({
   slot,
   status: myAppointmentsMessages.status.approved,
   amounts: 'Precio ₡35 000 · Anticipo ₡10 000',
+  heldNote: null,
 })
 const appointments = [appointment(FIRST_ID, 'martes, 12 de abril'), appointment(SECOND_ID, 'martes, 19 de abril')]
 
 describe('MyAppointmentsList', () => {
+  it('una cita con reagendado pendiente muestra la nota del horario que se mantiene; las demás no', () => {
+    const heldNote = myAppointmentsMessages.heldSchedule('martes, 5 de abril')
+    render(<MyAppointmentsList appointments={[{ ...appointments[0], heldNote }, appointments[1]]} onCancelled={vi.fn()} />)
+
+    const notes = screen.getAllByRole('note')
+    expect(notes).toHaveLength(1)
+    expect(notes[0].textContent).toBe(heldNote)
+  })
+
   it('cada cita trae su propio botón para cancelar', () => {
     render(<MyAppointmentsList appointments={appointments} onCancelled={vi.fn()} />)
 

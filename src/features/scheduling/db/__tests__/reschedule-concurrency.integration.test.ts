@@ -111,14 +111,18 @@ describe.skipIf(!reachable)('reagendar a la vez (Supabase local)', () => {
 
   const slotMs = (fridayStartMs: number, offsetHours: number) => fridayStartMs + offsetHours * MS_PER_HOUR
 
-  async function insertPendingAppointment(profileId: string, startsAtMs: number): Promise<string> {
+  async function insertPendingAppointment(
+    profileId: string,
+    startsAtMs: number,
+    status: 'pending_approval' | 'approved' = 'pending_approval',
+  ): Promise<string> {
     const endsAtMs = startsAtMs + SERVICE_HOURS * MS_PER_HOUR
     const occupiedUntilMs = endsAtMs + BUFFER_MINUTES * MS_PER_MINUTE
     const inserted = await pg.query(
       `INSERT INTO public.scheduling_appointments
          (resource_id, status, starts_at, ends_at, occupied_range, client_id, technique_id, technique_name,
           is_first_time, service_price, deposit_required, deposit_registered)
-       VALUES ($1, 'pending_approval', $2, $3, tstzrange($2, $4), $5, gen_random_uuid(), $6, true, $7, $8, $8)
+       VALUES ($1, $9, $2, $3, tstzrange($2, $4), $5, gen_random_uuid(), $6, true, $7, $8, $8)
        RETURNING id`,
       [
         STUDIO_RESOURCE_ID,
@@ -129,6 +133,7 @@ describe.skipIf(!reachable)('reagendar a la vez (Supabase local)', () => {
         TECHNIQUE_NAME,
         SERVICE_PRICE,
         DEPOSIT,
+        status,
       ],
     )
     return inserted.rows[0].id
@@ -140,11 +145,18 @@ describe.skipIf(!reachable)('reagendar a la vez (Supabase local)', () => {
     return start
   }
 
-  const rescheduleAs = (session: Session, appointmentId: string, newStartsAtMs: number) =>
-    createSupabaseRescheduleRepository(session.db).reschedule({
+  const rescheduleAs = (
+    session: Session,
+    appointmentId: string,
+    newStartsAtMs: number,
+    expectedStatus: 'pending_approval' | 'approved' = 'pending_approval',
+  ) =>
+    createSupabaseRescheduleRepository(session.db).reschedule({ appointmentId, newStartsAtMs, expectedStatus })
+  const rejectAsAdmin = (appointmentId: string) =>
+    createSupabaseAppointmentDecisionRepository(adminDb).decide({
       appointmentId,
-      newStartsAtMs,
-      expectedStatus: 'pending_approval',
+      decision: 'rejected',
+      reason: null,
     })
   const approveAsAdmin = (appointmentId: string, seenStartsAtMs: number) =>
     createSupabaseAppointmentDecisionRepository(adminDb).decide({
@@ -298,6 +310,33 @@ describe.skipIf(!reachable)('reagendar a la vez (Supabase local)', () => {
           expect(final).toMatchObject({ status: 'pending_approval', reschedule_count: 1 })
           expect(final.starts_at.getTime()).toBe(target)
         }
+      }
+    },
+    ROUND_TIMEOUT_MS * ROUNDS,
+  )
+
+  it(
+    'rechazar un reagendado mientras otra clienta pide el horario guardado: ella nunca lo toma y la cita vuelve a él',
+    async () => {
+      for (let round = 0; round < ROUNDS; round += 1) {
+        await deleteTestAppointments()
+        const friday = nextFridayStartMs()
+        const heldStart = slotMs(friday, OLD_SLOT_OFFSET_HOURS)
+        const target = slotMs(friday, NEW_SLOT_OFFSET_HOURS)
+        const appointmentId = await insertPendingAppointment(first.profileId, heldStart, 'approved')
+        const otherId = await insertPendingAppointment(second.profileId, slotMs(friday, OTHER_NEW_SLOT_OFFSET_HOURS))
+        expect(isOk(await rescheduleAs(first, appointmentId, target, 'approved'))).toBe(true)
+
+        const [rejected, taken] = await Promise.all([
+          rejectAsAdmin(appointmentId),
+          rescheduleAs(second, otherId, heldStart),
+        ])
+
+        expect(isOk(rejected)).toBe(true)
+        expect(isErr(taken) && taken.error.code).toBe('SCHEDULING_RESCHEDULE_SLOT_TAKEN')
+        expect(await stored(appointmentId)).toMatchObject({ status: 'approved', reschedule_count: 1 })
+        expect((await stored(appointmentId)).starts_at.getTime()).toBe(heldStart)
+        expect((await stored(otherId)).reschedule_count).toBe(0)
       }
     },
     ROUND_TIMEOUT_MS * ROUNDS,
