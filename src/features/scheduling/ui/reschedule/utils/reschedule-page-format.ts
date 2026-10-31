@@ -1,4 +1,4 @@
-import { addCalendarDays } from '@/shared/studio-time'
+import { addCalendarDays, studioLocalToUtc } from '@/shared/studio-time'
 import type { RescheduleQuote } from '../../../application/ports'
 import { formatAppointmentSlot } from '../../appointment-display/utils/format-appointment-slot'
 import { formatCalendarDate } from '../../availability/utils/availability-format'
@@ -7,7 +7,7 @@ import type { DayView } from '../../client-calendar/types/client-calendar.types'
 import { cancellationMessages } from '../../my-appointments/constants/cancellation-strings'
 import { reschedulePageMessages, reschedulePath } from '../constants/reschedule-page-strings'
 import type { ReschedulePageData } from '../types/reschedule-page.types'
-import type { RescheduleView } from '../types/reschedule-view.types'
+import type { RescheduleSlotView, RescheduleView } from '../types/reschedule-view.types'
 
 const toCurrent = (quote: RescheduleQuote): string =>
   reschedulePageMessages.current(quote.techniqueName, formatAppointmentSlot(quote.startsAtMs, quote.endsAtMs))
@@ -16,6 +16,12 @@ const toBlockedMessage = (quote: RescheduleQuote): string =>
   quote.blockedBy === 'outside_window'
     ? reschedulePageMessages.outsideWindow(cancellationMessages.hours(quote.windowHours))
     : reschedulePageMessages.limitReached(quote.maxReschedules)
+
+const toSlotsWithInstant = (slots: Parameters<typeof toSlotViews>[0], date: string): RescheduleSlotView[] =>
+  toSlotViews(slots).map((slot) => ({ ...slot, startsAtMs: studioLocalToUtc(date, slot.startMin).getTime() }))
+
+const toConsequence = (quote: RescheduleQuote): string =>
+  quote.status === 'pending_approval' ? reschedulePageMessages.keepsPending : reschedulePageMessages.backToPending
 
 const toDay = (appointmentId: string, date: string, today: string): DayView => ({
   title: formatCalendarDate(date),
@@ -36,10 +42,13 @@ export function toRescheduleView(data: ReschedulePageData, appointmentId: string
     case 'ready':
       return {
         status: 'ready',
+        appointmentId,
+        expectedStatus: data.quote.status,
         current: toCurrent(data.quote),
+        consequence: toConsequence(data.quote),
         remaining: reschedulePageMessages.remaining(data.quote.maxReschedules - data.quote.rescheduleCount),
         day: toDay(appointmentId, data.date, data.today),
-        slots: toSlotViews(data.slots),
+        slots: toSlotsWithInstant(data.slots, data.date),
       }
   }
 }
