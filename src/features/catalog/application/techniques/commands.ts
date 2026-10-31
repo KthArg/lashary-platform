@@ -8,12 +8,16 @@ import {
   type TechniqueView,
 } from '../../domain/techniques/technique'
 import {
+  techniqueAffectedPackagesChanged,
   techniqueNotFound,
   techniqueValidationError,
+  type AffectedPackage,
+  type TechniqueAffectedPackagesChanged,
   type TechniqueNameConflict,
   type TechniqueNotFound,
   type TechniqueValidationError,
 } from '../../domain/techniques/errors'
+import type { PackageRepository } from '../packages/ports'
 import type { TechniqueRepository, TechniqueWriteModel } from './ports'
 import { commandMessages } from './messages'
 
@@ -21,6 +25,8 @@ export type CommandDeps = {
   repo: TechniqueRepository
   newId: () => string
 }
+
+export type DeactivateDeps = Pick<CommandDeps, 'repo'> & { packageRepo: PackageRepository }
 
 const toMoney = (value: number): Money | null => {
   try {
@@ -111,6 +117,9 @@ export const updateTechnique =
     return ok(techniqueToView(built.value))
   }
 
+// deactivateTechnique (sin aviso de cascada) queda mientras ui/techniques/actions/technique-actions.ts
+// siga llamándola; la pieza siguiente la reemplaza por deactivateTechniqueCascade en la UI y la
+// retira de aquí (sin dejar dos caminos de desactivar una técnica una vez hecho el cambio).
 export const deactivateTechnique =
   (deps: CommandDeps) =>
   async (
@@ -123,4 +132,48 @@ export const deactivateTechnique =
     const saved = await deps.repo.save(deactivated)
     if (isErr(saved)) return saved
     return ok(techniqueToView(deactivated))
+  }
+
+/** Paquetes activos que esta técnica integra hoy — el aviso antes de desactivar (decisión del PO
+ *  sobre el hallazgo de code review de US-AGE-04: desactivar la técnica no debe dejar un paquete
+ *  a medio ofrecer, nombra el paquete y pide confirmar antes de tocar nada). */
+export const findPackagesAffectedByDeactivation =
+  (deps: DeactivateDeps) =>
+  async (id: string): Promise<Result<AffectedPackage[], TechniqueNotFound>> => {
+    const existing = await deps.repo.findById(id)
+    if (existing === null) return err(techniqueNotFound(id))
+    return ok(await deps.packageRepo.findActiveByTechniqueId(id))
+  }
+
+export type DeactivateTechniqueCascadeOutcome = {
+  technique: TechniqueView
+  deactivatedPackages: AffectedPackage[]
+}
+
+/** Desactiva la técnica; si confirmedPackages no está vacío, desactiva también esos paquetes en
+ *  la misma transacción (catalog_deactivate_technique_cascade). Si la lista de paquetes activos
+ *  cambió desde que se mostró el aviso, no toca nada y devuelve TechniqueAffectedPackagesChanged
+ *  con la lista fresca, para que la UI vuelva a mostrar el aviso en vez de aplicar uno que ya no
+ *  es cierto. */
+export const deactivateTechniqueCascade =
+  (deps: DeactivateDeps) =>
+  async (
+    id: string,
+    confirmedPackages: AffectedPackage[],
+  ): Promise<
+    Result<DeactivateTechniqueCascadeOutcome, TechniqueNotFound | TechniqueAffectedPackagesChanged>
+  > => {
+    const existing = await deps.repo.findById(id)
+    if (existing === null) return err(techniqueNotFound(id))
+
+    const confirmedIds = confirmedPackages.map((pkg) => pkg.id)
+    const cascaded = await deps.repo.deactivateCascade(id, confirmedIds)
+    if (isErr(cascaded)) {
+      const fresh = await deps.packageRepo.findActiveByTechniqueId(id)
+      return err(techniqueAffectedPackagesChanged(id, fresh))
+    }
+
+    const updated = await deps.repo.findById(id)
+    if (updated === null) return err(techniqueNotFound(id))
+    return ok({ technique: techniqueToView(updated), deactivatedPackages: confirmedPackages })
   }
