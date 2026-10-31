@@ -18,15 +18,26 @@ const baseRow = {
 const chosenRow = {
   ...baseRow,
   technique_name: 'Clásicas',
+  package_name: null,
   is_first_time: false,
   is_first_time_detected: true,
   service_price: 25000,
   deposit_required: 10000,
 }
+const packageRow = {
+  ...baseRow,
+  technique_name: null,
+  package_name: 'Combo clásicas',
+  is_first_time: null,
+  is_first_time_detected: null,
+  service_price: 45000,
+  deposit_required: 12000,
+}
 const staffRow = {
   ...baseRow,
   client_id: null,
   technique_name: null,
+  package_name: null,
   is_first_time: null,
   is_first_time_detected: null,
   service_price: null,
@@ -81,6 +92,22 @@ describe('createSupabasePendingAppointmentsRepository', () => {
         },
       },
     ])
+  })
+
+  it('una cita de paquete llega con el nombre del paquete y sin primera vez/retoque', async () => {
+    const { db } = createFakeDb(
+      { data: [packageRow], error: null },
+      { data: [{ client_id: 'perfil-ana', full_name: 'Ana Mora' }], error: null },
+    )
+    const result = await createSupabasePendingAppointmentsRepository(db).listPending()
+
+    expect(isOk(result) && result.value[0].choice).toEqual({
+      techniqueName: 'Combo clásicas',
+      isFirstTime: null,
+      detectedFirstTime: null,
+      servicePrice: 45000,
+      depositRequired: 12000,
+    })
   })
 
   it('una cita creada por el personal, sin elección guardada, llega con choice nulo', async () => {

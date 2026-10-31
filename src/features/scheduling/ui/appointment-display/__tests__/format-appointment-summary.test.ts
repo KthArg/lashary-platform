@@ -26,6 +26,12 @@ describe('formatAppointmentSummary', () => {
     )
   })
 
+  it('una cita de paquete se rotula como paquete, sin primera vez ni retoque', () => {
+    expect(formatAppointmentSummary({ ...CHOICE, techniqueName: 'Combo clásicas', isFirstTime: null }).kind).toBe(
+      APPOINTMENT_DISPLAY_CHOICE.packageKind,
+    )
+  })
+
   it('una cita sin elección guardada dice que el servicio no está registrado', () => {
     expect(formatAppointmentSummary(null)).toEqual({
       service: APPOINTMENT_DISPLAY_CHOICE.noService,
