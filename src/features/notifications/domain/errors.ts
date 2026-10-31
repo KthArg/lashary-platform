@@ -3,6 +3,7 @@ export const NOTIFICATIONS_ERROR_CODES = {
   channelNotConfigured: 'NOTIFICATIONS_CHANNEL_NOT_CONFIGURED',
   channelSendFailed: 'NOTIFICATIONS_CHANNEL_SEND_FAILED',
   contactMissing: 'NOTIFICATIONS_CONTACT_MISSING',
+  inboxStorageFailed: 'NOTIFICATIONS_INBOX_STORAGE_FAILED',
 } as const
 
 type NotificationsErrorCode = (typeof NOTIFICATIONS_ERROR_CODES)[keyof typeof NOTIFICATIONS_ERROR_CODES]
@@ -66,3 +67,16 @@ export function contactMissing(clientId: string): ContactMissing {
 
 export const isContactMissing = (error: unknown): error is ContactMissing =>
   hasCode<ContactMissing>(error, NOTIFICATIONS_ERROR_CODES.contactMissing)
+
+export interface InboxStorageFailed {
+  readonly code: typeof NOTIFICATIONS_ERROR_CODES.inboxStorageFailed
+  readonly message: string
+  readonly cause: string
+}
+
+export function inboxStorageFailed(cause: string): InboxStorageFailed {
+  return { code: NOTIFICATIONS_ERROR_CODES.inboxStorageFailed, message: `la bandeja no respondió: ${cause}`, cause }
+}
+
+export const isInboxStorageFailed = (error: unknown): error is InboxStorageFailed =>
+  hasCode<InboxStorageFailed>(error, NOTIFICATIONS_ERROR_CODES.inboxStorageFailed)

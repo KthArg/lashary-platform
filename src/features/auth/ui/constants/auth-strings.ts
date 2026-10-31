@@ -34,6 +34,7 @@ export const CLIENT_PORTAL_ROUTES = {
 } as const
 
 export const ADMIN_PORTAL_ROUTES = {
+  root: '/admin',
   login: '/admin',
   dashboard: '/admin/dashboard',
   citas: '/admin/citas',

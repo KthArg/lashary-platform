@@ -68,3 +68,9 @@ export async function runNotificationsReminderCycle(): Promise<
 
 export type { RunReminderCycleSummary } from './application/run-reminder-cycle'
 export { receiveReminderCronRequest } from './http/cron-handler'
+export { loadAdminInbox } from './ui/inbox/services/inbox-service'
+export { markNoticeAction } from './ui/inbox/actions/inbox-actions'
+export { AdminInbox } from './ui/inbox/components/AdminInbox'
+export type { AdminInboxResult, MarkNoticeActionResult } from './ui/inbox/types/inbox-results'
+export type { InboxView } from './application/inbox'
+export type { InboxNotice } from './domain/inbox-notice'

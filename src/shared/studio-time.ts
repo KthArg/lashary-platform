@@ -47,3 +47,17 @@ export function studioLocalToUtc(date: string, minuteOfDay: number): Date {
   const seenAsUtc = Date.UTC(seen.year, seen.month - 1, seen.day, seen.hour, seen.minute)
   return new Date(asIfUtc - (seenAsUtc - asIfUtc))
 }
+
+const studioDateTimeFormatter = new Intl.DateTimeFormat('es-CR', {
+  timeZone: STUDIO_TIME_ZONE,
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: true,
+})
+
+export function formatStudioDateTime(instant: Date): string {
+  return studioDateTimeFormatter.format(instant)
+}
