@@ -68,4 +68,22 @@ describe('MyAppointmentsView', () => {
     expect(screen.getByRole('alert').textContent).toContain(copy.accessDenied)
     expect(screen.queryByRole('list')).toBeNull()
   })
+
+  it('con citas, el encabezado también ofrece agendar otra', () => {
+    render(<MyAppointmentsView view={{ status: 'ready', appointments: [appointment] }} />)
+
+    expect(screen.getByRole('link', { name: copy.bookCta }).getAttribute('href')).toBe(BOOK_APPOINTMENT_PATH)
+  })
+
+  it('sin citas, "Agendar cita" aparece una sola vez', () => {
+    render(<MyAppointmentsView view={{ status: 'empty' }} />)
+
+    expect(screen.getAllByRole('link', { name: copy.bookCta })).toHaveLength(1)
+  })
+
+  it('quien no es clienta no ve el botón de agendar', () => {
+    render(<MyAppointmentsView view={{ status: 'forbidden' }} />)
+
+    expect(screen.queryByRole('link', { name: copy.bookCta })).toBeNull()
+  })
 })
