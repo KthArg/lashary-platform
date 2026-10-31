@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { err, ok } from '@/shared/result'
 import { storageFailed } from '../domain/errors'
 import { PENDING_APPROVAL_STATUS } from '../domain/appointment-decision.constants'
-import type { AppointmentChoice, PendingAppointmentsRepository } from '../application/ports'
+import type { AppointmentChoice, HeldSchedule, PendingAppointmentsRepository } from '../application/ports'
 import {
   APPOINTMENTS_TABLE,
   CLIENT_NAMES_FUNCTION,
@@ -22,6 +22,13 @@ type PendingAppointmentRow = {
   is_first_time_detected: boolean | null
   service_price: number | null
   deposit_required: number | null
+  previous_starts_at: string | null
+  previous_ends_at: string | null
+}
+
+function toHeldSchedule(row: PendingAppointmentRow): HeldSchedule | null {
+  if (!row.previous_starts_at || !row.previous_ends_at) return null
+  return { startsAtMs: Date.parse(row.previous_starts_at), endsAtMs: Date.parse(row.previous_ends_at) }
 }
 
 function toChoice(row: PendingAppointmentRow): AppointmentChoice | null {
@@ -73,6 +80,7 @@ export function createSupabasePendingAppointmentsRepository(
           endsAtMs: Date.parse(row.ends_at),
           clientName: row.client_id ? (names.get(row.client_id) ?? null) : null,
           choice: toChoice(row),
+          heldSchedule: toHeldSchedule(row),
         })),
       )
     },
