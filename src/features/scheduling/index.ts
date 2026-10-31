@@ -37,5 +37,6 @@ export async function listClientAppointments(query: ListClientAppointmentsQuery)
 export {
   listAppointmentsForReminders as listSchedulingAppointmentsForReminders,
   getAppointmentForReminder as getSchedulingAppointmentForReminder,
+  expireUndecidedReschedules as expireSchedulingUndecidedReschedules,
 } from './reminders-api'
 export type { AppointmentReminderSnapshot, ReminderSnapshotsWindow } from './application/ports'
