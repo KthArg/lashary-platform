@@ -94,10 +94,12 @@ SELECT results_eq(
             true, interval '1 hour', interval '15 minutes')$$,
   'el precio, el anticipo y la duración quedan; nadie figura como quien decidió');
 
-SELECT is((SELECT count(*) FROM public.scheduling_appointments
-            WHERE status IN ('pending_approval', 'approved', 'confirmed')
-              AND occupied_range && tstzrange('2027-09-06 09:00-06', '2027-09-06 10:15-06')), 0::bigint,
-  'el espacio viejo quedó libre');
+SELECT results_eq(
+  $$SELECT id FROM public.scheduling_appointments
+     WHERE status IN ('pending_approval', 'approved', 'confirmed')
+       AND blocked_ranges && tstzrange('2027-09-06 09:00-06', '2027-09-06 10:15-06')$$,
+  $$VALUES ('00000000-0000-0000-0000-00000000ea01'::uuid)$$,
+  'el espacio viejo lo sigue guardando la misma cita mientras la administradora no decide');
 
 SELECT results_eq(
   $$SELECT payload FROM public.audit_events
@@ -105,7 +107,8 @@ SELECT results_eq(
   $$VALUES ('{"newEndsAt": "2027-09-27T16:00:00+00:00", "newStartsAt": "2027-09-27T15:00:00+00:00",
              "previousEndsAt": "2027-09-06T16:00:00+00:00", "previousStatus": "approved",
              "previousStartsAt": "2027-09-06T15:00:00+00:00", "techniqueName": "zz-test reagendar",
-             "rescheduleCount": 1, "maxReschedules": 1, "depositRegistered": 10000}'::jsonb)$$,
+             "rescheduleCount": 1, "maxReschedules": 1, "depositRegistered": 10000,
+             "heldStartsAt": "2027-09-06T15:00:00+00:00"}'::jsonb)$$,
   'el evento trae el horario anterior y el nuevo, en la misma transacción');
 
 SELECT is((SELECT actor_id FROM public.audit_events
