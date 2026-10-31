@@ -2,6 +2,8 @@ export const RESCHEDULE_APPOINTMENT_FUNCTION = 'scheduling_reschedule_appointmen
 
 export const QUOTE_RESCHEDULE_FUNCTION = 'scheduling_quote_reschedule'
 
+export const EXPIRE_UNDECIDED_RESCHEDULES_FUNCTION = 'scheduling_expire_undecided_reschedules'
+
 export const RESCHEDULE_ERROR_MESSAGES = {
   clientNotRegistered: 'scheduling_client_not_registered',
   appointmentNotReschedulable: 'scheduling_appointment_not_reschedulable',
