@@ -7,10 +7,14 @@ import { isStaff } from '../../require-staff'
 import {
   createTechnique,
   updateTechnique,
-  deactivateTechnique,
+  findPackagesAffectedByDeactivation,
+  deactivateTechniqueCascade,
   type CommandDeps,
+  type DeactivateDeps,
 } from '../../../application/techniques/commands'
 import { techniqueRepository } from '../../../db/techniques/technique-repository'
+import { packageRepository } from '../../../db/packages/package-repository'
+import { isTechniqueAffectedPackagesChanged, type AffectedPackage } from '../../../domain/techniques/errors'
 import { techniqueFormSchema } from '../validation/technique-schema'
 import { catalogMessages } from '../constants/technique-strings'
 import { catalogRoutes } from '../../routes'
@@ -18,6 +22,10 @@ import type { TechniqueActionState } from '../types/technique-action-state'
 
 async function deps(): Promise<CommandDeps> {
   return { repo: await techniqueRepository(), newId: () => randomUUID() }
+}
+
+async function deactivateDeps(): Promise<DeactivateDeps> {
+  return { repo: await techniqueRepository(), packageRepo: await packageRepository() }
 }
 
 function forbidden(): TechniqueActionState {
@@ -73,18 +81,52 @@ export async function updateTechniqueAction(
   return { status: 'ok', message: catalogMessages.form.savedEdit }
 }
 
-export async function deactivateTechniqueAction(
+export type CheckTechniqueDeactivationResult =
+  | { status: 'ok'; affectedPackages: AffectedPackage[] }
+  | { status: 'forbidden' }
+  | { status: 'notFound' }
+
+/** La "cotización": qué paquetes activos incluyen la técnica, para armar el aviso antes de
+ *  desactivar (decisión del PO sobre el hallazgo de code review de US-AGE-04). Se llama directo
+ *  desde el cliente, no por <form action>, porque el aviso tiene que aparecer antes de que la
+ *  usuaria confirme nada. */
+export async function checkTechniqueDeactivationAction(id: string): Promise<CheckTechniqueDeactivationResult> {
+  if (!(await isStaff())) return { status: 'forbidden' }
+
+  const result = await findPackagesAffectedByDeactivation(await deactivateDeps())(id)
+  if (isErr(result)) return { status: 'notFound' }
+  return { status: 'ok', affectedPackages: result.value }
+}
+
+export async function deactivateTechniqueCascadeAction(
   _prev: TechniqueActionState,
   formData: FormData,
 ): Promise<TechniqueActionState> {
   if (!(await isStaff())) return forbidden()
 
   const id = String(formData.get('id') ?? '')
+  const confirmedIds = formData.getAll('packageId').map(String)
+  const confirmedNames = formData.getAll('packageName').map(String)
+  const confirmedPackages: AffectedPackage[] = confirmedIds.map((packageId, index) => ({
+    id: packageId,
+    name: confirmedNames[index] ?? '',
+  }))
 
-  const result = await deactivateTechnique(await deps())(id)
+  const result = await deactivateTechniqueCascade(await deactivateDeps())(id, confirmedPackages)
   if (isErr(result)) {
+    if (isTechniqueAffectedPackagesChanged(result.error)) {
+      return { status: 'invalid', problems: [catalogMessages.form.affectedPackagesChanged] }
+    }
     return { status: 'invalid', problems: [result.error.message] }
   }
+
   revalidatePath(catalogRoutes.admin)
-  return { status: 'ok', message: catalogMessages.form.deactivated }
+  const deactivatedNames = result.value.deactivatedPackages.map((pkg) => pkg.name)
+  return {
+    status: 'ok',
+    message:
+      deactivatedNames.length > 0
+        ? catalogMessages.form.deactivatedWithPackages(deactivatedNames)
+        : catalogMessages.form.deactivated,
+  }
 }

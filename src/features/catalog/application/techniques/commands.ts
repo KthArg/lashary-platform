@@ -2,7 +2,6 @@ import { type Money, moneyFromColones } from '@/shared/money'
 import { ok, err, isErr, type Result } from '@/shared/result'
 import {
   buildTechnique,
-  markTechniqueInactive,
   techniqueToView,
   type Technique,
   type TechniqueView,
@@ -115,23 +114,6 @@ export const updateTechnique =
     const saved = await deps.repo.save(built.value)
     if (isErr(saved)) return saved
     return ok(techniqueToView(built.value))
-  }
-
-// deactivateTechnique (sin aviso de cascada) queda mientras ui/techniques/actions/technique-actions.ts
-// siga llamándola; la pieza siguiente la reemplaza por deactivateTechniqueCascade en la UI y la
-// retira de aquí (sin dejar dos caminos de desactivar una técnica una vez hecho el cambio).
-export const deactivateTechnique =
-  (deps: CommandDeps) =>
-  async (
-    id: string,
-  ): Promise<Result<TechniqueView, TechniqueNotFound | TechniqueNameConflict>> => {
-    const existing = await deps.repo.findById(id)
-    if (existing === null) return err(techniqueNotFound(id))
-
-    const deactivated = markTechniqueInactive(existing)
-    const saved = await deps.repo.save(deactivated)
-    if (isErr(saved)) return saved
-    return ok(techniqueToView(deactivated))
   }
 
 /** Paquetes activos que esta técnica integra hoy — el aviso antes de desactivar (decisión del PO
