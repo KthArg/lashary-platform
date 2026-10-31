@@ -1,16 +1,14 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { err, ok } from '@/shared/result'
+import { err, isErr, ok } from '@/shared/result'
 import { storageFailed } from '../domain/errors'
 import { PENDING_APPROVAL_STATUS } from '../domain/appointment-decision.constants'
 import type { AppointmentChoice, PendingAppointmentsRepository } from '../application/ports'
 import {
   APPOINTMENTS_TABLE,
-  CLIENT_NAMES_FUNCTION,
   PENDING_APPOINTMENT_COLUMNS,
   PENDING_APPOINTMENTS_LIMIT,
 } from './appointment-repository.constants'
-
-type ClientNameRow = { client_id: string; full_name: string }
+import { fetchClientNames } from './client-names'
 
 type PendingAppointmentRow = {
   id: string
@@ -57,21 +55,15 @@ export function createSupabasePendingAppointmentsRepository(
       if (error) return err(storageFailed(error.message))
 
       const rows = (data ?? []) as PendingAppointmentRow[]
-      const clientIds = [...new Set(rows.flatMap((row) => (row.client_id ? [row.client_id] : [])))]
-
-      const names = new Map<string, string>()
-      if (clientIds.length > 0) {
-        const { data: nameRows, error: namesError } = await db.rpc(CLIENT_NAMES_FUNCTION, { p_client_ids: clientIds })
-        if (namesError) return err(storageFailed(namesError.message))
-        for (const nameRow of (nameRows ?? []) as ClientNameRow[]) names.set(nameRow.client_id, nameRow.full_name)
-      }
+      const names = await fetchClientNames(db, rows.map((row) => row.client_id))
+      if (isErr(names)) return names
 
       return ok(
         rows.map((row) => ({
           id: row.id,
           startsAtMs: Date.parse(row.starts_at),
           endsAtMs: Date.parse(row.ends_at),
-          clientName: row.client_id ? (names.get(row.client_id) ?? null) : null,
+          clientName: row.client_id ? (names.value.get(row.client_id) ?? null) : null,
           choice: toChoice(row),
         })),
       )

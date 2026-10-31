@@ -3,6 +3,7 @@ import type { SelectableTechnique } from '../domain/technique-selection'
 import type { AppointmentDecision } from '../domain/appointment-decision.constants'
 import type { CancellableStatus } from '../domain/appointment-cancellation.constants'
 import type { SchedulingAlert } from '../domain/alert'
+import type { AgendaAppointment } from '../domain/daily-agenda'
 import type {
   AppointmentNotCancellable,
   AppointmentNotPending,
@@ -163,6 +164,10 @@ export interface DelinquencyPort {
   hasActiveDelinquency(): Promise<boolean>
 }
 
+export interface DelinquentClientsPort {
+  listWithActiveDelinquency(clientIds: readonly string[]): Promise<Result<ReadonlySet<string>, StorageFailed>>
+}
+
 export type DecideAppointmentInput = {
   appointmentId: string
   decision: AppointmentDecision
@@ -210,4 +215,8 @@ export interface PendingAppointmentsRepository {
 
 export interface AlertsRepository {
   listRecent(limit: number): Promise<Result<SchedulingAlert[], StorageFailed>>
+}
+
+export interface DailyAgendaRepository {
+  listBetween(fromMs: number, untilMs: number): Promise<Result<AgendaAppointment[], StorageFailed>>
 }
