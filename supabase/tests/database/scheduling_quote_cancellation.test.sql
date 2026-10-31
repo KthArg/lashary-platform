@@ -2,7 +2,7 @@
 -- Correr con: npx supabase test db
 
 BEGIN;
-SELECT plan(15);
+SELECT plan(16);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -57,6 +57,17 @@ VALUES
    '00000000-0000-0000-0000-000000000cc6', '00000000-0000-0000-0000-000000000cf4', 'zz-test cotizar',
    true, 35000, 10000, 4000);
 
+-- Cita de paquete (US-AGE-04): sin técnica, el nombre sale de package_name.
+INSERT INTO public.scheduling_appointments
+  (id, resource_id, status, starts_at, ends_at, occupied_range, client_id, package_id, package_name,
+   service_price, deposit_required, deposit_registered)
+VALUES
+  ('00000000-0000-0000-0000-00000000cd08', '00000000-0000-0000-0000-000000000a01', 'approved',
+   (now() + interval '33 days'), (now() + interval '33 days 2 hours'),
+   tstzrange((now() + interval '33 days'), (now() + interval '33 days 2 hours')),
+   '00000000-0000-0000-0000-000000000cc6', '00000000-0000-0000-0000-00000000cb01', 'zz-test paquete cotizar',
+   45000, 12000, 12000);
+
 SELECT is((SELECT within_window FROM public.scheduling_evaluate_cancellation('approved', now() + interval '48 hours', 10000)), true,
   'con justo la antelación de la ventana todavía no se pierde (el límite es inclusivo)');
 
@@ -93,6 +104,9 @@ SELECT results_eq(
 
 SELECT is((SELECT technique_name FROM public.scheduling_quote_cancellation('00000000-0000-0000-0000-00000000cd01')),
   'zz-test cotizar', 'devuelve el nombre de la técnica congelado en la cita');
+
+SELECT is((SELECT technique_name FROM public.scheduling_quote_cancellation('00000000-0000-0000-0000-00000000cd08')),
+  'zz-test paquete cotizar', 'una cita de paquete muestra el nombre del paquete, no un valor vacío');
 
 SELECT throws_ok(
   $$SELECT * FROM public.scheduling_quote_cancellation('00000000-0000-0000-0000-00000000cd04')$$,

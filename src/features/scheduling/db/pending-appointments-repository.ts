@@ -18,23 +18,23 @@ type PendingAppointmentRow = {
   ends_at: string
   client_id: string | null
   technique_name: string | null
+  package_name: string | null
   is_first_time: boolean | null
   is_first_time_detected: boolean | null
   service_price: number | null
   deposit_required: number | null
 }
 
+// Una cita de técnica y una de paquete son las dos formas válidas del CHECK de snapshot
+// (scheduling_appointments_booking_snapshot_complete): un paquete no tiene is_first_time, su nombre
+// sale de package_name, y choice solo es null si la cita todavía no tiene ninguna reserva.
 function toChoice(row: PendingAppointmentRow): AppointmentChoice | null {
-  if (
-    row.technique_name === null ||
-    row.is_first_time === null ||
-    row.service_price === null ||
-    row.deposit_required === null
-  ) {
+  const serviceName = row.technique_name ?? row.package_name
+  if (serviceName === null || row.service_price === null || row.deposit_required === null) {
     return null
   }
   return {
-    techniqueName: row.technique_name,
+    techniqueName: serviceName,
     isFirstTime: row.is_first_time,
     detectedFirstTime: row.is_first_time_detected,
     servicePrice: row.service_price,
