@@ -115,6 +115,15 @@ A diferencia de un criterio diferido, un criterio trasladado **cambia de histori
 
 **Registro de la decisión (2026-10-28), aprobada verbalmente por Kenny, code reviewer con facultad de decisión por regla del PO:** la deuda de US-NOT-03 que queda en `deuda` del frontmatter de `src/features/notifications/SPEC.md` (consultas una por una en reconcile, discover y send; A4, rol dedicado del cron; B5, `reschedulePending` no reinicia `attempts`/`last_error`; B6, recordatorio inmediato para citas reservadas con menos de 24h). Es una aprobación verbal: no hay comentario escrito de KthArg (PO) y se pide que lo deje en #577. Que US-NOT-03 quede `terminada` sigue pendiente del visto bueno escrito de KthArg.
 
+## Activación del cron de recordatorios (propuesta, 2026-10-31)
+
+La ruta `/api/cron/notifications-reminders` corre el ciclo de recordatorios de US-NOT-03 y, desde US-AGE-10, vence los reagendados sin decisión (primer paso del ciclo). Hoy nadie la llama: no hay `vercel.json` ni workflow de GitHub Actions. Mientras no corra, un reagendado sin decisión se queda en `pending_approval` y ocupa el horario aprobado guardado y el pedido hasta que la administradora lo decida a mano, y no sale ningún recordatorio.
+
+- **Qué falta:** un workflow de GitHub Actions que haga `POST` cada 15 minutos con `Authorization: Bearer <CRON_SECRET>`, el secreto `CRON_SECRET` y la cuenta de staff del cron en producción (`NOTIFICATIONS_CRON_EMAIL`/`NOTIFICATIONS_CRON_PASSWORD`). El workflow lo aplica un admin (el tooling de `.github/` no lo toca Claude).
+- **Dueño propuesto:** KthArg, único admin del repositorio.
+- **Fecha propuesta:** 2026-11-06, antes de mergear el cierre de US-AGE-10 a `main`.
+- **Estado:** pendiente de confirmación de Kenny (PO desde el 2026-10-30). Hasta que la confirme por escrito, este dueño y esta fecha son una propuesta y no una decisión. Activar el cron con el canal de WhatsApp sin configurar manda los recordatorios a `failed` tras 5 intentos (ver «Antes de producción» en el SPEC de `notifications`); decidir eso antes de activarlo.
+
 ## FK cross-feature y archivado de clientas (ADR-0009 aceptado)
 
 `payments_deposit_exemptions.client_id` tiene FK real a `public.clients_profiles(id)`, tabla de la feature `clients` (US-AGE-13, migración `20260924000000_payments_deposit_exemptions.sql`). Es el primer FK entre tablas de dos features distintas; los demás apuntan a `auth.users`. El revisor automático lo marcó como tensión con ARCH-005.
