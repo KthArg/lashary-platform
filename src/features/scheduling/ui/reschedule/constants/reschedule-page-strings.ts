@@ -24,7 +24,8 @@ export const reschedulePageMessages = {
   backToAppointments: 'Volver a mis citas',
   rescheduleButton: 'Reagendar',
   rescheduleButtonLabel: (slot: string) => `Reagendar la cita del ${slot}`,
-  backToPending: 'Al reagendar, tu cita vuelve a quedar pendiente de aprobación y la administradora tiene que aprobarla de nuevo. Conservás tu anticipo.',
+  backToPending:
+    'Al reagendar, la administradora tiene que aprobar el nuevo horario. Mientras lo revisa, tu horario actual se mantiene; si no acepta el cambio, la cita se queda en él. Conservás tu anticipo.',
   keepsPending: 'Tu cita sigue pendiente de aprobación con el nuevo horario.',
   chooseSlot: 'Elegí un espacio para continuar.',
   confirmButton: 'Confirmar el nuevo horario',

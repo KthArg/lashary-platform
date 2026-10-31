@@ -24,6 +24,7 @@ const appointment: MyAppointmentView = {
   slot: 'viernes, 10 de septiembre de 2027 · 9:00 a. m. – 10:00 a. m.',
   status: copy.status.approved,
   amounts: 'Precio ₡35.000 · Anticipo ₡10.000',
+  heldNote: null,
 }
 
 describe('MyAppointmentsView', () => {
