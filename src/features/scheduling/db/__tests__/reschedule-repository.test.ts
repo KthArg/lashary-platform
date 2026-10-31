@@ -2,7 +2,11 @@ import { describe, it, expect } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isErr, isOk } from '@/shared/result'
 import { createSupabaseRescheduleRepository } from '../reschedule-repository'
-import { RESCHEDULE_APPOINTMENT_FUNCTION, RESCHEDULE_ERROR_MESSAGES } from '../reschedule-repository.constants'
+import {
+  QUOTE_RESCHEDULE_FUNCTION,
+  RESCHEDULE_APPOINTMENT_FUNCTION,
+  RESCHEDULE_ERROR_MESSAGES,
+} from '../reschedule-repository.constants'
 
 const APPOINTMENT_ID = 'cita-1'
 const NEW_STARTS_AT = '2027-09-27T15:00:00.000Z'
@@ -17,6 +21,18 @@ const rescheduleRow = {
   starts_at: NEW_STARTS_AT,
   ends_at: NEW_ENDS_AT,
   reschedule_count: 1,
+}
+
+const quoteRow = {
+  starts_at: '2027-09-06T15:00:00.000Z',
+  ends_at: '2027-09-06T16:00:00.000Z',
+  occupied_minutes: 75,
+  technique_name: 'Clásicas',
+  status: 'approved',
+  reschedule_count: 0,
+  max_reschedules: 1,
+  window_hours: 48,
+  blocked_by: 'outside_window',
 }
 
 type FakeResponse = { data: unknown[] | null; error: { code?: string; message: string } | null }
@@ -111,5 +127,60 @@ describe('createSupabaseRescheduleRepository', () => {
 
     expect(isErr(result)).toBe(true)
     if (isErr(result)) expect(result.error.code).toBe('SCHEDULING_STORAGE_FAILED')
+  })
+
+  describe('quote', () => {
+    it('llama a la función SQL solo con la cita y devuelve lo que se puede hacer con ella', async () => {
+      const { db, calls } = createFakeDb({ data: [quoteRow], error: null })
+      const result = await createSupabaseRescheduleRepository(db).quote(APPOINTMENT_ID)
+
+      expect(calls).toEqual([
+        { functionName: QUOTE_RESCHEDULE_FUNCTION, args: { p_appointment_id: APPOINTMENT_ID } },
+      ])
+      expect(isOk(result)).toBe(true)
+      if (isOk(result)) {
+        expect(result.value).toEqual({
+          startsAtMs: Date.parse('2027-09-06T15:00:00.000Z'),
+          endsAtMs: Date.parse('2027-09-06T16:00:00.000Z'),
+          occupiedMinutes: 75,
+          techniqueName: 'Clásicas',
+          status: 'approved',
+          rescheduleCount: 0,
+          maxReschedules: 1,
+          windowHours: 48,
+          blockedBy: 'outside_window',
+        })
+      }
+    })
+
+    it('una cita que se puede reagendar llega sin bloqueo', async () => {
+      const { db } = createFakeDb({ data: [{ ...quoteRow, blocked_by: null }], error: null })
+      const result = await createSupabaseRescheduleRepository(db).quote(APPOINTMENT_ID)
+
+      expect(isOk(result) && result.value.blockedBy).toBeNull()
+    })
+
+    it.each([
+      [RESCHEDULE_ERROR_MESSAGES.clientNotRegistered, { code: 'SCHEDULING_CLIENT_NOT_REGISTERED' }],
+      [
+        RESCHEDULE_ERROR_MESSAGES.appointmentNotReschedulable,
+        { code: 'SCHEDULING_APPOINTMENT_NOT_RESCHEDULABLE', appointmentId: APPOINTMENT_ID },
+      ],
+      ['connection refused', { code: 'SCHEDULING_STORAGE_FAILED' }],
+    ] as const)('el mensaje %s de la base llega como su error tipado, sin lanzar', async (message, expectedError) => {
+      const { db } = createFakeDb({ data: null, error: { code: 'P0001', message } })
+      const result = await createSupabaseRescheduleRepository(db).quote(APPOINTMENT_ID)
+
+      expect(isErr(result)).toBe(true)
+      if (isErr(result)) expect(result.error).toMatchObject(expectedError)
+    })
+
+    it('sin filas → StorageFailed', async () => {
+      const { db } = createFakeDb({ data: [], error: null })
+      const result = await createSupabaseRescheduleRepository(db).quote(APPOINTMENT_ID)
+
+      expect(isErr(result)).toBe(true)
+      if (isErr(result)) expect(result.error.code).toBe('SCHEDULING_STORAGE_FAILED')
+    })
   })
 })
