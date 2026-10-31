@@ -63,6 +63,7 @@ describe.skipIf(!reachable)('cancelar y aprobar la misma cita a la vez (Supabase
   let adminDb: SupabaseClient
   let profileId: string
   let slotIndex = 0
+  const startsAtMsById = new Map<string, number>()
 
   async function sessionFor(email: string): Promise<{ db: SupabaseClient; userId: string }> {
     const anon = createClient(API_URL, ANON_KEY, CLIENT_OPTIONS)
@@ -92,13 +93,19 @@ describe.skipIf(!reachable)('cancelar y aprobar la misma cita a la vez (Supabase
        RETURNING id`,
       [STUDIO_RESOURCE_ID, startsAt, endsAt, profileId, TECHNIQUE_NAME, SERVICE_PRICE, DEPOSIT],
     )
+    startsAtMsById.set(inserted.rows[0].id, startsAtMs)
     return inserted.rows[0].id
   }
 
   const cancelAsClient = (appointmentId: string) =>
     createSupabaseCancellationRepository(clientDb).cancel(appointmentId, SAW_NO_LOSS)
   const approveAsAdmin = (appointmentId: string) =>
-    createSupabaseAppointmentDecisionRepository(adminDb).decide({ appointmentId, decision: 'approved', reason: null })
+    createSupabaseAppointmentDecisionRepository(adminDb).decide({
+      appointmentId,
+      decision: 'approved',
+      reason: null,
+      expectedStartsAtMs: startsAtMsById.get(appointmentId),
+    })
 
   async function statusOf(appointmentId: string): Promise<string> {
     const { rows } = await pg.query('SELECT status FROM public.scheduling_appointments WHERE id = $1', [appointmentId])

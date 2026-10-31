@@ -146,8 +146,13 @@ describe.skipIf(!reachable)('reagendar a la vez (Supabase local)', () => {
       newStartsAtMs,
       expectedStatus: 'pending_approval',
     })
-  const approveAsAdmin = (appointmentId: string) =>
-    createSupabaseAppointmentDecisionRepository(adminDb).decide({ appointmentId, decision: 'approved', reason: null })
+  const approveAsAdmin = (appointmentId: string, seenStartsAtMs: number) =>
+    createSupabaseAppointmentDecisionRepository(adminDb).decide({
+      appointmentId,
+      decision: 'approved',
+      reason: null,
+      expectedStartsAtMs: seenStartsAtMs,
+    })
 
   async function stored(appointmentId: string): Promise<StoredAppointment> {
     const { rows } = await pg.query(
@@ -264,7 +269,7 @@ describe.skipIf(!reachable)('reagendar a la vez (Supabase local)', () => {
   )
 
   it(
-    'reagendar y aprobar la misma cita a la vez: nunca se pierde una de las dos y el contador coincide con los eventos',
+    'reagendar y aprobar a la vez: la aprobación nunca aprueba un horario que la administradora no vio',
     async () => {
       for (let round = 0; round < ROUNDS; round += 1) {
         const friday = nextFridayStartMs()
@@ -274,23 +279,42 @@ describe.skipIf(!reachable)('reagendar a la vez (Supabase local)', () => {
 
         const [rescheduled, approved] = await Promise.all([
           rescheduleAs(first, appointmentId, target),
-          approveAsAdmin(appointmentId),
+          approveAsAdmin(appointmentId, oldStart),
         ])
 
         const final = await stored(appointmentId)
-        expect(isOk(approved)).toBe(true)
-        expect(final.status).toBe('approved')
+        expect(isOk(rescheduled) && isOk(approved)).toBe(false)
         expect(await rescheduleEvents(appointmentId)).toBe(final.reschedule_count)
-        if (isOk(rescheduled)) {
-          expect(final.reschedule_count).toBe(1)
-          expect(final.starts_at.getTime()).toBe(target)
-        } else {
-          expect(rescheduled.error.code).toBe('SCHEDULING_RESCHEDULE_STATE_CHANGED')
-          expect(final.reschedule_count).toBe(0)
+        if (isOk(approved)) {
+          expect(isErr(rescheduled) && rescheduled.error.code).toBe('SCHEDULING_RESCHEDULE_STATE_CHANGED')
+          expect(final).toMatchObject({ status: 'approved', reschedule_count: 0 })
           expect(final.starts_at.getTime()).toBe(oldStart)
+        } else {
+          expect(isOk(rescheduled)).toBe(true)
+          expect(isErr(approved) && approved.error).toMatchObject({
+            code: 'SCHEDULING_APPOINTMENT_SCHEDULE_CHANGED',
+            startsAtMs: target,
+          })
+          expect(final).toMatchObject({ status: 'pending_approval', reschedule_count: 1 })
+          expect(final.starts_at.getTime()).toBe(target)
         }
       }
     },
     ROUND_TIMEOUT_MS * ROUNDS,
   )
+
+  it('si la clienta ya reagendó, aprobar el horario viejo no aprueba nada y la cita sigue pendiente', async () => {
+    const friday = nextFridayStartMs()
+    const oldStart = slotMs(friday, OLD_SLOT_OFFSET_HOURS)
+    const target = slotMs(friday, NEW_SLOT_OFFSET_HOURS)
+    const appointmentId = await insertPendingAppointment(first.profileId, oldStart)
+
+    expect(isOk(await rescheduleAs(first, appointmentId, target))).toBe(true)
+    const approvedOldSchedule = await approveAsAdmin(appointmentId, oldStart)
+
+    expect(isErr(approvedOldSchedule) && approvedOldSchedule.error.code).toBe('SCHEDULING_APPOINTMENT_SCHEDULE_CHANGED')
+    expect((await stored(appointmentId)).status).toBe('pending_approval')
+    expect(isOk(await approveAsAdmin(appointmentId, target))).toBe(true)
+    expect((await stored(appointmentId)).status).toBe('approved')
+  })
 })

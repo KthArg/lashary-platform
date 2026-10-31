@@ -39,7 +39,8 @@ export function useApprovalQueue() {
     errorMessage,
     setReason,
     cancelReject,
-    approve: (appointmentId: string) => decide(appointmentId, () => approveAppointmentAction(appointmentId)),
+    approve: (appointmentId: string, seenStartsAtMs: number) =>
+      decide(appointmentId, () => approveAppointmentAction(appointmentId, seenStartsAtMs)),
     confirmReject: (appointmentId: string) =>
       decide(appointmentId, () => rejectAppointmentAction(appointmentId, reason)),
     startReject: (appointmentId: string) => {
