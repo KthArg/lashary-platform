@@ -13,8 +13,19 @@ const cancelledRow = {
   starts_at: '2026-10-01T15:00:00+00:00',
   status: 'cancelled',
   technique_name: 'Volumen',
+  package_name: null,
   deposit_required: 15000,
   deposit_registered: 0,
+}
+
+const packageRow = {
+  id: 'cita-3',
+  starts_at: '2026-10-05T15:00:00+00:00',
+  status: 'confirmed',
+  technique_name: null,
+  package_name: 'Combo clásicas',
+  deposit_required: 12000,
+  deposit_registered: 12000,
 }
 
 type FakeResponse = { data: unknown; error: { message: string; code?: string } | null; count: number | null }
@@ -58,6 +69,13 @@ describe('createSupabaseClientAppointmentsRepository', () => {
       ],
       total: 26,
     })
+  })
+
+  it('una cita de paquete usa package_name como techniqueName', async () => {
+    const { db } = createFakeDb({ data: [packageRow], error: null, count: 1 })
+    const result = await createSupabaseClientAppointmentsRepository(db).listByClient(slice)
+
+    expect(isOk(result) && result.value.items[0].techniqueName).toBe('Combo clásicas')
   })
 
   it('no pide datos de la decisión, del recurso ni de la elección', () => {
