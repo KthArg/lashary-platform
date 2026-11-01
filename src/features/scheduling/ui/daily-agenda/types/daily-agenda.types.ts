@@ -33,3 +33,16 @@ export type DailyAgendaViewModel = { nav: AgendaDayNav } & (
   | { status: 'empty' }
   | { status: 'ready'; entries: AgendaEntryView[]; truncatedNotice: string | null; delinquencyNotice: string | null }
 )
+
+export type UnclosedItemView = {
+  id: string
+  when: string
+  clientName: string
+  technique: string
+  dayHref: string
+  dayLabel: string
+}
+
+export type UnclosedSectionView =
+  | { status: 'error' }
+  | { status: 'ready'; items: UnclosedItemView[]; truncatedNotice: string | null }

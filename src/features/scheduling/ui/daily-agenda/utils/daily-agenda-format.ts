@@ -1,17 +1,27 @@
 import { isErr, type Result } from '@/shared/result'
-import { addCalendarDays, studioLocalToUtc } from '@/shared/studio-time'
+import { addCalendarDays, studioDateOf, studioLocalToUtc } from '@/shared/studio-time'
+import type { UnclosedAppointment } from '@/features/scheduling/application/closing-ports'
 import type { DailyAgenda } from '@/features/scheduling/application/daily-agenda'
+import type { UnclosedAppointments } from '@/features/scheduling/application/list-unclosed-appointments'
 import type { AgendaEntry } from '@/features/scheduling/domain/daily-agenda'
 import type { DailyAgendaInvalid } from '@/features/scheduling/domain/availability-errors'
 import type { StorageFailed } from '@/features/scheduling/domain/errors'
 import { APPOINTMENT_DECISION, PENDING_APPROVAL_STATUS } from '@/features/scheduling/domain/appointment-decision.constants'
+import { UNCLOSED_APPOINTMENTS_LIMIT } from '@/features/scheduling/domain/appointment-closing.constants'
 import { DAILY_AGENDA_LIMIT } from '@/features/scheduling/domain/daily-agenda.constants'
 import {
   APPOINTMENT_DISPLAY_CHOICE,
   APPOINTMENT_DISPLAY_FORMAT,
 } from '../../appointment-display/constants/appointment-display.constants'
 import { dailyAgendaMessages as COPY } from '../constants/daily-agenda-strings'
-import type { AgendaDayNav, AgendaEntryView, ClientLinks, DailyAgendaViewModel } from '../types/daily-agenda.types'
+import type {
+  AgendaDayNav,
+  AgendaEntryView,
+  ClientLinks,
+  DailyAgendaViewModel,
+  UnclosedItemView,
+  UnclosedSectionView,
+} from '../types/daily-agenda.types'
 import { agendaDayHref } from './agenda-date'
 
 const NOON_MIN = 12 * 60
@@ -44,7 +54,7 @@ const visitOf = (isFirstTime: boolean | null): string | null => {
   return isFirstTime ? APPOINTMENT_DISPLAY_CHOICE.firstTime : APPOINTMENT_DISPLAY_CHOICE.retouch
 }
 
-const clientNameOf = (entry: AgendaEntry): string => {
+const clientNameOf = (entry: Pick<AgendaEntry, 'clientId' | 'clientName'>): string => {
   if (entry.clientId === null) return COPY.noClient
   return entry.clientName ?? COPY.unnamedClient
 }
@@ -93,5 +103,30 @@ export function toDailyAgendaViewModel(input: {
     entries: input.agenda.value.entries.map((entry) => toAgendaEntryView(entry, input.clientLinks)),
     truncatedNotice: input.agenda.value.isTruncated ? COPY.truncated(DAILY_AGENDA_LIMIT) : null,
     delinquencyNotice: input.agenda.value.isDelinquencyUnavailable ? COPY.delinquencyUnavailable : null,
+  }
+}
+
+const toUnclosedItemView = (appointment: UnclosedAppointment): UnclosedItemView => {
+  const date = studioDateOf(new Date(appointment.startsAtMs))
+  const dayLabel = formatAgendaDay(date)
+  return {
+    id: appointment.id,
+    when: `${dayLabel} · ${timeFormatter.format(appointment.startsAtMs)}`,
+    clientName: clientNameOf(appointment),
+    technique: appointment.techniqueName ?? APPOINTMENT_DISPLAY_CHOICE.noService,
+    dayHref: agendaDayHref(date),
+    dayLabel,
+  }
+}
+
+export function toUnclosedSectionView(
+  unclosed: Result<UnclosedAppointments, StorageFailed>,
+): UnclosedSectionView | null {
+  if (isErr(unclosed)) return { status: 'error' }
+  if (unclosed.value.appointments.length === 0) return null
+  return {
+    status: 'ready',
+    items: unclosed.value.appointments.map(toUnclosedItemView),
+    truncatedNotice: unclosed.value.isTruncated ? COPY.unclosed.truncated(UNCLOSED_APPOINTMENTS_LIMIT) : null,
   }
 }
