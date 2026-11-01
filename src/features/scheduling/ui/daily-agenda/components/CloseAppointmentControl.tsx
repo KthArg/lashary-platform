@@ -12,10 +12,11 @@ export function CloseAppointmentControl({
   item: UnclosedItemView
   onClosed: (message: string) => void
 }) {
-  const { state, start, choose, back, confirm } = useCloseAppointment(item, onClosed)
+  const { state, start, choose, chooseService, back, confirm } = useCloseAppointment(item, onClosed)
 
   if (state.status === 'choosing' || state.status === 'closing') {
     const isClosing = state.status === 'closing'
+    const chosenService = item.serviceChoices.find((service) => service.techniqueId === state.deliveredTechniqueId)
     return (
       <fieldset className={STYLES.closeBox} disabled={isClosing}>
         <legend className={STYLES.closeLegend}>{COPY.close.question(item.clientName)}</legend>
@@ -29,10 +30,28 @@ export function CloseAppointmentControl({
             />
             <span>
               <span className={STYLES.closeOptionLabel}>{option.label}</span>
-              <span className={STYLES.closeOptionSummary}>{option.summary}</span>
+              <span className={STYLES.closeOptionSummary}>
+                {option.outcome === 'completed' && chosenService ? chosenService.summary : option.summary}
+              </span>
             </span>
           </label>
         ))}
+        {state.outcome === 'completed' && item.serviceChoices.length > 0 ? (
+          <label className={STYLES.closeOption}>
+            <span className={STYLES.closeOptionLabel}>{COPY.close.serviceLabel}</span>
+            <select
+              value={state.deliveredTechniqueId ?? ''}
+              onChange={(event) => chooseService(event.target.value)}
+            >
+              <option value="">{COPY.close.reservedService(item.technique)}</option>
+              {item.serviceChoices.map((service) => (
+                <option key={service.techniqueId} value={service.techniqueId}>
+                  {service.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         <div className={STYLES.actions}>
           <button type="button" onClick={confirm} className={STYLES.closeConfirm}>
             {isClosing ? COPY.close.closing : COPY.close.confirm}

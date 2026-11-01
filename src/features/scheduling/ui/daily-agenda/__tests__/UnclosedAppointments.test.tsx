@@ -42,14 +42,17 @@ const unclosed = (overrides: Partial<UnclosedAppointment>): UnclosedAppointment 
   clientId: 'perfil-ana',
   clientName: 'Ana Mora',
   techniqueId: 'tecnica-1',
+  isFirstTime: true,
   techniqueName: 'Clásicas',
   servicePrice: SERVICE_PRICE,
   depositRegistered: DEPOSIT,
   ...overrides,
 })
 
+const services = [{ id: 'tecnica-2', name: 'Henna', priceFirstTime: 20000, priceRetouch: null }]
+
 const sectionOf = (appointments: UnclosedAppointment[], isTruncated = false) =>
-  toUnclosedSectionView(ok({ appointments, isTruncated }), NOW_MS)
+  toUnclosedSectionView(ok({ appointments, isTruncated }), NOW_MS, services)
 
 const renderAgenda = (section: ReturnType<typeof toUnclosedSectionView>) =>
   render(
@@ -188,5 +191,41 @@ describe('cerrar la cita desde la agenda — US-AGE-12 criterios 1, 3, 4 y 7', (
 
     expect(mockCloseAppointment).not.toHaveBeenCalled()
     expect(screen.getByRole('button', { name: /Cerrar la cita de Ana Mora/ })).toBeTruthy()
+  })
+
+  it('al elegir otro servicio prestado cambia el aviso y se manda ese servicio al confirmar', async () => {
+    mockCloseAppointment.mockResolvedValue({
+      ok: true,
+      closing: { appointmentId: 'cita-1', outcome: 'completed', chargeAmount: 20000, depositCredit: DEPOSIT, amountDue: 15000, forfeitedDeposit: 0 },
+    })
+    renderAgenda(sectionOf([unclosed({})]))
+    openCloseOptions()
+
+    fireEvent.change(screen.getByLabelText(COPY.close.serviceLabel), { target: { value: 'tecnica-2' } })
+
+    expect(screen.getByText(normalized(COPY.close.completedSummary(money(20000), money(DEPOSIT), money(20000 - DEPOSIT))))).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: COPY.close.confirm }))
+    await waitFor(() =>
+      expect(mockCloseAppointment).toHaveBeenCalledWith({
+        appointmentId: 'cita-1',
+        outcome: 'completed',
+        deliveredTechniqueId: 'tecnica-2',
+      }),
+    )
+  })
+
+  it('al cerrar como ausencia no manda el servicio prestado aunque se haya elegido otro', async () => {
+    mockCloseAppointment.mockResolvedValue({
+      ok: true,
+      closing: { appointmentId: 'cita-1', outcome: 'no_show', chargeAmount: 0, depositCredit: 0, amountDue: 0, forfeitedDeposit: DEPOSIT },
+    })
+    renderAgenda(sectionOf([unclosed({})]))
+    openCloseOptions()
+    fireEvent.change(screen.getByLabelText(COPY.close.serviceLabel), { target: { value: 'tecnica-2' } })
+
+    fireEvent.click(screen.getByLabelText(new RegExp(COPY.close.noShowLabel.slice(0, 11))))
+    fireEvent.click(screen.getByRole('button', { name: COPY.close.confirm }))
+
+    await waitFor(() => expect(mockCloseAppointment).toHaveBeenCalledWith({ appointmentId: 'cita-1', outcome: 'no_show' }))
   })
 })

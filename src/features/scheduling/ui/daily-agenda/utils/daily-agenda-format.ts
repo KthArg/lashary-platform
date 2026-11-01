@@ -20,6 +20,7 @@ import type {
   AgendaEntryView,
   ClientLinks,
   ClosingOptionView,
+  ServiceChoiceView,
   DailyAgendaViewModel,
   UnclosedItemView,
   UnclosedSectionView,
@@ -118,6 +119,30 @@ const closableOf = (appointment: UnclosedAppointment): ClosableAppointment => ({
   depositRegistered: appointment.depositRegistered,
 })
 
+export type ServicePrices = {
+  id: string
+  name: string
+  priceFirstTime: number
+  priceRetouch: number | null
+}
+
+function serviceChoicesOf(
+  appointment: UnclosedAppointment,
+  services: readonly ServicePrices[],
+  nowMs: number,
+): ServiceChoiceView[] {
+  if (appointment.clientId === null || appointment.servicePrice === null) return []
+  const closable = closableOf(appointment)
+  return services
+    .filter((service) => service.id !== appointment.techniqueId)
+    .flatMap((service) => {
+      const price = appointment.isFirstTime === false ? service.priceRetouch : service.priceFirstTime
+      if (price === null) return []
+      const completed = closeAsCompleted(closable, { techniqueId: service.id, price }, nowMs)
+      return isOk(completed) ? [{ techniqueId: service.id, name: service.name, summary: summarizeClosing(completed.value) }] : []
+    })
+}
+
 function closingOptionsOf(appointment: UnclosedAppointment, nowMs: number): ClosingOptionView[] {
   const closable = closableOf(appointment)
   const options: ClosingOptionView[] = []
@@ -135,7 +160,11 @@ function closingOptionsOf(appointment: UnclosedAppointment, nowMs: number): Clos
   return options
 }
 
-const toUnclosedItemView = (appointment: UnclosedAppointment, nowMs: number): UnclosedItemView => {
+const toUnclosedItemView = (
+  appointment: UnclosedAppointment,
+  services: readonly ServicePrices[],
+  nowMs: number,
+): UnclosedItemView => {
   const date = studioDateOf(new Date(appointment.startsAtMs))
   const dayLabel = formatAgendaDay(date)
   return {
@@ -146,18 +175,20 @@ const toUnclosedItemView = (appointment: UnclosedAppointment, nowMs: number): Un
     dayHref: agendaDayHref(date),
     dayLabel,
     options: closingOptionsOf(appointment, nowMs),
+    serviceChoices: serviceChoicesOf(appointment, services, nowMs),
   }
 }
 
 export function toUnclosedSectionView(
   unclosed: Result<UnclosedAppointments, StorageFailed>,
   nowMs: number,
+  services: readonly ServicePrices[] = [],
 ): UnclosedSectionView | null {
   if (isErr(unclosed)) return { status: 'error' }
   if (unclosed.value.appointments.length === 0) return null
   return {
     status: 'ready',
-    items: unclosed.value.appointments.map((appointment) => toUnclosedItemView(appointment, nowMs)),
+    items: unclosed.value.appointments.map((appointment) => toUnclosedItemView(appointment, services, nowMs)),
     truncatedNotice: unclosed.value.isTruncated ? COPY.unclosed.truncated(UNCLOSED_APPOINTMENTS_LIMIT) : null,
   }
 }

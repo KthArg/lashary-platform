@@ -36,6 +36,8 @@ export type DailyAgendaViewModel = { nav: AgendaDayNav } & (
 
 export type ClosingOptionView = { outcome: 'completed' | 'no_show'; label: string; summary: string }
 
+export type ServiceChoiceView = { techniqueId: string; name: string; summary: string }
+
 export type UnclosedItemView = {
   id: string
   when: string
@@ -44,6 +46,7 @@ export type UnclosedItemView = {
   dayHref: string
   dayLabel: string
   options: ClosingOptionView[]
+  serviceChoices: ServiceChoiceView[]
 }
 
 export type UnclosedSectionView =
