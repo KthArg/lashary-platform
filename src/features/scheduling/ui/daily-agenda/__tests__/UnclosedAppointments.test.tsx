@@ -13,6 +13,9 @@ afterEach(cleanup)
 
 const DATE = '2027-03-10'
 const TODAY = '2027-03-10'
+const NOW_MS = Date.parse('2027-03-10T18:00:00Z')
+const SERVICE_PRICE = 15000
+const DEPOSIT = 5000
 
 const clientLinks: ClientLinks = (clientId) => ({
   record: `/admin/clients/${clientId}/expediente`,
@@ -21,13 +24,20 @@ const clientLinks: ClientLinks = (clientId) => ({
 
 const unclosed = (overrides: Partial<UnclosedAppointment>): UnclosedAppointment => ({
   id: 'cita-1',
+  status: 'approved',
   startsAtMs: Date.parse('2027-03-08T16:00:00Z'),
   endsAtMs: Date.parse('2027-03-08T17:00:00Z'),
   clientId: 'perfil-ana',
   clientName: 'Ana Mora',
+  techniqueId: 'tecnica-1',
   techniqueName: 'Clásicas',
+  servicePrice: SERVICE_PRICE,
+  depositRegistered: DEPOSIT,
   ...overrides,
 })
+
+const sectionOf = (appointments: UnclosedAppointment[], isTruncated = false) =>
+  toUnclosedSectionView(ok({ appointments, isTruncated }), NOW_MS)
 
 const renderAgenda = (section: ReturnType<typeof toUnclosedSectionView>) =>
   render(
@@ -44,7 +54,7 @@ const renderAgenda = (section: ReturnType<typeof toUnclosedSectionView>) =>
 
 describe('citas pasadas sin cerrar — US-AGE-12 criterio 5', () => {
   it('no muestra la sección si no hay citas sin cerrar', () => {
-    expect(toUnclosedSectionView(ok({ appointments: [], isTruncated: false }))).toBeNull()
+    expect(toUnclosedSectionView(ok({ appointments: [], isTruncated: false }), NOW_MS)).toBeNull()
 
     renderAgenda(null)
 
@@ -52,14 +62,7 @@ describe('citas pasadas sin cerrar — US-AGE-12 criterio 5', () => {
   })
 
   it('destaca cada cita pasada sin cerrar con su día, hora, clienta y técnica, y enlaza al día de la cita', () => {
-    renderAgenda(
-      toUnclosedSectionView(
-        ok({
-          appointments: [unclosed({}), unclosed({ id: 'cita-2', clientId: null, clientName: null, techniqueName: null })],
-          isTruncated: false,
-        }),
-      ),
-    )
+    renderAgenda(sectionOf([unclosed({}), unclosed({ id: 'cita-2', clientId: null, clientName: null, techniqueName: null })]))
 
     const section = screen.getByRole('region', { name: COPY.unclosed.title })
     const items = within(section).getAllByRole('listitem')
@@ -73,13 +76,13 @@ describe('citas pasadas sin cerrar — US-AGE-12 criterio 5', () => {
   })
 
   it('avisa cuando hay más citas sin cerrar de las que caben', () => {
-    renderAgenda(toUnclosedSectionView(ok({ appointments: [unclosed({})], isTruncated: true })))
+    renderAgenda(sectionOf([unclosed({})], true))
 
     expect(screen.getByText(COPY.unclosed.truncated(UNCLOSED_APPOINTMENTS_LIMIT))).toBeTruthy()
   })
 
   it('si no se pudo comprobar, lo dice en lugar de callar', () => {
-    renderAgenda(toUnclosedSectionView(err(storageFailed('caída'))))
+    renderAgenda(toUnclosedSectionView(err(storageFailed('caída')), NOW_MS))
 
     expect(screen.getByRole('alert').textContent).toBe(COPY.unclosed.loadError)
   })

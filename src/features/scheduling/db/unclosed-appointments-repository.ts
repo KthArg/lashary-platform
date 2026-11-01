@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { err, isErr, ok } from '@/shared/result'
-import { CLOSABLE_STATUSES } from '../domain/appointment-closing.constants'
+import { CLOSABLE_STATUSES, type ClosableStatus } from '../domain/appointment-closing.constants'
 import { storageFailed } from '../domain/errors'
 import type { UnclosedAppointmentsRepository } from '../application/closing-ports'
 import { APPOINTMENTS_TABLE } from './appointment-repository.constants'
@@ -9,10 +9,14 @@ import { UNCLOSED_APPOINTMENT_COLUMNS } from './unclosed-appointments-repository
 
 type UnclosedRow = {
   id: string
+  status: ClosableStatus
   starts_at: string
   ends_at: string
   client_id: string | null
+  technique_id: string | null
   technique_name: string | null
+  service_price: number | null
+  deposit_registered: number
 }
 
 export function createSupabaseUnclosedAppointmentsRepository(db: SupabaseClient): UnclosedAppointmentsRepository {
@@ -35,11 +39,15 @@ export function createSupabaseUnclosedAppointmentsRepository(db: SupabaseClient)
       return ok(
         rows.map((row) => ({
           id: row.id,
+          status: row.status,
           startsAtMs: Date.parse(row.starts_at),
           endsAtMs: Date.parse(row.ends_at),
           clientId: row.client_id,
           clientName: row.client_id ? (names.value.get(row.client_id) ?? null) : null,
+          techniqueId: row.technique_id,
           techniqueName: row.technique_name,
+          servicePrice: row.service_price === null ? null : Number(row.service_price),
+          depositRegistered: Number(row.deposit_registered),
         })),
       )
     },

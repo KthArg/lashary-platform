@@ -9,11 +9,15 @@ const NOW_MS = Date.parse('2027-03-10T20:00:00Z')
 
 const unclosedAppointment = (position: number): UnclosedAppointment => ({
   id: `cita-${position}`,
+  status: 'approved',
   startsAtMs: Date.parse('2027-03-09T16:00:00Z') + position,
   endsAtMs: Date.parse('2027-03-09T17:00:00Z') + position,
   clientId: 'perfil-ana',
   clientName: 'Ana Mora',
+  techniqueId: 'tecnica-1',
   techniqueName: 'Clásicas',
+  servicePrice: 15000,
+  depositRegistered: 5000,
 })
 
 const repositoryReturning = (appointments: UnclosedAppointment[]) => {
