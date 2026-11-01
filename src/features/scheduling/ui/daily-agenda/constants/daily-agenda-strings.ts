@@ -33,6 +33,23 @@ export const dailyAgendaMessages = {
   openRecordLabel: (name: string) => `Abrir expediente de ${name}`,
   clientAppointments: 'Ver sus citas',
   clientAppointmentsLabel: (name: string) => `Ver sus citas de ${name}`,
+  close: {
+    start: 'Cerrar cita',
+    startLabel: (name: string, day: string) => `Cerrar la cita de ${name}, ${day}`,
+    question: (name: string) => `¿Qué pasó con la cita de ${name}?`,
+    completedLabel: 'Atendida',
+    noShowLabel: 'No se presentó (ausencia sin aviso)',
+    completedSummary: (charge: string, deposit: string, due: string) =>
+      `Se cobra ${charge}, se descuenta el anticipo de ${deposit} y quedan ${due} por pagar.`,
+    completedCreditSummary: (charge: string, deposit: string, credit: string) =>
+      `Se cobra ${charge}, se descuenta el anticipo de ${deposit} y quedan ${credit} a favor de la clienta.`,
+    noShowSummary: (deposit: string) => `Sin cargo. La clienta pierde el anticipo de ${deposit}.`,
+    noShowWithoutDeposit: 'Sin cargo. No hay anticipo registrado que perder.',
+    confirm: 'Confirmar cierre',
+    closing: 'Cerrando…',
+    back: 'Volver',
+    closed: (name: string, summary: string) => `Cita de ${name} cerrada. ${summary}`,
+  },
   unclosed: {
     title: 'Citas pasadas sin cerrar',
     description: 'Márcalas como atendidas o como ausencia. Siguen aquí hasta que las cierres.',

@@ -1,4 +1,4 @@
-import { isErr, type Result } from '@/shared/result'
+import { isErr, isOk, type Result } from '@/shared/result'
 import { addCalendarDays, studioDateOf, studioLocalToUtc } from '@/shared/studio-time'
 import type { UnclosedAppointment } from '@/features/scheduling/application/closing-ports'
 import type { DailyAgenda } from '@/features/scheduling/application/daily-agenda'
@@ -7,7 +7,8 @@ import type { AgendaEntry } from '@/features/scheduling/domain/daily-agenda'
 import type { DailyAgendaInvalid } from '@/features/scheduling/domain/availability-errors'
 import type { StorageFailed } from '@/features/scheduling/domain/errors'
 import { APPOINTMENT_DECISION, PENDING_APPROVAL_STATUS } from '@/features/scheduling/domain/appointment-decision.constants'
-import { UNCLOSED_APPOINTMENTS_LIMIT } from '@/features/scheduling/domain/appointment-closing.constants'
+import { closeAsCompleted, closeAsNoShow, type ClosableAppointment } from '@/features/scheduling/domain/appointment-closing'
+import { NO_AMOUNT, UNCLOSED_APPOINTMENTS_LIMIT } from '@/features/scheduling/domain/appointment-closing.constants'
 import { DAILY_AGENDA_LIMIT } from '@/features/scheduling/domain/daily-agenda.constants'
 import {
   APPOINTMENT_DISPLAY_CHOICE,
@@ -18,11 +19,13 @@ import type {
   AgendaDayNav,
   AgendaEntryView,
   ClientLinks,
+  ClosingOptionView,
   DailyAgendaViewModel,
   UnclosedItemView,
   UnclosedSectionView,
 } from '../types/daily-agenda.types'
 import { agendaDayHref } from './agenda-date'
+import { summarizeClosing } from './closing-summary'
 
 const NOON_MIN = 12 * 60
 
@@ -106,7 +109,33 @@ export function toDailyAgendaViewModel(input: {
   }
 }
 
-const toUnclosedItemView = (appointment: UnclosedAppointment): UnclosedItemView => {
+const closableOf = (appointment: UnclosedAppointment): ClosableAppointment => ({
+  id: appointment.id,
+  status: appointment.status,
+  endsAtMs: appointment.endsAtMs,
+  techniqueId: appointment.techniqueId ?? '',
+  servicePrice: appointment.servicePrice ?? NO_AMOUNT,
+  depositRegistered: appointment.depositRegistered,
+})
+
+function closingOptionsOf(appointment: UnclosedAppointment, nowMs: number): ClosingOptionView[] {
+  const closable = closableOf(appointment)
+  const options: ClosingOptionView[] = []
+  const canCharge = appointment.clientId !== null && appointment.servicePrice !== null
+  const completed = canCharge
+    ? closeAsCompleted(closable, { techniqueId: closable.techniqueId, price: closable.servicePrice }, nowMs)
+    : null
+  if (completed && isOk(completed)) {
+    options.push({ outcome: 'completed', label: COPY.close.completedLabel, summary: summarizeClosing(completed.value) })
+  }
+  const noShow = closeAsNoShow(closable, nowMs)
+  if (isOk(noShow)) {
+    options.push({ outcome: 'no_show', label: COPY.close.noShowLabel, summary: summarizeClosing(noShow.value) })
+  }
+  return options
+}
+
+const toUnclosedItemView = (appointment: UnclosedAppointment, nowMs: number): UnclosedItemView => {
   const date = studioDateOf(new Date(appointment.startsAtMs))
   const dayLabel = formatAgendaDay(date)
   return {
@@ -116,17 +145,19 @@ const toUnclosedItemView = (appointment: UnclosedAppointment): UnclosedItemView 
     technique: appointment.techniqueName ?? APPOINTMENT_DISPLAY_CHOICE.noService,
     dayHref: agendaDayHref(date),
     dayLabel,
+    options: closingOptionsOf(appointment, nowMs),
   }
 }
 
 export function toUnclosedSectionView(
   unclosed: Result<UnclosedAppointments, StorageFailed>,
+  nowMs: number,
 ): UnclosedSectionView | null {
   if (isErr(unclosed)) return { status: 'error' }
   if (unclosed.value.appointments.length === 0) return null
   return {
     status: 'ready',
-    items: unclosed.value.appointments.map(toUnclosedItemView),
+    items: unclosed.value.appointments.map((appointment) => toUnclosedItemView(appointment, nowMs)),
     truncatedNotice: unclosed.value.isTruncated ? COPY.unclosed.truncated(UNCLOSED_APPOINTMENTS_LIMIT) : null,
   }
 }
