@@ -19,11 +19,23 @@ const unclosed = (overrides: Partial<UnclosedAppointment>): UnclosedAppointment 
   clientId: 'perfil-ana',
   clientName: 'Ana Mora',
   techniqueId: 'tecnica-1',
+  isFirstTime: true,
   techniqueName: 'Clásicas',
   servicePrice: SERVICE_PRICE,
   depositRegistered: DEPOSIT,
   ...overrides,
 })
+
+const services = [
+  { id: 'tecnica-1', name: 'Clásicas', priceFirstTime: 15000, priceRetouch: 12000 },
+  { id: 'tecnica-2', name: 'Henna', priceFirstTime: 20000, priceRetouch: null },
+  { id: 'tecnica-3', name: 'Cejas', priceFirstTime: 9000, priceRetouch: 7000 },
+]
+
+const serviceChoicesOf = (appointment: UnclosedAppointment) => {
+  const section = toUnclosedSectionView(ok({ appointments: [appointment], isTruncated: false }), NOW_MS, services)
+  return section?.status === 'ready' ? section.items[0].serviceChoices : []
+}
 
 const optionsOf = (appointment: UnclosedAppointment) => {
   const section = toUnclosedSectionView(ok({ appointments: [appointment], isTruncated: false }), NOW_MS)
@@ -59,5 +71,26 @@ describe('opciones de cierre con su aviso previo — US-AGE-12 criterios 1, 3, 4
     ['sin precio', { servicePrice: null }],
   ])('una cita %s solo se puede cerrar como ausencia', (_description, overrides) => {
     expect(optionsOf(unclosed(overrides)).map((option) => option.outcome)).toEqual(['no_show'])
+  })
+})
+
+describe('servicio prestado distinto del reservado — US-AGE-12 criterio 2', () => {
+  it('ofrece los demás servicios del catálogo, con el cargo a su precio y el anticipo descontado', () => {
+    const choices = serviceChoicesOf(unclosed({}))
+
+    expect(choices.map((choice) => choice.techniqueId)).toEqual(['tecnica-2', 'tecnica-3'])
+    expect(choices[1].summary).toBe(COPY.close.completedSummary(money(9000), money(DEPOSIT), money(9000 - DEPOSIT)))
+  })
+
+  it('en un retoque usa el precio de retoque y no ofrece los servicios que no lo tienen', () => {
+    const choices = serviceChoicesOf(unclosed({ isFirstTime: false }))
+
+    expect(choices.map((choice) => choice.techniqueId)).toEqual(['tecnica-3'])
+    expect(choices[0].summary).toBe(COPY.close.completedSummary(money(7000), money(DEPOSIT), money(7000 - DEPOSIT)))
+  })
+
+  it('una cita sin clienta o sin precio no ofrece otro servicio, porque no se puede completar', () => {
+    expect(serviceChoicesOf(unclosed({ clientId: null, clientName: null }))).toEqual([])
+    expect(serviceChoicesOf(unclosed({ servicePrice: null }))).toEqual([])
   })
 })

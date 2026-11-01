@@ -15,6 +15,7 @@ const unclosedAppointment = (position: number): UnclosedAppointment => ({
   clientId: 'perfil-ana',
   clientName: 'Ana Mora',
   techniqueId: 'tecnica-1',
+  isFirstTime: true,
   techniqueName: 'Clásicas',
   servicePrice: 15000,
   depositRegistered: 5000,

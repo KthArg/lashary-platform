@@ -40,6 +40,7 @@ export type UnclosedAppointment = {
   clientId: string | null
   clientName: string | null
   techniqueId: string | null
+  isFirstTime: boolean | null
   techniqueName: string | null
   servicePrice: number | null
   depositRegistered: number
