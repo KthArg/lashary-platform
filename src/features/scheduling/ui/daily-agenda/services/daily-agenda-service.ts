@@ -15,6 +15,6 @@ export const dailyAgendaService = {
   },
   async loadUnclosed(nowMs: number): Promise<UnclosedSectionView | null> {
     const unclosed = createSupabaseUnclosedAppointmentsRepository(await createClient())
-    return toUnclosedSectionView(await listUnclosedAppointments(unclosed)(nowMs))
+    return toUnclosedSectionView(await listUnclosedAppointments(unclosed)(nowMs), nowMs)
   },
 }

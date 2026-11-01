@@ -11,12 +11,24 @@ const QUERY_LIMIT = 51
 
 const bookedRow = {
   id: 'cita-1',
+  status: 'approved',
   starts_at: '2027-03-09T16:00:00+00:00',
   ends_at: '2027-03-09T17:00:00+00:00',
   client_id: 'perfil-ana',
+  technique_id: 'tecnica-1',
   technique_name: 'Clásicas',
+  service_price: 15000,
+  deposit_registered: 5000,
 }
-const staffRow = { ...bookedRow, id: 'cita-2', client_id: null, technique_name: null }
+const staffRow = {
+  ...bookedRow,
+  id: 'cita-2',
+  client_id: null,
+  technique_id: null,
+  technique_name: null,
+  service_price: null,
+  deposit_registered: 0,
+}
 
 type FakeResponse = { data: unknown; error: { message: string } | null }
 
@@ -63,19 +75,27 @@ describe('createSupabaseUnclosedAppointmentsRepository — US-AGE-12 criterio 5'
     expect(isOk(result) && result.value).toEqual([
       {
         id: 'cita-1',
+        status: 'approved',
         startsAtMs: Date.parse(bookedRow.starts_at),
         endsAtMs: Date.parse(bookedRow.ends_at),
         clientId: 'perfil-ana',
         clientName: 'Ana Mora',
+        techniqueId: 'tecnica-1',
         techniqueName: 'Clásicas',
+        servicePrice: 15000,
+        depositRegistered: 5000,
       },
       {
         id: 'cita-2',
+        status: 'approved',
         startsAtMs: Date.parse(staffRow.starts_at),
         endsAtMs: Date.parse(staffRow.ends_at),
         clientId: null,
         clientName: null,
+        techniqueId: null,
         techniqueName: null,
+        servicePrice: null,
+        depositRegistered: 0,
       },
     ])
     expect(calls.filter(([name]) => name === 'rpc')).toEqual([

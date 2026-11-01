@@ -1,5 +1,5 @@
 import type { Result } from '@/shared/result'
-import type { CloseOutcome } from '../domain/appointment-closing.constants'
+import type { ClosableStatus, CloseOutcome } from '../domain/appointment-closing.constants'
 import type {
   AppointmentNotChargeable,
   AppointmentNotClosable,
@@ -34,11 +34,15 @@ export interface AppointmentClosingRepository {
 
 export type UnclosedAppointment = {
   id: string
+  status: ClosableStatus
   startsAtMs: number
   endsAtMs: number
   clientId: string | null
   clientName: string | null
+  techniqueId: string | null
   techniqueName: string | null
+  servicePrice: number | null
+  depositRegistered: number
 }
 
 export interface UnclosedAppointmentsRepository {
