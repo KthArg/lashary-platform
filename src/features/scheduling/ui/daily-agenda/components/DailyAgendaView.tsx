@@ -1,7 +1,13 @@
 import Link from 'next/link'
 import { dailyAgendaMessages as COPY } from '../constants/daily-agenda-strings'
 import { dailyAgendaStyles as STYLES } from '../styles/daily-agenda.styles'
-import type { AgendaDayNav, AgendaEntryView, DailyAgendaViewModel } from '../types/daily-agenda.types'
+import type {
+  AgendaDayNav,
+  AgendaEntryView,
+  DailyAgendaViewModel,
+  UnclosedSectionView,
+} from '../types/daily-agenda.types'
+import { UnclosedAppointments } from './UnclosedAppointments'
 
 function DayNav({ nav }: { nav: AgendaDayNav }) {
   return (
@@ -97,13 +103,20 @@ function AgendaBody({ view }: { view: DailyAgendaViewModel }) {
   }
 }
 
-export function DailyAgendaView({ view }: { view: DailyAgendaViewModel }) {
+export function DailyAgendaView({
+  view,
+  unclosed = null,
+}: {
+  view: DailyAgendaViewModel
+  unclosed?: UnclosedSectionView | null
+}) {
   return (
     <div className={STYLES.main}>
       <header className={STYLES.header}>
         <h1 className={STYLES.title}>{COPY.title}</h1>
         <p className={STYLES.subtitle}>{COPY.subtitle}</p>
       </header>
+      {unclosed ? <UnclosedAppointments section={unclosed} /> : null}
       <DayNav nav={view.nav} />
       <AgendaBody view={view} />
     </div>
