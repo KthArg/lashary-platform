@@ -14,6 +14,8 @@ const baseRow = {
   client_id: 'perfil-ana',
   starts_at: '2027-03-01T16:00:00+00:00',
   ends_at: '2027-03-01T17:00:00+00:00',
+  previous_starts_at: null,
+  previous_ends_at: null,
 }
 const chosenRow = {
   ...baseRow,
@@ -79,8 +81,24 @@ describe('createSupabasePendingAppointmentsRepository', () => {
           servicePrice: 25000,
           depositRequired: 10000,
         },
+        heldSchedule: null,
       },
     ])
+  })
+
+  it('una cita reagendada trae el horario aprobado que guarda, para avisar a qué vuelve si se rechaza', async () => {
+    const heldRow = {
+      ...chosenRow,
+      previous_starts_at: '2027-02-22T16:00:00+00:00',
+      previous_ends_at: '2027-02-22T17:00:00+00:00',
+    }
+    const { db } = createFakeDb({ data: [heldRow], error: null })
+    const result = await createSupabasePendingAppointmentsRepository(db).listPending()
+
+    expect(isOk(result) && result.value[0].heldSchedule).toEqual({
+      startsAtMs: Date.parse('2027-02-22T16:00:00Z'),
+      endsAtMs: Date.parse('2027-02-22T17:00:00Z'),
+    })
   })
 
   it('una cita creada por el personal, sin elección guardada, llega con choice nulo', async () => {

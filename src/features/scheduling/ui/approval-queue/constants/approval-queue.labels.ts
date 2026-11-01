@@ -24,6 +24,11 @@ export const APPROVAL_QUEUE_CHOICE = {
   },
 } as const
 
+export const APPROVAL_QUEUE_HELD = {
+  note: (slot: string) =>
+    `La clienta pidió cambiar el horario. Su horario aprobado es el ${slot}: si rechazás el cambio, la cita vuelve a ese horario.`,
+} as const
+
 export const APPROVAL_QUEUE_ARIA = {
   list: 'Citas pendientes de aprobación',
   approve: (slot: string) => `Aprobar la cita del ${slot}`,

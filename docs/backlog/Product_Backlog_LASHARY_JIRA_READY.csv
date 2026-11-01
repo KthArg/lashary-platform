@@ -215,7 +215,9 @@ Acceptance Criteria:
 • La vista muestra las citas del dia en orden cronologico con hora, cliente, tecnica, duracion y estado de pago.
 • Cada cita indica visiblemente si el cliente tiene morosidad activa o si es su primera vez.
 • Desde esta vista la administradora puede abrir el expediente del cliente y cerrar la cita sin navegar a otra seccion.
-• La vista permite moverse al dia anterior y siguiente.","6","US-AGE-11","Administración","Administrador","High","5","To Do","","","Administracion"
+• La vista permite moverse al dia anterior y siguiente.
+
+Decision de alcance aprobada por el PO (Kenny) el 2026-10-30, comunicada por Jose Lorenzo: la parte «morosidad activa» del criterio 2 se traslada a US-MOR-02 y la parte «cerrar la cita» del criterio 3 se traslada a US-AGE-12 (docs/process/DEPENDENCIES.md, items 10 y 11 de Criterios trasladados). La agenda tambien muestra las citas rechazadas, aprobado por el PO en la misma fecha.","6","US-AGE-11","Administración","Administrador","High","5","To Do","","","Administracion"
 "37","Story","Cerrar cita: marcar completada o ausencia","User Story:
 Como administradora del negocio, quiero marcar que paso con cada cita despues de su hora, para que el sistema sepa que servicios se prestaron y que pagos quedaron pendientes.
 
@@ -228,7 +230,8 @@ Acceptance Criteria:
 • Ningun estado se revierte silenciosamente: todo cambio queda en la bitacora de auditoria.
 • El anticipo se descuenta del saldo pendiente al cerrar la cita, de modo que el pago final sea la diferencia.
 
-Criterio original 4 recibido de US-AGE-13, traslado aprobado por el PO y comunicado por Bayron el 2026-10-03; pendientes de implementacion y pruebas (docs/process/DEPENDENCIES.md).","6","US-AGE-12","Administración","Administrador","High","5","To Do","","","Administracion"
+Criterio original 4 recibido de US-AGE-13, traslado aprobado por el PO y comunicado por Bayron el 2026-10-03; pendientes de implementacion y pruebas (docs/process/DEPENDENCIES.md).
+Recibe de US-AGE-11 la parte «cerrar la cita» del criterio 3: la administradora cierra la cita desde la agenda diaria sin navegar a otra seccion. Traslado aprobado por el PO (Kenny) el 2026-10-30; pendiente de implementacion y pruebas (docs/process/DEPENDENCIES.md).","6","US-AGE-12","Administración","Administrador","High","5","To Do","","","Administracion"
 "38","Story","Bloquear manualmente espacios del calendario","User Story:
 Como administradora del negocio, quiero bloquear manualmente espacios del calendario, para reservar tiempo personal sin que los clientes puedan agendar.
 
@@ -348,7 +351,9 @@ Acceptance Criteria:
 • Si la tiene, se muestra un mensaje claro con el motivo, el monto y la opcion de regularizar.
 • Una vez saldada la morosidad, el cliente recupera automaticamente la posibilidad de agendar.
 • La restriccion se aplica tambien cuando la administradora agenda en nombre del cliente, pero ella puede autorizar la excepcion en el momento.
-• Todo bloqueo aplicado queda registrado, para poder revisar si el sistema esta bloqueando clientes por error.","13","US-MOR-02","Administración","Administrador","High","5","To Do","","","Administracion"
+• Todo bloqueo aplicado queda registrado, para poder revisar si el sistema esta bloqueando clientes por error.
+
+Recibe de US-AGE-11 la parte «morosidad activa» del criterio 2: cada cita de la agenda diaria indica si la clienta tiene morosidad activa. US-AGE-11 deja el puerto por lote DelinquentClientsPort con un adaptador que no marca a ninguna; esta historia cambia solo el adaptador. Traslado aprobado por el PO (Kenny) el 2026-10-30; pendiente de implementacion y pruebas (docs/process/DEPENDENCIES.md).","13","US-MOR-02","Administración","Administrador","High","5","To Do","","","Administracion"
 "53","Story","Levantar o perdonar una morosidad manualmente","User Story:
 Como administradora del negocio, quiero poder levantar o perdonar una morosidad manualmente, para resolver de inmediato los casos en que el sistema bloqueo a una clienta por un error de registro o por una decision comercial mia.
 

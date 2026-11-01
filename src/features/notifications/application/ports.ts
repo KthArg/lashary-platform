@@ -19,6 +19,10 @@ export interface SchedulingReadPort {
   getAppointmentSnapshot(appointmentId: string): Promise<Result<AppointmentSnapshot | null, RepositoryFailure>>
 }
 
+export interface SchedulingMaintenancePort {
+  expireUndecidedReschedules(): Promise<Result<number, RepositoryFailure>>
+}
+
 export type ContactInfo = { phone: string; email: string }
 
 export interface ClientContactPort {

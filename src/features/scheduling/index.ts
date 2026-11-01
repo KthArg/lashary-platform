@@ -13,9 +13,14 @@ export { APPROVAL_QUEUE_LABELS } from './ui/approval-queue/constants/approval-qu
 export { BookingConfirmPage } from './ui/booking-confirm/components/BookingConfirmPage'
 export { bookingConfirmMessages } from './ui/booking-confirm/constants/booking-confirm-strings'
 export { AlertsPage } from './ui/alerts/components/AlertsPage'
+export { DailyAgendaPage } from './ui/daily-agenda/components/DailyAgendaPage'
+export type { ClientLinks } from './ui/daily-agenda/types/daily-agenda.types'
 export { CancellationPolicyPage } from './ui/cancellation-policy/components/CancellationPolicyPage'
 export { MyAppointmentsPage } from './ui/my-appointments/components/MyAppointmentsPage'
 export { myAppointmentsMessages } from './ui/my-appointments/constants/my-appointments-strings'
+export { ReschedulePolicyPage } from './ui/reschedule-policy/components/ReschedulePolicyPage'
+export { ReschedulePage } from './ui/reschedule/components/ReschedulePage'
+export { reschedulePageMessages } from './ui/reschedule/constants/reschedule-page-strings'
 export type {
   ClientAppointmentStatus,
   ClientAppointmentView,
@@ -34,5 +39,6 @@ export async function listClientAppointments(query: ListClientAppointmentsQuery)
 export {
   listAppointmentsForReminders as listSchedulingAppointmentsForReminders,
   getAppointmentForReminder as getSchedulingAppointmentForReminder,
+  expireUndecidedReschedules as expireSchedulingUndecidedReschedules,
 } from './reminders-api'
 export type { AppointmentReminderSnapshot, ReminderSnapshotsWindow } from './application/ports'

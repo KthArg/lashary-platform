@@ -2,7 +2,7 @@
 -- Correr con: npx supabase test db
 
 BEGIN;
-SELECT plan(11);
+SELECT plan(12);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -50,9 +50,24 @@ VALUES
    '00000000-0000-0000-0000-000000000dc7', '00000000-0000-0000-0000-000000000df4', 'zz-test de la otra',
    true, 35000, 10000);
 
+-- da02 es un reagendado: guarda su horario aprobado de dentro de 20 días (US-AGE-10, hallazgo A2).
+UPDATE public.scheduling_appointments
+   SET previous_starts_at = date_trunc('minute', now()) + interval '20 days',
+       previous_ends_at = date_trunc('minute', now()) + interval '20 days 1 hour',
+       previous_occupied_range = tstzrange(date_trunc('minute', now()) + interval '20 days',
+                                           date_trunc('minute', now()) + interval '20 days 1 hour'),
+       previous_status = 'approved'
+ WHERE id = '00000000-0000-0000-0000-00000000da02';
+
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claims',
   '{"sub":"00000000-0000-0000-0000-000000000d02","role":"authenticated"}', true);
+
+SELECT results_eq(
+  $$SELECT held_starts_at, held_ends_at FROM public.scheduling_list_my_appointments(now(), 50)$$,
+  $$VALUES (date_trunc('minute', now()) + interval '20 days', date_trunc('minute', now()) + interval '20 days 1 hour'),
+           (NULL::timestamptz, NULL::timestamptz)$$,
+  'un reagendado trae el horario aprobado que guarda; una cita sin reagendado, nulos');
 
 SELECT results_eq(
   $$SELECT technique_name FROM public.scheduling_list_my_appointments(now(), 50)$$,

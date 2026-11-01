@@ -6,6 +6,7 @@ import { ClientSidebar } from '@/features/auth/ui/navigation/components/ClientSi
 import { updateClientPhoneAction } from '@/features/auth/ui/actions/phone-actions'
 import { signInWithGoogleAction } from '@/features/auth/ui/actions/auth-actions'
 import PortalLayout from '@/app/portal/layout'
+import { AUTH_LABELS, SITE_HOME_ROUTE } from '@/features/auth/ui/constants/auth-strings'
 
 const mockRedirect = vi.fn()
 const mockGetUser = vi.fn()
@@ -129,5 +130,29 @@ describe('US-AUTH-02: Autenticación de Clientas con Google y Teléfono', () => 
   it('Criterio 10: PortalLayout redirige a /login si la clienta no tiene teléfono registrado', async () => {
     mockSingleProfile.mockResolvedValueOnce({ data: { phone: null, full_name: 'Client' }, error: null })
     await expect(PortalLayout({ children: <div>Contenido</div> })).rejects.toThrow('NEXT_REDIRECT:/login')
+  })
+})
+
+describe('ClientSidebar — volver al sitio desde el portal', () => {
+  const session = {
+    user: { id: 'c1', email: 'cliente@lashary.com' } as any,
+    role: 'cliente',
+    profile: { full_name: 'Ana García', phone: '88887777' },
+  }
+
+  it('el logo LASHARY lleva a la portada del sitio', () => {
+    render(<ClientSidebar session={session} />)
+
+    expect(screen.getByRole('link', { name: AUTH_LABELS.brandName }).getAttribute('href')).toBe(SITE_HOME_ROUTE)
+  })
+
+  it('"Ir al sitio" lleva a la portada y sigue disponible con la barra colapsada', () => {
+    render(<ClientSidebar session={session} />)
+    expect(screen.getByRole('link', { name: AUTH_LABELS.clientSiteNav }).getAttribute('href')).toBe(SITE_HOME_ROUTE)
+
+    fireEvent.click(screen.getByRole('button', { name: AUTH_LABELS.collapseSidebar }))
+
+    expect(screen.queryByRole('link', { name: AUTH_LABELS.brandName })).toBeNull()
+    expect(screen.getByRole('link', { name: AUTH_LABELS.clientSiteNav }).getAttribute('href')).toBe(SITE_HOME_ROUTE)
   })
 })

@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCallback, useRef, useState } from 'react'
 import { landingMessages } from '../../../constants/landing-strings'
-import { HOME_ANCHOR, LOGIN_ROUTE, RESERVE_ROUTE, anchorBaseFor } from '../../../routes'
+import { HOME_ANCHOR, RESERVE_ROUTE, accountRouteFor, anchorBaseFor } from '@/features/landing/ui/routes'
+import { useHasSessionCookie } from '../../hooks/use-session-cookie'
 import { siteHeaderStyles as STYLES } from './SiteHeader.styles'
 import { SiteMenu } from '../SiteMenu'
 import type { SiteHeaderProps } from './SiteHeader.types'
@@ -14,6 +15,7 @@ export function SiteHeader({ sections, productsHref, cartHref }: SiteHeaderProps
   const menuButtonRef = useRef<HTMLButtonElement>(null)
   const hasSections = sections.length > 0
   const anchorBase = anchorBaseFor(usePathname())
+  const hasSession = useHasSessionCookie()
 
   const closeMenu = useCallback(() => {
     setMenuOpen(false)
@@ -43,8 +45,8 @@ export function SiteHeader({ sections, productsHref, cartHref }: SiteHeaderProps
                 {landingMessages.header.products}
               </Link>
             )}
-            <Link href={LOGIN_ROUTE} className={hasSections ? STYLES.loginDesktop : STYLES.login}>
-              {landingMessages.header.login}
+            <Link href={accountRouteFor(hasSession)} className={hasSections ? STYLES.loginDesktop : STYLES.login}>
+              {hasSession ? landingMessages.header.portal : landingMessages.header.login}
             </Link>
             <Link href={RESERVE_ROUTE} className={STYLES.reserve}>
               {landingMessages.header.reserve}
@@ -90,6 +92,7 @@ export function SiteHeader({ sections, productsHref, cartHref }: SiteHeaderProps
           anchorBase={anchorBase}
           productsHref={productsHref}
           cartHref={cartHref}
+          hasSession={hasSession}
           onClose={closeMenu}
         />
       )}
