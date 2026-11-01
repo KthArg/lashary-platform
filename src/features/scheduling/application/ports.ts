@@ -264,7 +264,7 @@ export type MyAppointment = {
   endsAtMs: number
   techniqueName: string
   status: CancellableStatus
-  isFirstTime: boolean
+  isFirstTime: boolean | null
   servicePrice: number
   depositRequired: number
   heldSchedule: HeldSchedule | null
@@ -310,7 +310,7 @@ export type RecordAuditEvent = (input: {
 
 export type AppointmentChoice = {
   techniqueName: string
-  isFirstTime: boolean
+  isFirstTime: boolean | null
   detectedFirstTime: boolean | null
   servicePrice: number
   depositRequired: number

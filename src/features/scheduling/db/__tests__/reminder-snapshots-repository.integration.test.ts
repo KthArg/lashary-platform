@@ -76,6 +76,23 @@ describe.skipIf(!reachable)('createSupabaseReminderSnapshotsRepository (Supabase
     return id
   }
 
+  async function seedPackageAppointment(options: { status: string; startsAt: Date; packageName?: string }): Promise<string> {
+    const endsAt = new Date(options.startsAt.getTime() + 5 * 60_000)
+    const result = await admin.query(
+      `INSERT INTO public.scheduling_appointments
+         (resource_id, status, starts_at, ends_at, occupied_range, client_id, package_id, package_name, service_price, deposit_required)
+       VALUES ($1, $2, $3, $4, tstzrange($3, $4, '[)'), $5, $6, $7, $8, $9)
+       RETURNING id`,
+      [
+        STUDIO_RESOURCE_ID, options.status, options.startsAt.toISOString(), endsAt.toISOString(),
+        clientId, crypto.randomUUID(), options.packageName ?? 'Paquete de prueba', 60_000, 15_000,
+      ],
+    )
+    const id = result.rows[0].id as string
+    seededAppointmentIds.push(id)
+    return id
+  }
+
   beforeAll(async () => {
     admin = new PgClient({ connectionString: DB_URL })
     await admin.connect()
@@ -151,6 +168,25 @@ describe.skipIf(!reachable)('createSupabaseReminderSnapshotsRepository (Supabase
     const missing = await repo.getActiveById(crypto.randomUUID())
     expect(isOk(missing)).toBe(true)
     if (isOk(missing)) expect(missing.value).toBeNull()
+  })
+
+  it('una cita de paquete (sin technique_name) sí produce snapshot, con el nombre del paquete (US-AGE-04)', async () => {
+    const start = newTestStart()
+    const packageId = await seedPackageAppointment({ status: 'approved', startsAt: start, packageName: 'Combo clásicas de prueba' })
+
+    const result = await repo.getActiveById(packageId)
+    expect(isOk(result)).toBe(true)
+    if (isOk(result)) expect(result.value).toMatchObject({ appointmentId: packageId, clientId, techniqueName: 'Combo clásicas de prueba' })
+
+    const windowed = await repo.listActiveStartingWithin({
+      from: new Date(start.getTime() - 60_000),
+      to: new Date(start.getTime() + 15 * 60_000),
+    })
+    expect(isOk(windowed)).toBe(true)
+    if (isOk(windowed)) {
+      const snapshot = windowed.value.find((item) => item.appointmentId === packageId)
+      expect(snapshot).toMatchObject({ techniqueName: 'Combo clásicas de prueba' })
+    }
   })
 
   it('anon no puede leer ninguna cita por esta vía (SEC-002, fail-closed)', async () => {
