@@ -7,8 +7,8 @@ import { describeClosed } from '../utils/closing-summary'
 
 export type CloseAppointmentState =
   | { status: 'idle' }
-  | { status: 'choosing'; outcome: CloseOutcome }
-  | { status: 'closing'; outcome: CloseOutcome }
+  | { status: 'choosing'; outcome: CloseOutcome; deliveredTechniqueId?: string }
+  | { status: 'closing'; outcome: CloseOutcome; deliveredTechniqueId?: string }
   | { status: 'failed'; message: string }
 
 const IDLE: CloseAppointmentState = { status: 'idle' }
@@ -24,16 +24,25 @@ export function useCloseAppointment(item: UnclosedItemView, onClosed: (message: 
     setState({ status: 'choosing', outcome })
   }
 
+  function chooseService(deliveredTechniqueId: string) {
+    if (state.status !== 'choosing') return
+    setState({ status: 'choosing', outcome: state.outcome, deliveredTechniqueId: deliveredTechniqueId || undefined })
+  }
+
   function back() {
     setState(IDLE)
   }
 
   async function confirm() {
     if (state.status !== 'choosing') return
-    const { outcome } = state
-    setState({ status: 'closing', outcome })
+    const { outcome, deliveredTechniqueId } = state
+    setState({ status: 'closing', outcome, deliveredTechniqueId })
     try {
-      const result = await closeAppointmentAction({ appointmentId: item.id, outcome })
+      const result = await closeAppointmentAction({
+        appointmentId: item.id,
+        outcome,
+        deliveredTechniqueId: outcome === 'completed' ? deliveredTechniqueId : undefined,
+      })
       if (result.ok) onClosed(describeClosed(result.closing, item.clientName))
       else setState({ status: 'failed', message: result.error })
     } catch {
@@ -41,5 +50,5 @@ export function useCloseAppointment(item: UnclosedItemView, onClosed: (message: 
     }
   }
 
-  return { state, start, choose, back, confirm }
+  return { state, start, choose, chooseService, back, confirm }
 }

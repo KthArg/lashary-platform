@@ -14,6 +14,7 @@ type UnclosedRow = {
   ends_at: string
   client_id: string | null
   technique_id: string | null
+  is_first_time: boolean | null
   technique_name: string | null
   service_price: number | null
   deposit_registered: number
@@ -45,6 +46,7 @@ export function createSupabaseUnclosedAppointmentsRepository(db: SupabaseClient)
           clientId: row.client_id,
           clientName: row.client_id ? (names.value.get(row.client_id) ?? null) : null,
           techniqueId: row.technique_id,
+          isFirstTime: row.is_first_time,
           techniqueName: row.technique_name,
           servicePrice: row.service_price === null ? null : Number(row.service_price),
           depositRegistered: Number(row.deposit_registered),
