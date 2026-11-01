@@ -11,7 +11,7 @@ type MyAppointmentRow = {
   ends_at: string
   technique_name: string
   status: CancellableStatus
-  is_first_time: boolean
+  is_first_time: boolean | null
   service_price: number
   deposit_required: number
   held_starts_at: string | null

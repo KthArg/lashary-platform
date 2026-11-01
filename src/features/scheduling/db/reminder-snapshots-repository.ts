@@ -6,22 +6,27 @@ import { APPOINTMENTS_TABLE } from './appointment-repository.constants'
 
 const ACTIVE_APPOINTMENT_STATUSES = ['approved', 'confirmed']
 
-const REMINDER_SNAPSHOT_COLUMNS = 'id, client_id, starts_at, technique_name'
+const REMINDER_SNAPSHOT_COLUMNS = 'id, client_id, starts_at, technique_name, package_name'
 
 type ReminderSnapshotRow = {
   id: string
   client_id: string | null
   starts_at: string
   technique_name: string | null
+  package_name: string | null
 }
 
+// Una cita de paquete (US-AGE-04) no tiene technique_name; su nombre sale de package_name. Antes de
+// este fix, una cita de paquete no producía snapshot y su recordatorio de WhatsApp (US-NOT-03) nunca
+// se programaba.
 function toSnapshot(row: ReminderSnapshotRow): AppointmentReminderSnapshot | null {
-  if (row.client_id === null || row.technique_name === null) return null
+  const serviceName = row.technique_name ?? row.package_name
+  if (row.client_id === null || serviceName === null) return null
   return {
     appointmentId: row.id,
     clientId: row.client_id,
     startsAt: new Date(row.starts_at),
-    techniqueName: row.technique_name,
+    techniqueName: serviceName,
   }
 }
 
