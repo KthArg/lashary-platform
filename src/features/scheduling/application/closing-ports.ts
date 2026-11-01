@@ -31,3 +31,16 @@ export type CloseAppointmentError =
 export interface AppointmentClosingRepository {
   close(input: CloseAppointmentInput): Promise<Result<ClosedAppointment, CloseAppointmentError>>
 }
+
+export type UnclosedAppointment = {
+  id: string
+  startsAtMs: number
+  endsAtMs: number
+  clientId: string | null
+  clientName: string | null
+  techniqueName: string | null
+}
+
+export interface UnclosedAppointmentsRepository {
+  listUnclosed(nowMs: number, limit: number): Promise<Result<UnclosedAppointment[], StorageFailed>>
+}
