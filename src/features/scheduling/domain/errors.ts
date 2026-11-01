@@ -159,6 +159,12 @@ export interface InvalidClosingAmount {
   readonly message: string
 }
 
+export interface AppointmentNotChargeable {
+  readonly code: 'SCHEDULING_APPOINTMENT_NOT_CHARGEABLE'
+  readonly appointmentId: string
+  readonly message: string
+}
+
 export type SchedulingError =
   | SlotNotOffered
   | TooManyPendingAppointments
@@ -186,6 +192,7 @@ export type SchedulingError =
   | PackageNotAvailable
   | AppointmentNotClosable
   | InvalidClosingAmount
+  | AppointmentNotChargeable
 
 export const techniqueNotSelectable = (
   techniqueId: string,
@@ -355,4 +362,10 @@ export const invalidClosingAmount = (appointmentId: string): InvalidClosingAmoun
   code: 'SCHEDULING_INVALID_CLOSING_AMOUNT',
   appointmentId,
   message: `el precio o el anticipo de la cita ${appointmentId} no son montos enteros válidos para cerrarla`,
+})
+
+export const appointmentNotChargeable = (appointmentId: string): AppointmentNotChargeable => ({
+  code: 'SCHEDULING_APPOINTMENT_NOT_CHARGEABLE',
+  appointmentId,
+  message: `la cita ${appointmentId} no tiene clienta o precio registrado, así que no se puede generar su cargo`,
 })
