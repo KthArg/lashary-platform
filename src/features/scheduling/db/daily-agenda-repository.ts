@@ -17,6 +17,7 @@ type DailyAgendaRow = {
   ends_at: string
   client_id: string | null
   technique_name: string | null
+  package_name: string | null
   is_first_time: boolean | null
   deposit_required: number | null
   deposit_registered: number | null
@@ -48,7 +49,7 @@ export function createSupabaseDailyAgendaRepository(db: SupabaseClient): DailyAg
           endsAtMs: Date.parse(row.ends_at),
           clientId: row.client_id,
           clientName: row.client_id ? (names.value.get(row.client_id) ?? null) : null,
-          techniqueName: row.technique_name,
+          techniqueName: row.technique_name ?? row.package_name,
           isFirstTime: row.is_first_time,
           depositRequired: row.deposit_required,
           depositRegistered: row.deposit_registered,
