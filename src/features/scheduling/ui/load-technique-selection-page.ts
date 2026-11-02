@@ -1,5 +1,6 @@
 import { getAuthSession, AUTH_ROLES } from '@/features/auth'
 import { listPackages, listTechniques } from '@/features/catalog'
+import type { NamedPackage } from '../domain/service-option'
 import { MAX_SELECTION_PAGE_SERVICES } from './constants'
 
 export type SelectableTechniqueOption = {
@@ -7,15 +8,9 @@ export type SelectableTechniqueOption = {
   name: string
 }
 
-export type SelectablePackageOption = {
-  id: string
-  name: string
-  durationTotalMin: number
-}
-
 export type TechniqueSelectionPageData =
   | { status: 'forbidden' }
-  | { status: 'ok'; techniques: SelectableTechniqueOption[]; packages: SelectablePackageOption[] }
+  | { status: 'ok'; techniques: SelectableTechniqueOption[]; packages: NamedPackage[] }
 
 export async function loadTechniqueSelectionPageData(): Promise<TechniqueSelectionPageData> {
   const session = await getAuthSession()
@@ -31,6 +26,11 @@ export async function loadTechniqueSelectionPageData(): Promise<TechniqueSelecti
   return {
     status: 'ok',
     techniques: techniques.map((technique) => ({ id: technique.id, name: technique.name })),
-    packages: packages.map((pkg) => ({ id: pkg.id, name: pkg.name, durationTotalMin: pkg.durationTotalMin })),
+    packages: packages.map((servicePackage) => ({
+      id: servicePackage.id,
+      name: servicePackage.name,
+      isActive: servicePackage.isActive,
+      durationTotalMin: servicePackage.durationTotalMin,
+    })),
   }
 }
