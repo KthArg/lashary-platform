@@ -116,6 +116,14 @@ describe('cerrar la cita desde la agenda — US-AGE-12 criterios 1, 3, 4 y 7', (
     expect(screen.getByText(normalized(COPY.close.noShowSummary(money(DEPOSIT))))).toBeTruthy()
   })
 
+  it('avisa antes de confirmar que el cierre no se puede revertir', () => {
+    renderAgenda(sectionOf([unclosed({})]))
+
+    openCloseOptions()
+
+    expect(screen.getByText(COPY.close.irreversibleWarning)).toBeTruthy()
+  })
+
   it('una cita sin clienta ni precio solo se puede cerrar como ausencia', () => {
     renderAgenda(sectionOf([unclosed({ clientId: null, clientName: null, servicePrice: null, depositRegistered: 0 })]))
 

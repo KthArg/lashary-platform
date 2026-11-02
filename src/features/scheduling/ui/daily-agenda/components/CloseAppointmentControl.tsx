@@ -52,6 +52,7 @@ export function CloseAppointmentControl({
             </select>
           </label>
         ) : null}
+        <p className={STYLES.closeWarning}>{COPY.close.irreversibleWarning}</p>
         <div className={STYLES.actions}>
           <button type="button" onClick={confirm} className={STYLES.closeConfirm}>
             {isClosing ? COPY.close.closing : COPY.close.confirm}
