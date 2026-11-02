@@ -14,6 +14,7 @@ import type {
   ClientNotRegistered,
   InvalidCancellationWindow,
   InvalidRescheduleLimit,
+  PackageNotAvailable,
   RescheduleLimitReached,
   RescheduleOutsideWindow,
   RescheduleSlotNotOffered,
@@ -121,6 +122,37 @@ export type QuoteBookingError = ClientNotRegistered | TechniqueNotAvailable | St
 
 export interface BookingQuoteRepository {
   quote(input: QuoteBookingInput): Promise<Result<BookingQuote, QuoteBookingError>>
+}
+
+export type BookPackageAppointmentInput = {
+  resourceId: string
+  startsAtMs: number
+  packageId: string
+}
+
+export type BookedPackageAppointment = {
+  id: string
+  resourceId: string
+  startsAtMs: number
+  endsAtMs: number
+  packageName: string
+  servicePrice: number
+  depositRequired: number
+  depositRegistered: number
+}
+
+export type BookPackageAppointmentError =
+  | ClientNotRegistered
+  | TooManyPendingAppointments
+  | PackageNotAvailable
+  | SlotNotOffered
+  | SpaceNotAvailable
+  | StorageFailed
+
+export interface PackageBookingRepository {
+  book(
+    input: BookPackageAppointmentInput,
+  ): Promise<Result<BookedPackageAppointment, BookPackageAppointmentError>>
 }
 
 export type CancellationQuote = {

@@ -13,6 +13,12 @@ export interface TechniqueNotAvailable {
   readonly message: string
 }
 
+export interface PackageNotAvailable {
+  readonly code: 'SCHEDULING_PACKAGE_NOT_AVAILABLE'
+  readonly packageId: string
+  readonly message: string
+}
+
 export type AppointmentWindowField =
   | 'startsAtMs'
   | 'serviceDurationMin'
@@ -172,6 +178,7 @@ export type SchedulingError =
   | RescheduleSlotNotOffered
   | RescheduleSlotTaken
   | PackageHasNoTechniques
+  | PackageNotAvailable
 
 export const techniqueNotSelectable = (
   techniqueId: string,
@@ -190,6 +197,12 @@ export const techniqueNotAvailable = (techniqueId: string): TechniqueNotAvailabl
   code: 'SCHEDULING_TECHNIQUE_NOT_AVAILABLE',
   techniqueId,
   message: `no existe la técnica ${techniqueId} en el catálogo`,
+})
+
+export const packageNotAvailable = (packageId: string): PackageNotAvailable => ({
+  code: 'SCHEDULING_PACKAGE_NOT_AVAILABLE',
+  packageId,
+  message: `no existe el paquete ${packageId} en el catálogo, está desactivado o no tiene ninguna técnica`,
 })
 
 export const invalidAppointmentWindow = (
