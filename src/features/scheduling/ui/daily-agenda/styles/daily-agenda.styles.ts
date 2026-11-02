@@ -37,6 +37,7 @@ export const dailyAgendaStyles = {
   closeOptionSummary: 'block text-xs',
   closeConfirm: 'btn btn-primary btn-sm',
   closeError: 'text-error text-xs',
+  closeWarning: 'text-xs font-medium',
   closeNotice: 'alert alert-success text-sm',
   empty: 'rounded-box bg-base-200 p-4 text-sm',
   truncated: 'alert alert-warning text-sm',
