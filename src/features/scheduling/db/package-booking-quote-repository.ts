@@ -36,6 +36,8 @@ function toPackageBookingQuote(row: PackageQuoteRow): PackageBookingQuote {
     durationMin: row.duration_min,
     bufferMin: row.buffer_min,
     depositDue: row.deposit_due,
+    promotionId: null,
+    discountPercent: null,
   }
 }
 

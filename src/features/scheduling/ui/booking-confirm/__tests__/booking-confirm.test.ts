@@ -35,6 +35,8 @@ const PACKAGE_QUOTE: PackageBookingQuote = {
   durationMin: 90,
   bufferMin: 20,
   depositDue: 12000,
+  promotionId: null,
+  discountPercent: null,
 }
 const validParams = { servicio: 't1', fecha: '2026-10-20', espacio: '540' }
 
@@ -184,7 +186,7 @@ describe('toBookingConfirmView — criterio 7', () => {
 
 describe('toBookingConfirmView — US-PROM-01 criterio 2 (mostrar la promoción antes de confirmar)', () => {
   const ready = async (quote: BookingQuote) => {
-    const { deps } = createDeps({ quote: async () => ok(quote) })
+    const { deps } = createDeps({ quoteTechnique: async () => ok(quote) })
     return toBookingConfirmView(await loadBookingConfirm(validParams, deps))
   }
 
@@ -193,7 +195,7 @@ describe('toBookingConfirmView — US-PROM-01 criterio 2 (mostrar la promoción 
     expect(view).toMatchObject({
       status: 'ready',
       summary: {
-        price: Money.fromColones(28000).toString(),
+        price: formatMoney(moneyFromColones(28000)),
         promotionNotice: bookingConfirmMessages.promotionNotice(20),
       },
     })

@@ -51,6 +51,8 @@ describe('createSupabasePackageBookingQuoteRepository', () => {
         durationMin: 90,
         bufferMin: 20,
         depositDue: 12000,
+        promotionId: null,
+        discountPercent: null,
       })
     }
   })

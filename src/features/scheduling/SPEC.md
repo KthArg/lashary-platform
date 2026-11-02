@@ -185,6 +185,8 @@ Pruebas: pgTAP de la pieza 10/11 (`catalog_booking_terms.test.sql`, `scheduling_
 
 Al rebasar esta pieza contra `main` (2026-10-28), `BookedPanel.test.tsx` — escrito después, para la nueva ruta de «mis citas» — construía `BookingSummaryView` sin `promotionNotice`. Se agrega `promotionNotice: null` a su fijo; sin cambio de comportamiento.
 
+Al rebasar otra vez contra `main` (2026-11-01, ya con US-AGE-04 integrada), `ConfirmQuote` (el tipo unificado que esa historia introdujo para la pantalla de confirmación) y el manejo genérico `BookedAppointment | BookedPackageAppointment` de `perform-booking.ts` ya leían `promotionId`/`discountPercent`, pero `BookedPackageAppointment`/`PackageBookingQuote` (lado paquete) todavía no los tenían — `tsc` fallaba. Se agregan los dos campos (en `null`, hardcodeados en los mapeos de `db/package-booking-repository.ts`/`db/package-booking-quote-repository.ts`: el paquete todavía no tiene promoción vigente real, eso es trabajo de una pieza futura sobre US-AGE-04 ya en `main`) y se corrigen dos bloques de prueba que seguían con la forma anterior a la unificación.
+
 ## Faltantes de US-AGE-05
 
 US-AGE-05 queda `terminada` con estos faltantes aprobados por el PO, cada uno con su dueño:
