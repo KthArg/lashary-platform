@@ -87,7 +87,7 @@ export function createSupabasePackageRepository(db: SupabaseClient): PackageRepo
       if (error) throw new Error(`${BRIDGE_TABLE}.findActiveByTechniqueId: ${error.message}`)
       return (data as unknown as PackageRefRow[] ?? [])
         .map((row) => row.catalog_packages)
-        .filter((pkg): pkg is NonNullable<PackageRefRow['catalog_packages']> => pkg !== null)
+        .filter((row): row is NonNullable<PackageRefRow['catalog_packages']> => row !== null)
         .map(({ id, name }) => ({ id, name }))
     },
 
