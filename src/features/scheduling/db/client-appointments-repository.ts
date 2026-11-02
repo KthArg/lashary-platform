@@ -20,7 +20,6 @@ type ClientAppointmentRow = {
   deposit_registered: number
 }
 
-// Una cita de paquete (US-AGE-04) no tiene technique_name; su nombre sale de package_name.
 const toClientAppointment = (row: ClientAppointmentRow): ClientAppointmentView => ({
   id: row.id,
   startsAtMs: Date.parse(row.starts_at),

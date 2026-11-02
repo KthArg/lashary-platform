@@ -15,9 +15,6 @@ const LOCAL_HOSTS = ['127.0.0.1', 'localhost']
 
 const STUDIO_RESOURCE_ID = '00000000-0000-0000-0000-000000000a01'
 const SEEDED_PACKAGE_NAME = 'Cejas y pestañas clásico'
-// Año propio (US-AGE-04, hallazgo de code review): el resto de las pruebas de concurrencia e
-// integración de scheduling usa 2041-2045; esta reserva sobre el mismo recurso real, así que un
-// año compartido arriesgaría pisar el horario de otra prueba.
 const MONDAY_ISO_WEEKDAY = 1
 const OPEN_FROM_MIN = 120
 const FIRST_MONDAY_OPENING_MS = Date.parse('2046-01-01T08:00:00Z')
