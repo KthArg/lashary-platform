@@ -30,9 +30,6 @@ function toHeldSchedule(row: PendingAppointmentRow): HeldSchedule | null {
   return { startsAtMs: Date.parse(row.previous_starts_at), endsAtMs: Date.parse(row.previous_ends_at) }
 }
 
-// Una cita de técnica y una de paquete son las dos formas válidas del CHECK de snapshot
-// (scheduling_appointments_booking_snapshot_complete): un paquete no tiene is_first_time, su nombre
-// sale de package_name, y choice solo es null si la cita todavía no tiene ninguna reserva.
 function toChoice(row: PendingAppointmentRow): AppointmentChoice | null {
   const serviceName = row.technique_name ?? row.package_name
   if (serviceName === null || row.service_price === null || row.deposit_required === null) {

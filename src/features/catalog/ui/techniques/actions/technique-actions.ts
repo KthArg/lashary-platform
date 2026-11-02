@@ -86,10 +86,6 @@ export type CheckTechniqueDeactivationResult =
   | { status: 'forbidden' }
   | { status: 'notFound' }
 
-/** La "cotización": qué paquetes activos incluyen la técnica, para armar el aviso antes de
- *  desactivar (decisión del PO sobre el hallazgo de code review de US-AGE-04). Se llama directo
- *  desde el cliente, no por <form action>, porque el aviso tiene que aparecer antes de que la
- *  usuaria confirme nada. */
 export async function checkTechniqueDeactivationAction(id: string): Promise<CheckTechniqueDeactivationResult> {
   if (!(await isStaff())) return { status: 'forbidden' }
 
@@ -121,7 +117,7 @@ export async function deactivateTechniqueCascadeAction(
   }
 
   revalidatePath(catalogRoutes.admin)
-  const deactivatedNames = result.value.deactivatedPackages.map((pkg) => pkg.name)
+  const deactivatedNames = result.value.deactivatedPackages.map((affectedPackage) => affectedPackage.name)
   return {
     status: 'ok',
     message:

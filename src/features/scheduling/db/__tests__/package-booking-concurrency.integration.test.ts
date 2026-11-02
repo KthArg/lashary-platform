@@ -22,8 +22,6 @@ const ROUND_TIMEOUT_MS = 20_000
 const SETUP_TIMEOUT_MS = 60_000
 const TUESDAY_ISO_WEEKDAY = 2
 const OPEN_FROM_MIN = 120
-// Año propio (US-AGE-04, hallazgo de code review): el resto de las pruebas de concurrencia de
-// scheduling usa 2041-2045 sobre el mismo recurso real; esta reserva en 2046 para no pisarlas.
 const FIRST_TUESDAY_OPENING_MS = Date.parse('2046-01-02T08:00:00Z')
 const MS_PER_WEEK = 7 * 24 * 60 * MS_PER_MINUTE
 const RUN_OFFSET_WEEKS_SPREAD = 40

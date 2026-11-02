@@ -16,9 +16,6 @@ type ReminderSnapshotRow = {
   package_name: string | null
 }
 
-// Una cita de paquete (US-AGE-04) no tiene technique_name; su nombre sale de package_name. Antes de
-// este fix, una cita de paquete no producía snapshot y su recordatorio de WhatsApp (US-NOT-03) nunca
-// se programaba.
 function toSnapshot(row: ReminderSnapshotRow): AppointmentReminderSnapshot | null {
   const serviceName = row.technique_name ?? row.package_name
   if (row.client_id === null || serviceName === null) return null
