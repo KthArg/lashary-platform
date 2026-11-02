@@ -1,6 +1,8 @@
 -- payments_ledger_entries.test.sql
 -- US-AGE-12 · feature payments — ledger append-only (DOM-005, SEC-001).
--- Staff registra el cargo y el crédito del anticipo por la función, el saldo es la suma de asientos,
+-- La función del ledger la llama el cierre (SECURITY DEFINER, como dueño): aquí se prueba en ese contexto,
+-- sin rol de sesión. Staff ya no la llama ni inserta directo (payments_ledger_write_only_through_close).
+-- El saldo es la suma de asientos,
 -- nadie (ni staff) hace UPDATE ni DELETE, una cita no se cobra dos veces y la clienta no ve ni
 -- escribe nada. El rol se siembra como superusuario local dentro de la transacción; no se usa la
 -- service-role key (SEC-003) y todo se deshace con ROLLBACK.
@@ -28,7 +30,6 @@ VALUES
    'Otra clienta', 'ledger-otra@test.local', '00000000001');
 
 -- ── Como admin ──────────────────────────────────────────────────────────────
-SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claims',
   '{"sub":"00000000-0000-0000-0000-0000000000f1","role":"authenticated"}', true);
 
@@ -83,11 +84,13 @@ SELECT throws_ok(
       '00000000-0000-0000-0000-00000000cf01', '00000000-0000-0000-0000-00000000a003', 0, 0)$$,
   'P0001', 'payments_charge_invalid', 'un cargo en cero no es un cargo');
 
+SET LOCAL ROLE authenticated;
+
 SELECT throws_ok(
   $$INSERT INTO public.payments_ledger_entries (client_id, appointment_id, kind, amount, created_by)
     VALUES ('00000000-0000-0000-0000-00000000cf01', '00000000-0000-0000-0000-00000000a004',
             'charge', 100, '00000000-0000-0000-0000-0000000000f3')$$,
-  '42501', NULL, 'staff no puede escribir quién registró el asiento: la columna no tiene permiso');
+  '42501', NULL, 'staff no puede insertar directo, ni escribir quién registró el asiento');
 
 SELECT throws_ok(
   $$UPDATE public.payments_ledger_entries SET amount = 1
