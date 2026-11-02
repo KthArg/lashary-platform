@@ -40,6 +40,12 @@ export function createFakePackageRepository(
       return pkg ? toRow(pkg) : null
     },
 
+    async findActiveByTechniqueId(techniqueId: string) {
+      return [...store.values()]
+        .filter((pkg) => pkg.isActive && pkg.techniqueIds.includes(techniqueId))
+        .map((pkg) => ({ id: pkg.id, name: packageToView(pkg).name }))
+    },
+
     async save(pkg: Package) {
       const name = packageToView(pkg).name
       for (const other of store.values()) {
