@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '../../../domain/manual-blocks.constants'
+import { MAX_MANUAL_BLOCK_REASON_LENGTH } from '@/features/scheduling/domain/manual-blocks.constants'
 import {
   blockSlotsFormSchema,
   closedDateFormSchema,
