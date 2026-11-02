@@ -8,9 +8,11 @@ export function formatAppointmentSummary(choice: AppointmentSummaryInput | null)
   const copy = APPOINTMENT_DISPLAY_CHOICE
   if (!choice) return { service: copy.noService, kind: null, amounts: null }
 
+  const kind = choice.isFirstTime === null ? copy.packageKind : choice.isFirstTime ? copy.firstTime : copy.retouch
+
   return {
     service: choice.techniqueName,
-    kind: choice.isFirstTime ? copy.firstTime : copy.retouch,
+    kind,
     amounts:
       choice.depositRequired > 0
         ? copy.priceAndDeposit(money(choice.servicePrice), money(choice.depositRequired))

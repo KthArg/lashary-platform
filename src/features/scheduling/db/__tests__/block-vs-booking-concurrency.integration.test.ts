@@ -90,6 +90,20 @@ describe.skipIf(!reachable)('US-AGE-07 criterio 4 — la administradora bloquea 
   const createdBlockIds: string[] = []
   const runOffsetWeeks = Math.floor(Math.random() * RUN_OFFSET_WEEKS_SPREAD)
 
+  // El trigger que impide quitar un bloque con citas cuenta por día y hora, no por fecha: una cita de otra
+  // prueba en paralelo, de otro año, bastaría para rechazar el borrado. Sin triggers solo en esta transacción.
+  const deleteWeeklyBlock = async () => {
+    await admin.query('BEGIN')
+    try {
+      await admin.query('SET LOCAL session_replication_role = replica')
+      await admin.query('DELETE FROM public.scheduling_weekly_availability WHERE id = $1', [weeklyBlockId])
+      await admin.query('COMMIT')
+    } catch (error) {
+      await admin.query('ROLLBACK')
+      throw error
+    }
+  }
+
   beforeAll(async () => {
     admin = new PgClient({ connectionString: DB_URL })
     await admin.connect()
@@ -139,7 +153,7 @@ describe.skipIf(!reachable)('US-AGE-07 criterio 4 — la administradora bloquea 
     if (createdBlockIds.length > 0) {
       await admin.query('DELETE FROM public.scheduling_manual_blocks WHERE id = ANY($1::uuid[])', [createdBlockIds])
     }
-    if (weeklyBlockId) await admin.query('DELETE FROM public.scheduling_weekly_availability WHERE id = $1', [weeklyBlockId])
+    if (weeklyBlockId) await deleteWeeklyBlock()
     const allUserIds = staff ? [...userIds, staff.userId] : userIds
     if (allUserIds.length > 0) await admin.query('DELETE FROM auth.users WHERE id = ANY($1::uuid[])', [allUserIds])
     await admin.end()

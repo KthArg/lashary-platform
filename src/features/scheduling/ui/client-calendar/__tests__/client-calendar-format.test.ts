@@ -3,8 +3,16 @@ import { clientCalendarMessages } from '../constants/client-calendar-strings'
 import { toCalendarView } from '../utils/client-calendar-format'
 import type { ClientCalendarData } from '../types/client-calendar.types'
 
-const firstTime = { key: 't1', techniqueId: 't1', name: 'Volumen ruso', isFirstTime: true, durationMin: 135 }
+const firstTime = {
+  kind: 'technique' as const,
+  key: 't1',
+  techniqueId: 't1',
+  name: 'Volumen ruso',
+  isFirstTime: true,
+  durationMin: 135,
+}
 const retouch = { ...firstTime, key: 't1.retoque', isFirstTime: false, durationMin: 105 }
+const pkg = { kind: 'package' as const, key: 'pkg:p1', packageId: 'p1', name: 'Combo clásicas', durationMin: 110 }
 const base = { options: [firstTime, retouch], date: '2026-10-21', today: '2026-10-19' }
 
 describe('toCalendarView — US-AGE-02', () => {
@@ -49,6 +57,14 @@ describe('toCalendarView — US-AGE-02', () => {
   it('hoy no ofrece día anterior', () => {
     const view = toCalendarView({ ...base, date: '2026-10-19', status: 'invalid', selected: firstTime })
     expect(view.status === 'invalid' && view.day.previousHref).toBeNull()
+  })
+
+  it('un paquete se etiqueta distinto, sin primera vez ni retoque (US-AGE-04, criterio 1)', () => {
+    const view = toCalendarView({ options: [firstTime, pkg], date: '2026-10-21', today: '2026-10-19', status: 'chooseService' })
+    expect(view.status === 'chooseService' && view.picker.options).toEqual([
+      { key: 't1', label: clientCalendarMessages.serviceOption('Volumen ruso', true, 135) },
+      { key: 'pkg:p1', label: clientCalendarMessages.packageOption('Combo clásicas', 110) },
+    ])
   })
 
   it('sin servicio elegido no hay día ni espacios; forbidden y noServices pasan tal cual', () => {

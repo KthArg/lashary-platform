@@ -30,6 +30,7 @@ export const AUTH_LABELS = {
 
 export const CLIENT_PORTAL_ROUTES = {
   citas: '/portal/citas',
+  misCitas: '/portal/citas/mis-citas',
   carrito: '/portal/carrito',
   cuenta: '/portal/cuenta',
 } as const

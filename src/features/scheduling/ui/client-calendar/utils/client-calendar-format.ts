@@ -19,13 +19,15 @@ export const toSlotViews = (slots: readonly DaySlot[]): SlotView[] =>
     busy: slot.status === 'busy',
   }))
 
+const toOptionLabel = (option: ServiceOption): string =>
+  option.kind === 'package'
+    ? clientCalendarMessages.packageOption(option.name, option.durationMin)
+    : clientCalendarMessages.serviceOption(option.name, option.isFirstTime, option.durationMin)
+
 const toPicker = (options: readonly ServiceOption[], date: string, selectedKey?: string): ServicePickerView => ({
   date,
   selectedKey,
-  options: options.map((option) => ({
-    key: option.key,
-    label: clientCalendarMessages.serviceOption(option.name, option.isFirstTime, option.durationMin),
-  })),
+  options: options.map((option) => ({ key: option.key, label: toOptionLabel(option) })),
 })
 
 const toDay = (date: string, today: string, serviceKey: string): DayView => ({

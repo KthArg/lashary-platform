@@ -14,6 +14,7 @@ import type {
   ClientNotRegistered,
   InvalidCancellationWindow,
   InvalidRescheduleLimit,
+  PackageNotAvailable,
   RescheduleLimitReached,
   RescheduleOutsideWindow,
   RescheduleSlotNotOffered,
@@ -123,6 +124,55 @@ export interface BookingQuoteRepository {
   quote(input: QuoteBookingInput): Promise<Result<BookingQuote, QuoteBookingError>>
 }
 
+export type BookPackageAppointmentInput = {
+  resourceId: string
+  startsAtMs: number
+  packageId: string
+}
+
+export type BookedPackageAppointment = {
+  id: string
+  resourceId: string
+  startsAtMs: number
+  endsAtMs: number
+  packageName: string
+  servicePrice: number
+  depositRequired: number
+  depositRegistered: number
+}
+
+export type BookPackageAppointmentError =
+  | ClientNotRegistered
+  | TooManyPendingAppointments
+  | PackageNotAvailable
+  | SlotNotOffered
+  | SpaceNotAvailable
+  | StorageFailed
+
+export interface PackageBookingRepository {
+  book(
+    input: BookPackageAppointmentInput,
+  ): Promise<Result<BookedPackageAppointment, BookPackageAppointmentError>>
+}
+
+export type QuotePackageBookingInput = {
+  packageId: string
+}
+
+export type PackageBookingQuote = {
+  packageName: string
+  servicePrice: number
+  durationMin: number
+  bufferMin: number
+  depositDue: number
+}
+
+export type QuotePackageBookingError = ClientNotRegistered | PackageNotAvailable | StorageFailed
+
+export interface PackageBookingQuoteRepository {
+  quote(input: QuotePackageBookingInput): Promise<Result<PackageBookingQuote, QuotePackageBookingError>>
+}
+
 export type CancellationQuote = {
   startsAtMs: number
   techniqueName: string
@@ -214,7 +264,7 @@ export type MyAppointment = {
   endsAtMs: number
   techniqueName: string
   status: CancellableStatus
-  isFirstTime: boolean
+  isFirstTime: boolean | null
   servicePrice: number
   depositRequired: number
   heldSchedule: HeldSchedule | null
@@ -260,7 +310,7 @@ export type RecordAuditEvent = (input: {
 
 export type AppointmentChoice = {
   techniqueName: string
-  isFirstTime: boolean
+  isFirstTime: boolean | null
   detectedFirstTime: boolean | null
   servicePrice: number
   depositRequired: number

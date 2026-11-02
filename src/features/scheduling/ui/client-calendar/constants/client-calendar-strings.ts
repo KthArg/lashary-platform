@@ -15,6 +15,7 @@ export const clientCalendarMessages = {
   servicePlaceholder: 'Elegí un servicio',
   serviceOption: (name: string, isFirstTime: boolean, minutes: number) =>
     `${name} — ${isFirstTime ? 'primera vez' : 'retoque'} (${minutes} min)`,
+  packageOption: (name: string, minutes: number) => `${name} — paquete (${minutes} min)`,
   showSlots: 'Ver espacios',
   dayNavigation: 'Cambiar de día',
   previousDay: 'Día anterior',

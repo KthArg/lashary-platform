@@ -20,6 +20,11 @@ export type PackageWithDuration = {
   durationTotalMin: number
 }
 
+export type PackageSummary = {
+  id: string
+  name: string
+}
+
 export interface PackageRepository {
   list(params: {
     activeOnly: boolean
@@ -28,6 +33,8 @@ export interface PackageRepository {
   }): Promise<{ items: PackageWithDuration[]; total: number }>
 
   findById(id: string): Promise<PackageWithDuration | null>
+
+  findActiveByTechniqueId(techniqueId: string): Promise<PackageSummary[]>
 
   save(pkg: Package): Promise<Result<void, PackageNameConflict>>
 
