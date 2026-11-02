@@ -19,9 +19,7 @@ const requiredDateTime = (message: string) =>
 
 export const promotionFormSchema = z
   .object({
-    targetType: z.enum(['technique', 'package'], {
-      errorMap: () => ({ message: validationMessages.targetType }),
-    }),
+    targetType: z.enum(['technique', 'package'], { message: validationMessages.targetType }),
     targetId: z.string().trim().min(1, validationMessages.targetId),
     discountPercent: requiredInt
       .min(1, validationMessages.discountPercent)
