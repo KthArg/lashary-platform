@@ -4,9 +4,11 @@ import { ok, err, isOk, type Result } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import { buildTechnique, techniqueToView, type Technique, type ServiceFamily } from '../../domain/techniques/technique'
 import { techniqueNameConflict, type TechniqueNameConflict } from '../../domain/techniques/errors'
-import type { TechniqueRepository } from '../../application/techniques/ports'
+import type { AffectedPackagesRace, TechniqueRepository } from '../../application/techniques/ports'
 
 const TABLE = 'catalog_techniques'
+const DEACTIVATE_CASCADE_FN = 'catalog_deactivate_technique_cascade'
+const AFFECTED_PACKAGES_CHANGED_CODE = 'catalog_affected_packages_changed'
 const COLUMNS =
   'id, name, family, price_first_time, price_retouch, duration_first_time_min, duration_retouch_min, buffer_min, reapplication_interval_days, deposit, aftercare_text, is_active'
 
@@ -107,6 +109,21 @@ export function createSupabaseTechniqueRepository(db: SupabaseClient): Technique
         throw new Error(`${TABLE}.save: ${error.message}`)
       }
       return ok(undefined)
+    },
+
+    async deactivateCascade(id, expectedPackageIds) {
+      const { data, error } = await db.rpc(DEACTIVATE_CASCADE_FN, {
+        p_technique_id: id,
+        p_expected_package_ids: expectedPackageIds,
+      })
+      if (error) {
+        if (error.message === AFFECTED_PACKAGES_CHANGED_CODE) {
+          return err({ code: 'CATALOG_TECHNIQUE_AFFECTED_PACKAGES_RACE' } satisfies AffectedPackagesRace)
+        }
+        throw new Error(`${DEACTIVATE_CASCADE_FN}: ${error.message}`)
+      }
+      const row = (Array.isArray(data) ? data[0] : data) as { deactivated_package_ids: string[] } | null
+      return ok({ deactivatedPackageIds: row?.deactivated_package_ids ?? [] })
     },
   }
 }
