@@ -14,16 +14,18 @@ type ClientAppointmentRow = {
   id: string
   starts_at: string
   status: ClientAppointmentStatus
-  technique_name: string
+  technique_name: string | null
+  package_name: string | null
   deposit_required: number
   deposit_registered: number
 }
 
+// Una cita de paquete (US-AGE-04) no tiene technique_name; su nombre sale de package_name.
 const toClientAppointment = (row: ClientAppointmentRow): ClientAppointmentView => ({
   id: row.id,
   startsAtMs: Date.parse(row.starts_at),
   status: row.status,
-  techniqueName: row.technique_name,
+  techniqueName: row.technique_name ?? row.package_name ?? '',
   depositRequired: row.deposit_required,
   depositRegistered: row.deposit_registered,
 })
