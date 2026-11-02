@@ -68,4 +68,12 @@ describe.skipIf(!reachable)('createSupabaseTechniqueRepository (Supabase local)'
     const again = await repo.findById(items[0].id)
     expect(again?.name).toBe(items[0].name)
   })
+
+  it('deactivateCascade() está denegado por RLS con token anónimo (B1, fail-closed)', async () => {
+    const { items } = await repo.list({ activeOnly: true, offset: 0, limit: 1 })
+    await expect(repo.deactivateCascade(items[0].id, [])).rejects.toThrow()
+
+    const again = await repo.findById(items[0].id)
+    expect(again?.isActive).toBe(true)
+  })
 })

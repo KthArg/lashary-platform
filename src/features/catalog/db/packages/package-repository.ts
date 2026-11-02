@@ -4,12 +4,15 @@ import { ok, err, isOk, type Result } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import { buildPackage, packageToView, type Package } from '../../domain/packages/package'
 import { packageNameConflict, type PackageNameConflict } from '../../domain/packages/errors'
-import type { PackageRepository, PackageWithDuration } from '../../application/packages/ports'
+import type { PackageRepository, PackageSummary, PackageWithDuration } from '../../application/packages/ports'
 
 const TABLE = 'catalog_packages'
+const BRIDGE_TABLE = 'catalog_package_techniques'
 const SAVE_FN = 'catalog_save_package_with_deposit'
 const DELETE_FN = 'catalog_delete_package'
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+type PackageRefRow = { catalog_packages: { id: string; name: string; is_active: boolean } | null }
 
 const COLUMNS = `
   id, name, price, deposit, is_active,
@@ -72,6 +75,20 @@ export function createSupabasePackageRepository(db: SupabaseClient): PackageRepo
       const { data, error } = await db.from(TABLE).select(COLUMNS).eq('id', id).maybeSingle()
       if (error) throw new Error(`${TABLE}.findById: ${error.message}`)
       return data ? rowToDomain(data as unknown as Row) : null
+    },
+
+    async findActiveByTechniqueId(techniqueId: string): Promise<PackageSummary[]> {
+      if (!UUID.test(techniqueId)) return []
+      const { data, error } = await db
+        .from(BRIDGE_TABLE)
+        .select('catalog_packages!inner ( id, name, is_active )')
+        .eq('technique_id', techniqueId)
+        .eq('catalog_packages.is_active', true)
+      if (error) throw new Error(`${BRIDGE_TABLE}.findActiveByTechniqueId: ${error.message}`)
+      return (data as unknown as PackageRefRow[] ?? [])
+        .map((row) => row.catalog_packages)
+        .filter((pkg): pkg is NonNullable<PackageRefRow['catalog_packages']> => pkg !== null)
+        .map(({ id, name }) => ({ id, name }))
     },
 
     async save(pkg: Package): Promise<Result<void, PackageNameConflict>> {

@@ -58,4 +58,18 @@ describe.skipIf(!reachable)('SupabasePackageRepository (Supabase local)', () => 
     const again = await repo.findById(items[0].pkg.id)
     expect(again?.pkg.name).toBe(items[0].pkg.name)
   })
+
+  it('findActiveByTechniqueId nombra el paquete del seed para cada técnica que incluye', async () => {
+    const { items } = await repo.list({ activeOnly: true, offset: 0, limit: 1 })
+    const [{ pkg }] = items
+    for (const techniqueId of pkg.techniqueIds) {
+      const affected = await repo.findActiveByTechniqueId(techniqueId)
+      expect(affected).toEqual([{ id: pkg.id, name: pkg.name }])
+    }
+  })
+
+  it('findActiveByTechniqueId no encuentra nada para una técnica que no está en ningún paquete', async () => {
+    expect(await repo.findActiveByTechniqueId('00000000-0000-0000-0000-000000000000')).toEqual([])
+    expect(await repo.findActiveByTechniqueId('no-es-un-uuid')).toEqual([])
+  })
 })
