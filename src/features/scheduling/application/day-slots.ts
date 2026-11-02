@@ -13,6 +13,7 @@ export type DaySlotsQuery = {
   resourceId: string
   date: string
   durationMin: number
+  ignoreAppointmentId?: string
 }
 
 export const getDaySlots =
@@ -23,7 +24,9 @@ export const getDaySlots =
 
     const [openHours, busy] = await Promise.all([
       deps.repo.listOpenHours(query.resourceId, query.date),
-      deps.repo.listBusyRanges(query.resourceId, query.date),
+      query.ignoreAppointmentId === undefined
+        ? deps.repo.listBusyRanges(query.resourceId, query.date)
+        : deps.repo.listBusyRanges(query.resourceId, query.date, query.ignoreAppointmentId),
     ])
 
     return computeDaySlots({

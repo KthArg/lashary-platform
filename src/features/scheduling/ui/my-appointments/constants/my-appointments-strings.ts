@@ -12,6 +12,8 @@ export const myAppointmentsMessages = {
   reload: 'Reintentar',
   loading: 'Cargando tus citas…',
   listLabel: 'Próximas citas',
+  heldSchedule: (slot: string) =>
+    `Pediste cambiar el horario. Mientras la administradora lo revisa, tu horario aprobado sigue siendo el ${slot}; si no acepta el cambio, la cita se queda ahí.`,
   status: {
     pending_approval: 'Pendiente de aprobación',
     approved: 'Aprobada',

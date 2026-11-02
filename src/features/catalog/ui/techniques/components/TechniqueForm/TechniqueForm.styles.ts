@@ -10,5 +10,4 @@ export const techniqueFormStyles = {
   submitWrapper: 'sm:col-span-2',
   submitButton: 'btn btn-primary',
   deactivateForm: 'flex flex-col gap-2 border-t border-base-300 pt-4',
-  deactivateButton: 'btn btn-outline btn-error w-fit',
 }

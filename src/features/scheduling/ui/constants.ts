@@ -8,3 +8,5 @@ export const FIRST_TIME_OVERRIDE_VALUES = {
   firstTime: 'first_time',
   retouch: 'retouch',
 } as const
+
+export const MAX_SELECTION_PAGE_SERVICES = 100

@@ -2,7 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { moneyFromColones, formatMoney } from '@/shared/money'
 import { ApprovalQueue } from '../components/ApprovalQueue'
-import { APPROVAL_QUEUE_ARIA, APPROVAL_QUEUE_CHOICE, APPROVAL_QUEUE_CLIENT, APPROVAL_QUEUE_LABELS } from '../constants/approval-queue.labels'
+import {
+  APPROVAL_QUEUE_ARIA,
+  APPROVAL_QUEUE_CHOICE,
+  APPROVAL_QUEUE_CLIENT,
+  APPROVAL_QUEUE_HELD,
+  APPROVAL_QUEUE_LABELS,
+} from '../constants/approval-queue.labels'
 import { APPROVAL_QUEUE_ERRORS } from '../constants/approval-queue.constants'
 import { APPOINTMENT_DISPLAY_CHOICE } from '../../appointment-display/constants/appointment-display.constants'
 import { formatAppointmentSlot } from '../../appointment-display/utils/format-appointment-slot'
@@ -13,7 +19,8 @@ const mockReject = vi.fn()
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: mockRefresh }) }))
 vi.mock('../actions/approval-queue-actions', () => ({
-  approveAppointmentAction: (appointmentId: string) => mockApprove(appointmentId),
+  approveAppointmentAction: (appointmentId: string, seenStartsAtMs: number) =>
+    mockApprove(appointmentId, seenStartsAtMs),
   rejectAppointmentAction: (appointmentId: string, reason: string) => mockReject(appointmentId, reason),
 }))
 
@@ -29,6 +36,7 @@ const FIRST_APPOINTMENT = {
     servicePrice: 35000,
     depositRequired: 10000,
   },
+  heldSchedule: null,
 }
 const SECOND_APPOINTMENT = {
   id: 'cita-2',
@@ -36,6 +44,7 @@ const SECOND_APPOINTMENT = {
   endsAtMs: Date.parse('2027-03-02T17:00:00Z'),
   clientName: null,
   choice: null,
+  heldSchedule: null,
 }
 const FIRST_SLOT = formatAppointmentSlot(FIRST_APPOINTMENT.startsAtMs, FIRST_APPOINTMENT.endsAtMs)
 const REJECTION_REASON = 'horario no disponible'
@@ -128,13 +137,29 @@ describe('ApprovalQueue: lo que eligió la clienta', () => {
   })
 })
 
+describe('ApprovalQueue: reagendados', () => {
+  it('una cita reagendada avisa su horario aprobado y que rechazar el cambio la devuelve a él', () => {
+    const heldSchedule = {
+      startsAtMs: Date.parse('2027-02-22T16:00:00Z'),
+      endsAtMs: Date.parse('2027-02-22T17:00:00Z'),
+    }
+    render(<ApprovalQueue appointments={[{ ...FIRST_APPOINTMENT, heldSchedule }, SECOND_APPOINTMENT]} />)
+
+    const notes = screen.getAllByRole('note')
+    expect(notes).toHaveLength(1)
+    expect(notes[0].textContent).toBe(
+      APPROVAL_QUEUE_HELD.note(formatAppointmentSlot(heldSchedule.startsAtMs, heldSchedule.endsAtMs)),
+    )
+  })
+})
+
 describe('ApprovalQueue: decisiones', () => {
   it('aprobar llama a la acción con el id de esa cita', async () => {
     render(<ApprovalQueue appointments={[FIRST_APPOINTMENT, SECOND_APPOINTMENT]} />)
 
     fireEvent.click(screen.getByRole('button', { name: APPROVAL_QUEUE_ARIA.approve(FIRST_SLOT) }))
 
-    await waitFor(() => expect(mockApprove).toHaveBeenCalledWith(FIRST_APPOINTMENT.id))
+    await waitFor(() => expect(mockApprove).toHaveBeenCalledWith(FIRST_APPOINTMENT.id, FIRST_APPOINTMENT.startsAtMs))
   })
 
   it('rechazar pide el motivo opcional y llama a la acción con el id y el motivo', async () => {

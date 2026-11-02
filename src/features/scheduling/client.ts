@@ -9,3 +9,6 @@ export { cancellationPolicyMessages } from './ui/cancellation-policy/constants/c
 export { CancellationPolicyLoading } from './ui/cancellation-policy/components/CancellationPolicyLoading'
 export { myAppointmentsMessages } from './ui/my-appointments/constants/my-appointments-strings'
 export { MyAppointmentsLoading } from './ui/my-appointments/components/MyAppointmentsLoading'
+export { reschedulePolicyMessages } from './ui/reschedule-policy/constants/reschedule-policy-strings'
+export { ReschedulePolicyLoading } from './ui/reschedule-policy/components/ReschedulePolicyLoading'
+export { reschedulePageMessages } from './ui/reschedule/constants/reschedule-page-strings'

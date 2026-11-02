@@ -5,7 +5,9 @@ import {
   listPendingAppointmentsAction,
   rejectAppointmentAction,
 } from '../actions/approval-queue-actions'
-import { APPROVAL_QUEUE_ERRORS } from '../constants/approval-queue.constants'
+import { APPROVAL_QUEUE_ERRORS, scheduleChangedMessage } from '../constants/approval-queue.constants'
+import { formatAppointmentSlot } from '../../appointment-display/utils/format-appointment-slot'
+import { SCHEDULE_CHANGED_MESSAGE } from '../../../db/appointment-repository.constants'
 import {
   MAX_DECISION_REASON_LENGTH,
   PENDING_APPROVAL_STATUS,
@@ -14,6 +16,9 @@ import {
 const ADMIN_ID = 'admin-1'
 const APPOINTMENT_ID = 'cita-1'
 const CITAS_PATH = '/admin/citas'
+const SEEN_STARTS_AT_MS = Date.parse('2027-03-01T16:00:00Z')
+const CURRENT_STARTS_AT_MS = Date.parse('2027-03-02T16:00:00Z')
+const CURRENT_ENDS_AT_MS = Date.parse('2027-03-02T17:00:00Z')
 
 let rpcResult: { data: unknown; error: unknown }
 let listResult: { data: unknown; error: unknown }
@@ -83,6 +88,7 @@ describe('listPendingAppointmentsAction', () => {
             servicePrice: 35000,
             depositRequired: 10000,
           },
+          heldSchedule: null,
         },
       ],
     })
@@ -109,22 +115,47 @@ describe('listPendingAppointmentsAction', () => {
 
 describe('approveAppointmentAction', () => {
   it('aprueba, refresca la cola y no escribe en la bitácora', async () => {
-    expect(await approveAppointmentAction(APPOINTMENT_ID)).toEqual({ ok: true })
+    expect(await approveAppointmentAction(APPOINTMENT_ID, SEEN_STARTS_AT_MS)).toEqual({ ok: true })
     expect(mockRevalidate).toHaveBeenCalledWith(CITAS_PATH)
     expect(mockRecord).not.toHaveBeenCalled()
+  })
+
+  it('manda a la base el horario que vio la administradora', async () => {
+    await approveAppointmentAction(APPOINTMENT_ID, SEEN_STARTS_AT_MS)
+
+    expect(mockRpc).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ p_expected_starts_at: new Date(SEEN_STARTS_AT_MS).toISOString() }),
+    )
+  })
+
+  it('si la clienta cambió el horario avisa con el horario nuevo y refresca la cola para que se vea', async () => {
+    rpcResult = {
+      data: null,
+      error: { message: SCHEDULE_CHANGED_MESSAGE, details: `${CURRENT_STARTS_AT_MS}|${CURRENT_ENDS_AT_MS}` },
+    }
+
+    expect(await approveAppointmentAction(APPOINTMENT_ID, SEEN_STARTS_AT_MS)).toEqual({
+      ok: false,
+      error: scheduleChangedMessage(formatAppointmentSlot(CURRENT_STARTS_AT_MS, CURRENT_ENDS_AT_MS)),
+    })
+    expect(mockRevalidate).toHaveBeenCalledWith(CITAS_PATH)
   })
 
   it('una cita que ya no está pendiente devuelve su mensaje y no refresca', async () => {
     rpcResult = { data: [], error: null }
 
-    expect(await approveAppointmentAction(APPOINTMENT_ID)).toEqual({ ok: false, error: APPROVAL_QUEUE_ERRORS.notPending })
+    expect(await approveAppointmentAction(APPOINTMENT_ID, SEEN_STARTS_AT_MS)).toEqual({
+      ok: false,
+      error: APPROVAL_QUEUE_ERRORS.notPending,
+    })
     expect(mockRevalidate).not.toHaveBeenCalled()
   })
 
   it('exige sesión de administradora: sin ella no llega a la base', async () => {
     mockRequireAdmin.mockRejectedValue(new Error('redirect'))
 
-    await expect(approveAppointmentAction(APPOINTMENT_ID)).rejects.toThrow('redirect')
+    await expect(approveAppointmentAction(APPOINTMENT_ID, SEEN_STARTS_AT_MS)).rejects.toThrow('redirect')
     expect(mockRpc).not.toHaveBeenCalled()
   })
 })

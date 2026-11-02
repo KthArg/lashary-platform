@@ -2,7 +2,7 @@
 -- Correr con: npx supabase test db
 
 BEGIN;
-SELECT plan(36);
+SELECT plan(38);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -70,6 +70,17 @@ VALUES
    tstzrange(now() + interval '24 hours', now() + interval '25 hours'),
    '00000000-0000-0000-0000-000000000bc6', '00000000-0000-0000-0000-000000000bf4', 'zz-test cancelar',
    true, 35000, 10000, 10000, NULL, NULL);
+
+-- Cita de paquete (US-AGE-04): la bitácora de cancelación debe nombrarla por su package_name.
+INSERT INTO public.scheduling_appointments
+  (id, resource_id, status, starts_at, ends_at, occupied_range, client_id, package_id, package_name,
+   service_price, deposit_required, deposit_registered)
+VALUES
+  ('00000000-0000-0000-0000-00000000ca11', '00000000-0000-0000-0000-000000000a01', 'approved',
+   (now() + interval '33 days'), (now() + interval '33 days 2 hours'),
+   tstzrange((now() + interval '33 days'), (now() + interval '33 days 2 hours')),
+   '00000000-0000-0000-0000-000000000bc6', '00000000-0000-0000-0000-00000000bb01', 'zz-test paquete cancelar',
+   45000, 12000, 12000);
 
 SELECT results_eq(
   $$SELECT cancellable, within_window, forfeited_deposit, window_hours
@@ -313,6 +324,23 @@ SELECT results_eq(
   'al confirmar de nuevo con la cifra correcta, cancela');
 
 RESET ROLE;
+
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-0000-0000-000000000b02","role":"authenticated"}', true);
+
+SELECT lives_ok(
+  $$SELECT public.scheduling_cancel_appointment('00000000-0000-0000-0000-00000000ca11', 0)$$,
+  'cancela una cita de paquete igual que una de técnica');
+
+RESET ROLE;
+
+SELECT is(
+  (SELECT payload ->> 'techniqueName' FROM public.audit_events
+    WHERE entity_id = '00000000-0000-0000-0000-00000000ca11'
+      AND action = 'scheduling.appointment.cancelled'),
+  'zz-test paquete cancelar',
+  'la bitácora de la cancelación nombra el paquete, no deja el campo vacío');
 
 SELECT * FROM finish();
 ROLLBACK;

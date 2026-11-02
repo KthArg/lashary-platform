@@ -23,7 +23,7 @@ const SERVICE_DURATION_MIN = 60
 const PREP_MIN = 15
 const CLEANUP_MIN = 10
 const STAFF_ROLE = 'admin'
-const FIRST_TEST_DAY_MS = Date.parse('2043-01-01T10:00:00Z')
+const FIRST_TEST_DAY_MS = Date.parse('2043-01-02T00:00:00Z')
 const MS_PER_DAY = 86_400_000
 const TEST_DAYS_SPREAD = 300
 const CONCURRENCY_ROUND_TIMEOUT_MS = 10_000
@@ -96,8 +96,11 @@ describe.skipIf(!reachable)('US-AGE-09 criterio 4 — N reservas simultáneas (S
   })
 
   const newTestStartMs = (): number => {
-    const dayOffset = Math.floor(Math.random() * TEST_DAYS_SPREAD)
-    const startsAtMs = FIRST_TEST_DAY_MS + dayOffset * MS_PER_DAY
+    let startsAtMs = 0
+    do {
+      const dayOffset = Math.floor(Math.random() * TEST_DAYS_SPREAD)
+      startsAtMs = FIRST_TEST_DAY_MS + dayOffset * MS_PER_DAY
+    } while (usedStartsMs.includes(startsAtMs))
     usedStartsMs.push(startsAtMs)
     return startsAtMs
   }

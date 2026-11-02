@@ -21,6 +21,7 @@ const appointment: MyAppointment = {
   isFirstTime: true,
   servicePrice: 35000,
   depositRequired: 10000,
+  heldSchedule: null,
 }
 
 function createDeps(overrides: Partial<MyAppointmentsDeps> = {}): MyAppointmentsDeps {
@@ -60,6 +61,7 @@ describe('toMyAppointmentView', () => {
       slot: formatAppointmentSlot(STARTS_AT_MS, ENDS_AT_MS),
       status: myAppointmentsMessages.status.approved,
       amounts: APPOINTMENT_DISPLAY_CHOICE.priceAndDeposit(price(35000), price(10000)),
+      heldNote: null,
     })
     expect(view.slot).toContain('9:00')
   })
@@ -70,6 +72,15 @@ describe('toMyAppointmentView', () => {
     expect(view.kind).toBe(APPOINTMENT_DISPLAY_CHOICE.retouch)
     expect(view.amounts).toBe(APPOINTMENT_DISPLAY_CHOICE.priceNoDeposit(price(35000)))
     expect(view.status).toBe(myAppointmentsMessages.status.pending_approval)
+  })
+
+  it('sin reagendado pendiente no hay nota; con uno, la nota dice el horario aprobado que se mantiene', () => {
+    const heldSchedule = { startsAtMs: Date.parse('2027-09-03T15:00:00Z'), endsAtMs: Date.parse('2027-09-03T16:00:00Z') }
+
+    expect(toMyAppointmentView(appointment).heldNote).toBeNull()
+    expect(toMyAppointmentView({ ...appointment, status: 'pending_approval', heldSchedule }).heldNote).toBe(
+      myAppointmentsMessages.heldSchedule(formatAppointmentSlot(heldSchedule.startsAtMs, heldSchedule.endsAtMs)),
+    )
   })
 })
 
