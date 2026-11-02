@@ -193,4 +193,22 @@ describe('performBooking — paquetes (US-AGE-04, criterios 1 a 3)', () => {
       message: bookingConfirmMessages.unavailable,
     })
   })
+
+  it('con promoción aplicada sobre el paquete, el resumen avisa el descuento (US-PROM-01)', async () => {
+    const { deps } = createDeps({
+      bookPackage: async () =>
+        ok({ ...BOOKED_PACKAGE, servicePrice: 36000, promotionId: 'promo-2', discountPercent: 20 }),
+    })
+    const outcome = await performBooking(packageFields, deps)
+
+    expect(outcome).toMatchObject({
+      kind: 'booked',
+      booked: {
+        summary: {
+          price: formatMoney(moneyFromColones(36000)),
+          promotionNotice: bookingConfirmMessages.promotionNotice(20),
+        },
+      },
+    })
+  })
 })
