@@ -19,7 +19,7 @@ export const catalogMessages = {
       actions: 'Acciones',
     },
     status: { active: 'Activa', inactive: 'Desactivada' },
-    rowActions: { edit: 'Editar', deactivate: 'Desactivar' },
+    rowActions: { edit: 'Editar' },
     minutesShort: 'min',
     daysShort: 'días',
     notApplicable: '—',
@@ -59,6 +59,22 @@ export const catalogMessages = {
     savedCreate: 'Técnica creada.',
     savedEdit: 'Cambios guardados.',
     deactivated: 'Técnica desactivada.',
+    deactivatedWithPackages: (packageNames: string[]) =>
+      `Técnica desactivada junto con ${packageNames.length === 1 ? 'el paquete' : 'los paquetes'}: ${packageNames.join(', ')}.`,
+    affectedPackagesChanged:
+      'Los paquetes afectados cambiaron desde que se mostró el aviso. Volvé a intentarlo.',
+    deactivate: {
+      open: 'Desactivar',
+      title: '¿Desactivar esta técnica?',
+      checking: 'Comprobando si algún paquete la incluye…',
+      notFound: 'No se encontró la técnica.',
+      bodySimple: '¿Confirmás que querés desactivar esta técnica?',
+      bodyWithPackages: (packageNames: string[]) =>
+        `${packageNames.length === 1 ? 'El paquete' : 'Los paquetes'} «${packageNames.join('», «')}» ${packageNames.length === 1 ? 'incluye' : 'incluyen'} esta técnica. Desactivar la técnica también ${packageNames.length === 1 ? 'desactiva el paquete' : 'desactiva los paquetes'}. ¿Querés continuar?`,
+      confirm: 'Sí, desactivar',
+      cancel: 'Cancelar',
+      close: 'Cerrar',
+    },
     validation: {
       name: 'El nombre es obligatorio',
       family: 'Elegí una familia de servicio válida',

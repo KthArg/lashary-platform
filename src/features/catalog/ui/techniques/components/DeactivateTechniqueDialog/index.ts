@@ -1,0 +1,1 @@
+export { DeactivateTechniqueDialog } from './DeactivateTechniqueDialog'
