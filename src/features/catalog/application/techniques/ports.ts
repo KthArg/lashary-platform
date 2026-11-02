@@ -21,6 +21,14 @@ export type TechniqueWriteModel = {
   aftercareText: string
 }
 
+export type DeactivateCascadeResult = {
+  deactivatedPackageIds: string[]
+}
+
+export type AffectedPackagesRace = {
+  readonly code: 'CATALOG_TECHNIQUE_AFFECTED_PACKAGES_RACE'
+}
+
 export interface TechniqueRepository {
   list(params: {
     activeOnly: boolean
@@ -33,4 +41,9 @@ export interface TechniqueRepository {
   findByIds(ids: string[]): Promise<Technique[]>
 
   save(technique: Technique): Promise<Result<void, TechniqueNameConflict>>
+
+  deactivateCascade(
+    id: string,
+    expectedPackageIds: string[],
+  ): Promise<Result<DeactivateCascadeResult, AffectedPackagesRace>>
 }

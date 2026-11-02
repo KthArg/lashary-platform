@@ -3,12 +3,19 @@
 import Link from 'next/link'
 import { useEffect } from 'react'
 import { landingMessages } from '../../../constants/landing-strings'
-import { LOGIN_ROUTE, RESERVE_ROUTE } from '../../../routes'
+import { RESERVE_ROUTE, accountRouteFor } from '@/features/landing/ui/routes'
 import { siteMenuStyles as STYLES } from './SiteMenu.styles'
 import { useFocusTrap } from '../../hooks/use-focus-trap'
 import type { SiteMenuProps } from './SiteMenu.types'
 
-export function SiteMenu({ sections, anchorBase = '', productsHref, cartHref, onClose }: SiteMenuProps) {
+export function SiteMenu({
+  sections,
+  anchorBase = '',
+  productsHref,
+  cartHref,
+  hasSession = false,
+  onClose,
+}: SiteMenuProps) {
   const containerRef = useFocusTrap<HTMLDivElement>()
 
   useEffect(() => {
@@ -61,8 +68,8 @@ export function SiteMenu({ sections, anchorBase = '', productsHref, cartHref, on
             {landingMessages.menu.cart}
           </Link>
         )}
-        <Link href={LOGIN_ROUTE} onClick={onClose} className={STYLES.login}>
-          {landingMessages.menu.login}
+        <Link href={accountRouteFor(hasSession)} onClick={onClose} className={STYLES.login}>
+          {hasSession ? landingMessages.menu.portal : landingMessages.menu.login}
         </Link>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { User } from '@supabase/supabase-js'
 
 export interface AdminSession {
@@ -8,4 +9,5 @@ export interface AdminSession {
 
 export interface AdminSidebarProps {
   session: AdminSession
+  notifications?: ReactNode
 }

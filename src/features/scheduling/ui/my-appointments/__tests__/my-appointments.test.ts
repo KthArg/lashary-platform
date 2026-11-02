@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { err, ok } from '@/shared/result'
-import { Money } from '@/shared/money'
+import { moneyFromColones, formatMoney } from '@/shared/money'
 import { storageFailed } from '../../../domain/errors'
 import type { MyAppointment } from '../../../application/ports'
 import { APPOINTMENT_DISPLAY_CHOICE } from '../../appointment-display/constants/appointment-display.constants'
@@ -11,7 +11,7 @@ import { toMyAppointmentsView, toMyAppointmentView } from '../utils/my-appointme
 
 const STARTS_AT_MS = Date.parse('2027-09-10T15:00:00Z')
 const ENDS_AT_MS = Date.parse('2027-09-10T16:00:00Z')
-const price = (colones: number) => Money.fromColones(colones).toString()
+const price = (colones: number) => formatMoney(moneyFromColones(colones))
 const appointment: MyAppointment = {
   id: 'cita-1',
   startsAtMs: STARTS_AT_MS,
@@ -21,6 +21,7 @@ const appointment: MyAppointment = {
   isFirstTime: true,
   servicePrice: 35000,
   depositRequired: 10000,
+  heldSchedule: null,
 }
 
 function createDeps(overrides: Partial<MyAppointmentsDeps> = {}): MyAppointmentsDeps {
@@ -60,6 +61,7 @@ describe('toMyAppointmentView', () => {
       slot: formatAppointmentSlot(STARTS_AT_MS, ENDS_AT_MS),
       status: myAppointmentsMessages.status.approved,
       amounts: APPOINTMENT_DISPLAY_CHOICE.priceAndDeposit(price(35000), price(10000)),
+      heldNote: null,
     })
     expect(view.slot).toContain('9:00')
   })
@@ -70,6 +72,15 @@ describe('toMyAppointmentView', () => {
     expect(view.kind).toBe(APPOINTMENT_DISPLAY_CHOICE.retouch)
     expect(view.amounts).toBe(APPOINTMENT_DISPLAY_CHOICE.priceNoDeposit(price(35000)))
     expect(view.status).toBe(myAppointmentsMessages.status.pending_approval)
+  })
+
+  it('sin reagendado pendiente no hay nota; con uno, la nota dice el horario aprobado que se mantiene', () => {
+    const heldSchedule = { startsAtMs: Date.parse('2027-09-03T15:00:00Z'), endsAtMs: Date.parse('2027-09-03T16:00:00Z') }
+
+    expect(toMyAppointmentView(appointment).heldNote).toBeNull()
+    expect(toMyAppointmentView({ ...appointment, status: 'pending_approval', heldSchedule }).heldNote).toBe(
+      myAppointmentsMessages.heldSchedule(formatAppointmentSlot(heldSchedule.startsAtMs, heldSchedule.endsAtMs)),
+    )
   })
 })
 

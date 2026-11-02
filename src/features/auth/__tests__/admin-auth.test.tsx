@@ -45,6 +45,12 @@ vi.mock('next/navigation', () => ({
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 
+const mockLoadAdminInbox = vi.fn(async () => ({ ok: false }))
+vi.mock('@/features/notifications', () => ({
+  loadAdminInbox: () => mockLoadAdminInbox(),
+  AdminInbox: () => <button type="button">Notificaciones</button>,
+}))
+
 describe('US-AUTH-01: Autenticación de Administradores (/admin)', () => {
   beforeEach(() => { vi.clearAllMocks() })
 
@@ -201,6 +207,9 @@ describe('US-AUTH-01: Autenticación de Administradores (/admin)', () => {
     expect(screen.getByText('Contenido Admin')).toBeDefined()
     expect(screen.getByText('LASHARY')).toBeDefined()
     expect(screen.getByText('Dashboard')).toBeDefined()
+    const navEntries = Array.from(document.querySelectorAll('nav a, nav button')).map((entry) => entry.textContent)
+    expect(navEntries.slice(0, 3)).toEqual(['Dashboard', 'Notificaciones', 'Citas'])
+    expect(mockLoadAdminInbox).toHaveBeenCalledOnce()
     unmount()
 
     mockGetUser.mockResolvedValueOnce({ data: { user: null } })
@@ -208,5 +217,6 @@ describe('US-AUTH-01: Autenticación de Administradores (/admin)', () => {
     render(unauthJsx)
     expect(screen.getByText('Contenido Bare')).toBeDefined()
     expect(screen.queryByText('Dashboard')).toBeNull()
+    expect(mockLoadAdminInbox).toHaveBeenCalledOnce()
   })
 })

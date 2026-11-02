@@ -18,7 +18,7 @@ export async function createClient() {
               cookieStore.set(name, value, options)
             )
           } catch {
-            // Manejado silenciosamente en Server Components
+            // Server Components no pueden escribir cookies
           }
         },
       },

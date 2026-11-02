@@ -19,6 +19,11 @@ export function toMyAppointmentView(appointment: MyAppointment): MyAppointmentVi
     amounts: summary.amounts,
     slot: formatAppointmentSlot(appointment.startsAtMs, appointment.endsAtMs),
     status: myAppointmentsMessages.status[appointment.status],
+    heldNote: appointment.heldSchedule
+      ? myAppointmentsMessages.heldSchedule(
+          formatAppointmentSlot(appointment.heldSchedule.startsAtMs, appointment.heldSchedule.endsAtMs),
+        )
+      : null,
   }
 }
 

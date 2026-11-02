@@ -1,6 +1,6 @@
 export interface AppointmentSummaryInput {
   techniqueName: string
-  isFirstTime: boolean
+  isFirstTime: boolean | null
   servicePrice: number
   depositRequired: number
 }

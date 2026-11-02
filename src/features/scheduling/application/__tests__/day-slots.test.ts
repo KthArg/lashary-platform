@@ -8,6 +8,7 @@ import type { BusyRange, OpenHours } from '../../domain/day-slots'
 
 const RESOURCE = 'r-1'
 const MONDAY = '2026-10-19'
+const APPOINTMENT = 'cita-1'
 
 function fakeRepo(openHours: OpenHours[] = [], busy: BusyRange[] = []) {
   const calls: { openHours: unknown[][]; busy: unknown[][] } = { openHours: [], busy: [] }
@@ -37,6 +38,18 @@ describe('getDaySlots — US-AGE-02', () => {
     expect(calls.openHours).toEqual([[RESOURCE, MONDAY]])
     expect(calls.busy).toEqual([[RESOURCE, MONDAY]])
     expect(isOk(result) && result.value.map((slot) => slot.status)).toEqual(['busy', 'free', 'free'])
+  })
+
+  it('con una cita a ignorar se la pide a la base junto con lo ocupado del día', async () => {
+    const { repo, calls } = fakeRepo([{ startMin: 540, endMin: 660 }])
+    await getDaySlots({ repo, clock })({
+      resourceId: RESOURCE,
+      date: MONDAY,
+      durationMin: 60,
+      ignoreAppointmentId: APPOINTMENT,
+    })
+
+    expect(calls.busy).toEqual([[RESOURCE, MONDAY, APPOINTMENT]])
   })
 
   it('una fecha o una duración inválidas no consultan la base', async () => {

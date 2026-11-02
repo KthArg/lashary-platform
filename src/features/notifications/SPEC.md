@@ -2,10 +2,11 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-28
+actualizado: 2026-10-30
 historias:
   - id: US-NOT-01
-    estado: no_iniciada
+    estado: terminada
+    evidencia: "Pila de 5 piezas sobre main: PRs #610 (1/5, tabla y RLS), #612 (2/5, trigger al reservar), #613 (3/5, dominio y repositorio), #615 (4/5, action y lectura) y #616 (5/5, panel lateral, cierra la historia). Criterio 1 (al reservar se genera el aviso en el panel): supabase/tests/database/scheduling_notify_booking_created.test.sql (reservar crea el aviso; una reserva fallida, una cita sin clienta o un cambio de hora no lo crean), ui/inbox/__tests__/admin-inbox.test.tsx y auth/__tests__/admin-auth.test.tsx (el layout lo carga para administradoras). Criterio 2 (clienta, servicio, fecha y hora): scheduling_notify_booking_created.test.sql, db/__tests__/inbox-repository.test.ts y admin-inbox.test.tsx. Criterio 3 (leído y no leído, persiste): supabase/tests/database/notifications_admin_inbox.test.sql (staff marca y desmarca, nadie borra ni fabrica avisos, la clienta y anon no los ven, SEC-002), application/__tests__/inbox.test.ts, inbox-repository.test.ts, ui/inbox/__tests__/inbox-actions.test.ts y admin-inbox.test.tsx, también con más de 20 avisos («Ver más»). Aislamiento con tokens reales de clienta y anon: __tests__/rls-isolation.test.ts. Si el aviso falla, la reserva igual se guarda, y una cita de paquete de US-AGE-04 usa el nombre del paquete: scheduling_notify_booking_created.test.sql. Probada a mano por José Loría en next dev contra Supabase local el 2026-10-29."
   - id: US-NOT-02
     estado: no_iniciada
   - id: US-NOT-03
@@ -56,10 +57,15 @@ US-NOT-03 (ADR-0007); el resto lo reusa vía el puerto que US-NOT-08 exige.
   — la aritmética de fechas vive en `shared/` para que `domain/`/`application/` nunca construyan un
   `Date` con aritmética (DOM-004, lo escanea `check-domain-purity.sh`). Errores tipados en
   `domain/errors.ts` (DOM-006). `domain/reminder-message.ts` arma el texto externalizado
-  (`REMINDER_MESSAGE_TEXTS`, DOM-009) con fecha y hora en `America/Costa_Rica` (`formatStudioDateTime`,
-  DOM-003) y la técnica reservada (criterio 2). Pruebas: `domain/__tests__/reminder.test.ts` y
+  (`REMINDER_MESSAGE_TEXTS`, DOM-009) con fecha y hora en `America/Costa_Rica` (`formatStudioDateTime`
+  de `shared/studio-time`, que también usa la bandeja, DOM-003) y la técnica reservada (criterio 2). Pruebas: `domain/__tests__/reminder.test.ts` y
   `reminder-message.test.ts`.
-- Capa `application/`: tres casos de uso encadenados por `run-reminder-cycle.ts` (lo llama el cron):
+- Capa `application/`: tres casos de uso encadenados por `run-reminder-cycle.ts` (lo llama el cron).
+  Antes de los tres, el ciclo le pide a `scheduling` que venza los reagendados que nadie decidió a
+  tiempo (puerto `SchedulingMaintenancePort`, `expireSchedulingUndecidedReschedules`; regla de
+  US-AGE-10 aprobada por el PO el 2026-10-29): la cita vuelve a su horario aprobado y el paso de
+  descubrir le crea el recordatorio en la misma corrida. Si ese paso falla, el ciclo sigue y lo cuenta
+  en `expireFailed`; el resumen trae `expiredReschedules`. Prueba: `__tests__/run-reminder-cycle.test.ts`.
   - `discover-reminders.ts` — lee de `scheduling` (puerto `SchedulingReadPort`) las citas activas
     (`approved`/`confirmed`) que entran a la ventana de 24h + 2h de margen y crea el recordatorio
     pendiente si no existe (`insertIfAbsent`, idempotente). Prueba: `__tests__/discover-reminders.test.ts`.
@@ -112,20 +118,60 @@ US-NOT-03 (ADR-0007); el resto lo reusa vía el puerto que US-NOT-08 exige.
   todo (reemplazado por `meta-whatsapp-channel.ts` y cableado en `index.ts`); no queda código de
   Twilio en la feature. Pruebas: `channels/__tests__/meta-whatsapp-channel.test.ts` (sin plantilla
   y con plantilla) y `resend-email-channel.test.ts` (mock de `fetch`).
-- Disparo (`http/cron-handler.ts`, `src/app/api/cron/notifications-reminders/route.ts`, `vercel.json`):
-  Vercel Cron llama cada 15 minutos con `Authorization: Bearer <CRON_SECRET>`; sin ese secreto
-  configurado el endpoint se niega siempre (fail-closed). Sin sesión de usuario (sin cookies): el
+- Disparo (`http/cron-handler.ts`, `src/app/api/cron/notifications-reminders/route.ts`): la ruta
+  recibe un `POST` con `Authorization: Bearer <CRON_SECRET>`; sin ese secreto configurado el endpoint
+  se niega siempre (fail-closed). Hoy nadie la llama: no hay `vercel.json` ni un workflow de GitHub
+  Actions que lo haga (ver «Antes de producción», punto 5, y la activación en `docs/process/DEPENDENCIES.md`). Sin sesión de usuario (sin cookies): el
   cron se autentica como una cuenta de staff (`shared/lib/supabase/system.ts`,
   `NOTIFICATIONS_CRON_EMAIL`/`NOTIFICATIONS_CRON_PASSWORD`) y queda sujeto a la misma RLS que
   cualquier sesión real — nunca la service-role key (SEC-001/003). Prueba: `http/__tests__/cron-handler.test.ts`.
 - `index.ts` (`runNotificationsReminderCycle`) arma los adaptadores reales y expone la única puerta
   de entrada (ARCH-003): scheduling y clients por su índice público, los canales por ADR-0006.
 
+## US-NOT-01: bandeja de avisos de la administradora
+
+`notifications_admin_inbox` guarda un aviso por reserva (`UNIQUE (kind, appointment_id)`), con una
+copia de clienta, servicio y hora: el aviso cuenta lo que pasó al reservar aunque la cita cambie
+después, y US-NOT-02 necesita el horario anterior. `read_at` vacío es «no leído»; nunca se borra.
+
+- Lee y marca solo staff (SEC-001): `SELECT` y `UPDATE (read_at)`, nada más; sin `INSERT` ni `DELETE`.
+- Solo escribe `notifications_record_booking`, sin `EXECUTE` para `anon` ni `authenticated`: nadie
+  puede fabricar avisos por PostgREST.
+- Prueba: `supabase/tests/database/notifications_admin_inbox.test.sql` (staff, clienta y anon, SEC-002)
+  y `__tests__/rls-isolation.test.ts`, con tokens reales de clienta y anon contra PostgREST. Los
+  clientes de esa prueba no guardan la sesión: si la guardaran, el anónimo heredaría la de la clienta.
+- Lo llama el trigger de `scheduling` al reservar (criterio 1), en la misma transacción: si la reserva
+  falla, no hay aviso. Al revés no: si el aviso falla, el trigger lo atrapa (`RAISE WARNING`) y la
+  reserva se guarda, porque la reserva importa más que el aviso. El servicio es la técnica o, en una
+  cita de paquete (US-AGE-04), el paquete; un nombre vacío cae a «Clienta» o «Servicio». Prueba:
+  `supabase/tests/database/scheduling_notify_booking_created.test.sql`.
+- En la app: `domain/inbox-notice.ts` (`InboxNotice`, `INBOX_LIMIT = 20`), `db/inbox-repository.ts`
+  (páginas de 20 con `range` y si hay más, conteo de todos los no leídos sin traer filas, `setReadAt`)
+  y `application/inbox.ts` (`loadInbox`, `loadMoreNotices`, `markNotice` con reloj inyectado, DOM-004).
+  Si la RLS no deja tocar el aviso, el `UPDATE` no afecta filas y se informa `notice-not-found`. Un
+  fallo de la base es `InboxStorageFailed` con su causa, nunca una bandeja vacía. Pruebas:
+  `domain/__tests__/inbox-notice.test.ts`, `db/__tests__/inbox-repository.test.ts` y `application/__tests__/inbox.test.ts`.
+- Borde (`ui/inbox/`): `loadAdminInbox` es una lectura de servidor normal, no `'use server'`; la RLS
+  deja sin avisos a quien no es staff. `markNoticeAction` exige `requireAdminSession`, valida con zod
+  (`id` uuid, `read` booleano), devuelve `{ ok: false, error }` en vez de lanzar, y refresca el layout
+  de `/admin` (`ADMIN_PORTAL_ROUTES.root`) para que cambie el contador. `loadMoreNoticesAction` trae
+  la página siguiente de 20: es una lectura con `'use server'` a propósito, porque el layout no recibe
+  parámetros de la URL y «ver más» se pide desde el panel; por eso exige `requireAdminSession`, valida
+  el desplazamiento con zod y la RLS sigue detrás. Prueba: `ui/inbox/__tests__/inbox-actions.test.ts`.
+- Panel (`ui/inbox/components/AdminInbox/`): botón en el menú lateral con el número de no leídos y un
+  `<dialog>` modal que sale por la izquierda; el `<dialog>` nativo da foco atrapado, Escape y vuelta del
+  foco al botón. El layout de `/admin` carga la bandeja y se la pasa a `AdminSidebar` como hueco
+  (`notifications`), así `auth` no importa nada de `notifications`. Estados: vacío, error con
+  reintento y guardado en curso (botones deshabilitados); la bandeja llega cargada con el layout.
+  El contador cuenta todos los no leídos; si hay más de 20 avisos, «Ver más» trae los siguientes 20
+  y se pueden marcar igual. Al cerrar el panel se descarta lo cargado de más y vuelve a los primeros
+  20. Prueba: `ui/inbox/__tests__/admin-inbox.test.tsx` y `auth/__tests__/admin-auth.test.tsx` (el layout).
+
 ## Qué no hace todavía
 
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
   mano. No lo pide ningún criterio de US-NOT-03.
-- US-NOT-01, 02, 04 a 08 y US-CLI-06 reusan el canal pero no están construidas.
+- US-NOT-02, 04 a 08 y US-CLI-06 reusan el canal pero no están construidas.
 
 ## Correcciones de la auditoría del 2026-10-23 (AUDIT.md, líder del proyecto)
 
@@ -342,9 +388,12 @@ recordatorio real le llegue a una clienta; es un checklist de activación, no de
    migraciones de `notifications`, así que `discoverReminders` (criterio 1: detectar la cita 24h
    antes) y `reconcileReminders` (criterio 3: cancelar o reprogramar si la cita cambia) se pueden
    probar ahí de punta a punta; falta correr esa prueba con datos reales.
-5. **Disparo automático en producción.** `vercel.json` pide una corrida cada 15 minutos, pero el
-   plan Hobby de Vercel solo permite cron jobs una vez al día. Decisión del líder (2026-10-21): se
-   resuelve con GitHub Actions cuando el proyecto se despliegue, no ahora.
+5. **Disparo automático en producción.** No existe `vercel.json` ni un workflow que llame a la ruta:
+   el plan Hobby de Vercel solo permite cron jobs una vez al día, así que el disparo cada 15 minutos
+   se resuelve con un workflow de GitHub Actions que haga `POST` con el `Bearer CRON_SECRET`
+   (decisión del líder, 2026-10-21). El workflow lo aplica un admin; dueño y fecha en «Activación del
+   cron de recordatorios» de `docs/process/DEPENDENCIES.md`. Mientras no corra, tampoco vencen solos
+   los reagendados sin decisión de US-AGE-10.
 6. **Cuenta de staff del cron en producción — deliberadamente no creada.** Decisión del líder
    (2026-10-21): sin número de WhatsApp ni dominio de email reales, cualquier recordatorio que el
    cron intentara mandar en producción fallaría en los dos canales y, tras `MAX_REMINDER_ATTEMPTS`
@@ -368,9 +417,16 @@ en el frontmatter de esta historia).
   Consumidor: `receiveReminderCronRequest`.
 - `receiveReminderCronRequest` — handler de la ruta de cron. Consumidor:
   `src/app/api/cron/notifications-reminders/route.ts`.
+- `loadAdminInbox`, `AdminInbox`, `markNoticeAction` y sus tipos (US-NOT-01). Consumidor:
+  `src/app/admin/layout.tsx`.
 - Dominio y aplicación son superficie interna; ninguna otra feature los consume.
 
 ## Decisiones
+
+- US-NOT-01, 2026-10-29: el aviso nace al reservar la clienta, no al aprobar (la historia dice
+  «cuando un cliente agende»). Acordado por el equipo, comunicado por José Loría el 2026-10-29.
+- US-NOT-01, 2026-10-29: la historia se cierra en la pieza 5 de 5, la última con código; no se abre
+  una pieza aparte solo para el cierre.
 
 - ADR-0006 (canal de notificaciones): WhatsApp directo contra la Graph API de Meta (sin Twilio,
   decisión del PO el 2026-10-21: lo exige quien pide el proyecto), Resend como respaldo por email

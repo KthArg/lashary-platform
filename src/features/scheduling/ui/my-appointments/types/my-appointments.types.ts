@@ -12,6 +12,7 @@ export type MyAppointmentView = {
   slot: string
   status: string
   amounts: string | null
+  heldNote: string | null
 }
 
 export type MyAppointmentsScreen =

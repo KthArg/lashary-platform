@@ -1,4 +1,3 @@
-import type { BookingQuote } from '../../../application/ports'
 import type { CalendarSearchParams } from '../../client-calendar/types/client-calendar.types'
 
 export type BookingConfirmSearchParams = CalendarSearchParams
@@ -9,6 +8,12 @@ export type ConfirmParams = {
   readonly startMin: number
 }
 
+export type ConfirmQuote = {
+  readonly servicePrice: number
+  readonly durationMin: number
+  readonly depositDue: number
+}
+
 export type BookingConfirmData =
   | { status: 'forbidden' }
   | { status: 'invalid'; backHref: string }
@@ -17,8 +22,8 @@ export type BookingConfirmData =
       status: 'ready'
       params: ConfirmParams
       serviceName: string
-      isFirstTime: boolean
-      quote: BookingQuote
+      isFirstTime: boolean | null
+      quote: ConfirmQuote
       backHref: string
     }
 

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOutAction } from '../../../actions/auth-actions'
-import { AUTH_BUTTON_TEXTS, AUTH_LABELS, CLIENT_PORTAL_ROUTES } from '../../../constants/auth-strings'
+import { AUTH_BUTTON_TEXTS, AUTH_LABELS, CLIENT_PORTAL_ROUTES, SITE_HOME_ROUTE } from '@/features/auth/ui/constants/auth-strings'
 import { clientSidebarStyles as STYLES } from './ClientSidebar.styles'
 import type { ClientSidebarProps, ClientSession } from './ClientSidebar.types'
 
@@ -20,17 +20,20 @@ export function ClientSidebar({ session }: ClientSidebarProps) {
   const navItems = [
     {
       label: AUTH_LABELS.clientCitasNav,
-      href: CLIENT_PORTAL_ROUTES.citas,
+      href: CLIENT_PORTAL_ROUTES.misCitas,
+      section: CLIENT_PORTAL_ROUTES.citas,
       icon: <svg className={STYLES.navIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
     },
     {
       label: AUTH_LABELS.clientCartNav,
       href: CLIENT_PORTAL_ROUTES.carrito,
+      section: CLIENT_PORTAL_ROUTES.carrito,
       icon: <svg className={STYLES.navIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>,
     },
     {
       label: AUTH_LABELS.clientAccountNav,
       href: CLIENT_PORTAL_ROUTES.cuenta,
+      section: CLIENT_PORTAL_ROUTES.cuenta,
       icon: <svg className={STYLES.navIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>,
     },
   ]
@@ -45,7 +48,11 @@ export function ClientSidebar({ session }: ClientSidebarProps) {
     >
       <div>
         <div className={STYLES.header}>
-          {isExpanded && <span className={STYLES.brandTitle}>{AUTH_LABELS.brandName}</span>}
+          {isExpanded && (
+            <Link href={SITE_HOME_ROUTE} className={STYLES.brandTitle}>
+              {AUTH_LABELS.brandName}
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => setIsExpanded(!isExpanded)}
@@ -63,11 +70,12 @@ export function ClientSidebar({ session }: ClientSidebarProps) {
 
         <nav className={STYLES.nav}>
           {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`)
+            const isActive = pathname === item.section || pathname?.startsWith(`${item.section}/`)
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={isActive ? 'page' : undefined}
                 className={`${STYLES.navLink} ${isActive ? STYLES.navLinkActive : STYLES.navLinkInactive}`}
                 title={!isExpanded ? item.label : undefined}
               >
@@ -87,6 +95,17 @@ export function ClientSidebar({ session }: ClientSidebarProps) {
             {displayPhone && <p className={STYLES.userPhone}>{AUTH_LABELS.phonePrefix}{displayPhone}</p>}
           </div>
         )}
+        <Link
+          href={SITE_HOME_ROUTE}
+          className={STYLES.siteLink}
+          title={AUTH_LABELS.clientSiteNav}
+          aria-label={AUTH_LABELS.clientSiteNav}
+        >
+          <svg className={STYLES.siteIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V10" />
+          </svg>
+          {isExpanded && <span>{AUTH_LABELS.clientSiteNav}</span>}
+        </Link>
         <form action={signOutAction} className={STYLES.signOutForm}>
           <button
             type="submit"

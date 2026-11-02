@@ -5,10 +5,17 @@ import type { TechniqueRepository } from '@/features/catalog/application/techniq
 
 export type FakeTechniqueRepository = TechniqueRepository & { readonly saveCalls: number }
 
-export function createFakeTechniqueRepository(initial: Technique[] = []): FakeTechniqueRepository {
+/** actualAffectedPackageIds simula lo que el aviso de desactivación ya no refleja: el DB real lo
+ *  decide con una lectura fresca dentro de la transacción (ver catalog_deactivate_technique_cascade
+ *  y su prueba pgTAP); acá se inyecta para poder probar la rama de "cambió" sin una base real. */
+export function createFakeTechniqueRepository(
+  initial: Technique[] = [],
+  actualAffectedPackageIds: Record<string, string[]> = {},
+): FakeTechniqueRepository {
   const store = new Map<string, Technique>()
   for (const technique of initial) store.set(technique.id, technique)
   let saveCalls = 0
+  const sorted = (ids: readonly string[]) => [...ids].sort()
 
   return {
     get saveCalls() {
@@ -47,6 +54,17 @@ export function createFakeTechniqueRepository(initial: Technique[] = []): FakeTe
       saveCalls += 1
       store.set(technique.id, technique)
       return ok(undefined)
+    },
+
+    async deactivateCascade(id: string, expectedPackageIds: string[]) {
+      const actual = actualAffectedPackageIds[id] ?? []
+      if (JSON.stringify(sorted(actual)) !== JSON.stringify(sorted(expectedPackageIds))) {
+        return err({ code: 'CATALOG_TECHNIQUE_AFFECTED_PACKAGES_RACE' } as const)
+      }
+      const technique = store.get(id)
+      if (technique) store.set(id, { ...technique, isActive: false })
+      saveCalls += 1
+      return ok({ deactivatedPackageIds: actual })
     },
   }
 }

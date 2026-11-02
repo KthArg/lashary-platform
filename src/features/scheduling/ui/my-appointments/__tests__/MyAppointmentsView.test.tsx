@@ -6,6 +6,7 @@ import {
   myAppointmentsMessages,
 } from '../constants/my-appointments-strings'
 import { MyAppointmentsView } from '../components/MyAppointmentsView'
+import { reschedulePageMessages, reschedulePath } from '../../reschedule/constants/reschedule-page-strings'
 import type { MyAppointmentView } from '../types/my-appointments.types'
 
 const copy = myAppointmentsMessages
@@ -23,6 +24,7 @@ const appointment: MyAppointmentView = {
   slot: 'viernes, 10 de septiembre de 2027 · 9:00 a. m. – 10:00 a. m.',
   status: copy.status.approved,
   amounts: 'Precio ₡35.000 · Anticipo ₡10.000',
+  heldNote: null,
 }
 
 describe('MyAppointmentsView', () => {
@@ -38,6 +40,14 @@ describe('MyAppointmentsView', () => {
     expect(within(items[0]).getByText(appointment.amounts as string)).toBeTruthy()
     expect(within(items[1]).getByText('Retoque')).toBeTruthy()
     expect(within(items[1]).getByText(copy.status.pending_approval)).toBeTruthy()
+  })
+
+  it('cada cita ofrece reagendar, con un enlace a su pantalla y un nombre que dice cuál cita es', () => {
+    render(<MyAppointmentsView view={{ status: 'ready', appointments: [appointment] }} />)
+
+    const link = screen.getByRole('link', { name: reschedulePageMessages.rescheduleButtonLabel(appointment.slot) })
+    expect(link.getAttribute('href')).toBe(reschedulePath(appointment.id))
+    expect(link.textContent).toBe(reschedulePageMessages.rescheduleButton)
   })
 
   it('el título identifica la pantalla', () => {
@@ -67,5 +77,23 @@ describe('MyAppointmentsView', () => {
 
     expect(screen.getByRole('alert').textContent).toContain(copy.accessDenied)
     expect(screen.queryByRole('list')).toBeNull()
+  })
+
+  it('con citas, el encabezado también ofrece agendar otra', () => {
+    render(<MyAppointmentsView view={{ status: 'ready', appointments: [appointment] }} />)
+
+    expect(screen.getByRole('link', { name: copy.bookCta }).getAttribute('href')).toBe(BOOK_APPOINTMENT_PATH)
+  })
+
+  it('sin citas, "Agendar cita" aparece una sola vez', () => {
+    render(<MyAppointmentsView view={{ status: 'empty' }} />)
+
+    expect(screen.getAllByRole('link', { name: copy.bookCta })).toHaveLength(1)
+  })
+
+  it('quien no es clienta no ve el botón de agendar', () => {
+    render(<MyAppointmentsView view={{ status: 'forbidden' }} />)
+
+    expect(screen.queryByRole('link', { name: copy.bookCta })).toBeNull()
   })
 })

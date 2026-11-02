@@ -1,0 +1,1 @@
+export { AdminInbox } from './AdminInbox'

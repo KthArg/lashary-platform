@@ -12,7 +12,8 @@ export const bookingConfirmMessages = {
   depositLabel: 'Anticipo',
   noDeposit: 'Sin anticipo',
   duration: (minutes: number) => `${minutes} min`,
-  service: (name: string, isFirstTime: boolean) => `${name} — ${isFirstTime ? 'primera vez' : 'retoque'}`,
+  service: (name: string, isFirstTime: boolean | null) =>
+    isFirstTime === null ? `${name} — paquete` : `${name} — ${isFirstTime ? 'primera vez' : 'retoque'}`,
   depositNotice: 'Si cancelás o no asistís a la cita, es posible que pierdas el anticipo.',
   changeSlot: 'Elegir otro horario',
   confirm: 'Confirmar reserva',

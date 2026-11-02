@@ -15,7 +15,6 @@ describe('studio-time', () => {
   })
 
   it('studioDateOf usa la fecha del estudio, no la de UTC', () => {
-    // 2026-10-15 03:00 UTC = 2026-10-14 21:00 en Costa Rica (UTC-6).
     expect(studioDateOf(new Date('2026-10-15T03:00:00Z'))).toBe('2026-10-14')
     expect(studioDateOf(new Date('2026-10-15T06:00:00Z'))).toBe('2026-10-15')
   })

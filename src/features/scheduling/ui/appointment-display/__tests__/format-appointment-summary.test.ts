@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { Money } from '@/shared/money'
+import { moneyFromColones, formatMoney } from '@/shared/money'
 import { APPOINTMENT_DISPLAY_CHOICE } from '../constants/appointment-display.constants'
 import { formatAppointmentSlot } from '../utils/format-appointment-slot'
 import { formatAppointmentSummary } from '../utils/format-appointment-summary'
 
 const CHOICE = { techniqueName: 'Clásicas', isFirstTime: true, servicePrice: 35000, depositRequired: 10000 }
-const price = (colones: number) => Money.fromColones(colones).toString()
+const price = (colones: number) => formatMoney(moneyFromColones(colones))
 
 describe('formatAppointmentSummary', () => {
   it('muestra el servicio, que es primera vez, y el precio con el anticipo', () => {
@@ -23,6 +23,12 @@ describe('formatAppointmentSummary', () => {
   it('sin anticipo lo dice en vez de mostrar cero colones', () => {
     expect(formatAppointmentSummary({ ...CHOICE, depositRequired: 0 }).amounts).toBe(
       APPOINTMENT_DISPLAY_CHOICE.priceNoDeposit(price(35000)),
+    )
+  })
+
+  it('una cita de paquete se rotula como paquete, sin primera vez ni retoque', () => {
+    expect(formatAppointmentSummary({ ...CHOICE, techniqueName: 'Combo clásicas', isFirstTime: null }).kind).toBe(
+      APPOINTMENT_DISPLAY_CHOICE.packageKind,
     )
   })
 

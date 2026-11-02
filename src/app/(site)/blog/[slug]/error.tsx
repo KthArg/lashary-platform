@@ -1,17 +1,17 @@
 'use client'
 
 import { blogMessages } from '@/features/content/client'
-import { blogRouteStyles as s } from '../blog.styles'
+import { blogRouteStyles as STYLES } from '../blog.styles'
 
-const m = blogMessages.article.error
+const errorMessages = blogMessages.article.error
 
 export default function Error({ reset }: { error: Error; reset: () => void }) {
   return (
-    <main role="alert" className={s.errorBox}>
-      <h1 className={s.errorTitle}>{m.title}</h1>
-      <p className={s.errorBody}>{m.body}</p>
-      <button type="button" onClick={reset} className={s.retryButton}>
-        {m.retry}
+    <main role="alert" className={STYLES.errorBox}>
+      <h1 className={STYLES.errorTitle}>{errorMessages.title}</h1>
+      <p className={STYLES.errorBody}>{errorMessages.body}</p>
+      <button type="button" onClick={reset} className={STYLES.retryButton}>
+        {errorMessages.retry}
       </button>
     </main>
   )

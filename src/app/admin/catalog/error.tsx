@@ -1,6 +1,5 @@
 'use client'
 
-// Ver nota en loading.tsx: el texto viene del entry point cliente-seguro, no del index.ts.
 import { catalogMessages } from '@/features/catalog/client'
 import { catalogStyles } from './catalog.styles'
 

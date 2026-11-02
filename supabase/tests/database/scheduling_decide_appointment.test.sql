@@ -37,7 +37,7 @@ SELECT set_config('request.jwt.claims',
 
 SELECT is(
   (SELECT decided_by FROM public.scheduling_decide_appointment(
-     '00000000-0000-0000-0000-00000000d901', 'approved')),
+     '00000000-0000-0000-0000-00000000d901', 'approved', NULL, '2027-07-01 10:00+00')),
   '00000000-0000-0000-0000-0000000000d1'::uuid,
   'admin: aprobar registra quién decidió desde la sesión, no desde un parámetro');
 

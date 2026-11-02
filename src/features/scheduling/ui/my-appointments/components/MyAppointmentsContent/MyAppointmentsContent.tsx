@@ -1,11 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import {
-  BOOK_APPOINTMENT_PATH,
-  MY_APPOINTMENTS_PATH,
-  myAppointmentsMessages,
-} from '../../constants/my-appointments-strings'
+import { MY_APPOINTMENTS_PATH, myAppointmentsMessages } from '../../constants/my-appointments-strings'
 import { useMyAppointmentsNotice } from '../../hooks/useMyAppointmentsNotice'
 import { MyAppointmentsList } from '../MyAppointmentsList'
 import { myAppointmentsContentStyles as STYLES } from './MyAppointmentsContent.styles'
@@ -34,9 +30,6 @@ function AppointmentsBody({ view, onCancelled }: MyAppointmentsContentProps & { 
       return (
         <section className={STYLES.emptyBox}>
           <p>{copy.empty}</p>
-          <Link href={BOOK_APPOINTMENT_PATH} className={STYLES.action}>
-            {copy.bookCta}
-          </Link>
         </section>
       )
     case 'ready':

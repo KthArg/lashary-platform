@@ -1,6 +1,7 @@
 import { MAX_DECISION_REASON_LENGTH } from '../../../domain/appointment-decision.constants'
 import {
   APPROVAL_QUEUE_ARIA,
+  APPROVAL_QUEUE_HELD,
   APPROVAL_QUEUE_LABELS,
   REASON_FIELD_ROWS,
 } from '../constants/approval-queue.labels'
@@ -13,6 +14,9 @@ import type { ApprovalQueueItemProps } from '../types/approval-queue.types'
 export function ApprovalQueueItem({ appointment, queue }: ApprovalQueueItemProps) {
   const slot = formatAppointmentSlot(appointment.startsAtMs, appointment.endsAtMs)
   const choice = formatAppointmentChoice(appointment.choice)
+  const heldSlot = appointment.heldSchedule
+    ? formatAppointmentSlot(appointment.heldSchedule.startsAtMs, appointment.heldSchedule.endsAtMs)
+    : null
   const reasonFieldId = `approval-reason-${appointment.id}`
   const isBusy = queue.busyAppointmentId === appointment.id
   const isRejecting = queue.rejectingAppointmentId === appointment.id
@@ -30,6 +34,11 @@ export function ApprovalQueueItem({ appointment, queue }: ApprovalQueueItemProps
         {choice.warning && (
           <p role="note" className={STYLES.mismatch}>
             {choice.warning}
+          </p>
+        )}
+        {heldSlot && (
+          <p role="note" className={STYLES.held}>
+            {APPROVAL_QUEUE_HELD.note(heldSlot)}
           </p>
         )}
       </div>
@@ -57,7 +66,7 @@ export function ApprovalQueueItem({ appointment, queue }: ApprovalQueueItemProps
         </div>
       ) : (
         <div className={STYLES.actions}>
-          <button type="button" className={STYLES.primaryButton} disabled={isBusy} aria-label={APPROVAL_QUEUE_ARIA.approve(slot)} onClick={() => queue.approve(appointment.id)}>
+          <button type="button" className={STYLES.primaryButton} disabled={isBusy} aria-label={APPROVAL_QUEUE_ARIA.approve(slot)} onClick={() => queue.approve(appointment.id, appointment.startsAtMs)}>
             {isBusy ? APPROVAL_QUEUE_LABELS.saving : APPROVAL_QUEUE_LABELS.approve}
           </button>
           <button type="button" className={STYLES.secondaryButton} disabled={isBusy} aria-label={APPROVAL_QUEUE_ARIA.reject(slot)} onClick={() => queue.startReject(appointment.id)}>

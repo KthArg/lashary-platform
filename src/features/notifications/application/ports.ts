@@ -1,6 +1,7 @@
 import type { Result } from '@/shared/result'
 import type { ReminderChannelKind, ReminderSnapshot } from '../domain/reminder'
-import type { ChannelNotConfigured, ChannelSendFailed } from '../domain/errors'
+import type { InboxNotice } from '../domain/inbox-notice'
+import type { ChannelNotConfigured, ChannelSendFailed, InboxStorageFailed } from '../domain/errors'
 
 export type RepositoryFailure = 'repository-failed'
 
@@ -16,6 +17,10 @@ export type ReminderWindow = { from: Date; to: Date }
 export interface SchedulingReadPort {
   listActiveAppointmentsStartingWithin(window: ReminderWindow): Promise<Result<AppointmentSnapshot[], RepositoryFailure>>
   getAppointmentSnapshot(appointmentId: string): Promise<Result<AppointmentSnapshot | null, RepositoryFailure>>
+}
+
+export interface SchedulingMaintenancePort {
+  expireUndecidedReschedules(): Promise<Result<number, RepositoryFailure>>
 }
 
 export type ContactInfo = { phone: string; email: string }
@@ -50,7 +55,21 @@ export interface ReminderRepository {
   markExhausted(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
 }
 
-export type ChannelSendInput = { reminderId: string; contact: ContactInfo; message: string; templateVariables: string[] }
+export type NoticeNotFound = 'notice-not-found'
+
+export type SetReadOutcome = { updated: boolean }
+
+export type InboxPageRequest = { offset: number; limit: number }
+
+export type InboxPage = { notices: InboxNotice[]; hasMore: boolean }
+
+export interface InboxRepository {
+  listRecent(page: InboxPageRequest): Promise<Result<InboxPage, InboxStorageFailed>>
+  countUnread(): Promise<Result<number, InboxStorageFailed>>
+  setReadAt(id: string, readAt: Date | null): Promise<Result<SetReadOutcome, InboxStorageFailed>>
+}
+
+export type ChannelSendInput ={ reminderId: string; contact: ContactInfo; message: string; templateVariables: string[] }
 
 export interface NotificationChannel {
   readonly kind: ReminderChannelKind

@@ -31,7 +31,7 @@ defectos: []
 
 # store
 
-El código de `store` usa `Money` por sus funciones (`moneyFromColones`, `zeroMoney`, `addMoney`) y no por sus métodos, como paso previo a quitar la `class` (ADR-0008); el comportamiento es el mismo.
+`Money` (`shared/money.ts`) ya no es una `class`: es una `interface` con marca `unique symbol` y funciones (`moneyFromColones`, `zeroMoney`, `addMoney`, ADR-0008); el comportamiento es el mismo.
 
 Tienda (F4): productos, carrito, checkout con comprobante. Stock y pedidos admin: criterios existentes de US-SHOP-02 y US-PROD-02/03 (ADR-0007).
 

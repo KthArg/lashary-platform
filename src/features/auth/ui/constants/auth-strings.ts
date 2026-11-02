@@ -23,17 +23,22 @@ export const AUTH_LABELS = {
   clientAccountSubtitle: 'Ficha de clienta, estado de cuenta e información personal (US-CLI-06 / US-MOR-03).',
   clientNavAriaLabel: 'Panel de clienta', clientFallbackName: 'Clienta',
   brandName: 'LASHARY',
+  clientSiteNav: 'Ir al sitio',
   emailLabel: 'Correo:',
   phoneLabel: 'Teléfono:',
 } as const
 
 export const CLIENT_PORTAL_ROUTES = {
   citas: '/portal/citas',
+  misCitas: '/portal/citas/mis-citas',
   carrito: '/portal/carrito',
   cuenta: '/portal/cuenta',
 } as const
 
+export const SITE_HOME_ROUTE = '/'
+
 export const ADMIN_PORTAL_ROUTES = {
+  root: '/admin',
   login: '/admin',
   dashboard: '/admin/dashboard',
   citas: '/admin/citas',

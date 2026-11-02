@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Money } from '@/shared/money'
+import { moneyFromColones, formatMoney } from '@/shared/money'
 import { APPROVAL_QUEUE_CHOICE } from '../constants/approval-queue.labels'
 import { APPOINTMENT_DISPLAY_CHOICE } from '../../appointment-display/constants/appointment-display.constants'
 import { formatAppointmentChoice } from '../utils/format-appointment-choice'
@@ -11,7 +11,7 @@ const CHOICE = {
   servicePrice: 35000,
   depositRequired: 10000,
 }
-const price = (colones: number) => Money.fromColones(colones).toString()
+const price = (colones: number) => formatMoney(moneyFromColones(colones))
 
 describe('formatAppointmentChoice', () => {
   it('muestra el servicio, que es primera vez, y el precio con el anticipo', () => {

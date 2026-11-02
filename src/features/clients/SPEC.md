@@ -2,14 +2,14 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-26
+actualizado: 2026-10-31
 historias:
   - id: US-CLI-01
     estado: en_progreso
     falta: "las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)"
   - id: US-CLI-02
-    estado: en_progreso
-    falta: "el acceso desde la vista diaria espera a US-AGE-11 (criterio diferido): la agenda diaria no existe y no enlaza a clientAppointmentsPath"
+    estado: terminada
+    evidencia: "Pila de 5 piezas sobre main: PRs #481 (1/5, contrato scheduling-api.md), #483 (2/5, listClientAppointments), #505 (3/5, caso de uso y estado del anticipo), #506 (4/5, pestaña Citas) y #507 (5/5, paginacion y enlace desde el listado), y el PR de cierre us/US-CLI-02 a main. Criterio 1 (servicio, fecha, estado de la cita y estado de pago; las anotaciones trasladadas a US-CLI-03): deposit-status.test.ts, view-appointment-history.test.ts, history-gateways.test.ts, history-queries.test.ts, appointment-history.test.tsx. Criterio 2 (de la mas reciente a la mas antigua): client-appointments-repository.test.ts de scheduling (ordena por starts_at descendente) y appointment-history.test.tsx (la tabla respeta el orden recibido). Criterio 3 (desde el listado y desde la vista diaria): clients-list.test.tsx (listado), src/app/admin/citas/agenda/page.test.tsx (la agenda arma el enlace con clientAppointmentsPath) y DailyAgendaView.test.tsx de scheduling (la tarjeta pinta el enlace «Ver sus citas»)"
   - id: US-CLI-03
     estado: no_iniciada
   - id: US-CLI-04
@@ -144,6 +144,11 @@ de solo icono a su historial con `aria-label` que la nombra (UI-004). Pruebas:
 `appointment-history-pagination.test.tsx`, `src/app/admin/clients/[id]/citas/page.test.tsx` y
 `clients-list.test.tsx`.
 
+Desde la agenda diaria de `scheduling` (US-AGE-11), cada tarjeta de cita tiene «Ver sus citas», que
+lleva a esta pestaña. La ruta `src/app/admin/citas/agenda/page.tsx` arma ese enlace con
+`clientAppointmentsPath`; `scheduling` no importa `clients`, recibe la función ya armada
+(`ClientLinks`). Prueba: `src/app/admin/citas/agenda/page.test.tsx`.
+
 ## Qué no hace todavía
 
 No existe un flujo de archivado o borrado de clientas en esta rama. `docs/adr/ADR-0009-client-archival-and-exemptions.md` recoge el acuerdo de archivar sin eliminar el perfil ni sus referencias, comunicado por Bayron el 2026-10-05. Antes de implementarlo deben acordarse permisos, búsquedas y reservas, citas existentes y restauración. La pieza 21 de US-AGE-13 implementa y prueba la migración de `payments` a `ON DELETE RESTRICT`; bloquea el borrado de perfiles con exoneraciones activas o históricas, incluso desde `auth.users`. Su integración sigue pendiente. Reactivar un perfil deberá revisar la vigencia de su exoneración antes de aplicarla. Este cambio de documentación no implementa archivado ni completa una historia de `clients`.
@@ -161,8 +166,7 @@ registra con Google, además del alta de esta feature. Le falta lo que US-CLI-05
 El listado con filtros y paginación **no pertenece a esta historia**: es US-CLI-01, que depende de
 esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
-**Al historial de citas (US-CLI-02) no se llega desde la vista diaria:** US-AGE-11 no existe todavía
-(criterio diferido, decisión del 2026-10-21). Las anotaciones dicen "Sin dato" hasta US-CLI-03.
+En el historial de citas (US-CLI-02), las anotaciones dicen "Sin dato" hasta US-CLI-03.
 
 ## Contrato público (`src/features/clients/index.ts`)
 
@@ -469,6 +473,14 @@ anon no lee ningún contacto (SEC-002).
   Loría.** El expediente y el historial muestran el mismo aviso con *Reintentar*; lo que comparten dos
   áreas va a `ui/shared/` (lección de US-CLI-04). Como `ConfirmDialog`, no trae textos: recibe
   `retryLabel` y cada área pasa el suyo (`RECORD_LABELS.retry`, `HISTORY_LABELS.retry`, DOM-009).
+- **2026-10-31 — US-CLI-02 se cierra con una prueba propia del enlace desde la agenda, por decisión
+  de José Loría.** US-AGE-11 (#621) ya pinta «Ver sus citas», pero su prueba usa un `ClientLinks`
+  escrito a mano, como debe para no depender de `clients`. Lo que une las dos features es la ruta
+  `src/app/admin/citas/agenda/page.tsx`, y no tenía prueba: cambiar la ruta de la pestaña o pasar
+  `clientRecordPath` en los dos enlaces no rompía nada. `page.test.tsx` compara el enlace con
+  `clientAppointmentsPath` real. Se descartó cerrar solo con la prueba de la agenda (EST-005: el
+  criterio necesita una prueba que falle si se rompe). El PR `us/US-CLI-02` → `main` no cambia código
+  de producción y deja la historia `terminada` (EST-007).
 
 ## Contrato para scheduling (US-AGE-05)
 

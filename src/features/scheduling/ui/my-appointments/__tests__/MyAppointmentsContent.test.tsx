@@ -31,6 +31,7 @@ const only: MyAppointmentView = {
   slot: SLOT,
   status: myAppointmentsMessages.status.approved,
   amounts: null,
+  heldNote: null,
 }
 
 async function cancelTheOnlyAppointment() {

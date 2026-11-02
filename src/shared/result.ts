@@ -1,7 +1,3 @@
-// Result — resultado explícito de una operación (DOM-006).
-// Los resultados de negocio ESPERADOS (no encontrado, monto inválido, espacio ocupado) se
-// retornan como valor, no se lanzan. Lo verdaderamente inesperado sí lanza.
-
 export type Ok<T> = { readonly ok: true; readonly value: T }
 export type Err<E> = { readonly ok: false; readonly error: E }
 export type Result<T, E> = Ok<T> | Err<E>

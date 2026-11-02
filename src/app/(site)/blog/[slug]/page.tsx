@@ -12,8 +12,6 @@ interface BlogArticlePageProps {
   params: Promise<{ slug: string }>
 }
 
-// La lectura sale de la caché de `content`, la misma entrada que usa el listado, así que
-// pedirla aquí y en la página no llama dos veces al CMS.
 export async function generateMetadata({ params }: BlogArticlePageProps): Promise<Metadata> {
   const { slug } = await params
   return articleMetadata(await getBlogArticle(slug))
@@ -23,10 +21,9 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
   const { slug } = await params
   const lookup = await getBlogArticle(slug)
 
-  // El CMS respondió y no la tiene: se sirve `not-found.tsx`. Como la ruta transmite (tiene
-  // `loading.tsx`), Next responde 200 con `noindex` en vez de un 404 de HTTP.
+  // La ruta transmite (loading.tsx): Next responde 200 con noindex, no un 404 HTTP
   if (lookup.status === 'not-found') notFound()
-  // No se pudo leer el CMS: no se puede afirmar que no existe, así que no es un 404.
+  // CMS caído: no se afirma que no existe
   if (lookup.article === null) {
     return <BlogArticleNotice kind="unavailable" retryHref={blogArticleRoute(slug)} />
   }
