@@ -80,7 +80,7 @@ type TechniqueSnapshot = {
 
 ## Paquetes (US-PROD-01)
 
-Un **paquete** combina dos o más técnicas existentes bajo un nombre y un precio propio, ajustado a mano por la administradora (no es la suma automática de precios). A diferencia de la técnica, el paquete **no** tiene snapshot todavía: es composición viva del catálogo — se congelará recién cuando US-AGE-04 confirme una cita con paquete (DOM-002).
+Un **paquete** combina dos o más técnicas existentes bajo un nombre y un precio propio, ajustado a mano por la administradora (no es la suma automática de precios). A diferencia de la técnica, el paquete **no** tiene snapshot todavía fuera de la reserva: es composición viva del catálogo — se congela cuando US-AGE-04 confirme una cita con paquete (DOM-002), igual que la técnica.
 
 Tablas dueñas: `catalog_packages` y `catalog_package_techniques` (ARCH-006). Mismo acceso exclusivo por `index.ts` que las técnicas (ARCH-005).
 
@@ -106,6 +106,25 @@ type PackageListItem = {
 Ordena por `name`.
 
 ### `getPackage(id) => Promise<PackageListItem | PackageNotFound>`
+
+### `catalog_package_booking_terms(p_package_id uuid)` — contrato SQL para reservar (US-AGE-04)
+
+A diferencia de `listPackages`/`getPackage`, esta no es una función TypeScript del `index.ts`: es una función de PostgreSQL, el mismo patrón que `catalog_booking_terms` (US-AGE-05). La clienta llama a la función de reserva de paquete de `scheduling` directo por PostgREST, sin pasar por el servidor de Next.js, así que el precio, el anticipo y la duración de un paquete no pueden calcularse en la aplicación ni venir de un parámetro suyo: los calcula la base (ARCH-005, DOM-002). `scheduling` nunca lee `catalog_packages` ni `catalog_package_techniques` directamente.
+
+```sql
+catalog_package_booking_terms(p_package_id uuid) RETURNS TABLE (
+  package_id     uuid,
+  package_name   text,
+  package_price  bigint,   -- colones enteros (DOM-001), el precio propio del paquete
+  deposit        bigint,   -- anticipo propio del paquete
+  technique_id   uuid,
+  technique_name text,
+  duration_min   integer,  -- duration_first_time_min de la técnica: un paquete no tiene retoque
+  buffer_min     integer   -- limpieza de esa técnica
+)
+```
+
+Devuelve **una fila por técnica incluida** en el paquete (los campos del paquete se repiten en cada una), para que quien reserve pueda congelar tanto el paquete como el detalle de sus técnicas — el tiempo total del criterio 2 de US-AGE-04 es `sum(duration_min + buffer_min)` sobre ese conjunto. No filtra técnicas inactivas dentro del paquete (igual que `durationTotalMin` en `db/packages/package-repository.ts`); si el paquete no existe, está desactivado o no tiene ninguna técnica, no devuelve ninguna fila, igual trato que una técnica desactivada en `catalog_booking_terms`. `SECURITY INVOKER`, solo ejecutable por `authenticated` (SEC-001).
 
 ### Garantías (paquetes)
 
