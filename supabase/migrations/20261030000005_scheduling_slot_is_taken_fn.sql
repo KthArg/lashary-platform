@@ -1,19 +1,10 @@
 -- 20261030000005_scheduling_slot_is_taken_fn.sql
 -- US-AGE-04 · feature scheduling — extrae la comprobación de "¿este espacio ya está ocupado?" a su
--- propia función, hallazgo de code review: scheduling_book_package_appointment
--- (20261030000002) copió esa comprobación de scheduling_book_appointment en vez de compartirla, y
--- US-AGE-10 (rama feat/us-age-10-calendario-ve-horario-guardado, todavía sin mergear a main) ya
--- cambió la original para mirar blocked_ranges (el horario guardado de un reagendado sigue
--- ocupado) en vez de occupied_range — sin este cambio, las dos copias se iban a desfasar apenas
--- una de las dos historias mergeara antes que la otra.
--- scheduling_slot_is_taken(p_resource_id, p_starts_at, p_occupied_until) reproduce exactamente el
--- criterio vigente hoy en main (occupied_range + scheduling_manual_blocks); solo
--- scheduling_book_package_appointment la usa en esta migración porque scheduling_book_appointment
--- lo sigue editando US-AGE-10 en su propia rama, y tocarla aquí competiría por las mismas líneas.
--- Queda anotado en docs/process/DEPENDENCIES.md: quien de las dos historias entre segundo a main
--- debe dejar scheduling_book_appointment llamando también a esta función (en vez de su copia
--- inline) y, si ya existe blocked_ranges, moverla a esa columna aquí mismo — un solo lugar para
--- las dos reservas en vez de dos copias que hay que acordarse de sincronizar a mano.
+-- propia función, para que la reserva de técnica y la de paquete la compartan en vez de copiarla.
+-- scheduling_slot_is_taken(p_resource_id, p_starts_at, p_occupied_until) mira occupied_range y
+-- scheduling_manual_blocks, y la llama scheduling_book_package_appointment. US-AGE-10 ya está en main
+-- (#632) con blocked_ranges: 20261101000001_scheduling_slot_is_taken_uses_blocked_ranges.sql la mueve a
+-- esa columna y hace que scheduling_book_appointment también la llame.
 -- Sin GRANT a anon/authenticated (igual que scheduling_evaluate_cancellation,
 -- 20261022000000_scheduling_cancellation_uses_registered_deposit.sql): solo la llama otra función
 -- SECURITY DEFINER, que corre como su propietaria.
