@@ -99,6 +99,12 @@ export interface InvalidRescheduleLimit {
   readonly message: string
 }
 
+export interface PackageHasNoTechniques {
+  readonly code: 'SCHEDULING_PACKAGE_HAS_NO_TECHNIQUES'
+  readonly packageId: string
+  readonly message: string
+}
+
 export interface AppointmentNotCancellable {
   readonly code: 'SCHEDULING_APPOINTMENT_NOT_CANCELLABLE'
   readonly appointmentId: string
@@ -165,6 +171,7 @@ export type SchedulingError =
   | RescheduleStateChanged
   | RescheduleSlotNotOffered
   | RescheduleSlotTaken
+  | PackageHasNoTechniques
 
 export const techniqueNotSelectable = (
   techniqueId: string,
@@ -317,3 +324,14 @@ export const appointmentScheduleChanged = (
   endsAtMs,
   message: `el horario de la cita ${appointmentId} cambió desde que la administradora lo vio`,
 })
+
+export const packageHasNoTechniques = (packageId: string): PackageHasNoTechniques => ({
+  code: 'SCHEDULING_PACKAGE_HAS_NO_TECHNIQUES',
+  packageId,
+  message: `el paquete ${packageId} no tiene ninguna técnica incluida`,
+})
+
+export const isPackageHasNoTechniques = (value: unknown): value is PackageHasNoTechniques =>
+  typeof value === 'object' &&
+  value !== null &&
+  (value as { code?: unknown }).code === 'SCHEDULING_PACKAGE_HAS_NO_TECHNIQUES'
