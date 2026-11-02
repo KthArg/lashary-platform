@@ -24,9 +24,6 @@ export function DeactivateTechniqueDialog({ techniqueId }: DeactivateTechniqueDi
   const [check, setCheck] = useState<CheckState | null>(null)
   const [state, action, pending] = useActionState(deactivateTechniqueCascadeAction, initialActionState)
 
-  // La confirmación llegó y tuvo éxito: se queda mostrando el mensaje hasta que la usuaria cierre,
-  // en vez de cerrar el diálogo sola y perder el "junto con el paquete X" (state solo se resetea
-  // al reabrir, no solo).
   useEffect(() => {
     if (state.status === 'ok') {
       setCheck((previous) => (previous?.phase === 'ready' ? { phase: 'done' } : previous))
@@ -70,7 +67,9 @@ export function DeactivateTechniqueDialog({ techniqueId }: DeactivateTechniqueDi
               <p className={STYLES.body}>
                 {check.affectedPackages.length === 0
                   ? deactivateMessages.bodySimple
-                  : deactivateMessages.bodyWithPackages(check.affectedPackages.map((pkg) => pkg.name))}
+                  : deactivateMessages.bodyWithPackages(
+                      check.affectedPackages.map((affectedPackage) => affectedPackage.name),
+                    )}
               </p>
               {state.status !== 'ok' && <TechniqueFormFeedback {...state} />}
               <div className={STYLES.actions}>
@@ -79,10 +78,10 @@ export function DeactivateTechniqueDialog({ techniqueId }: DeactivateTechniqueDi
                 </button>
                 <form action={action}>
                   <input type="hidden" name="id" value={techniqueId} />
-                  {check.affectedPackages.map((pkg) => (
-                    <Fragment key={pkg.id}>
-                      <input type="hidden" name="packageId" value={pkg.id} />
-                      <input type="hidden" name="packageName" value={pkg.name} />
+                  {check.affectedPackages.map((affectedPackage) => (
+                    <Fragment key={affectedPackage.id}>
+                      <input type="hidden" name="packageId" value={affectedPackage.id} />
+                      <input type="hidden" name="packageName" value={affectedPackage.name} />
                     </Fragment>
                   ))}
                   <button type="submit" className={STYLES.confirmButton} disabled={pending}>

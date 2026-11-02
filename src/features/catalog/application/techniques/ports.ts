@@ -25,8 +25,6 @@ export type DeactivateCascadeResult = {
   deactivatedPackageIds: string[]
 }
 
-/** Señal de bajo nivel: la lista de paquetes afectados cambió entre el aviso y la confirmación.
- *  La capa de aplicación la traduce a TechniqueAffectedPackagesChanged con los nombres frescos. */
 export type AffectedPackagesRace = {
   readonly code: 'CATALOG_TECHNIQUE_AFFECTED_PACKAGES_RACE'
 }
@@ -44,8 +42,6 @@ export interface TechniqueRepository {
 
   save(technique: Technique): Promise<Result<void, TechniqueNameConflict>>
 
-  /** Desactiva la técnica y, en la misma transacción, los paquetes activos que la incluían —
-   *  solo si expectedPackageIds coincide con los paquetes activos reales en ese momento. */
   deactivateCascade(
     id: string,
     expectedPackageIds: string[],

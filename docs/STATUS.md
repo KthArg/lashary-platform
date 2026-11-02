@@ -1,7 +1,7 @@
 # Estado del proyecto
 
 > **GENERADO** por `scripts/status-gen.sh` — no editar a mano (EST-002).
-> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-10-31.
+> Fuente: 14 specs de feature + `docs/backlog/Product_Backlog_LASHARY_JIRA_READY.csv`. Datos al: 2026-11-01.
 
 ## Features
 
@@ -32,7 +32,7 @@
 - US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
 - US-AUTH-02 — terminada — PR #3, PR #18, tests: auth-client.test.tsx, rls-isolation.test.ts
 
-### catalog (actualizado: 2026-10-31)
+### catalog (actualizado: 2026-11-01)
 - US-AGE-08 — terminada — PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx
 - US-PROD-01 — terminada — PRs #98 a #107, #134, #157 a #168 (pila) y el cierre us/US-PROD-01 a main; tests: package.test.ts, package-commands.test.ts, package-queries.test.ts, package-actions.test.ts, package-schema.test.ts, package-inactive-techniques.test.tsx, package-pagination.test.tsx, package-repository.integration.test.ts, package-rls-isolation.test.ts, catalog_package_staff_write.test.sql; UI probada a mano contra lashary-pruebas (2026-10-03)
 - US-PROM-01 — no_iniciada
@@ -84,7 +84,7 @@
 
 ### platform (actualizado: 2026-09-16)
 
-### scheduling (actualizado: 2026-10-31)
+### scheduling (actualizado: 2026-11-01)
 - US-AGE-01 — terminada — PR de cierre us/US-AGE-01 a main, con las piezas 1 a 13 apiladas hacia la rama de la historia. Criterios 1, 2 y 3 demostrados en /admin/citas/disponibilidad; los criterios 4 y 5 se trasladaron a US-AGE-02 y US-AGE-05 con aprobación del PO el 2026-10-14 (docs/process/DEPENDENCIES.md); tests: weekly-availability.test.ts (domain y application), closed-dates.test.ts (domain y application), manual-blocks.test.ts (domain y application), los tres *-repository.test.ts, studio-time.test.ts, availability-schema.test.ts, availability-actions.test.ts, availability-format.test.ts, AdminAvailabilityView.test.tsx, __tests__/availability-rls-isolation.test.ts (SEC-002) y pgTAP scheduling_weekly_availability.test.sql y scheduling_closed_dates_and_manual_blocks.test.sql
 - US-AGE-02 — terminada — PR de cierre us/US-AGE-02 a main (#403), con las piezas 1 a 12 apiladas hacia la rama de la historia (#387 a #392 y la pila de correcciones de la revisión #397 a #402). SLOT_INTERVAL_MIN = 30 confirmado por el PO el 2026-10-18. Criterios 1 a 5 y el criterio 4 recibido de US-AGE-01 con prueba unitaria; tests: domain/__tests__/day-slots.test.ts (criterios 1, 2, 3 y 5), domain/__tests__/service-option.test.ts (criterio 5), application/__tests__/day-slots.test.ts (criterio 4 de US-AGE-01), db/__tests__/day-availability-repository.test.ts, ui/client-calendar/__tests__/ClientCalendarView.test.tsx (criterios 1, 3 y 4), ui/client-calendar/__tests__/load-client-calendar.test.ts, ui/client-calendar/__tests__/calendar-params.test.ts, ui/client-calendar/__tests__/client-calendar-format.test.ts, ui/__tests__/TechniqueSelector.test.tsx (enlace desde el selector de US-AGE-03), shared/__tests__/studio-time.test.ts (addCalendarDays), __tests__/availability-rls-isolation.test.ts (las dos funciones con tokens reales, SEC-002), pgTAP supabase/tests/database/scheduling_client_day_view.test.sql (criterios 2 y 3 en la base, RLS intacta, anon sin acceso y criterio 4 de US-AGE-01), corrida en local el 2026-10-18; verificada en navegador el 2026-10-17 con Playwright contra Supabase local (escritorio y 375 px, capturas en el PR de la pieza 6)
 - US-AGE-03 — terminada — criterios 1, 3 y 4 demostrados; el criterio 2 se trasladó a US-AGE-05 con aprobación del PO (líder del proyecto), comunicado por Erick Duran el 2026-10-17 (docs/process/DEPENDENCIES.md, Criterios trasladados, ítem 6); tests: technique-selection.test.ts, select-technique.test.ts, load-technique-selection-page.test.ts, TechniqueSelectionPageView.test.tsx

@@ -34,7 +34,6 @@ export interface PackageRepository {
 
   findById(id: string): Promise<PackageWithDuration | null>
 
-  /** Paquetes activos que incluyen la técnica dada, para el aviso de cascada al desactivarla. */
   findActiveByTechniqueId(techniqueId: string): Promise<PackageSummary[]>
 
   save(pkg: Package): Promise<Result<void, PackageNameConflict>>
