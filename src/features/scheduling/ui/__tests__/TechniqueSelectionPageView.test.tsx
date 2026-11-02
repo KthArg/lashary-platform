@@ -61,7 +61,7 @@ describe('TechniqueSelectionPageView', () => {
         data={{
           status: 'ok',
           techniques: [{ id: 't1', name: 'Volumen ruso' }],
-          packages: [{ id: 'p1', name: 'Combo clásicas', durationTotalMin: 110 }],
+          packages: [{ id: 'p1', name: 'Combo clásicas', isActive: true, durationTotalMin: 110 }],
         }}
       />,
     )

@@ -8,9 +8,6 @@ export type ConfirmParams = {
   readonly startMin: number
 }
 
-// Técnica y paquete cotizan con la misma forma (precio, duración, anticipo); el nombre ya vive en
-// serviceName y bufferMin no se muestra, así que no hace falta cargar BookingQuote/PackageBookingQuote
-// completos aquí — solo lo que la pantalla de confirmación realmente usa.
 export type ConfirmQuote = {
   readonly servicePrice: number
   readonly durationMin: number

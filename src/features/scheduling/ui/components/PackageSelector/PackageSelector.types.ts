@@ -1,9 +1,5 @@
-export interface PackageSelectorOption {
-  readonly id: string
-  readonly name: string
-  readonly durationTotalMin: number
-}
+import type { NamedPackage } from '../../../domain/service-option'
 
 export interface PackageSelectorProps {
-  readonly packages: PackageSelectorOption[]
+  readonly packages: NamedPackage[]
 }
