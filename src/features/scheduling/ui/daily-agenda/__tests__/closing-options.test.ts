@@ -22,6 +22,7 @@ const unclosed = (overrides: Partial<UnclosedAppointment>): UnclosedAppointment 
   isFirstTime: true,
   techniqueName: 'Clásicas',
   servicePrice: SERVICE_PRICE,
+  isPackage: false,
   depositRegistered: DEPOSIT,
   ...overrides,
 })
@@ -92,5 +93,12 @@ describe('servicio prestado distinto del reservado — US-AGE-12 criterio 2', ()
   it('una cita sin clienta o sin precio no ofrece otro servicio, porque no se puede completar', () => {
     expect(serviceChoicesOf(unclosed({ clientId: null, clientName: null }))).toEqual([])
     expect(serviceChoicesOf(unclosed({ servicePrice: null }))).toEqual([])
+  })
+
+  it('una cita de paquete solo se cierra tal cual se reservó: no ofrece otro servicio prestado', () => {
+    const packageAppointment = unclosed({ techniqueId: null, isFirstTime: null, techniqueName: 'Paquete novia', isPackage: true })
+
+    expect(serviceChoicesOf(packageAppointment)).toEqual([])
+    expect(optionsOf(packageAppointment)).toHaveLength(2)
   })
 })

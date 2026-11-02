@@ -18,6 +18,8 @@ const bookedRow = {
   technique_id: 'tecnica-1',
   is_first_time: true,
   technique_name: 'Clásicas',
+  package_id: null,
+  package_name: null,
   service_price: 15000,
   deposit_registered: 5000,
 }
@@ -28,6 +30,8 @@ const staffRow = {
   technique_id: null,
   is_first_time: null,
   technique_name: null,
+  package_id: null,
+  package_name: null,
   service_price: null,
   deposit_registered: 0,
 }
@@ -85,6 +89,7 @@ describe('createSupabaseUnclosedAppointmentsRepository — US-AGE-12 criterio 5'
         techniqueId: 'tecnica-1',
         isFirstTime: true,
         techniqueName: 'Clásicas',
+        isPackage: false,
         servicePrice: 15000,
         depositRegistered: 5000,
       },
@@ -98,6 +103,7 @@ describe('createSupabaseUnclosedAppointmentsRepository — US-AGE-12 criterio 5'
         techniqueId: null,
         isFirstTime: null,
         techniqueName: null,
+        isPackage: false,
         servicePrice: null,
         depositRegistered: 0,
       },
@@ -105,6 +111,18 @@ describe('createSupabaseUnclosedAppointmentsRepository — US-AGE-12 criterio 5'
     expect(calls.filter(([name]) => name === 'rpc')).toEqual([
       ['rpc', CLIENT_NAMES_FUNCTION, { p_client_ids: ['perfil-ana'] }],
     ])
+  })
+
+  it('una cita de paquete se nombra con el paquete y se marca como tal', async () => {
+    const packageRow = { ...bookedRow, technique_id: null, is_first_time: null, technique_name: null, package_id: 'paquete-1', package_name: 'Paquete novia' }
+    const { db } = createFakeDb(
+      { data: [packageRow], error: null },
+      { data: [{ client_id: 'perfil-ana', full_name: 'Ana Mora' }], error: null },
+    )
+
+    const result = await createSupabaseUnclosedAppointmentsRepository(db).listUnclosed(NOW_MS, QUERY_LIMIT)
+
+    expect(isOk(result) && result.value[0]).toMatchObject({ techniqueId: null, techniqueName: 'Paquete novia', isPackage: true })
   })
 
   it('si la consulta falla, devuelve un error de almacenamiento sin lanzar', async () => {
