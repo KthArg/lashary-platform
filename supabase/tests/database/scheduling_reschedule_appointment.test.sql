@@ -5,7 +5,7 @@
 -- Hora de Costa Rica, UTC-6.
 
 BEGIN;
-SELECT plan(13);
+SELECT plan(15);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -72,6 +72,16 @@ VALUES
    '00000000-0000-0000-0000-000000000ec6', '00000000-0000-0000-0000-000000000ef4', 'zz-test reagendar',
    true, 35000, 10000, 10000, NULL, NULL);
 
+-- Cita de paquete (US-AGE-04, reauditoría A1 residual): sin técnica, el nombre sale de package_name.
+INSERT INTO public.scheduling_appointments
+  (id, resource_id, status, starts_at, ends_at, occupied_range, client_id, package_id, package_name,
+   service_price, deposit_required, deposit_registered, decided_by, decided_at)
+VALUES
+  ('00000000-0000-0000-0000-00000000ea08', '00000000-0000-0000-0000-000000000a01', 'approved',
+   '2027-10-11 10:00-06', '2027-10-11 12:00-06', tstzrange('2027-10-11 10:00-06', '2027-10-11 12:15-06'),
+   '00000000-0000-0000-0000-000000000ec6', '00000000-0000-0000-0000-00000000ef99', 'zz-test paquete reagendar',
+   45000, 12000, 12000, '00000000-0000-0000-0000-000000000e05', now());
+
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claims',
   '{"sub":"00000000-0000-0000-0000-000000000e02","role":"authenticated"}', true);
@@ -114,6 +124,25 @@ SELECT results_eq(
 SELECT is((SELECT actor_id FROM public.audit_events
             WHERE action = 'scheduling.appointment.rescheduled' AND entity_id = '00000000-0000-0000-0000-00000000ea01'),
   '00000000-0000-0000-0000-000000000e02'::uuid, 'la actora del evento es la clienta de la sesión');
+
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-0000-0000-000000000e02","role":"authenticated"}', true);
+
+SELECT results_eq(
+  $$SELECT starts_at, status
+      FROM public.scheduling_reschedule_appointment(
+        '00000000-0000-0000-0000-00000000ea08', '2027-10-18 10:00-06', 'approved')$$,
+  $$VALUES ('2027-10-18 10:00-06'::timestamptz, 'pending_approval'::text)$$,
+  'una cita de paquete también se reagenda (sin técnica, el nombre sale de package_name)');
+
+RESET ROLE;
+
+SELECT is(
+  (SELECT payload->>'techniqueName' FROM public.audit_events
+    WHERE action = 'scheduling.appointment.rescheduled' AND entity_id = '00000000-0000-0000-0000-00000000ea08'),
+  'zz-test paquete reagendar',
+  'el evento de una cita de paquete trae el nombre del paquete, no NULL (reauditoría, A1 residual)');
 
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claims',
