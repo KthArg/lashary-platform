@@ -2,7 +2,7 @@
 -- Correr con: npx supabase test db
 
 BEGIN;
-SELECT plan(13);
+SELECT plan(14);
 
 CREATE TEMP TABLE audit_events_before AS SELECT count(*) AS total FROM public.audit_events;
 
@@ -54,6 +54,17 @@ VALUES
    '00000000-0000-0000-0000-000000000bd6', '00000000-0000-0000-0000-000000000bf5', 'zz-test cotizar reagendar',
    true, 35000, 10000, 10000, 1);
 
+-- Cita de paquete (US-AGE-04): sin técnica ni primera vez, el nombre sale de package_name.
+INSERT INTO public.scheduling_appointments
+  (id, resource_id, status, starts_at, ends_at, occupied_range, client_id, package_id, package_name,
+   service_price, deposit_required, deposit_registered, reschedule_count)
+VALUES
+  ('00000000-0000-0000-0000-00000000bb07', '00000000-0000-0000-0000-000000000a01', 'approved',
+   (now() + interval '34 days'), (now() + interval '34 days 2 hours'),
+   tstzrange((now() + interval '34 days'), (now() + interval '34 days 2 hours 15 minutes')),
+   '00000000-0000-0000-0000-000000000bd6', '00000000-0000-0000-0000-00000000bf99', 'zz-test paquete reagendar',
+   45000, 12000, 12000, 0);
+
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claims',
   '{"sub":"00000000-0000-0000-0000-000000000b12","role":"authenticated"}', true);
@@ -92,6 +103,10 @@ SELECT throws_ok(
 SELECT throws_ok(
   $$SELECT * FROM public.scheduling_quote_reschedule('00000000-0000-0000-0000-00000000bb99')$$,
   'P0001', 'scheduling_appointment_not_reschedulable', 'una cita que no existe da el mismo error que una ajena');
+
+SELECT is(
+  (SELECT technique_name FROM public.scheduling_quote_reschedule('00000000-0000-0000-0000-00000000bb07')),
+  'zz-test paquete reagendar', 'una cita de paquete trae el nombre del paquete, no NULL (reauditoría, A1 residual)');
 
 RESET ROLE;
 UPDATE public.scheduling_reschedule_policy SET max_reschedules = 2;
