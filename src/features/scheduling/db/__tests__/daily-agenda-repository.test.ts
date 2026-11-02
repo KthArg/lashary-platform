@@ -19,6 +19,7 @@ const bookedRow = {
   ends_at: '2027-03-01T17:30:00+00:00',
   client_id: 'perfil-ana',
   technique_name: 'Clásicas',
+  package_name: null,
   is_first_time: true,
   deposit_required: 10000,
   deposit_registered: 10000,
@@ -30,8 +31,21 @@ const staffRow = {
   ends_at: '2027-03-01T19:00:00+00:00',
   client_id: null,
   technique_name: null,
+  package_name: null,
   is_first_time: null,
   deposit_required: null,
+  deposit_registered: 0,
+}
+const packageRow = {
+  id: 'cita-3',
+  status: 'approved',
+  starts_at: '2027-03-01T20:00:00+00:00',
+  ends_at: '2027-03-01T22:00:00+00:00',
+  client_id: 'perfil-bea',
+  technique_name: null,
+  package_name: 'Cejas y pestañas clásico',
+  is_first_time: null,
+  deposit_required: 12000,
   deposit_registered: 0,
 }
 
@@ -98,6 +112,16 @@ describe('createSupabaseDailyAgendaRepository — US-AGE-11', () => {
         depositRegistered: 0,
       },
     ])
+  })
+
+  it('una cita de paquete muestra el nombre del paquete como servicio (sin técnica)', async () => {
+    const { db } = createFakeDb(
+      { data: [packageRow], error: null },
+      { data: [{ client_id: 'perfil-bea', full_name: 'Bea Rojas' }], error: null },
+    )
+    const result = await createSupabaseDailyAgendaRepository(db).listBetween(FROM_MS, UNTIL_MS)
+
+    expect(isOk(result) && result.value[0].techniqueName).toBe('Cejas y pestañas clásico')
   })
 
   it('un día sin citas no pide nombres', async () => {
