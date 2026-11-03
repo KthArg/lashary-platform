@@ -33,6 +33,14 @@ export const dailyAgendaMessages = {
   openRecordLabel: (name: string) => `Abrir expediente de ${name}`,
   clientAppointments: 'Ver sus citas',
   clientAppointmentsLabel: (name: string) => `Ver sus citas de ${name}`,
+  unclosed: {
+    title: 'Citas pasadas sin cerrar',
+    description: 'Márcalas como atendidas o como ausencia. Siguen aquí hasta que las cierres.',
+    openDay: 'Ir a ese día',
+    openDayLabel: (name: string, day: string) => `Ir al día de la cita de ${name}, ${day}`,
+    loadError: 'No pudimos comprobar las citas pasadas sin cerrar: revisa los días anteriores.',
+    truncated: (limit: number) => `Hay más de ${limit} citas sin cerrar: aquí se muestran las más antiguas.`,
+  },
   status: {
     pending_approval: 'Pendiente de aprobar',
     approved: 'Aprobada',
