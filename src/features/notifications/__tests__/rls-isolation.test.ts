@@ -5,6 +5,7 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
 const REMINDERS_TABLE = 'notifications_reminders'
 const INBOX_TABLE = 'notifications_admin_inbox'
+const PERMISSION_DENIED = '42501'
 const NO_SAVED_SESSION = { auth: { persistSession: false, autoRefreshToken: false } }
 
 const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
@@ -155,6 +156,19 @@ describe.skipIf(!isSupabaseConfigured)('SEC-002 — aislamiento RLS de notificat
 
       const recorded = await client.rpc('notifications_record_booking', probe)
       expect(recorded.error).not.toBeNull()
+    }
+  })
+
+  itLive('ni la clienta ni anon pueden fabricar avisos de cancelación o de reagendado (US-NOT-02)', async () => {
+    const event = { p_event_id: PROBE_APPOINTMENT_ID, p_appointment_id: PROBE_APPOINTMENT_ID, p_client_name: 'Falsa', p_service_name: 'Falso' }
+    const now = new Date().toISOString()
+
+    for (const client of [anonClient, clientaClient]) {
+      const cancelled = await client.rpc('notifications_record_cancellation', { ...event, p_starts_at: now, p_forfeited_deposit: 0 })
+      expect(cancelled.error?.code).toBe(PERMISSION_DENIED)
+
+      const rescheduled = await client.rpc('notifications_record_reschedule', { ...event, p_previous_starts_at: now, p_starts_at: now })
+      expect(rescheduled.error?.code).toBe(PERMISSION_DENIED)
     }
   })
 })
