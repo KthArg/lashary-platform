@@ -4,6 +4,7 @@ import {
   createPromotion,
   updatePromotion,
   deactivatePromotion,
+  activatePromotion,
 } from '@/features/catalog/application/promotions/commands'
 import {
   isPromotionNotFound,
@@ -182,6 +183,29 @@ describe('deactivatePromotion', () => {
     const promotionRepo = createFakePromotionRepository()
 
     const result = await deactivatePromotion(deps(promotionRepo, techniqueRepo, packageRepo))('nope')
+    expect(isErr(result)).toBe(true)
+  })
+})
+
+describe('activatePromotion (M2 de la auditoría: reactivar una promoción pausada por error)', () => {
+  it('reactiva una promoción pausada', async () => {
+    const techniqueRepo = createFakeTechniqueRepository()
+    const packageRepo = createFakePackageRepository()
+    const promotionRepo = createFakePromotionRepository([makePromotion({ id: 'a1', isActive: false })])
+
+    const result = await activatePromotion(deps(promotionRepo, techniqueRepo, packageRepo))('a1')
+    expect(isOk(result)).toBe(true)
+    if (!isOk(result)) return
+    expect(result.value.isActive).toBe(true)
+    expect((await promotionRepo.findById('a1'))?.isActive).toBe(true)
+  })
+
+  it('devuelve PromotionNotFound si no existe', async () => {
+    const techniqueRepo = createFakeTechniqueRepository()
+    const packageRepo = createFakePackageRepository()
+    const promotionRepo = createFakePromotionRepository()
+
+    const result = await activatePromotion(deps(promotionRepo, techniqueRepo, packageRepo))('nope')
     expect(isErr(result)).toBe(true)
   })
 })

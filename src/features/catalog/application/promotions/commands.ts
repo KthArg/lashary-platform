@@ -2,6 +2,7 @@ import { ok, err, isErr, type Result } from '@/shared/result'
 import {
   buildPromotion,
   markPromotionInactive,
+  markPromotionActive,
   promotionToView,
   type Promotion,
   type PromotionView,
@@ -102,4 +103,15 @@ export const deactivatePromotion =
     const deactivated = markPromotionInactive(existing)
     await deps.promotionRepo.save(deactivated)
     return ok(promotionToView(deactivated))
+  }
+
+export const activatePromotion =
+  (deps: PromotionCommandDeps) =>
+  async (id: string): Promise<Result<PromotionView, PromotionNotFound>> => {
+    const existing = await deps.promotionRepo.findById(id)
+    if (existing === null) return err(promotionNotFound(id))
+
+    const activated = markPromotionActive(existing)
+    await deps.promotionRepo.save(activated)
+    return ok(promotionToView(activated))
   }
