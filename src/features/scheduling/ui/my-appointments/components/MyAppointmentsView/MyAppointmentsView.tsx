@@ -4,7 +4,7 @@ import { MyAppointmentsContent } from '../MyAppointmentsContent'
 import { myAppointmentsViewStyles as STYLES } from './MyAppointmentsView.styles'
 import type { MyAppointmentsViewProps } from './MyAppointmentsView.types'
 
-export function MyAppointmentsView({ view }: MyAppointmentsViewProps) {
+export function MyAppointmentsView({ view, notices }: MyAppointmentsViewProps) {
   const copy = myAppointmentsMessages
   const canBook = view.status !== 'forbidden'
 
@@ -21,6 +21,7 @@ export function MyAppointmentsView({ view }: MyAppointmentsViewProps) {
           </Link>
         )}
       </header>
+      {notices}
       <MyAppointmentsContent view={view} />
     </div>
   )
