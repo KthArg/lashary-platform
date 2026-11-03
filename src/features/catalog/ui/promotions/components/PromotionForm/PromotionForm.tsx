@@ -1,11 +1,13 @@
 'use client'
 
 import { useActionState, useState } from 'react'
+import { studioDateTimeInputValue } from '@/shared/studio-time'
 import { promotionMessages } from '../../constants/promotion-strings'
 import {
   createPromotionAction,
   updatePromotionAction,
   deactivatePromotionAction,
+  activatePromotionAction,
 } from '../../actions/promotion-actions'
 import { initialPromotionActionState } from '../../types/promotion-action-state'
 import { promotionFormStyles as STYLES } from './PromotionForm.styles'
@@ -17,9 +19,7 @@ const admin = promotionMessages.admin
 
 function toInputValue(iso: string | undefined): string {
   if (!iso) return ''
-  const date = new Date(iso)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+  return studioDateTimeInputValue(new Date(iso))
 }
 
 export function PromotionForm({ promotion, techniques, packages }: PromotionFormProps) {
@@ -30,6 +30,10 @@ export function PromotionForm({ promotion, techniques, packages }: PromotionForm
   )
   const [deactivateState, deactivateAction, deactivating] = useActionState(
     deactivatePromotionAction,
+    initialPromotionActionState,
+  )
+  const [activateState, activateAction, activating] = useActionState(
+    activatePromotionAction,
     initialPromotionActionState,
   )
 
@@ -130,7 +134,7 @@ export function PromotionForm({ promotion, techniques, packages }: PromotionForm
             name="discountPercent"
             type="number"
             min={1}
-            max={100}
+            max={99}
             step={1}
             required
             defaultValue={promotion?.discountPercent}
@@ -169,12 +173,22 @@ export function PromotionForm({ promotion, techniques, packages }: PromotionForm
         </div>
       </form>
 
-      {editing && (
+      {editing && promotion.isActive && (
         <form action={deactivateAction} className={STYLES.deactivateForm}>
           <input type="hidden" name="id" value={promotion.id} />
           <PromotionFormFeedback {...deactivateState} />
           <button type="submit" className={STYLES.deactivateButton} disabled={deactivating}>
             {admin.rowActions.deactivate}
+          </button>
+        </form>
+      )}
+
+      {editing && !promotion.isActive && (
+        <form action={activateAction} className={STYLES.deactivateForm}>
+          <input type="hidden" name="id" value={promotion.id} />
+          <PromotionFormFeedback {...activateState} />
+          <button type="submit" className={STYLES.deactivateButton} disabled={activating}>
+            {admin.rowActions.activate}
           </button>
         </form>
       )}

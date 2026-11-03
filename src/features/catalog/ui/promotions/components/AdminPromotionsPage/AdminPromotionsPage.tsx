@@ -4,18 +4,19 @@ import { systemClock } from '@/shared/clock'
 import {
   listTechniques as listTechniquesUseCase,
   getTechnique as getTechniqueUseCase,
-} from '../../../../application/techniques/queries'
+} from '@/features/catalog/application/techniques/queries'
 import {
   listPackages as listPackagesUseCase,
   getPackage as getPackageUseCase,
-} from '../../../../application/packages/queries'
+} from '@/features/catalog/application/packages/queries'
 import {
   listPromotions as listPromotionsUseCase,
   getPromotion as getPromotionUseCase,
-} from '../../../../application/promotions/queries'
-import { promotionRepository } from '../../../../db/promotions/promotion-repository'
-import { techniqueRepository } from '../../../../db/techniques/technique-repository'
-import { packageRepository } from '../../../../db/packages/package-repository'
+} from '@/features/catalog/application/promotions/queries'
+import { MAX_PAGE_SIZE } from '@/features/catalog/application/pagination'
+import { promotionRepository } from '@/features/catalog/db/promotions/promotion-repository'
+import { techniqueRepository } from '@/features/catalog/db/techniques/technique-repository'
+import { packageRepository } from '@/features/catalog/db/packages/package-repository'
 import { promotionMessages } from '../../constants/promotion-strings'
 import { catalogRoutes } from '../../../routes'
 import { adminPromotionsPageStyles as STYLES } from './AdminPromotionsPage.styles'
@@ -38,8 +39,8 @@ export async function AdminPromotionsPage({ searchParams }: AdminPromotionsPageP
 
   const [page, activeTechniques, activePackages] = await Promise.all([
     listPromotionsUseCase(promoRepo)(now)({ page: Number(params.page) || 1 }),
-    listTechniquesUseCase(techRepo)({ activeOnly: true, pageSize: 100 }),
-    listPackagesUseCase(pkgRepo)({ activeOnly: true, pageSize: 100 }),
+    listTechniquesUseCase(techRepo)({ activeOnly: true, pageSize: MAX_PAGE_SIZE }),
+    listPackagesUseCase(pkgRepo)({ activeOnly: true, pageSize: MAX_PAGE_SIZE }),
   ])
 
   const editResult = params.edit ? await getPromotionUseCase(promoRepo)(params.edit) : null
@@ -49,9 +50,6 @@ export async function AdminPromotionsPage({ searchParams }: AdminPromotionsPageP
   const techniqueNameById = new Map(activeTechniques.items.map((technique) => [technique.id, technique.name]))
   const packageNameById = new Map(activePackages.items.map((pkg) => [pkg.id, pkg.name]))
 
-  // Si la promoción en edición apunta a una técnica/paquete que ya no está activo, se agrega
-  // igual al listado del formulario (con su nombre resuelto) para no perder la referencia al
-  // guardar — mismo problema que resolvió packages con sus técnicas desactivadas.
   const editingTechnique =
     editing?.target.type === 'technique' && !techniqueNameById.has(editing.target.techniqueId)
       ? await getTechniqueUseCase(techRepo)(editing.target.techniqueId)
@@ -86,7 +84,12 @@ export async function AdminPromotionsPage({ searchParams }: AdminPromotionsPageP
 
       {showForm && (
         <div className={STYLES.formWrapper}>
-          <PromotionForm promotion={editing} techniques={formTechniques} packages={formPackages} />
+          <PromotionForm
+            key={editing?.id ?? 'new'}
+            promotion={editing}
+            techniques={formTechniques}
+            packages={formPackages}
+          />
           <Link href={catalogRoutes.promotionsAdmin} className={STYLES.cancelLink}>
             {promotionMessages.form.cancel}
           </Link>
