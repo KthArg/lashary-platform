@@ -267,6 +267,16 @@ Hecho hasta ahora:
   a la otra). Pruebas: `domain/__tests__/client-notice-message.test.ts`,
   `db/__tests__/client-notice-repository.test.ts`, `application/__tests__/client-notices.test.ts` y
   `ui/client-notices/__tests__/ClientNotices.test.tsx`.
+- Canales por tipo de mensaje (ítem 13): `ChannelSendInput` lleva `messageId` (antes `reminderId`) y
+  `purpose` (`reminder` o `reschedule_outcome`). WhatsApp elige la plantilla del tipo:
+  `META_WHATSAPP_TEMPLATE_NAME` para el recordatorio y `META_WHATSAPP_RESCHEDULE_OUTCOME_TEMPLATE_NAME` para
+  el aviso de cambio, con las 3 variables de `buildClientNoticeTemplateVariables` (servicio, horario pedido
+  y horario que conserva). Sin ninguna plantilla manda texto libre, como antes; con la del recordatorio pero
+  sin la del aviso, el aviso no sale por WhatsApp (`channelNotConfigured`: Meta rechazaría el texto libre
+  fuera de una sesión abierta) y pasa al correo. El correo toma el asunto del tipo y la clave de
+  idempotencia `notifications-<tipo>-<id>` (la del recordatorio no cambia). Pruebas:
+  `channels/__tests__/meta-whatsapp-channel.test.ts`, `resend-email-channel.test.ts` y
+  `domain/__tests__/client-notice-message.test.ts`.
 
 ## Qué no hace todavía
 

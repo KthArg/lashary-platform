@@ -3,9 +3,10 @@ import type { Clock } from '@/shared/clock'
 import { hasExhaustedRetries, type ReminderSnapshot } from '../domain/reminder'
 import { buildReminderMessage, buildReminderTemplateVariables } from '../domain/reminder-message'
 import { isChannelNotConfigured } from '../domain/errors'
-import type { ClientContactPort, NotificationChannel, ReminderRepository, RepositoryFailure } from './ports'
+import type { ClientContactPort, MessagePurpose, NotificationChannel, ReminderRepository, RepositoryFailure } from './ports'
 
 const MAX_LAST_ERROR_LENGTH = 500
+const REMINDER_PURPOSE: MessagePurpose = 'reminder'
 
 export type SendDueRemindersDeps = {
   claimDuePending: ReminderRepository['claimDuePending']
@@ -62,14 +63,14 @@ const sendOne = async (deps: SendDueRemindersDeps, reminder: ReminderSnapshot, n
   const message = buildReminderMessage(reminderMessageInput)
   const templateVariables = buildReminderTemplateVariables(reminderMessageInput)
 
-  const primary = await deps.primaryChannel.send({ reminderId: reminder.id, contact: contact.value, message, templateVariables })
+  const primary = await deps.primaryChannel.send({ messageId: reminder.id, purpose: REMINDER_PURPOSE, contact: contact.value, message, templateVariables })
   if (isOk(primary)) {
     const marked = await deps.markSent(reminder.id, deps.primaryChannel.kind, now)
     if (isErr(marked)) { console.error(`[notifications] se mandó el recordatorio ${reminder.id} por ${deps.primaryChannel.kind} pero no se pudo marcar sent: ${marked.error}`); return 'errored' }
     return 'sent'
   }
 
-  const backup = await deps.backupChannel.send({ reminderId: reminder.id, contact: contact.value, message, templateVariables })
+  const backup = await deps.backupChannel.send({ messageId: reminder.id, purpose: REMINDER_PURPOSE, contact: contact.value, message, templateVariables })
   if (isOk(backup)) {
     const marked = await deps.markSent(reminder.id, deps.backupChannel.kind, now)
     if (isErr(marked)) { console.error(`[notifications] se mandó el recordatorio ${reminder.id} por ${deps.backupChannel.kind} pero no se pudo marcar sent: ${marked.error}`); return 'errored' }

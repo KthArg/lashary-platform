@@ -1,12 +1,13 @@
 import { ok, err } from '@/shared/result'
 import { channelNotConfigured, channelSendFailed } from '../domain/errors'
-import type { NotificationChannel } from '../application/ports'
+import type { MessagePurpose, NotificationChannel } from '../application/ports'
 import { CHANNEL_SEND_TIMEOUT_MS } from './send-timeout'
 
 export type MetaWhatsAppConfig = {
   accessToken: string
   phoneNumberId: string
   templateName: string | null
+  rescheduleOutcomeTemplateName: string | null
   templateLanguage: string
   graphApiVersion: string
 }
@@ -22,6 +23,7 @@ export function readMetaWhatsAppConfigFromEnv(env: Record<string, string | undef
     accessToken,
     phoneNumberId,
     templateName: env.META_WHATSAPP_TEMPLATE_NAME ?? null,
+    rescheduleOutcomeTemplateName: env.META_WHATSAPP_RESCHEDULE_OUTCOME_TEMPLATE_NAME ?? null,
     templateLanguage: env.META_WHATSAPP_TEMPLATE_LANGUAGE ?? DEFAULT_TEMPLATE_LANGUAGE,
     graphApiVersion: env.META_WHATSAPP_GRAPH_API_VERSION ?? DEFAULT_GRAPH_API_VERSION,
   }
@@ -31,13 +33,16 @@ function toMetaPhoneNumber(phone: string): string {
   return phone.replace(/\D/g, '')
 }
 
-function buildTemplateBody(config: MetaWhatsAppConfig, recipientPhone: string, templateVariables: string[]) {
+const templateFor = (config: MetaWhatsAppConfig, purpose: MessagePurpose): string | null =>
+  purpose === 'reminder' ? config.templateName : config.rescheduleOutcomeTemplateName
+
+function buildTemplateBody(config: MetaWhatsAppConfig, templateName: string, recipientPhone: string, templateVariables: string[]) {
   return {
     messaging_product: 'whatsapp',
     to: toMetaPhoneNumber(recipientPhone),
     type: 'template',
     template: {
-      name: config.templateName,
+      name: templateName,
       language: { code: config.templateLanguage },
       components: [
         {
@@ -70,12 +75,14 @@ async function readErrorMessage(response: Response): Promise<string> {
 export function metaWhatsAppChannel(config: MetaWhatsAppConfig | null): NotificationChannel {
   return {
     kind: 'whatsapp',
-    async send({ contact, message, templateVariables }) {
+    async send({ purpose, contact, message, templateVariables }) {
       if (config === null) return err(channelNotConfigured('whatsapp'))
+      const templateName = templateFor(config, purpose)
+      if (templateName === null && config.templateName !== null) return err(channelNotConfigured('whatsapp'))
 
       const url = `https://graph.facebook.com/${config.graphApiVersion}/${config.phoneNumberId}/messages`
-      const requestBody = config.templateName
-        ? buildTemplateBody(config, contact.phone, templateVariables)
+      const requestBody = templateName
+        ? buildTemplateBody(config, templateName, contact.phone, templateVariables)
         : buildFreeTextBody(contact.phone, message)
 
       try {

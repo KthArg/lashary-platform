@@ -16,3 +16,7 @@ export function buildClientNoticeMessage(notice: Pick<ClientNotice, 'kind' | 'se
     ? CLIENT_NOTICE_MESSAGE_TEXTS.rejected(notice.serviceName, requested, kept)
     : CLIENT_NOTICE_MESSAGE_TEXTS.expired(notice.serviceName, requested, kept)
 }
+
+export function buildClientNoticeTemplateVariables(notice: Pick<ClientNotice, 'serviceName' | 'requestedStartsAt' | 'keptStartsAt'>): string[] {
+  return [notice.serviceName, formatStudioDateTime(notice.requestedStartsAt), formatStudioDateTime(notice.keptStartsAt)]
+}

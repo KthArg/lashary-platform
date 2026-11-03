@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { fixedDate } from '@/shared/testing/fixed-clock'
 import { formatStudioDateTime } from '@/shared/studio-time'
-import { buildClientNoticeMessage, CLIENT_NOTICE_MESSAGE_TEXTS } from '../client-notice-message'
+import { buildClientNoticeMessage, buildClientNoticeTemplateVariables, CLIENT_NOTICE_MESSAGE_TEXTS } from '../client-notice-message'
 
 const notice = {
   kind: 'reschedule_rejected' as const,
@@ -27,5 +27,9 @@ describe('buildClientNoticeMessage', () => {
     for (const kind of ['reschedule_rejected', 'reschedule_expired'] as const) {
       expect(buildClientNoticeMessage({ ...notice, kind })).not.toContain('..')
     }
+  })
+
+  it('la plantilla de WhatsApp recibe el servicio, el horario pedido y el que conserva, en ese orden', () => {
+    expect(buildClientNoticeTemplateVariables(notice)).toEqual(['Lifting de pestañas', requested, kept])
   })
 })
