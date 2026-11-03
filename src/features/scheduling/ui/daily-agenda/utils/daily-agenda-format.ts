@@ -131,7 +131,7 @@ function serviceChoicesOf(
   services: readonly ServicePrices[],
   nowMs: number,
 ): ServiceChoiceView[] {
-  if (appointment.clientId === null || appointment.servicePrice === null) return []
+  if (appointment.isPackage || appointment.clientId === null || appointment.servicePrice === null) return []
   const closable = closableOf(appointment)
   return services
     .filter((service) => service.id !== appointment.techniqueId)

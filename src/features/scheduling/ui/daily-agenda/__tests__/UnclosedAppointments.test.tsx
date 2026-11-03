@@ -45,6 +45,7 @@ const unclosed = (overrides: Partial<UnclosedAppointment>): UnclosedAppointment 
   isFirstTime: true,
   techniqueName: 'Clásicas',
   servicePrice: SERVICE_PRICE,
+  isPackage: false,
   depositRegistered: DEPOSIT,
   ...overrides,
 })

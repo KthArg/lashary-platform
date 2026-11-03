@@ -18,6 +18,7 @@ const unclosedAppointment = (position: number): UnclosedAppointment => ({
   isFirstTime: true,
   techniqueName: 'Clásicas',
   servicePrice: 15000,
+  isPackage: false,
   depositRegistered: 5000,
 })
 
