@@ -24,7 +24,7 @@ const renderView = (view: BookingConfirmViewModel) => render(<BookingConfirmView
 
 describe('BookingConfirmView — US-AGE-05', () => {
   it('muestra el resumen y la advertencia del anticipo antes de confirmar (criterio 7)', () => {
-    renderView({ status: 'ready', fields, summary, backHref: BACK_HREF })
+    renderView({ status: 'ready', fields, expectedPrice: 35000, summary, backHref: BACK_HREF })
 
     expect(screen.getByText('Clásicas — primera vez')).toBeTruthy()
     expect(screen.getByText('₡10.000')).toBeTruthy()
@@ -36,6 +36,7 @@ describe('BookingConfirmView — US-AGE-05', () => {
     renderView({
       status: 'ready',
       fields,
+      expectedPrice: 35000,
       summary: { ...summary, deposit: bookingConfirmMessages.noDeposit, depositNotice: null },
       backHref: BACK_HREF,
     })
@@ -48,6 +49,7 @@ describe('BookingConfirmView — US-AGE-05', () => {
     renderView({
       status: 'ready',
       fields,
+      expectedPrice: 28000,
       summary: { ...summary, price: '₡28.000', promotionNotice: bookingConfirmMessages.promotionNotice(20) },
       backHref: BACK_HREF,
     })

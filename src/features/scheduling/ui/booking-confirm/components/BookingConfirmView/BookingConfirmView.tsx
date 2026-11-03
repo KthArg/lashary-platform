@@ -29,7 +29,12 @@ function BookingBody({ view }: BookingConfirmViewProps) {
     case 'ready':
       return (
         <section className={STYLES.card}>
-          <BookingConfirmForm fields={view.fields} summary={view.summary} backHref={view.backHref} />
+          <BookingConfirmForm
+            fields={view.fields}
+            expectedPrice={view.expectedPrice}
+            summary={view.summary}
+            backHref={view.backHref}
+          />
         </section>
       )
   }

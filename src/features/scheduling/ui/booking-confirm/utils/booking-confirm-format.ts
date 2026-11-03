@@ -37,6 +37,7 @@ export function toBookingConfirmView(data: BookingConfirmData): BookingConfirmVi
   return {
     status: 'ready',
     fields: params,
+    expectedPrice: quote.servicePrice,
     backHref: data.backHref,
     summary: toBookingSummary({
       serviceName: data.serviceName,

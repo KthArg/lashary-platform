@@ -3,6 +3,7 @@ import { err, ok } from '@/shared/result'
 import {
   clientNotRegistered,
   packageNotAvailable,
+  priceChanged,
   slotNotOffered,
   spaceNotAvailable,
   storageFailed,
@@ -61,6 +62,8 @@ function toBookingError(message: string, input: BookPackageAppointmentInput): Bo
       return spaceNotAvailable(input.resourceId)
     case PACKAGE_BOOKING_ERROR_MESSAGES.tooManyPending:
       return tooManyPendingAppointments()
+    case PACKAGE_BOOKING_ERROR_MESSAGES.priceChanged:
+      return priceChanged()
     default:
       return storageFailed(message)
   }
@@ -76,6 +79,7 @@ export function createSupabasePackageBookingRepository(
         p_resource_id: input.resourceId,
         p_starts_at: toIso(input.startsAtMs),
         p_package_id: input.packageId,
+        p_expected_price: input.expectedPrice ?? null,
       })
 
       if (error) return err(toBookingError(error.message, input))

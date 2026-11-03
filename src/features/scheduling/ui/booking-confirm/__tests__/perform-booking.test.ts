@@ -5,6 +5,7 @@ import {
   clientHasActiveDelinquency,
   clientNotRegistered,
   packageNotAvailable,
+  priceChanged,
   slotNotOffered,
   spaceNotAvailable,
   storageFailed,
@@ -126,9 +127,19 @@ describe('performBooking — US-AGE-05', () => {
     })
   })
 
+  it('manda el precio que vio la clienta como esperado (C4)', async () => {
+    const { deps, booked } = createDeps()
+    await performBooking({ ...fields, precioEsperado: '35000' }, deps)
+
+    expect(booked).toEqual([
+      { resourceId: RESOURCE_ID, startsAtMs: STARTS_AT_MS, techniqueId: 't1', isFirstTime: true, expectedPrice: 35000 },
+    ])
+  })
+
   it.each([
     ['espacio tomado', spaceNotAvailable(RESOURCE_ID), 'ocupado'],
     ['horario que no se ofrece', slotNotOffered(RESOURCE_ID), 'no-ofrecido'],
+    ['el precio cambió desde la cotización', priceChanged(), 'precio-cambio'],
   ])('%s: vuelve al calendario con el mismo servicio y día, y un aviso (criterio 4)', async (_name, error, notice) => {
     const { deps } = createDeps({ bookTechnique: async () => err(error) })
     const outcome = await performBooking(fields, deps)

@@ -2,7 +2,7 @@ export const CLIENT_CALENDAR_PATH = '/portal/citas/calendario'
 
 export const CALENDAR_PARAMS = { service: 'servicio', date: 'fecha', notice: 'aviso' } as const
 
-export const CALENDAR_NOTICES = { taken: 'ocupado', notOffered: 'no-ofrecido' } as const
+export const CALENDAR_NOTICES = { taken: 'ocupado', notOffered: 'no-ofrecido', priceChanged: 'precio-cambio' } as const
 
 export type CalendarNotice = (typeof CALENDAR_NOTICES)[keyof typeof CALENDAR_NOTICES]
 
@@ -34,6 +34,7 @@ export const clientCalendarMessages = {
   notices: {
     [CALENDAR_NOTICES.taken]: 'Ese espacio ya fue tomado. Elegí otro horario: conservamos tu servicio y el día.',
     [CALENDAR_NOTICES.notOffered]: 'Ese horario ya no está disponible. Elegí otro.',
+    [CALENDAR_NOTICES.priceChanged]: 'El precio cambió desde que lo viste. Confirmá de nuevo con el precio actual.',
   },
   noSlots: 'No hay espacios disponibles este día. Probá con otro día.',
   invalid: 'No pudimos calcular los espacios de ese día. Elegí otro día o servicio.',
