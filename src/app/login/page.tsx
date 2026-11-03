@@ -1,4 +1,5 @@
-import { getAuthSession, GoogleSignInButton, PhoneRegistrationModal, signOutAction, AUTH_BUTTON_TEXTS, AUTH_LABELS } from '@/features/auth'
+import { getAuthSession, GoogleSignInButton, PhoneRegistrationModal, signOutAction, ADMIN_PORTAL_ROUTES, AUTH_BUTTON_TEXTS, AUTH_LABELS } from '@/features/auth'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { loginStyles as STYLES } from './login.styles'
 import type { LoginPageProps } from './login.types'
@@ -40,6 +41,7 @@ export default async function LoginPage(_props: LoginPageProps) {
             <p className={STYLES.noticeText}>{AUTH_LABELS.phoneNotice}</p>
             <div className={STYLES.footer}>
               <a href="#ayuda" className={STYLES.helpLink}>{AUTH_LABELS.helpQuestion}</a>
+              <Link href={ADMIN_PORTAL_ROUTES.login} className={STYLES.staffAccessLink}>{AUTH_LABELS.staffAccessLink}</Link>
             </div>
           </div>
         )}
