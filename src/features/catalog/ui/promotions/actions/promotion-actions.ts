@@ -1,6 +1,7 @@
 'use server'
 
 import { randomUUID } from 'node:crypto'
+import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { isErr } from '@/shared/result'
 import { isStaff } from '../../require-staff'
@@ -8,6 +9,7 @@ import {
   createPromotion,
   updatePromotion,
   deactivatePromotion,
+  activatePromotion,
   type PromotionCommandDeps,
 } from '../../../application/promotions/commands'
 import { promotionRepository } from '../../../db/promotions/promotion-repository'
@@ -29,6 +31,13 @@ async function deps(): Promise<PromotionCommandDeps> {
 
 function forbidden(): PromotionActionState {
   return { status: 'forbidden', message: promotionMessages.form.accessDenied }
+}
+
+const idSchema = z.string().uuid()
+
+function parseId(formData: FormData): string | null {
+  const parsed = idSchema.safeParse(formData.get('id'))
+  return parsed.success ? parsed.data : null
 }
 
 function parseForm(formData: FormData) {
@@ -65,7 +74,9 @@ export async function updatePromotionAction(
 ): Promise<PromotionActionState> {
   if (!(await isStaff())) return forbidden()
 
-  const id = String(formData.get('id') ?? '')
+  const id = parseId(formData)
+  if (id === null) return { status: 'invalid', problems: [promotionMessages.form.invalidId] }
+
   const parsed = parseForm(formData)
   if (!parsed.success) {
     return { status: 'invalid', problems: parsed.error.issues.map((issue) => issue.message) }
@@ -87,7 +98,8 @@ export async function deactivatePromotionAction(
 ): Promise<PromotionActionState> {
   if (!(await isStaff())) return forbidden()
 
-  const id = String(formData.get('id') ?? '')
+  const id = parseId(formData)
+  if (id === null) return { status: 'invalid', problems: [promotionMessages.form.invalidId] }
 
   const result = await deactivatePromotion(await deps())(id)
   if (isErr(result)) {
@@ -95,4 +107,21 @@ export async function deactivatePromotionAction(
   }
   revalidatePath(catalogRoutes.promotionsAdmin)
   return { status: 'ok', message: promotionMessages.form.deactivated }
+}
+
+export async function activatePromotionAction(
+  _prev: PromotionActionState,
+  formData: FormData,
+): Promise<PromotionActionState> {
+  if (!(await isStaff())) return forbidden()
+
+  const id = parseId(formData)
+  if (id === null) return { status: 'invalid', problems: [promotionMessages.form.invalidId] }
+
+  const result = await activatePromotion(await deps())(id)
+  if (isErr(result)) {
+    return { status: 'invalid', problems: [result.error.message] }
+  }
+  revalidatePath(catalogRoutes.promotionsAdmin)
+  return { status: 'ok', message: promotionMessages.form.activated }
 }

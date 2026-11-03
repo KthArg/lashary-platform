@@ -23,7 +23,7 @@ export const promotionMessages = {
       page: 'Página',
       of: 'de',
     },
-    rowActions: { edit: 'Editar', deactivate: 'Pausar' },
+    rowActions: { edit: 'Editar', deactivate: 'Pausar', activate: 'Reactivar' },
     discountSuffix: '%',
     windowSeparator: '–',
     empty: {
@@ -59,10 +59,12 @@ export const promotionMessages = {
     savedCreate: 'Promoción creada.',
     savedEdit: 'Cambios guardados.',
     deactivated: 'Promoción pausada.',
+    activated: 'Promoción reactivada.',
+    invalidId: 'El identificador de la promoción no es válido.',
     validation: {
       targetType: 'Elegí si aplica a una técnica o a un paquete',
       targetId: 'Elegí el servicio aplicable',
-      discountPercent: 'El descuento debe ser un entero entre 1 y 100',
+      discountPercent: 'El descuento debe ser un entero entre 1 y 99',
       startsAt: 'La fecha de inicio es obligatoria',
       endsAt: 'La fecha de fin es obligatoria',
     },

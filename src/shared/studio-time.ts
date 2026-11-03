@@ -48,6 +48,23 @@ export function studioLocalToUtc(date: string, minuteOfDay: number): Date {
   return new Date(asIfUtc - (seenAsUtc - asIfUtc))
 }
 
+const DATETIME_LOCAL_INPUT = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})$/
+
+export function parseStudioDateTimeInput(value: string): Date | null {
+  const match = DATETIME_LOCAL_INPUT.exec(value)
+  if (!match) return null
+  const [, date, hour, minute] = match
+  if (!isCalendarDate(date)) return null
+  const minuteOfDay = Number(hour) * 60 + Number(minute)
+  if (minuteOfDay < 0 || minuteOfDay >= 24 * 60) return null
+  return studioLocalToUtc(date, minuteOfDay)
+}
+
+export function studioDateTimeInputValue(instant: Date): string {
+  const { year, month, day, hour, minute } = zonedParts(instant)
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
+}
+
 const studioDateTimeFormatter = new Intl.DateTimeFormat('es-CR', {
   timeZone: STUDIO_TIME_ZONE,
   weekday: 'long',

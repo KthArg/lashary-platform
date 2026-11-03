@@ -32,9 +32,12 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
 
 import {
   createPromotionAction,
+  updatePromotionAction,
   deactivatePromotionAction,
+  activatePromotionAction,
 } from '@/features/catalog/ui/promotions/actions/promotion-actions'
 import { initialPromotionActionState } from '@/features/catalog/ui/promotions/types/promotion-action-state'
+import { promotionMessages } from '@/features/catalog/ui/promotions/constants/promotion-strings'
 
 function form(fields: Record<string, string>): FormData {
   const formData = new FormData()
@@ -42,9 +45,11 @@ function form(fields: Record<string, string>): FormData {
   return formData
 }
 
+const TECHNIQUE_ID = '00000000-0000-4000-8000-000000000001'
+
 const validFields = {
   targetType: 'technique',
-  targetId: 't1',
+  targetId: TECHNIQUE_ID,
   discountPercent: '20',
   startsAt: '2026-01-01T10:00',
   endsAt: '2026-01-31T10:00',
@@ -55,7 +60,7 @@ describe('acciones administrativas de promociones', () => {
     vi.clearAllMocks()
     mocks.isStaff.mockResolvedValue(true)
     mocks.promotionSave.mockResolvedValue(undefined)
-    mocks.techniqueFindById.mockResolvedValue(makeTechnique({ id: 't1', isActive: true }))
+    mocks.techniqueFindById.mockResolvedValue(makeTechnique({ id: TECHNIQUE_ID, isActive: true }))
   })
 
   it('rechaza una llamada directa sin sesión staff antes de tocar el repositorio', async () => {
@@ -102,5 +107,27 @@ describe('acciones administrativas de promociones', () => {
 
     expect(state.status).toBe('forbidden')
     expect(mocks.promotionFindById).not.toHaveBeenCalled()
+  })
+
+  it('rechaza reactivar mediante una llamada directa sin sesión staff', async () => {
+    mocks.isStaff.mockResolvedValueOnce(false)
+
+    const state = await activatePromotionAction(initialPromotionActionState, form({ id: 'algo' }))
+
+    expect(state.status).toBe('forbidden')
+    expect(mocks.promotionFindById).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    ['actualizar', () => updatePromotionAction(initialPromotionActionState, form({ ...validFields, id: 'no-es-uuid' }))],
+    ['pausar', () => deactivatePromotionAction(initialPromotionActionState, form({ id: 'no-es-uuid' }))],
+    ['reactivar', () => activatePromotionAction(initialPromotionActionState, form({ id: 'no-es-uuid' }))],
+  ])('%s con un id sin forma de uuid avisa sin tocar el repositorio (auditoría B4, 2026-11-02)', async (_name, run) => {
+    const state = await run()
+
+    expect(state.status).toBe('invalid')
+    expect(state.problems).toEqual([promotionMessages.form.invalidId])
+    expect(mocks.promotionFindById).not.toHaveBeenCalled()
+    expect(mocks.promotionSave).not.toHaveBeenCalled()
   })
 })
