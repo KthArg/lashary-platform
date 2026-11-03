@@ -57,6 +57,7 @@ export function createSupabasePromotionRepository(db: SupabaseClient): Promotion
         .from(TABLE)
         .select(COLUMNS, { count: 'exact' })
         .order('starts_at', { ascending: false })
+        .order('id', { ascending: true })
         .range(params.offset, params.offset + params.limit - 1)
       if (error) throw new Error(`${TABLE}.list: ${error.message}`)
       return {
@@ -74,6 +75,7 @@ export function createSupabasePromotionRepository(db: SupabaseClient): Promotion
         .lte('starts_at', nowIso)
         .gte('ends_at', nowIso)
         .order('ends_at', { ascending: true })
+        .order('id', { ascending: true })
         .range(params.offset, params.offset + params.limit - 1)
       if (error) throw new Error(`${TABLE}.listActive: ${error.message}`)
       return {
