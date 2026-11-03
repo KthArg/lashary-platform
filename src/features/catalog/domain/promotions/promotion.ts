@@ -50,9 +50,9 @@ export function buildPromotion(input: PromotionInput): Result<Promotion, Promoti
   if (
     !Number.isInteger(input.discountPercent) ||
     input.discountPercent <= 0 ||
-    input.discountPercent > 100
+    input.discountPercent > 99
   ) {
-    problems.push('el descuento debe ser un entero entre 1 y 100')
+    problems.push('el descuento debe ser un entero entre 1 y 99')
   }
 
   if (!(input.endsAt.getTime() > input.startsAt.getTime())) {

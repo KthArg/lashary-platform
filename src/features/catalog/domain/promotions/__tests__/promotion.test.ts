@@ -58,15 +58,15 @@ describe('buildPromotion — invariantes de dominio (DOM-007, criterio 1)', () =
     expect(result.error.problems.join(' ')).toMatch(/paquete aplicable/i)
   })
 
-  it('rechaza descuento no positivo, mayor a 100 o no entero', () => {
+  it('rechaza descuento no positivo, mayor a 99 o no entero', () => {
     expect(isErr(buildPromotion({ ...validTechniqueInput(), discountPercent: 0 }))).toBe(true)
     expect(isErr(buildPromotion({ ...validTechniqueInput(), discountPercent: -5 }))).toBe(true)
-    expect(isErr(buildPromotion({ ...validTechniqueInput(), discountPercent: 101 }))).toBe(true)
+    expect(isErr(buildPromotion({ ...validTechniqueInput(), discountPercent: 100 }))).toBe(true)
     expect(isErr(buildPromotion({ ...validTechniqueInput(), discountPercent: 20.5 }))).toBe(true)
   })
 
-  it('acepta el borde superior del descuento (100)', () => {
-    expect(isOk(buildPromotion({ ...validTechniqueInput(), discountPercent: 100 }))).toBe(true)
+  it('acepta el borde superior del descuento (99) pero no un 100% (A2/C2: nunca se regala el servicio completo)', () => {
+    expect(isOk(buildPromotion({ ...validTechniqueInput(), discountPercent: 99 }))).toBe(true)
   })
 
   it('rechaza una vigencia donde endsAt no es posterior a startsAt', () => {
