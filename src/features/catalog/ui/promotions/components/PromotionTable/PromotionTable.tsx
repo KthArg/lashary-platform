@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import type { PromotionListItem } from '../../../../application/promotions/queries'
+import type { PromotionListItem } from '@/features/catalog/application/promotions/queries'
 import { promotionMessages } from '../../constants/promotion-strings'
 import { formatDateTime } from '../../../format'
 import { catalogRoutes } from '../../../routes'

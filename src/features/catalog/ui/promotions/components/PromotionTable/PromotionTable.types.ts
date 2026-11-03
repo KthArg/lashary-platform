@@ -1,4 +1,4 @@
-import type { PromotionListItem } from '../../../../application/promotions/queries'
+import type { PromotionListItem } from '@/features/catalog/application/promotions/queries'
 
 export interface PromotionTableProps {
   items: PromotionListItem[]
