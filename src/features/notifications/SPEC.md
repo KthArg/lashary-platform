@@ -287,7 +287,11 @@ Hecho hasta ahora:
   La selección va en un CTE `MATERIALIZED`: con `WHERE id IN (subconsulta)` Postgres puede volver a
   evaluarla mientras actualiza y, como un reclamo vencido sigue cumpliendo la condición después de
   reclamarlo, tomaba más avisos que la tanda (lo detectó la prueba de la tanda).
-  Prueba: pgTAP `notifications_claim_client_notices.test.sql`.
+  `db/client-notice-delivery-repository.ts` llama a esa función (tanda calculada como la de los
+  recordatorios, con el tiempo máximo de los dos canales) y marca cada aviso enviado, para reintentar o
+  agotado, solo si sigue `claimed`; `CLIENT_NOTICE_MAX_ATTEMPTS` es 5, como los recordatorios. Pruebas: pgTAP
+  `notifications_claim_client_notices.test.sql`, `db/__tests__/client-notice-delivery-repository.test.ts` y
+  `client-notice-delivery-repository.integration.test.ts` (contra Supabase local, con una sesión de staff).
 
 ## Qué no hace todavía
 

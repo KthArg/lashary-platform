@@ -1,7 +1,7 @@
 import type { Result } from '@/shared/result'
 import type { ReminderChannelKind, ReminderSnapshot } from '../domain/reminder'
 import type { InboxNotice } from '../domain/inbox-notice'
-import type { ClientNotice } from '../domain/client-notice'
+import type { ClientNotice, ClientNoticeDelivery } from '../domain/client-notice'
 import type { ChannelNotConfigured, ChannelSendFailed, ClientNoticesStorageFailed, InboxStorageFailed } from '../domain/errors'
 
 export type RepositoryFailure = 'repository-failed'
@@ -72,6 +72,14 @@ export interface InboxRepository {
 
 export interface ClientNoticesRepository {
   listKeptFrom(now: Date, limit: number): Promise<Result<ClientNotice[], ClientNoticesStorageFailed>>
+}
+
+export interface ClientNoticeDeliveryRepository {
+  claimDue(now: Date): Promise<Result<ClientNoticeDelivery[], RepositoryFailure>>
+  releaseToPending(id: string): Promise<Result<void, RepositoryFailure>>
+  markSent(id: string, channel: ReminderChannelKind, sentAt: Date): Promise<Result<void, RepositoryFailure>>
+  markRetry(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
+  markExhausted(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
 }
 
 export type MessagePurpose = 'reminder' | 'reschedule_outcome'
