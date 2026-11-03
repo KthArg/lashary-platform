@@ -116,7 +116,7 @@ export function DailyAgendaView({
         <h1 className={STYLES.title}>{COPY.title}</h1>
         <p className={STYLES.subtitle}>{COPY.subtitle}</p>
       </header>
-      {unclosed ? <UnclosedAppointments section={unclosed} /> : null}
+      <UnclosedAppointments section={unclosed} />
       <DayNav nav={view.nav} />
       <AgendaBody view={view} />
     </div>
