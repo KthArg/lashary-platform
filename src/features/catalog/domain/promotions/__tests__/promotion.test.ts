@@ -3,6 +3,7 @@ import { isErr, isOk } from '@/shared/result'
 import {
   buildPromotion,
   markPromotionInactive,
+  markPromotionActive,
   promotionToView,
   isPromotionCurrentlyActive,
 } from '@/features/catalog/domain/promotions/promotion'
@@ -123,6 +124,16 @@ describe('Promotion — comportamiento', () => {
     expect(inactive.isActive).toBe(false)
     expect(original.isActive).toBe(true)
     expect(inactive.id).toBe(original.id)
+  })
+
+  it('markPromotionActive devuelve una copia activa sin mutar la original (M2: reactivar una pausada)', () => {
+    const result = buildPromotion({ ...validTechniqueInput(), isActive: false })
+    if (!isOk(result)) throw new Error('esperaba ok')
+    const paused = result.value
+    const reactivated = markPromotionActive(paused)
+    expect(reactivated.isActive).toBe(true)
+    expect(paused.isActive).toBe(false)
+    expect(reactivated.id).toBe(paused.id)
   })
 
   it('promotionToView expone fechas ISO y el descuento como número', () => {

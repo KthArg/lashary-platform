@@ -78,6 +78,10 @@ export function markPromotionInactive(promotion: Promotion): Promotion {
   return { ...promotion, isActive: false }
 }
 
+export function markPromotionActive(promotion: Promotion): Promotion {
+  return { ...promotion, isActive: true }
+}
+
 export function promotionToView(promotion: Promotion): PromotionView {
   return {
     id: promotion.id,
