@@ -23,16 +23,27 @@
 -- scheduling_book_package_appointment quedó al día con dos migraciones posteriores a su versión
 -- original (20261030000005 y 20261101000001): la comprobación de espacio ocupado vive ahora en
 -- scheduling_slot_is_taken(), no inline — este CREATE OR REPLACE la llama en vez de duplicarla,
--- para no revertir ese refactor (el otro hallazgo de esta pieza, el mismo error pero ya mergeado a
--- main sobre scheduling_book_appointment, se corrige aparte en
--- 20261101000003_scheduling_book_appointment_promotion_fix.sql — no es parte de esta migración
--- para no mezclar el bug de otra historia con esta extensión, INT-002).
+-- para no revertir ese refactor. El equivalente de técnica suelta tuvo el mismo problema con
+-- scheduling_book_appointment, resuelto en la pieza 10 renombrando su propia migración para que
+-- quede después de la de main que lo pisaba (auditoría A3) — no hace falta repetirlo acá porque
+-- esta migración, al ser nueva (no una edición de una migración ya mergeada), ya nace con fecha
+-- posterior.
 -- Postgres no deja cambiar las columnas de salida de una función RETURNS TABLE con CREATE OR
 -- REPLACE ("Row type defined by OUT parameters is different"): catalog_package_booking_terms y
 -- scheduling_quote_package_booking necesitan DROP FUNCTION antes de CREATE FUNCTION, y sus
 -- permisos (REVOKE de anon/PUBLIC, GRANT a authenticated) hay que volver a otorgarlos porque el
 -- DROP + CREATE es un objeto nuevo (OID distinto). scheduling_book_package_appointment no, porque
 -- devuelve public.scheduling_appointments por referencia, no columnas inline.
+-- C3 (decisión del PO, 2026-11-02 — el anticipo nunca supera el precio, mismo criterio que la
+-- técnica suelta en la pieza 10): catalog_package_booking_terms devuelve deposit =
+-- LEAST(deposit del paquete, precio ya descontado).
+-- C4 (decisión del PO, 2026-11-02 — avisar o bloquear, nunca cobrar el precio nuevo en silencio,
+-- mismo criterio que la pieza 10): scheduling_book_package_appointment recibe un cuarto parámetro
+-- opcional p_expected_price (DEFAULT NULL). Si no coincide con el precio que
+-- catalog_package_booking_terms calcula en ese instante, lanza scheduling_price_changed antes de
+-- tomar ningún lock. CREATE OR REPLACE con una lista de parámetros distinta crea un overload en
+-- vez de remplazar la función (mismo riesgo de ambigüedad 42725 que en la pieza 10): se agrega un
+-- DROP FUNCTION IF EXISTS de la firma de 3 argumentos antes de crear la de 4.
 -- Cumplimiento: ARCH-005, DOM-001, DOM-002, SEC-001, PERF-005, INT-008 (una migración,
 -- forward-only).
 
@@ -63,7 +74,13 @@ AS $$
               THEN p.price
               ELSE round(p.price * (100 - promo.discount_percent) / 100.0)::bigint
          END,
-         p.deposit,
+         LEAST(
+           p.deposit,
+           CASE WHEN promo.discount_percent IS NULL
+                THEN p.price
+                ELSE round(p.price * (100 - promo.discount_percent) / 100.0)::bigint
+           END
+         ),
          t.id,
          t.name,
          t.duration_first_time_min,
@@ -93,12 +110,15 @@ REVOKE ALL ON FUNCTION public.catalog_package_booking_terms(uuid) FROM anon;
 GRANT EXECUTE ON FUNCTION public.catalog_package_booking_terms(uuid) TO authenticated;
 
 -- 2. scheduling_book_package_appointment (20261030000002, la versión vigente) copia los dos
---    campos nuevos al confirmar. Devuelve public.scheduling_appointments por referencia: no
---    necesita DROP, CREATE OR REPLACE alcanza.
-CREATE OR REPLACE FUNCTION public.scheduling_book_package_appointment(
-  p_resource_id uuid,
-  p_starts_at   timestamptz,
-  p_package_id  uuid
+--    campos nuevos al confirmar y recibe p_expected_price (C4). Un cuarto parámetro es una firma
+--    distinta: DROP la de 3 argumentos antes de crear la de 4 (mismo riesgo de overload que en la
+--    pieza 10).
+DROP FUNCTION IF EXISTS public.scheduling_book_package_appointment(uuid, timestamptz, uuid);
+CREATE FUNCTION public.scheduling_book_package_appointment(
+  p_resource_id     uuid,
+  p_starts_at       timestamptz,
+  p_package_id      uuid,
+  p_expected_price  bigint DEFAULT NULL
 )
 RETURNS public.scheduling_appointments
 LANGUAGE plpgsql
@@ -149,6 +169,10 @@ BEGIN
 
   IF v_technique_count = 0 THEN
     RAISE EXCEPTION 'scheduling_package_not_available';
+  END IF;
+
+  IF p_expected_price IS NOT NULL AND v_package_price IS DISTINCT FROM p_expected_price THEN
+    RAISE EXCEPTION 'scheduling_price_changed';
   END IF;
 
   PERFORM pg_advisory_xact_lock(hashtextextended('scheduling_client:' || v_client_id::text, 0));
@@ -236,9 +260,9 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.scheduling_book_package_appointment(uuid, timestamptz, uuid) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.scheduling_book_package_appointment(uuid, timestamptz, uuid) FROM anon;
-GRANT EXECUTE ON FUNCTION public.scheduling_book_package_appointment(uuid, timestamptz, uuid) TO authenticated;
+REVOKE ALL ON FUNCTION public.scheduling_book_package_appointment(uuid, timestamptz, uuid, bigint) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.scheduling_book_package_appointment(uuid, timestamptz, uuid, bigint) FROM anon;
+GRANT EXECUTE ON FUNCTION public.scheduling_book_package_appointment(uuid, timestamptz, uuid, bigint) TO authenticated;
 
 -- 3. scheduling_quote_package_booking (20261030000003, la versión vigente) muestra el descuento
 --    antes de confirmar, igual que scheduling_quote_booking para una técnica suelta. RETURNS
