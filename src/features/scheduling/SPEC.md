@@ -348,6 +348,17 @@ Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el
   que no exige la columna de US-AGE-04). Un `UPDATE` no lo dispara, y si el aviso falla la reserva
   igual se guarda. Prueba:
   `supabase/tests/database/scheduling_notify_booking_created.test.sql`.
+- Trigger `audit_events_notify_appointment_changed` (US-NOT-02, migración
+  `20261103000001_scheduling_notify_appointment_changed.sql`): al escribirse en `audit_events` un
+  `scheduling.appointment.cancelled` o un `scheduling.appointment.rescheduled` de una cita con clienta,
+  llama a `notifications_record_cancellation` (con el anticipo perdido del evento) o a
+  `notifications_record_reschedule` (con el horario anterior y el nuevo), en la misma transacción.
+  Una cancelación que falla no deja aviso; si el aviso falla, la cancelación o el reagendado igual se
+  guardan. Al cancelar con un reagendado sin decidir, el aviso lleva el horario aprobado
+  (`heldStartsAt`), el que estaba en la agenda. Prueba:
+  `supabase/tests/database/scheduling_notify_appointment_changed.test.sql`, que también prueba que el
+  espacio cancelado y el horario anterior de un reagendado aprobado dejan de verse ocupados en
+  `scheduling_busy_ranges`, el calendario de la clienta (criterio 4 de US-NOT-02).
 - Dominio y aplicación (`selectTechnique`, puertos) son superficie interna: ninguna otra feature los consume todavía, salvo los dos puertos de solo lectura de arriba.
 
 ### Historial de citas de una clienta (para US-CLI-02 de `clients`)
