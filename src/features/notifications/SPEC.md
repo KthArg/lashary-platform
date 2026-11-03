@@ -277,6 +277,17 @@ Hecho hasta ahora:
   idempotencia `notifications-<tipo>-<id>` (la del recordatorio no cambia). Pruebas:
   `channels/__tests__/meta-whatsapp-channel.test.ts`, `resend-email-channel.test.ts` y
   `domain/__tests__/client-notice-message.test.ts`.
+- Reclamo y envío de los avisos (ítem 13, migración `20261103000004_notifications_claim_client_notices_fn.sql`):
+  `notifications_claim_client_notices(p_now, p_batch_size, p_claim_ttl_minutes)` pasa a `claimed` los avisos
+  pendientes y los reclamados hace más del plazo (un cron que murió a medio envío), los más viejos primero y
+  en tandas, con `FOR UPDATE SKIP LOCKED` para que dos corridas superpuestas no manden el mismo dos veces
+  (DOM-010). A diferencia de los recordatorios, reclamar y soltar lo vencido van en una sola función: un
+  aviso no se reconcilia contra la cita, así que no hace falta revalidarlo antes. `SECURITY INVOKER`: lo
+  frena la RLS, así que solo staff (la cuenta del cron) reclama; la clienta no, ni los suyos.
+  La selección va en un CTE `MATERIALIZED`: con `WHERE id IN (subconsulta)` Postgres puede volver a
+  evaluarla mientras actualiza y, como un reclamo vencido sigue cumpliendo la condición después de
+  reclamarlo, tomaba más avisos que la tanda (lo detectó la prueba de la tanda).
+  Prueba: pgTAP `notifications_claim_client_notices.test.sql`.
 
 ## Qué no hace todavía
 
