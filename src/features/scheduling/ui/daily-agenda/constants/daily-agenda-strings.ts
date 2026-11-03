@@ -47,6 +47,7 @@ export const dailyAgendaMessages = {
     noShowWithoutDeposit: 'Sin cargo. No hay anticipo registrado que perder.',
     serviceLabel: 'Servicio prestado',
     reservedService: (name: string) => `El reservado (${name})`,
+    irreversibleWarning: 'Al confirmar, la cita queda cerrada y no se puede revertir desde el sistema.',
     confirm: 'Confirmar cierre',
     closing: 'Cerrando…',
     back: 'Volver',
