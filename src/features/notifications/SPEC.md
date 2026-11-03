@@ -292,6 +292,17 @@ Hecho hasta ahora:
   agotado, solo si sigue `claimed`; `CLIENT_NOTICE_MAX_ATTEMPTS` es 5, como los recordatorios. Pruebas: pgTAP
   `notifications_claim_client_notices.test.sql`, `db/__tests__/client-notice-delivery-repository.test.ts` y
   `client-notice-delivery-repository.integration.test.ts` (contra Supabase local, con una sesión de staff).
+- Envío por el cron (ítem 13): `sendClientNotices` (`application/send-client-notices.ts`) reclama los
+  avisos y manda cada uno con `purpose: 'reschedule_outcome'`, el texto de `buildClientNoticeMessage` (el
+  mismo de la nota en «Mis citas») y las variables de la plantilla: WhatsApp primero y correo si falla. Sin
+  contacto, o con los dos canales caídos, cuenta un intento y vuelve a la fila; en el quinto intento, o sin
+  ningún canal configurado, queda `failed` con el motivo. Si no se pudo leer el contacto, suelta el aviso
+  sin gastar un intento. `runReminderCycle` lo corre justo después de vencer los reagendados, así el aviso
+  de un vencimiento sale en la misma corrida, y antes de los recordatorios, para que una falla de éstos no
+  lo frene; si el reclamo falla, el ciclo sigue y lo cuenta en `noticesFailed`. El resumen del cron suma
+  `noticesSent`, `noticesRetried`, `noticesExhausted`, `noticesErrored` y `noticesFailed`. Lo cablea
+  `index.ts` con `clientNoticeDeliveryRepository`. Pruebas: `application/__tests__/send-client-notices.test.ts`
+  y `run-reminder-cycle.test.ts`.
 
 ## Qué no hace todavía
 
@@ -526,6 +537,11 @@ recordatorio real le llegue a una clienta; es un checklist de activación, no de
    (5) intentos, quedaría en `failed` sin llegarle nunca a la clienta. Se creó la cuenta equivalente
    solo en `lashary-pruebas` (base de pruebas) para validar el código; la de producción se crea
    cuando los puntos 1 a 3 estén resueltos.
+7. **Plantilla del aviso de cambio de horario (US-NOT-02, ítem 13).** Con un número de WhatsApp
+   Business real hace falta una segunda plantilla aprobada, con 3 variables (servicio, horario pedido y
+   horario que conserva) y un texto que sirva para el rechazo y para el vencimiento; su nombre va en
+   `META_WHATSAPP_RESCHEDULE_OUTCOME_TEMPLATE_NAME` (`.env.example`). Sin ella el aviso sale por correo, y
+   sin correo queda `failed`; la nota en «Mis citas» no depende de ningún canal.
 
 ## Cierre (2026-10-27)
 

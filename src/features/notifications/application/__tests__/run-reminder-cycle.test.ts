@@ -3,7 +3,15 @@ import { ok, err, isOk } from '@/shared/result'
 import { fixedClock, fixedDate } from '@/shared/testing/fixed-clock'
 import { runReminderCycle } from '../run-reminder-cycle'
 import type { AppointmentSnapshot, ContactInfo, ReminderUpsert } from '../ports'
-import type { NotificationChannel } from '../ports'
+import type { ClientNoticeDeliveryRepository, NotificationChannel } from '../ports'
+
+const noClientNotices: ClientNoticeDeliveryRepository = {
+  claimDue: async () => ok([]),
+  releaseToPending: async () => ok(undefined),
+  markSent: async () => ok(undefined),
+  markRetry: async () => ok(undefined),
+  markExhausted: async () => ok(undefined),
+}
 
 describe('runReminderCycle', () => {
   it('encadena descubrir, reconciliar y enviar en una sola corrida', async () => {
@@ -31,6 +39,7 @@ describe('runReminderCycle', () => {
       markSent: async () => ok(undefined),
       markRetry: async () => ok(undefined),
       markExhausted: async () => ok(undefined),
+      clientNotices: noClientNotices,
       primaryChannel: channel('whatsapp'),
       backupChannel: channel('email'),
     })()
@@ -41,6 +50,7 @@ describe('runReminderCycle', () => {
       expiredReschedules: 0, expireFailed: 0,
       discovered: 1, discoverFailed: 0, releasedExpiredClaims: 0, cancelled: 0, rescheduled: 0, reconcileFailed: 0,
       sent: 0, retried: 0, exhausted: 0, sendErrored: 0,
+      noticesSent: 0, noticesRetried: 0, noticesExhausted: 0, noticesErrored: 0, noticesFailed: 0,
     })
     expect(inserted).toHaveLength(1)
   })
@@ -61,6 +71,7 @@ describe('runReminderCycle', () => {
     markSent: async () => ok(undefined),
     markRetry: async () => ok(undefined),
     markExhausted: async () => ok(undefined),
+    clientNotices: noClientNotices,
     primaryChannel: { kind: 'whatsapp' as const, send: async () => ok(undefined) },
     backupChannel: { kind: 'email' as const, send: async () => ok(undefined) },
   })
@@ -85,5 +96,29 @@ describe('runReminderCycle', () => {
 
     expect(steps).toEqual(['discover'])
     expect(isOk(result) && result.value).toMatchObject({ expiredReschedules: 0, expireFailed: 1 })
+  })
+
+  it('manda los avisos a la clienta justo después de vencer reagendados, así el aviso de un vencimiento sale en la misma corrida (US-NOT-02)', async () => {
+    const steps: string[] = []
+    const result = await runReminderCycle({
+      ...quietDeps(steps),
+      expireUndecidedReschedules: async () => (steps.push('expire'), ok(1)),
+      clientNotices: { ...noClientNotices, claimDue: async () => (steps.push('notices'), ok([])) },
+    })()
+
+    expect(steps).toEqual(['expire', 'notices', 'discover'])
+    expect(isOk(result) && result.value).toMatchObject({ noticesSent: 0, noticesFailed: 0 })
+  })
+
+  it('si los avisos a la clienta no se pueden reclamar, el ciclo sigue con los recordatorios y lo cuenta', async () => {
+    const steps: string[] = []
+    const result = await runReminderCycle({
+      ...quietDeps(steps),
+      expireUndecidedReschedules: async () => ok(0),
+      clientNotices: { ...noClientNotices, claimDue: async () => err('repository-failed') },
+    })()
+
+    expect(steps).toEqual(['discover'])
+    expect(isOk(result) && result.value).toMatchObject({ noticesFailed: 1 })
   })
 })
