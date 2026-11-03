@@ -231,6 +231,20 @@ Hecho hasta ahora:
   `ui/inbox/constants/inbox-strings.ts` (DOM-009). Pruebas: `domain/__tests__/inbox-notice.test.ts`,
   `db/__tests__/inbox-repository.test.ts`, `ui/inbox/__tests__/notice-lines.test.ts` y
   `ui/inbox/__tests__/admin-inbox.test.tsx`.
+- Avisos a la clienta (ítem 13, migración `20261103000002_notifications_client_notices.sql`):
+  `notifications_client_notices` guarda uno por evento (`UNIQUE (event_id)`) cuando un reagendado se
+  rechaza (`reschedule_rejected`) o vence (`reschedule_expired`), con el servicio, el horario que pidió
+  (`requested_starts_at`) y el que conserva (`kept_starts_at`). La misma fila lleva su envío por el
+  canal de US-NOT-03 (`status` `pending`, `claimed`, `sent` o `failed`, intentos, último error y
+  canal), como `notifications_reminders`. RLS: la clienta lee solo los suyos
+  (`clients_current_profile_id()`) y staff todos; solo staff (la cuenta del cron) cambia las columnas
+  del envío, nunca el contenido; nadie inserta ni borra. Registra `notifications_record_reschedule_outcome`,
+  `SECURITY DEFINER` y sin `EXECUTE` para nadie. Sin FK a `scheduling_appointments` ni a
+  `clients_profiles`, por la misma razón que `notifications_reminders`: es un registro operativo de
+  envíos. Pruebas: pgTAP `notifications_client_notices.test.sql` (cada clienta ve solo los suyos, staff
+  marca el envío pero no cambia el contenido, nadie fabrica ni borra, anon no lee; SEC-002; verificado por
+  mutación: con la política de la clienta abierta caen las dos de aislamiento) y
+  `__tests__/rls-isolation.test.ts` (con tokens reales).
 
 ## Qué no hace todavía
 
