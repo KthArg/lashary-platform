@@ -45,6 +45,8 @@ export const dailyAgendaMessages = {
       `Se cobra ${charge}, se descuenta el anticipo de ${deposit} y quedan ${credit} a favor de la clienta.`,
     noShowSummary: (deposit: string) => `Sin cargo. La clienta pierde el anticipo de ${deposit}.`,
     noShowWithoutDeposit: 'Sin cargo. No hay anticipo registrado que perder.',
+    serviceLabel: 'Servicio prestado',
+    reservedService: (name: string) => `El reservado (${name})`,
     confirm: 'Confirmar cierre',
     closing: 'Cerrando…',
     back: 'Volver',
