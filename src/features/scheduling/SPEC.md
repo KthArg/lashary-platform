@@ -359,6 +359,13 @@ Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el
   `supabase/tests/database/scheduling_notify_appointment_changed.test.sql`, que también prueba que el
   espacio cancelado y el horario anterior de un reagendado aprobado dejan de verse ocupados en
   `scheduling_busy_ranges`, el calendario de la clienta (criterio 4 de US-NOT-02).
+- Trigger `audit_events_notify_reschedule_outcome` (US-NOT-02, ítem 13, migración
+  `20261103000003_scheduling_notify_reschedule_outcome.sql`): al escribirse
+  `scheduling.appointment.reschedule_reverted` o `scheduling.appointment.reschedule_expired` de una cita
+  con clienta, llama a `notifications_record_reschedule_outcome` con el servicio (técnica o paquete), el
+  horario que pidió (`rejectedStartsAt` o `expiredStartsAt`) y el que conserva (`restoredStartsAt`). Si
+  el aviso falla, el rechazo o el vencimiento igual se guardan. Prueba:
+  `supabase/tests/database/scheduling_notify_reschedule_outcome.test.sql`.
 - Dominio y aplicación (`selectTechnique`, puertos) son superficie interna: ninguna otra feature los consume todavía, salvo los dos puertos de solo lectura de arriba.
 
 ### Historial de citas de una clienta (para US-CLI-02 de `clients`)

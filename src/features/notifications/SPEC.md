@@ -245,6 +245,16 @@ Hecho hasta ahora:
   marca el envío pero no cambia el contenido, nadie fabrica ni borra, anon no lee; SEC-002; verificado por
   mutación: con la política de la clienta abierta caen las dos de aislamiento) y
   `__tests__/rls-isolation.test.ts` (con tokens reales).
+  Vencer un reagendado (`scheduling_expire_undecided_reschedules`) lo hace rechazándolo, así que la misma
+  transacción deja dos eventos, `reschedule_reverted` y después `reschedule_expired`. Para que la clienta
+  reciba un solo aviso, y el correcto, `notifications_record_reschedule_outcome` borra al registrar un
+  vencimiento el aviso de rechazo pendiente que esa misma transacción dejó para la cita (`created_at =
+  now()`); un rechazo de otra transacción no se toca. Prueba: `notifications_client_notices.test.sql`.
+- El registro lo dispara `scheduling` (trigger `audit_events_notify_reschedule_outcome`, en su SPEC) al
+  escribirse `scheduling.appointment.reschedule_reverted` o `reschedule_expired`, con el servicio de la
+  cita (técnica o paquete), el horario pedido y el que conserva. Prueba:
+  `scheduling_notify_reschedule_outcome.test.sql` (rechazo y vencimiento de punta a punta, y si el aviso
+  falla el vencimiento igual se hace).
 
 ## Qué no hace todavía
 
