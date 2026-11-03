@@ -1,4 +1,4 @@
--- 20261026000002_catalog_promotions_in_booking.sql
+-- 20261101000003_catalog_promotions_in_booking.sql
 -- US-PROM-01 · features catalog y scheduling — la promoción vigente se aplica al reservar.
 -- Decisión del líder del proyecto (comunicada por Erick Duran, 2026-10-20, ver DEPENDENCIES.md):
 -- solo técnicas por ahora (paquetes queda diferido a US-AGE-04) y la cita debe guardar QUÉ
@@ -14,6 +14,29 @@
 -- promotion_id no lleva FK, igual que technique_id en scheduling_appointments: es snapshot, no
 -- referencia viva (DOM-002) — una promoción puede pausarse o vencer después sin afectar citas ya
 -- agendadas con ese descuento.
+--
+-- Auditoría (AUDIT.md, 2026-11-02):
+-- A3 — esta migración se escribió originalmente con fecha 20261026000002, antes de que
+-- US-AGE-10/US-AGE-04 (ya en main) redefinieran scheduling_book_appointment/
+-- scheduling_slot_is_taken dos veces más (20261030000005, 20261101000001). Con `db push
+-- --include-all` las migraciones se aplican en orden de fecha: con la fecha original, la de
+-- main revertía esta corrección después de aplicarse, y #447 (el PR de esta pieza) salía en
+-- rojo en pgTAP aunque el código fuera correcto en el momento de escribirse — el problema no era
+-- el contenido, era la fecha. Renombrada a una fecha posterior a 20261101000002 y reescrita desde
+-- la definición vigente en `main` (con `scheduling_slot_is_taken()`, no la comprobación inline
+-- de la versión original) para que no haya una migración posterior que la pise. Esto deja sin
+-- trabajo a la pieza que antes vivía en 20261101000003_scheduling_book_appointment_promotion_fix.sql
+-- (ya no existe en la pila: su arreglo está aquí desde el principio).
+-- C3 (decisión del PO, 2026-11-02) — el anticipo nunca debe superar el precio ya rebajado: con
+-- un descuento fuerte, el anticipo del catálogo puede quedar por encima del precio con
+-- promoción. catalog_booking_terms devuelve `LEAST(deposit, precio_rebajado)`, no el anticipo
+-- crudo del catálogo.
+-- C4 (decisión del PO, 2026-11-02) — si la promoción vence entre que la clienta cotiza y
+-- confirma, no se le cobra el precio nuevo sin avisarle: scheduling_book_appointment admite un
+-- `p_expected_price` opcional (como `scheduling_cancel_appointment` ya hace con el anticipo
+-- perdido); si no coincide con el precio vigente al confirmar, rechaza con
+-- `scheduling_price_changed` en vez de reservar con otro precio del que la clienta no sabe nada.
+-- NULL (el valor por defecto) se salta la comprobación, para no romper ningún otro llamador.
 -- Cumplimiento: ARCH-005, DOM-001, DOM-002, SEC-001 (RLS de catalog_promotions ya es pública en
 --   lectura, igual que catalog_techniques), PERF-005 (filtro de vigencia en la base),
 --   INT-008 (una migración, forward-only).
@@ -51,7 +74,16 @@ AS $$
          END,
          CASE WHEN p_is_first_time THEN t.duration_first_time_min ELSE t.duration_retouch_min END,
          t.buffer_min,
-         t.deposit,
+         LEAST(
+           t.deposit,
+           CASE WHEN promo.discount_percent IS NULL
+                THEN CASE WHEN p_is_first_time THEN t.price_first_time ELSE t.price_retouch END
+                ELSE round(
+                       (CASE WHEN p_is_first_time THEN t.price_first_time ELSE t.price_retouch END)
+                       * (100 - promo.discount_percent) / 100.0
+                     )::bigint
+           END
+         ),
          promo.id,
          promo.discount_percent
     FROM public.catalog_techniques t
@@ -62,7 +94,7 @@ AS $$
          AND p.is_active
          AND p.starts_at <= now()
          AND p.ends_at >= now()
-       ORDER BY p.discount_percent DESC, p.ends_at ASC
+       ORDER BY p.discount_percent DESC, p.ends_at ASC, p.id ASC
        LIMIT 1
     ) promo ON true
    WHERE t.id = p_technique_id
@@ -78,24 +110,29 @@ GRANT EXECUTE ON FUNCTION public.catalog_booking_terms(uuid, boolean) TO authent
 
 -- 2. La cita guarda qué promoción se aplicó, no solo el precio ya rebajado (decisión del líder
 --    del proyecto). Ambas columnas o ninguna: una cita no puede tener descuento sin saber de
---    cuál promoción viene.
+--    cuál promoción viene. Tope 99, no 100 (A2/C2): nunca se regala el servicio completo.
 ALTER TABLE public.scheduling_appointments
   ADD COLUMN promotion_id     uuid,
-  ADD COLUMN discount_percent integer CHECK (discount_percent > 0 AND discount_percent <= 100);
+  ADD COLUMN discount_percent integer CHECK (discount_percent > 0 AND discount_percent <= 99);
 
 ALTER TABLE public.scheduling_appointments
   ADD CONSTRAINT scheduling_appointments_promotion_snapshot_complete CHECK (
     (promotion_id IS NULL) = (discount_percent IS NULL)
   );
 
--- 3. scheduling_book_appointment (20261019000009, la versión vigente) copia los dos campos
---    nuevos de catalog_booking_terms al confirmar. El resto de la función es idéntico: el cambio
---    real está en la lista de columnas del INSERT.
+-- 3. scheduling_book_appointment: misma definición vigente en main (20261101000001, ya con
+--    scheduling_slot_is_taken() en vez de la comprobación de espacio ocupado inline), más
+--    promotion_id/discount_percent al confirmar (criterio 4) y p_expected_price opcional (C4).
+--    Un parámetro nuevo con DEFAULT cambia la firma: CREATE OR REPLACE no la sustituye, crea una
+--    sobrecarga y deja dos funciones ambiguas entre sí (42725, "is not unique") para cualquier
+--    llamada con los cuatro argumentos de siempre. Hay que soltar la firma de 4 parámetros.
+DROP FUNCTION IF EXISTS public.scheduling_book_appointment(uuid, timestamptz, uuid, boolean);
 CREATE OR REPLACE FUNCTION public.scheduling_book_appointment(
-  p_resource_id   uuid,
-  p_starts_at     timestamptz,
-  p_technique_id  uuid,
-  p_is_first_time boolean
+  p_resource_id     uuid,
+  p_starts_at       timestamptz,
+  p_technique_id    uuid,
+  p_is_first_time   boolean,
+  p_expected_price  bigint DEFAULT NULL
 )
 RETURNS public.scheduling_appointments
 LANGUAGE plpgsql
@@ -128,6 +165,10 @@ BEGIN
   SELECT * INTO v_terms FROM public.catalog_booking_terms(p_technique_id, p_is_first_time);
   IF NOT FOUND THEN
     RAISE EXCEPTION 'scheduling_technique_not_available';
+  END IF;
+
+  IF p_expected_price IS NOT NULL AND v_terms.price IS DISTINCT FROM p_expected_price THEN
+    RAISE EXCEPTION 'scheduling_price_changed';
   END IF;
 
   v_detected_first_time := NOT EXISTS (
@@ -188,18 +229,7 @@ BEGIN
 
   PERFORM pg_advisory_xact_lock(hashtextextended('scheduling_resource:' || p_resource_id::text, 0));
 
-  IF EXISTS (
-       SELECT 1 FROM public.scheduling_appointments a
-        WHERE a.resource_id = p_resource_id
-          AND a.status IN ('pending_approval', 'approved', 'confirmed')
-          AND a.occupied_range && tstzrange(p_starts_at, v_occupied_until)
-     )
-     OR EXISTS (
-       SELECT 1 FROM public.scheduling_manual_blocks b
-        WHERE b.resource_id = p_resource_id
-          AND tstzrange(b.starts_at, b.ends_at) && tstzrange(p_starts_at, v_occupied_until)
-     )
-  THEN
+  IF public.scheduling_slot_is_taken(p_resource_id, p_starts_at, v_occupied_until) THEN
     RAISE EXCEPTION 'scheduling_slot_taken';
   END IF;
 
@@ -226,9 +256,9 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.scheduling_book_appointment(uuid, timestamptz, uuid, boolean) FROM PUBLIC;
-REVOKE ALL ON FUNCTION public.scheduling_book_appointment(uuid, timestamptz, uuid, boolean) FROM anon;
-GRANT EXECUTE ON FUNCTION public.scheduling_book_appointment(uuid, timestamptz, uuid, boolean) TO authenticated;
+REVOKE ALL ON FUNCTION public.scheduling_book_appointment(uuid, timestamptz, uuid, boolean, bigint) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.scheduling_book_appointment(uuid, timestamptz, uuid, boolean, bigint) FROM anon;
+GRANT EXECUTE ON FUNCTION public.scheduling_book_appointment(uuid, timestamptz, uuid, boolean, bigint) TO authenticated;
 
 -- 4. scheduling_quote_booking (20261019000009, la versión vigente) muestra el descuento ANTES
 --    de confirmar (criterio 2 de US-PROM-01): lo que se cotiza vuelve a ser exactamente lo mismo
