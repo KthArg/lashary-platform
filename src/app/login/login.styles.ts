@@ -10,4 +10,5 @@ export const loginStyles = {
   signOutBtn: 'w-full bg-brand-dark hover:bg-black text-white text-xs tracking-widest uppercase py-3.5 px-4 transition-colors font-medium rounded-none',
   buttonContainer: 'pt-2', noticeText: 'text-3xs text-brand-muted/80 leading-relaxed px-2',
   footer: 'pt-4 border-t border-brand-border/60', helpLink: 'text-xs text-brand-muted hover:text-brand-dark transition-colors',
+  staffAccessLink: 'flex min-h-11 items-center justify-center text-xs text-brand-muted hover:text-brand-dark transition-colors',
 }
