@@ -9,7 +9,7 @@
 -- Correr con: npx supabase test db   (requiere `supabase start`)
 
 BEGIN;
-SELECT plan(13);
+SELECT plan(14);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -72,7 +72,13 @@ SELECT throws_ok(
   $$INSERT INTO public.catalog_promotions
       (technique_id, discount_percent, starts_at, ends_at)
     VALUES ('00000000-0000-0000-0000-00000000e101', 101, '2026-01-01T00:00:00Z', '2026-01-02T00:00:00Z')$$,
-  '23514', NULL, 'invariante: descuento mayor a 100 se rechaza');
+  '23514', NULL, 'invariante: descuento mayor a 99 se rechaza');
+
+SELECT throws_ok(
+  $$INSERT INTO public.catalog_promotions
+      (technique_id, discount_percent, starts_at, ends_at)
+    VALUES ('00000000-0000-0000-0000-00000000e101', 100, '2026-01-01T00:00:00Z', '2026-01-02T00:00:00Z')$$,
+  '23514', NULL, 'invariante A2/C2: un descuento del 100% se rechaza (nunca se regala el servicio completo)');
 
 DELETE FROM public.catalog_promotions WHERE id = '00000000-0000-0000-0000-00000000e103';
 SELECT is(
@@ -99,11 +105,19 @@ SELECT throws_ok(
 
 UPDATE public.catalog_promotions SET discount_percent = 1
  WHERE id = '00000000-0000-0000-0000-00000000e104';
+DELETE FROM public.catalog_promotions WHERE id = '00000000-0000-0000-0000-00000000e104';
+
+-- Las dos verificaciones de abajo leen como admin, no como la clienta (auditoría M3,
+-- 2026-11-02): desde que la lectura pública solo ve lo vigente, e104 — con una ventana fija de
+-- enero de 2026, ya vencida — deja de ser visible para la clienta por RLS de lectura, no por el
+-- UPDATE/DELETE de arriba; verificar con su propia lectura confundiría las dos políticas.
+SELECT set_config('request.jwt.claims',
+  '{"sub":"00000000-0000-0000-0000-0000000000e1","role":"authenticated"}', true);
+
 SELECT is(
   (SELECT discount_percent::int FROM public.catalog_promotions WHERE id = '00000000-0000-0000-0000-00000000e104'),
   15, 'clienta: UPDATE no altera la fila');
 
-DELETE FROM public.catalog_promotions WHERE id = '00000000-0000-0000-0000-00000000e104';
 SELECT is(
   (SELECT count(*)::int FROM public.catalog_promotions WHERE id = '00000000-0000-0000-0000-00000000e104'),
   1, 'clienta: DELETE no elimina la fila');

@@ -61,7 +61,7 @@ describe.skipIf(!reachable)('createSupabasePromotionRepository (Supabase local)'
   })
 
   it('listActive solo devuelve lo vigente en `now`: la del seed dentro de su ventana, nada fuera de ella', async () => {
-    const withinSeedWindow = await repo.listActive(new Date('2026-06-01T00:00:00Z'), {
+    const withinSeedWindow = await repo.listActive(new Date(), {
       offset: 0,
       limit: 10,
     })

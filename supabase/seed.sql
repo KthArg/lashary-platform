@@ -51,11 +51,12 @@ FROM public.catalog_packages pkg, public.catalog_techniques t
 WHERE pkg.name = 'Cejas y pestañas clásico'
   AND t.name IN ('Set clásico', 'Diseño de cejas');
 
--- Una promoción de ejemplo (US-PROM-01, criterio 1): 20% sobre el set clásico, vigente todo
--- 2026 para que el seed no quede "vencido" apenas pase enero. Prueba
--- src/features/catalog/__tests__/promotion-rls-isolation.test.ts (necesita al menos una fila).
+-- Una promoción de ejemplo (US-PROM-01, criterio 1): 20% sobre el set clásico. Ventana relativa
+-- a now() (auditoría B9, 2026-11-02 — antes una fecha fija de 2026 vencía el 31 de diciembre y
+-- promotion-rls-isolation.test.ts, que necesita al menos una fila vigente, quedaba rota a partir
+-- de esa fecha sin que nadie lo notara hasta que fallara en CI).
 INSERT INTO public.catalog_promotions (technique_id, discount_percent, starts_at, ends_at)
-SELECT t.id, 20, '2026-01-01T00:00:00Z', '2026-12-31T23:59:59Z'
+SELECT t.id, 20, now() - interval '1 day', now() + interval '10 years'
 FROM public.catalog_techniques t
 WHERE t.name = 'Set clásico';
 
