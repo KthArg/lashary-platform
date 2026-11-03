@@ -17,7 +17,11 @@ CREATE TABLE public.catalog_promotions (
   package_id        uuid REFERENCES public.catalog_packages (id),
 
   -- Descuento como porcentaje entero (D-PROM-1 del SPEC): no es un monto, Money no aplica.
-  discount_percent  integer NOT NULL CHECK (discount_percent > 0 AND discount_percent <= 100),
+  -- Tope 99, no 100 (hallazgo de auditoría, A2 en AUDIT.md): un descuento del 100% deja el
+  -- precio en 0 y viola el CHECK service_price > 0 de scheduling_appointments — la reserva
+  -- fallaría. Decisión del PO (2026-11-02): nunca se regala el servicio por completo vía
+  -- promoción.
+  discount_percent  integer NOT NULL CHECK (discount_percent > 0 AND discount_percent <= 99),
 
   -- Vigencia (criterio 1). "Vencida" (criterio 3) se deriva comparando contra el reloj
   -- inyectado (DOM-004) en la capa de aplicación, nunca con una columna que haya que mantener.
@@ -56,14 +60,23 @@ CREATE TRIGGER catalog_promotions_set_updated_at
 -- 3. RLS — la autorización real (SEC-001).
 ALTER TABLE public.catalog_promotions ENABLE ROW LEVEL SECURITY;
 
--- Lectura: pública, igual que catalog_techniques / catalog_packages. El filtro de "vigente"
--- (is_active + ventana) lo aplica la capa de aplicación (listActivePromotions), no RLS —
--- la administradora necesita ver también las vencidas y las pausadas en su panel.
-CREATE POLICY "catalog_promotions_select_all"
+-- Lectura (hallazgo de auditoría, M3 en AUDIT.md): dos políticas, no una sola `USING (true)`.
+-- Cualquiera con `anon`/`authenticated` solo ve lo vigente (is_active + ventana) — una campaña
+-- futura o pausada no es pública hasta que corresponda; Postgres evalúa las políticas de SELECT
+-- con OR, así que el panel de administración (staff autenticado) sigue viendo todo vía la
+-- segunda política, sin que listActivePromotions tenga que filtrar en la aplicación lo que ya
+-- debería estar filtrado en la base.
+CREATE POLICY "catalog_promotions_select_active"
   ON public.catalog_promotions
   FOR SELECT
   TO anon, authenticated
-  USING (true);
+  USING (is_active AND starts_at <= now() AND ends_at >= now());
+
+CREATE POLICY "catalog_promotions_select_staff"
+  ON public.catalog_promotions
+  FOR SELECT
+  TO authenticated
+  USING (public.auth_is_staff());
 
 -- Escritura: SIN política de INSERT / UPDATE / DELETE en esta migración. Con RLS activo y sin
 -- política permisiva, la base deniega toda escritura a anon y authenticated (postura B1,
