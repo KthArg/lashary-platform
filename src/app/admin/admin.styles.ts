@@ -15,4 +15,5 @@ export const adminStyles = {
   signOutBtn: 'w-full bg-brand-dark hover:bg-black text-white text-xs tracking-widest uppercase py-3.5 px-4 transition-colors font-medium rounded-none',
   footer: 'pt-4 border-t border-brand-border/60 text-center',
   noticeText: 'text-3xs text-brand-muted tracking-wide',
+  clientAccessLink: 'flex min-h-11 items-center justify-center text-xs text-brand-muted hover:text-brand-dark transition-colors',
 }

@@ -1,4 +1,5 @@
-import { getAuthSession, AdminLoginForm, AUTH_ROLES, AUTH_LABELS } from '@/features/auth'
+import { getAuthSession, AdminLoginForm, AUTH_ROLES, AUTH_LABELS, CLIENT_LOGIN_ROUTE } from '@/features/auth'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { adminStyles as STYLES } from './admin.styles'
 import type { AdminLoginPageProps } from './admin.types'
@@ -32,6 +33,7 @@ export default async function AdminLoginPage(_props: AdminLoginPageProps) {
           <AdminLoginForm />
           <div className={STYLES.footer}>
             <p className={STYLES.noticeText}>{AUTH_LABELS.adminRestrictedNotice}</p>
+            <Link href={CLIENT_LOGIN_ROUTE} className={STYLES.clientAccessLink}>{AUTH_LABELS.clientAccessLink}</Link>
           </div>
         </div>
       </div>
