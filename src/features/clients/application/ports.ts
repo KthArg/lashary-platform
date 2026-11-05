@@ -1,15 +1,17 @@
 import type { Result } from '@/shared/result'
-import type { ClientRecord } from '../domain/client.types'
+import type { ClientListItem, ClientRecord } from '../domain/client.types'
 
-export interface ListClientsQuery { page?: number; pageSize?: number; name?: string }
+export interface ListClientsQuery { page?: number; pageSize?: number; name?: string; visitFrom?: string; visitTo?: string }
 
 export interface ClientWriteModel { fullName: string; phone: string; email: string; notes: string | null }
 
 export interface ClientPhoneEntry { id: string; phone: string }
 
-export interface ClientsPageRequest { offset: number; limit: number; name: string | null }
+export interface ClientsPageRequest {
+  offset: number; limit: number; name: string | null; visitFrom: string | null; visitTo: string | null
+}
 
-export interface ClientsPage { clients: ClientRecord[]; total: number }
+export interface ClientsPage { clients: ClientListItem[]; total: number }
 
 export type RepositoryFailure = 'repository-failed'
 

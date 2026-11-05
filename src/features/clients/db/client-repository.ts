@@ -1,16 +1,23 @@
 import { ok, err } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
-import type { ClientRecord } from '../domain/client.types'
+import type { ClientListItem, ClientRecord } from '../domain/client.types'
 import type { ClientPhoneEntry, ClientRepository, ClientWriteModel } from '../application/ports'
 
 const CLIENTS_TABLE = 'clients_profiles'
+const CLIENTS_LIST_FUNCTION = 'clients_list'
 const CLIENT_COLUMNS = 'id, full_name, phone, email, notes'
 const FAILED = 'repository-failed' as const
 
 interface ClientRow { id: string; full_name: string; phone: string; email: string; notes: string | null }
 
+interface ClientListRow extends ClientRow { last_visit_at: string | null }
+
 const toRecord = (row: ClientRow): ClientRecord => ({
   id: row.id, fullName: row.full_name, phone: row.phone, email: row.email, notes: row.notes ?? '',
+})
+
+const toListItem = (row: ClientListRow): ClientListItem => ({
+  ...toRecord(row), lastVisitAtMs: row.last_visit_at === null ? null : Date.parse(row.last_visit_at),
 })
 
 const toRow = (client: ClientWriteModel): Omit<ClientRow, 'id'> => ({
@@ -56,13 +63,12 @@ export async function clientRepository(): Promise<ClientRepository> {
       return ok(data ? toRecord(data as ClientRow) : null)
     },
 
-    async listPage({ offset, limit, name }) {
-      const namePattern = toLiteralNamePattern(name)
-      let request = supabase.from(CLIENTS_TABLE).select(CLIENT_COLUMNS, { count: 'exact' })
-      if (namePattern) request = request.ilike('full_name', namePattern)
-      const { data, error, count } = await request.order('created_at', { ascending: false }).range(offset, offset + limit - 1)
+    async listPage({ offset, limit, name, visitFrom, visitTo }) {
+      const filters = { p_name_pattern: toLiteralNamePattern(name), p_visit_from: visitFrom, p_visit_to: visitTo }
+      const { data, error, count } = await supabase.rpc(CLIENTS_LIST_FUNCTION, filters, { count: 'exact' })
+        .order('created_at', { ascending: false }).range(offset, offset + limit - 1)
       if (error || !data || count === null) return err(FAILED)
-      return ok({ clients: (data as ClientRow[]).map(toRecord), total: count })
+      return ok({ clients: (data as ClientListRow[]).map(toListItem), total: count })
     },
   }
 }
