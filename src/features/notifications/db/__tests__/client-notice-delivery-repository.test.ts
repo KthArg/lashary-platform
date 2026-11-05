@@ -2,12 +2,8 @@ import { describe, it, expect } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isErr, isOk } from '@/shared/result'
 import { fixedDate } from '@/shared/testing/fixed-clock'
-import {
-  clientNoticeDeliveryRepository,
-  CLAIM_CLIENT_NOTICES_FUNCTION,
-  CLIENT_NOTICE_CLAIM_BATCH_SIZE,
-  CLIENT_NOTICE_CLAIM_TTL_MINUTES,
-} from '../client-notice-delivery-repository'
+import { clientNoticeDeliveryRepository, CLAIM_CLIENT_NOTICES_FUNCTION } from '../client-notice-delivery-repository'
+import { CLAIM_BATCH_SIZE, CLAIM_TTL_MINUTES } from '../claim-limits'
 import { CLIENT_NOTICES_TABLE } from '../client-notice-repository'
 
 const row = {
@@ -45,11 +41,11 @@ describe('clientNoticeDeliveryRepository', () => {
     expect(calls).toEqual([
       ['rpc', CLAIM_CLIENT_NOTICES_FUNCTION, {
         p_now: now.toISOString(),
-        p_batch_size: CLIENT_NOTICE_CLAIM_BATCH_SIZE,
-        p_claim_ttl_minutes: CLIENT_NOTICE_CLAIM_TTL_MINUTES,
+        p_batch_size: CLAIM_BATCH_SIZE,
+        p_claim_ttl_minutes: CLAIM_TTL_MINUTES,
       }],
     ])
-    expect(CLIENT_NOTICE_CLAIM_BATCH_SIZE).toBeGreaterThan(0)
+    expect(CLAIM_BATCH_SIZE).toBeGreaterThan(0)
     expect(isOk(result) && result.value).toEqual([{
       id: 'aviso-1',
       kind: 'reschedule_expired',
@@ -73,6 +69,11 @@ describe('clientNoticeDeliveryRepository', () => {
       ['eq', 'id', 'aviso-1'],
       ['eq', 'status', 'claimed'],
     ])
+  })
+
+  it('una fila con otra forma es un error, nunca un envío a medias', async () => {
+    const { db } = createFakeDb({ data: [{ ...row, attempts: 'dos' }], error: null })
+    expect(isErr(await clientNoticeDeliveryRepository(db).claimDue(fixedDate('2047-10-01T12:00:00Z')))).toBe(true)
   })
 
   it('un fallo de la base es un error, nunca una lista vacía', async () => {

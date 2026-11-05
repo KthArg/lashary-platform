@@ -54,9 +54,16 @@ describe('clientNoticeRepository', () => {
     ])
   })
 
-  it('un fallo de la base es un error con su causa, nunca una lista vacía', async () => {
-    const { db } = createFakeDb({ data: null, error: { message: 'sin conexión' } })
+  it('un fallo de la base es un error, nunca una lista vacía, y no guarda el texto crudo de la base', async () => {
+    const { db } = createFakeDb({ data: null, error: { message: 'sin conexión a 10.0.0.5' } })
     const result = await clientNoticeRepository(db).listKeptFrom(new Date(), 5)
-    expect(isErr(result) && isClientNoticesStorageFailed(result.error) && result.error.cause).toBe('sin conexión')
+    expect(isErr(result) && isClientNoticesStorageFailed(result.error)).toBe(true)
+    expect(isErr(result) && JSON.stringify(result.error)).not.toContain('10.0.0.5')
+  })
+
+  it('una fila con otra forma es un error, no un aviso a medias', async () => {
+    const { db } = createFakeDb({ data: [{ ...row, kind: 'otro' }], error: null })
+    const result = await clientNoticeRepository(db).listKeptFrom(new Date(), 5)
+    expect(isErr(result) && isClientNoticesStorageFailed(result.error)).toBe(true)
   })
 })

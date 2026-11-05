@@ -3,8 +3,8 @@ import { render, screen, cleanup, within } from '@testing-library/react'
 import { fixedDate } from '@/shared/testing/fixed-clock'
 import { buildClientNoticeMessage } from '@/features/notifications/domain/client-notice-message'
 import type { ClientNotice } from '@/features/notifications/domain/client-notice'
-import { ClientNotices } from '@/features/notifications/ui/client-notices/components/ClientNotices'
-import { CLIENT_NOTICES_TEXTS } from '@/features/notifications/ui/client-notices/constants/client-notices-strings'
+import { ClientNotices } from '../components/ClientNotices'
+import { CLIENT_NOTICES_TEXTS } from '../constants/client-notices-strings'
 
 const rejected: ClientNotice = {
   id: 'aviso-1',

@@ -3,20 +3,13 @@ import { ok, err } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import type { ReminderChannelKind, ReminderSnapshot, ReminderStatus } from '../domain/reminder'
 import type { ReminderRepository, ReminderUpsert, ReminderReschedule } from '../application/ports'
-import { CHANNEL_SEND_TIMEOUT_MS } from '../channels/send-timeout'
+import { CLAIM_BATCH_SIZE, CLAIM_TTL_MINUTES } from './claim-limits'
 
 const TABLE = 'notifications_reminders'
 const CLAIM_FUNCTION = 'notifications_claim_due_reminders'
 const RELEASE_EXPIRED_CLAIMS_FUNCTION = 'notifications_release_expired_claims'
 const FAILED = 'repository-failed' as const
 const DUPLICATE_KEY_CODE = '23505'
-
-const CLAIM_TTL_MINUTES = 10
-const CLAIM_TTL_MS = CLAIM_TTL_MINUTES * 60_000
-const CHANNELS_PER_REMINDER = 2
-const WORST_CASE_MS_PER_REMINDER = CHANNEL_SEND_TIMEOUT_MS * CHANNELS_PER_REMINDER
-const CLAIM_TTL_SAFETY_MARGIN = 2
-const CLAIM_BATCH_SIZE = Math.floor(CLAIM_TTL_MS / WORST_CASE_MS_PER_REMINDER / CLAIM_TTL_SAFETY_MARGIN)
 
 const REMINDER_COLUMNS =
   'id, appointment_id, client_id, starts_at, technique_name, send_at, status, attempts, last_error, last_channel, sent_at'

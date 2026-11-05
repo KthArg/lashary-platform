@@ -1,5 +1,5 @@
 import { buildClientNoticeMessage } from '@/features/notifications/domain/client-notice-message'
-import { CLIENT_NOTICES_TEXTS } from '@/features/notifications/ui/client-notices/constants/client-notices-strings'
+import { CLIENT_NOTICES_TEXTS } from '../../constants/client-notices-strings'
 import { clientNoticesStyles as STYLES } from './ClientNotices.styles'
 import type { ClientNoticesProps } from './ClientNotices.types'
 

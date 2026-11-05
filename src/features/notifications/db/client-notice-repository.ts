@@ -1,21 +1,29 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { z } from 'zod'
 import { ok, err } from '@/shared/result'
 import { clientNoticesStorageFailed } from '../domain/errors'
-import type { ClientNotice, ClientNoticeKind } from '../domain/client-notice'
+import type { ClientNotice } from '../domain/client-notice'
 import type { ClientNoticesRepository } from '../application/ports'
 
 export const CLIENT_NOTICES_TABLE = 'notifications_client_notices'
 export const CLIENT_NOTICE_COLUMNS = 'id, kind, appointment_id, service_name, requested_starts_at, kept_starts_at, created_at'
 
-type ClientNoticeRow = {
-  id: string
-  kind: ClientNoticeKind
-  appointment_id: string
-  service_name: string
-  requested_starts_at: string
-  kept_starts_at: string
-  created_at: string
-}
+const READ_FAILED = 'no se pudieron leer los avisos'
+const INVALID_ROWS = 'los avisos llegaron con una forma inesperada'
+
+const timestampSchema = z.string().refine((value) => !Number.isNaN(Date.parse(value)))
+
+const clientNoticeRowSchema = z.object({
+  id: z.string(),
+  kind: z.enum(['reschedule_rejected', 'reschedule_expired']),
+  appointment_id: z.string(),
+  service_name: z.string(),
+  requested_starts_at: timestampSchema,
+  kept_starts_at: timestampSchema,
+  created_at: timestampSchema,
+})
+
+type ClientNoticeRow = z.infer<typeof clientNoticeRowSchema>
 
 const toClientNotice = (row: ClientNoticeRow): ClientNotice => ({
   id: row.id,
@@ -37,8 +45,10 @@ export function clientNoticeRepository(db: SupabaseClient): ClientNoticesReposit
         .order('created_at', { ascending: false })
         .order('id', { ascending: false })
         .limit(limit)
-      if (error) return err(clientNoticesStorageFailed(error.message))
-      return ok(((data ?? []) as ClientNoticeRow[]).map(toClientNotice))
+      if (error) return err(clientNoticesStorageFailed(READ_FAILED))
+      const rows = z.array(clientNoticeRowSchema).safeParse(data ?? [])
+      if (!rows.success) return err(clientNoticesStorageFailed(INVALID_ROWS))
+      return ok(rows.data.map(toClientNotice))
     },
   }
 }

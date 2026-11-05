@@ -2,14 +2,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, cleanup, fireEvent, waitFor, within } from '@testing-library/react'
 import { fixedDate } from '@/shared/testing/fixed-clock'
 import { INBOX_LIMIT, type InboxNotice } from '@/features/notifications/domain/inbox-notice'
-import { AdminInbox } from '@/features/notifications/ui/inbox/components/AdminInbox'
-import { INBOX_TEXTS } from '@/features/notifications/ui/inbox/constants/inbox-strings'
+import { AdminInbox } from '../components/AdminInbox'
+import { INBOX_TEXTS } from '../constants/inbox-strings'
 
 const mockMarkNotice = vi.fn()
 const mockLoadMore = vi.fn()
 const mockRefresh = vi.fn()
 
-vi.mock('@/features/notifications/ui/inbox/actions/inbox-actions', () => ({
+vi.mock('../actions/inbox-actions', () => ({
   markNoticeAction: (input: unknown) => mockMarkNotice(input),
   loadMoreNoticesAction: (input: unknown) => mockLoadMore(input),
 }))

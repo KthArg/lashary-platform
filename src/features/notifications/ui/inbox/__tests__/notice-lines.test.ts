@@ -3,8 +3,8 @@ import { fixedDate } from '@/shared/testing/fixed-clock'
 import { formatMoney, moneyFromColones } from '@/shared/money'
 import { formatStudioDateTime } from '@/shared/studio-time'
 import type { AppointmentCancelledNotice, AppointmentRescheduledNotice, BookingCreatedNotice } from '@/features/notifications/domain/inbox-notice'
-import { INBOX_TEXTS } from '@/features/notifications/ui/inbox/constants/inbox-strings'
-import { noticeLines } from '@/features/notifications/ui/inbox/utils/notice-lines'
+import { INBOX_TEXTS } from '../constants/inbox-strings'
+import { noticeLines } from '../utils/notice-lines'
 
 const booking: BookingCreatedNotice = {
   id: 'aviso-1',

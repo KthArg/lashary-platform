@@ -1,29 +1,27 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { z } from 'zod'
 import { ok, err } from '@/shared/result'
-import type { ClientNoticeDelivery, ClientNoticeKind } from '../domain/client-notice'
+import type { ClientNoticeDelivery } from '../domain/client-notice'
 import type { ClientNoticeDeliveryRepository, RepositoryFailure } from '../application/ports'
-import { CHANNEL_SEND_TIMEOUT_MS } from '../channels/send-timeout'
+import { CLAIM_BATCH_SIZE, CLAIM_TTL_MINUTES } from './claim-limits'
 import { CLIENT_NOTICES_TABLE } from './client-notice-repository'
 
 export const CLAIM_CLIENT_NOTICES_FUNCTION = 'notifications_claim_client_notices'
 const FAILED: RepositoryFailure = 'repository-failed'
 
-export const CLIENT_NOTICE_CLAIM_TTL_MINUTES = 10
-const CHANNELS_PER_NOTICE = 2
-const CLAIM_TTL_SAFETY_MARGIN = 2
-export const CLIENT_NOTICE_CLAIM_BATCH_SIZE = Math.floor(
-  (CLIENT_NOTICE_CLAIM_TTL_MINUTES * 60_000) / (CHANNEL_SEND_TIMEOUT_MS * CHANNELS_PER_NOTICE) / CLAIM_TTL_SAFETY_MARGIN,
-)
+const timestampSchema = z.string().refine((value) => !Number.isNaN(Date.parse(value)))
 
-type ClientNoticeDeliveryRow = {
-  id: string
-  kind: ClientNoticeKind
-  client_id: string
-  service_name: string
-  requested_starts_at: string
-  kept_starts_at: string
-  attempts: number
-}
+const clientNoticeDeliveryRowSchema = z.object({
+  id: z.string(),
+  kind: z.enum(['reschedule_rejected', 'reschedule_expired']),
+  client_id: z.string(),
+  service_name: z.string(),
+  requested_starts_at: timestampSchema,
+  kept_starts_at: timestampSchema,
+  attempts: z.number().int().min(0),
+})
+
+type ClientNoticeDeliveryRow = z.infer<typeof clientNoticeDeliveryRowSchema>
 
 const toDelivery = (row: ClientNoticeDeliveryRow): ClientNoticeDelivery => ({
   id: row.id,
@@ -45,11 +43,13 @@ export function clientNoticeDeliveryRepository(db: SupabaseClient): ClientNotice
     async claimDue(now) {
       const { data, error } = await db.rpc(CLAIM_CLIENT_NOTICES_FUNCTION, {
         p_now: now.toISOString(),
-        p_batch_size: CLIENT_NOTICE_CLAIM_BATCH_SIZE,
-        p_claim_ttl_minutes: CLIENT_NOTICE_CLAIM_TTL_MINUTES,
+        p_batch_size: CLAIM_BATCH_SIZE,
+        p_claim_ttl_minutes: CLAIM_TTL_MINUTES,
       })
       if (error || !data) return err(FAILED)
-      return ok((data as ClientNoticeDeliveryRow[]).map(toDelivery))
+      const rows = z.array(clientNoticeDeliveryRowSchema).safeParse(data)
+      if (!rows.success) return err(FAILED)
+      return ok(rows.data.map(toDelivery))
     },
 
     releaseToPending: (id) => updateClaimed(id, { status: 'pending', claimed_at: null }),

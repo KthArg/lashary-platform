@@ -308,6 +308,15 @@ Hecho hasta ahora:
   `claimed_at`, `last_channel` y `sent_at` quedan fuera del `GRANT SELECT`. El cron las recibe al reclamar,
   porque `notifications_claim_client_notices` pasó a `SECURITY DEFINER` y rechaza con `42501` a quien no es
   staff. Pruebas: pgTAP `notifications_client_notices_private_columns.test.sql` y `__tests__/rls-isolation.test.ts`.
+- Tiempo del ciclo: el TTL del reclamo (`CLAIM_TTL_MINUTES`, 10), la tanda (`CLAIM_BATCH_SIZE`, 7) y la
+  duración de la ruta (`maxDuration` = `CYCLE_MAX_DURATION_SECONDS`, 300) van atados en
+  `db/claim-limits.ts`: el ciclo corre dos envíos en serie (avisos y recordatorios), cada mensaje puede
+  gastar los dos canales a `CHANNEL_SEND_TIMEOUT_MS`, y la tanda sale de repartir la duración de la ruta
+  entre ambos. Cambiar uno obliga a revisar los otros; `db/__tests__/claim-limits.test.ts` lo comprueba y
+  lee el `maxDuration` de la ruta.
+- Las filas que llegan de la base se validan con Zod (`client-notice-repository.ts`,
+  `client-notice-delivery-repository.ts`); una forma inesperada es un error, y el error no guarda el texto
+  de Postgres. Los fallos del envío de avisos se registran con `logError` (`shared/logger.ts`).
 
 ## Qué no hace todavía
 
