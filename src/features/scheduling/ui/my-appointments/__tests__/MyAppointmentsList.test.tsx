@@ -32,6 +32,8 @@ const appointment = (id: string, slot: string): MyAppointmentView => ({
   status: myAppointmentsMessages.status.approved,
   amounts: 'Precio ₡35 000 · Anticipo ₡10 000',
   heldNote: null,
+  canConfirm: false,
+  confirmedNote: null,
 })
 const appointments = [appointment(FIRST_ID, 'martes, 12 de abril'), appointment(SECOND_ID, 'martes, 19 de abril')]
 
