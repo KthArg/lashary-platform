@@ -1,5 +1,3 @@
-export const CONFIRMABLE_APPOINTMENT_STATUS = 'approved'
-
 export const CONFIRMED_APPOINTMENT_STATUS = 'confirmed'
 
 export const confirmationMessages = {
@@ -13,5 +11,5 @@ export const confirmationMessages = {
   confirmed: 'Tu asistencia quedó confirmada.',
   confirmedWithPolicy: (hours: string) =>
     `Tu asistencia quedó confirmada. Si cancelás con menos de ${hours} de anticipación, perdés el anticipo.`,
-  confirmedNote: 'Confirmaste tu asistencia. Si cancelás fuera de la ventana de cancelación, perdés el anticipo.',
+  confirmedNote: 'Tu asistencia está confirmada. Si cancelás fuera de la ventana de cancelación, perdés el anticipo.',
 } as const

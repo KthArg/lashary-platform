@@ -5,9 +5,10 @@ import { buildReminderMessage, buildReminderTemplateVariables } from '../domain/
 import { REMINDER_ATTEMPT_OUTCOMES, type ReminderAttempt } from '../domain/reminder-attempt'
 import { sanitizeProviderError } from '../domain/provider-error'
 import { isChannelNotConfigured, type ChannelNotConfigured, type ChannelSendFailed } from '../domain/errors'
-import type { ClientContactPort, NotificationChannel, ReminderRepository, RepositoryFailure } from './ports'
+import type { ClientContactPort, MessagePurpose, NotificationChannel, ReminderRepository, RepositoryFailure } from './ports'
 
 const NO_CONTACT_ERROR = 'sin contacto registrado para la clienta'
+const REMINDER_PURPOSE: MessagePurpose = 'reminder'
 
 export type SendDueRemindersDeps = {
   claimDuePending: ReminderRepository['claimDuePending']
@@ -83,7 +84,7 @@ const sendOne = async (deps: SendDueRemindersDeps, reminder: ReminderSnapshot, n
   const message = buildReminderMessage(reminderMessageInput)
   const templateVariables = buildReminderTemplateVariables(reminderMessageInput)
 
-  const primary = await deps.primaryChannel.send({ reminderId: reminder.id, contact: contact.value, message, templateVariables })
+  const primary = await deps.primaryChannel.send({ messageId: reminder.id, purpose: REMINDER_PURPOSE, contact: contact.value, message, templateVariables })
   await recordAttempt(deps, toChannelAttempt(reminder, deps.primaryChannel, primary, now))
   if (isOk(primary)) {
     const marked = await deps.markSent(reminder.id, deps.primaryChannel.kind, now)
@@ -91,7 +92,7 @@ const sendOne = async (deps: SendDueRemindersDeps, reminder: ReminderSnapshot, n
     return 'sent'
   }
 
-  const backup = await deps.backupChannel.send({ reminderId: reminder.id, contact: contact.value, message, templateVariables })
+  const backup = await deps.backupChannel.send({ messageId: reminder.id, purpose: REMINDER_PURPOSE, contact: contact.value, message, templateVariables })
   await recordAttempt(deps, toChannelAttempt(reminder, deps.backupChannel, backup, now))
   if (isOk(backup)) {
     const marked = await deps.markSent(reminder.id, deps.backupChannel.kind, now)
