@@ -58,7 +58,7 @@ describe('runReminderCycle', () => {
       discovered: 1, discoverFailed: 0, releasedExpiredClaims: 0, cancelled: 0, rescheduled: 0, reconcileFailed: 0,
       sent: 0, retried: 0, exhausted: 0, sendErrored: 0,
       noticesSent: 0, noticesRetried: 0, noticesExhausted: 0, noticesErrored: 0, noticesFailed: 0,
-      droppedResolved: 0, droppedOpen: 0,
+      droppedResolved: 0, droppedOpen: 0, droppedFailed: 0,
     })
     expect(inserted).toHaveLength(1)
   })
@@ -163,7 +163,8 @@ describe('runReminderCycle', () => {
     expect(logged).not.toHaveBeenCalled()
   })
 
-  it('si reintentar los avisos perdidos falla, el ciclo sigue y lo cuenta como noticesFailed, igual que el reclamo', async () => {
+  it('si reintentar los avisos perdidos falla, el ciclo sigue, lo cuenta aparte del reclamo y lo escribe', async () => {
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined)
     const steps: string[] = []
     const result = await runReminderCycle({
       ...quietDeps(steps),
@@ -173,6 +174,7 @@ describe('runReminderCycle', () => {
     })()
 
     expect(steps).toEqual(['notices', 'discover'])
-    expect(isOk(result) && result.value).toMatchObject({ noticesFailed: 1, droppedResolved: 0, droppedOpen: 0 })
+    expect(isOk(result) && result.value).toMatchObject({ noticesFailed: 0, droppedFailed: 1, droppedResolved: 0, droppedOpen: 0 })
+    expect(logged).toHaveBeenCalled()
   })
 })

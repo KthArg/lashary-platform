@@ -220,8 +220,10 @@ Decisiones:
   `notifications_dropped_notices` (un registro por evento, con acción, error recortado a 500 e intentos), que solo
   staff lee y marca como resuelto. El cron lo reintenta solo con `notifications_reconcile_dropped_notices`
   (`SECURITY DEFINER`, solo staff): relee el evento de `audit_events` y repite el registro que le corresponde, que
-  es idempotente por evento; si sale bien lo marca resuelto y si no suma un intento. Migraciones `20261107000000` y
-  `20261107000001`. Pruebas: pgTAP `notifications_dropped_notices.test.sql` y
+  es idempotente por evento; si sale bien lo marca resuelto y si no suma un intento. Reintenta primero los que menos
+  intentos llevan y deja de tocar los que ya gastaron cinco, que siguen contados como abiertos, para que unos
+  pocos irrecuperables no frenen a los nuevos. Migraciones `20261107000000`, `20261107000001` y
+  `20261107000002`. Pruebas: pgTAP `notifications_dropped_notices.test.sql` y
   `notifications_reconcile_dropped_notices.test.sql`, `db/__tests__/dropped-notices-repository.test.ts` y
   `__tests__/rls-isolation.test.ts`.
 - Datos internos: la clienta y staff leen por la tabla solo el contenido y `status`; `attempts`, `last_error`,
@@ -248,8 +250,8 @@ Decisiones:
   canales caídos cuenta un intento y, al quinto o sin canal configurado, queda `failed`. Si no se pudo leer el
   contacto, suelta el aviso sin gastar un intento. `runReminderCycle` lo corre después de vencer los reagendados
   y antes de los recordatorios; antes de enviar reintenta los avisos perdidos, suma `droppedResolved` y
-  `droppedOpen` al resumen y, si quedan abiertos, lo escribe con `logError`. Si ese reintento falla, el ciclo sigue
-  y lo cuenta en `noticesFailed`. Pruebas: `application/__tests__/send-client-notices.test.ts` y
+  `droppedOpen` al resumen y, si quedan abiertos, lo escribe con `logError`. Si ese reintento falla, el ciclo sigue,
+  lo cuenta en `droppedFailed` y lo escribe con `logError`. Pruebas: `application/__tests__/send-client-notices.test.ts` y
   `run-reminder-cycle.test.ts`.
 - Tiempo del ciclo: el TTL del reclamo (`CLAIM_TTL_MINUTES`, 10), la tanda (`CLAIM_BATCH_SIZE`, 7) y la duración
   de la ruta (`maxDuration` igual a `CYCLE_MAX_DURATION_SECONDS`, 300) van atados en `db/claim-limits.ts`. El ciclo
