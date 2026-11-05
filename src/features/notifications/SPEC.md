@@ -206,6 +206,7 @@ WhatsApp falla: no se envían los dos siempre.
 ## US-NOT-08: confirmación de asistencia
 
 - `scheduling_confirm_appointment` (migración `20261105010000`, feature `scheduling`) lleva una cita de `approved` a `confirmed`. La usa la dueña o el staff; cualquier otra persona recibe el mismo error que con una cita inexistente (SEC-005). Confirmar dos veces no repite el evento `scheduling.appointment.confirmed`, que guarda fecha, hora y quién confirmó (`client` o `staff`). Prueba: `supabase/tests/database/scheduling_confirm_appointment.test.sql`.
+- `scheduling_confirmation_policy` (migración `20261105010001`, feature `scheduling`) guarda las horas antes de la cita desde las que una cita sin confirmar se destaca: 48 por defecto, de 0 a 720, y 0 no destaca. Solo se cambia con `scheduling_change_confirmation_deadline`, que exige administradora y deja el evento `scheduling.confirmation_deadline.changed`. Prueba: `supabase/tests/database/scheduling_confirmation_policy.test.sql`.
 
 ## Qué no hace todavía
 
