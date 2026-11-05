@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { ok, err, isOk } from '@/shared/result'
 import { fixedClock, fixedDate } from '@/shared/testing/fixed-clock'
 import { runReminderCycle } from '../run-reminder-cycle'
 import type { AppointmentSnapshot, ContactInfo, ReminderUpsert } from '../ports'
-import type { ClientNoticeDeliveryRepository, NotificationChannel } from '../ports'
+import type { ClientNoticeDeliveryRepository, DroppedNoticesRepository, NotificationChannel } from '../ports'
 
 const noClientNotices: ClientNoticeDeliveryRepository = {
   claimDue: async () => ok([]),
@@ -12,6 +12,12 @@ const noClientNotices: ClientNoticeDeliveryRepository = {
   markRetry: async () => ok(undefined),
   markExhausted: async () => ok(undefined),
 }
+
+const noDroppedNotices: DroppedNoticesRepository = {
+  reconcile: async () => ok({ resolved: 0, open: 0 }),
+}
+
+afterEach(() => vi.restoreAllMocks())
 
 describe('runReminderCycle', () => {
   it('encadena descubrir, reconciliar y enviar en una sola corrida', async () => {
@@ -40,6 +46,7 @@ describe('runReminderCycle', () => {
       markRetry: async () => ok(undefined),
       markExhausted: async () => ok(undefined),
       clientNotices: noClientNotices,
+      droppedNotices: noDroppedNotices,
       primaryChannel: channel('whatsapp'),
       backupChannel: channel('email'),
     })()
@@ -51,6 +58,7 @@ describe('runReminderCycle', () => {
       discovered: 1, discoverFailed: 0, releasedExpiredClaims: 0, cancelled: 0, rescheduled: 0, reconcileFailed: 0,
       sent: 0, retried: 0, exhausted: 0, sendErrored: 0,
       noticesSent: 0, noticesRetried: 0, noticesExhausted: 0, noticesErrored: 0, noticesFailed: 0,
+      droppedResolved: 0, droppedOpen: 0,
     })
     expect(inserted).toHaveLength(1)
   })
@@ -72,6 +80,7 @@ describe('runReminderCycle', () => {
     markRetry: async () => ok(undefined),
     markExhausted: async () => ok(undefined),
     clientNotices: noClientNotices,
+    droppedNotices: noDroppedNotices,
     primaryChannel: { kind: 'whatsapp' as const, send: async () => ok(undefined) },
     backupChannel: { kind: 'email' as const, send: async () => ok(undefined) },
   })
@@ -120,5 +129,50 @@ describe('runReminderCycle', () => {
 
     expect(steps).toEqual(['discover'])
     expect(isOk(result) && result.value).toMatchObject({ noticesFailed: 1 })
+  })
+
+  it('reintenta los avisos perdidos antes de mandar los avisos a la clienta y suma el resultado al resumen', async () => {
+    const steps: string[] = []
+    const result = await runReminderCycle({
+      ...quietDeps(steps),
+      expireUndecidedReschedules: async () => (steps.push('expire'), ok(0)),
+      droppedNotices: { reconcile: async () => (steps.push('dropped'), ok({ resolved: 2, open: 0 })) },
+      clientNotices: { ...noClientNotices, claimDue: async () => (steps.push('notices'), ok([])) },
+    })()
+
+    expect(steps).toEqual(['expire', 'dropped', 'notices', 'discover'])
+    expect(isOk(result) && result.value).toMatchObject({ droppedResolved: 2, droppedOpen: 0, noticesFailed: 0 })
+  })
+
+  it('si siguen avisos perdidos abiertos, lo deja escrito para que se vea', async () => {
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const result = await runReminderCycle({
+      ...quietDeps([]),
+      expireUndecidedReschedules: async () => ok(0),
+      droppedNotices: { reconcile: async () => ok({ resolved: 1, open: 3 }) },
+    })()
+
+    expect(isOk(result) && result.value).toMatchObject({ droppedResolved: 1, droppedOpen: 3 })
+    expect(logged).toHaveBeenCalledTimes(1)
+    expect(String(logged.mock.calls[0]?.[0])).toContain('3 avisos perdidos')
+  })
+
+  it('si no queda ninguno abierto no escribe nada', async () => {
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    await runReminderCycle({ ...quietDeps([]), expireUndecidedReschedules: async () => ok(0) })()
+    expect(logged).not.toHaveBeenCalled()
+  })
+
+  it('si reintentar los avisos perdidos falla, el ciclo sigue y lo cuenta como noticesFailed, igual que el reclamo', async () => {
+    const steps: string[] = []
+    const result = await runReminderCycle({
+      ...quietDeps(steps),
+      expireUndecidedReschedules: async () => ok(0),
+      droppedNotices: { reconcile: async () => err('repository-failed' as const) },
+      clientNotices: { ...noClientNotices, claimDue: async () => (steps.push('notices'), ok([])) },
+    })()
+
+    expect(steps).toEqual(['notices', 'discover'])
+    expect(isOk(result) && result.value).toMatchObject({ noticesFailed: 1, droppedResolved: 0, droppedOpen: 0 })
   })
 })

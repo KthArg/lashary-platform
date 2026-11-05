@@ -10,6 +10,7 @@ import {
 import { getClientContactForReminders } from '@/features/clients'
 import { reminderRepository } from './db/reminder-repository'
 import { clientNoticeDeliveryRepository } from './db/client-notice-delivery-repository'
+import { droppedNoticesRepository } from './db/dropped-notices-repository'
 import { runReminderCycle, type RunReminderCycleSummary } from './application/run-reminder-cycle'
 import type { AppointmentSnapshot, ContactInfo, RepositoryFailure } from './application/ports'
 import { metaWhatsAppChannel, readMetaWhatsAppConfigFromEnv } from './channels/meta-whatsapp-channel'
@@ -70,6 +71,7 @@ export async function runNotificationsReminderCycle(): Promise<
       markRetry: repo.markRetry,
       markExhausted: repo.markExhausted,
       clientNotices: clientNoticeDeliveryRepository(db),
+      droppedNotices: droppedNoticesRepository(db),
       primaryChannel: metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env)),
       backupChannel: resendEmailChannel(readResendEmailConfigFromEnv(process.env)),
     })()
