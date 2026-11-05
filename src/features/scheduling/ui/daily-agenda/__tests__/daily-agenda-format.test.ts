@@ -82,6 +82,8 @@ describe('toDailyAgendaViewModel — US-AGE-11', () => {
         status: 'Pendiente de aprobar',
         isPending: true,
         isRejected: false,
+        isUnconfirmed: false,
+        confirmLabel: null,
         links: {
           record: '/admin/clients/perfil-ana/expediente',
           appointments: '/admin/clients/perfil-ana/citas',

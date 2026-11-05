@@ -7,6 +7,7 @@ import type {
   DailyAgendaViewModel,
   UnclosedSectionView,
 } from '../types/daily-agenda.types'
+import { ManualConfirmationControl } from './ManualConfirmationControl'
 import { UnclosedAppointments } from './UnclosedAppointments'
 
 function DayNav({ nav }: { nav: AgendaDayNav }) {
@@ -34,6 +35,7 @@ function DayNav({ nav }: { nav: AgendaDayNav }) {
 
 const cardStyleOf = (entry: AgendaEntryView): string => {
   if (entry.isPending) return STYLES.cardPending
+  if (entry.isUnconfirmed) return STYLES.cardUnconfirmed
   return entry.isRejected ? STYLES.cardRejected : STYLES.card
 }
 
@@ -54,6 +56,7 @@ function AgendaItem({ entry }: { entry: AgendaEntryView }) {
         <span className={STYLES.tag}>{entry.technique}</span>
         {entry.visit ? <span className={STYLES.tag}>{entry.visit}</span> : null}
         {entry.delinquency ? <span className={STYLES.delinquent}>{entry.delinquency}</span> : null}
+        {entry.isUnconfirmed ? <span className={STYLES.unconfirmed}>{COPY.confirmation.unconfirmed}</span> : null}
       </div>
       <dl className={STYLES.meta}>
         <dt className={STYLES.term}>{COPY.labels.duration}</dt>
@@ -69,6 +72,7 @@ function AgendaItem({ entry }: { entry: AgendaEntryView }) {
           <Link href={entry.links.appointments} aria-label={entry.links.appointmentsLabel} className={STYLES.action}>
             {COPY.clientAppointments}
           </Link>
+          {entry.confirmLabel ? <ManualConfirmationControl appointmentId={entry.id} clientName={entry.clientName} label={entry.confirmLabel} /> : null}
         </div>
       ) : null}
     </li>
@@ -93,6 +97,7 @@ function AgendaBody({ view }: { view: DailyAgendaViewModel }) {
         <>
           {view.truncatedNotice ? <p className={STYLES.truncated}>{view.truncatedNotice}</p> : null}
           {view.delinquencyNotice ? <p className={STYLES.truncated}>{view.delinquencyNotice}</p> : null}
+          {view.confirmationNotice ? <p className={STYLES.truncated}>{view.confirmationNotice}</p> : null}
           <ul aria-label={COPY.listLabel(view.nav.dayLabel)} className={STYLES.list}>
             {view.entries.map((entry) => (
               <AgendaItem key={entry.id} entry={entry} />
