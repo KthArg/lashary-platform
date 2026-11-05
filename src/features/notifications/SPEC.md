@@ -2,7 +2,7 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-30
+actualizado: 2026-11-04
 historias:
   - id: US-NOT-01
     estado: terminada
@@ -19,7 +19,8 @@ historias:
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "criterio 2: falta la bitacora de intentos que pide ADR-0006; los criterios 1 y 3 ya los entrego US-NOT-03"
   - id: US-NOT-08
     estado: no_iniciada
   - id: US-CLI-06
