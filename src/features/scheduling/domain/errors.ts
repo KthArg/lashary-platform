@@ -147,6 +147,24 @@ export interface RescheduleSlotTaken {
   readonly message: string
 }
 
+export interface AppointmentNotClosable {
+  readonly code: 'SCHEDULING_APPOINTMENT_NOT_CLOSABLE'
+  readonly appointmentId: string
+  readonly message: string
+}
+
+export interface InvalidClosingAmount {
+  readonly code: 'SCHEDULING_INVALID_CLOSING_AMOUNT'
+  readonly appointmentId: string
+  readonly message: string
+}
+
+export interface AppointmentNotChargeable {
+  readonly code: 'SCHEDULING_APPOINTMENT_NOT_CHARGEABLE'
+  readonly appointmentId: string
+  readonly message: string
+}
+
 export type SchedulingError =
   | SlotNotOffered
   | TooManyPendingAppointments
@@ -172,6 +190,9 @@ export type SchedulingError =
   | RescheduleSlotNotOffered
   | RescheduleSlotTaken
   | PackageNotAvailable
+  | AppointmentNotClosable
+  | InvalidClosingAmount
+  | AppointmentNotChargeable
 
 export const techniqueNotSelectable = (
   techniqueId: string,
@@ -329,4 +350,22 @@ export const appointmentScheduleChanged = (
   startsAtMs,
   endsAtMs,
   message: `el horario de la cita ${appointmentId} cambió desde que la administradora lo vio`,
+})
+
+export const appointmentNotClosable = (appointmentId: string): AppointmentNotClosable => ({
+  code: 'SCHEDULING_APPOINTMENT_NOT_CLOSABLE',
+  appointmentId,
+  message: `la cita ${appointmentId} no existe, todavía no terminó o no está en un estado que se pueda cerrar`,
+})
+
+export const invalidClosingAmount = (appointmentId: string): InvalidClosingAmount => ({
+  code: 'SCHEDULING_INVALID_CLOSING_AMOUNT',
+  appointmentId,
+  message: `el precio o el anticipo de la cita ${appointmentId} no son montos enteros válidos para cerrarla`,
+})
+
+export const appointmentNotChargeable = (appointmentId: string): AppointmentNotChargeable => ({
+  code: 'SCHEDULING_APPOINTMENT_NOT_CHARGEABLE',
+  appointmentId,
+  message: `la cita ${appointmentId} no tiene clienta o precio registrado, así que no se puede generar su cargo`,
 })

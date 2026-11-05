@@ -33,3 +33,22 @@ export type DailyAgendaViewModel = { nav: AgendaDayNav } & (
   | { status: 'empty' }
   | { status: 'ready'; entries: AgendaEntryView[]; truncatedNotice: string | null; delinquencyNotice: string | null }
 )
+
+export type ClosingOptionView = { outcome: 'completed' | 'no_show'; label: string; summary: string }
+
+export type ServiceChoiceView = { techniqueId: string; name: string; summary: string }
+
+export type UnclosedItemView = {
+  id: string
+  when: string
+  clientName: string
+  technique: string
+  dayHref: string
+  dayLabel: string
+  options: ClosingOptionView[]
+  serviceChoices: ServiceChoiceView[]
+}
+
+export type UnclosedSectionView =
+  | { status: 'error' }
+  | { status: 'ready'; items: UnclosedItemView[]; truncatedNotice: string | null }
