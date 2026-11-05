@@ -95,6 +95,8 @@ notifications_cancel_confirmation_request(p_appointment_id uuid) RETURNS void
 
 Confirmar la cita (`scheduling_confirm_appointment`) y el plazo que destaca las citas sin confirmar son internos de `scheduling`: otra feature no los usa.
 
+`SCHEDULING_MY_APPOINTMENTS_PATH`, exportada en `index.ts`, es la ruta de «Mis citas» que el mensaje enlaza.
+
 ## Eventos de dominio
 
 Ninguno. Leer el historial no cambia ninguna cita.

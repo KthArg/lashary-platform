@@ -16,6 +16,7 @@ describe('runReminderCycle', () => {
 
     const result = await runReminderCycle({
       expireUndecidedReschedules: async () => ok(0),
+      sendConfirmationRequests: async () => ok({ sent: 2, retried: 0, exhausted: 0, errored: 0, unconfigured: 0, cancelled: 0 }),
       listUpcoming: async () => ok([newAppointment]),
       insertIfAbsent: async (reminderUpsert) => { inserted.push(reminderUpsert); return ok({ inserted: true }) },
       newId: () => 'rem-1',
@@ -42,11 +43,13 @@ describe('runReminderCycle', () => {
       expiredReschedules: 0, expireFailed: 0,
       discovered: 1, discoverFailed: 0, releasedExpiredClaims: 0, cancelled: 0, rescheduled: 0, reconcileFailed: 0,
       sent: 0, retried: 0, exhausted: 0, sendErrored: 0,
+      confirmationsSent: 2, confirmationsRetried: 0, confirmationsExhausted: 0, confirmationsErrored: 0, confirmationsUnconfigured: 0, confirmationsCancelled: 0, confirmationsFailed: 0,
     })
     expect(inserted).toHaveLength(1)
   })
 
   const quietDeps = (steps: string[]) => ({
+    sendConfirmationRequests: async () => ok({ sent: 0, retried: 0, exhausted: 0, errored: 0, unconfigured: 0, cancelled: 0 }),
     listUpcoming: async () => (steps.push('discover'), ok([])),
     insertIfAbsent: async () => ok({ inserted: true }),
     newId: () => 'rem-1',
@@ -87,5 +90,15 @@ describe('runReminderCycle', () => {
 
     expect(steps).toEqual(['discover'])
     expect(isOk(result) && result.value).toMatchObject({ expiredReschedules: 0, expireFailed: 1 })
+  })
+
+  it('si no se pudieron reclamar las confirmaciones, lo cuenta y la corrida no se pierde (US-NOT-08)', async () => {
+    const result = await runReminderCycle({
+      ...quietDeps([]),
+      expireUndecidedReschedules: async () => ok(0),
+      sendConfirmationRequests: async () => err('repository-failed' as const),
+    })()
+
+    expect(isOk(result) && result.value.confirmationsFailed).toBe(1)
   })
 })
