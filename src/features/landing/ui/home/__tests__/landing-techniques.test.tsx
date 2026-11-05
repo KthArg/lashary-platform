@@ -5,6 +5,7 @@ import type { TechniqueMediaByFamily } from '@/features/content'
 import {
   LandingTechniques,
   toLandingTechnique,
+  formatColones,
   RESERVE_ROUTE,
   TECHNIQUES_SECTION,
   landingSections,
@@ -172,5 +173,34 @@ describe('LandingTechniques — US-LAND-02', () => {
 
     expect(landingSections.some((section) => section.id === TECHNIQUES_SECTION.id)).toBe(true)
     expect(container.querySelector(`#${TECHNIQUES_SECTION.id}`)).toBeTruthy()
+  })
+
+  const sameAmount = (actual: string, expected: string) =>
+    actual.replace(/ /g, ' ') === expected.replace(/ /g, ' ')
+
+  it('US-PROM-01 criterio 2: con promoción vigente, el precio de la fila muestra el original tachado y el rebajado', () => {
+    render(<LandingTechniques techniques={[toLandingTechnique(makeTechnique(), {}, 20)]} />)
+
+    const row = screen.getByRole('button', { name: /Set clásico/ })
+    expect(within(row).getByText((text) => sameAmount(text, formatColones(25000)))).toBeTruthy()
+    expect(within(row).getByText((text) => sameAmount(text, formatColones(20000)))).toBeTruthy()
+  })
+
+  it('US-PROM-01 criterio 2: con promoción vigente, al abrir avisa el descuento y rebaja también el retoque', () => {
+    render(<LandingTechniques techniques={[toLandingTechnique(makeTechnique(), {}, 20)]} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Set clásico/ }))
+
+    expect(screen.getByRole('note').textContent).toContain('20%')
+    const retouch = screen.getByText(/Retoque:/)
+    expect(within(retouch).getByText((text) => sameAmount(text, formatColones(12000)))).toBeTruthy()
+  })
+
+  it('sin promoción vigente, no muestra ningún aviso de descuento', () => {
+    renderSection([makeTechnique()])
+
+    fireEvent.click(screen.getByRole('button', { name: /Set clásico/ }))
+
+    expect(screen.queryByRole('note')).toBeNull()
   })
 })
