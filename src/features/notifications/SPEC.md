@@ -2,7 +2,7 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-30
+actualizado: 2026-11-05
 historias:
   - id: US-NOT-01
     estado: terminada
@@ -21,7 +21,8 @@ historias:
   - id: US-NOT-07
     estado: no_iniciada
   - id: US-NOT-08
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "los seis criterios: la transicion a confirmed, el plazo configurable, el mensaje al aprobar y las pantallas; decisiones del PO del 2026-11-05 en docs/process/DEPENDENCIES.md"
   - id: US-CLI-06
     estado: no_iniciada
 flags: []
