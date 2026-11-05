@@ -303,6 +303,11 @@ Hecho hasta ahora:
   `noticesSent`, `noticesRetried`, `noticesExhausted`, `noticesErrored` y `noticesFailed`. Lo cablea
   `index.ts` con `clientNoticeDeliveryRepository`. Pruebas: `application/__tests__/send-client-notices.test.ts`
   y `run-reminder-cycle.test.ts`.
+- Datos internos del envío (migración `20261106000001_notifications_client_notices_private_columns.sql`): la
+  clienta y staff leen por la tabla solo las columnas del contenido y `status`; `attempts`, `last_error`,
+  `claimed_at`, `last_channel` y `sent_at` quedan fuera del `GRANT SELECT`. El cron las recibe al reclamar,
+  porque `notifications_claim_client_notices` pasó a `SECURITY DEFINER` y rechaza con `42501` a quien no es
+  staff. Pruebas: pgTAP `notifications_client_notices_private_columns.test.sql` y `__tests__/rls-isolation.test.ts`.
 
 ## Qué no hace todavía
 

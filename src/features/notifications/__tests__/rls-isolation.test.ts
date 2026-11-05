@@ -177,6 +177,11 @@ describe.skipIf(!isSupabaseConfigured)('SEC-002 — aislamiento RLS de notificat
     const anonRead = await anonClient.from(CLIENT_NOTICES_TABLE).select('id')
     expect(anonRead.error?.code).toBe(PERMISSION_DENIED)
 
+    const internalColumns = await clientaClient
+      .from(CLIENT_NOTICES_TABLE)
+      .select('last_error, attempts, claimed_at, last_channel, sent_at')
+    expect(internalColumns.error?.code).toBe(PERMISSION_DENIED)
+
     const marked = await clientaClient.from(CLIENT_NOTICES_TABLE).update({ status: 'sent' }).not('id', 'is', null).select('id')
     expect(marked.data ?? []).toHaveLength(0)
 
