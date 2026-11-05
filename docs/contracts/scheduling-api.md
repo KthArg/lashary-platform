@@ -1,6 +1,6 @@
 # Contrato — API pública de citas
 
-> **Autoridad:** qué expone la feature `scheduling` a las demás features y bajo qué garantías. Es un contrato **de demanda**: nace de lo que necesita `clients` para el historial de citas de una clienta (US-CLI-02). Se versiona aquí antes de cualquier cambio de forma (INT-003). **Lectores:** feature `clients`. **Estado:** implementado en la pieza 2 de US-CLI-02 (`application/list-client-appointments.ts` y `db/client-appointments-repository.ts`). **Actualizado:** 2026-10-21.
+> **Autoridad:** qué expone la feature `scheduling` a las demás features y bajo qué garantías. Es un contrato **de demanda**: nace de lo que necesita `clients` para el historial de citas de una clienta (US-CLI-02). Se versiona aquí antes de cualquier cambio de forma (INT-003). **Lectores:** feature `clients`. **Estado:** implementado en la pieza 2 de US-CLI-02 (`application/list-client-appointments.ts` y `db/client-appointments-repository.ts`). **Actualizado:** 2026-11-05.
 
 ## Qué es
 
@@ -71,6 +71,29 @@ Consumidor: **US-CLI-02**, la pestaña "Citas" de la ficha de la clienta en `/ad
 ## Pruebas
 
 `src/features/scheduling/application/__tests__/list-client-appointments.test.ts` (página y tamaño saneados, el fallo de la base como `StorageFailed`) y `src/features/scheduling/db/__tests__/client-appointments-repository.test.ts` (columnas pedidas, filtro por clienta, orden, rango de la página y conteo). El aislamiento de la RLS ya lo prueban `scheduling_appointment_client_snapshot.test.sql` y `__tests__/rls-isolation.test.ts` (SEC-002).
+
+## Confirmación de asistencia (US-NOT-08)
+
+`scheduling` le avisa a `notifications` cuándo hay que pedir una confirmación, y cuándo ya no. Va por funciones SQL de `notifications` que llama un trigger de `scheduling_appointments`, en la misma transacción, igual que `notifications_record_booking` de US-NOT-01. `notifications` no lee la tabla de citas (ARCH-005).
+
+```sql
+notifications_record_confirmation_request(
+  p_appointment_id uuid,
+  p_client_id      uuid,
+  p_starts_at      timestamptz,
+  p_service_name   text
+) RETURNS void
+
+notifications_cancel_confirmation_request(p_appointment_id uuid) RETURNS void
+```
+
+- `record` se llama cuando una cita con clienta pasa a `approved` desde otro estado: la decisión de la administradora, y también un reagendado que se aprueba o se rechaza. Hay como máximo una solicitud por cita y horario: repetirla no manda otro mensaje, y una solicitud cancelada del mismo horario vuelve a quedar pendiente.
+- `cancel` se llama cuando una cita deja de estar `approved`. Solo cancela lo que aún no se mandó.
+- `p_service_name` es la técnica o, en una cita de paquete, el paquete.
+- Ningún rol de la API puede ejecutarlas: nadie fabrica solicitudes por PostgREST.
+- Si `notifications` falla, el trigger lo atrapa (`RAISE WARNING`) y la cita conserva su cambio de estado: el estado de la cita importa más que el mensaje.
+
+Confirmar la cita (`scheduling_confirm_appointment`) y el plazo que destaca las citas sin confirmar son internos de `scheduling`: otra feature no los usa.
 
 ## Eventos de dominio
 
