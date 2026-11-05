@@ -69,7 +69,7 @@ El backlog se mantiene en sus 51 historias; estas capacidades se construyen **de
 | US-NOT-01 notif. reserva | US-AGE-05, US-AUTH-01 | el trigger usa `technique_name` o, en citas de paquete de US-AGE-04, `package_name`; lee la columna sin exigirla, así que el orden de merge entre las dos no importa |
 | US-NOT-02 notif. cancelación/reagendado | US-AGE-06, US-AGE-10 | recibe el criterio de notificar la cancelación (ítem 9), el de notificar el reagendado (ítem 12) y el aviso a la clienta cuando su reagendado se rechaza o vence (ítem 13) |
 | US-NOT-03 recordatorio 24h | US-AGE-05 | **porta el canal completo** (ADR-0006): puerto, Twilio, email fallback, registro de envíos y reintentos; desde US-AGE-10 el ciclo de recordatorios llama primero a `expireSchedulingUndecidedReschedules` de `scheduling` (pieza 31, #588), así que depende de esa función, y los reagendados sin decisión solo vencen solos cuando este cron esté activo en producción (dueño y fecha de la activación por acordar) |
-| US-NOT-07 canal alternativo | US-NOT-03 | |
+| US-NOT-07 canal alternativo | US-NOT-03 | el canal y el respaldo por correo los entregó US-NOT-03; esta historia agrega la bitácora de intentos (`notifications_reminder_attempts`), que ADR-0006 pide para todo envío |
 | US-NOT-08 confirmación asistencia | US-NOT-03, US-AGE-05, US-AGE-13 | |
 | US-NOT-04 recordatorio pago | US-NOT-03, US-MOR-02 | |
 | US-NOT-05 re-aplicación | US-NOT-03, US-AGE-08, US-AGE-12 | |

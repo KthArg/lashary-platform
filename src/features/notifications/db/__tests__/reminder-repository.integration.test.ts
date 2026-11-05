@@ -12,6 +12,7 @@ const DB_URL = process.env.SUPABASE_DB_URL || DEFAULT_LOCAL_DB_URL
 const LOCAL_HOSTS = ['127.0.0.1', 'localhost']
 
 const TABLE = 'notifications_reminders'
+const ATTEMPTS_TABLE = 'notifications_reminder_attempts'
 const STAFF_ROLE = 'admin'
 const CLAIM_TTL_MINUTES = 10
 const SETUP_TIMEOUT_MS = 60_000
@@ -86,6 +87,7 @@ describe.skipIf(!reachable)('reminderRepository (Supabase local)', () => {
   afterAll(async () => {
     if (!admin) return
     if (seededIds.length > 0) {
+      await admin.query(`DELETE FROM public.${ATTEMPTS_TABLE} WHERE reminder_id = ANY($1::uuid[])`, [seededIds])
       await admin.query(`DELETE FROM public.${TABLE} WHERE id = ANY($1::uuid[])`, [seededIds])
     }
     if (staffUserId) await admin.query('DELETE FROM auth.users WHERE id = $1', [staffUserId])
@@ -312,6 +314,38 @@ describe.skipIf(!reachable)('reminderRepository (Supabase local)', () => {
     const { data: exhaustedRow } = await staffClient.from(TABLE).select('status, attempts').eq('id', exhaustedUpsert.id).single()
     expect(exhaustedRow?.status).toBe('failed')
     expect(exhaustedRow?.attempts).toBe(5)
+  })
+
+  it('recordAttempt acumula cada intento sin pisar los anteriores (US-NOT-07)', async () => {
+    const upsert = newUpsert()
+    track(upsert.id)
+    await repo.insertIfAbsent(upsert)
+    const attemptedAt = new Date('2042-01-01T14:00:00Z')
+
+    const failure = await repo.recordAttempt({
+      reminderId: upsert.id, attemptNumber: 1, channel: 'whatsapp', outcome: 'failed', error: 'Meta respondió 500', attemptedAt,
+    })
+    const rescue = await repo.recordAttempt({
+      reminderId: upsert.id, attemptNumber: 1, channel: 'email', outcome: 'sent', error: null, attemptedAt,
+    })
+    expect(isOk(failure)).toBe(true)
+    expect(isOk(rescue)).toBe(true)
+
+    const { data } = await staffClient.from(ATTEMPTS_TABLE)
+      .select('attempt_number, channel, outcome, error').eq('reminder_id', upsert.id).order('channel')
+    expect(data).toEqual([
+      { attempt_number: 1, channel: 'email', outcome: 'sent', error: null },
+      { attempt_number: 1, channel: 'whatsapp', outcome: 'failed', error: 'Meta respondió 500' },
+    ])
+  })
+
+  it('recordAttempt devuelve el fallo si el recordatorio no existe', async () => {
+    const recorded = await repo.recordAttempt({
+      reminderId: crypto.randomUUID(), attemptNumber: 1, channel: 'email', outcome: 'sent', error: null,
+      attemptedAt: new Date('2042-01-01T14:00:00Z'),
+    })
+
+    expect(isErr(recorded)).toBe(true)
   })
 
   it('anon no puede leer ni escribir notifications_reminders (SEC-002, fail-closed)', async () => {

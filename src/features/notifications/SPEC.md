@@ -20,7 +20,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-07
     estado: en_progreso
-    falta: "criterio 2: falta la bitacora de intentos que pide ADR-0006; los criterios 1 y 3 ya los entrego US-NOT-03"
+    falta: "verificacion y cierre: la bitacora de intentos esta implementada; falta el PR de cierre de us/US-NOT-07 con su evidencia"
   - id: US-NOT-08
     estado: no_iniciada
   - id: US-CLI-06
@@ -167,6 +167,26 @@ después, y US-NOT-02 necesita el horario anterior. `read_at` vacío es «no le�
   El contador cuenta todos los no leídos; si hay más de 20 avisos, «Ver más» trae los siguientes 20
   y se pueden marcar igual. Al cerrar el panel se descarta lo cargado de más y vuelve a los primeros
   20. Prueba: `ui/inbox/__tests__/admin-inbox.test.tsx` y `auth/__tests__/admin-auth.test.tsx` (el layout).
+
+## US-NOT-07: recordatorio por correo y bitácora de intentos
+
+WhatsApp como canal por defecto y el correo cuando falla ya los entregó US-NOT-03 (`sendDueReminders`,
+ADR-0006); el «medio alternativo por definir» del backlog es el correo por Resend. Esta historia agrega
+lo que faltaba del criterio 2: antes, si WhatsApp fallaba y el correo funcionaba, el error de WhatsApp
+se descartaba, y cada reintento pisaba `last_error`.
+
+- `notifications_reminder_attempts` (`20261104000000_notifications_reminder_attempts.sql`) guarda una
+  fila por intento y canal: `attempt_number`, `channel`, `outcome` (`sent`, `failed`, `not_configured`,
+  `no_contact`), `error` y `attempted_at`. Sin contacto no hay canal, y solo `sent` va sin error (CHECK).
+- Es append-only: staff solo tiene SELECT e INSERT; la clienta y anon no entran (SEC-001/002).
+- `sendDueReminders` registra cada canal apenas responde, con `recordAttempt` del repositorio. Si la
+  lectura del contacto falla no hay fila: no se intentó enviar y el recordatorio vuelve a `pending`.
+- Si la bitácora falla, se registra en el log y el envío sigue: perder un recordatorio ya enviado o
+  reenviarlo sería peor que perder la fila.
+- `notifications_reminders.last_error` y `last_channel` siguen como resumen del último estado.
+
+El título del backlog dice «además de WhatsApp», pero el criterio y ADR-0006 piden correo solo si
+WhatsApp falla: no se envían los dos siempre.
 
 ## Qué no hace todavía
 
