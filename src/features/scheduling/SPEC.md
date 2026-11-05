@@ -355,6 +355,7 @@ El ledger solo se escribe al cerrar (pieza 12, hallazgos M3 y B4 del audit del 2
 - «Mis citas»: `ui/my-appointments/components/ConfirmAppointment` y `confirmAppointmentAction`, con la política de cancelación al confirmar y en la tarjeta de una cita `confirmed` con anticipo.
 - Agenda diaria: etiqueta «Sin confirmar» dentro del plazo y `ManualConfirmationControl`, con `confirmAppointmentManuallyAction` para la administradora.
 - Lógica del plazo en el panel: `ui/confirmation-policy` (action, servicio y validación).
+- Pantalla `/admin/citas/confirmacion`: `ConfirmationPolicyPage` en `index.ts` y `ConfirmationPolicyLoading` y `confirmationPolicyMessages` en `client.ts`.
 
 ## Criterios recibidos de US-AGE-01
 

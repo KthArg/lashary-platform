@@ -1,0 +1,1 @@
+export { ConfirmationPolicyPage } from './ConfirmationPolicyPage'
