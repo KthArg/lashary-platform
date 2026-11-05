@@ -1,6 +1,6 @@
 # Contrato — API pública de citas
 
-> **Autoridad:** qué expone la feature `scheduling` a las demás features y bajo qué garantías. Es un contrato **de demanda**: nace de lo que necesita `clients` para el historial de citas de una clienta (US-CLI-02). Se versiona aquí antes de cualquier cambio de forma (INT-003). **Lectores:** feature `clients`. **Estado:** `listClientAppointments` implementado en la pieza 2 de US-CLI-02 (`application/list-client-appointments.ts` y `db/client-appointments-repository.ts`); `scheduling_client_last_visits` pactado para US-CLI-01, se implementa en su pieza 2/4. **Actualizado:** 2026-11-05.
+> **Autoridad:** qué expone la feature `scheduling` a las demás features y bajo qué garantías. Es un contrato **de demanda**: nace de lo que necesita `clients` para el historial de citas de una clienta (US-CLI-02). Se versiona aquí antes de cualquier cambio de forma (INT-003). **Lectores:** feature `clients`. **Estado:** `listClientAppointments` implementado en la pieza 2 de US-CLI-02 (`application/list-client-appointments.ts` y `db/client-appointments-repository.ts`); `scheduling_client_last_visits` implementado en la pieza 2/4 de US-CLI-01 (`supabase/migrations/20261105000000_clients_list_last_visit.sql`). **Actualizado:** 2026-11-05.
 
 ## Qué es
 

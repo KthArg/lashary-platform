@@ -442,6 +442,6 @@ Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el
 
 ### Última visita de cada clienta (para US-CLI-01 de `clients`)
 
-- Pactado el 2026-11-05 en `docs/contracts/scheduling-api.md` (INT-003), sin implementar todavía: la función SQL `scheduling_client_last_visits()` llega en la pieza 2/4 de US-CLI-01, en la misma migración que `clients_list` de `clients`, que es su único consumidor.
+- Pactado el 2026-11-05 en `docs/contracts/scheduling-api.md` (INT-003) e implementado en la pieza 2/4 de US-CLI-01: la función SQL `scheduling_client_last_visits()` está en `supabase/migrations/20261105000000_clients_list_last_visit.sql`, la misma migración que `clients_list` de `clients`, que es su único consumidor.
 - Devuelve `(client_id, last_visit_at)`: el `starts_at` de la cita `completed` más reciente de cada clienta. Las demás citas, y las que no tienen clienta, no cuentan. `SECURITY INVOKER`: la RLS de `scheduling_appointments` decide qué ve quien llama (SEC-001).
-- Prueba prevista: `supabase/tests/database/scheduling_client_last_visits.test.sql`.
+- Prueba: `supabase/tests/database/scheduling_client_last_visits.test.sql` (solo `completed`, la más reciente, sin citas sin clienta, personal ve todas, clienta solo la suya, `anon` no la ejecuta, `SECURITY INVOKER`).
