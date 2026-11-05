@@ -91,7 +91,7 @@ notifications_cancel_confirmation_request(p_appointment_id uuid) RETURNS void
 - `cancel` se llama cuando una cita deja de estar `approved`. Solo cancela lo que aún no se mandó.
 - `p_service_name` es la técnica o, en una cita de paquete, el paquete.
 - Ningún rol de la API puede ejecutarlas: nadie fabrica solicitudes por PostgREST.
-- Si `notifications` falla, el trigger lo atrapa (`RAISE WARNING`) y la cita conserva su cambio de estado: el estado de la cita importa más que el mensaje.
+- Si `notifications` falla, el trigger lo atrapa (`RAISE WARNING`) y la cita conserva su cambio de estado: el estado de la cita importa más que el mensaje. El fallo deja `scheduling.confirmation_request.failed` en `audit_events`, para saber qué citas quedaron sin solicitud.
 
 Confirmar la cita (`scheduling_confirm_appointment`) y el plazo que destaca las citas sin confirmar son internos de `scheduling`: otra feature no los usa.
 

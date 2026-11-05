@@ -213,6 +213,7 @@ WhatsApp falla: no se envían los dos siempre.
 - Lógica del plazo en el panel (`ui/confirmation-policy` de `scheduling`): `changeConfirmationDeadlineAction`, `confirmationPolicyService` (exige sesión de administradora) y la validación del formulario. Pruebas: `perform-change-deadline.test.ts`, `load-confirmation-policy.test.ts` y `confirmation-policy-actions.test.ts`.
 - Pantalla del plazo: `/admin/citas/confirmacion` (`ConfirmationPolicyPage`), con su pestaña «Confirmación» en la sección de citas. Pruebas: `ConfirmationPolicyForm.test.tsx`, `ConfirmationPolicyView.test.tsx` y `src/app/admin/citas/layout.test.tsx`.
 - `notifications_confirmation_requests` (migración `20261105010002`): una solicitud por cita y horario, sin FK a tablas ajenas. Solo el staff la lee y actualiza; `notifications_record_confirmation_request` y `notifications_cancel_confirmation_request` no tienen `EXECUTE` para ningún rol de la API, y `notifications_claim_confirmation_requests` reclama en tandas sin tomar citas que ya empezaron. Prueba: `supabase/tests/database/notifications_confirmation_requests.test.sql` (SEC-002).
+- Trigger `scheduling_appointments_notify_confirmation_request` (migración `20261105010003`, feature `scheduling`): una cita con clienta que pasa a `approved` deja la solicitud, y una que deja de estarlo retira lo que no salió. Si `notifications` falla, la cita conserva su estado y el fallo deja `scheduling.confirmation_request.failed` en la bitácora. Prueba: `supabase/tests/database/scheduling_notify_confirmation_request.test.sql`.
 
 ## Qué no hace todavía
 
