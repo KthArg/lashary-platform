@@ -214,8 +214,13 @@ Decisiones:
 - Disparo: el trigger `audit_events_notify_reschedule_outcome` (migración `20261103000003`). Prueba: pgTAP
   `scheduling_notify_reschedule_outcome.test.sql`.
 - Vigencia: `notifications_discard_client_notices` borra los avisos de la cita cuando se reagenda o cancela de
-  nuevo (trigger `audit_events_discard_superseded_client_notices`, migración `20261106000000`). Prueba: pgTAP
+  nuevo (trigger `audit_events_discard_superseded_client_notices`, migración `20261106000000`; `notifications_discard_client_notices` recibe el instante del evento y solo borra lo anterior). Prueba: pgTAP
   `notifications_client_notices_only_live.test.sql`.
+- Avisos perdidos: los triggers de `scheduling` no tumban el cambio si el aviso falla. Lo que se pierde queda en
+  `notifications_dropped_notices` (un registro por evento, con la acción y el error recortado a 500), que solo staff
+  lee y marca como resuelto; la anota `notifications_log_dropped_notice`, `SECURITY DEFINER` y sin `EXECUTE` para
+  nadie. Migración `20261107000000`. Pruebas: pgTAP `notifications_dropped_notices.test.sql` y
+  `__tests__/rls-isolation.test.ts`.
 - Datos internos: la clienta y staff leen por la tabla solo el contenido y `status`; `attempts`, `last_error`,
   `claimed_at`, `last_channel` y `sent_at` no tienen `SELECT` (migración `20261106000001`). Pruebas: pgTAP
   `notifications_client_notices_private_columns.test.sql` y `__tests__/rls-isolation.test.ts`.
