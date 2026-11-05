@@ -7,11 +7,14 @@ import { clientAppointmentsPath, clientRecordPath } from '../../../client-routes
 import { CLIENTS_ARIA_LABELS, CLIENTS_BUTTON_TEXTS, CLIENTS_LABELS, CLIENTS_TABLE_HEADERS, CLIENTS_TABLE_TEXTS } from '../../constants/client-strings'
 import { CLIENTS_ICON_PATHS } from '../../constants/client-icons'
 import { EditClientDialog } from '../EditClientDialog'
+import { formatVisitDate } from '../../../shared/format-visit-date'
 import { clientsListStyles as STYLES } from './ClientsList.styles'
 import type { ClientRecord } from '../../../../domain/client.types'
 import type { ClientsListProps } from './ClientsList.types'
 
-export function ClientsList({ clients, isLoading = false, loadError = null, activeNameFilter = null }: ClientsListProps) {
+export function ClientsList({
+  clients, isLoading = false, loadError = null, filterError = null, activeNameFilter = null, hasVisitRangeFilter = false,
+}: ClientsListProps) {
   const router = useRouter()
   const [editing, setEditing] = useState<ClientRecord | null>(null)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
@@ -20,6 +23,12 @@ export function ClientsList({ clients, isLoading = false, loadError = null, acti
     setEditing(null)
     triggerRef.current?.focus()
   }, [])
+
+  const emptyMessage = () => {
+    if (hasVisitRangeFilter) return CLIENTS_LABELS.clientsListEmptyForFilters
+    if (activeNameFilter) return CLIENTS_LABELS.clientsListEmptyForFilter(activeNameFilter)
+    return CLIENTS_LABELS.clientsListEmpty
+  }
 
   const renderBody = () => {
     if (isLoading) return <p role="status" className={STYLES.empty}>{CLIENTS_LABELS.clientsListLoading}</p>
@@ -31,12 +40,8 @@ export function ClientsList({ clients, isLoading = false, loadError = null, acti
         </div>
       )
     }
-    if (clients.length === 0) {
-      const emptyMessage = activeNameFilter
-        ? CLIENTS_LABELS.clientsListEmptyForFilter(activeNameFilter)
-        : CLIENTS_LABELS.clientsListEmpty
-      return <p className={STYLES.empty}>{emptyMessage}</p>
-    }
+    if (filterError) return <p role="alert" className={STYLES.error}>{filterError}</p>
+    if (clients.length === 0) return <p className={STYLES.empty}>{emptyMessage()}</p>
     return (
       <div className={STYLES.tableWrapper}>
         <table className={STYLES.table}>
@@ -46,7 +51,7 @@ export function ClientsList({ clients, isLoading = false, loadError = null, acti
               <th scope="col" className={STYLES.headerCell}>{CLIENTS_TABLE_HEADERS.phone}</th>
               <th scope="col" className={STYLES.headerCell}>{CLIENTS_TABLE_HEADERS.email}</th>
               <th scope="col" className={STYLES.headerCell}>{CLIENTS_TABLE_HEADERS.delinquencyStatus}</th>
-              <th scope="col" className={STYLES.headerCell}>{CLIENTS_TABLE_HEADERS.lastAppointment}</th>
+              <th scope="col" className={STYLES.headerCell}>{CLIENTS_TABLE_HEADERS.lastVisit}</th>
               <th scope="col" className={STYLES.headerCellActions}>{CLIENTS_TABLE_HEADERS.actions}</th>
             </tr>
           </thead>
@@ -57,7 +62,9 @@ export function ClientsList({ clients, isLoading = false, loadError = null, acti
                 <td className={STYLES.contactCell}>{client.phone}</td>
                 <td className={STYLES.contactCell}>{client.email}</td>
                 <td className={STYLES.pendingCell}>{CLIENTS_TABLE_TEXTS.pendingColumnValue}</td>
-                <td className={STYLES.pendingCell}>{CLIENTS_TABLE_TEXTS.pendingColumnValue}</td>
+                {client.lastVisitAtMs === null
+                  ? <td className={STYLES.pendingCell}>{CLIENTS_TABLE_TEXTS.neverVisited}</td>
+                  : <td className={STYLES.contactCell}>{formatVisitDate(client.lastVisitAtMs)}</td>}
                 <td className={STYLES.actionsCell}>
                   <Link href={clientRecordPath(client.id)} className={STYLES.recordLink}
                     aria-label={CLIENTS_ARIA_LABELS.openRecord(client.fullName)}>

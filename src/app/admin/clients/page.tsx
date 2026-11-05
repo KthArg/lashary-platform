@@ -4,6 +4,7 @@ import {
   ClientsList,
   ClientsNameFilter,
   ClientsPagination,
+  ClientsVisitFilter,
   CLIENTS_LABELS,
   listClientsAction,
 } from '@/features/clients'
@@ -24,11 +25,16 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
   await requireAdminSession()
   const params = (await searchParams) ?? {}
   const name = params.name?.trim() ?? ''
+  const visitFrom = params.visitFrom ?? ''
+  const visitTo = params.visitTo ?? ''
   const result = await listClientsAction({
     page: readNumber(params.page),
     pageSize: readNumber(params.pageSize),
     name: name || undefined,
+    visitFrom: visitFrom || undefined,
+    visitTo: visitTo || undefined,
   })
+  const isInvalidRange = !result.ok && result.reason === 'invalid-visit-range'
 
   return (
     <div className={STYLES.page}>
@@ -40,10 +46,13 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
         <AddClientDialog />
       </header>
       <ClientsNameFilter name={name} />
+      <ClientsVisitFilter visitFrom={visitFrom} visitTo={visitTo} />
       <ClientsList
         clients={result.ok ? result.clients : []}
-        loadError={result.ok ? null : result.error}
+        loadError={!result.ok && !isInvalidRange ? result.error : null}
+        filterError={isInvalidRange ? result.error : null}
         activeNameFilter={name || null}
+        hasVisitRangeFilter={Boolean(visitFrom || visitTo)}
       />
       {result.ok && result.total > 0 ? (
         <ClientsPagination page={result.page} pageSize={result.pageSize} total={result.total} />

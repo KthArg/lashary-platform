@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import {
   ClientsList, CLIENTS_ARIA_LABELS, CLIENTS_BUTTON_TEXTS, CLIENTS_CONFIRM_MESSAGES, CLIENTS_ERROR_MESSAGES, CLIENTS_LABELS,
 } from '@/features/clients'
-import { CLIENT_FIXTURES } from '../../../__tests__/client-fixtures'
+import { CLIENT_LIST_FIXTURES as CLIENT_FIXTURES } from '../../../__tests__/client-fixtures'
 
 const mockUpdate = vi.fn()
 vi.mock('../actions/client-actions', () => ({
