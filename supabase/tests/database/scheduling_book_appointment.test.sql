@@ -201,7 +201,7 @@ SELECT is(
 SELECT is(
   (SELECT pronargs::int FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
     WHERE n.nspname = 'public' AND p.proname = 'scheduling_book_appointment'),
-  4, 'la función no recibe ni la clienta ni los montos');
+  5, 'la función no recibe ni la clienta ni los montos, solo el precio esperado opcional (C4)');
 
 SELECT * FROM finish();
 ROLLBACK;

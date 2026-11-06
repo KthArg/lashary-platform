@@ -113,10 +113,16 @@ describe.skipIf(!reachable)('US-AGE-05 criterio 4 — clientas reservando el mis
     }
 
     const seeded = await admin.query(
-      `SELECT id, price_first_time, deposit, duration_first_time_min, buffer_min
-         FROM public.catalog_techniques WHERE is_active ORDER BY created_at, id LIMIT 1`,
+      `SELECT t.id, t.price_first_time, t.deposit, t.duration_first_time_min, t.buffer_min
+         FROM public.catalog_techniques t
+         WHERE t.is_active
+           AND NOT EXISTS (
+             SELECT 1 FROM public.catalog_promotions p
+             WHERE p.technique_id = t.id AND p.is_active AND p.starts_at <= now() AND p.ends_at >= now()
+           )
+         ORDER BY t.created_at, t.id LIMIT 1`,
     )
-    if (seeded.rows.length === 0) throw new Error('no hay ninguna técnica activa sembrada en el catálogo')
+    if (seeded.rows.length === 0) throw new Error('no hay ninguna técnica activa sin promoción sembrada en el catálogo')
     const row = seeded.rows[0]
     technique = {
       id: row.id,
