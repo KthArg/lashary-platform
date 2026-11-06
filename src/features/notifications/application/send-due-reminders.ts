@@ -3,10 +3,10 @@ import type { Clock } from '@/shared/clock'
 import { hasExhaustedRetries, type ReminderSnapshot } from '../domain/reminder'
 import { buildReminderMessage, buildReminderTemplateVariables } from '../domain/reminder-message'
 import { REMINDER_ATTEMPT_OUTCOMES, type ReminderAttempt } from '../domain/reminder-attempt'
+import { sanitizeProviderError } from '../domain/provider-error'
 import { isChannelNotConfigured, type ChannelNotConfigured, type ChannelSendFailed } from '../domain/errors'
 import type { ClientContactPort, NotificationChannel, ReminderRepository, RepositoryFailure } from './ports'
 
-const MAX_LAST_ERROR_LENGTH = 500
 const NO_CONTACT_ERROR = 'sin contacto registrado para la clienta'
 
 export type SendDueRemindersDeps = {
@@ -26,9 +26,6 @@ export type SendDueRemindersSummary = { sent: number; retried: number; exhausted
 
 type SendOutcome = 'sent' | 'retried' | 'exhausted' | 'errored'
 
-const truncateLastError = (error: string): string =>
-  error.length > MAX_LAST_ERROR_LENGTH ? `${error.slice(0, MAX_LAST_ERROR_LENGTH)}…` : error
-
 const recordAttempt = async (deps: SendDueRemindersDeps, attempt: ReminderAttempt): Promise<void> => {
   const recorded = await deps.recordAttempt(attempt)
   if (isErr(recorded)) console.error(`[notifications] no se pudo registrar el intento del recordatorio ${attempt.reminderId} (${attempt.outcome}): ${recorded.error}`)
@@ -43,7 +40,7 @@ const toChannelAttempt = (
   const base = { reminderId: reminder.id, attemptNumber: reminder.attempts + 1, channel: channel.kind, attemptedAt }
   if (isOk(sendResult)) return { ...base, outcome: REMINDER_ATTEMPT_OUTCOMES.sent, error: null }
   const outcome = isChannelNotConfigured(sendResult.error) ? REMINDER_ATTEMPT_OUTCOMES.notConfigured : REMINDER_ATTEMPT_OUTCOMES.failed
-  return { ...base, outcome, error: truncateLastError(sendResult.error.message) }
+  return { ...base, outcome, error: sanitizeProviderError(sendResult.error.message) }
 }
 
 const registerFailure = async (
@@ -53,13 +50,13 @@ const registerFailure = async (
   isPermanent: boolean,
 ): Promise<Result<'retried' | 'exhausted', RepositoryFailure>> => {
   const nextAttempts = reminder.attempts + 1
-  const truncatedError = truncateLastError(error)
+  const sanitizedError = sanitizeProviderError(error)
   if (isPermanent || hasExhaustedRetries({ ...reminder, attempts: nextAttempts })) {
-    const marked = await deps.markExhausted(reminder.id, nextAttempts, truncatedError)
+    const marked = await deps.markExhausted(reminder.id, nextAttempts, sanitizedError)
     if (isErr(marked)) return marked
     return ok('exhausted')
   }
-  const marked = await deps.markRetry(reminder.id, nextAttempts, truncatedError)
+  const marked = await deps.markRetry(reminder.id, nextAttempts, sanitizedError)
   if (isErr(marked)) return marked
   return ok('retried')
 }

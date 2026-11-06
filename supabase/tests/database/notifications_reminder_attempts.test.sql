@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(14);
+SELECT plan(16);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -73,6 +73,18 @@ SELECT throws_ok(
       (reminder_id, attempt_number, channel, outcome, error, attempted_at)
     VALUES ('00000000-0000-0000-0000-00000000f701', 1, NULL, 'failed', 'sin canal', now())$$,
   '23514', NULL, 'un fallo de envío exige canal');
+
+SELECT lives_ok(
+  $$INSERT INTO public.notifications_reminder_attempts
+      (reminder_id, attempt_number, channel, outcome, error, attempted_at)
+    VALUES ('00000000-0000-0000-0000-00000000f701', 2, 'email', 'failed', repeat('x', 500) || '…', now())$$,
+  'el error admite 500 caracteres más la elipsis');
+
+SELECT throws_ok(
+  $$INSERT INTO public.notifications_reminder_attempts
+      (reminder_id, attempt_number, channel, outcome, error, attempted_at)
+    VALUES ('00000000-0000-0000-0000-00000000f701', 2, 'email', 'failed', repeat('x', 502), now())$$,
+  '23514', NULL, 'un error de más de 501 caracteres se rechaza');
 
 SELECT throws_ok(
   $$INSERT INTO public.notifications_reminder_attempts
