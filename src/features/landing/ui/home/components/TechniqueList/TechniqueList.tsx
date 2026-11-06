@@ -6,10 +6,26 @@ import { useId, useState } from 'react'
 import { landingMessages } from '../../../constants/landing-strings'
 import { landingTechniquesStyles as STYLES } from '../LandingTechniques/LandingTechniques.styles'
 import { reserveRouteFor } from '../../../routes'
-import { formatColones } from '../../../technique-view'
+import { formatColones } from '../../../format-colones'
 import type { TechniqueListProps } from './TechniqueList.types'
 
 const NONE_OPEN = -1
+
+function PriceTag({
+  price,
+  discountedPrice,
+}: {
+  price: number
+  discountedPrice: number | null
+}) {
+  if (discountedPrice === null) return <>{formatColones(price)}</>
+  return (
+    <>
+      <span className={STYLES.priceOriginal}>{formatColones(price)}</span>{' '}
+      <span className={STYLES.priceDiscounted}>{formatColones(discountedPrice)}</span>
+    </>
+  )
+}
 
 export function TechniqueList({ techniques }: TechniqueListProps) {
   const [openIndex, setOpenIndex] = useState(NONE_OPEN)
@@ -35,7 +51,9 @@ export function TechniqueList({ techniques }: TechniqueListProps) {
               <span className={STYLES.meta}>
                 {technique.durationFirstTimeMin} {copy.minutes}
               </span>
-              <span className={STYLES.meta}>{formatColones(technique.priceFirstTime)}</span>
+              <span className={STYLES.meta}>
+                <PriceTag price={technique.priceFirstTime} discountedPrice={technique.priceFirstTimeDiscounted} />
+              </span>
               <span
                 aria-hidden="true"
                 className={`${STYLES.sign} ${isOpen ? STYLES.signOpen : ''}`}
@@ -87,14 +105,21 @@ export function TechniqueList({ techniques }: TechniqueListProps) {
 
                 <div className={STYLES.detail}>
                   <span className={STYLES.detailItem}>
-                    {copy.firstTime}: {formatColones(technique.priceFirstTime)} ·{' '}
-                    {technique.durationFirstTimeMin} {copy.minutes}
+                    {copy.firstTime}:{' '}
+                    <PriceTag price={technique.priceFirstTime} discountedPrice={technique.priceFirstTimeDiscounted} />{' '}
+                    · {technique.durationFirstTimeMin} {copy.minutes}
                   </span>
                   {technique.priceRetouch !== null && (
                     <span className={STYLES.detailItem}>
-                      {copy.retouch}: {formatColones(technique.priceRetouch)}
+                      {copy.retouch}:{' '}
+                      <PriceTag price={technique.priceRetouch} discountedPrice={technique.priceRetouchDiscounted} />
                       {technique.durationRetouchMin !== null &&
                         ` · ${technique.durationRetouchMin} ${copy.minutes}`}
+                    </span>
+                  )}
+                  {technique.discountPercent !== null && (
+                    <span role="note" className={STYLES.promoBadge}>
+                      {copy.promotion(technique.discountPercent)}
                     </span>
                   )}
                 </div>

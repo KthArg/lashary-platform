@@ -2,14 +2,14 @@
 
 import Link from 'next/link'
 import { CALENDAR_PARAMS, SLOT_FIELD } from '../../../client-calendar/constants/client-calendar-strings'
-import { bookingConfirmMessages } from '../../constants/booking-confirm-strings'
+import { bookingConfirmMessages, EXPECTED_PRICE_FIELD } from '../../constants/booking-confirm-strings'
 import { useBookingConfirm } from '../../hooks/useBookingConfirm'
 import { BookedPanel } from '../BookedPanel'
 import { SummaryList } from '../SummaryList'
 import { bookingConfirmFormStyles as STYLES } from './BookingConfirmForm.styles'
 import type { BookingConfirmFormProps } from './BookingConfirmForm.types'
 
-export function BookingConfirmForm({ fields, summary, backHref }: BookingConfirmFormProps) {
+export function BookingConfirmForm({ fields, expectedPrice, summary, backHref }: BookingConfirmFormProps) {
   const copy = bookingConfirmMessages
   const { state, formAction, isPending } = useBookingConfirm()
 
@@ -21,6 +21,7 @@ export function BookingConfirmForm({ fields, summary, backHref }: BookingConfirm
       <input type="hidden" name={CALENDAR_PARAMS.service} value={fields.serviceKey} />
       <input type="hidden" name={CALENDAR_PARAMS.date} value={fields.date} />
       <input type="hidden" name={SLOT_FIELD} value={fields.startMin} />
+      <input type="hidden" name={EXPECTED_PRICE_FIELD} value={expectedPrice} />
       {state.status === 'error' && (
         <div role="alert" className={STYLES.alertError}>
           <span>{state.message}</span>

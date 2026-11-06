@@ -19,7 +19,7 @@ import type { BookAppointmentFailure } from '../../../application/book-appointme
 import type { BookPackageAppointmentFailure } from '../../../application/book-package-appointment'
 import { CALENDAR_NOTICES, type CalendarNotice } from '../../client-calendar/constants/client-calendar-strings'
 import { calendarHref } from '../../client-calendar/utils/calendar-params'
-import { bookingConfirmMessages } from '../constants/booking-confirm-strings'
+import { bookingConfirmMessages, EXPECTED_PRICE_FIELD } from '../constants/booking-confirm-strings'
 import { toBookingSummary } from './booking-confirm-format'
 import { readConfirmParams } from './read-confirm-params'
 import type { BookingConfirmSearchParams } from '../types/booking-confirm.types'
@@ -55,6 +55,13 @@ const failureMessages: Partial<Record<FailureCode, string>> = {
 const retryNotices: Partial<Record<FailureCode, CalendarNotice>> = {
   SCHEDULING_SPACE_NOT_AVAILABLE: CALENDAR_NOTICES.taken,
   SCHEDULING_SLOT_NOT_OFFERED: CALENDAR_NOTICES.notOffered,
+  SCHEDULING_PRICE_CHANGED: CALENDAR_NOTICES.priceChanged,
+}
+
+function readExpectedPrice(fields: BookingConfirmSearchParams): number | undefined {
+  const raw = fields[EXPECTED_PRICE_FIELD]
+  const value = Number(Array.isArray(raw) ? raw[0] : raw)
+  return Number.isFinite(value) ? value : undefined
 }
 
 export async function performBooking(
@@ -73,15 +80,17 @@ export async function performBooking(
   if (!selected) return { kind: 'retry', backHref: backTo(CALENDAR_NOTICES.notOffered) }
 
   const startsAtMs = studioLocalToUtc(params.date, params.startMin).getTime()
+  const expectedPrice = readExpectedPrice(fields)
 
   const result =
     selected.kind === 'package'
-      ? await deps.bookPackage({ resourceId: deps.resourceId, startsAtMs, packageId: selected.packageId })
+      ? await deps.bookPackage({ resourceId: deps.resourceId, startsAtMs, packageId: selected.packageId, expectedPrice })
       : await deps.bookTechnique({
           resourceId: deps.resourceId,
           startsAtMs,
           techniqueId: selected.techniqueId,
           isFirstTime: selected.isFirstTime,
+          expectedPrice,
         })
 
   if (result.ok) {
@@ -100,6 +109,7 @@ export async function performBooking(
           durationMin: (booked.endsAtMs - booked.startsAtMs) / MS_PER_MINUTE,
           price: booked.servicePrice,
           depositDue: booked.depositRequired,
+          discountPercent: booked.discountPercent,
         }),
       },
     }

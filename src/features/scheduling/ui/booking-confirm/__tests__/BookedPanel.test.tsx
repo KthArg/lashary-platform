@@ -13,6 +13,7 @@ const booked = {
     price: '₡35.000',
     deposit: '₡10.000',
     depositNotice: null,
+    promotionNotice: null,
   },
 }
 

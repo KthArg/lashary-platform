@@ -113,18 +113,22 @@ A diferencia de `listPackages`/`getPackage`, esta no es una función TypeScript 
 
 ```sql
 catalog_package_booking_terms(p_package_id uuid) RETURNS TABLE (
-  package_id     uuid,
-  package_name   text,
-  package_price  bigint,   -- colones enteros (DOM-001), el precio propio del paquete
-  deposit        bigint,   -- anticipo propio del paquete
-  technique_id   uuid,
-  technique_name text,
-  duration_min   integer,  -- duration_first_time_min de la técnica: un paquete no tiene retoque
-  buffer_min     integer   -- limpieza de esa técnica
+  package_id        uuid,
+  package_name      text,
+  package_price      bigint,   -- colones enteros (DOM-001), el precio propio del paquete
+  deposit            bigint,   -- anticipo propio del paquete
+  technique_id       uuid,
+  technique_name     text,
+  duration_min       integer,  -- duration_first_time_min de la técnica: un paquete no tiene retoque
+  buffer_min         integer,  -- limpieza de esa técnica
+  promotion_id       uuid,     -- US-PROM-01, ver más abajo
+  discount_percent   integer   -- US-PROM-01, ver más abajo
 )
 ```
 
 Devuelve **una fila por técnica incluida** en el paquete (los campos del paquete se repiten en cada una), para que quien reserve pueda congelar tanto el paquete como el detalle de sus técnicas — el tiempo total del criterio 2 de US-AGE-04 es `sum(duration_min + buffer_min)` sobre ese conjunto. No filtra técnicas inactivas dentro del paquete (igual que `durationTotalMin` en `db/packages/package-repository.ts`); si el paquete no existe, está desactivado o no tiene ninguna técnica, no devuelve ninguna fila, igual trato que una técnica desactivada en `catalog_booking_terms`. `SECURITY INVOKER`, solo ejecutable por `authenticated` (SEC-001).
+
+- **`promotion_id`/`discount_percent` (US-PROM-01, desde `20261101000004_catalog_promotions_in_package_booking.sql`):** mismo contrato que en `catalog_booking_terms`, filtrado por `package_id` en vez de `technique_id` — si hay una promoción vigente sobre este paquete, `package_price` ya viene con el descuento aplicado (redondeado al colón, DOM-001) y estas dos columnas identifican cuál promoción fue y su porcentaje; si no hay ninguna, ambas son `NULL`. Se repiten igual en cada fila (una por técnica incluida); quien agregue sobre este resultado con `max(package_price)` agrega también `max(discount_percent)` y, para `promotion_id` (`uuid`, sin `max()`/`min()` agregado en Postgres), `max(promotion_id::text)::uuid` — mismo valor en todas las filas, así que cuál se quede es indiferente. Si hay más de una promoción vigente a la vez sobre el mismo paquete, gana la de mayor descuento (empate: la que vence primero) — D-PROM-3 en `src/features/catalog/SPEC.md`.
 
 ### Garantías (paquetes)
 
@@ -164,8 +168,9 @@ La aprobación del traslado de criterios está registrada en `docs/process/DEPEN
 
 ### `public.catalog_booking_terms(p_technique_id uuid, p_is_first_time boolean)`
 
-Devuelve una fila `(technique_id, name, price, duration_min, buffer_min, deposit)` con las condiciones aplicables: precio y duración de la primera vez o del retoque según `p_is_first_time`; `buffer_min` y `deposit` son los de la técnica. No devuelve ninguna fila si la técnica no existe, está desactivada, o se pide retoque y no lo ofrece. Con un argumento nulo tampoco devuelve nada.
+Devuelve una fila `(technique_id, name, price, duration_min, buffer_min, deposit, promotion_id, discount_percent)` con las condiciones aplicables: precio y duración de la primera vez o del retoque según `p_is_first_time`; `buffer_min` y `deposit` son los de la técnica. No devuelve ninguna fila si la técnica no existe, está desactivada, o se pide retoque y no lo ofrece. Con un argumento nulo tampoco devuelve nada.
 
+- **`promotion_id`/`discount_percent` (US-PROM-01, desde `20261026000002_catalog_promotions_in_booking.sql`):** si hay una promoción vigente sobre esta técnica (`catalog_promotions`, activa y dentro de su ventana), `price` ya viene con el descuento aplicado (redondeado al colón, DOM-001) y estas dos columnas identifican cuál promoción fue y su porcentaje; si no hay ninguna, ambas son `NULL` y `price` es el de catálogo sin tocar. Si hay más de una promoción vigente a la vez sobre la misma técnica, gana la de mayor descuento (empate: la que vence primero) — D-PROM-3 en `src/features/catalog/SPEC.md`. Una promoción sobre un paquete sigue el mismo contrato en `catalog_package_booking_terms`, más abajo.
 - Solo `authenticated` la ejecuta; `anon` no. Corre con los permisos de quien llama (`SECURITY INVOKER`): el catálogo ya es público.
 - La forma de la fila es contrato: un cambio se versiona aquí antes del cambio (INT-003).
 - Prueba: pgTAP `supabase/tests/database/catalog_booking_terms.test.sql`.
