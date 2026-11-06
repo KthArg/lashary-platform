@@ -10,7 +10,7 @@
 | account | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
 | audit | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
-| catalog | pendiente | en_progreso | 2 / 1 / 0 / 0 / 1 |
+| catalog | pendiente | en_progreso | 3 / 0 / 0 / 0 / 1 |
 | clients | pendiente | en_progreso | 3 / 1 / 0 / 0 / 1 |
 | content | pendiente | terminada | 3 / 0 / 0 / 0 / 0 |
 | delinquency | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 5 |
@@ -35,7 +35,7 @@
 ### catalog (actualizado: 2026-11-01)
 - US-AGE-08 — terminada — PR #7, PR #50, tests: seed.integration.test.ts, technique.test.ts, queries.test.ts, commands.test.ts, actions.test.ts, schema.test.ts, technique-repository.integration.test.ts, public-api.integration.test.ts, rls-isolation.test.ts, layout.test.tsx
 - US-PROD-01 — terminada — PRs #98 a #107, #134, #157 a #168 (pila) y el cierre us/US-PROD-01 a main; tests: package.test.ts, package-commands.test.ts, package-queries.test.ts, package-actions.test.ts, package-schema.test.ts, package-inactive-techniques.test.tsx, package-pagination.test.tsx, package-repository.integration.test.ts, package-rls-isolation.test.ts, catalog_package_staff_write.test.sql; UI probada a mano contra lashary-pruebas (2026-10-03)
-- US-PROM-01 — en_progreso — falta: pendiente probar la UI a mano en un navegador (igual que US-PROD-01).
+- US-PROM-01 — terminada — criterios 1 y 3 completos — crear/editar/pausar una promoción sobre técnica o paquete, que deje de aplicarse sola al vencer sin intervención manual; criterio 2 y criterio 4, completos sobre técnica y sobre paquete (US-AGE-05 y US-AGE-04 ya terminadas): catalog_booking_terms/catalog_package_booking_terms descuentan el precio (DOM-001, redondeo al colón) y devuelven promotion_id/discount_percent; scheduling_quote_booking/scheduling_quote_package_booking los muestran antes de confirmar y scheduling_book_appointment/scheduling_book_package_appointment los congelan en la cita (DOM-002); el aviso 'Precio con N% de descuento por promoción' se ve en /portal/citas/calendario/confirmar para técnica y paquete. Criterio 2, mitad landing (2026-11-05): la página pública muestra el precio rebajado y un aviso del porcentaje sobre las técnicas con promoción vigente (listActivePromotions + applyDiscount, detalle en src/features/landing/SPEC.md). Tests: promotion.test.ts, promotion-queries.test.ts, promotion-commands.test.ts, promotion-repository.integration.test.ts, promotion-schema.test.ts, promotion-actions.test.ts, promotion-rls-isolation.test.ts (SEC-002), catalog_promotion_staff_write.test.sql, catalog_booking_terms.test.sql, catalog_package_booking_terms.test.sql, scheduling_quote_booking.test.sql, scheduling_book_appointment.test.sql, scheduling_quote_package_booking.test.sql, scheduling_book_package_appointment.test.sql (pgTAP), booking-quote-repository.test.ts, booking-repository.test.ts, package-booking-quote-repository.test.ts, package-booking-repository.test.ts, booking-confirm.test.ts, perform-booking.test.ts, BookingConfirmView.test.tsx, landing/ui/__tests__/technique-view.test.ts, landing-techniques.test.tsx. UI en /admin/catalog/promotions, pestaña del panel. Verificación visual con Playwright contra Supabase local (2026-11-06): tabla y formulario de promociones en /admin/catalog/promotions, aviso de descuento en /portal/citas/calendario/confirmar con una clienta real, y el precio tachado + aviso de porcentaje en la landing pública (/) — capturas en los PRs #289, #290, #448 y #675.
 - US-PROM-02 — no_iniciada
 
 ### clients (actualizado: 2026-10-31)
