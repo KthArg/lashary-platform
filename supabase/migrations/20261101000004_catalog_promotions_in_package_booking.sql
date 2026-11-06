@@ -97,7 +97,7 @@ AS $$
          AND pr.is_active
          AND pr.starts_at <= now()
          AND pr.ends_at >= now()
-       ORDER BY pr.discount_percent DESC, pr.ends_at ASC
+       ORDER BY pr.discount_percent DESC, pr.ends_at ASC, pr.id ASC
        LIMIT 1
     ) promo ON true
    WHERE p.id = p_package_id
