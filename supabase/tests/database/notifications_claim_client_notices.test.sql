@@ -51,9 +51,9 @@ SET LOCAL ROLE authenticated;
 
 SELECT set_config('request.jwt.claims',
   '{"sub":"00000000-0000-0000-0000-0000000007a2","role":"authenticated"}', true);
-SELECT is(
-  (SELECT count(*)::int FROM public.notifications_claim_client_notices('2047-10-01 12:00+00', 10, 10)), 0,
-  'una clienta no reclama avisos, ni los suyos');
+SELECT throws_ok(
+  $$SELECT * FROM public.notifications_claim_client_notices('2047-10-01 12:00+00', 10, 10)$$,
+  '42501', NULL, 'una clienta no reclama avisos, ni los suyos');
 
 SELECT set_config('request.jwt.claims',
   '{"sub":"00000000-0000-0000-0000-0000000007a1","role":"authenticated"}', true);
@@ -71,10 +71,12 @@ SELECT results_eq(
   $$VALUES ('A'::text), ('D'::text)$$,
   'reclama de a tandas, los más viejos primero: un reclamo vencido vuelve a la fila y uno reciente no');
 
+RESET ROLE;
 SELECT results_eq(
   $$SELECT status, claimed_at FROM public.notifications_client_notices WHERE id = '00000000-0000-0000-0000-0000000007d1'$$,
   $$VALUES ('claimed'::text, '2047-10-01 12:00+00'::timestamptz)$$,
   'lo reclamado queda claimed con la hora del reloj');
+SET LOCAL ROLE authenticated;
 
 SELECT results_eq(
   $$SELECT service_name FROM public.notifications_claim_client_notices('2047-10-01 12:00+00', 10, 10)$$,

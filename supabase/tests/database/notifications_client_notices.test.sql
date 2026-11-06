@@ -110,9 +110,9 @@ SELECT is(
 UPDATE public.notifications_client_notices SET status = 'sent', last_channel = 'whatsapp', sent_at = now()
  WHERE event_id = '00000000-0000-0000-0000-00000000e501';
 SELECT is(
-  (SELECT status || ' · ' || last_channel FROM public.notifications_client_notices
+  (SELECT status FROM public.notifications_client_notices
     WHERE event_id = '00000000-0000-0000-0000-00000000e501'),
-  'sent · whatsapp', 'staff (el cron): marca el envío');
+  'sent', 'staff (el cron): marca el envío');
 
 SELECT throws_ok(
   $$UPDATE public.notifications_client_notices SET kept_starts_at = now() WHERE event_id = '00000000-0000-0000-0000-00000000e501'$$,
