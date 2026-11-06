@@ -96,3 +96,9 @@ export interface NotificationChannel {
   readonly kind: ReminderChannelKind
   send(input: ChannelSendInput): Promise<Result<void, ChannelSendFailed | ChannelNotConfigured>>
 }
+
+export type DroppedNoticesOutcome = { resolved: number; open: number }
+
+export interface DroppedNoticesRepository {
+  reconcile(): Promise<Result<DroppedNoticesOutcome, RepositoryFailure>>
+}
