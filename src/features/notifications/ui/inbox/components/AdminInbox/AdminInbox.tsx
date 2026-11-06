@@ -2,10 +2,10 @@
 
 import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { formatStudioDateTime } from '@/shared/studio-time'
 import { isUnread, type InboxNotice } from '@/features/notifications/domain/inbox-notice'
 import { loadMoreNoticesAction, markNoticeAction } from '@/features/notifications/ui/inbox/actions/inbox-actions'
 import { INBOX_TEXTS } from '@/features/notifications/ui/inbox/constants/inbox-strings'
+import { noticeLines } from '@/features/notifications/ui/inbox/utils/notice-lines'
 import { adminInboxStyles as STYLES } from './AdminInbox.styles'
 import type { AdminInboxProps } from './AdminInbox.types'
 
@@ -99,15 +99,17 @@ export function AdminInbox({ inbox }: AdminInboxProps) {
             <ul className={STYLES.list} aria-busy={isSaving || isLoadingMore}>
               {notices.map((notice) => {
                 const unread = isUnread(notice)
+                const lines = noticeLines(notice)
                 return (
                   <li key={notice.id} className={unread ? STYLES.itemUnread : STYLES.itemRead}>
                     <p className={STYLES.itemTitle}>
                       {unread && <span className={STYLES.dot} aria-hidden="true" />}
                       {unread && <span className={STYLES.srOnly}>{INBOX_TEXTS.unread}</span>}
-                      {INBOX_TEXTS.bookingCreated(notice.clientName)}
+                      {lines.title}
                     </p>
-                    <p className={STYLES.itemDetail}>{notice.serviceName}</p>
-                    <p className={STYLES.itemDetail}>{formatStudioDateTime(notice.startsAt)}</p>
+                    {lines.details.map((detail) => (
+                      <p key={detail} className={STYLES.itemDetail}>{detail}</p>
+                    ))}
                     <button
                       type="button"
                       disabled={isSaving}

@@ -221,6 +221,16 @@ Hecho hasta ahora:
   verse ocupado en el calendario de la clienta (criterio 4). Prueba: pgTAP
   `scheduling_notify_appointment_changed.test.sql` (16 aserciones; verificado por mutación: con el
   trigger apagado caen las tres que leen los avisos).
+- En la app: `InboxNotice` (`domain/inbox-notice.ts`) es una unión por `kind`: la cancelación trae
+  `forfeitedDeposit` (colones enteros; un número y no `Money`, porque el aviso cruza al componente de
+  cliente y la marca de `Money` no se serializa) y el reagendado `previousStartsAt`; `lostDeposit` dice
+  si perdió el anticipo. `db/inbox-repository.ts` lee las dos columnas nuevas y arma cada tipo.
+  `ui/inbox/utils/notice-lines.ts` arma el título y los detalles de cada aviso: la cancelación dice el
+  monto perdido o «No perdió el anticipo» (nunca «perdió ₡0», criterio 2), y el reagendado el horario
+  anterior y el nuevo, por aprobar (criterio 3). El panel pinta esas líneas; textos en
+  `ui/inbox/constants/inbox-strings.ts` (DOM-009). Pruebas: `domain/__tests__/inbox-notice.test.ts`,
+  `db/__tests__/inbox-repository.test.ts`, `ui/inbox/__tests__/notice-lines.test.ts` y
+  `ui/inbox/__tests__/admin-inbox.test.tsx`.
 
 ## Qué no hace todavía
 

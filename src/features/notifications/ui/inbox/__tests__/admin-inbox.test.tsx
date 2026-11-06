@@ -63,6 +63,26 @@ describe('AdminInbox', () => {
     expect(within(panel).getByText(INBOX_TEXTS.unread)).toBeDefined()
   })
 
+  it('muestra los avisos de cancelación y de reagendado con sus datos (US-NOT-02, criterios 1 a 3)', () => {
+    const cancelled: InboxNotice = { ...unreadNotice, id: 'aviso-3', kind: 'appointment_cancelled', forfeitedDeposit: 10000 }
+    const rescheduled: InboxNotice = {
+      ...unreadNotice,
+      id: 'aviso-4',
+      clientName: 'Eva Solís',
+      kind: 'appointment_rescheduled',
+      previousStartsAt: fixedDate('2026-11-04T15:00:00Z'),
+    }
+    render(<AdminInbox inbox={{ ok: true, inbox: { notices: [cancelled, rescheduled], unreadCount: 2, hasMore: false } }} />)
+    const panel = openPanel()
+
+    const [cancelledItem, rescheduledItem] = within(panel).getAllByRole('listitem')
+    expect(within(cancelledItem).getByText(INBOX_TEXTS.appointmentCancelled('Ana Pérez'))).toBeDefined()
+    expect(within(cancelledItem).getByText(/^Perdió el anticipo de ₡/)).toBeDefined()
+    expect(within(rescheduledItem).getByText(INBOX_TEXTS.appointmentRescheduled('Eva Solís'))).toBeDefined()
+    expect(within(rescheduledItem).getByText(/^Horario anterior: /)).toBeDefined()
+    expect(within(rescheduledItem).getByText(/^Horario nuevo, por aprobar: /)).toBeDefined()
+  })
+
   it('marca un aviso sin leer como leído, y uno leído como no leído (criterio 3)', async () => {
     render(<AdminInbox inbox={{ ok: true, inbox: { notices: [unreadNotice, readNotice], hasMore: false, unreadCount: 1 } }} />)
     const panel = openPanel()
