@@ -74,7 +74,15 @@ export interface ClientNoticesRepository {
   listKeptFrom(now: Date, limit: number): Promise<Result<ClientNotice[], ClientNoticesStorageFailed>>
 }
 
-export type ChannelSendInput ={ reminderId: string; contact: ContactInfo; message: string; templateVariables: string[] }
+export type MessagePurpose = 'reminder' | 'reschedule_outcome'
+
+export type ChannelSendInput = {
+  messageId: string
+  purpose: MessagePurpose
+  contact: ContactInfo
+  message: string
+  templateVariables: string[]
+}
 
 export interface NotificationChannel {
   readonly kind: ReminderChannelKind
