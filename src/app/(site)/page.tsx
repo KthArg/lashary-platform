@@ -6,9 +6,14 @@ import {
   getStudio,
   getTechniqueMedia,
 } from '@/features/content'
-import { listTechniques } from '@/features/catalog'
+import { listActivePromotions, listTechniques } from '@/features/catalog'
 import type { Metadata } from 'next'
-import { LandingHome, landingMessages, toLandingTechnique } from '@/features/landing'
+import {
+  LandingHome,
+  landingMessages,
+  toLandingTechnique,
+  bestActiveDiscountsByTechnique,
+} from '@/features/landing'
 
 // TTL de respaldo del CMS (10 min); el aviso al publicar la renueva antes
 export const revalidate = 600
@@ -26,11 +31,15 @@ export const metadata: Metadata = {
 
 async function readTechniques() {
   try {
-    const [page, media] = await Promise.all([
+    const [page, media, activePromotions] = await Promise.all([
       listTechniques({ activeOnly: true }),
       getTechniqueMedia(),
+      listActivePromotions(),
     ])
-    return page.items.map((technique) => toLandingTechnique(technique, media))
+    const discounts = bestActiveDiscountsByTechnique(activePromotions.items)
+    return page.items.map((technique) =>
+      toLandingTechnique(technique, media, discounts.get(technique.id) ?? null),
+    )
   } catch (error) {
     console.warn('[landing] catálogo no disponible; la sección de técnicas queda vacía', error)
     return []

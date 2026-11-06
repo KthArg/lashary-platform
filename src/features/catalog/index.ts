@@ -63,6 +63,7 @@ export type {
 export { isTechniqueNotFound, techniqueNotFound } from './domain/techniques/errors'
 export type { TechniqueNotFound } from './domain/techniques/errors'
 export type { PackageNotFound } from './domain/packages/errors'
+export { applyDiscount } from './domain/promotions/promotion'
 export type { PromotionView, PromotionTarget } from './domain/promotions/promotion'
 export type { PromotionNotFound } from './domain/promotions/errors'
 export type { ListTechniquesQuery } from './application/techniques/ports'

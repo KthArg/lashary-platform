@@ -102,3 +102,10 @@ export function isPromotionCurrentlyActive(promotion: Promotion, now: Date): boo
     now.getTime() <= promotion.endsAt.getTime()
   )
 }
+
+// Misma fórmula que catalog_booking_terms/catalog_package_booking_terms (DOM-001: redondeo al
+// colón) — para que un precio con descuento mostrado en landing coincida con el que de verdad se
+// cobra al reservar.
+export function applyDiscount(price: number, discountPercent: number): number {
+  return Math.round((price * (100 - discountPercent)) / 100)
+}

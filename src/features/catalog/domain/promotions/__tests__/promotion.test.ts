@@ -6,6 +6,7 @@ import {
   markPromotionActive,
   promotionToView,
   isPromotionCurrentlyActive,
+  applyDiscount,
 } from '@/features/catalog/domain/promotions/promotion'
 import { isPromotionValidationError } from '@/features/catalog/domain/promotions/errors'
 
@@ -181,5 +182,22 @@ describe('isPromotionCurrentlyActive — criterio 3, reloj inyectado (DOM-004)',
     if (!isOk(result)) throw new Error('setup')
     expect(isPromotionCurrentlyActive(result.value, new Date('2026-01-01T00:00:00Z'))).toBe(true)
     expect(isPromotionCurrentlyActive(result.value, new Date('2026-01-31T00:00:00Z'))).toBe(true)
+  })
+})
+
+describe('applyDiscount — misma fórmula que catalog_booking_terms (DOM-001)', () => {
+  it('descuenta el porcentaje y redondea al colón', () => {
+    expect(applyDiscount(10000, 20)).toBe(8000)
+    expect(applyDiscount(35000, 30)).toBe(24500)
+  })
+
+  it('redondea cuando el resultado no es un colón exacto', () => {
+    expect(applyDiscount(10000, 33)).toBe(6700)
+    expect(applyDiscount(9999, 10)).toBe(8999)
+  })
+
+  it('un descuento de 1% casi no cambia el precio, 99% lo deja casi en cero', () => {
+    expect(applyDiscount(10000, 1)).toBe(9900)
+    expect(applyDiscount(10000, 99)).toBe(100)
   })
 })
