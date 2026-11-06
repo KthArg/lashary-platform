@@ -1,5 +1,6 @@
 import { ok, isErr, isOk, type Result } from '@/shared/result'
 import type { Clock } from '@/shared/clock'
+import { logError } from '@/shared/logger'
 import { hasExhaustedNoticeRetries, type ClientNoticeDelivery } from '../domain/client-notice'
 import { buildClientNoticeMessage, buildClientNoticeTemplateVariables } from '../domain/client-notice-message'
 import { isChannelNotConfigured } from '../domain/errors'
@@ -42,7 +43,7 @@ const registerFailure = async (
     ? await deps.clientNotices.markExhausted(notice.id, attempts, truncate(error))
     : await deps.clientNotices.markRetry(notice.id, attempts, truncate(error))
   if (isErr(marked)) {
-    console.error(`[notifications] no se pudo registrar el fallo de envío del aviso ${notice.id}: ${marked.error}`)
+    logError('notifications', `no se pudo registrar el fallo de envío del aviso ${notice.id}`, marked.error)
     return 'errored'
   }
   return exhausted ? 'exhausted' : 'retried'
@@ -56,7 +57,7 @@ const markSent = async (
 ): Promise<SendOutcome> => {
   const marked = await deps.clientNotices.markSent(notice.id, channel.kind, now)
   if (isErr(marked)) {
-    console.error(`[notifications] se mandó el aviso ${notice.id} por ${channel.kind} pero no se pudo marcar enviado: ${marked.error}`)
+    logError('notifications', `se mandó el aviso ${notice.id} por ${channel.kind} pero no se pudo marcar enviado`, marked.error)
     return 'errored'
   }
   return 'sent'
@@ -65,9 +66,9 @@ const markSent = async (
 const sendOne = async (deps: SendClientNoticesDeps, notice: ClientNoticeDelivery, now: Date): Promise<SendOutcome> => {
   const contact = await deps.getContact(notice.clientId)
   if (isErr(contact)) {
-    console.error(`[notifications] no se pudo leer el contacto de ${notice.clientId} para el aviso ${notice.id}: ${contact.error}`)
+    logError('notifications', `no se pudo leer el contacto de ${notice.clientId} para el aviso ${notice.id}`, contact.error)
     const released = await deps.clientNotices.releaseToPending(notice.id)
-    if (isErr(released)) console.error(`[notifications] no se pudo soltar el aviso ${notice.id}: ${released.error}`)
+    if (isErr(released)) logError('notifications', `no se pudo soltar el aviso ${notice.id}`, released.error)
     return 'errored'
   }
   if (contact.value === null) return registerFailure(deps, notice, NO_CONTACT, false)

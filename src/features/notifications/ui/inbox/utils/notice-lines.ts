@@ -1,7 +1,7 @@
 import { moneyFromColones, formatMoney } from '@/shared/money'
 import { formatStudioDateTime } from '@/shared/studio-time'
 import { lostDeposit, type InboxNotice } from '@/features/notifications/domain/inbox-notice'
-import { INBOX_TEXTS } from '@/features/notifications/ui/inbox/constants/inbox-strings'
+import { INBOX_TEXTS } from '../constants/inbox-strings'
 
 export type NoticeLines = { title: string; details: string[] }
 

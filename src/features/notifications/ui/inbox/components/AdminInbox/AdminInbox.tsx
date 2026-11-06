@@ -3,9 +3,9 @@
 import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { isUnread, type InboxNotice } from '@/features/notifications/domain/inbox-notice'
-import { loadMoreNoticesAction, markNoticeAction } from '@/features/notifications/ui/inbox/actions/inbox-actions'
-import { INBOX_TEXTS } from '@/features/notifications/ui/inbox/constants/inbox-strings'
-import { noticeLines } from '@/features/notifications/ui/inbox/utils/notice-lines'
+import { loadMoreNoticesAction, markNoticeAction } from '../../actions/inbox-actions'
+import { INBOX_TEXTS } from '../../constants/inbox-strings'
+import { noticeLines } from '../../utils/notice-lines'
 import { adminInboxStyles as STYLES } from './AdminInbox.styles'
 import type { AdminInboxProps } from './AdminInbox.types'
 
