@@ -2,7 +2,7 @@
 -- Correr con: npx supabase test db
 
 BEGIN;
-SELECT plan(11);
+SELECT plan(13);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -104,6 +104,25 @@ SELECT results_eq(
   $$VALUES (0, 2)$$,
   'un evento que ya no existe queda abierto, no tumba el resto');
 
+RESET ROLE;
+INSERT INTO public.audit_events (id, actor_id, action, entity_type, entity_id, payload, created_at)
+VALUES ('00000000-0000-0000-0000-0000000011b4', '00000000-0000-0000-0000-0000000011a2',
+        'scheduling.appointment.rescheduled', 'scheduling_appointment', '00000000-0000-0000-0000-0000000011e1',
+        '{"previousStartsAt":"2047-10-07T15:00:00Z","newStartsAt":"2047-10-21T15:00:00Z"}', '2026-01-04 10:00+00');
+DELETE FROM public.notifications_admin_inbox WHERE event_id = '00000000-0000-0000-0000-0000000011b4';
+INSERT INTO public.notifications_dropped_notices (event_id, action, appointment_id, error, attempts)
+SELECT gen_random_uuid(), 'scheduling.appointment.cancelled', NULL, 'imposible', 5 FROM generate_series(1, 50);
+SELECT public.notifications_log_dropped_notice('00000000-0000-0000-0000-0000000011b4',
+  'scheduling.appointment.rescheduled', '00000000-0000-0000-0000-0000000011e1', 'falló por un dato transitorio');
+SET LOCAL ROLE authenticated;
+SELECT results_eq(
+  $$SELECT resolved, still_open FROM public.notifications_reconcile_dropped_notices()$$,
+  $$VALUES (1, 52)$$,
+  '50 avisos que ya gastaron sus intentos no impiden recuperar uno nuevo y siguen contados como abiertos');
+
+RESET ROLE;
+SELECT is((SELECT max(attempts) FROM public.notifications_dropped_notices), 5,
+  'los que ya gastaron cinco intentos no se reintentan más');
 RESET ROLE;
 SET LOCAL ROLE anon;
 SELECT throws_ok($$SELECT * FROM public.notifications_reconcile_dropped_notices()$$,

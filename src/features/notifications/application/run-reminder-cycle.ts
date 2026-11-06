@@ -34,6 +34,7 @@ export type RunReminderCycleSummary = {
   noticesFailed: number
   droppedResolved: number
   droppedOpen: number
+  droppedFailed: number
 }
 
 export const runReminderCycle =
@@ -41,7 +42,9 @@ export const runReminderCycle =
   async (): Promise<Result<RunReminderCycleSummary, RepositoryFailure>> => {
     const expiry = await deps.expireUndecidedReschedules()
     const dropped = await deps.droppedNotices.reconcile()
-    if (!isErr(dropped) && dropped.value.open > 0) {
+    if (isErr(dropped)) {
+      logError('notifications', 'no se pudieron reintentar los avisos perdidos', dropped.error)
+    } else if (dropped.value.open > 0) {
       logError('notifications', `quedan ${dropped.value.open} avisos perdidos sin registrar tras reintentarlos`)
     }
     const notices = await sendClientNotices(deps)()
@@ -72,8 +75,9 @@ export const runReminderCycle =
       noticesRetried: isErr(notices) ? 0 : notices.value.retried,
       noticesExhausted: isErr(notices) ? 0 : notices.value.exhausted,
       noticesErrored: isErr(notices) ? 0 : notices.value.errored,
-      noticesFailed: (isErr(notices) ? 1 : 0) + (isErr(dropped) ? 1 : 0),
+      noticesFailed: isErr(notices) ? 1 : 0,
       droppedResolved: isErr(dropped) ? 0 : dropped.value.resolved,
       droppedOpen: isErr(dropped) ? 0 : dropped.value.open,
+      droppedFailed: isErr(dropped) ? 1 : 0,
     })
   }
