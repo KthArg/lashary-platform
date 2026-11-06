@@ -62,6 +62,7 @@ describe('createSupabasePackageBookingRepository', () => {
           p_resource_id: RESOURCE_ID,
           p_starts_at: '2027-09-06T15:00:00.000Z',
           p_package_id: PACKAGE_ID,
+          p_expected_price: null,
         },
       },
     ])
@@ -80,6 +81,13 @@ describe('createSupabasePackageBookingRepository', () => {
         discountPercent: null,
       })
     }
+  })
+
+  it('manda el precio esperado a la base cuando viene (C4)', async () => {
+    const { db, calls } = createFakeDb({ data: row, error: null })
+    await createSupabasePackageBookingRepository(db).book({ ...input, expectedPrice: 45000 })
+
+    expect(calls[0].args).toMatchObject({ p_expected_price: 45000 })
   })
 
   it('con promoción aplicada, devuelve el precio ya rebajado y cuál promoción se aplicó', async () => {
@@ -104,6 +112,7 @@ describe('createSupabasePackageBookingRepository', () => {
     ],
     [PACKAGE_BOOKING_ERROR_MESSAGES.clientNotRegistered, { code: 'SCHEDULING_CLIENT_NOT_REGISTERED' }],
     [PACKAGE_BOOKING_ERROR_MESSAGES.tooManyPending, { code: 'SCHEDULING_TOO_MANY_PENDING_APPOINTMENTS' }],
+    [PACKAGE_BOOKING_ERROR_MESSAGES.priceChanged, { code: 'SCHEDULING_PRICE_CHANGED' }],
   ])('el mensaje %s de la base llega como su error tipado', async (message, expectedError) => {
     expect(await bookExpectingError(message)).toMatchObject(expectedError)
   })

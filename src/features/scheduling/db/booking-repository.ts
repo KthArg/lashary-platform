@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { err, ok } from '@/shared/result'
 import {
   clientNotRegistered,
+  priceChanged,
   slotNotOffered,
   spaceNotAvailable,
   storageFailed,
@@ -73,6 +74,8 @@ function toBookingError(message: string, input: BookAppointmentInput): BookAppoi
       return spaceNotAvailable(input.resourceId)
     case BOOKING_ERROR_MESSAGES.tooManyPending:
       return tooManyPendingAppointments()
+    case BOOKING_ERROR_MESSAGES.priceChanged:
+      return priceChanged()
     default:
       return storageFailed(message)
   }
@@ -89,6 +92,7 @@ export function createSupabaseBookingRepository(
         p_starts_at: toIso(input.startsAtMs),
         p_technique_id: input.techniqueId,
         p_is_first_time: input.isFirstTime,
+        p_expected_price: input.expectedPrice ?? null,
       })
 
       if (error) return err(toBookingError(error.message, input))
