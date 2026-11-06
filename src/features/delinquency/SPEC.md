@@ -26,7 +26,7 @@ Morosidad: deteccion con gracia y aviso previo (DOM-012), bloqueo, regularizacio
 
 ## Qué hace hoy
 
-Hoy: solo está el arranque de US-MOR-01 (sección de abajo). No hay código, tablas ni contrato.
+Hoy: las tablas de morosidades y de configuración, con la detección apagada (sección de US-MOR-01). Todavía no hay función de detección, aviso, pantalla ni cron.
 
 ## Contrato público
 
@@ -75,7 +75,22 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - **Orden de las historias.** El override manual auditado y levantar o perdonar son de US-MOR-05; esta historia solo
   deja la morosidad en un estado que ese override pueda cambiar.
 
+### Tablas y configuración (pieza 4)
+
+- Migración `20261108000001_delinquency_tables.sql`. `delinquency_settings` es una tabla de una sola fila con
+  `grace_days` (de 1 a 90, arranca en 7, aprobado por el PO el 2026-11-08). Staff la lee y nadie la escribe directo: la administradora la
+  cambia por la función `delinquency_set_grace_days` (pieza 17), que deja bitácora. Cambiar la gracia rige solo para las detecciones nuevas: no toca las morosidades ya generadas. No hay
+  bandera de encendido (decisión del PO): la detección lee el ledger y funciona sola cuando US-MOR-03 registre pagos.
+- `delinquency_cases`: una morosidad por cita (`UNIQUE appointment_id`, así una descartada no se vuelve a generar),
+  con `client_id`, el saldo `pending` al detectarla, el `state` (`pending_review`, `active` o `dismissed`) y quién
+  y cuándo la decidió. El CHECK obliga a que una morosidad por revisar no traiga decisión y que una activa o
+  descartada sí la traiga. `appointment_id` no tiene FK (ARCH-005). Staff solo lee: las morosidades las escriben las
+  funciones de las piezas siguientes.
+- Prueba: pgTAP `delinquency_tables.test.sql` (la gracia nace en 7 días y nadie la cambia directo,
+  ni la administradora; una morosidad por cita; estado y decisión van juntos; staff no inserta directo; la
+  clienta no ve ni cambia nada y `anon` no tiene permiso).
+
 ### Qué no hace todavía
 
-Nada del criterio 1 al 5: no hay tablas, funciones, pantalla ni cron. El plan de piezas está en el PR de cada
-incremento.
+No hay todavía la función que detecta y escribe las morosidades, el aviso previo, la pantalla ni el cron: son
+las piezas 5 a 8. Las tablas existen pero ninguna fila se genera sola.
