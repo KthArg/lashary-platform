@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-11-03"
+actualizado: "2026-11-06"
 historias:
   - id: US-AGE-01
     estado: terminada
@@ -193,6 +193,19 @@ Al rebasar otra vez contra `main` (2026-11-01, ya con US-AGE-04 integrada), `Con
 **Hallazgo propio de la pieza de paquete:** `max(uuid)` no existe en Postgres. `scheduling_book_package_appointment`/`scheduling_quote_package_booking` agregan con `max()` las columnas repetidas de `catalog_package_booking_terms` (una fila por técnica incluida); para `promotion_id` (`uuid`) eso falla con `42883 function max(uuid) does not exist`, detectado porque las 10 clientas de `package-booking-concurrency.integration.test.ts` fallaban todas en vez de que gane una. Arreglo: `max(promotion_id::text)::uuid` — mismo valor en todas las filas, así que cuál gane la agregación es indiferente.
 
 Pruebas: pgTAP de la pieza de paquete (`catalog_package_booking_terms.test.sql`, `scheduling_quote_package_booking.test.sql`, `scheduling_book_package_appointment.test.sql`); del lado TypeScript, `db/__tests__/package-booking-quote-repository.test.ts` y `db/__tests__/package-booking-repository.test.ts` (el mapeo de fila, más el caso con promoción aplicada), `ui/booking-confirm/__tests__/booking-confirm.test.ts` y `perform-booking.test.ts` (el aviso antes y después de confirmar, caso paquete).
+
+## Incremento de US-PROM-02: ver paquetes y promociones antes de agendar (`catalog` es la dueña)
+
+US-PROM-02 ("ver paquetes y promociones antes de agendar") la declara `catalog/SPEC.md`; el código cae entero en esta feature porque la pantalla ya existía (`/portal/citas`, la puerta de entrada de US-AGE-04) y todo lo que necesita ya era público en el contrato de `catalog` (`listPackages`, `listActivePromotions`, `applyDiscount`, `PromotionView`) — cero cambios en `catalog`.
+
+- Criterio 1 (paquetes activos con precio y servicios incluidos): `PackageSelectorItem` (`ui/load-technique-selection-page.ts`) agrega `price`, `techniqueNames` y `discountPercent`/`priceDiscounted` a lo que ya mostraba `PackageSelector` (nombre y duración). Los nombres de las técnicas incluidas se resuelven contra la lista de técnicas que `loadTechniqueSelectionPageData` ya pedía para el selector de técnicas — sin consulta nueva (PERF-005); una técnica incluida que ya no esté activa simplemente no aporta nombre, en vez de reventar el mapeo (no debería ocurrir en un paquete activo: `catalog_deactivate_technique_cascade` desactiva el paquete junto con la técnica, pero el código no lo asume).
+- Criterio 2 (promociones activas destacadas visualmente): `bestActiveDiscountsByPackage` (`ui/package-promotions.ts`) es el espejo exacto de `bestActiveDiscountsByTechnique` de `landing/ui/technique-view.ts` (D-PROM-3: mayor descuento gana; el desempate por vigencia no cambia el número mostrado) — duplicado en vez de compartido porque `domain/` no puede importar `@/features/catalog` (ARCH-004) y hoy no existe un lugar neutral para esta regla fuera de cada feature que la consume. `PackageSelector` pinta una insignia visible "Promoción" (no solo color, UI-004) y el precio anterior tachado (`<s>`) junto al precio rebajado, con las etiquetas visibles "Antes"/"Ahora" para que el cambio se entienda sin depender del tachado.
+- Criterio 3 (seleccionar dirige al flujo de agendamiento): ya estaba cubierto por el enlace a `calendarHref` de US-AGE-04; sin cambios.
+
+Pruebas: `ui/__tests__/package-promotions.test.ts` (D-PROM-3), `ui/__tests__/load-technique-selection-page.test.ts` (precio, servicios incluidos, técnica inactiva omitida sin reventar, descuento con empate) y `ui/__tests__/TechniqueSelectionPageView.test.tsx` (precio visible, insignia y precio tachado solo con promoción vigente).
+
+**Verificación visual (INT-010):** esta sesión no podía montar una sesión de clienta en un navegador por su cuenta (la clienta entra por Google OAuth, US-AUTH-02, sin fixture de sesión en `e2e/`, cuyos specs hoy solo cubren páginas públicas; y crear una clienta por `signUp` contra `lashary-pruebas` quedó sin sesión por requerir confirmar el correo, sin tocar la service-role key, SEC-003). Erick Durán la hizo a mano contra `lashary-pruebas` el 2026-11-06, con su cuenta real: `/portal/citas` → "O elegí un paquete" mostró "Set volumen" con `Incluye: Set clásico, Set volumen extra, Diseño de cejas`, `Tiempo total: 390 min` y `₡450 000` sin promoción; tras crear una promoción de ejemplo sobre ese paquete desde `/admin/catalog/promotions`, la misma sección mostró la insignia "Promoción" junto al nombre y `Antes ₡450 000` (tachado) `Ahora ₡409 500`. De paso se descartó el falso positivo más probable: una promoción creada primero sobre una técnica suelta (Set clásico) solo afectó la pantalla de confirmación de esa técnica (US-PROM-01, ya terminada) y no la insignia del paquete — confirma que `bestActiveDiscountsByPackage` filtra `target.type === 'package'` como se esperaba.
+
 ## Faltantes de US-AGE-05
 
 US-AGE-05 queda `terminada` con estos faltantes aprobados por el PO, cada uno con su dueño:

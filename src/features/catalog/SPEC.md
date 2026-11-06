@@ -1,8 +1,8 @@
 ---
 feature: catalog
 dri: pendiente
-estado: en_progreso
-actualizado: 2026-11-01
+estado: terminada
+actualizado: 2026-11-06
 historias:
   - id: US-AGE-08
     estado: terminada
@@ -14,7 +14,8 @@ historias:
     estado: terminada
     evidencia: "criterios 1 y 3 completos — crear/editar/pausar una promoción sobre técnica o paquete, que deje de aplicarse sola al vencer sin intervención manual; criterio 2 y criterio 4, completos sobre técnica y sobre paquete (US-AGE-05 y US-AGE-04 ya terminadas): catalog_booking_terms/catalog_package_booking_terms descuentan el precio (DOM-001, redondeo al colón) y devuelven promotion_id/discount_percent; scheduling_quote_booking/scheduling_quote_package_booking los muestran antes de confirmar y scheduling_book_appointment/scheduling_book_package_appointment los congelan en la cita (DOM-002); el aviso 'Precio con N% de descuento por promoción' se ve en /portal/citas/calendario/confirmar para técnica y paquete. Criterio 2, mitad landing (2026-11-05): la página pública muestra el precio rebajado y un aviso del porcentaje sobre las técnicas con promoción vigente (listActivePromotions + applyDiscount, detalle en src/features/landing/SPEC.md). Tests: promotion.test.ts, promotion-queries.test.ts, promotion-commands.test.ts, promotion-repository.integration.test.ts, promotion-schema.test.ts, promotion-actions.test.ts, promotion-rls-isolation.test.ts (SEC-002), catalog_promotion_staff_write.test.sql, catalog_booking_terms.test.sql, catalog_package_booking_terms.test.sql, scheduling_quote_booking.test.sql, scheduling_book_appointment.test.sql, scheduling_quote_package_booking.test.sql, scheduling_book_package_appointment.test.sql (pgTAP), booking-quote-repository.test.ts, booking-repository.test.ts, package-booking-quote-repository.test.ts, package-booking-repository.test.ts, booking-confirm.test.ts, perform-booking.test.ts, BookingConfirmView.test.tsx, landing/ui/__tests__/technique-view.test.ts, landing-techniques.test.tsx. UI en /admin/catalog/promotions, pestaña del panel. Verificación visual con Playwright contra Supabase local (2026-11-06): tabla y formulario de promociones en /admin/catalog/promotions, aviso de descuento en /portal/citas/calendario/confirmar con una clienta real, y el precio tachado + aviso de porcentaje en la landing pública (/) — capturas en los PRs #289, #290, #448 y #675."
   - id: US-PROM-02
-    estado: no_iniciada
+    estado: terminada
+    evidencia: "Criterios 1 a 3 completos. El código cae en `scheduling` (la pantalla de selección de servicio en /portal/citas ya existía, US-AGE-04) consumiendo el contrato ya público de catalog (listPackages, listActivePromotions, applyDiscount) — catalog no cambió. Criterio 1 (paquetes activos con precio y servicios incluidos): PackageSelectorItem agrega price/techniqueNames a lo que ya mostraba PackageSelector. Criterio 2 (promociones destacadas visualmente): bestActiveDiscountsByPackage (D-PROM-3) más insignia 'Promoción' y precio tachado/rebajado con etiquetas 'Antes'/'Ahora' (UI-004, no solo color). Criterio 3 (dirige al agendamiento): ya cubierto por el enlace al calendario de US-AGE-04. Detalle completo en src/features/scheduling/SPEC.md, 'Incremento de US-PROM-02'. Tests: ui/__tests__/package-promotions.test.ts, ui/__tests__/load-technique-selection-page.test.ts, ui/__tests__/TechniqueSelectionPageView.test.tsx (los tres en scheduling). Verificación visual (INT-010) contra lashary-pruebas, a mano por Erick Durán el 2026-11-06, con su cuenta real: /portal/citas, sección 'O elegí un paquete' — 'Set volumen' con precio y servicios incluidos sin promoción, y luego con una promoción de ejemplo sobre el paquete, la insignia 'Promoción', 'Antes ₡450 000' tachado y 'Ahora ₡409 500'; también se descartó que una promoción sobre una técnica suelta (Set clásico) se cuele en la insignia del paquete."
 flags: []
 deuda: []
 defectos: []
@@ -75,7 +76,6 @@ Dónde se detiene US-PROD-01: el código está completo y probado. Las pruebas u
 - **Criterio 7b / 8** (una técnica desactivada o con precio cambiado no altera citas ya agendadas): trasladados a US-AGE-05, que trae la tabla de citas. El catálogo cumple su parte — no borra técnicas (solo `is_active = false`) y expone `TechniqueSnapshot` — y el congelamiento se prueba en US-AGE-05 con el test obligatorio de DOM-002.
 - Consumo de `buffer_min` en el calendario: US-AGE-02.
 - Consumo de `reapplication_interval_days` en recordatorios: US-NOT-05.
-- Promociones (US-PROM-02, ver "ver paquetes/promos" en loyalty/landing).
 
 ## US-PROM-01 — promociones (terminada)
 
@@ -100,6 +100,10 @@ Descuento por tiempo limitado sobre exactamente una técnica o un paquete existe
 **Criterios 2 y 4, sobre paquete (US-AGE-04 ya en main):** mismo patrón, filtrado por `package_id` en vez de `technique_id` (migración `20261101000004_catalog_promotions_in_package_booking.sql`). `catalog_package_booking_terms` devuelve una fila por técnica incluida con `promotion_id`/`discount_percent` del paquete repetidos (igual que `package_price`, ver `20261030000000`); las funciones que agregan con `max(package_price)` agregan también `max(discount_percent)` y, para `promotion_id` (`uuid`, sin `max()`/`min()` agregado en Postgres), `max(promotion_id::text)::uuid` — mismo valor en todas las filas, así que cuál se quede es indiferente. `scheduling_book_package_appointment`/`scheduling_quote_package_booking` copian esos dos campos igual que su equivalente de técnica. D-PROM-3 aplica igual (mayor descuento gana, empate por la que vence primero, con `pr.id` como segundo desempate — faltaba en la pieza 12 y se corrigió ahí mismo, ya alineado con el `p.id` de la técnica suelta, B6). C3 y C4 (decisiones del PO, 2026-11-02 — mismas que la técnica suelta, pieza 10) aplican igual: `catalog_package_booking_terms` devuelve `deposit = LEAST(deposit del paquete, precio ya descontado)`, y `scheduling_book_package_appointment` recibe un cuarto parámetro opcional `p_expected_price` que lanza `scheduling_price_changed` si no coincide con el precio recién calculado (con el mismo `DROP FUNCTION IF EXISTS` de la firma de 3 argumentos para evitar el overload de `CREATE OR REPLACE`). Pruebas: `catalog_package_booking_terms.test.sql`, `scheduling_quote_package_booking.test.sql`/`scheduling_book_package_appointment.test.sql` (pgTAP, incluye `pronargs = 4`) y, del lado de `scheduling`, `package-booking-quote-repository.test.ts`/`package-booking-repository.test.ts`/`booking-confirm.test.ts`/`perform-booking.test.ts` (detalle en `src/features/scheduling/SPEC.md`).
 
 Dónde se detiene: los cuatro criterios tienen código, pruebas automatizadas de punta a punta (incluida la landing) y verificación visual con Playwright contra Supabase local (2026-11-06) — tabla y formulario de promociones, el aviso de descuento al reservar y el precio tachado en la landing pública. Historia `terminada`.
+
+## US-PROM-02 — ver paquetes y promociones antes de agendar (terminada)
+
+Declarada acá (`catalog` es la dueña de la historia), pero el código entero cae en `scheduling`: la pantalla de selección de servicio en `/portal/citas` (puerta de entrada de US-AGE-04) ya existía y todo lo que necesitaba ya era público (`listPackages`, `listActivePromotions`, `applyDiscount`) — ningún archivo de `catalog` cambió. Detalle completo, pruebas y la decisión sobre el criterio 2 ("destacar visualmente" como insignia + precio tachado, en vez de solo color) en `src/features/scheduling/SPEC.md`, sección "Incremento de US-PROM-02".
 
 ## Modelo de datos
 

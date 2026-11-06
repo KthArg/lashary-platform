@@ -61,7 +61,17 @@ describe('TechniqueSelectionPageView', () => {
         data={{
           status: 'ok',
           techniques: [{ id: 't1', name: 'Volumen ruso' }],
-          packages: [{ id: 'p1', name: 'Combo clásicas', isActive: true, durationTotalMin: 110 }],
+          packages: [
+            {
+              id: 'p1',
+              name: 'Combo clásicas',
+              durationTotalMin: 110,
+              techniqueNames: [],
+              price: 20000,
+              discountPercent: null,
+              priceDiscounted: null,
+            },
+          ],
         }}
       />,
     )
@@ -71,6 +81,60 @@ describe('TechniqueSelectionPageView', () => {
     expect(
       screen.getByRole('link', { name: schedulingMessages.selector.seePackageSlots }).getAttribute('href'),
     ).toBe('/portal/citas/calendario?servicio=pkg%3Ap1')
+  })
+
+  it('un paquete activo muestra su precio y sus servicios incluidos (US-PROM-02, criterio 1)', () => {
+    render(
+      <TechniqueSelectionPageView
+        data={{
+          status: 'ok',
+          techniques: [],
+          packages: [
+            {
+              id: 'p1',
+              name: 'Combo clásicas',
+              durationTotalMin: 110,
+              techniqueNames: ['Volumen ruso', 'Laminado de cejas'],
+              price: 20000,
+              discountPercent: null,
+              priceDiscounted: null,
+            },
+          ],
+        }}
+      />,
+    )
+
+    expect(
+      screen.getByText(schedulingMessages.selector.packageIncludes(['Volumen ruso', 'Laminado de cejas'])),
+    ).toBeTruthy()
+    expect(screen.getByText(/^₡20.000$/)).toBeTruthy()
+    expect(screen.queryByText(schedulingMessages.selector.packagePromotionBadge)).toBeNull()
+  })
+
+  it('un paquete con promoción vigente destaca el descuento: insignia, precio anterior tachado y precio rebajado (US-PROM-02, criterio 2)', () => {
+    render(
+      <TechniqueSelectionPageView
+        data={{
+          status: 'ok',
+          techniques: [],
+          packages: [
+            {
+              id: 'p1',
+              name: 'Combo clásicas',
+              durationTotalMin: 110,
+              techniqueNames: [],
+              price: 20000,
+              discountPercent: 10,
+              priceDiscounted: 18000,
+            },
+          ],
+        }}
+      />,
+    )
+
+    expect(screen.getByText(schedulingMessages.selector.packagePromotionBadge)).toBeTruthy()
+    expect(screen.getByText(/^₡20.000$/).closest('s')).not.toBeNull()
+    expect(screen.getByText(/^₡18.000$/)).toBeTruthy()
   })
 
   it('sin paquetes activos, la sección de paquetes no se muestra', () => {
