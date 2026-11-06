@@ -7,6 +7,7 @@ const REMINDERS_TABLE = 'notifications_reminders'
 const INBOX_TABLE = 'notifications_admin_inbox'
 const PERMISSION_DENIED = '42501'
 const CLIENT_NOTICES_TABLE = 'notifications_client_notices'
+const DROPPED_NOTICES_TABLE = 'notifications_dropped_notices'
 const NO_SAVED_SESSION = { auth: { persistSession: false, autoRefreshToken: false } }
 
 const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
@@ -198,6 +199,20 @@ describe.skipIf(!isSupabaseConfigured)('SEC-002 — aislamiento RLS de notificat
     for (const client of [anonClient, clientaClient]) {
       const recorded = await client.rpc('notifications_record_reschedule_outcome', probe)
       expect(recorded.error?.code).toBe(PERMISSION_DENIED)
+    }
+  })
+
+  itLive('avisos perdidos (US-NOT-02): anon no los lee, la clienta no ve ninguno y nadie los anota a mano', async () => {
+    const anonRead = await anonClient.from(DROPPED_NOTICES_TABLE).select('id')
+    expect(anonRead.error?.code).toBe(PERMISSION_DENIED)
+
+    const clientaRead = await clientaClient.from(DROPPED_NOTICES_TABLE).select('id')
+    expect(clientaRead.data ?? []).toHaveLength(0)
+
+    const probe = { p_event_id: PROBE_APPOINTMENT_ID, p_action: 'scheduling.appointment.cancelled', p_appointment_id: null, p_error: 'falso' }
+    for (const client of [anonClient, clientaClient]) {
+      const logged = await client.rpc('notifications_log_dropped_notice', probe)
+      expect(logged.error?.code).toBe(PERMISSION_DENIED)
     }
   })
 })

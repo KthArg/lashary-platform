@@ -98,7 +98,7 @@ SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claims',
   '{"sub":"00000000-0000-0000-0000-0000000008a2","role":"authenticated"}', true);
 SELECT throws_ok(
-  $$SELECT public.notifications_discard_client_notices('00000000-0000-0000-0000-0000000008e4')$$,
+  $$SELECT public.notifications_discard_client_notices('00000000-0000-0000-0000-0000000008e4', now())$$,
   '42501', NULL, 'nadie descarta avisos llamando a la función a mano');
 
 SELECT * FROM finish();
