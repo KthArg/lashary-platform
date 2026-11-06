@@ -26,7 +26,7 @@ Morosidad: deteccion con gracia y aviso previo (DOM-012), bloqueo, regularizacio
 
 ## Qué hace hoy
 
-Hoy: las tablas de morosidades y de configuración la función que detecta y la que confirma o descarta (sección de US-MOR-01). Todavía no hay cron, pantalla ni aviso.
+Hoy: las tablas de morosidades y de configuración la función que detecta las que confirman o descartan y las del contrato (sección de US-MOR-01). Todavía no hay cron, pantalla ni aviso.
 
 ## Contrato público
 
@@ -121,6 +121,18 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
   pantalla. Pruebas: `application/__tests__/decide-case.test.ts`, `db/__tests__/case-repository.test.ts` y
   `ui/review/__tests__/review-actions.test.ts`.
 - Todavía no hay pantalla que la llame: llega en una pieza siguiente.
+
+### Funciones del contrato (pieza 8)
+
+- Migración `20261108000004_delinquency_contract_fns.sql`: `delinquency_client_states(ids)` y
+  `delinquency_list_active(tope, después_de)`, las dos del contrato [delinquency-api.md](../../../docs/contracts/delinquency-api.md).
+  Son de solo lectura y `SECURITY INVOKER`: la RLS deja ver las filas solo a staff. El estado de una clienta es el
+  más relevante: `active` gana a `pending_review` y `dismissed` no se devuelve; el saldo es el de las morosidades de ese
+  estado. Más de 200 ids es el error `delinquency_too_many_ids`. El listado de activas va de la más reciente a la más
+  antigua, con tope de 100 y paginado por fecha.
+- Prueba: pgTAP `delinquency_contract.test.sql` (la activa gana, el saldo se suma por estado, la descartada no sale, el
+  tope de ids, el orden y la paginación del listado, y la clienta y `anon` no ven nada).
+- Todavía nadie las llama: las consumen la pantalla y `clients` en las piezas siguientes.
 
 ### Qué no hace todavía
 
