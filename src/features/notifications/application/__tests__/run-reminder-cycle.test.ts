@@ -31,6 +31,7 @@ describe('runReminderCycle', () => {
       markSent: async () => ok(undefined),
       markRetry: async () => ok(undefined),
       markExhausted: async () => ok(undefined),
+      recordAttempt: async () => ok(undefined),
       primaryChannel: channel('whatsapp'),
       backupChannel: channel('email'),
     })()
@@ -61,6 +62,7 @@ describe('runReminderCycle', () => {
     markSent: async () => ok(undefined),
     markRetry: async () => ok(undefined),
     markExhausted: async () => ok(undefined),
+    recordAttempt: async () => ok(undefined),
     primaryChannel: { kind: 'whatsapp' as const, send: async () => ok(undefined) },
     backupChannel: { kind: 'email' as const, send: async () => ok(undefined) },
   })
