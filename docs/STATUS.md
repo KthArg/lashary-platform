@@ -75,7 +75,7 @@
 - US-NOT-04 — no_iniciada
 - US-NOT-05 — no_iniciada
 - US-NOT-06 — no_iniciada
-- US-NOT-07 — en_progreso — falta: criterio 2: falta la bitacora de intentos que pide ADR-0006; los criterios 1 y 3 ya los entrego US-NOT-03
+- US-NOT-07 — en_progreso — falta: verificacion y cierre: la bitacora de intentos esta implementada; falta el PR de cierre de us/US-NOT-07 con su evidencia
 - US-NOT-08 — no_iniciada
 - US-CLI-06 — no_iniciada
 

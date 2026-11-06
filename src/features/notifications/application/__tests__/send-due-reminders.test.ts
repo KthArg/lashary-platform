@@ -4,6 +4,7 @@ import { fixedClock, fixedDate } from '@/shared/testing/fixed-clock'
 import { sendDueReminders, type SendDueRemindersDeps } from '../send-due-reminders'
 import { channelNotConfigured, channelSendFailed } from '../../domain/errors'
 import { MAX_REMINDER_ATTEMPTS, type ReminderSnapshot } from '../../domain/reminder'
+import type { ReminderAttempt } from '../../domain/reminder-attempt'
 import type { ContactInfo, NotificationChannel } from '../ports'
 
 const dueReminder: ReminderSnapshot = {
@@ -32,12 +33,14 @@ function buildDeps(options: {
   contactReadFails?: boolean
   primary?: 'ok' | 'send-failed' | 'not-configured'
   backup?: 'ok' | 'send-failed' | 'not-configured'
+  recordAttemptFails?: boolean
 }) {
   const reminder = options.reminder ?? dueReminder
   const sentCalls: unknown[] = []
   const retryCalls: unknown[] = []
   const exhaustedCalls: unknown[] = []
   const releasedIds: string[] = []
+  const attempts: ReminderAttempt[] = []
   const deps: SendDueRemindersDeps = {
       claimDuePending: async () => ok([reminder]),
       releaseToPending: async (id: string) => {
@@ -60,12 +63,102 @@ function buildDeps(options: {
         exhaustedCalls.push({ id, attempts, error })
         return ok(undefined)
       },
+      recordAttempt: async (attempt: ReminderAttempt) => {
+        if (options.recordAttemptFails) return err('repository-failed' as const)
+        attempts.push(attempt)
+        return ok(undefined)
+      },
       primaryChannel: fakeChannel('whatsapp', options.primary ?? 'ok'),
       backupChannel: fakeChannel('email', options.backup ?? 'ok'),
       clock: fixedClock('2026-11-01T15:00:01Z'),
   }
-  return { deps, sentCalls, retryCalls, exhaustedCalls, releasedIds }
+  return { deps, sentCalls, retryCalls, exhaustedCalls, releasedIds, attempts }
 }
+
+describe('sendDueReminders: bitácora de intentos (US-NOT-07, criterio 2)', () => {
+  const attemptedAt = fixedDate('2026-11-01T15:00:01Z')
+  const whatsappFailure = 'envío falló por whatsapp: fallo simulado'
+  const emailFailure = 'envío falló por email: fallo simulado'
+
+  it('registra el envío exitoso por WhatsApp, sin intento por correo', async () => {
+    const { deps, attempts } = buildDeps({})
+
+    await sendDueReminders(deps)()
+
+    expect(attempts).toEqual([
+      { reminderId: 'rem-1', attemptNumber: 1, channel: 'whatsapp', outcome: 'sent', error: null, attemptedAt },
+    ])
+  })
+
+  it('conserva el fallo de WhatsApp cuando el correo lo rescata', async () => {
+    const { deps, attempts } = buildDeps({ primary: 'send-failed' })
+
+    await sendDueReminders(deps)()
+
+    expect(attempts).toEqual([
+      { reminderId: 'rem-1', attemptNumber: 1, channel: 'whatsapp', outcome: 'failed', error: whatsappFailure, attemptedAt },
+      { reminderId: 'rem-1', attemptNumber: 1, channel: 'email', outcome: 'sent', error: null, attemptedAt },
+    ])
+  })
+
+  it('registra los dos fallos con el número del intento en curso', async () => {
+    const { deps, attempts } = buildDeps({ primary: 'send-failed', backup: 'send-failed', reminder: { ...dueReminder, attempts: 2 } })
+
+    await sendDueReminders(deps)()
+
+    expect(attempts).toEqual([
+      { reminderId: 'rem-1', attemptNumber: 3, channel: 'whatsapp', outcome: 'failed', error: whatsappFailure, attemptedAt },
+      { reminderId: 'rem-1', attemptNumber: 3, channel: 'email', outcome: 'failed', error: emailFailure, attemptedAt },
+    ])
+  })
+
+  it('distingue un canal sin configurar de un envío fallido', async () => {
+    const { deps, attempts } = buildDeps({ primary: 'not-configured' })
+
+    await sendDueReminders(deps)()
+
+    expect(attempts[0]).toEqual({
+      reminderId: 'rem-1', attemptNumber: 1, channel: 'whatsapp', outcome: 'not_configured', error: 'canal sin configurar: whatsapp', attemptedAt,
+    })
+  })
+
+  it('registra el intento sin canal cuando la clienta no tiene contacto', async () => {
+    const { deps, attempts } = buildDeps({ hasContact: false })
+
+    await sendDueReminders(deps)()
+
+    expect(attempts).toEqual([
+      { reminderId: 'rem-1', attemptNumber: 1, channel: null, outcome: 'no_contact', error: 'sin contacto registrado para la clienta', attemptedAt },
+    ])
+  })
+
+  it('no registra intento si falló la lectura del contacto, porque no se intentó enviar', async () => {
+    const { deps, attempts } = buildDeps({ contactReadFails: true })
+
+    await sendDueReminders(deps)()
+
+    expect(attempts).toEqual([])
+  })
+
+  it('acota el error guardado en la bitácora', async () => {
+    const { deps, attempts } = buildDeps({})
+    deps.primaryChannel = { kind: 'whatsapp', send: async () => err(channelSendFailed('whatsapp', 'x'.repeat(1000))) }
+
+    await sendDueReminders(deps)()
+
+    expect(attempts[0].error?.length).toBeLessThanOrEqual(501)
+  })
+
+  it('no pierde el envío si la bitácora falla: el recordatorio queda sent', async () => {
+    const { deps, sentCalls } = buildDeps({ recordAttemptFails: true })
+
+    const result = await sendDueReminders(deps)()
+
+    expect(isOk(result)).toBe(true)
+    if (isOk(result)) expect(result.value.sent).toBe(1)
+    expect(sentCalls).toHaveLength(1)
+  })
+})
 
 describe('sendDueReminders', () => {
   it('envía por el canal primario (WhatsApp) cuando funciona', async () => {

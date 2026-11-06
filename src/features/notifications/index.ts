@@ -68,6 +68,7 @@ export async function runNotificationsReminderCycle(): Promise<
       markSent: repo.markSent,
       markRetry: repo.markRetry,
       markExhausted: repo.markExhausted,
+      recordAttempt: repo.recordAttempt,
       primaryChannel: metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env)),
       backupChannel: resendEmailChannel(readResendEmailConfigFromEnv(process.env)),
     })()
