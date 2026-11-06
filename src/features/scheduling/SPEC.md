@@ -366,6 +366,7 @@ Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el
   horario que pidió (`rejectedStartsAt` o `expiredStartsAt`) y el que conserva (`restoredStartsAt`). Si
   el aviso falla, el rechazo o el vencimiento igual se guardan. Prueba:
   `supabase/tests/database/scheduling_notify_reschedule_outcome.test.sql`.
+- Hueco de avisos en «Mis citas» (US-NOT-02, ítem 13): `MyAppointmentsPage` y `MyAppointmentsView` reciben `notices` (un `ReactNode`) y lo pintan entre el encabezado y la lista. Lo llena la ruta `src/app/portal/citas/mis-citas/page.tsx` con `ClientNotices` de `notifications`, así `scheduling` no importa esa feature (ARCH-005). Prueba: `ui/my-appointments/__tests__/MyAppointmentsView.test.tsx`.
 - Dominio y aplicación (`selectTechnique`, puertos) son superficie interna: ninguna otra feature los consume todavía, salvo los dos puertos de solo lectura de arriba.
 
 ### Historial de citas de una clienta (para US-CLI-02 de `clients`)

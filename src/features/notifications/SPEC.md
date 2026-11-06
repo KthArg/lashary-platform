@@ -255,6 +255,18 @@ Hecho hasta ahora:
   cita (técnica o paquete), el horario pedido y el que conserva. Prueba:
   `scheduling_notify_reschedule_outcome.test.sql` (rechazo y vencimiento de punta a punta, y si el aviso
   falla el vencimiento igual se hace).
+- Nota en «Mis citas» (ítem 13): `loadClientNotices` (`application/client-notices.ts`, reloj inyectado,
+  DOM-004) pide a `db/client-notice-repository.ts` los avisos de la sesión cuyo horario conservado todavía
+  no pasó, los más recientes primero y con tope de `CLIENT_NOTICES_LIMIT` (5, PERF-002); la RLS deja solo
+  los de la clienta. El texto lo arma `buildClientNoticeMessage` (`domain/client-notice-message.ts`,
+  textos en `CLIENT_NOTICE_MESSAGE_TEXTS`, DOM-009): qué cambio pidió, si se lo rechazaron o venció sin
+  respuesta, y el horario que conserva; el mensaje por el canal usará el mismo texto. `ClientNotices`
+  (`ui/client-notices/`) lo pinta como una sección «Avisos de tus citas»; sin avisos no pinta nada, y si
+  no cargaron lo dice con `role="alert"` (UI-003). La ruta `src/app/portal/citas/mis-citas/page.tsx` lo
+  compone en el hueco `notices` de `MyAppointmentsPage` de `scheduling` (ARCH-005: ninguna feature importa
+  a la otra). Pruebas: `domain/__tests__/client-notice-message.test.ts`,
+  `db/__tests__/client-notice-repository.test.ts`, `application/__tests__/client-notices.test.ts` y
+  `ui/client-notices/__tests__/ClientNotices.test.tsx`.
 
 ## Qué no hace todavía
 
@@ -508,6 +520,8 @@ en el frontmatter de esta historia).
   `src/app/api/cron/notifications-reminders/route.ts`.
 - `loadAdminInbox`, `AdminInbox`, `markNoticeAction` y sus tipos (US-NOT-01). Consumidor:
   `src/app/admin/layout.tsx`.
+- `loadMyClientNotices`, `ClientNotices` y `ClientNoticesResult` (US-NOT-02). Consumidor:
+  `src/app/portal/citas/mis-citas/page.tsx`.
 - Dominio y aplicación son superficie interna; ninguna otra feature los consume.
 
 ## Decisiones
