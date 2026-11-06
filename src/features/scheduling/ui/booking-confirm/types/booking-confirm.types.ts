@@ -12,6 +12,8 @@ export type ConfirmQuote = {
   readonly servicePrice: number
   readonly durationMin: number
   readonly depositDue: number
+  readonly promotionId: string | null
+  readonly discountPercent: number | null
 }
 
 export type BookingConfirmData =
@@ -34,10 +36,17 @@ export type BookingSummaryView = {
   price: string
   deposit: string
   depositNotice: string | null
+  promotionNotice: string | null
 }
 
 export type BookingConfirmView =
   | { status: 'forbidden' }
   | { status: 'invalid'; backHref: string }
   | { status: 'unavailable'; backHref: string }
-  | { status: 'ready'; fields: ConfirmParams; summary: BookingSummaryView; backHref: string }
+  | {
+      status: 'ready'
+      fields: ConfirmParams
+      expectedPrice: number
+      summary: BookingSummaryView
+      backHref: string
+    }

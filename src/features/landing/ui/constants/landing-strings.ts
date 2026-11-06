@@ -33,6 +33,7 @@ export const landingMessages = {
     retouch: 'Retoque',
     minutes: 'min',
     reserve: 'Reservar esta técnica',
+    promotion: (discountPercent: number) => `${discountPercent}% de descuento por tiempo limitado`,
     empty:
       'El catálogo se está actualizando. Escribinos y te contamos qué técnicas hay disponibles esta semana.',
   },

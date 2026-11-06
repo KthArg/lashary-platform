@@ -14,6 +14,9 @@ export const landingTechniquesStyles = {
     'flex min-h-site-tap w-full cursor-pointer flex-wrap items-baseline gap-x-site-row-gap gap-y-2 py-site-row-y text-left font-site-sans text-site-ink outline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-site-focus',
   name: 'flex-auto basis-60 font-site-display text-site-technique',
   meta: 'flex-none text-site-meta text-site-ink-muted',
+  priceOriginal: 'line-through text-site-ink-muted',
+  priceDiscounted: 'text-site-rose',
+  promoBadge: 'text-site-rose',
   sign: 'ml-auto flex-none text-site-sign text-site-ink-muted transition-transform duration-300 ease-site-out motion-reduce:transition-none',
   signOpen: 'rotate-site-sign text-site-rose',
 

@@ -3,6 +3,7 @@ import { err, ok } from '@/shared/result'
 import {
   clientNotRegistered,
   packageNotAvailable,
+  priceChanged,
   slotNotOffered,
   spaceNotAvailable,
   storageFailed,
@@ -28,6 +29,8 @@ type PackageAppointmentRow = {
   service_price: number
   deposit_required: number
   deposit_registered: number
+  promotion_id: string | null
+  discount_percent: number | null
 }
 
 const toIso = (epochMs: number): string => new Date(epochMs).toISOString()
@@ -42,6 +45,8 @@ function toBookedPackageAppointment(row: PackageAppointmentRow): BookedPackageAp
     servicePrice: row.service_price,
     depositRequired: row.deposit_required,
     depositRegistered: row.deposit_registered,
+    promotionId: row.promotion_id,
+    discountPercent: row.discount_percent,
   }
 }
 
@@ -57,6 +62,8 @@ function toBookingError(message: string, input: BookPackageAppointmentInput): Bo
       return spaceNotAvailable(input.resourceId)
     case PACKAGE_BOOKING_ERROR_MESSAGES.tooManyPending:
       return tooManyPendingAppointments()
+    case PACKAGE_BOOKING_ERROR_MESSAGES.priceChanged:
+      return priceChanged()
     default:
       return storageFailed(message)
   }
@@ -72,6 +79,7 @@ export function createSupabasePackageBookingRepository(
         p_resource_id: input.resourceId,
         p_starts_at: toIso(input.startsAtMs),
         p_package_id: input.packageId,
+        p_expected_price: input.expectedPrice ?? null,
       })
 
       if (error) return err(toBookingError(error.message, input))

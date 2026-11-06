@@ -13,6 +13,8 @@ const row = {
   duration_min: 90,
   buffer_min: 20,
   deposit_due: 12000,
+  promotion_id: null as string | null,
+  discount_percent: null as number | null,
 }
 
 type FakeResponse = { data: Array<typeof row> | null; error: { code?: string; message: string } | null }
@@ -51,7 +53,22 @@ describe('createSupabasePackageBookingQuoteRepository', () => {
         durationMin: 90,
         bufferMin: 20,
         depositDue: 12000,
+        promotionId: null,
+        discountPercent: null,
       })
+    }
+  })
+
+  it('con promoción vigente, devuelve el precio ya rebajado y cuál promoción se aplicó', async () => {
+    const { db } = createFakeDb({
+      data: [{ ...row, price: 36000, promotion_id: 'promo-1', discount_percent: 20 }],
+      error: null,
+    })
+    const result = await createSupabasePackageBookingQuoteRepository(db).quote(input)
+
+    expect(isOk(result)).toBe(true)
+    if (isOk(result)) {
+      expect(result.value).toMatchObject({ servicePrice: 36000, promotionId: 'promo-1', discountPercent: 20 })
     }
   })
 

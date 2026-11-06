@@ -6,4 +6,5 @@ export const PACKAGE_BOOKING_ERROR_MESSAGES = {
   slotNotOffered: 'scheduling_slot_not_offered',
   slotTaken: 'scheduling_slot_taken',
   tooManyPending: 'scheduling_too_many_pending',
+  priceChanged: 'scheduling_price_changed',
 } as const

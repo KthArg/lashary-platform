@@ -16,6 +16,8 @@ type PackageQuoteRow = {
   duration_min: number
   buffer_min: number
   deposit_due: number
+  promotion_id: string | null
+  discount_percent: number | null
 }
 
 function toQuoteError(message: string, packageId: string): QuotePackageBookingError {
@@ -36,6 +38,8 @@ function toPackageBookingQuote(row: PackageQuoteRow): PackageBookingQuote {
     durationMin: row.duration_min,
     bufferMin: row.buffer_min,
     depositDue: row.deposit_due,
+    promotionId: row.promotion_id,
+    discountPercent: row.discount_percent,
   }
 }
 
