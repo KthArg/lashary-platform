@@ -1,15 +1,13 @@
 import Link from 'next/link'
-import { moneyFromColones, formatMoney } from '@/shared/money'
 import { packageOptionKey } from '../../../domain/service-option'
 import { calendarHref } from '../../client-calendar/utils/calendar-params'
 import { schedulingMessages } from '../../messages'
+import { formatPackagePrice } from './PackageSelector.format'
 import { packageSelectorStyles as STYLES } from './PackageSelector.styles'
 import type { PackageSelectorProps } from './PackageSelector.types'
 
 const selectorMessages = schedulingMessages.selector
 const PACKAGE_SELECTOR_HEADING_ID = 'package-selector-heading'
-
-const money = (colones: number): string => formatMoney(moneyFromColones(colones))
 
 export function PackageSelector({ packages }: PackageSelectorProps) {
   if (packages.length === 0) return null
@@ -34,12 +32,12 @@ export function PackageSelector({ packages }: PackageSelectorProps) {
           {servicePackage.discountPercent !== null && servicePackage.priceDiscounted !== null ? (
             <span className={STYLES.price}>
               {selectorMessages.packagePriceBefore}{' '}
-              <s className={STYLES.priceBefore}>{money(servicePackage.price)}</s>{' '}
+              <s className={STYLES.priceBefore}>{formatPackagePrice(servicePackage.price)}</s>{' '}
               {selectorMessages.packagePriceNow}{' '}
-              <span className={STYLES.priceNow}>{money(servicePackage.priceDiscounted)}</span>
+              <span className={STYLES.priceNow}>{formatPackagePrice(servicePackage.priceDiscounted)}</span>
             </span>
           ) : (
-            <span className={STYLES.price}>{money(servicePackage.price)}</span>
+            <span className={STYLES.price}>{formatPackagePrice(servicePackage.price)}</span>
           )}
           <Link href={calendarHref({ serviceKey: packageOptionKey(servicePackage.id) })} className={STYLES.link}>
             {selectorMessages.seePackageSlots}
