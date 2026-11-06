@@ -12,6 +12,8 @@ export type ConfirmQuote = {
   readonly servicePrice: number
   readonly durationMin: number
   readonly depositDue: number
+  readonly promotionId: string | null
+  readonly discountPercent: number | null
 }
 
 export type BookingConfirmData =
@@ -34,6 +36,7 @@ export type BookingSummaryView = {
   price: string
   deposit: string
   depositNotice: string | null
+  promotionNotice: string | null
 }
 
 export type BookingConfirmView =

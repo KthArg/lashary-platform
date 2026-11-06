@@ -42,6 +42,8 @@ function toBookedPackageAppointment(row: PackageAppointmentRow): BookedPackageAp
     servicePrice: row.service_price,
     depositRequired: row.deposit_required,
     depositRegistered: row.deposit_registered,
+    promotionId: null,
+    discountPercent: null,
   }
 }
 

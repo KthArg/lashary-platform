@@ -28,6 +28,8 @@ const booked: BookedPackageAppointment = {
   servicePrice: 45000,
   depositRequired: 12000,
   depositRegistered: 0,
+  promotionId: null,
+  discountPercent: null,
 }
 
 function createFakePackageBookingRepository(

@@ -17,6 +17,7 @@ const summary = {
   price: '₡35.000',
   deposit: '₡10.000',
   depositNotice: bookingConfirmMessages.depositNotice,
+  promotionNotice: null,
 }
 
 const renderView = (view: BookingConfirmViewModel) => render(<BookingConfirmView view={view} />)
@@ -41,6 +42,19 @@ describe('BookingConfirmView — US-AGE-05', () => {
 
     expect(screen.getByText(bookingConfirmMessages.noDeposit)).toBeTruthy()
     expect(screen.queryByRole('note')).toBeNull()
+  })
+
+  it('con promoción vigente, avisa el descuento (US-PROM-01 criterio 2)', () => {
+    renderView({
+      status: 'ready',
+      fields,
+      summary: { ...summary, price: '₡28.000', promotionNotice: bookingConfirmMessages.promotionNotice(20) },
+      backHref: BACK_HREF,
+    })
+
+    expect(screen.getAllByRole('note').map((note) => note.textContent)).toContain(
+      bookingConfirmMessages.promotionNotice(20),
+    )
   })
 
   it.each([
