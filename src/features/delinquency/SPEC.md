@@ -26,7 +26,7 @@ Morosidad: deteccion con gracia y aviso previo (DOM-012), bloqueo, regularizacio
 
 ## Qué hace hoy
 
-Hoy: las tablas de morosidades y de configuración, con la detección apagada (sección de US-MOR-01). Todavía no hay función de detección, aviso, pantalla ni cron.
+Hoy: las tablas de morosidades y de configuración y la función que detecta, con la detección apagada (sección de US-MOR-01). Todavía no hay cron, confirmar y descartar, aviso ni pantalla.
 
 ## Contrato público
 
@@ -90,7 +90,23 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
   ni la administradora; una morosidad por cita; estado y decisión van juntos; staff no inserta directo; la
   clienta no ve ni cambia nada y `anon` no tiene permiso).
 
+### Detección (pieza 5)
+
+- Migración `20261108000002_delinquency_detect_fn.sql`: `delinquency_detect_unpaid()` (`SECURITY DEFINER`, solo
+  staff; la clienta y `anon` reciben `42501`). Pide a `payments` las citas cerradas con saldo pendiente al corte `ahora - grace_days` y deja
+  una morosidad `pending_review` por cada una, con la clienta y lo que debe; devuelve cuántas generó. No activa
+  nada: la revisión es de la administradora (DOM-012).
+- Idempotente: `ON CONFLICT (appointment_id) DO NOTHING`, así una cita con morosidad, incluso descartada, no se
+  regenera. Lee el ledger por el contrato `payments_unpaid_charges`, no la tabla (ARCH-005), y recorre la lista por
+  cursor, de a 200 con un máximo de 50 páginas por corrida, para que las morosidades ya existentes, que siguen
+  impagas, no tapen a las citas nuevas (PERF-002).
+- Prueba: pgTAP `delinquency_detect_unpaid.test.sql` (genera una por cita impaga pasada
+  la gracia, asociada a la clienta; no toca las de dentro de la gracia ni las pagadas; correrla dos veces no duplica;
+  una descartada no vuelve; al bajar la gracia entra la de 3 días; una cita nueva se detecta detrás de 210
+  morosidades que llenan más de una página; la clienta y `anon` no la corren).
+- Todavía nadie la llama: el cron que la corre llega con la pieza que cablea la aplicación.
+
 ### Qué no hace todavía
 
-No hay todavía la función que detecta y escribe las morosidades, el aviso previo, la pantalla ni el cron: son
-las piezas 5 a 8. Las tablas existen pero ninguna fila se genera sola.
+No hay todavía el cron que corre la detección, confirmar y descartar, el aviso previo ni la pantalla: son las
+piezas 6 a 8. La detección existe en la base pero nadie la llama y está apagada: ninguna fila se genera sola.
