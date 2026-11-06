@@ -199,6 +199,23 @@ Decisiones:
   respaldo por correo, ADR-0006). La nota se puede demostrar hoy; el mensaje queda listo para cuando
   el negocio tenga número y dominio («Antes de producción»).
 
+Hecho hasta ahora:
+
+- Bandeja con los avisos de cancelación y de reagendado (migración
+  `20261103000000_notifications_admin_inbox_appointment_changes.sql`): `notifications_admin_inbox`
+  suma los tipos `appointment_cancelled` y `appointment_rescheduled`, y tres columnas: `event_id`
+  (el evento de `audit_events` que originó el aviso), `previous_starts_at` (el horario anterior de un
+  reagendado, criterio 3) y `forfeited_deposit` (el anticipo perdido en una cancelación, 0 si no lo
+  perdió, criterio 2). Una restricción exige los campos de cada tipo. Una reserva sigue dejando un
+  solo aviso (índice único parcial por cita); un cambio deja uno por evento (`UNIQUE (event_id)`),
+  porque una cita se puede reagendar hasta tres veces (`scheduling_reschedule_policy`). Registran
+  `notifications_record_cancellation` y `notifications_record_reschedule`, `SECURITY DEFINER` y sin
+  `EXECUTE` para nadie: ni staff, ni la clienta, ni anon fabrican avisos. Pruebas: pgTAP
+  `notifications_admin_inbox_appointment_changes.test.sql` (registro idempotente, campos por tipo,
+  staff lee pero no fabrica ni edita, la clienta y anon no ven nada; SEC-002) y
+  `__tests__/rls-isolation.test.ts` (con tokens reales, la clienta y anon no pueden llamar las dos
+  funciones; verificado por mutación: con `EXECUTE` para anon la prueba cae).
+
 ## Qué no hace todavía
 
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
