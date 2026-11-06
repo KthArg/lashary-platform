@@ -2,13 +2,14 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-30
+actualizado: 2026-11-03
 historias:
   - id: US-NOT-01
     estado: terminada
     evidencia: "Pila de 5 piezas sobre main: PRs #610 (1/5, tabla y RLS), #612 (2/5, trigger al reservar), #613 (3/5, dominio y repositorio), #615 (4/5, action y lectura) y #616 (5/5, panel lateral, cierra la historia). Criterio 1 (al reservar se genera el aviso en el panel): supabase/tests/database/scheduling_notify_booking_created.test.sql (reservar crea el aviso; una reserva fallida, una cita sin clienta o un cambio de hora no lo crean), ui/inbox/__tests__/admin-inbox.test.tsx y auth/__tests__/admin-auth.test.tsx (el layout lo carga para administradoras). Criterio 2 (clienta, servicio, fecha y hora): scheduling_notify_booking_created.test.sql, db/__tests__/inbox-repository.test.ts y admin-inbox.test.tsx. Criterio 3 (leído y no leído, persiste): supabase/tests/database/notifications_admin_inbox.test.sql (staff marca y desmarca, nadie borra ni fabrica avisos, la clienta y anon no los ven, SEC-002), application/__tests__/inbox.test.ts, inbox-repository.test.ts, ui/inbox/__tests__/inbox-actions.test.ts y admin-inbox.test.tsx, también con más de 20 avisos («Ver más»). Aislamiento con tokens reales de clienta y anon: __tests__/rls-isolation.test.ts. Si el aviso falla, la reserva igual se guarda, y una cita de paquete de US-AGE-04 usa el nombre del paquete: scheduling_notify_booking_created.test.sql. Probada a mano por José Loría en next dev contra Supabase local el 2026-10-29."
   - id: US-NOT-02
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "el aviso a la administradora al cancelar y al reagendar (criterios 1 a 3), la prueba del espacio liberado en el calendario (criterio 4) y el aviso a la clienta cuando su reagendado se rechaza o vence, en «Mis citas» y por WhatsApp o correo (ítem 13 de «Criterios trasladados»); sección US-NOT-02 de este SPEC"
   - id: US-NOT-03
     estado: terminada
     evidencia: "PR de cierre #577 (us/US-NOT-03 a main), con 23 piezas apiladas hacia la rama de la historia. Criterio 1 (envío automático 24h antes): computeReminderSendAt y discoverReminders; domain/__tests__/reminder.test.ts, application/__tests__/discover-reminders.test.ts. Criterio 2 (mensaje con fecha, hora y técnica): domain/reminder-message.ts (REMINDER_MESSAGE_TEXTS, formatStudioDateTime); domain/__tests__/reminder-message.test.ts, application/__tests__/send-due-reminders.test.ts. Criterio 3 (cancela o reprograma si la cita cambia): reconcile-reminders.ts; application/__tests__/reconcile-reminders.test.ts, incluida la corrección del líder del 2026-10-26 (libera el reclamo vencido antes de leer lo pendiente, para que la misma corrida cancele si la cita ya no es válida). Criterio 4 (reintenta y queda registrado): send-due-reminders.ts (MAX_REMINDER_ATTEMPTS), reclamo atómico FOR UPDATE SKIP LOCKED con TTL y tandas (notifications_claim_due_reminders, notifications_release_expired_claims); application/__tests__/send-due-reminders.test.ts, db/__tests__/reminder-repository.integration.test.ts (A6, contra Supabase local, incluido el reclamo doble simultáneo) y pgTAP notifications_reminders_staff_access.test.sql (13 aserciones, SEC-001/002). Decisión del líder del proyecto, comunicada el 2026-10-27: la historia pasa de en_progreso a terminada porque lo que falta —plantilla de WhatsApp aprobada por Meta, número de WhatsApp Business real, contenido del mensaje de la dueña del negocio, dominio verificado en Resend, disparo vía GitHub Actions, cuenta de staff del cron en producción— ya no es código sino configuración externa y decisiones de negocio; queda como checklist de activación para producción en la sección «Antes de producción» de este SPEC, no como deuda de la historia. A4 (rol dedicado del cron, sin ADR), B5 (reschedulePending no reinicia attempts/last_error) y B6 (recordatorio inmediato si la cita se reserva con menos de 24h) quedan registrados en `deuda` del frontmatter, con dueño (líder/PO); B8 (opt-in de WhatsApp) ya está cubierto por la fila de US-NOT-06 en docs/process/DEPENDENCIES.md."
@@ -167,11 +168,42 @@ después, y US-NOT-02 necesita el horario anterior. `read_at` vacío es «no le�
   y se pueden marcar igual. Al cerrar el panel se descarta lo cargado de más y vuelve a los primeros
   20. Prueba: `ui/inbox/__tests__/admin-inbox.test.tsx` y `auth/__tests__/admin-auth.test.tsx` (el layout).
 
+## US-NOT-02: avisos de cancelación y reagendado
+
+Empezada el 2026-11-03. Criterios del backlog:
+
+1. Al cancelarse o reagendarse una cita se genera una notificación con los datos correspondientes.
+2. En una cancelación, la notificación indica si la clienta perdió el anticipo según la política.
+3. En un reagendado, la notificación muestra el horario anterior y el nuevo.
+4. El espacio liberado se refleja automáticamente en el calendario.
+
+Recibe además tres criterios trasladados (`docs/process/DEPENDENCIES.md`, «Criterios trasladados»):
+el ítem 9 (notificar la cancelación, de US-AGE-06), el 12 (notificar el reagendado con el horario
+anterior y el nuevo, de US-AGE-10) y el 13 (la clienta recibe aviso cuando su reagendado se rechaza
+o vence, con el horario que conserva).
+
+De dónde salen los datos: US-AGE-06 y US-AGE-10 ya escriben en `audit_events`, en la misma
+transacción que el cambio, `scheduling.appointment.cancelled` (estado anterior, inicio, servicio,
+si cayó dentro de la ventana y el anticipo perdido), `scheduling.appointment.rescheduled` (horario
+anterior y nuevo), `scheduling.appointment.reschedule_reverted` (rechazo, con el horario devuelto) y
+`scheduling.appointment.reschedule_expired` (vencimiento, con el horario devuelto). Esta historia
+convierte esos eventos en avisos, con el mismo reparto que US-NOT-01: `notifications` es dueña de
+las tablas de avisos y de la función que los registra, y `scheduling` dispara el registro.
+
+Decisiones:
+
+- Ítem 13, aprobado por el PO (Kenny); Jose Lorenzo comunicó el 2026-11-03 que basta esa
+  aprobación, sin el visto bueno aparte de KthArg.
+- Ítem 13, decisión del equipo (Jose Lorenzo, 2026-11-03): el aviso a la clienta llega por los dos
+  caminos, una nota en «Mis citas» del portal y un mensaje por el canal de US-NOT-03 (WhatsApp con
+  respaldo por correo, ADR-0006). La nota se puede demostrar hoy; el mensaje queda listo para cuando
+  el negocio tenga número y dominio («Antes de producción»).
+
 ## Qué no hace todavía
 
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
   mano. No lo pide ningún criterio de US-NOT-03.
-- US-NOT-02, 04 a 08 y US-CLI-06 reusan el canal pero no están construidas.
+- US-NOT-04 a 08 y US-CLI-06 reusan el canal pero no están construidas. US-NOT-02 está en curso (sección de arriba).
 
 ## Correcciones de la auditoría del 2026-10-23 (AUDIT.md, líder del proyecto)
 
