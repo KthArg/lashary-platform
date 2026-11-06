@@ -5,6 +5,7 @@ import { sendDueReminders, type SendDueRemindersDeps } from '../send-due-reminde
 import { channelNotConfigured, channelSendFailed } from '../../domain/errors'
 import { MAX_REMINDER_ATTEMPTS, type ReminderSnapshot } from '../../domain/reminder'
 import type { ReminderAttempt } from '../../domain/reminder-attempt'
+import { MASKED_PHONE_NUMBER } from '../../domain/provider-error'
 import type { ContactInfo, NotificationChannel } from '../ports'
 
 const dueReminder: ReminderSnapshot = {
@@ -157,6 +158,32 @@ describe('sendDueReminders: bitácora de intentos (US-NOT-07, criterio 2)', () =
     expect(isOk(result)).toBe(true)
     if (isOk(result)) expect(result.value.sent).toBe(1)
     expect(sentCalls).toHaveLength(1)
+  })
+})
+
+describe('sendDueReminders: teléfono en el error del proveedor (US-NOT-07)', () => {
+  const metaError = `Recipient ${contact.phone} is not a valid WhatsApp user`
+
+  it('la bitácora y last_error guardan el error sin el teléfono de la clienta', async () => {
+    const { deps, attempts, retryCalls } = buildDeps({ backup: 'send-failed' })
+    deps.primaryChannel = { kind: 'whatsapp', send: async () => err(channelSendFailed('whatsapp', metaError)) }
+
+    await sendDueReminders(deps)()
+
+    const whatsappAttempt = attempts.find((attempt) => attempt.channel === 'whatsapp')
+    expect(whatsappAttempt?.error).toContain(`Recipient ${MASKED_PHONE_NUMBER} is not a valid WhatsApp user`)
+    expect(JSON.stringify(retryCalls)).not.toContain(contact.phone)
+    expect(JSON.stringify(retryCalls)).toContain(MASKED_PHONE_NUMBER)
+  })
+
+  it('al agotar los reintentos last_error tampoco lleva el teléfono', async () => {
+    const lastAttempt = { ...dueReminder, attempts: MAX_REMINDER_ATTEMPTS - 1 }
+    const { deps, exhaustedCalls } = buildDeps({ reminder: lastAttempt, backup: 'send-failed' })
+    deps.primaryChannel = { kind: 'whatsapp', send: async () => err(channelSendFailed('whatsapp', metaError)) }
+
+    await sendDueReminders(deps)()
+
+    expect(JSON.stringify(exhaustedCalls)).not.toContain(contact.phone)
   })
 })
 

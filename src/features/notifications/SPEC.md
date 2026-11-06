@@ -2,7 +2,7 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-04
+actualizado: 2026-11-05
 historias:
   - id: US-NOT-01
     estado: terminada
@@ -178,7 +178,18 @@ se descartaba, y cada reintento pisaba `last_error`.
 - `notifications_reminder_attempts` (`20261104000000_notifications_reminder_attempts.sql`) guarda una
   fila por intento y canal: `attempt_number`, `channel`, `outcome` (`sent`, `failed`, `not_configured`,
   `no_contact`), `error` y `attempted_at`. Sin contacto no hay canal, y solo `sent` va sin error (CHECK).
-- Es append-only: staff solo tiene SELECT e INSERT; la clienta y anon no entran (SEC-001/002).
+- Es append-only: staff solo tiene SELECT e INSERT; la clienta y anon no entran (SEC-001/002). Como
+  cualquier staff puede insertar filas, es una bitácora operativa, no de auditoría: sirve para
+  diagnosticar envíos, no para demostrar qué pasó.
+- `error` guarda el motivo del fallo: el texto que devuelve el proveedor (Meta, Resend), o el mensaje
+  fijo de `sin contacto registrado`. Al venir del proveedor puede traer datos de la clienta, y solo
+  staff lo lee.
+- `sanitizeProviderError` (`domain/provider-error.ts`) limpia ese texto antes de guardarlo, también en
+  `last_error`: oculta los teléfonos, que Meta a veces incluye, y corta a 500 caracteres más la
+  elipsis. Oculta toda serie de 8 dígitos o más, así que no borra los códigos de Meta, más cortos, pero
+  sí podría borrar otro número largo. No oculta otros datos de la clienta.
+- La base no depende de la app: `20261104000001_notifications_reminder_attempts_error_length.sql`
+  limita `error` a 501 caracteres (CHECK).
 - `sendDueReminders` registra cada canal apenas responde, con `recordAttempt` del repositorio. Si la
   lectura del contacto falla no hay fila: no se intentó enviar y el recordatorio vuelve a `pending`.
 - Si la bitácora falla, se registra en el log y el envío sigue: perder un recordatorio ya enviado o
