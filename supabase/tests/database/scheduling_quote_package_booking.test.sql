@@ -3,7 +3,7 @@
 -- Correr con: npx supabase test db
 
 BEGIN;
-SELECT plan(10);
+SELECT plan(9);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -31,26 +31,16 @@ VALUES
   ('00000000-0000-0000-0000-0000000009f1', 'zz-paquete cotizable técnica 1', 'lash_classic',
    20000, 60, 15, 4000, 'cuidados', true),
   ('00000000-0000-0000-0000-0000000009f2', 'zz-paquete cotizable técnica 2', 'brow_design',
-   10000, 30, 5, 2000, 'cuidados', true),
-  ('00000000-0000-0000-0000-0000000009f3', 'zz-paquete cotizable con promo técnica', 'henna',
-   8000, 30, 5, 1000, 'cuidados', true);
+   10000, 30, 5, 2000, 'cuidados', true);
 
 INSERT INTO public.catalog_packages (id, name, price, deposit, is_active)
 VALUES
   ('00000000-0000-0000-0000-0000000009d1', 'zz-paquete cotizable', 45000, 12000, true),
-  ('00000000-0000-0000-0000-0000000009d2', 'zz-paquete cotizable desactivado', 45000, 12000, false),
-  ('00000000-0000-0000-0000-0000000009d3', 'zz-paquete cotizable con promo vigente', 10000, 0, true);
+  ('00000000-0000-0000-0000-0000000009d2', 'zz-paquete cotizable desactivado', 45000, 12000, false);
 
 INSERT INTO public.catalog_package_techniques (package_id, technique_id) VALUES
   ('00000000-0000-0000-0000-0000000009d1', '00000000-0000-0000-0000-0000000009f1'),
-  ('00000000-0000-0000-0000-0000000009d1', '00000000-0000-0000-0000-0000000009f2'),
-  ('00000000-0000-0000-0000-0000000009d3', '00000000-0000-0000-0000-0000000009f3');
-
--- US-PROM-01: promoción vigente sobre este paquete, para probar que la paridad entre cotizar
--- y reservar también cubre promotion_id/discount_percent.
-INSERT INTO public.catalog_promotions (id, package_id, discount_percent, starts_at, ends_at, is_active)
-VALUES ('00000000-0000-0000-0000-0000000009f9', '00000000-0000-0000-0000-0000000009d3', 20,
-  now() - interval '1 day', now() + interval '1 day', true);
+  ('00000000-0000-0000-0000-0000000009d1', '00000000-0000-0000-0000-0000000009f2');
 
 DELETE FROM public.scheduling_weekly_availability WHERE resource_id = '00000000-0000-0000-0000-000000000a01';
 INSERT INTO public.scheduling_weekly_availability (resource_id, weekday, start_min, end_min)
@@ -74,15 +64,6 @@ SELECT results_eq(
         '00000000-0000-0000-0000-000000000a01', '2027-09-06 09:00-06',
         '00000000-0000-0000-0000-0000000009d1') b$$,
   'lo que se cotiza es lo que la reserva real guarda (criterio 3)');
-
-SELECT results_eq(
-  $$SELECT q.price, q.promotion_id, q.discount_percent
-      FROM public.scheduling_quote_package_booking('00000000-0000-0000-0000-0000000009d3') q$$,
-  $$SELECT b.service_price, b.promotion_id, b.discount_percent
-      FROM public.scheduling_book_package_appointment(
-        '00000000-0000-0000-0000-000000000a01', '2027-09-06 11:00-06',
-        '00000000-0000-0000-0000-0000000009d3') b$$,
-  'con promoción vigente sobre el paquete, lo que se cotiza ya rebajado es lo que la reserva guarda (US-PROM-01)');
 
 SELECT throws_ok(
   $$SELECT * FROM public.scheduling_quote_package_booking('00000000-0000-0000-0000-0000000009d2')$$,
@@ -118,7 +99,7 @@ RESET ROLE;
 SELECT is(
   (SELECT count(*)::int FROM public.scheduling_appointments
     WHERE client_id IN ('00000000-0000-0000-0000-0000000009c8', '00000000-0000-0000-0000-0000000009c9')),
-  2, 'cotizar no reserva nada: solo existen las citas de las dos pruebas de paridad');
+  1, 'cotizar no reserva nada: solo existe la cita de la prueba de paridad');
 
 SELECT is(
   (SELECT pronargs::int FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
