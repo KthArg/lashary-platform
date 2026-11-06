@@ -2,7 +2,7 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-05
+actualizado: 2026-11-06
 historias:
   - id: US-NOT-01
     estado: terminada
@@ -19,7 +19,8 @@ historias:
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
-    estado: no_iniciada
+    estado: terminada
+    evidencia: "PR de cierre #671 (us/US-NOT-07 a main), con 2 piezas apiladas: #672 (bitácora de intentos) y #702 (error del proveedor acotado). Criterio 1 (WhatsApp como canal por defecto): lo entregó US-NOT-03; application/__tests__/send-due-reminders.test.ts, «envía por el canal primario (WhatsApp) cuando funciona». Criterio 2 (envíos y fallos registrados): notifications_reminder_attempts (migraciones 20261104000000 y 20261104000001) y recordAttempt de sendDueReminders; application/__tests__/send-due-reminders.test.ts (bloque «bitácora de intentos», con envío por WhatsApp, fallo rescatado por correo, dos fallos, canal sin configurar, sin contacto, bitácora caída sin perder el envío y error sin teléfono), domain/__tests__/reminder-attempt.test.ts y provider-error.test.ts, db/__tests__/reminder-repository.integration.test.ts (contra Supabase local) y pgTAP notifications_reminder_attempts.test.sql (16 aserciones, SEC-001/002). Criterio 3 (medio alternativo si falla el canal por defecto): lo entregó US-NOT-03; send-due-reminders.test.ts, «cae al respaldo (email) si el canal primario falla (ADR-0006)» y «conserva el fallo de WhatsApp cuando el correo lo rescata». Sin pantalla: ningún criterio la pide. El respaldo por correo no envía a clientas reales mientras no se cumpla la sección «Antes de producción» (dominio verificado en Resend, número y plantilla de WhatsApp, disparo del ciclo); es la misma deuda de US-NOT-03, cuyo visto bueno escrito del PO sigue pendiente."
   - id: US-NOT-08
     estado: en_progreso
     falta: "los seis criterios: la transicion a confirmed, el plazo configurable, el mensaje al aprobar y las pantallas; decisiones del PO del 2026-11-05 en docs/process/DEPENDENCIES.md"
@@ -168,11 +169,45 @@ después, y US-NOT-02 necesita el horario anterior. `read_at` vacío es «no le�
   y se pueden marcar igual. Al cerrar el panel se descarta lo cargado de más y vuelve a los primeros
   20. Prueba: `ui/inbox/__tests__/admin-inbox.test.tsx` y `auth/__tests__/admin-auth.test.tsx` (el layout).
 
+## US-NOT-07: recordatorio por correo y bitácora de intentos
+
+WhatsApp como canal por defecto y el correo cuando falla ya los entregó US-NOT-03 (`sendDueReminders`,
+ADR-0006); el «medio alternativo por definir» del backlog es el correo por Resend. Esta historia agrega
+lo que faltaba del criterio 2: antes, si WhatsApp fallaba y el correo funcionaba, el error de WhatsApp
+se descartaba, y cada reintento pisaba `last_error`.
+
+- `notifications_reminder_attempts` (`20261104000000_notifications_reminder_attempts.sql`) guarda una
+  fila por intento y canal: `attempt_number`, `channel`, `outcome` (`sent`, `failed`, `not_configured`,
+  `no_contact`), `error` y `attempted_at`. Sin contacto no hay canal, y solo `sent` va sin error (CHECK).
+- Es append-only: staff solo tiene SELECT e INSERT; la clienta y anon no entran (SEC-001/002). Como
+  cualquier staff puede insertar filas, es una bitácora operativa, no de auditoría: sirve para
+  diagnosticar envíos, no para demostrar qué pasó.
+- `error` guarda el motivo del fallo: el texto que devuelve el proveedor (Meta, Resend), o el mensaje
+  fijo de `sin contacto registrado`. Al venir del proveedor puede traer datos de la clienta, y solo
+  staff lo lee.
+- `sanitizeProviderError` (`domain/provider-error.ts`) limpia ese texto antes de guardarlo, también en
+  `last_error`: oculta los teléfonos, que Meta a veces incluye, y corta a 500 caracteres más la
+  elipsis. Oculta toda serie de 8 dígitos o más, así que no borra los códigos de Meta, más cortos, pero
+  sí podría borrar otro número largo (una fecha ISO, un timestamp o el `phone_number_id` de Meta).
+  No oculta otros datos de la clienta.
+- La base no depende de la app: `20261104000001_notifications_reminder_attempts_error_length.sql`
+  limita `error` a 501 caracteres (CHECK).
+- `sendDueReminders` registra cada canal apenas responde, con `recordAttempt` del repositorio. Si la
+  lectura del contacto falla no hay fila: no se intentó enviar y el recordatorio vuelve a `pending`.
+- Si la bitácora falla, se registra en el log y el envío sigue: perder un recordatorio ya enviado o
+  reenviarlo sería peor que perder la fila.
+- `attempted_at` es la hora en que empezó la tanda del ciclo, la misma para todos los intentos de la
+  corrida: el orden entre WhatsApp y el correo se lee por `channel`, no por el tiempo.
+- `notifications_reminders.last_error` y `last_channel` siguen como resumen del último estado.
+
+El título del backlog dice «además de WhatsApp», pero el criterio y ADR-0006 piden correo solo si
+WhatsApp falla: no se envían los dos siempre.
+
 ## Qué no hace todavía
 
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
-  mano. No lo pide ningún criterio de US-NOT-03.
-- US-NOT-02, 04 a 08 y US-CLI-06 reusan el canal pero no están construidas.
+  mano. No lo pide ningún criterio de US-NOT-03 ni de US-NOT-07.
+- US-NOT-02, 04, 05, 06, 08 y US-CLI-06 reusan el canal pero no están construidas.
 
 ## Correcciones de la auditoría del 2026-10-23 (AUDIT.md, líder del proyecto)
 

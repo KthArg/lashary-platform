@@ -5,6 +5,7 @@ import {
   clientHasActiveDelinquency,
   clientNotRegistered,
   packageNotAvailable,
+  priceChanged,
   slotNotOffered,
   spaceNotAvailable,
   storageFailed,
@@ -40,6 +41,8 @@ const BOOKED: BookedAppointment = {
   depositRequired: 10000,
   depositRegistered: 0,
   isFirstTime: true,
+  promotionId: null,
+  discountPercent: null,
 }
 const BOOKED_PACKAGE: BookedPackageAppointment = {
   id: 'cita-2',
@@ -50,6 +53,8 @@ const BOOKED_PACKAGE: BookedPackageAppointment = {
   servicePrice: 45000,
   depositRequired: 12000,
   depositRegistered: 0,
+  promotionId: null,
+  discountPercent: null,
 }
 const fields = { servicio: 't1', fecha: '2027-03-01', espacio: '600' }
 
@@ -105,9 +110,36 @@ describe('performBooking — US-AGE-05', () => {
     if (outcome.kind === 'booked') expect(outcome.booked.summary.when).toContain('10:00–11:00')
   })
 
+  it('con promoción aplicada, el resumen de la confirmación avisa el descuento (US-PROM-01)', async () => {
+    const { deps } = createDeps({
+      bookTechnique: async () => ok({ ...BOOKED, servicePrice: 28000, promotionId: 'promo-1', discountPercent: 20 }),
+    })
+    const outcome = await performBooking(fields, deps)
+
+    expect(outcome).toMatchObject({
+      kind: 'booked',
+      booked: {
+        summary: {
+          price: formatMoney(moneyFromColones(28000)),
+          promotionNotice: bookingConfirmMessages.promotionNotice(20),
+        },
+      },
+    })
+  })
+
+  it('manda el precio que vio la clienta como esperado (C4)', async () => {
+    const { deps, booked } = createDeps()
+    await performBooking({ ...fields, precioEsperado: '35000' }, deps)
+
+    expect(booked).toEqual([
+      { resourceId: RESOURCE_ID, startsAtMs: STARTS_AT_MS, techniqueId: 't1', isFirstTime: true, expectedPrice: 35000 },
+    ])
+  })
+
   it.each([
     ['espacio tomado', spaceNotAvailable(RESOURCE_ID), 'ocupado'],
     ['horario que no se ofrece', slotNotOffered(RESOURCE_ID), 'no-ofrecido'],
+    ['el precio cambió desde la cotización', priceChanged(), 'precio-cambio'],
   ])('%s: vuelve al calendario con el mismo servicio y día, y un aviso (criterio 4)', async (_name, error, notice) => {
     const { deps } = createDeps({ bookTechnique: async () => err(error) })
     const outcome = await performBooking(fields, deps)
@@ -170,6 +202,24 @@ describe('performBooking — paquetes (US-AGE-04, criterios 1 a 3)', () => {
     expect(await performBooking(packageFields, deps)).toEqual({
       kind: 'failed',
       message: bookingConfirmMessages.unavailable,
+    })
+  })
+
+  it('con promoción aplicada sobre el paquete, el resumen avisa el descuento (US-PROM-01)', async () => {
+    const { deps } = createDeps({
+      bookPackage: async () =>
+        ok({ ...BOOKED_PACKAGE, servicePrice: 36000, promotionId: 'promo-2', discountPercent: 20 }),
+    })
+    const outcome = await performBooking(packageFields, deps)
+
+    expect(outcome).toMatchObject({
+      kind: 'booked',
+      booked: {
+        summary: {
+          price: formatMoney(moneyFromColones(36000)),
+          promotionNotice: bookingConfirmMessages.promotionNotice(20),
+        },
+      },
     })
   })
 })

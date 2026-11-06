@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { addCalendarDays, isCalendarDate, studioDateOf, studioLocalToUtc } from '../studio-time'
+import {
+  addCalendarDays,
+  isCalendarDate,
+  parseStudioDateTimeInput,
+  studioDateOf,
+  studioDateTimeInputValue,
+  studioLocalToUtc,
+} from '../studio-time'
 
 describe('studio-time', () => {
   it.each([
@@ -36,5 +43,29 @@ describe('studio-time', () => {
   it('ida y vuelta: la fecha del estudio de un instante convertido es la misma', () => {
     const instant = studioLocalToUtc('2026-12-31', 23 * 60 + 59)
     expect(studioDateOf(instant)).toBe('2026-12-31')
+  })
+
+  it('parseStudioDateTimeInput interpreta un <input type="datetime-local"> en la hora del estudio (auditoría A1)', () => {
+    expect(parseStudioDateTimeInput('2026-10-20T09:00')?.toISOString()).toBe(
+      '2026-10-20T15:00:00.000Z',
+    )
+  })
+
+  it.each([
+    ['sin ceros a la izquierda', '2026-10-20T9:00'],
+    ['sin T', '2026-10-20 09:00'],
+    ['fecha inexistente', '2026-02-30T09:00'],
+    ['hora fuera de rango', '2026-10-20T24:00'],
+    ['basura', 'no es una fecha'],
+    ['vacío', ''],
+  ])('parseStudioDateTimeInput rechaza %s con null, no Invalid Date', (_name, value) => {
+    expect(parseStudioDateTimeInput(value)).toBeNull()
+  })
+
+  it('studioDateTimeInputValue y parseStudioDateTimeInput son inversas (ida y vuelta sin desplazamiento)', () => {
+    const original = '2026-10-20T09:00'
+    const instant = parseStudioDateTimeInput(original)
+    expect(instant).not.toBeNull()
+    expect(studioDateTimeInputValue(instant as Date)).toBe(original)
   })
 })

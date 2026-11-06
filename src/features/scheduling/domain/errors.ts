@@ -79,6 +79,11 @@ export interface TooManyPendingAppointments {
   readonly message: string
 }
 
+export interface PriceChanged {
+  readonly code: 'SCHEDULING_PRICE_CHANGED'
+  readonly message: string
+}
+
 export interface CancellationConsequenceChanged {
   readonly code: 'SCHEDULING_CANCELLATION_CONSEQUENCE_CHANGED'
   readonly appointmentId: string
@@ -193,6 +198,7 @@ export type SchedulingError =
   | AppointmentNotClosable
   | InvalidClosingAmount
   | AppointmentNotChargeable
+  | PriceChanged
 
 export const techniqueNotSelectable = (
   techniqueId: string,
@@ -252,6 +258,11 @@ export const clientNotRegistered = (): ClientNotRegistered => ({
 export const tooManyPendingAppointments = (): TooManyPendingAppointments => ({
   code: 'SCHEDULING_TOO_MANY_PENDING_APPOINTMENTS',
   message: 'la clienta ya tiene el máximo de citas pendientes de aprobación',
+})
+
+export const priceChanged = (): PriceChanged => ({
+  code: 'SCHEDULING_PRICE_CHANGED',
+  message: 'el precio cambió desde que la clienta lo vio antes de confirmar',
 })
 
 export const clientHasActiveDelinquency = (): ClientHasActiveDelinquency => ({

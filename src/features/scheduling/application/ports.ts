@@ -15,6 +15,7 @@ import type {
   InvalidCancellationWindow,
   InvalidRescheduleLimit,
   PackageNotAvailable,
+  PriceChanged,
   RescheduleLimitReached,
   RescheduleOutsideWindow,
   RescheduleSlotNotOffered,
@@ -79,6 +80,7 @@ export type BookAppointmentInput = {
   startsAtMs: number
   techniqueId: string
   isFirstTime: boolean
+  expectedPrice?: number
 }
 
 export type BookedAppointment = {
@@ -91,6 +93,8 @@ export type BookedAppointment = {
   depositRequired: number
   depositRegistered: number
   isFirstTime: boolean
+  promotionId: string | null
+  discountPercent: number | null
 }
 
 export type BookAppointmentError =
@@ -99,6 +103,7 @@ export type BookAppointmentError =
   | TechniqueNotAvailable
   | SlotNotOffered
   | SpaceNotAvailable
+  | PriceChanged
   | StorageFailed
 
 export interface BookingRepository {
@@ -116,6 +121,8 @@ export type BookingQuote = {
   durationMin: number
   bufferMin: number
   depositDue: number
+  promotionId: string | null
+  discountPercent: number | null
 }
 
 export type QuoteBookingError = ClientNotRegistered | TechniqueNotAvailable | StorageFailed
@@ -128,6 +135,7 @@ export type BookPackageAppointmentInput = {
   resourceId: string
   startsAtMs: number
   packageId: string
+  expectedPrice?: number
 }
 
 export type BookedPackageAppointment = {
@@ -139,6 +147,8 @@ export type BookedPackageAppointment = {
   servicePrice: number
   depositRequired: number
   depositRegistered: number
+  promotionId: string | null
+  discountPercent: number | null
 }
 
 export type BookPackageAppointmentError =
@@ -147,6 +157,7 @@ export type BookPackageAppointmentError =
   | PackageNotAvailable
   | SlotNotOffered
   | SpaceNotAvailable
+  | PriceChanged
   | StorageFailed
 
 export interface PackageBookingRepository {
@@ -165,6 +176,8 @@ export type PackageBookingQuote = {
   durationMin: number
   bufferMin: number
   depositDue: number
+  promotionId: string | null
+  discountPercent: number | null
 }
 
 export type QuotePackageBookingError = ClientNotRegistered | PackageNotAvailable | StorageFailed

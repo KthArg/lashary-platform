@@ -11,6 +11,7 @@ const CATALOG_TABS = [
   { label: CATALOG_SECTION.tabs.products, href: productRoutes.admin },
   { label: CATALOG_SECTION.tabs.techniques, href: catalogRoutes.admin },
   { label: CATALOG_SECTION.tabs.packages, href: catalogRoutes.packagesAdmin },
+  { label: CATALOG_SECTION.tabs.promotions, href: catalogRoutes.promotionsAdmin },
 ]
 
 export function CatalogTabs() {

@@ -1,5 +1,6 @@
 import type { Result } from '@/shared/result'
 import type { ReminderChannelKind, ReminderSnapshot } from '../domain/reminder'
+import type { ReminderAttempt } from '../domain/reminder-attempt'
 import type { InboxNotice } from '../domain/inbox-notice'
 import type { ChannelNotConfigured, ChannelSendFailed, InboxStorageFailed } from '../domain/errors'
 
@@ -53,6 +54,7 @@ export interface ReminderRepository {
   markSent(id: string, channel: ReminderChannelKind, sentAt: Date): Promise<Result<void, RepositoryFailure>>
   markRetry(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
   markExhausted(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
+  recordAttempt(attempt: ReminderAttempt): Promise<Result<void, RepositoryFailure>>
 }
 
 export type NoticeNotFound = 'notice-not-found'

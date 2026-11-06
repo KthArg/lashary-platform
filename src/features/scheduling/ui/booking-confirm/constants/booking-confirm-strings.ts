@@ -2,6 +2,8 @@ export const BOOKING_CONFIRM_PATH = '/portal/citas/calendario/confirmar'
 
 export const MAX_CONFIRM_SERVICES = 100
 
+export const EXPECTED_PRICE_FIELD = 'precioEsperado'
+
 export const bookingConfirmMessages = {
   title: 'Revisá tu reserva',
   subtitle: 'Confirmá que los datos son correctos antes de reservar.',
@@ -15,6 +17,7 @@ export const bookingConfirmMessages = {
   service: (name: string, isFirstTime: boolean | null) =>
     isFirstTime === null ? `${name} — paquete` : `${name} — ${isFirstTime ? 'primera vez' : 'retoque'}`,
   depositNotice: 'Si cancelás o no asistís a la cita, es posible que pierdas el anticipo.',
+  promotionNotice: (discountPercent: number) => `Precio con ${discountPercent}% de descuento por promoción.`,
   changeSlot: 'Elegir otro horario',
   confirm: 'Confirmar reserva',
   booking: 'Reservando…',

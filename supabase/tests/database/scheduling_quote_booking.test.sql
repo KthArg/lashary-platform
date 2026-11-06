@@ -2,7 +2,7 @@
 -- Correr con: npx supabase test db
 
 BEGIN;
-SELECT plan(11);
+SELECT plan(12);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -33,7 +33,15 @@ VALUES
   ('00000000-0000-0000-0000-0000000005f8', 'zz-test sin retoque', 'henna',
    18000, NULL, 60, NULL, 0, 5000, 'cuidados', true),
   ('00000000-0000-0000-0000-0000000005f9', 'zz-test desactivada', 'lips',
-   22000, NULL, 45, NULL, 0, 0, 'cuidados', false);
+   22000, NULL, 45, NULL, 0, 0, 'cuidados', false),
+  ('00000000-0000-0000-0000-0000000005fa', 'zz-test con promo', 'lash_classic',
+   20000, NULL, 30, NULL, 0, 0, 'cuidados', true);
+
+-- US-PROM-01: promoción vigente sobre esta técnica, para probar que la paridad entre cotizar
+-- y reservar también cubre promotion_id/discount_percent.
+INSERT INTO public.catalog_promotions (id, technique_id, discount_percent, starts_at, ends_at, is_active)
+VALUES ('00000000-0000-0000-0000-0000000006fa', '00000000-0000-0000-0000-0000000005fa', 25,
+  now() - interval '1 day', now() + interval '1 day', true);
 
 DELETE FROM public.scheduling_weekly_availability WHERE resource_id = '00000000-0000-0000-0000-000000000a01';
 INSERT INTO public.scheduling_weekly_availability (resource_id, weekday, start_min, end_min)
@@ -63,6 +71,15 @@ SELECT results_eq(
         '00000000-0000-0000-0000-000000000a01', '2027-09-06 09:00-06',
         '00000000-0000-0000-0000-0000000005f7', true) b$$,
   'lo que se cotiza es lo que la reserva guarda');
+
+SELECT results_eq(
+  $$SELECT q.price, q.promotion_id, q.discount_percent
+      FROM public.scheduling_quote_booking('00000000-0000-0000-0000-0000000005fa', true) q$$,
+  $$SELECT b.service_price, b.promotion_id, b.discount_percent
+      FROM public.scheduling_book_appointment(
+        '00000000-0000-0000-0000-000000000a01', '2027-09-06 11:00-06',
+        '00000000-0000-0000-0000-0000000005fa', true) b$$,
+  'con promoción vigente, lo que se cotiza ya rebajado es lo que la reserva guarda (US-PROM-01)');
 
 SELECT throws_ok(
   $$SELECT * FROM public.scheduling_quote_booking('00000000-0000-0000-0000-0000000005f9', true)$$,
@@ -102,7 +119,7 @@ RESET ROLE;
 SELECT is(
   (SELECT count(*)::int FROM public.scheduling_appointments
     WHERE client_id IN ('00000000-0000-0000-0000-0000000005c8', '00000000-0000-0000-0000-0000000005c9')),
-  1, 'cotizar no reserva nada: solo existe la cita de la prueba de paridad');
+  2, 'cotizar no reserva nada: solo existen las dos citas de las pruebas de paridad');
 
 SELECT is(
   (SELECT pronargs::int FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace

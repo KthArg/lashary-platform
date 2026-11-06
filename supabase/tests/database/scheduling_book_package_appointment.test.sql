@@ -5,7 +5,7 @@
 -- 2027-09-20 (con un bloqueo de 10:00 a 11:00). Hora de Costa Rica, UTC-6.
 
 BEGIN;
-SELECT plan(21);
+SELECT plan(22);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -33,17 +33,28 @@ VALUES
   ('00000000-0000-0000-0000-0000000008f1', 'zz-paquete reservable técnica 1', 'lash_classic',
    20000, 60, 15, 4000, 'cuidados', true),
   ('00000000-0000-0000-0000-0000000008f2', 'zz-paquete reservable técnica 2', 'brow_design',
-   10000, 30, 5, 2000, 'cuidados', true);
+   10000, 30, 5, 2000, 'cuidados', true),
+  ('00000000-0000-0000-0000-0000000008f3', 'zz-paquete con promo técnica', 'henna',
+   8000, 30, 5, 1000, 'cuidados', true);
 
 INSERT INTO public.catalog_packages (id, name, price, deposit, is_active)
 VALUES
   ('00000000-0000-0000-0000-0000000008d1', 'zz-paquete reservable', 45000, 12000, true),
-  ('00000000-0000-0000-0000-0000000008d2', 'zz-paquete desactivado', 45000, 12000, false);
+  ('00000000-0000-0000-0000-0000000008d2', 'zz-paquete desactivado', 45000, 12000, false),
+  ('00000000-0000-0000-0000-0000000008d3', 'zz-paquete con promo vigente', 10000, 0, true);
 
 INSERT INTO public.catalog_package_techniques (package_id, technique_id) VALUES
   ('00000000-0000-0000-0000-0000000008d1', '00000000-0000-0000-0000-0000000008f1'),
   ('00000000-0000-0000-0000-0000000008d1', '00000000-0000-0000-0000-0000000008f2'),
-  ('00000000-0000-0000-0000-0000000008d2', '00000000-0000-0000-0000-0000000008f1');
+  ('00000000-0000-0000-0000-0000000008d2', '00000000-0000-0000-0000-0000000008f1'),
+  ('00000000-0000-0000-0000-0000000008d3', '00000000-0000-0000-0000-0000000008f3');
+
+-- US-PROM-01: promoción vigente sobre este paquete, para probar que la reserva de paquete
+-- también guarda el precio ya rebajado junto con cuál promoción se aplicó (igual que la
+-- reserva de técnica suelta de US-AGE-05, scheduling_book_appointment.test.sql).
+INSERT INTO public.catalog_promotions (id, package_id, discount_percent, starts_at, ends_at, is_active)
+VALUES ('00000000-0000-0000-0000-0000000008f9', '00000000-0000-0000-0000-0000000008d3', 20,
+  now() - interval '1 day', now() + interval '1 day', true);
 
 DELETE FROM public.scheduling_weekly_availability WHERE resource_id = '00000000-0000-0000-0000-000000000a01';
 DELETE FROM public.scheduling_closed_dates WHERE resource_id = '00000000-0000-0000-0000-000000000a01';
@@ -104,6 +115,16 @@ SELECT results_eq(
   $$VALUES ('zz-paquete reservable técnica 1'::text, 60, 15),
            ('zz-paquete reservable técnica 2'::text, 30, 5)$$,
   'cada técnica congelada trae su propia duración y limpieza de ese momento');
+
+-- US-PROM-01: con promoción vigente sobre el paquete, la cita guarda el precio ya rebajado y
+-- cuál promoción se aplicó (criterio 4, parte «sobre paquete»).
+SELECT results_eq(
+  $$SELECT service_price, promotion_id, discount_percent
+      FROM public.scheduling_book_package_appointment(
+        '00000000-0000-0000-0000-000000000a01', '2027-09-06 15:00-06',
+        '00000000-0000-0000-0000-0000000008d3')$$,
+  $$VALUES (8000::bigint, '00000000-0000-0000-0000-0000000008f9'::uuid, 20)$$,
+  'con promoción vigente sobre el paquete, guarda el precio rebajado y cuál promoción se aplicó');
 
 -- ── Lo que el calendario no ofrece ───────────────────────────────────────────
 SELECT throws_ok(
@@ -179,18 +200,18 @@ RESET ROLE;
 SELECT is(
   (SELECT count(*)::int FROM public.scheduling_appointments
     WHERE client_id IN ('00000000-0000-0000-0000-0000000008c6', '00000000-0000-0000-0000-0000000008c7')),
-  2, 'los intentos rechazados no dejaron ninguna cita de paquete');
+  3, 'los intentos rechazados no dejaron ninguna cita de paquete (las tres que sí se crearon: d1 x2 y la de la promoción)');
 
 SELECT is(
   (SELECT count(*)::int FROM public.scheduling_appointment_package_techniques t
     JOIN public.scheduling_appointments a ON a.id = t.appointment_id
    WHERE a.client_id IN ('00000000-0000-0000-0000-0000000008c6', '00000000-0000-0000-0000-0000000008c7')),
-  4, 'cada una de las dos citas de paquete que se crearon congeló sus dos técnicas');
+  5, 'cada cita de paquete que se creó congeló sus técnicas (2 + 2 + 1 de la de la promoción)');
 
 SELECT is(
   (SELECT pronargs::int FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
     WHERE n.nspname = 'public' AND p.proname = 'scheduling_book_package_appointment'),
-  3, 'la función no recibe ni la clienta ni los montos, solo recurso, hora y paquete');
+  4, 'la función no recibe ni la clienta ni los montos, solo recurso, hora, paquete y el precio esperado opcional (C4)');
 
 SELECT * FROM finish();
 ROLLBACK;

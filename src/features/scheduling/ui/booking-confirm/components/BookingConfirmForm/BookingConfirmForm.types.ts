@@ -2,6 +2,7 @@ import type { BookingSummaryView, ConfirmParams } from '../../types/booking-conf
 
 export interface BookingConfirmFormProps {
   fields: ConfirmParams
+  expectedPrice: number
   summary: BookingSummaryView
   backHref: string
 }
