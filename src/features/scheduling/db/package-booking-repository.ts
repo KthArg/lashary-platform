@@ -28,6 +28,8 @@ type PackageAppointmentRow = {
   service_price: number
   deposit_required: number
   deposit_registered: number
+  promotion_id: string | null
+  discount_percent: number | null
 }
 
 const toIso = (epochMs: number): string => new Date(epochMs).toISOString()
@@ -42,8 +44,8 @@ function toBookedPackageAppointment(row: PackageAppointmentRow): BookedPackageAp
     servicePrice: row.service_price,
     depositRequired: row.deposit_required,
     depositRegistered: row.deposit_registered,
-    promotionId: null,
-    discountPercent: null,
+    promotionId: row.promotion_id,
+    discountPercent: row.discount_percent,
   }
 }
 

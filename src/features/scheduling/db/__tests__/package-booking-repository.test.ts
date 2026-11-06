@@ -26,6 +26,8 @@ const row = {
   service_price: 45000,
   deposit_required: 12000,
   deposit_registered: 0,
+  promotion_id: null as string | null,
+  discount_percent: null as number | null,
 }
 
 type FakeResponse = { data: typeof row | null; error: { code?: string; message: string } | null }
@@ -77,6 +79,19 @@ describe('createSupabasePackageBookingRepository', () => {
         promotionId: null,
         discountPercent: null,
       })
+    }
+  })
+
+  it('con promoción aplicada, devuelve el precio ya rebajado y cuál promoción se aplicó', async () => {
+    const { db } = createFakeDb({
+      data: { ...row, service_price: 36000, promotion_id: 'promo-1', discount_percent: 20 },
+      error: null,
+    })
+    const result = await createSupabasePackageBookingRepository(db).book(input)
+
+    expect(isOk(result)).toBe(true)
+    if (isOk(result)) {
+      expect(result.value).toMatchObject({ servicePrice: 36000, promotionId: 'promo-1', discountPercent: 20 })
     }
   })
 

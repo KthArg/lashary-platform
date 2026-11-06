@@ -205,4 +205,22 @@ describe('toBookingConfirmView — US-PROM-01 criterio 2 (mostrar la promoción 
     const view = await ready(QUOTE)
     expect(view).toMatchObject({ status: 'ready', summary: { promotionNotice: null } })
   })
+
+  it('con promoción vigente sobre un paquete, el precio ya viene rebajado y se avisa el descuento', async () => {
+    const { deps } = createDeps({
+      quotePackage: async () =>
+        ok({ ...PACKAGE_QUOTE, servicePrice: 36000, promotionId: 'promo-2', discountPercent: 20 }),
+    })
+    const view = toBookingConfirmView(
+      await loadBookingConfirm({ ...validParams, servicio: packageOptionKey(PACKAGE.id) }, deps),
+    )
+
+    expect(view).toMatchObject({
+      status: 'ready',
+      summary: {
+        price: formatMoney(moneyFromColones(36000)),
+        promotionNotice: bookingConfirmMessages.promotionNotice(20),
+      },
+    })
+  })
 })
