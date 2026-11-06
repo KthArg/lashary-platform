@@ -21,20 +21,31 @@ const summary = {
   price: '₡35 000',
   deposit: '₡10 000',
   depositNotice: bookingConfirmMessages.depositNotice,
+  promotionNotice: null,
 }
-const props = { fields: { serviceKey: 't1', date: '2027-03-01', startMin: 600 }, summary, backHref: BACK_HREF }
+const props = {
+  fields: { serviceKey: 't1', date: '2027-03-01', startMin: 600 },
+  expectedPrice: 35000,
+  summary,
+  backHref: BACK_HREF,
+}
 
 const submit = () => fireEvent.click(screen.getByRole('button', { name: bookingConfirmMessages.confirm }))
 
 describe('BookingConfirmForm — US-AGE-05', () => {
-  it('manda a la acción solo el servicio, la fecha y el espacio elegidos', async () => {
+  it('manda a la acción el servicio, la fecha, el espacio y el precio que vio la clienta (C4)', async () => {
     mockAction.mockResolvedValue({ status: 'error', message: 'x' })
     render(<BookingConfirmForm {...props} />)
     submit()
 
     await waitFor(() => expect(mockAction).toHaveBeenCalled())
     const sent = mockAction.mock.calls[0][1]
-    expect(Object.fromEntries(sent.entries())).toEqual({ servicio: 't1', fecha: '2027-03-01', espacio: '600' })
+    expect(Object.fromEntries(sent.entries())).toEqual({
+      servicio: 't1',
+      fecha: '2027-03-01',
+      espacio: '600',
+      precioEsperado: '35000',
+    })
   })
 
   it('al reservar, muestra la confirmación con el detalle y que queda pendiente de aprobación (criterio 5)', async () => {

@@ -79,6 +79,11 @@ export interface TooManyPendingAppointments {
   readonly message: string
 }
 
+export interface PriceChanged {
+  readonly code: 'SCHEDULING_PRICE_CHANGED'
+  readonly message: string
+}
+
 export interface CancellationConsequenceChanged {
   readonly code: 'SCHEDULING_CANCELLATION_CONSEQUENCE_CHANGED'
   readonly appointmentId: string
@@ -147,6 +152,24 @@ export interface RescheduleSlotTaken {
   readonly message: string
 }
 
+export interface AppointmentNotClosable {
+  readonly code: 'SCHEDULING_APPOINTMENT_NOT_CLOSABLE'
+  readonly appointmentId: string
+  readonly message: string
+}
+
+export interface InvalidClosingAmount {
+  readonly code: 'SCHEDULING_INVALID_CLOSING_AMOUNT'
+  readonly appointmentId: string
+  readonly message: string
+}
+
+export interface AppointmentNotChargeable {
+  readonly code: 'SCHEDULING_APPOINTMENT_NOT_CHARGEABLE'
+  readonly appointmentId: string
+  readonly message: string
+}
+
 export type SchedulingError =
   | SlotNotOffered
   | TooManyPendingAppointments
@@ -172,6 +195,10 @@ export type SchedulingError =
   | RescheduleSlotNotOffered
   | RescheduleSlotTaken
   | PackageNotAvailable
+  | AppointmentNotClosable
+  | InvalidClosingAmount
+  | AppointmentNotChargeable
+  | PriceChanged
 
 export const techniqueNotSelectable = (
   techniqueId: string,
@@ -231,6 +258,11 @@ export const clientNotRegistered = (): ClientNotRegistered => ({
 export const tooManyPendingAppointments = (): TooManyPendingAppointments => ({
   code: 'SCHEDULING_TOO_MANY_PENDING_APPOINTMENTS',
   message: 'la clienta ya tiene el máximo de citas pendientes de aprobación',
+})
+
+export const priceChanged = (): PriceChanged => ({
+  code: 'SCHEDULING_PRICE_CHANGED',
+  message: 'el precio cambió desde que la clienta lo vio antes de confirmar',
 })
 
 export const clientHasActiveDelinquency = (): ClientHasActiveDelinquency => ({
@@ -329,4 +361,22 @@ export const appointmentScheduleChanged = (
   startsAtMs,
   endsAtMs,
   message: `el horario de la cita ${appointmentId} cambió desde que la administradora lo vio`,
+})
+
+export const appointmentNotClosable = (appointmentId: string): AppointmentNotClosable => ({
+  code: 'SCHEDULING_APPOINTMENT_NOT_CLOSABLE',
+  appointmentId,
+  message: `la cita ${appointmentId} no existe, todavía no terminó o no está en un estado que se pueda cerrar`,
+})
+
+export const invalidClosingAmount = (appointmentId: string): InvalidClosingAmount => ({
+  code: 'SCHEDULING_INVALID_CLOSING_AMOUNT',
+  appointmentId,
+  message: `el precio o el anticipo de la cita ${appointmentId} no son montos enteros válidos para cerrarla`,
+})
+
+export const appointmentNotChargeable = (appointmentId: string): AppointmentNotChargeable => ({
+  code: 'SCHEDULING_APPOINTMENT_NOT_CHARGEABLE',
+  appointmentId,
+  message: `la cita ${appointmentId} no tiene clienta o precio registrado, así que no se puede generar su cargo`,
 })

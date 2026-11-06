@@ -11,8 +11,10 @@ export const AUTH_LABELS = {
   phoneNotice: 'Al continuar con Google, se te solicitará tu número de teléfono para la confirmación de tus citas.',
   phonePending: 'Teléfono pendiente', helpQuestion: '¿Necesitas ayuda?', phonePrefix: 'Tel: ',
   emailInput: 'Correo Electrónico', passwordInput: 'Contraseña',
-  adminAccessTitle: 'Acceso de Gestión', adminAccessSubtitle: 'Ingresa tus credenciales autorizadas',
+  adminAccessTitle: 'Acceso Administrativo', adminAccessSubtitle: 'Ingresa tus credenciales autorizadas',
   adminRestrictedNotice: 'Acceso restringido a personal autorizado.',
+  staffAccessLink: '¿Eres parte del equipo? Acceso administrativo',
+  clientAccessLink: '¿Eres clienta? Ingresa con Google',
   adminActiveSession: 'Sesión Administrativa Activa', adminRoleBadge: 'Rol:',
   dashboardNav: 'Dashboard', citasNav: 'Citas', clientsNav: 'Clientas', catalogNav: 'Catálogo', paymentsNav: 'Pagos',
   collapseSidebar: 'Colapsar barra', expandSidebar: 'Expandir barra',
@@ -36,6 +38,8 @@ export const CLIENT_PORTAL_ROUTES = {
 } as const
 
 export const SITE_HOME_ROUTE = '/'
+
+export const CLIENT_LOGIN_ROUTE = '/login'
 
 export const ADMIN_PORTAL_ROUTES = {
   root: '/admin',
