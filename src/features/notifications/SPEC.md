@@ -2,14 +2,14 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-03
+actualizado: 2026-11-05
 historias:
   - id: US-NOT-01
     estado: terminada
     evidencia: "Pila de 5 piezas sobre main: PRs #610 (1/5, tabla y RLS), #612 (2/5, trigger al reservar), #613 (3/5, dominio y repositorio), #615 (4/5, action y lectura) y #616 (5/5, panel lateral, cierra la historia). Criterio 1 (al reservar se genera el aviso en el panel): supabase/tests/database/scheduling_notify_booking_created.test.sql (reservar crea el aviso; una reserva fallida, una cita sin clienta o un cambio de hora no lo crean), ui/inbox/__tests__/admin-inbox.test.tsx y auth/__tests__/admin-auth.test.tsx (el layout lo carga para administradoras). Criterio 2 (clienta, servicio, fecha y hora): scheduling_notify_booking_created.test.sql, db/__tests__/inbox-repository.test.ts y admin-inbox.test.tsx. Criterio 3 (leído y no leído, persiste): supabase/tests/database/notifications_admin_inbox.test.sql (staff marca y desmarca, nadie borra ni fabrica avisos, la clienta y anon no los ven, SEC-002), application/__tests__/inbox.test.ts, inbox-repository.test.ts, ui/inbox/__tests__/inbox-actions.test.ts y admin-inbox.test.tsx, también con más de 20 avisos («Ver más»). Aislamiento con tokens reales de clienta y anon: __tests__/rls-isolation.test.ts. Si el aviso falla, la reserva igual se guarda, y una cita de paquete de US-AGE-04 usa el nombre del paquete: scheduling_notify_booking_created.test.sql. Probada a mano por José Loría en next dev contra Supabase local el 2026-10-29."
   - id: US-NOT-02
     estado: en_progreso
-    falta: "el aviso a la administradora al cancelar y al reagendar (criterios 1 a 3), la prueba del espacio liberado en el calendario (criterio 4) y el aviso a la clienta cuando su reagendado se rechaza o vence, en «Mis citas» y por WhatsApp o correo (ítem 13 de «Criterios trasladados»); sección US-NOT-02 de este SPEC"
+    falta: "revisión externa de las funciones SECURITY DEFINER de las migraciones 20261103000001 a 20261106000001 (INT-005), decisión del PO sobre los triggers que tragan errores y orden de entrada con US-NOT-07; sección US-NOT-02, «Pendiente antes de mergear el cierre»"
   - id: US-NOT-03
     estado: terminada
     evidencia: "PR de cierre #577 (us/US-NOT-03 a main), con 23 piezas apiladas hacia la rama de la historia. Criterio 1 (envío automático 24h antes): computeReminderSendAt y discoverReminders; domain/__tests__/reminder.test.ts, application/__tests__/discover-reminders.test.ts. Criterio 2 (mensaje con fecha, hora y técnica): domain/reminder-message.ts (REMINDER_MESSAGE_TEXTS, formatStudioDateTime); domain/__tests__/reminder-message.test.ts, application/__tests__/send-due-reminders.test.ts. Criterio 3 (cancela o reprograma si la cita cambia): reconcile-reminders.ts; application/__tests__/reconcile-reminders.test.ts, incluida la corrección del líder del 2026-10-26 (libera el reclamo vencido antes de leer lo pendiente, para que la misma corrida cancele si la cita ya no es válida). Criterio 4 (reintenta y queda registrado): send-due-reminders.ts (MAX_REMINDER_ATTEMPTS), reclamo atómico FOR UPDATE SKIP LOCKED con TTL y tandas (notifications_claim_due_reminders, notifications_release_expired_claims); application/__tests__/send-due-reminders.test.ts, db/__tests__/reminder-repository.integration.test.ts (A6, contra Supabase local, incluido el reclamo doble simultáneo) y pgTAP notifications_reminders_staff_access.test.sql (13 aserciones, SEC-001/002). Decisión del líder del proyecto, comunicada el 2026-10-27: la historia pasa de en_progreso a terminada porque lo que falta —plantilla de WhatsApp aprobada por Meta, número de WhatsApp Business real, contenido del mensaje de la dueña del negocio, dominio verificado en Resend, disparo vía GitHub Actions, cuenta de staff del cron en producción— ya no es código sino configuración externa y decisiones de negocio; queda como checklist de activación para producción en la sección «Antes de producción» de este SPEC, no como deuda de la historia. A4 (rol dedicado del cron, sin ADR), B5 (reschedulePending no reinicia attempts/last_error) y B6 (recordatorio inmediato si la cita se reserva con menos de 24h) quedan registrados en `deuda` del frontmatter, con dueño (líder/PO); B8 (opt-in de WhatsApp) ya está cubierto por la fila de US-NOT-06 en docs/process/DEPENDENCIES.md."
@@ -170,159 +170,101 @@ después, y US-NOT-02 necesita el horario anterior. `read_at` vacío es «no le�
 
 ## US-NOT-02: avisos de cancelación y reagendado
 
-Empezada el 2026-11-03. Criterios del backlog:
+Criterios del backlog, todos cubiertos:
 
 1. Al cancelarse o reagendarse una cita se genera una notificación con los datos correspondientes.
 2. En una cancelación, la notificación indica si la clienta perdió el anticipo según la política.
 3. En un reagendado, la notificación muestra el horario anterior y el nuevo.
 4. El espacio liberado se refleja automáticamente en el calendario.
 
-Recibe además tres criterios trasladados (`docs/process/DEPENDENCIES.md`, «Criterios trasladados»):
-el ítem 9 (notificar la cancelación, de US-AGE-06), el 12 (notificar el reagendado con el horario
-anterior y el nuevo, de US-AGE-10) y el 13 (la clienta recibe aviso cuando su reagendado se rechaza
-o vence, con el horario que conserva).
-
-De dónde salen los datos: US-AGE-06 y US-AGE-10 ya escriben en `audit_events`, en la misma
-transacción que el cambio, `scheduling.appointment.cancelled` (estado anterior, inicio, servicio,
-si cayó dentro de la ventana y el anticipo perdido), `scheduling.appointment.rescheduled` (horario
-anterior y nuevo), `scheduling.appointment.reschedule_reverted` (rechazo, con el horario devuelto) y
-`scheduling.appointment.reschedule_expired` (vencimiento, con el horario devuelto). Esta historia
-convierte esos eventos en avisos, con el mismo reparto que US-NOT-01: `notifications` es dueña de
-las tablas de avisos y de la función que los registra, y `scheduling` dispara el registro.
+Recibe además tres criterios trasladados (`docs/process/DEPENDENCIES.md`, «Criterios trasladados»): el ítem 9
+(notificar la cancelación, de US-AGE-06), el 12 (notificar el reagendado, de US-AGE-10) y el 13 (la clienta
+recibe aviso cuando su reagendado se rechaza o vence, con el horario que conserva).
 
 Decisiones:
 
-- Ítem 13, aprobado por el PO (Kenny); Jose Lorenzo comunicó el 2026-11-03 que basta esa
-  aprobación, sin el visto bueno aparte de KthArg.
-- Ítem 13, decisión del equipo (Jose Lorenzo, 2026-11-03): el aviso a la clienta llega por los dos
-  caminos, una nota en «Mis citas» del portal y un mensaje por el canal de US-NOT-03 (WhatsApp con
-  respaldo por correo, ADR-0006). La nota se puede demostrar hoy; el mensaje queda listo para cuando
-  el negocio tenga número y dominio («Antes de producción»).
+- Ítem 13: aprobado por el PO (Kenny); Jose Lorenzo comunicó el 2026-11-03 que basta esa aprobación.
+- Ítem 13: el aviso a la clienta llega por dos caminos, una nota en «Mis citas» y un mensaje por el canal de
+  US-NOT-03 (WhatsApp con respaldo por correo, ADR-0006). El mensaje queda listo para cuando el negocio tenga
+  número y dominio («Antes de producción»).
+- `notifications` es dueña de las tablas de avisos y de las funciones que los registran; `scheduling` dispara
+  el registro con triggers sobre `audit_events`, en la misma transacción que el cambio.
 
-Hecho hasta ahora:
+### Avisos de la administradora
 
-- Bandeja con los avisos de cancelación y de reagendado (migración
-  `20261103000000_notifications_admin_inbox_appointment_changes.sql`): `notifications_admin_inbox`
-  suma los tipos `appointment_cancelled` y `appointment_rescheduled`, y tres columnas: `event_id`
-  (el evento de `audit_events` que originó el aviso), `previous_starts_at` (el horario anterior de un
-  reagendado, criterio 3) y `forfeited_deposit` (el anticipo perdido en una cancelación, 0 si no lo
-  perdió, criterio 2). Una restricción exige los campos de cada tipo. Una reserva sigue dejando un
-  solo aviso (índice único parcial por cita); un cambio deja uno por evento (`UNIQUE (event_id)`),
-  porque una cita se puede reagendar hasta tres veces (`scheduling_reschedule_policy`). Registran
-  `notifications_record_cancellation` y `notifications_record_reschedule`, `SECURITY DEFINER` y sin
-  `EXECUTE` para nadie: ni staff, ni la clienta, ni anon fabrican avisos. Pruebas: pgTAP
-  `notifications_admin_inbox_appointment_changes.test.sql` (registro idempotente, campos por tipo,
-  staff lee pero no fabrica ni edita, la clienta y anon no ven nada; SEC-002) y
-  `__tests__/rls-isolation.test.ts` (con tokens reales, la clienta y anon no pueden llamar las dos
-  funciones; verificado por mutación: con `EXECUTE` para anon la prueba cae).
-- El registro lo dispara `scheduling` (trigger `audit_events_notify_appointment_changed`, en su SPEC):
-  cancelar o reagendar deja el aviso en la misma transacción, con la clienta, el servicio, el
-  anticipo perdido o el horario anterior y el nuevo (criterios 1 a 3), y el espacio liberado deja de
-  verse ocupado en el calendario de la clienta (criterio 4). Prueba: pgTAP
-  `scheduling_notify_appointment_changed.test.sql` (16 aserciones; verificado por mutación: con el
-  trigger apagado caen las tres que leen los avisos).
-- En la app: `InboxNotice` (`domain/inbox-notice.ts`) es una unión por `kind`: la cancelación trae
-  `forfeitedDeposit` (colones enteros; un número y no `Money`, porque el aviso cruza al componente de
-  cliente y la marca de `Money` no se serializa) y el reagendado `previousStartsAt`; `lostDeposit` dice
-  si perdió el anticipo. `db/inbox-repository.ts` lee las dos columnas nuevas y arma cada tipo.
-  `ui/inbox/utils/notice-lines.ts` arma el título y los detalles de cada aviso: la cancelación dice el
-  monto perdido o «No perdió el anticipo» (nunca «perdió ₡0», criterio 2), y el reagendado el horario
-  anterior y el nuevo, por aprobar (criterio 3). El panel pinta esas líneas; textos en
-  `ui/inbox/constants/inbox-strings.ts` (DOM-009). Pruebas: `domain/__tests__/inbox-notice.test.ts`,
-  `db/__tests__/inbox-repository.test.ts`, `ui/inbox/__tests__/notice-lines.test.ts` y
-  `ui/inbox/__tests__/admin-inbox.test.tsx`.
-- Avisos a la clienta (ítem 13, migración `20261103000002_notifications_client_notices.sql`):
-  `notifications_client_notices` guarda uno por evento (`UNIQUE (event_id)`) cuando un reagendado se
-  rechaza (`reschedule_rejected`) o vence (`reschedule_expired`), con el servicio, el horario que pidió
-  (`requested_starts_at`) y el que conserva (`kept_starts_at`). La misma fila lleva su envío por el
-  canal de US-NOT-03 (`status` `pending`, `claimed`, `sent` o `failed`, intentos, último error y
-  canal), como `notifications_reminders`. RLS: la clienta lee solo los suyos
-  (`clients_current_profile_id()`) y staff todos; solo staff (la cuenta del cron) cambia las columnas
-  del envío, nunca el contenido; nadie inserta ni borra. Registra `notifications_record_reschedule_outcome`,
-  `SECURITY DEFINER` y sin `EXECUTE` para nadie. Sin FK a `scheduling_appointments` ni a
-  `clients_profiles`, por la misma razón que `notifications_reminders`: es un registro operativo de
-  envíos. Pruebas: pgTAP `notifications_client_notices.test.sql` (cada clienta ve solo los suyos, staff
-  marca el envío pero no cambia el contenido, nadie fabrica ni borra, anon no lee; SEC-002; verificado por
-  mutación: con la política de la clienta abierta caen las dos de aislamiento) y
-  `__tests__/rls-isolation.test.ts` (con tokens reales).
-  Vencer un reagendado (`scheduling_expire_undecided_reschedules`) lo hace rechazándolo, así que la misma
-  transacción deja dos eventos, `reschedule_reverted` y después `reschedule_expired`. Para que la clienta
-  reciba un solo aviso, y el correcto, `notifications_record_reschedule_outcome` borra al registrar un
-  vencimiento el aviso de rechazo pendiente que esa misma transacción dejó para la cita (`created_at =
-  now()`); un rechazo de otra transacción no se toca. Prueba: `notifications_client_notices.test.sql`.
-- El registro lo dispara `scheduling` (trigger `audit_events_notify_reschedule_outcome`, en su SPEC) al
-  escribirse `scheduling.appointment.reschedule_reverted` o `reschedule_expired`, con el servicio de la
-  cita (técnica o paquete), el horario pedido y el que conserva. Prueba:
-  `scheduling_notify_reschedule_outcome.test.sql` (rechazo y vencimiento de punta a punta, y si el aviso
-  falla el vencimiento igual se hace).
-- Nota en «Mis citas» (ítem 13): `loadClientNotices` (`application/client-notices.ts`, reloj inyectado,
-  DOM-004) pide a `db/client-notice-repository.ts` los avisos de la sesión cuyo horario conservado todavía
-  no pasó, los más recientes primero y con tope de `CLIENT_NOTICES_LIMIT` (5, PERF-002); la RLS deja solo
-  los de la clienta. El texto lo arma `buildClientNoticeMessage` (`domain/client-notice-message.ts`,
-  textos en `CLIENT_NOTICE_MESSAGE_TEXTS`, DOM-009): qué cambio pidió, si se lo rechazaron o venció sin
-  respuesta, y el horario que conserva; el mensaje por el canal usará el mismo texto. `ClientNotices`
-  (`ui/client-notices/`) lo pinta como una sección «Avisos de tus citas»; sin avisos no pinta nada, y si
-  no cargaron lo dice con `role="alert"` (UI-003). La ruta `src/app/portal/citas/mis-citas/page.tsx` lo
-  compone en el hueco `notices` de `MyAppointmentsPage` de `scheduling` (ARCH-005: ninguna feature importa
-  a la otra). Pruebas: `domain/__tests__/client-notice-message.test.ts`,
-  `db/__tests__/client-notice-repository.test.ts`, `application/__tests__/client-notices.test.ts` y
+- Bandeja: `notifications_admin_inbox` suma los tipos `appointment_cancelled` y `appointment_rescheduled`, con
+  `event_id`, `previous_starts_at` y `forfeited_deposit`; un cambio deja un aviso por evento. Migración
+  `20261103000000`. Prueba: pgTAP `notifications_admin_inbox_appointment_changes.test.sql`.
+- Registro: `notifications_record_cancellation` y `notifications_record_reschedule` son `SECURITY DEFINER` sin
+  `EXECUTE` para nadie. Pruebas: `__tests__/rls-isolation.test.ts` (tokens reales de clienta y anon).
+- Disparo: el trigger `audit_events_notify_appointment_changed` (migración `20261103000001`) cubre los criterios
+  1 a 3 y deja el espacio liberado fuera de `scheduling_busy_ranges` (criterio 4). Prueba: pgTAP
+  `scheduling_notify_appointment_changed.test.sql`.
+- App: `InboxNotice` es una unión por `kind`; `ui/inbox/utils/notice-lines.ts` dice el monto perdido o «No
+  perdió el anticipo» y el horario anterior y el nuevo. Pruebas: `domain/__tests__/inbox-notice.test.ts`,
+  `db/__tests__/inbox-repository.test.ts`, `ui/inbox/__tests__/notice-lines.test.ts` y `admin-inbox.test.tsx`.
+
+### Avisos de la clienta (ítem 13)
+
+- Tabla: `notifications_client_notices` guarda un aviso por evento (`reschedule_rejected` o `reschedule_expired`)
+  con el servicio, el horario pedido y el que conserva, más el estado de su envío. La clienta lee solo los suyos;
+  staff solo cambia el envío. Migración `20261103000002`. Prueba: pgTAP `notifications_client_notices.test.sql`.
+- Un solo aviso por vencimiento: vencer rechaza antes, así que `notifications_record_reschedule_outcome` borra
+  el rechazo pendiente de la misma transacción al registrar el vencimiento.
+- Disparo: el trigger `audit_events_notify_reschedule_outcome` (migración `20261103000003`). Prueba: pgTAP
+  `scheduling_notify_reschedule_outcome.test.sql`.
+- Vigencia: `notifications_discard_client_notices` borra los avisos de la cita cuando se reagenda o cancela de
+  nuevo (trigger `audit_events_discard_superseded_client_notices`, migración `20261106000000`). Prueba: pgTAP
+  `notifications_client_notices_only_live.test.sql`.
+- Datos internos: la clienta y staff leen por la tabla solo el contenido y `status`; `attempts`, `last_error`,
+  `claimed_at`, `last_channel` y `sent_at` no tienen `SELECT` (migración `20261106000001`). Pruebas: pgTAP
+  `notifications_client_notices_private_columns.test.sql` y `__tests__/rls-isolation.test.ts`.
+- Nota en «Mis citas»: `loadClientNotices` pide los avisos cuyo horario conservado no pasó, los más recientes
+  primero y con tope `CLIENT_NOTICES_LIMIT` (5, PERF-002). `ClientNotices` (`ui/client-notices/`) los pinta; la
+  ruta `src/app/portal/citas/mis-citas/page.tsx` los compone en el hueco `notices` de `scheduling` (ARCH-005).
+  Pruebas: `application/__tests__/client-notices.test.ts`, `db/__tests__/client-notice-repository.test.ts` y
   `ui/client-notices/__tests__/ClientNotices.test.tsx`.
-- Canales por tipo de mensaje (ítem 13): `ChannelSendInput` lleva `messageId` (antes `reminderId`) y
-  `purpose` (`reminder` o `reschedule_outcome`). WhatsApp elige la plantilla del tipo:
-  `META_WHATSAPP_TEMPLATE_NAME` para el recordatorio y `META_WHATSAPP_RESCHEDULE_OUTCOME_TEMPLATE_NAME` para
-  el aviso de cambio, con las 3 variables de `buildClientNoticeTemplateVariables` (servicio, horario pedido
-  y horario que conserva). Sin ninguna plantilla manda texto libre, como antes; con la del recordatorio pero
-  sin la del aviso, el aviso no sale por WhatsApp (`channelNotConfigured`: Meta rechazaría el texto libre
-  fuera de una sesión abierta) y pasa al correo. El correo toma el asunto del tipo y la clave de
-  idempotencia `notifications-<tipo>-<id>` (la del recordatorio no cambia). Pruebas:
-  `channels/__tests__/meta-whatsapp-channel.test.ts`, `resend-email-channel.test.ts` y
-  `domain/__tests__/client-notice-message.test.ts`.
-- Reclamo y envío de los avisos (ítem 13, migración `20261103000004_notifications_claim_client_notices_fn.sql`):
-  `notifications_claim_client_notices(p_now, p_batch_size, p_claim_ttl_minutes)` pasa a `claimed` los avisos
-  pendientes y los reclamados hace más del plazo (un cron que murió a medio envío), los más viejos primero y
-  en tandas, con `FOR UPDATE SKIP LOCKED` para que dos corridas superpuestas no manden el mismo dos veces
-  (DOM-010). A diferencia de los recordatorios, reclamar y soltar lo vencido van en una sola función: un
-  aviso no se reconcilia contra la cita, así que no hace falta revalidarlo antes. `SECURITY INVOKER`: lo
-  frena la RLS, así que solo staff (la cuenta del cron) reclama; la clienta no, ni los suyos.
-  La selección va en un CTE `MATERIALIZED`: con `WHERE id IN (subconsulta)` Postgres puede volver a
-  evaluarla mientras actualiza y, como un reclamo vencido sigue cumpliendo la condición después de
-  reclamarlo, tomaba más avisos que la tanda (lo detectó la prueba de la tanda).
-  `db/client-notice-delivery-repository.ts` llama a esa función (tanda calculada como la de los
-  recordatorios, con el tiempo máximo de los dos canales) y marca cada aviso enviado, para reintentar o
-  agotado, solo si sigue `claimed`; `CLIENT_NOTICE_MAX_ATTEMPTS` es 5, como los recordatorios. Pruebas: pgTAP
-  `notifications_claim_client_notices.test.sql`, `db/__tests__/client-notice-delivery-repository.test.ts` y
-  `client-notice-delivery-repository.integration.test.ts` (contra Supabase local, con una sesión de staff).
-- Envío por el cron (ítem 13): `sendClientNotices` (`application/send-client-notices.ts`) reclama los
-  avisos y manda cada uno con `purpose: 'reschedule_outcome'`, el texto de `buildClientNoticeMessage` (el
-  mismo de la nota en «Mis citas») y las variables de la plantilla: WhatsApp primero y correo si falla. Sin
-  contacto, o con los dos canales caídos, cuenta un intento y vuelve a la fila; en el quinto intento, o sin
-  ningún canal configurado, queda `failed` con el motivo. Si no se pudo leer el contacto, suelta el aviso
-  sin gastar un intento. `runReminderCycle` lo corre justo después de vencer los reagendados, así el aviso
-  de un vencimiento sale en la misma corrida, y antes de los recordatorios, para que una falla de éstos no
-  lo frene; si el reclamo falla, el ciclo sigue y lo cuenta en `noticesFailed`. El resumen del cron suma
-  `noticesSent`, `noticesRetried`, `noticesExhausted`, `noticesErrored` y `noticesFailed`. Lo cablea
-  `index.ts` con `clientNoticeDeliveryRepository`. Pruebas: `application/__tests__/send-client-notices.test.ts`
-  y `run-reminder-cycle.test.ts`.
-- Datos internos del envío (migración `20261106000001_notifications_client_notices_private_columns.sql`): la
-  clienta y staff leen por la tabla solo las columnas del contenido y `status`; `attempts`, `last_error`,
-  `claimed_at`, `last_channel` y `sent_at` quedan fuera del `GRANT SELECT`. El cron las recibe al reclamar,
-  porque `notifications_claim_client_notices` pasó a `SECURITY DEFINER` y rechaza con `42501` a quien no es
-  staff. Pruebas: pgTAP `notifications_client_notices_private_columns.test.sql` y `__tests__/rls-isolation.test.ts`.
-- Tiempo del ciclo: el TTL del reclamo (`CLAIM_TTL_MINUTES`, 10), la tanda (`CLAIM_BATCH_SIZE`, 7) y la
-  duración de la ruta (`maxDuration` = `CYCLE_MAX_DURATION_SECONDS`, 300) van atados en
-  `db/claim-limits.ts`: el ciclo corre dos envíos en serie (avisos y recordatorios), cada mensaje puede
-  gastar los dos canales a `CHANNEL_SEND_TIMEOUT_MS`, y la tanda sale de repartir la duración de la ruta
-  entre ambos. Cambiar uno obliga a revisar los otros; `db/__tests__/claim-limits.test.ts` lo comprueba y
-  lee el `maxDuration` de la ruta.
-- Las filas que llegan de la base se validan con Zod (`client-notice-repository.ts`,
-  `client-notice-delivery-repository.ts`); una forma inesperada es un error, y el error no guarda el texto
-  de Postgres. Los fallos del envío de avisos se registran con `logError` (`shared/logger.ts`).
+
+### Envío por el cron
+
+- Canales: `ChannelSendInput` lleva `messageId` y `purpose` (`reminder` o `reschedule_outcome`). WhatsApp elige
+  la plantilla del tipo (`META_WHATSAPP_TEMPLATE_NAME` o `META_WHATSAPP_RESCHEDULE_OUTCOME_TEMPLATE_NAME`); sin la
+  del aviso no sale por WhatsApp y pasa al correo. Pruebas: `channels/__tests__/meta-whatsapp-channel.test.ts` y
+  `resend-email-channel.test.ts`.
+- Reclamo: `notifications_claim_client_notices` toma de a tandas, con `FOR UPDATE SKIP LOCKED`, los avisos
+  pendientes o con reclamo vencido cuyo horario conservado no pasó y cuya cita sigue viva (`approved` o
+  `confirmed`) en ese mismo horario. Es `SECURITY DEFINER` y rechaza con `42501` a quien no es staff. Pruebas:
+  pgTAP `notifications_claim_client_notices.test.sql` y
+  `db/__tests__/client-notice-delivery-repository.test.ts`.
+- Envío: `sendClientNotices` manda cada aviso por WhatsApp y, si falla, por correo; sin contacto o con los dos
+  canales caídos cuenta un intento y, al quinto o sin canal configurado, queda `failed`. Si no se pudo leer el
+  contacto, suelta el aviso sin gastar un intento. `runReminderCycle` lo corre después de vencer los reagendados
+  y antes de los recordatorios. Pruebas: `application/__tests__/send-client-notices.test.ts` y
+  `run-reminder-cycle.test.ts`.
+- Tiempo del ciclo: el TTL del reclamo (`CLAIM_TTL_MINUTES`, 10), la tanda (`CLAIM_BATCH_SIZE`, 7) y la duración
+  de la ruta (`maxDuration` igual a `CYCLE_MAX_DURATION_SECONDS`, 300) van atados en `db/claim-limits.ts`. El ciclo
+  corre dos envíos en serie, cada mensaje puede gastar dos canales a `CHANNEL_SEND_TIMEOUT_MS`, y la tanda reparte
+  la duración de la ruta entre ambos. Cambiar uno obliga a revisar los otros. Prueba:
+  `db/__tests__/claim-limits.test.ts`, que lee el `maxDuration` de la ruta.
+- Las filas se validan con Zod; una forma inesperada es un error que no guarda el texto de Postgres. Los fallos
+  del envío de avisos se registran con `logError` (`shared/logger.ts`).
+
+### Pendiente antes de mergear el cierre
+
+- Revisión externa de las funciones `SECURITY DEFINER` de las migraciones `20261103000001` a `20261106000001`
+  (INT-005).
+- Decisión del PO: los triggers de `scheduling` que registran avisos tragan cualquier error con un `WARNING` y
+  la cita igual se guarda. Si se acepta perder el aviso, queda así; si no, hay que registrar el fallo en una
+  tabla o en `audit_events` para reconciliarlo.
+- Orden de entrada con US-NOT-07 (#671 y #672): ambas tocan `send-due-reminders.ts`, `index.ts` y
+  `run-reminder-cycle.test.ts`, y `ChannelSendInput` cambia de `reminderId` a `messageId` y `purpose`. La segunda
+  rebasa y corre `tsc` y vitest por pieza.
 
 ## Qué no hace todavía
 
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
   mano. No lo pide ningún criterio de US-NOT-03.
-- US-NOT-04 a 08 y US-CLI-06 reusan el canal pero no están construidas. US-NOT-02 está en curso (sección de arriba).
+- US-NOT-04 a 08 y US-CLI-06 reusan el canal pero no están construidas. US-NOT-02 tiene pendiente lo de su sección.
 
 ## Correcciones de la auditoría del 2026-10-23 (AUDIT.md, líder del proyecto)
 
@@ -417,7 +359,7 @@ debía fusionarse en vez de solo renombrarse.
   después de un envío exitoso, la fila quedaba `claimed` para siempre — nadie la volvía a intentar
   y tampoco avisaba. `notifications_claim_due_reminders` (función SQL,
   `20261026000001_notifications_claim_due_reminders_fn.sql`) reclama con `FOR UPDATE SKIP LOCKED`
-  en tandas de `CLAIM_BATCH_SIZE` (50) en vez de reclamar todo de una vez, y vuelve a reclamar lo
+  en tandas de `CLAIM_BATCH_SIZE` (`db/claim-limits.ts`) en vez de reclamar todo de una vez, y vuelve a reclamar lo
   que lleva más de `CLAIM_TTL_MINUTES` (10) en `claimed` sin resolverse. Además, si falla la
   lectura del contacto (`getContact`), `sendOne` ahora llama a `releaseToPending` en vez de dejar
   la fila `claimed` — no gasta un intento, el siguiente ciclo la vuelve a ver `pending`. Probado a
@@ -493,17 +435,9 @@ Revisando la pieza 20/21, el líder encontró un hallazgo nuevo y tres mejoras a
 - **`make_interval` en vez de concatenar texto** (`p_claim_ttl_minutes || ' minutes'`) para armar
   el intervalo del TTL — más seguro, no depende de que Postgres interprete bien un texto armado a
   mano.
-- **El lote (`CLAIM_BATCH_SIZE`) y el TTL (`CLAIM_TTL_MINUTES`) eran números sueltos que podían
-  contradecirse:** con 50 filas y hasta 10s por canal (`CHANNEL_SEND_TIMEOUT_MS`, ahora compartida
-  entre los dos canales en `channels/send-timeout.ts`, antes duplicada), el peor caso de una tanda
-  (primario + respaldo agotan su tiempo en cada una) es 50 × 20s ≈ 16.7 minutos — más que los 10
-  minutos del TTL. Si una corrida de verdad tardara eso, otra corrida solapada podría reclamar sus
-  mismas filas antes de que termine, justo lo que el TTL existe para evitar. `CLAIM_BATCH_SIZE`
-  ahora se calcula a partir de `CLAIM_TTL_MINUTES` y `CHANNEL_SEND_TIMEOUT_MS` (con un margen de
-  seguridad de 2×) en vez de ser un número aparte: queda en 15, con un peor caso de ~5 minutos, la
-  mitad del TTL. La ruta del cron (`src/app/api/cron/notifications-reminders/route.ts`) declara
-  `maxDuration = 300` (segundos) a juego con ese mismo peor caso, para que Vercel corte una
-  corrida colgada antes de que el TTL de otra la alcance.
+- **El lote, el TTL y la duración de la ruta van atados:** `CLAIM_BATCH_SIZE`, `CLAIM_TTL_MINUTES` y
+  `CYCLE_MAX_DURATION_SECONDS` viven en `db/claim-limits.ts`, calculados a partir de
+  `CHANNEL_SEND_TIMEOUT_MS`; el detalle está en «Tiempo del ciclo» de la sección de US-NOT-02.
 
 `getClientContactForReminders` (`clients`) y `clientRepository` (`clients`, sin relación con esta
 historia): ver el SPEC de `clients` — la consulta se movió a `db/` y `clientRepository` perdió su
