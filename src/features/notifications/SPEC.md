@@ -215,6 +215,12 @@ Hecho hasta ahora:
   staff lee pero no fabrica ni edita, la clienta y anon no ven nada; SEC-002) y
   `__tests__/rls-isolation.test.ts` (con tokens reales, la clienta y anon no pueden llamar las dos
   funciones; verificado por mutación: con `EXECUTE` para anon la prueba cae).
+- El registro lo dispara `scheduling` (trigger `audit_events_notify_appointment_changed`, en su SPEC):
+  cancelar o reagendar deja el aviso en la misma transacción, con la clienta, el servicio, el
+  anticipo perdido o el horario anterior y el nuevo (criterios 1 a 3), y el espacio liberado deja de
+  verse ocupado en el calendario de la clienta (criterio 4). Prueba: pgTAP
+  `scheduling_notify_appointment_changed.test.sql` (16 aserciones; verificado por mutación: con el
+  trigger apagado caen las tres que leen los avisos).
 
 ## Qué no hace todavía
 
