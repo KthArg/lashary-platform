@@ -51,6 +51,15 @@ FROM public.catalog_packages pkg, public.catalog_techniques t
 WHERE pkg.name = 'Cejas y pestañas clásico'
   AND t.name IN ('Set clásico', 'Diseño de cejas');
 
+-- Una promoción de ejemplo (US-PROM-01, criterio 1): 20% sobre el set clásico. Ventana relativa
+-- a now() (auditoría B9, 2026-11-02 — antes una fecha fija de 2026 vencía el 31 de diciembre y
+-- promotion-rls-isolation.test.ts, que necesita al menos una fila vigente, quedaba rota a partir
+-- de esa fecha sin que nadie lo notara hasta que fallara en CI).
+INSERT INTO public.catalog_promotions (technique_id, discount_percent, starts_at, ends_at)
+SELECT t.id, 20, now() - interval '1 day', now() + interval '10 years'
+FROM public.catalog_techniques t
+WHERE t.name = 'Set clásico';
+
 -- Datos de desarrollo: 5 clientas sin cuenta para ver /admin/clients con datos reales (US-CLI-05).
 -- Solo local: `supabase db reset` lo aplica después de las migraciones. No es una migración (INT-008)
 -- y no se corre en producción. Teléfonos en la forma de normalizePhone (+506 + 8 dígitos) y
