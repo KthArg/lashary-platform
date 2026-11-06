@@ -2,10 +2,12 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { ok, err } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import type { ReminderChannelKind, ReminderSnapshot, ReminderStatus } from '../domain/reminder'
+import type { ReminderAttempt } from '../domain/reminder-attempt'
 import type { ReminderRepository, ReminderUpsert, ReminderReschedule } from '../application/ports'
 import { CLAIM_BATCH_SIZE, CLAIM_TTL_MINUTES } from './claim-limits'
 
 const TABLE = 'notifications_reminders'
+const ATTEMPTS_TABLE = 'notifications_reminder_attempts'
 const CLAIM_FUNCTION = 'notifications_claim_due_reminders'
 const RELEASE_EXPIRED_CLAIMS_FUNCTION = 'notifications_release_expired_claims'
 const FAILED = 'repository-failed' as const
@@ -131,6 +133,19 @@ export async function reminderRepository(db?: SupabaseClient): Promise<ReminderR
       const { error } = await supabase.from(TABLE)
         .update({ status: 'failed', attempts, last_error: lastError })
         .eq('id', id).eq('status', 'claimed')
+      if (error) return err(FAILED)
+      return ok(undefined)
+    },
+
+    async recordAttempt(attempt: ReminderAttempt) {
+      const { error } = await supabase.from(ATTEMPTS_TABLE).insert({
+        reminder_id: attempt.reminderId,
+        attempt_number: attempt.attemptNumber,
+        channel: attempt.channel,
+        outcome: attempt.outcome,
+        error: attempt.error,
+        attempted_at: attempt.attemptedAt.toISOString(),
+      })
       if (error) return err(FAILED)
       return ok(undefined)
     },

@@ -47,6 +47,7 @@ describe('runReminderCycle', () => {
       markExhausted: async () => ok(undefined),
       clientNotices: noClientNotices,
       droppedNotices: noDroppedNotices,
+      recordAttempt: async () => ok(undefined),
       primaryChannel: channel('whatsapp'),
       backupChannel: channel('email'),
     })()
@@ -81,6 +82,7 @@ describe('runReminderCycle', () => {
     markExhausted: async () => ok(undefined),
     clientNotices: noClientNotices,
     droppedNotices: noDroppedNotices,
+    recordAttempt: async () => ok(undefined),
     primaryChannel: { kind: 'whatsapp' as const, send: async () => ok(undefined) },
     backupChannel: { kind: 'email' as const, send: async () => ok(undefined) },
   })

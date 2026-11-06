@@ -2,14 +2,14 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-05
+actualizado: 2026-11-06
 historias:
   - id: US-NOT-01
     estado: terminada
     evidencia: "Pila de 5 piezas sobre main: PRs #610 (1/5, tabla y RLS), #612 (2/5, trigger al reservar), #613 (3/5, dominio y repositorio), #615 (4/5, action y lectura) y #616 (5/5, panel lateral, cierra la historia). Criterio 1 (al reservar se genera el aviso en el panel): supabase/tests/database/scheduling_notify_booking_created.test.sql (reservar crea el aviso; una reserva fallida, una cita sin clienta o un cambio de hora no lo crean), ui/inbox/__tests__/admin-inbox.test.tsx y auth/__tests__/admin-auth.test.tsx (el layout lo carga para administradoras). Criterio 2 (clienta, servicio, fecha y hora): scheduling_notify_booking_created.test.sql, db/__tests__/inbox-repository.test.ts y admin-inbox.test.tsx. Criterio 3 (leído y no leído, persiste): supabase/tests/database/notifications_admin_inbox.test.sql (staff marca y desmarca, nadie borra ni fabrica avisos, la clienta y anon no los ven, SEC-002), application/__tests__/inbox.test.ts, inbox-repository.test.ts, ui/inbox/__tests__/inbox-actions.test.ts y admin-inbox.test.tsx, también con más de 20 avisos («Ver más»). Aislamiento con tokens reales de clienta y anon: __tests__/rls-isolation.test.ts. Si el aviso falla, la reserva igual se guarda, y una cita de paquete de US-AGE-04 usa el nombre del paquete: scheduling_notify_booking_created.test.sql. Probada a mano por José Loría en next dev contra Supabase local el 2026-10-29."
   - id: US-NOT-02
     estado: en_progreso
-    falta: "orden de entrada con US-NOT-07 (#671 y #672) y el visto bueno escrito del ítem 13 por el PO; sección US-NOT-02, «Pendiente antes de mergear el cierre»"
+    falta: "el visto bueno escrito del ítem 13 por el PO; sección US-NOT-02, «Pendiente antes de mergear el cierre»"
   - id: US-NOT-03
     estado: terminada
     evidencia: "PR de cierre #577 (us/US-NOT-03 a main), con 23 piezas apiladas hacia la rama de la historia. Criterio 1 (envío automático 24h antes): computeReminderSendAt y discoverReminders; domain/__tests__/reminder.test.ts, application/__tests__/discover-reminders.test.ts. Criterio 2 (mensaje con fecha, hora y técnica): domain/reminder-message.ts (REMINDER_MESSAGE_TEXTS, formatStudioDateTime); domain/__tests__/reminder-message.test.ts, application/__tests__/send-due-reminders.test.ts. Criterio 3 (cancela o reprograma si la cita cambia): reconcile-reminders.ts; application/__tests__/reconcile-reminders.test.ts, incluida la corrección del líder del 2026-10-26 (libera el reclamo vencido antes de leer lo pendiente, para que la misma corrida cancele si la cita ya no es válida). Criterio 4 (reintenta y queda registrado): send-due-reminders.ts (MAX_REMINDER_ATTEMPTS), reclamo atómico FOR UPDATE SKIP LOCKED con TTL y tandas (notifications_claim_due_reminders, notifications_release_expired_claims); application/__tests__/send-due-reminders.test.ts, db/__tests__/reminder-repository.integration.test.ts (A6, contra Supabase local, incluido el reclamo doble simultáneo) y pgTAP notifications_reminders_staff_access.test.sql (13 aserciones, SEC-001/002). Decisión del líder del proyecto, comunicada el 2026-10-27: la historia pasa de en_progreso a terminada porque lo que falta —plantilla de WhatsApp aprobada por Meta, número de WhatsApp Business real, contenido del mensaje de la dueña del negocio, dominio verificado en Resend, disparo vía GitHub Actions, cuenta de staff del cron en producción— ya no es código sino configuración externa y decisiones de negocio; queda como checklist de activación para producción en la sección «Antes de producción» de este SPEC, no como deuda de la historia. A4 (rol dedicado del cron, sin ADR), B5 (reschedulePending no reinicia attempts/last_error) y B6 (recordatorio inmediato si la cita se reserva con menos de 24h) quedan registrados en `deuda` del frontmatter, con dueño (líder/PO); B8 (opt-in de WhatsApp) ya está cubierto por la fila de US-NOT-06 en docs/process/DEPENDENCIES.md."
@@ -20,7 +20,8 @@ historias:
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
-    estado: no_iniciada
+    estado: terminada
+    evidencia: "PR de cierre #671 (us/US-NOT-07 a main), con 2 piezas apiladas: #672 (bitácora de intentos) y #702 (error del proveedor acotado). Criterio 1 (WhatsApp como canal por defecto): lo entregó US-NOT-03; application/__tests__/send-due-reminders.test.ts, «envía por el canal primario (WhatsApp) cuando funciona». Criterio 2 (envíos y fallos registrados): notifications_reminder_attempts (migraciones 20261104000000 y 20261104000001) y recordAttempt de sendDueReminders; application/__tests__/send-due-reminders.test.ts (bloque «bitácora de intentos», con envío por WhatsApp, fallo rescatado por correo, dos fallos, canal sin configurar, sin contacto, bitácora caída sin perder el envío y error sin teléfono), domain/__tests__/reminder-attempt.test.ts y provider-error.test.ts, db/__tests__/reminder-repository.integration.test.ts (contra Supabase local) y pgTAP notifications_reminder_attempts.test.sql (16 aserciones, SEC-001/002). Criterio 3 (medio alternativo si falla el canal por defecto): lo entregó US-NOT-03; send-due-reminders.test.ts, «cae al respaldo (email) si el canal primario falla (ADR-0006)» y «conserva el fallo de WhatsApp cuando el correo lo rescata». Sin pantalla: ningún criterio la pide. El respaldo por correo no envía a clientas reales mientras no se cumpla la sección «Antes de producción» (dominio verificado en Resend, número y plantilla de WhatsApp, disparo del ciclo); es la misma deuda de US-NOT-03, cuyo visto bueno escrito del PO sigue pendiente."
   - id: US-NOT-08
     estado: no_iniciada
   - id: US-CLI-06
@@ -265,18 +266,52 @@ Decisiones:
 
 - La revisión externa de las funciones `SECURITY DEFINER` (INT-005) ya está: las 18 piezas de la pila tienen la
   aprobación de Kenny, code reviewer con facultad de decisión por regla del PO.
-- Orden de entrada con US-NOT-07 (#671 y #672): ambas tocan `send-due-reminders.ts`, `index.ts` y
-  `run-reminder-cycle.test.ts`, y `ChannelSendInput` cambia de `reminderId` a `messageId` y `purpose`. La segunda
-  rebasa y corre `tsc` y vitest por pieza. Se acuerda con Bayron; #672 ya entró a `us/US-NOT-07` y el cierre #671
-  sigue en draft.
+- Orden de entrada con US-NOT-07: resuelto. US-NOT-07 entró primero a `main` (#671); este cierre trajo `main` y
+  unió los cambios en `send-due-reminders.ts`, `index.ts` y `run-reminder-cycle.test.ts`: los envíos llevan
+  `messageId` y `purpose` (`ChannelSendInput`) y, además, registran cada intento con `recordAttempt`.
 - Visto bueno escrito del ítem 13 por el PO. Si no queda escrito antes del merge, se anota en
   `docs/process/DEPENDENCIES.md` con su fecha.
+
+## US-NOT-07: recordatorio por correo y bitácora de intentos
+
+WhatsApp como canal por defecto y el correo cuando falla ya los entregó US-NOT-03 (`sendDueReminders`,
+ADR-0006); el «medio alternativo por definir» del backlog es el correo por Resend. Esta historia agrega
+lo que faltaba del criterio 2: antes, si WhatsApp fallaba y el correo funcionaba, el error de WhatsApp
+se descartaba, y cada reintento pisaba `last_error`.
+
+- `notifications_reminder_attempts` (`20261104000000_notifications_reminder_attempts.sql`) guarda una
+  fila por intento y canal: `attempt_number`, `channel`, `outcome` (`sent`, `failed`, `not_configured`,
+  `no_contact`), `error` y `attempted_at`. Sin contacto no hay canal, y solo `sent` va sin error (CHECK).
+- Es append-only: staff solo tiene SELECT e INSERT; la clienta y anon no entran (SEC-001/002). Como
+  cualquier staff puede insertar filas, es una bitácora operativa, no de auditoría: sirve para
+  diagnosticar envíos, no para demostrar qué pasó.
+- `error` guarda el motivo del fallo: el texto que devuelve el proveedor (Meta, Resend), o el mensaje
+  fijo de `sin contacto registrado`. Al venir del proveedor puede traer datos de la clienta, y solo
+  staff lo lee.
+- `sanitizeProviderError` (`domain/provider-error.ts`) limpia ese texto antes de guardarlo, también en
+  `last_error`: oculta los teléfonos, que Meta a veces incluye, y corta a 500 caracteres más la
+  elipsis. Oculta toda serie de 8 dígitos o más, así que no borra los códigos de Meta, más cortos, pero
+  sí podría borrar otro número largo (una fecha ISO, un timestamp o el `phone_number_id` de Meta).
+  No oculta otros datos de la clienta.
+- La base no depende de la app: `20261104000001_notifications_reminder_attempts_error_length.sql`
+  limita `error` a 501 caracteres (CHECK).
+- `sendDueReminders` registra cada canal apenas responde, con `recordAttempt` del repositorio. Si la
+  lectura del contacto falla no hay fila: no se intentó enviar y el recordatorio vuelve a `pending`.
+- Si la bitácora falla, se registra en el log y el envío sigue: perder un recordatorio ya enviado o
+  reenviarlo sería peor que perder la fila.
+- `attempted_at` es la hora en que empezó la tanda del ciclo, la misma para todos los intentos de la
+  corrida: el orden entre WhatsApp y el correo se lee por `channel`, no por el tiempo.
+- `notifications_reminders.last_error` y `last_channel` siguen como resumen del último estado.
+
+El título del backlog dice «además de WhatsApp», pero el criterio y ADR-0006 piden correo solo si
+WhatsApp falla: no se envían los dos siempre.
 
 ## Qué no hace todavía
 
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
-  mano. No lo pide ningún criterio de US-NOT-03.
-- US-NOT-04 a 08 y US-CLI-06 reusan el canal pero no están construidas. US-NOT-02 tiene pendiente lo de su sección.
+  mano. No lo pide ningún criterio de US-NOT-03 ni de US-NOT-07.
+- US-NOT-04, 05, 06, 08 y US-CLI-06 reusan el canal pero no están construidas. US-NOT-02 está construida y tiene
+  pendiente lo de su sección.
 
 ## Correcciones de la auditoría del 2026-10-23 (AUDIT.md, líder del proyecto)
 
