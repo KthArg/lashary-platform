@@ -467,7 +467,7 @@ Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el
 
 ### Clienta de una cita (para US-CLI-03 de `clients`)
 
-- Pactado el 2026-11-07 en `docs/contracts/scheduling-api.md` (INT-003, pieza 1/6 de US-CLI-03) e implementado en la pieza 2/6: la función SQL `scheduling_appointment_client(p_appointment_id uuid) → uuid` está en `supabase/migrations/20261107000000_scheduling_appointment_client_fn.sql`, sola en su migración (INT-008).
+- Pactado el 2026-11-07 en `docs/contracts/scheduling-api.md` (INT-003, pieza 1/6 de US-CLI-03) e implementado en la pieza 2/6: la función SQL `scheduling_appointment_client(p_appointment_id uuid) → uuid` está en `supabase/migrations/20261107010000_scheduling_appointment_client_fn.sql`, sola en su migración (INT-008).
 - Devuelve el `client_id` de la cita, o `NULL` si la cita no existe, si quien llama no la ve o si no tiene clienta. `STABLE` y `SECURITY INVOKER`: la RLS de `scheduling_appointments` decide qué ve quien llama (SEC-001). Solo `authenticated` la ejecuta.
 - Consumidor: el trigger de `clients_appointment_notes` (pieza 3/6 de US-CLI-03), que rechaza la anotación cuya cita no es de la clienta que dice. `scheduling` no sabe nada de las anotaciones.
 - Prueba: `supabase/tests/database/scheduling_appointment_client.test.sql` (la clienta de una cita completada y de una cancelada, nulo para una cita inexistente, sin clienta o con `id` nulo, una clienta ve la suya y no la de otra, `anon` no la ejecuta, `SECURITY INVOKER`).
