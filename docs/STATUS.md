@@ -13,7 +13,7 @@
 | catalog | pendiente | terminada | 4 / 0 / 0 / 0 / 0 |
 | clients | pendiente | en_progreso | 4 / 1 / 0 / 0 / 0 |
 | content | pendiente | terminada | 3 / 0 / 0 / 0 / 0 |
-| delinquency | pendiente | en_progreso | 1 / 0 / 0 / 0 / 4 |
+| delinquency | pendiente | en_progreso | 1 / 1 / 0 / 0 / 3 |
 | landing | pendiente | terminada | 6 / 0 / 0 / 0 / 0 |
 | loyalty | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 1 |
 | notifications | pendiente | en_progreso | 5 / 0 / 0 / 0 / 4 |
@@ -52,7 +52,7 @@
 
 ### delinquency (actualizado: 2026-11-08)
 - US-MOR-01 — terminada — PR de cierre us/US-MOR-01 a main, con 24 piezas apiladas contra la rama de la historia (#765 a #784 y #789 a #792; las piezas 21 a 24 son correcciones de la revisión de la pila). Criterio 1 (detección de las citas cerradas con pago sin registrar): supabase/tests/database/delinquency_detect_unpaid.test.sql y payments_unpaid_charges.test.sql; el cron, en delinquency/http/__tests__/cron-handler.test.ts, application/__tests__/detect-unpaid.test.ts y db/__tests__/detection-repository.test.ts; comprobado a mano en local con el servidor real: el cron genera 3 morosidades por revisar y una segunda corrida genera 0. Criterio 2 (periodo de gracia configurable, de 1 a 90 días y 7 por defecto): delinquency_tables.test.sql, delinquency_set_grace_days.test.sql, application/__tests__/grace-days.test.ts, db/__tests__/settings-repository.test.ts, ui/review/__tests__/review-actions.test.ts y review-view.test.tsx; comprobado a mano en el navegador: guarda 14, deja el evento con el valor anterior y el nuevo y persiste al recargar. Criterio 3 (aviso previo con opción de confirmar o descartar): delinquency_decide_case.test.sql, delinquency_notify_case_detected.test.sql, application/__tests__/decide-case.test.ts, db/__tests__/case-repository.test.ts, ui/review/__tests__/review-view.test.tsx y, en notifications, ui/inbox/__tests__/notice-lines.test.ts, admin-inbox.test.tsx y db/__tests__/inbox-repository.test.ts; comprobado a mano: la administradora ve el aviso en Notificaciones y su enlace lleva a /admin/morosidades. Criterio 4 (el saldo se calcula sumando los asientos, no se guarda a mano): payments_unpaid_charges.test.sql, una cita entra si la suma de todos sus asientos es mayor que cero; la morosidad guarda el saldo que tenía al detectarla y ninguna función lo actualiza. Criterio 5 (estado en el expediente y listado de activas): delinquency_contract.test.sql, delinquency_list_active_cursor.test.sql (el cursor por fecha y clienta no se salta empates), db/__tests__/case-list-repository.test.ts, application/__tests__/load-review.test.ts (avisa cuando hay más de 50), y en clients application/__tests__/list-clients-delinquency.test.ts, ui/admin-clients/__tests__/clients-list-delinquency.test.tsx, get-client-action.test.ts y el layout.test.tsx del perfil. Pasa a US-MOR-03: qué cuenta como pago registrado (ítem 14 de «Criterios trasladados»). Decisiones del PO del 2026-11-08 en docs/process/DEPENDENCIES.md. El cron no está programado: .github/workflows/delinquency-detect.yml solo tiene workflow_dispatch y el schedule se agrega cuando US-MOR-03 esté mergeada y Kenny lo confirme.
-- US-MOR-02 — no_iniciada
+- US-MOR-02 — en_progreso — falta: casi toda: solo existe el arranque en docs (2026-11-06), apilado sobre US-MOR-01 que todavía no es terminada; con las decisiones del PO del 2026-11-08; pendiente fijar el mínimo de caracteres del motivo de la excepción (sección US-MOR-02, «Decisiones del PO»)
 - US-MOR-03 — no_iniciada
 - US-MOR-04 — no_iniciada
 - US-MOR-05 — no_iniciada
