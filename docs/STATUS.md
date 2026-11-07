@@ -108,8 +108,7 @@
 Ninguno.
 
 ## Defectos conocidos
-
-Ninguno registrado.
+- auth: PortalLayout/ClientSidebar no es responsive: a 375px de ancho el sidebar fijo (w-64, shrink-0) deja muy poco espacio al contenido, y como el contenedor es overflow-hidden (no scroll), el contenido se recorta en vez de desbordar — títulos, formularios y listas de opciones quedan cortados a la mitad, en cualquier ruta de /portal/* — `src/app/portal/layout.tsx (flex h-screen overflow-hidden) y src/features/auth/ui/navigation/components/ClientSidebar/ClientSidebar.styles.ts (sin breakpoint que oculte o colapse el sidebar en móvil)` — #710, encontrado durante la verificación visual (INT-010) de US-PROM-02 (PR #708, 2026-11-06); no lo introduce esa historia, que no toca ninguno de los dos archivos
 
 ## Deuda aceptada
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h
