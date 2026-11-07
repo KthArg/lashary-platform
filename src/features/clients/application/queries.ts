@@ -1,9 +1,12 @@
 import { ok, err, isErr, type Result } from '@/shared/result'
 import { CLIENTS_LIST_LIMITS } from './clients-list-limits'
-import type { ClientRecord } from '../domain/client.types'
+import { readVisitRange, type VisitRangeError } from '../domain/list/visit-range'
+import type { ClientListItem, ClientRecord } from '../domain/client.types'
 import type { ClientRepository, ListClientsQuery } from './ports'
 
-export interface ClientsListPage { clients: ClientRecord[]; total: number; page: number; pageSize: number }
+export interface ClientsListPage { clients: ClientListItem[]; total: number; page: number; pageSize: number }
+
+export type ListClientsError = 'failed' | VisitRangeError
 
 const readPage = (page: unknown): number => (Number.isInteger(page) && (page as number) > 0 ? (page as number) : 0)
 
@@ -27,10 +30,18 @@ export const getClient =
 
 export const listClients =
   (repo: ClientRepository) =>
-  async (query: ListClientsQuery = {}): Promise<Result<ClientsListPage, 'failed'>> => {
+  async (query: ListClientsQuery = {}): Promise<Result<ClientsListPage, ListClientsError>> => {
+    const visitRange = readVisitRange(query?.visitFrom, query?.visitTo)
+    if (isErr(visitRange)) return visitRange
     const page = readPage(query?.page)
     const pageSize = readPageSize(query?.pageSize)
-    const found = await repo.listPage({ offset: page * pageSize, limit: pageSize, name: readName(query?.name) })
+    const found = await repo.listPage({
+      offset: page * pageSize,
+      limit: pageSize,
+      name: readName(query?.name),
+      visitFrom: visitRange.value.from,
+      visitTo: visitRange.value.to,
+    })
     if (isErr(found)) return err('failed')
     return ok({ ...found.value, page, pageSize })
   }

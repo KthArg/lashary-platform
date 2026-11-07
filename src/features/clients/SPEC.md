@@ -6,7 +6,7 @@ actualizado: 2026-11-05
 historias:
   - id: US-CLI-01
     estado: en_progreso
-    falta: "la columna de morosidad existe sin dato y sin filtro: espera a US-MOR-01 (criterio diferido). La ultima visita y su filtro por rango de fechas estan en construccion en las piezas 1/4 a 4/4 (contrato en la 1/4, funciones SQL en la 2/4; faltan el repositorio en la 3/4 y la pantalla en la 4/4)"
+    falta: "la columna de morosidad existe sin dato y sin filtro: espera a US-MOR-01 (criterio diferido). La ultima visita y su filtro por rango de fechas estan en construccion en las piezas 1/4 a 4/4 (contrato en la 1/4, funciones SQL en la 2/4, lectura en la 3/4; falta la pantalla en la 4/4)"
   - id: US-CLI-02
     estado: terminada
     evidencia: "Pila de 5 piezas sobre main: PRs #481 (1/5, contrato scheduling-api.md), #483 (2/5, listClientAppointments), #505 (3/5, caso de uso y estado del anticipo), #506 (4/5, pestaña Citas) y #507 (5/5, paginacion y enlace desde el listado), y el PR de cierre us/US-CLI-02 a main. Criterio 1 (servicio, fecha, estado de la cita y estado de pago; las anotaciones trasladadas a US-CLI-03): deposit-status.test.ts, view-appointment-history.test.ts, history-gateways.test.ts, history-queries.test.ts, appointment-history.test.tsx. Criterio 2 (de la mas reciente a la mas antigua): client-appointments-repository.test.ts de scheduling (ordena por starts_at descendente) y appointment-history.test.tsx (la tabla respeta el orden recibido). Criterio 3 (desde el listado y desde la vista diaria): clients-list.test.tsx (listado), src/app/admin/citas/agenda/page.test.tsx (la agenda arma el enlace con clientAppointmentsPath) y DailyAgendaView.test.tsx de scheduling (la tarjeta pinta el enlace «Ver sus citas»)"
@@ -70,7 +70,8 @@ La action ya recibe `{ page, pageSize, name }` y devuelve `{ clients, total, pag
 (10, 25 o 50) y cualquier otro valor usa 25; una página inválida es la 0; `name` filtra `full_name` con
 `ilike`, recortado a 120 caracteres, con `%`, `_` y `\` escapados y `*` quitado (PostgREST lo lee como
 `%`), así que lo escrito se busca como texto. `total` sale de `count: 'exact'` y cuenta todo lo que
-cumple el filtro. La página lee `?page`, `?pageSize` y `?name` de la URL y se los pasa.
+cumple el filtro. Desde la pieza 3/4 la lectura pasa por la función `clients_list` (ver «Listado con
+última visita»). La página lee `?page`, `?pageSize` y `?name` de la URL y se los pasa.
 Sobre la tabla, `ClientsNameFilter` es un `<form role="search">` con un campo de nombre limitado a
 `CLIENTS_LIST_LIMITS.nameFilterMaxLength`: al enviarlo escribe `?name` y borra `?page`, un texto en blanco
 quita el filtro, y con filtro activo aparece *Quitar filtro*. Sin coincidencias, la lista nombra el filtro
@@ -513,12 +514,14 @@ anon no lee ningún contacto (SEC-002).
   pantalla. La morosidad sigue diferida (US-MOR-01 está `no_iniciada`), así que la 4/4 no cierra la
   historia.
 
-## Listado con última visita (US-CLI-01, pieza 2/4)
+## Listado con última visita (US-CLI-01, piezas 2/4 y 3/4)
 
 - Migración `20261105000000_clients_list_last_visit.sql`, la única de la pieza (INT-008), con dos funciones `STABLE` y `SECURITY INVOKER`, solo para `authenticated`: primero `scheduling_client_last_visits()`, el contrato de `scheduling` (`docs/contracts/scheduling-api.md`), y después `clients_list(p_name_pattern text, p_visit_from date, p_visit_to date)`, que es de `clients`.
 - `clients_list` devuelve `id, full_name, phone, email, notes, created_at, last_visit_at`: las columnas que ya lee el listado más la última visita. Une los perfiles con la función de `scheduling` con `LEFT JOIN`, así que una clienta sin visitas sale con `last_visit_at` nulo. Cada filtro se aplica solo si viene: el nombre con `ILIKE` sobre el patrón que arma el repositorio, y el rango comparando `(last_visit_at AT TIME ZONE 'America/Costa_Rica')::date`, inclusivo en los dos extremos. Con rango, una clienta sin visitas no entra. No ordena ni pagina: eso lo hace PostgREST desde el repositorio.
 - La RLS de `clients_profiles` y de `scheduling_appointments` sigue siendo la frontera (SEC-001): la administradora ve todas las clientas con su visita, una clienta que llama por PostgREST solo se ve a sí misma, y `anon` no ejecuta ninguna de las dos.
-- Todavía no la usa ningún código: el repositorio pasa a llamarla en la pieza 3/4.
+- Pieza 3/4: `listPage` de `db/client-repository.ts` ya no lee `clients_profiles`: llama a `rpc('clients_list', { p_name_pattern, p_visit_from, p_visit_to }, { count: 'exact' })`, ordena por `created_at` descendente y desempata por `id`, para que dos clientas creadas en el mismo instante no salten de página entre lecturas, y corta con `range`. Cada fila llega como `ClientListItem` (`domain/client.types.ts`): la `ClientRecord` de siempre más `lastVisitAtMs`, el instante en milisegundos (DOM-003) o `null` si nunca vino. Si alguna `last_visit_at` no se puede leer, la página entera es `repository-failed`: mostrarla como «Sin visitas» mentiría, y un `NaN` tumbaría el formato de fecha de la pantalla. Pasarlo a la fecha del estudio es de la pantalla (pieza 4/4).
+- `domain/list/visit-range.ts` lee el rango: `readVisitDate` acepta solo `AAAA-MM-DD` que exista en el calendario (un 30 de febrero no filtra) con `isCalendarDate` de `@/shared/studio-time`, la misma que usa `scheduling`, y `readVisitRange` devuelve `inverted-visit-range` si `desde` es posterior a `hasta`. Un extremo inválido se ignora, como una página o un tamaño inválidos. `listClients` recibe `visitFrom` y `visitTo` en `ListClientsQuery`; con un rango al revés no consulta la base. `listClientsAction` devuelve entonces `{ ok: false, reason: 'invalid-visit-range', error }` con `CLIENTS_ERROR_MESSAGES.invertedVisitRange` (DOM-009), distinto del fallo de lectura (`reason: 'failed'`), para que la pantalla no ofrezca *Reintentar* ante un error de quien filtra.
+- Pruebas: `domain/list/__tests__/visit-range.test.ts` (fechas reales, formatos inválidos, rangos abiertos, mismo día, rango al revés) y `application/__tests__/list-clients.test.ts`, que ahora simula `rpc` (los argumentos de la función, el rango junto con el nombre, un extremo, fechas inválidas, el rango al revés sin consulta y `lastVisitAtMs` nulo para quien nunca vino). Las pruebas de la action simulan Supabase: que PostgREST pagine y cuente sobre la función lo comprueba la pantalla de la pieza 4/4 contra Supabase local.
 - Prueba: `supabase/tests/database/clients_list.test.sql` (sin filtros con la visita de cada una, rango inclusivo, los dos bordes de la hora del estudio, rangos abiertos, sin visitas fuera de todo rango, nombre y rango juntos, rango al revés vacío, RLS de la clienta y `anon`).
 
 ## Contrato para scheduling (US-AGE-05)
