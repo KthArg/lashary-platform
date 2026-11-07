@@ -4,6 +4,7 @@ import { discoverReminders, type DiscoverRemindersDeps } from './discover-remind
 import { reconcileReminders, type ReconcileRemindersDeps } from './reconcile-reminders'
 import { sendDueReminders, type SendDueRemindersDeps } from './send-due-reminders'
 import { sendClientNotices, type SendClientNoticesDeps } from './send-client-notices'
+import type { SendConfirmationRequestsSummary } from './send-confirmation-requests'
 import type { DroppedNoticesRepository, RepositoryFailure, SchedulingMaintenancePort } from './ports'
 
 export type RunReminderCycleDeps = DiscoverRemindersDeps &
@@ -12,6 +13,7 @@ export type RunReminderCycleDeps = DiscoverRemindersDeps &
   SendClientNoticesDeps & {
     droppedNotices: DroppedNoticesRepository
     expireUndecidedReschedules: SchedulingMaintenancePort['expireUndecidedReschedules']
+    sendConfirmationRequests: () => Promise<Result<SendConfirmationRequestsSummary, RepositoryFailure>>
   }
 
 export type RunReminderCycleSummary = {
@@ -35,6 +37,22 @@ export type RunReminderCycleSummary = {
   droppedResolved: number
   droppedOpen: number
   droppedFailed: number
+  confirmationsSent: number
+  confirmationsRetried: number
+  confirmationsExhausted: number
+  confirmationsErrored: number
+  confirmationsUnconfigured: number
+  confirmationsCancelled: number
+  confirmationsFailed: number
+}
+
+const NO_CONFIRMATIONS_SENT: SendConfirmationRequestsSummary = {
+  sent: 0,
+  retried: 0,
+  exhausted: 0,
+  errored: 0,
+  unconfigured: 0,
+  cancelled: 0,
 }
 
 export const runReminderCycle =
@@ -48,6 +66,9 @@ export const runReminderCycle =
       logError('notifications', `quedan ${dropped.value.open} avisos perdidos sin registrar tras reintentarlos`)
     }
     const notices = await sendClientNotices(deps)()
+
+    const confirmations = await deps.sendConfirmationRequests()
+    const confirmationSummary = isErr(confirmations) ? NO_CONFIRMATIONS_SENT : confirmations.value
 
     const discovery = await discoverReminders(deps)()
     if (isErr(discovery)) return discovery
@@ -79,5 +100,12 @@ export const runReminderCycle =
       droppedResolved: isErr(dropped) ? 0 : dropped.value.resolved,
       droppedOpen: isErr(dropped) ? 0 : dropped.value.open,
       droppedFailed: isErr(dropped) ? 1 : 0,
+      confirmationsSent: confirmationSummary.sent,
+      confirmationsRetried: confirmationSummary.retried,
+      confirmationsExhausted: confirmationSummary.exhausted,
+      confirmationsErrored: confirmationSummary.errored,
+      confirmationsUnconfigured: confirmationSummary.unconfigured,
+      confirmationsCancelled: confirmationSummary.cancelled,
+      confirmationsFailed: isErr(confirmations) ? 1 : 0,
     })
   }

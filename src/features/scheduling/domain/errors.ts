@@ -170,6 +170,18 @@ export interface AppointmentNotChargeable {
   readonly message: string
 }
 
+export interface AppointmentNotConfirmable {
+  readonly code: 'SCHEDULING_APPOINTMENT_NOT_CONFIRMABLE'
+  readonly appointmentId: string
+  readonly message: string
+}
+
+export interface InvalidConfirmationDeadline {
+  readonly code: 'SCHEDULING_INVALID_CONFIRMATION_DEADLINE'
+  readonly hours: number
+  readonly message: string
+}
+
 export type SchedulingError =
   | SlotNotOffered
   | TooManyPendingAppointments
@@ -199,6 +211,8 @@ export type SchedulingError =
   | InvalidClosingAmount
   | AppointmentNotChargeable
   | PriceChanged
+  | AppointmentNotConfirmable
+  | InvalidConfirmationDeadline
 
 export const techniqueNotSelectable = (
   techniqueId: string,
@@ -307,6 +321,23 @@ export const invalidCancellationWindow = (hours: number): InvalidCancellationWin
   code: 'SCHEDULING_INVALID_CANCELLATION_WINDOW',
   hours,
   message: `la ventana de cancelación debe ser un número entero de horas, no negativo y de hasta 30 días: ${hours}`,
+})
+
+export const appointmentNotConfirmable = (appointmentId: string): AppointmentNotConfirmable => ({
+  code: 'SCHEDULING_APPOINTMENT_NOT_CONFIRMABLE',
+  appointmentId,
+  message: `la cita ${appointmentId} no existe, ya pasó o no está aprobada`,
+})
+
+export const isAppointmentNotConfirmable = (value: unknown): value is AppointmentNotConfirmable =>
+  typeof value === 'object' &&
+  value !== null &&
+  (value as { code?: unknown }).code === 'SCHEDULING_APPOINTMENT_NOT_CONFIRMABLE'
+
+export const invalidConfirmationDeadline = (hours: number): InvalidConfirmationDeadline => ({
+  code: 'SCHEDULING_INVALID_CONFIRMATION_DEADLINE',
+  hours,
+  message: `el plazo de confirmación debe ser un número entero de horas, no negativo y de hasta 30 días: ${hours}`,
 })
 
 export const appointmentNotReschedulable = (appointmentId: string): AppointmentNotReschedulable => ({

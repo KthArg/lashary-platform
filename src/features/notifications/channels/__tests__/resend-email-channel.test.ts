@@ -70,4 +70,18 @@ describe('resendEmailChannel', () => {
     expect(JSON.parse(init.body).subject).toBe(CLIENT_NOTICE_MESSAGE_TEXTS.emailSubject)
     expect(init.headers['Idempotency-Key']).toBe('notifications-reschedule_outcome-aviso-1')
   })
+
+  it('una confirmación va con su propio asunto y su propia clave de idempotencia (US-NOT-08)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await resendEmailChannel({ apiKey: 'key', fromAddress: 'avisos@lashary.example' }).send({
+      messageId: 'sol-1', purpose: 'appointment_confirmation', contact: { phone: '+50688887777', email: 'clienta@example.com' },
+      message: 'confirmá', templateVariables: [],
+    })
+
+    const [, init] = fetchMock.mock.calls[0]
+    expect(JSON.parse(init.body).subject).toBe('Confirmá tu cita en LASHARY')
+    expect(init.headers['Idempotency-Key']).toBe('notifications-appointment_confirmation-sol-1')
+  })
 })

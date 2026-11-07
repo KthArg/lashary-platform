@@ -1,5 +1,6 @@
 import { ok, err } from '@/shared/result'
 import { channelNotConfigured, channelSendFailed } from '../domain/errors'
+import { CONFIRMATION_MESSAGE_TEXTS } from '../domain/confirmation-request'
 import { REMINDER_MESSAGE_TEXTS } from '../domain/reminder-message'
 import { CLIENT_NOTICE_MESSAGE_TEXTS } from '../domain/client-notice-message'
 import type { MessagePurpose, NotificationChannel } from '../application/ports'
@@ -9,6 +10,7 @@ export type ResendEmailConfig = { apiKey: string; fromAddress: string }
 
 const SUBJECTS: Record<MessagePurpose, string> = {
   reminder: REMINDER_MESSAGE_TEXTS.emailSubject,
+  appointment_confirmation: CONFIRMATION_MESSAGE_TEXTS.emailSubject,
   reschedule_outcome: CLIENT_NOTICE_MESSAGE_TEXTS.emailSubject,
 }
 

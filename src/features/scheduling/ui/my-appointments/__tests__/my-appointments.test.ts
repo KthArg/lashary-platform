@@ -5,6 +5,7 @@ import { storageFailed } from '../../../domain/errors'
 import type { MyAppointment } from '../../../application/ports'
 import { APPOINTMENT_DISPLAY_CHOICE } from '../../appointment-display/constants/appointment-display.constants'
 import { formatAppointmentSlot } from '../../appointment-display/utils/format-appointment-slot'
+import { confirmationMessages } from '../constants/confirmation-strings'
 import { myAppointmentsMessages } from '../constants/my-appointments-strings'
 import { loadMyAppointments, type MyAppointmentsDeps } from '../utils/load-my-appointments'
 import { toMyAppointmentsView, toMyAppointmentView } from '../utils/my-appointments-format'
@@ -62,8 +63,27 @@ describe('toMyAppointmentView', () => {
       status: myAppointmentsMessages.status.approved,
       amounts: APPOINTMENT_DISPLAY_CHOICE.priceAndDeposit(price(35000), price(10000)),
       heldNote: null,
+      canConfirm: true,
+      confirmedNote: null,
     })
     expect(view.slot).toContain('9:00')
+  })
+
+  it('una cita confirmada con anticipo ya no ofrece confirmar y recuerda la política (criterio 3)', () => {
+    const view = toMyAppointmentView({ ...appointment, status: 'confirmed' })
+
+    expect(view.canConfirm).toBe(false)
+    expect(view.confirmedNote).toBe(confirmationMessages.confirmedNote)
+  })
+
+  it('una cita confirmada sin anticipo no advierte ninguna pérdida', () => {
+    const view = toMyAppointmentView({ ...appointment, status: 'confirmed', depositRequired: 0 })
+
+    expect(view.confirmedNote).toBeNull()
+  })
+
+  it('una cita pendiente todavía no se confirma', () => {
+    expect(toMyAppointmentView({ ...appointment, status: 'pending_approval' }).canConfirm).toBe(false)
   })
 
   it('un retoque sin anticipo se rotula así y dice «sin anticipo»', () => {

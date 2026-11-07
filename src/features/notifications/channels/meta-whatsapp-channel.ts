@@ -7,6 +7,7 @@ export type MetaWhatsAppConfig = {
   accessToken: string
   phoneNumberId: string
   templateName: string | null
+  confirmationTemplateName: string | null
   rescheduleOutcomeTemplateName: string | null
   templateLanguage: string
   graphApiVersion: string
@@ -23,6 +24,7 @@ export function readMetaWhatsAppConfigFromEnv(env: Record<string, string | undef
     accessToken,
     phoneNumberId,
     templateName: env.META_WHATSAPP_TEMPLATE_NAME ?? null,
+    confirmationTemplateName: env.META_WHATSAPP_CONFIRMATION_TEMPLATE_NAME ?? null,
     rescheduleOutcomeTemplateName: env.META_WHATSAPP_RESCHEDULE_OUTCOME_TEMPLATE_NAME ?? null,
     templateLanguage: env.META_WHATSAPP_TEMPLATE_LANGUAGE ?? DEFAULT_TEMPLATE_LANGUAGE,
     graphApiVersion: env.META_WHATSAPP_GRAPH_API_VERSION ?? DEFAULT_GRAPH_API_VERSION,
@@ -33,8 +35,15 @@ function toMetaPhoneNumber(phone: string): string {
   return phone.replace(/\D/g, '')
 }
 
-const templateFor = (config: MetaWhatsAppConfig, purpose: MessagePurpose): string | null =>
-  purpose === 'reminder' ? config.templateName : config.rescheduleOutcomeTemplateName
+// Un Record exhaustivo: si se agrega un propósito a MessagePurpose, TypeScript avisa que falta su plantilla.
+const templateFor = (config: MetaWhatsAppConfig, purpose: MessagePurpose): string | null => {
+  const templates: Record<MessagePurpose, string | null> = {
+    reminder: config.templateName,
+    appointment_confirmation: config.confirmationTemplateName,
+    reschedule_outcome: config.rescheduleOutcomeTemplateName,
+  }
+  return templates[purpose]
+}
 
 function buildTemplateBody(config: MetaWhatsAppConfig, templateName: string, recipientPhone: string, templateVariables: string[]) {
   return {
@@ -77,6 +86,7 @@ export function metaWhatsAppChannel(config: MetaWhatsAppConfig | null): Notifica
     kind: 'whatsapp',
     async send({ purpose, contact, message, templateVariables }) {
       if (config === null) return err(channelNotConfigured('whatsapp'))
+      // Con la plantilla de recordatorio pero sin la del propósito, no sale por WhatsApp y pasa al correo.
       const templateName = templateFor(config, purpose)
       if (templateName === null && config.templateName !== null) return err(channelNotConfigured('whatsapp'))
 

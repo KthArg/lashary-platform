@@ -23,7 +23,8 @@ historias:
     estado: terminada
     evidencia: "PR de cierre #671 (us/US-NOT-07 a main), con 2 piezas apiladas: #672 (bitácora de intentos) y #702 (error del proveedor acotado). Criterio 1 (WhatsApp como canal por defecto): lo entregó US-NOT-03; application/__tests__/send-due-reminders.test.ts, «envía por el canal primario (WhatsApp) cuando funciona». Criterio 2 (envíos y fallos registrados): notifications_reminder_attempts (migraciones 20261104000000 y 20261104000001) y recordAttempt de sendDueReminders; application/__tests__/send-due-reminders.test.ts (bloque «bitácora de intentos», con envío por WhatsApp, fallo rescatado por correo, dos fallos, canal sin configurar, sin contacto, bitácora caída sin perder el envío y error sin teléfono), domain/__tests__/reminder-attempt.test.ts y provider-error.test.ts, db/__tests__/reminder-repository.integration.test.ts (contra Supabase local) y pgTAP notifications_reminder_attempts.test.sql (16 aserciones, SEC-001/002). Criterio 3 (medio alternativo si falla el canal por defecto): lo entregó US-NOT-03; send-due-reminders.test.ts, «cae al respaldo (email) si el canal primario falla (ADR-0006)» y «conserva el fallo de WhatsApp cuando el correo lo rescata». Sin pantalla: ningún criterio la pide. El respaldo por correo no envía a clientas reales mientras no se cumpla la sección «Antes de producción» (dominio verificado en Resend, número y plantilla de WhatsApp, disparo del ciclo); es la misma deuda de US-NOT-03, cuyo visto bueno escrito del PO sigue pendiente."
   - id: US-NOT-08
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "los seis criterios tienen codigo y pruebas en las piezas de us/US-NOT-08; falta su revision y merge, y marcar terminada con la evidencia en el PR de cierre"
   - id: US-CLI-06
     estado: no_iniciada
 flags: []
@@ -238,10 +239,13 @@ Decisiones:
 
 ### Envío por el cron
 
-- Canales: `ChannelSendInput` lleva `messageId` y `purpose` (`reminder` o `reschedule_outcome`). WhatsApp elige
-  la plantilla del tipo (`META_WHATSAPP_TEMPLATE_NAME` o `META_WHATSAPP_RESCHEDULE_OUTCOME_TEMPLATE_NAME`); sin la
-  del aviso no sale por WhatsApp y pasa al correo. Pruebas: `channels/__tests__/meta-whatsapp-channel.test.ts` y
-  `resend-email-channel.test.ts`.
+- Canales: `ChannelSendInput` lleva `messageId` y `purpose` (`reminder`, `appointment_confirmation` o
+  `reschedule_outcome`, US-NOT-08 y US-NOT-02). WhatsApp elige la plantilla del propósito con un `Record` exhaustivo
+  (`META_WHATSAPP_TEMPLATE_NAME`, `META_WHATSAPP_CONFIRMATION_TEMPLATE_NAME` o
+  `META_WHATSAPP_RESCHEDULE_OUTCOME_TEMPLATE_NAME`): si se agrega un propósito, TypeScript avisa que falta su plantilla.
+  Con la plantilla de recordatorio pero sin la del propósito no sale por WhatsApp (`channelNotConfigured`) y pasa al
+  correo. El correo lleva un asunto por propósito y la clave de idempotencia `notifications-<propósito>-<mensaje>`.
+  Pruebas: `channels/__tests__/meta-whatsapp-channel.test.ts` y `resend-email-channel.test.ts`, con los tres propósitos.
 - Reclamo: `notifications_claim_client_notices` toma de a tandas, con `FOR UPDATE SKIP LOCKED`, los avisos
   pendientes o con reclamo vencido cuyo horario conservado no pasó y cuya cita sigue viva (`approved` o
   `confirmed`) en ese mismo horario. Es `SECURITY DEFINER` y rechaza con `42501` a quien no es staff. Pruebas:
@@ -249,26 +253,32 @@ Decisiones:
   `db/__tests__/client-notice-delivery-repository.test.ts`.
 - Envío: `sendClientNotices` manda cada aviso por WhatsApp y, si falla, por correo; sin contacto o con los dos
   canales caídos cuenta un intento y, al quinto o sin canal configurado, queda `failed`. Si no se pudo leer el
-  contacto, suelta el aviso sin gastar un intento. `runReminderCycle` lo corre después de vencer los reagendados
-  y antes de los recordatorios; antes de enviar reintenta los avisos perdidos, suma `droppedResolved` y
-  `droppedOpen` al resumen y, si quedan abiertos, lo escribe con `logError`. Si ese reintento falla, el ciclo sigue,
-  lo cuenta en `droppedFailed` y lo escribe con `logError`. Pruebas: `application/__tests__/send-client-notices.test.ts` y
-  `run-reminder-cycle.test.ts`.
-- Tiempo del ciclo: el TTL del reclamo (`CLAIM_TTL_MINUTES`, 10), la tanda (`CLAIM_BATCH_SIZE`, 7) y la duración
-  de la ruta (`maxDuration` igual a `CYCLE_MAX_DURATION_SECONDS`, 300) van atados en `db/claim-limits.ts`. El ciclo
-  corre dos envíos en serie, cada mensaje puede gastar dos canales a `CHANNEL_SEND_TIMEOUT_MS`, y la tanda reparte
-  la duración de la ruta entre ambos. Cambiar uno obliga a revisar los otros. Prueba:
-  `db/__tests__/claim-limits.test.ts`, que lee el `maxDuration` de la ruta.
+  contacto, suelta el aviso sin gastar un intento. `runReminderCycle` corre los bloques en este orden: vencer los
+  reagendados, reintentar los avisos perdidos, avisos a la clienta, confirmaciones de asistencia (US-NOT-08),
+  descubrimiento, reconciliación y recordatorios. El resumen suma los tres bloques (`notices*`, `confirmations*` y
+  `dropped*`) sin quitar campos de ninguno; si quedan avisos perdidos abiertos, lo escribe con `logError`, y un fallo en
+  uno de esos bloques no corta el ciclo: lo cuenta en `noticesFailed`, `confirmationsFailed` o `droppedFailed`. Pruebas:
+  `application/__tests__/send-client-notices.test.ts` y `run-reminder-cycle.test.ts` (el orden y que un fallo no corta).
+- Tiempo del ciclo: el TTL del reclamo (`CLAIM_TTL_MINUTES`, 10), la tanda (`CLAIM_BATCH_SIZE`, 3) y la duración
+  de la ruta (`maxDuration` igual a `CYCLE_MAX_DURATION_SECONDS`, 300) van atados en `db/claim-limits.ts`, y los tres
+  repositorios que reclaman mensajes (recordatorios, avisos a la clienta y confirmaciones) importan de ahí la misma
+  tanda y el mismo TTL. El ciclo corre tres envíos en serie (`MESSAGE_KINDS_SENT_PER_CYCLE`, 3), cada mensaje puede
+  gastar dos canales a `CHANNEL_SEND_TIMEOUT_MS` (10 s), y la tanda se calcula como si fueran cuatro tipos: con tres, la
+  tanda de 5 llenaba los 300 s de la ruta sin dejar margen. Con 3 el peor caso es 3 × 3 × 20 s = 180 s y sobran 120 s
+  para vencer, reintentar, descubrir y reconciliar. Cambiar uno obliga a revisar los otros. Prueba:
+  `db/__tests__/claim-limits.test.ts`, que lee el `maxDuration` de la ruta y comprueba el peor caso con los tres tipos
+  y su margen.
 - Las filas se validan con Zod; una forma inesperada es un error que no guarda el texto de Postgres. Los fallos
   del envío de avisos se registran con `logError` (`shared/logger.ts`).
 
 ### Pendiente antes de mergear el cierre
 
-- La revisión externa de las funciones `SECURITY DEFINER` (INT-005) ya está: las 18 piezas de la pila tienen la
-  aprobación de Kenny, code reviewer con facultad de decisión por regla del PO.
-- Orden de entrada con US-NOT-07: resuelto. US-NOT-07 entró primero a `main` (#671); este cierre trajo `main` y
-  unió los cambios en `send-due-reminders.ts`, `index.ts` y `run-reminder-cycle.test.ts`: los envíos llevan
-  `messageId` y `purpose` (`ChannelSendInput`) y, además, registran cada intento con `recordAttempt`.
+- La revisión externa de las funciones `SECURITY DEFINER` (INT-005) ya está: Kenny, code reviewer con facultad de decisión
+  por regla del PO, aprobó #660 a #670, y joselhcr aprobó #679 a #682, #684, #685 y #686.
+- Orden de entrada con US-NOT-07 y US-NOT-08: resuelto. Ambas entraron primero a `main` (#671 y #688 a #701); este cierre
+  trajo `main` y unió los cambios: `MessagePurpose` lleva los tres propósitos, `ChannelSendInput` se conserva,
+  `sendDueReminders` conserva la bitácora de intentos de US-NOT-07 y las tandas de los tres repositorios salen de
+  `db/claim-limits.ts`.
 - Visto bueno escrito del ítem 13 por el PO. Si no queda escrito antes del merge, se anota en
   `docs/process/DEPENDENCIES.md` con su fecha.
 
@@ -306,12 +316,28 @@ se descartaba, y cada reintento pisaba `last_error`.
 El título del backlog dice «además de WhatsApp», pero el criterio y ADR-0006 piden correo solo si
 WhatsApp falla: no se envían los dos siempre.
 
+## US-NOT-08: confirmación de asistencia
+
+- `scheduling_confirm_appointment` (migración `20261105010000`, feature `scheduling`) lleva una cita de `approved` a `confirmed`. La usa la dueña o el staff; cualquier otra persona recibe el mismo error que con una cita inexistente (SEC-005). Confirmar dos veces no repite el evento `scheduling.appointment.confirmed`, que guarda fecha, hora y quién confirmó (`client` o `staff`). Prueba: `supabase/tests/database/scheduling_confirm_appointment.test.sql`.
+- `scheduling_confirmation_policy` (migración `20261105010001`, feature `scheduling`) guarda las horas antes de la cita desde las que una cita sin confirmar se destaca: 48 por defecto, de 0 a 720, y 0 no destaca. Solo se cambia con `scheduling_change_confirmation_deadline`, que exige administradora y deja el evento `scheduling.confirmation_deadline.changed`. Prueba: `supabase/tests/database/scheduling_confirmation_policy.test.sql`.
+- Capa TypeScript en `scheduling`: `application/confirm-appointment.ts` (`confirmAppointment`, `getConfirmationDeadline`, `changeConfirmationDeadline`), `db/appointment-confirmation-repository.ts` y `domain/appointment-confirmation.ts`. `isConfirmationOverdue` destaca una cita `approved`, con clienta, que aún no empieza y entra en el plazo. Errores tipados: `AppointmentNotConfirmable` e `InvalidConfirmationDeadline`. Pruebas: `domain/__tests__/appointment-confirmation.test.ts`, `application/__tests__/confirm-appointment.test.ts` y `db/__tests__/appointment-confirmation-repository.test.ts`, de `scheduling`.
+- «Mis citas» (`ui/my-appointments` de `scheduling`): una cita `approved` muestra «Confirmar asistencia» (`ConfirmAppointment`, `confirmAppointmentAction`). Al confirmar, la clienta ve la política vigente con las horas de la ventana; sin anticipo requerido o sin ventana no se advierte pérdida (el aviso usa el anticipo requerido de la cita, no el registrado, que nace en 0 hasta US-MOR-03). Una cita `confirmed` con anticipo la recuerda en la tarjeta, también si la confirmó la administradora. Pruebas: `perform-confirmation.test.ts`, `ConfirmAppointment.test.tsx` y `my-appointments.test.ts`.
+- Agenda diaria (`ui/daily-agenda` de `scheduling`): con el plazo de `scheduling_confirmation_policy`, una cita sin confirmar dentro del plazo sale con borde y la etiqueta «Sin confirmar». Si el plazo no se puede leer, un aviso lo dice en vez de dar las citas por confirmadas. Toda cita `approved` con clienta que aún no empieza ofrece «Registrar confirmación» (`confirmAppointmentManuallyAction`, exige sesión de administradora). Pide un segundo paso con la advertencia de que no se deshace desde el sistema. Prueba: `ui/daily-agenda/__tests__/agenda-confirmation.test.tsx`.
+- Lógica del plazo en el panel (`ui/confirmation-policy` de `scheduling`): `changeConfirmationDeadlineAction`, `confirmationPolicyService` (exige sesión de administradora) y la validación del formulario. Pruebas: `perform-change-deadline.test.ts`, `load-confirmation-policy.test.ts` y `confirmation-policy-actions.test.ts`.
+- Pantalla del plazo: `/admin/citas/confirmacion` (`ConfirmationPolicyPage`), con su pestaña «Confirmación» en la sección de citas. Pruebas: `ConfirmationPolicyForm.test.tsx`, `ConfirmationPolicyView.test.tsx` y `src/app/admin/citas/layout.test.tsx`.
+- `notifications_confirmation_requests` (migración `20261105010002`): una solicitud por cita y horario, sin FK a tablas ajenas. Solo el staff la lee y actualiza; `notifications_record_confirmation_request` y `notifications_cancel_confirmation_request` no tienen `EXECUTE` para ningún rol de la API, y `notifications_claim_confirmation_requests` reclama en tandas sin tomar citas que ya empezaron. Prueba: `supabase/tests/database/notifications_confirmation_requests.test.sql` (SEC-002).
+- Trigger `scheduling_appointments_notify_confirmation_request` (migración `20261105010003`, feature `scheduling`): una cita con clienta que pasa a `approved` deja la solicitud, y una que deja de estarlo retira lo que no salió. Si `notifications` falla, la cita conserva su estado y el fallo deja `scheduling.confirmation_request.failed` en la bitácora. Prueba: `supabase/tests/database/scheduling_notify_confirmation_request.test.sql`.
+- Dos casos que no se tratan aparte. Las citas ya aprobadas cuando se aplican las migraciones no tienen solicitud (el trigger actúa al pasar a `approved`) y no reciben el mensaje: no se rellenan, decisión del PO del 2026-11-06; la agenda las destaca al entrar en el plazo y la administradora puede registrar la confirmación a mano. Una cita aprobada con menos horas de antelación que el plazo (48 por defecto) sale «Sin confirmar» desde el principio, porque el plazo cuenta horas antes de la cita (registro del 2026-11-05, punto d); es solo una etiqueta y nada se cancela solo.
+- Mensaje y persistencia en TypeScript: `domain/confirmation-request.ts` arma el texto con el servicio, la hora del estudio y el enlace a «Mis citas», y las 3 variables de la plantilla de Meta en ese orden. `db/confirmation-request-repository.ts` solo actualiza filas `claimed`, así que una solicitud cancelada durante el envío sigue cancelada. Pruebas: `domain/__tests__/confirmation-request.test.ts` y `db/__tests__/confirmation-request-repository.test.ts`.
+- Canales por tipo de mensaje: `ChannelSendInput` lleva `messageId` (antes `reminderId`) y `purpose` (`reminder` o `appointment_confirmation`). WhatsApp usa `META_WHATSAPP_TEMPLATE_NAME` para el recordatorio y `META_WHATSAPP_CONFIRMATION_TEMPLATE_NAME` para la confirmación; sin ninguna plantilla manda texto libre, y con la del recordatorio pero sin la de confirmación responde `channelNotConfigured` y el mensaje pasa al correo. El correo toma el asunto del tipo y la clave `notifications-<tipo>-<id>`; la del recordatorio no cambia. Es la misma forma de #667 (US-NOT-02): al integrar queda un solo `MessagePurpose` con los tres tipos. Pruebas: `channels/__tests__/meta-whatsapp-channel.test.ts` y `resend-email-channel.test.ts`.
+- Envío: `application/send-confirmation-requests.ts` corre dentro de `runReminderCycle`, después de los recordatorios, por el mismo canal primario y de respaldo (criterio 6, ADR-0006). El mensaje enlaza `NEXT_PUBLIC_SITE_URL` más `SCHEDULING_MY_APPOINTMENTS_PATH` (`domain/appointments-url.ts`); si esa variable no es una URL absoluta http(s), no se manda ninguna confirmación (sin enlace no hay medio para confirmar) y el resumen lo cuenta en `confirmationsFailed`, sin frenar los recordatorios. Reintenta hasta `MAX_REMINDER_ATTEMPTS`; sin ningún canal configurado la solicitud vuelve a `pending` sin gastar un intento y el resumen la cuenta en `confirmationsUnconfigured`, `confirmationsCancelled`, `confirmationsCancelled`, así que no se pierde si el cron se activa antes que el canal. El error del proveedor se guarda con `sanitizeProviderError` (sin teléfonos, US-NOT-07). Si reclamar falla, el resumen lo cuenta en `confirmationsFailed` y la corrida conserva lo demás. Prueba: `application/__tests__/send-confirmation-requests.test.ts` y `run-reminder-cycle.test.ts`. Antes de mandar se relee que la solicitud siga reclamada: si la clienta confirmó entre el reclamo y el envío, no se manda y cuenta como `cancelled`. Queda una ventana de milisegundos entre esa lectura y la llamada al canal, que no se puede cerrar (el proveedor no tiene transacción); si ahí se cancela, `markSent` no encuentra la fila reclamada y también cuenta `cancelled`, no `sent`.
+
 ## Qué no hace todavía
 
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
   mano. No lo pide ningún criterio de US-NOT-03 ni de US-NOT-07.
-- US-NOT-04, 05, 06, 08 y US-CLI-06 reusan el canal pero no están construidas. US-NOT-02 está construida y tiene
-  pendiente lo de su sección.
+- US-NOT-04, 05, 06 y US-CLI-06 reusan el canal pero no están construidas. US-NOT-02 y US-NOT-08 están construidas y
+  tienen pendiente lo de su sección.
 
 ## Correcciones de la auditoría del 2026-10-23 (AUDIT.md, líder del proyecto)
 

@@ -3,6 +3,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { Client as PgClient } from 'pg'
 import { isErr, isOk } from '@/shared/result'
 import { reminderRepository } from '../reminder-repository'
+import { CLAIM_BATCH_SIZE } from '../claim-limits'
 import type { ReminderRepository, ReminderUpsert } from '../../application/ports'
 
 const API_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
@@ -233,7 +234,9 @@ describe.skipIf(!reachable)('reminderRepository (Supabase local)', () => {
   })
 
   it('dos reclamos simultáneos nunca reclaman la misma fila dos veces (FOR UPDATE SKIP LOCKED)', async () => {
-    const upserts = Array.from({ length: 6 }, () => newUpsert({ sendAt: new Date('2030-01-01T00:00:00Z') }))
+    // Más filas que dos tandas: cada reclamo se lleva su tanda y ninguna fila sale en los dos. Otras pruebas pueden
+    // dejar filas vencidas en la misma base, así que no se exige reclamar todas las nuestras, solo que no se repitan.
+    const upserts = Array.from({ length: CLAIM_BATCH_SIZE * 2 }, () => newUpsert({ sendAt: new Date('2030-01-01T00:00:00Z') }))
     for (const upsert of upserts) {
       track(upsert.id)
       await repo.insertIfAbsent(upsert)
@@ -245,6 +248,9 @@ describe.skipIf(!reachable)('reminderRepository (Supabase local)', () => {
     expect(isOk(second)).toBe(true)
     if (!isOk(first) || !isOk(second)) return
 
+    expect(first.value.length).toBeLessThanOrEqual(CLAIM_BATCH_SIZE)
+    expect(second.value.length).toBeLessThanOrEqual(CLAIM_BATCH_SIZE)
+
     const firstIds = first.value.map((reminder) => reminder.id)
     const secondIds = second.value.map((reminder) => reminder.id)
     const overlap = firstIds.filter((id) => secondIds.includes(id))
@@ -252,8 +258,7 @@ describe.skipIf(!reachable)('reminderRepository (Supabase local)', () => {
 
     const upsertIds = upserts.map((upsert) => upsert.id)
     const claimedFromOurs = [...firstIds, ...secondIds].filter((id) => upsertIds.includes(id))
-    expect(new Set(claimedFromOurs).size).toBe(upsertIds.length)
-    expect(claimedFromOurs).toHaveLength(upsertIds.length)
+    expect(new Set(claimedFromOurs).size).toBe(claimedFromOurs.length)
   })
 
   it('releaseToPending vuelve a pending una fila claimed y limpia claimed_at', async () => {

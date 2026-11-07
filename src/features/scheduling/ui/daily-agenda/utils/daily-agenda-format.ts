@@ -7,6 +7,8 @@ import type { AgendaEntry } from '@/features/scheduling/domain/daily-agenda'
 import type { DailyAgendaInvalid } from '@/features/scheduling/domain/availability-errors'
 import type { StorageFailed } from '@/features/scheduling/domain/errors'
 import { APPOINTMENT_DECISION, PENDING_APPROVAL_STATUS } from '@/features/scheduling/domain/appointment-decision.constants'
+import { isConfirmationOverdue } from '@/features/scheduling/domain/appointment-confirmation'
+import { CONFIRMABLE_STATUS } from '@/features/scheduling/domain/appointment-confirmation.constants'
 import { closeAsCompleted, closeAsNoShow, type ClosableAppointment } from '@/features/scheduling/domain/appointment-closing'
 import { NO_AMOUNT, UNCLOSED_APPOINTMENTS_LIMIT } from '@/features/scheduling/domain/appointment-closing.constants'
 import { DAILY_AGENDA_LIMIT } from '@/features/scheduling/domain/daily-agenda.constants'
@@ -68,7 +70,18 @@ const paymentOf = (entry: AgendaEntry): string => {
   return entry.paymentStatus ? COPY.payment[entry.paymentStatus] : COPY.noPayment
 }
 
-export function toAgendaEntryView(entry: AgendaEntry, clientLinks: ClientLinks): AgendaEntryView {
+export type AgendaConfirmationRule =
+  | { status: 'ready'; deadlineHours: number; nowMs: number }
+  | { status: 'unavailable'; nowMs: number }
+
+const canBeConfirmed = (entry: AgendaEntry, nowMs: number): boolean =>
+  entry.status === CONFIRMABLE_STATUS && entry.clientId !== null && entry.startsAtMs > nowMs
+
+export function toAgendaEntryView(
+  entry: AgendaEntry,
+  clientLinks: ClientLinks,
+  confirmation?: AgendaConfirmationRule,
+): AgendaEntryView {
   const clientName = clientNameOf(entry)
   return {
     id: entry.id,
@@ -82,6 +95,11 @@ export function toAgendaEntryView(entry: AgendaEntry, clientLinks: ClientLinks):
     status: COPY.status[entry.status],
     isPending: entry.status === PENDING_APPROVAL_STATUS,
     isRejected: entry.status === APPOINTMENT_DECISION.REJECTED,
+    isUnconfirmed:
+      confirmation?.status === 'ready' &&
+      isConfirmationOverdue(entry, confirmation.deadlineHours, confirmation.nowMs),
+    confirmLabel:
+      confirmation && canBeConfirmed(entry, confirmation.nowMs) ? COPY.confirmation.registerLabel(clientName) : null,
     links: entry.clientId
       ? {
           ...clientLinks(entry.clientId),
@@ -97,6 +115,7 @@ export function toDailyAgendaViewModel(input: {
   today: string
   agenda: Result<DailyAgenda, DailyAgendaInvalid | StorageFailed>
   clientLinks: ClientLinks
+  confirmation?: AgendaConfirmationRule
 }): DailyAgendaViewModel {
   const nav = buildAgendaDayNav(input.date, input.today)
   if (isErr(input.agenda)) return { nav, status: 'error' }
@@ -104,9 +123,10 @@ export function toDailyAgendaViewModel(input: {
   return {
     nav,
     status: 'ready',
-    entries: input.agenda.value.entries.map((entry) => toAgendaEntryView(entry, input.clientLinks)),
+    entries: input.agenda.value.entries.map((entry) => toAgendaEntryView(entry, input.clientLinks, input.confirmation)),
     truncatedNotice: input.agenda.value.isTruncated ? COPY.truncated(DAILY_AGENDA_LIMIT) : null,
     delinquencyNotice: input.agenda.value.isDelinquencyUnavailable ? COPY.delinquencyUnavailable : null,
+    confirmationNotice: input.confirmation?.status === 'unavailable' ? COPY.confirmation.deadlineUnavailable : null,
   }
 }
 
