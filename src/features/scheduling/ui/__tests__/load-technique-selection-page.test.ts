@@ -73,8 +73,8 @@ describe('loadTechniqueSelectionPageData', () => {
     expect(data).toEqual({
       status: 'ok',
       techniques: [
-        { id: 't1', name: 'Volumen ruso' },
-        { id: 't2', name: 'Laminado de cejas' },
+        { id: 't1', name: 'Volumen ruso', discountPercent: null },
+        { id: 't2', name: 'Laminado de cejas', discountPercent: null },
       ],
       packages: [
         {
@@ -94,8 +94,8 @@ describe('loadTechniqueSelectionPageData', () => {
     mockGetAuthSession.mockResolvedValue({ user: { id: 'u1' }, role: 'cliente' })
     mockListTechniques.mockResolvedValue({
       items: [
-        { id: 't1', name: 'Volumen ruso' },
-        { id: 't2', name: 'Laminado de cejas' },
+        { id: 't1', name: 'Volumen ruso', discountPercent: null },
+        { id: 't2', name: 'Laminado de cejas', discountPercent: null },
       ],
       page: 1,
       pageSize: MAX_SELECTION_PAGE_SERVICES,
@@ -121,8 +121,8 @@ describe('loadTechniqueSelectionPageData', () => {
     expect(data).toEqual({
       status: 'ok',
       techniques: [
-        { id: 't1', name: 'Volumen ruso' },
-        { id: 't2', name: 'Laminado de cejas' },
+        { id: 't1', name: 'Volumen ruso', discountPercent: null },
+        { id: 't2', name: 'Laminado de cejas', discountPercent: null },
       ],
       packages: [
         {
@@ -218,9 +218,40 @@ describe('loadTechniqueSelectionPageData', () => {
 
     expect(data.status).toBe('ok')
     if (data.status === 'ok') {
-      // round(12345 * (100 - 15) / 100) = round(10493.25) = 10493, misma fórmula que
-      // catalog_booking_terms/catalog_package_booking_terms en SQL.
       expect(data.packages[0].priceDiscounted).toBe(10493)
+    }
+  })
+
+  it('una técnica con promoción vigente trae su descuento; las demás, null (US-PROM-02, criterio 2)', async () => {
+    mockGetAuthSession.mockResolvedValue({ user: { id: 'u1' }, role: 'cliente' })
+    mockListTechniques.mockResolvedValue({
+      items: [
+        { id: 't1', name: 'Volumen ruso' },
+        { id: 't2', name: 'Laminado de cejas' },
+      ],
+      page: 1,
+      pageSize: MAX_SELECTION_PAGE_SERVICES,
+      total: 2,
+    })
+    mockListActivePromotions.mockResolvedValue({
+      items: [
+        { id: 'a', target: { type: 'technique', techniqueId: 't1' }, discountPercent: 10 },
+        { id: 'b', target: { type: 'technique', techniqueId: 't1' }, discountPercent: 25 },
+        { id: 'c', target: { type: 'package', packageId: 't2' }, discountPercent: 50 },
+      ],
+      page: 1,
+      pageSize: MAX_SELECTION_PAGE_SERVICES,
+      total: 3,
+    })
+
+    const data = await loadTechniqueSelectionPageData()
+
+    expect(data.status).toBe('ok')
+    if (data.status === 'ok') {
+      expect(data.techniques).toEqual([
+        { id: 't1', name: 'Volumen ruso', discountPercent: 25 },
+        { id: 't2', name: 'Laminado de cejas', discountPercent: null },
+      ])
     }
   })
 })

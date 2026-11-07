@@ -30,6 +30,7 @@ export const schedulingMessages = {
     seePackageSlots: 'Ver espacios disponibles',
     packageIncludes: (techniqueNames: string[]) => `Incluye: ${techniqueNames.join(', ')}`,
     packagePromotionBadge: 'Promoción',
+    techniqueDiscountBadge: (percent: number) => `Promoción: ${percent}% de descuento`,
     packagePriceBefore: 'Antes',
     packagePriceNow: 'Ahora',
   },

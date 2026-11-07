@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import type { PromotionView } from '@/features/catalog'
-import { bestActiveDiscountsByPackage } from '../package-promotions'
+import { bestActiveDiscountsByPackage, bestActiveDiscountsByTechnique } from '../package-promotions'
 
 const makePromotion = (overrides: Partial<PromotionView> = {}): PromotionView => ({
   id: '22222222-2222-4222-8222-222222222222',
@@ -35,5 +35,19 @@ describe('bestActiveDiscountsByPackage — D-PROM-3, mayor descuento gana', () =
       makePromotion({ target: { type: 'technique', techniqueId: 't1' } }),
     ])
     expect(discounts.size).toBe(0)
+  })
+})
+
+describe('bestActiveDiscountsByTechnique — D-PROM-3, mayor descuento gana', () => {
+  it('dos promociones vigentes sobre la misma técnica: gana la de mayor descuento', () => {
+    const discounts = bestActiveDiscountsByTechnique([
+      makePromotion({ id: 'a', target: { type: 'technique', techniqueId: 't1' }, discountPercent: 10 }),
+      makePromotion({ id: 'b', target: { type: 'technique', techniqueId: 't1' }, discountPercent: 30 }),
+    ])
+    expect(discounts.get('t1')).toBe(30)
+  })
+
+  it('ignora promociones sobre paquete', () => {
+    expect(bestActiveDiscountsByTechnique([makePromotion()]).size).toBe(0)
   })
 })

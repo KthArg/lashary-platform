@@ -31,7 +31,7 @@ describe('TechniqueSelectionPageView', () => {
 
     render(
       <TechniqueSelectionPageView
-        data={{ status: 'ok', techniques: [{ id: 't1', name: 'Volumen ruso' }], packages: [] }}
+        data={{ status: 'ok', techniques: [{ id: 't1', name: 'Volumen ruso', discountPercent: null }], packages: [] }}
       />,
     )
     expect(screen.getByRole('link', { name: schedulingMessages.page.myAppointments }).getAttribute('href')).toBe(
@@ -48,7 +48,7 @@ describe('TechniqueSelectionPageView', () => {
   it('ok con técnicas: renderiza el selector', () => {
     render(
       <TechniqueSelectionPageView
-        data={{ status: 'ok', techniques: [{ id: 't1', name: 'Volumen ruso' }], packages: [] }}
+        data={{ status: 'ok', techniques: [{ id: 't1', name: 'Volumen ruso', discountPercent: null }], packages: [] }}
       />,
     )
 
@@ -60,7 +60,7 @@ describe('TechniqueSelectionPageView', () => {
       <TechniqueSelectionPageView
         data={{
           status: 'ok',
-          techniques: [{ id: 't1', name: 'Volumen ruso' }],
+          techniques: [{ id: 't1', name: 'Volumen ruso', discountPercent: null }],
           packages: [
             {
               id: 'p1',
@@ -140,7 +140,7 @@ describe('TechniqueSelectionPageView', () => {
   it('sin paquetes activos, la sección de paquetes no se muestra', () => {
     render(
       <TechniqueSelectionPageView
-        data={{ status: 'ok', techniques: [{ id: 't1', name: 'Volumen ruso' }], packages: [] }}
+        data={{ status: 'ok', techniques: [{ id: 't1', name: 'Volumen ruso', discountPercent: null }], packages: [] }}
       />,
     )
 

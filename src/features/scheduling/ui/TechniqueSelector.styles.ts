@@ -4,6 +4,7 @@ export const techniqueSelectorStyles = {
   legend: 'px-1 text-sm font-semibold text-brand-dark',
   option: 'flex items-center gap-2 text-sm text-brand-dark',
   optionName: 'font-medium',
+  badge: 'badge badge-secondary badge-sm',
   radio: 'radio radio-sm',
   hint: 'text-xs text-brand-muted',
   submitButton: 'btn btn-primary',

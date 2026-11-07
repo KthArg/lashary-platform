@@ -1,11 +1,12 @@
 import { getAuthSession, AUTH_ROLES } from '@/features/auth'
 import { applyDiscount, listActivePromotions, listPackages, listTechniques } from '@/features/catalog'
-import { bestActiveDiscountsByPackage } from './package-promotions'
+import { bestActiveDiscountsByPackage, bestActiveDiscountsByTechnique } from './package-promotions'
 import { MAX_SELECTION_PAGE_SERVICES } from './constants'
 
 export type SelectableTechniqueOption = {
   id: string
   name: string
+  discountPercent: number | null
 }
 
 export type PackageSelectorItem = {
@@ -36,10 +37,15 @@ export async function loadTechniqueSelectionPageData(): Promise<TechniqueSelecti
 
   const techniqueNameById = new Map(techniques.map((technique) => [technique.id, technique.name]))
   const discountByPackageId = bestActiveDiscountsByPackage(activePromotions)
+  const discountByTechniqueId = bestActiveDiscountsByTechnique(activePromotions)
 
   return {
     status: 'ok',
-    techniques: techniques.map((technique) => ({ id: technique.id, name: technique.name })),
+    techniques: techniques.map((technique) => ({
+      id: technique.id,
+      name: technique.name,
+      discountPercent: discountByTechniqueId.get(technique.id) ?? null,
+    })),
     packages: packages.map((servicePackage) => {
       const discountPercent = discountByPackageId.get(servicePackage.id) ?? null
       return {
