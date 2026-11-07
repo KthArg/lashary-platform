@@ -18,7 +18,10 @@ deuda:
   - que: "La política clients_profiles_select_own deja a la clienta leer su fila completa, notes incluido, llamando a PostgREST directo; findClientProfile ya no las pide pero la base no lo impide"
     aceptada_en: "PR #273"
     costo: "migración de privilegios por columna o vista para la clienta, más decisión del PO sobre si notes debe ser legible por ella"
-defectos: []
+defectos:
+  - que: "PortalLayout/ClientSidebar no es responsive: a 375px de ancho el sidebar fijo (w-64, shrink-0) deja muy poco espacio al contenido, y como el contenedor es overflow-hidden (no scroll), el contenido se recorta en vez de desbordar — títulos, formularios y listas de opciones quedan cortados a la mitad, en cualquier ruta de /portal/*"
+    donde: "src/app/portal/layout.tsx (flex h-screen overflow-hidden) y src/features/auth/ui/navigation/components/ClientSidebar/ClientSidebar.styles.ts (sin breakpoint que oculte o colapse el sidebar en móvil)"
+    issue: "#710, encontrado durante la verificación visual (INT-010) de US-PROM-02 (PR #708, 2026-11-06); no lo introduce esa historia, que no toca ninguno de los dos archivos"
 ---
 
 # auth

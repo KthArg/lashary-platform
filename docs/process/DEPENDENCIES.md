@@ -1,6 +1,6 @@
 # Grafo de dependencias entre historias
 
-> **Autoridad:** qué historia depende de cuál, y qué infraestructura sin historia propia carga cada una (ADR-0007). Se consulta en cada planificación de sprint (INT-007); lo lee `/empezables`. **Lectores:** PO y equipo al planificar; skills. **Estado:** vigente. **Actualizado:** 2026-11-05.
+> **Autoridad:** qué historia depende de cuál, y qué infraestructura sin historia propia carga cada una (ADR-0007). Se consulta en cada planificación de sprint (INT-007); lo lee `/empezables`. **Lectores:** PO y equipo al planificar; skills. **Estado:** vigente. **Actualizado:** 2026-11-06.
 > Derivado del backlog en [../backlog/](../backlog/) (que no trae columna de dependencias). Si el backlog cambia, este archivo se revisa en el mismo PR.
 
 ## Infraestructura sin historia propia (ADR-0007)
@@ -54,7 +54,7 @@ El backlog se mantiene en sus 51 historias; estas capacidades se construyen **de
 | US-AGE-04 agendar paquete | US-PROD-01, US-AGE-05 | revisa los bloqueos manuales al crear la cita (`scheduling_book_package_appointment`, hecho — US-AGE-07); el aviso de US-NOT-01 toma `package_name` cuando la cita es de paquete: quien entre segundo a `main` corre `scheduling_notify_booking_created.test.sql`, cuya prueba de paquete se activa sola al existir la columna; **nombre del servicio en cola de aprobación, mis citas, cancelación, historial y recordatorio de WhatsApp — ver registro del 2026-10-30**; comparte con **US-AGE-10** la comprobación de ocupado vía `scheduling_slot_is_taken`, unificada sobre `blocked_ranges` — ver registro del 2026-10-30 y su actualización del 2026-10-31; el mismo arreglo del nombre del servicio alcanza a **US-NOT-03** (el recordatorio de WhatsApp de una cita de paquete no se programaba, `reminder-snapshots-repository.ts`) y a **US-CLI-02** (`listClientAppointments` ya nombra el paquete en el historial de la clienta, sin cambios en `clients`); **Hecho:** US-PROM-01 congela el precio con promoción también en `scheduling_book_package_appointment`/`scheduling_quote_package_booking`, igual que en la reserva de técnica suelta de US-AGE-05 — `20261101000004_catalog_promotions_in_package_booking.sql`, ver ítem 6 de «Criterios diferidos» |
 | US-PROD-01 paquetes | US-AGE-08 | desactivar una técnica avisa y, si se confirma, desactiva también los paquetes que la incluyen — ver registro del 2026-10-31; eliminar un paquete con citas sigue sin bloquearse, pendiente del PO (mismo registro) |
 | US-PROM-01 promociones | US-AGE-08, US-PROD-01 | precio congelado (DOM-002) |
-| US-PROM-02 ver paquetes/promos | US-PROM-01 | |
+| US-PROM-02 ver paquetes/promos | US-PROM-01 | **terminada**; el código cae en `scheduling` (pantalla de selección de servicio en `/portal/citas`), consumiendo el contrato ya público de `catalog` sin cambiarlo (detalle en `src/features/scheduling/SPEC.md`, «Incremento de US-PROM-02») |
 | US-CLI-05 crear/editar cliente | US-AUTH-01 | |
 | US-CLI-01 listado clientes | US-CLI-05 | estados de UI (UI-003) |
 | US-CLI-02 historial citas | US-CLI-05, US-AGE-05 | lee las citas por `listClientAppointments` de `scheduling` ([scheduling-api.md](../contracts/scheduling-api.md)); anotaciones **trasladadas** a US-CLI-03 (ítem 9 de «Criterios trasladados»); **terminada**; acceso desde la vista diaria cerrado con US-AGE-11 (ítem 5 de «Criterios diferidos») |

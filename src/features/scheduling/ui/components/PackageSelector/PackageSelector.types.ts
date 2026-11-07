@@ -1,5 +1,5 @@
-import type { NamedPackage } from '../../../domain/service-option'
+import type { PackageSelectorItem } from '../../load-technique-selection-page'
 
 export interface PackageSelectorProps {
-  readonly packages: NamedPackage[]
+  readonly packages: PackageSelectorItem[]
 }
