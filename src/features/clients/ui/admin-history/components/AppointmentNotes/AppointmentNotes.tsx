@@ -26,6 +26,12 @@ export function AppointmentNotes({ clientId, appointmentId, notes }: Appointment
     setDraft(nextDraft)
   }
 
+  const changeBody = (body: string) => {
+    if (draft === null) return
+    setError(null)
+    setDraft({ ...draft, body })
+  }
+
   const closeForm = () => {
     setDraft(null)
     setError(null)
@@ -97,7 +103,7 @@ export function AppointmentNotes({ clientId, appointmentId, notes }: Appointment
           <label htmlFor={fieldId} className={STYLES.fieldLabel}>
             {draft.noteId === null ? NOTE_LABELS.newField : NOTE_LABELS.editField}
           </label>
-          <textarea id={fieldId} value={draft.body} onChange={(event) => setDraft({ ...draft, body: event.target.value })}
+          <textarea id={fieldId} value={draft.body} onChange={(event) => changeBody(event.target.value)}
             maxLength={NOTE_LIMITS.bodyMaxLength} rows={3} required autoFocus className={STYLES.input} />
           <div className={STYLES.actions}>
             <button type="button" onClick={closeForm} disabled={isSaving} className={STYLES.cancelButton}>{NOTE_LABELS.cancel}</button>

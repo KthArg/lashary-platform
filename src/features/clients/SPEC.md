@@ -623,7 +623,8 @@ anon no lee ningún contacto (SEC-002).
   servidor, así que solo la celda viaja al navegador. Cada anotación dice «Creada …» y agrega
   «· Editada …» solo si `updatedAtMs` difiere (`noteDatesText`). *Agregar* y *Editar* abren un
   `<form>` con un `<textarea>` limitado por `NOTE_LIMITS.bodyMaxLength`; *Eliminar* pasa por
-  `ConfirmDialog`. Si la action falla, el aviso sale con `role="alert"` y lo escrito se conserva.
+  `ConfirmDialog`. Si la action falla, el aviso sale con `role="alert"` y lo escrito se conserva;
+  al corregir el texto, el aviso desaparece.
   Sin anotaciones dice «Sin anotaciones»; `HISTORY_LABELS.pendingValue` desapareció porque ya no
   queda dato pendiente. Pruebas: `appointment-notes.test.tsx` y `appointment-history.test.tsx`.
 

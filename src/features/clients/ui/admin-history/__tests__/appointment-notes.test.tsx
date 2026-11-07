@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { AppointmentNotes } from '../components/AppointmentNotes'
-import { NOTE_LABELS } from '../constants/history-strings'
+import { NOTE_LABELS, NOTE_PROBLEM_MESSAGES } from '../constants/history-strings'
 import { formatAppointmentDate } from '../format-appointment-date'
 import type { AppointmentNoteView } from '@/features/clients/application/notes/notes-by-appointment'
 
@@ -72,6 +72,17 @@ describe('AppointmentNotes — agregar y editar (criterio 1)', () => {
     expect((await screen.findByRole('alert')).textContent).toBe('Esa cita no es de esta clienta.')
     expect(noteField().value).toBe('Ojos irritados')
     expect(mocks.refresh).not.toHaveBeenCalled()
+  })
+
+  it('al corregir el texto, el aviso del intento anterior desaparece', async () => {
+    mocks.add.mockResolvedValue({ ok: false, error: NOTE_PROBLEM_MESSAGES['note-empty'] })
+    renderNotes([])
+    fireEvent.click(screen.getByRole('button', { name: NOTE_LABELS.add }))
+    fireEvent.change(noteField(), { target: { value: '   ' } })
+    fireEvent.click(screen.getByRole('button', { name: NOTE_LABELS.save }))
+    await screen.findByRole('alert')
+    fireEvent.change(noteField(), { target: { value: 'Ojos irritados' } })
+    expect(screen.queryByRole('alert')).toBeNull()
   })
 })
 
