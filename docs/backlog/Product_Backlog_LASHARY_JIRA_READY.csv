@@ -408,7 +408,9 @@ Acceptance Criteria:
 • Una vez confirmada, el sistema advierte al cliente que el anticipo ya no es reembolsable segun la politica de US-AGE-13.
 • Las citas sin confirmar dentro del plazo configurado aparecen destacadas en la vista diaria de la administradora.
 • La confirmacion se puede registrar manualmente por la administradora cuando la clienta responde por otro medio.
-• El envio usa el canal configurado en US-NOT-07, de modo que activar WhatsApp no requiera reescribir esta historia.","8","US-NOT-08","Notificaciones","Administrador","High","5","To Do","","","Notificaciones"
+• El envio usa el canal configurado en US-NOT-07, de modo que activar WhatsApp no requiera reescribir esta historia.
+
+Decision de alcance aprobada por el PO el 2026-11-05, comunicada por Bayron: el mensaje sale al aprobar la cita (ADR-0003); la clienta responde desde Mis citas con su sesion; la advertencia repite la politica vigente de cancelacion; el plazo son horas antes de la cita, editables, 48 por defecto, y solo destaca (docs/process/DEPENDENCIES.md). ","8","US-NOT-08","Notificaciones","Administrador","High","5","To Do","","","Notificaciones"
 "60","Story","Recordatorio de cita por WhatsApp 24h antes","User Story:
 Como cliente, quiero recibir un recordatorio por WhatsApp 24 horas antes de mi cita, para no olvidar mi compromiso agendado.
 
