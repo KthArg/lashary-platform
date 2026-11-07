@@ -12,7 +12,7 @@ historias:
     evidencia: "Pila de 5 piezas sobre main: PRs #481 (1/5, contrato scheduling-api.md), #483 (2/5, listClientAppointments), #505 (3/5, caso de uso y estado del anticipo), #506 (4/5, pestaña Citas) y #507 (5/5, paginacion y enlace desde el listado), y el PR de cierre us/US-CLI-02 a main. Criterio 1 (servicio, fecha, estado de la cita y estado de pago; las anotaciones trasladadas a US-CLI-03): deposit-status.test.ts, view-appointment-history.test.ts, history-gateways.test.ts, history-queries.test.ts, appointment-history.test.tsx. Criterio 2 (de la mas reciente a la mas antigua): client-appointments-repository.test.ts de scheduling (ordena por starts_at descendente) y appointment-history.test.tsx (la tabla respeta el orden recibido). Criterio 3 (desde el listado y desde la vista diaria): clients-list.test.tsx (listado), src/app/admin/citas/agenda/page.test.tsx (la agenda arma el enlace con clientAppointmentsPath) y DailyAgendaView.test.tsx de scheduling (la tarjeta pinta el enlace «Ver sus citas»)"
   - id: US-CLI-03
     estado: en_progreso
-    falta: "Piezas 1/7 a 5/7 hechas: contrato, funcion scheduling_appointment_client, tabla clients_appointment_notes con sus triggers, RLS de administradora y pgTAP con SEC-002, dominio y ordenes (note-body.test.ts, note-commands.test.ts) y repositorio de Supabase con lectura por lote (note-repository.test.ts). El criterio 3 (fecha de creacion y de modificacion) esta demostrado en la base por clients_appointment_notes.test.sql; falta mostrarlas en pantalla. Faltan las actions y la lectura del historial (6/7) y la pantalla (7/7); los criterios 1 y 2 no estan demostrados de punta a punta todavia"
+    falta: "Piezas 1/7 a 5/7 hechas: contrato, funcion scheduling_appointment_client, tabla clients_appointment_notes con sus triggers, RLS de administradora y pgTAP con SEC-002, dominio y ordenes (note-body.test.ts, note-commands.test.ts) repositorio de Supabase con lectura por lote (note-repository.test.ts), server actions y lectura de las anotaciones en el historial (note-actions.test.ts, history-queries.test.ts). El criterio 3 (fecha de creacion y de modificacion) esta demostrado en la base por clients_appointment_notes.test.sql; falta mostrarlas en pantalla. Falta la pantalla (7/7): la columna Anotaciones sigue diciendo Sin dato, asi que los criterios 1 y 2 no estan demostrados de punta a punta todavia"
   - id: US-CLI-04
     estado: terminada
     evidencia: "Pila de 20 piezas: PRs #369 (1/20, esquema), #370 (2/20, bucket), #372, #374, #384, #385, #394, #395, #396, #404, #405, #406, #407, #408 (14/20, cierre funcional), #409 y #410 (mejoras visuales) y los PRs de las piezas 17/20 a 20/20 (auditoria del 2026-10-19). Criterio 1 (estudio con texto e imagenes): record-content.test.ts, record-changes.test.ts, record-commands.test.ts, study-editor.test.tsx, add-record-image.test.ts, record-image.test.ts, record-image-action.test.ts, images-editor.test.tsx. Criterio 2 (alergias, sensibilidades, condiciones): clients_record_versions.test.sql (categorias), record-content.test.ts, precautions-editor.test.tsx. Criterio 3 (solo la administradora y cada acceso en la bitacora): clients_record_versions.test.sql y clients_record_images_bucket.test.sql (aislamiento SEC-002 frente a clienta y anon), view-record.test.ts (bitacora fail-closed), record-gateways.test.ts, record-actions.test.ts, record-queries.test.ts. Criterio 4 (historial de cambios): clients_record_versions.test.sql (sin UPDATE ni DELETE, una sucesora por version), record-changes.test.ts, record-commands.test.ts (dos cambios simultaneos), record-history.test.ts, record-view.test.tsx. Criterio 5 (imagenes sin URL publica): clients_record_images_bucket.test.sql (bucket privado), record-image-storage.test.ts (URLs firmadas de 5 minutos), images-editor.test.tsx"
@@ -568,7 +568,7 @@ anon no lee ningún contacto (SEC-002).
 - Con `reason: 'invalid-visit-range'` la lista muestra el aviso (`filterError`, `role="alert"`) **sin** *Reintentar*, porque reintentar no arregla un rango al revés; un fallo de la base sigue saliendo como `loadError` con *Reintentar*. Con un rango activo y sin resultados, la lista dice «Ninguna clienta coincide con los filtros aplicados» y no que no hay clientas registradas (UI-003).
 - Pruebas: `ui/shared/__tests__/format-visit-date.test.ts` (el borde de la hora del estudio, solo el día), `ui/admin-clients/__tests__/clients-visit-filter.test.tsx` (dos campos de fecha, un extremo, conserva el nombre y vuelve a la primera página, quitar fechas), `clients-list-url.test.ts` (rango, extremos vacíos, el nombre conserva el rango), `clients-list-params.test.ts` (fecha inexistente, parámetro repetido, número ilegible) y `clients-list.test.tsx` (la fecha, «Sin visitas», el vacío con filtros y el aviso sin *Reintentar*). `CLIENT_LIST_FIXTURES` (`__tests__/client-fixtures.ts`) da una clienta con visita y otra sin ella.
 
-## Anotaciones por cita (US-CLI-03, piezas 2/7 a 5/7)
+## Anotaciones por cita (US-CLI-03, piezas 2/7 a 6/7)
 
 - Pieza 2/7: `scheduling` expone `scheduling_appointment_client(p_appointment_id) → uuid`
   (`20261107010000_scheduling_appointment_client_fn.sql`), contrato en `docs/contracts/scheduling-api.md`.
@@ -611,6 +611,15 @@ anon no lee ningún contacto (SEC-002).
   en una sola consulta (`in`, PERF-005), de la más vieja a la más nueva, y con la lista vacía no
   consulta. Una fecha ilegible es `storage-failed`. Prueba: `db/__tests__/note-repository.test.ts`,
   con un Supabase falso; contra la base real lo cubre el pgTAP de la 3/7.
+- Pieza 6/7: `addNoteAction`, `editNoteAction` y `deleteNoteAction` (`ui/admin-history/actions/`,
+  `'use server'`) piden `requireAdminSession()` antes que nada, rechazan ids que no son UUID sin
+  consultar, firman con la sesión, nunca lanzan (`{ ok, error }` con textos de `history-strings.ts`)
+  y refrescan la pestaña Citas solo si guardaron. La lectura no es una action:
+  `readAppointmentHistory` pide las anotaciones de la página en una llamada y `notesByAppointment`
+  las pone en su cita, con fechas en milisegundos. Si no se pueden leer, el historial entero
+  muestra el aviso de carga (decisión de José Loría del 2026-11-07: una cita sin anotaciones por
+  error se leería como «no se anotó nada»). Pruebas: `note-actions.test.ts`,
+  `history-queries.test.ts` y `notes-by-appointment.test.ts`.
 
 ## Contrato para scheduling (US-AGE-05)
 
