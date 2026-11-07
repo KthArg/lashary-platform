@@ -2,11 +2,11 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-31
+actualizado: 2026-11-05
 historias:
   - id: US-CLI-01
     estado: en_progreso
-    falta: "las columnas de morosidad y ultima cita existen sin dato y no tienen filtro: el dato espera a US-MOR-01 y el de ultima cita a US-AGE-05 (criterios diferidos)"
+    falta: "la columna de morosidad existe sin dato y sin filtro: espera a US-MOR-01 (criterio diferido). La ultima visita y su filtro por rango de fechas estan en construccion en las piezas 1/4 a 4/4 (contrato en la 1/4)"
   - id: US-CLI-02
     estado: terminada
     evidencia: "Pila de 5 piezas sobre main: PRs #481 (1/5, contrato scheduling-api.md), #483 (2/5, listClientAppointments), #505 (3/5, caso de uso y estado del anticipo), #506 (4/5, pestaña Citas) y #507 (5/5, paginacion y enlace desde el listado), y el PR de cierre us/US-CLI-02 a main. Criterio 1 (servicio, fecha, estado de la cita y estado de pago; las anotaciones trasladadas a US-CLI-03): deposit-status.test.ts, view-appointment-history.test.ts, history-gateways.test.ts, history-queries.test.ts, appointment-history.test.tsx. Criterio 2 (de la mas reciente a la mas antigua): client-appointments-repository.test.ts de scheduling (ordena por starts_at descendente) y appointment-history.test.tsx (la tabla respeta el orden recibido). Criterio 3 (desde el listado y desde la vista diaria): clients-list.test.tsx (listado), src/app/admin/citas/agenda/page.test.tsx (la agenda arma el enlace con clientAppointmentsPath) y DailyAgendaView.test.tsx de scheduling (la tarjeta pinta el enlace «Ver sus citas»)"
@@ -481,6 +481,37 @@ anon no lee ningún contacto (SEC-002).
   `clientAppointmentsPath` real. Se descartó cerrar solo con la prueba de la agenda (EST-005: el
   criterio necesita una prueba que falle si se rompe). El PR `us/US-CLI-02` → `main` no cambia código
   de producción y deja la historia `terminada` (EST-007).
+- **2026-11-05 — La «última cita» de US-CLI-01 es la última visita, por decisión de José Loría
+  (pendiente de confirmar con el PO, Kenny).** Es el `starts_at` de la cita `completed` más reciente
+  de la clienta: solo una cita cerrada como completada (US-AGE-12) demuestra que vino. Las pendientes,
+  aprobadas, confirmadas, rechazadas, canceladas y ausencias no cuentan; tampoco una cita futura. Se
+  descartó «la última pasada no cancelada» porque cuenta citas a las que quizá no llegó, y «la más
+  reciente», porque con una cita próxima «última» deja de decir lo que parece. Costo asumido: las
+  citas viejas que nadie cerró no cuentan, así que algunas clientas salen sin visitas aunque hayan
+  venido. El encabezado de la columna pasa a «Última visita», también pendiente del PO, porque el
+  criterio dice «última cita».
+- **2026-11-05 — El filtro es por rango de fechas de la última visita, sobre clientas y no sobre
+  citas.** Cada clienta tiene una sola fecha y aparece si cae en el rango. `desde` y `hasta` son
+  opcionales cada uno (rango abierto), inclusivos y en la fecha del estudio (`America/Costa_Rica`),
+  como el historial. Un rango con `desde` posterior a `hasta` no busca y lo dice. Una clienta sin
+  visitas no entra en ningún rango; mostrarlas aparte («Sin visitas») queda para después. Sirve a
+  US-NOT-06 (inactivas), que depende de esta historia.
+- **2026-11-05 — El listado pasa a una función SQL con el contrato de `scheduling`, en una sola
+  migración.** Para filtrar antes de paginar, los perfiles y la última visita se juntan en la base:
+  `scheduling` expone `scheduling_client_last_visits()` (contrato en
+  `docs/contracts/scheduling-api.md`, INT-003) y `clients` crea `clients_list(nombre, desde, hasta)`,
+  que une sus perfiles con esa función (`LEFT JOIN`), filtra y devuelve las filas ordenadas. El
+  repositorio la llama con `rpc` y PostgREST pagina y cuenta (`range` y `count: 'exact'`), como hoy
+  con la tabla (PERF-002). Las dos van en la misma migración, primero la de `scheduling` (INT-008 pide
+  una por PR, no una por feature; INT-002 admite dos features). Las dos son `SECURITY INVOKER`: la RLS
+  de cada tabla sigue siendo la frontera (SEC-001). Se descartó resolverlo solo en TypeScript, porque
+  leería todas las citas completadas en cada carga y mandaría la lista de ids en la URL de la consulta.
+  Sin índice nuevo hasta medir (PERF-001).
+- **2026-11-05 — Corte de la última visita en cuatro piezas apiladas sobre `main`.** 1/4 el contrato
+  y los SPEC (este cambio, sin código); 2/4 la migración con las dos funciones y su pgTAP; 3/4 el
+  repositorio con `rpc`, `lastVisitAt` y la lectura del rango; 4/4 la columna y el filtro en la
+  pantalla. La morosidad sigue diferida (US-MOR-01 está `no_iniciada`), así que la 4/4 no cierra la
+  historia.
 
 ## Contrato para scheduling (US-AGE-05)
 
