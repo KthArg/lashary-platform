@@ -2,14 +2,14 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-06
+actualizado: 2026-11-07
 historias:
   - id: US-NOT-01
     estado: terminada
     evidencia: "Pila de 5 piezas sobre main: PRs #610 (1/5, tabla y RLS), #612 (2/5, trigger al reservar), #613 (3/5, dominio y repositorio), #615 (4/5, action y lectura) y #616 (5/5, panel lateral, cierra la historia). Criterio 1 (al reservar se genera el aviso en el panel): supabase/tests/database/scheduling_notify_booking_created.test.sql (reservar crea el aviso; una reserva fallida, una cita sin clienta o un cambio de hora no lo crean), ui/inbox/__tests__/admin-inbox.test.tsx y auth/__tests__/admin-auth.test.tsx (el layout lo carga para administradoras). Criterio 2 (clienta, servicio, fecha y hora): scheduling_notify_booking_created.test.sql, db/__tests__/inbox-repository.test.ts y admin-inbox.test.tsx. Criterio 3 (leído y no leído, persiste): supabase/tests/database/notifications_admin_inbox.test.sql (staff marca y desmarca, nadie borra ni fabrica avisos, la clienta y anon no los ven, SEC-002), application/__tests__/inbox.test.ts, inbox-repository.test.ts, ui/inbox/__tests__/inbox-actions.test.ts y admin-inbox.test.tsx, también con más de 20 avisos («Ver más»). Aislamiento con tokens reales de clienta y anon: __tests__/rls-isolation.test.ts. Si el aviso falla, la reserva igual se guarda, y una cita de paquete de US-AGE-04 usa el nombre del paquete: scheduling_notify_booking_created.test.sql. Probada a mano por José Loría en next dev contra Supabase local el 2026-10-29."
   - id: US-NOT-02
-    estado: en_progreso
-    falta: "el visto bueno escrito del ítem 13 por el PO; sección US-NOT-02, «Pendiente antes de mergear el cierre»"
+    estado: terminada
+    evidencia: "PR de cierre us/US-NOT-02 a main, con 18 piezas apiladas (#660 a #670, #679 a #682, #684 a #686). Criterios 1 a 4 e ítems 9, 12 y 13: tabla criterio→prueba del cuerpo del PR de cierre (pgTAP scheduling_notify_appointment_changed, notifications_admin_inbox_appointment_changes, notifications_client_notices, scheduling_notify_reschedule_outcome, notifications_claim_client_notices, notifications_dropped_notices y notifications_reconcile_dropped_notices; vitest de dominio, aplicación, canales e interfaz; aislamiento por rol en __tests__/rls-isolation.test.ts). Decisión de Kenny del 2026-11-06: la historia cierra terminada con la deuda del frontmatter (visto bueno escrito del PO sobre el ítem 13, reseña externa de las funciones SECURITY DEFINER y dry_run con respaldo de las 10 migraciones), porque es de proceso y no de código; el envío real depende de la sección «Antes de producción»."
   - id: US-NOT-03
     estado: terminada
     evidencia: "PR de cierre #577 (us/US-NOT-03 a main), con 23 piezas apiladas hacia la rama de la historia. Criterio 1 (envío automático 24h antes): computeReminderSendAt y discoverReminders; domain/__tests__/reminder.test.ts, application/__tests__/discover-reminders.test.ts. Criterio 2 (mensaje con fecha, hora y técnica): domain/reminder-message.ts (REMINDER_MESSAGE_TEXTS, formatStudioDateTime); domain/__tests__/reminder-message.test.ts, application/__tests__/send-due-reminders.test.ts. Criterio 3 (cancela o reprograma si la cita cambia): reconcile-reminders.ts; application/__tests__/reconcile-reminders.test.ts, incluida la corrección del líder del 2026-10-26 (libera el reclamo vencido antes de leer lo pendiente, para que la misma corrida cancele si la cita ya no es válida). Criterio 4 (reintenta y queda registrado): send-due-reminders.ts (MAX_REMINDER_ATTEMPTS), reclamo atómico FOR UPDATE SKIP LOCKED con TTL y tandas (notifications_claim_due_reminders, notifications_release_expired_claims); application/__tests__/send-due-reminders.test.ts, db/__tests__/reminder-repository.integration.test.ts (A6, contra Supabase local, incluido el reclamo doble simultáneo) y pgTAP notifications_reminders_staff_access.test.sql (13 aserciones, SEC-001/002). Decisión del líder del proyecto, comunicada el 2026-10-27: la historia pasa de en_progreso a terminada porque lo que falta —plantilla de WhatsApp aprobada por Meta, número de WhatsApp Business real, contenido del mensaje de la dueña del negocio, dominio verificado en Resend, disparo vía GitHub Actions, cuenta de staff del cron en producción— ya no es código sino configuración externa y decisiones de negocio; queda como checklist de activación para producción en la sección «Antes de producción» de este SPEC, no como deuda de la historia. A4 (rol dedicado del cron, sin ADR), B5 (reschedulePending no reinicia attempts/last_error) y B6 (recordatorio inmediato si la cita se reserva con menos de 24h) quedan registrados en `deuda` del frontmatter, con dueño (líder/PO); B8 (opt-in de WhatsApp) ya está cubierto por la fila de US-NOT-06 en docs/process/DEPENDENCIES.md."
@@ -41,6 +41,12 @@ deuda:
   - que: "B6: una cita reservada con menos de 24h de anticipacion manda su recordatorio en el siguiente ciclo (buildReminder solo exige que la cita empiece despues de createdAt, el recordatorio queda con sendAt en el pasado y el siguiente claim lo reclama). Si eso debe enviarse o no es regla de producto, decision del PO"
     aceptada_en: "Aprobada verbalmente por Kenny (code reviewer con facultad de decision por regla del PO), registrada el 2026-10-28 en docs/process/DEPENDENCIES.md; el visto bueno escrito de KthArg (PO) sigue pendiente"
     costo: "3h: decision del PO (enviar de inmediato o no enviar) y ajuste de computeReminderSendAt/discoverReminders con sus pruebas"
+  - que: "Visto bueno escrito del PO (KthArg) sobre el ítem 13 de US-NOT-02 (aviso a la clienta cuando su reagendado se rechaza o vence): no consta por escrito en docs/process/DEPENDENCIES.md"
+    aceptada_en: "Decisión de Kenny del 2026-11-06 al cerrar US-NOT-02 como terminada"
+    costo: "0.5h: dejarlo escrito con fecha en DEPENDENCIES.md"
+  - que: "Reseña externa (INT-005) de las 13 funciones SECURITY DEFINER de la pila de US-NOT-02, y dry_run de supabase-migrate con respaldo antes de aplicar las 10 migraciones (20261103000000 a 20261107000002; cinco anteriores a la última de main, dependen de --include-all)"
+    aceptada_en: "Decisión de Kenny del 2026-11-06 al cerrar US-NOT-02 como terminada; el dry_run lo corre un admin"
+    costo: "2h: reseña externa y corrida del dry_run"
 defectos: []
 ---
 
@@ -279,8 +285,8 @@ Decisiones:
   trajo `main` y unió los cambios: `MessagePurpose` lleva los tres propósitos, `ChannelSendInput` se conserva,
   `sendDueReminders` conserva la bitácora de intentos de US-NOT-07 y las tandas de los tres repositorios salen de
   `db/claim-limits.ts`.
-- Visto bueno escrito del ítem 13 por el PO. Si no queda escrito antes del merge, se anota en
-  `docs/process/DEPENDENCIES.md` con su fecha.
+- Visto bueno escrito del ítem 13 por el PO, reseña externa de las funciones `SECURITY DEFINER` y `dry_run` con respaldo:
+  la historia cierra `terminada` con estos tres pendientes registrados en `deuda` del frontmatter.
 
 ## US-NOT-07: recordatorio por correo y bitácora de intentos
 
