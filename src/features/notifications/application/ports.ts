@@ -85,7 +85,15 @@ export interface InboxRepository {
   setReadAt(id: string, readAt: Date | null): Promise<Result<SetReadOutcome, InboxStorageFailed>>
 }
 
-export type ChannelSendInput ={ reminderId: string; contact: ContactInfo; message: string; templateVariables: string[] }
+export type MessagePurpose = 'reminder' | 'appointment_confirmation'
+
+export type ChannelSendInput = {
+  messageId: string
+  purpose: MessagePurpose
+  contact: ContactInfo
+  message: string
+  templateVariables: string[]
+}
 
 export interface NotificationChannel {
   readonly kind: ReminderChannelKind

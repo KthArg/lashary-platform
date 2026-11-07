@@ -356,6 +356,7 @@ El ledger solo se escribe al cerrar (pieza 12, hallazgos M3 y B4 del audit del 2
 - Agenda diaria: etiqueta «Sin confirmar» dentro del plazo y `ManualConfirmationControl`, con `confirmAppointmentManuallyAction` para la administradora.
 - Lógica del plazo en el panel: `ui/confirmation-policy` (action, servicio y validación).
 - Pantalla `/admin/citas/confirmacion`: `ConfirmationPolicyPage` en `index.ts` y `ConfirmationPolicyLoading` y `confirmationPolicyMessages` en `client.ts`.
+- `index.ts` exporta `SCHEDULING_MY_APPOINTMENTS_PATH`, la ruta de «Mis citas» que enlaza el mensaje de `notifications` (docs/contracts/scheduling-api.md). La nota de la tarjeta dice «Tu asistencia está confirmada» porque también la ve la clienta cuya confirmación registró la administradora.
 
 ## Criterios recibidos de US-AGE-01
 
