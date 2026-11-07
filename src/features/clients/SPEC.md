@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-05
+actualizado: 2026-11-07
 historias:
   - id: US-CLI-01
     estado: en_progreso
@@ -11,7 +11,8 @@ historias:
     estado: terminada
     evidencia: "Pila de 5 piezas sobre main: PRs #481 (1/5, contrato scheduling-api.md), #483 (2/5, listClientAppointments), #505 (3/5, caso de uso y estado del anticipo), #506 (4/5, pestaña Citas) y #507 (5/5, paginacion y enlace desde el listado), y el PR de cierre us/US-CLI-02 a main. Criterio 1 (servicio, fecha, estado de la cita y estado de pago; las anotaciones trasladadas a US-CLI-03): deposit-status.test.ts, view-appointment-history.test.ts, history-gateways.test.ts, history-queries.test.ts, appointment-history.test.tsx. Criterio 2 (de la mas reciente a la mas antigua): client-appointments-repository.test.ts de scheduling (ordena por starts_at descendente) y appointment-history.test.tsx (la tabla respeta el orden recibido). Criterio 3 (desde el listado y desde la vista diaria): clients-list.test.tsx (listado), src/app/admin/citas/agenda/page.test.tsx (la agenda arma el enlace con clientAppointmentsPath) y DailyAgendaView.test.tsx de scheduling (la tarjeta pinta el enlace «Ver sus citas»)"
   - id: US-CLI-03
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "Pieza 1/6 hecha: contrato de scheduling_appointment_client en docs/contracts/scheduling-api.md y decisiones en este SPEC, sin codigo. Faltan la funcion de scheduling con su pgTAP (2/6), la tabla clients_appointment_notes con su trigger, RLS y prueba SEC-002 (3/6), dominio y ordenes (4/6), actions y lectura por lote (5/6) y la pantalla (6/6). Ningun criterio esta demostrado todavia"
   - id: US-CLI-04
     estado: terminada
     evidencia: "Pila de 20 piezas: PRs #369 (1/20, esquema), #370 (2/20, bucket), #372, #374, #384, #385, #394, #395, #396, #404, #405, #406, #407, #408 (14/20, cierre funcional), #409 y #410 (mejoras visuales) y los PRs de las piezas 17/20 a 20/20 (auditoria del 2026-10-19). Criterio 1 (estudio con texto e imagenes): record-content.test.ts, record-changes.test.ts, record-commands.test.ts, study-editor.test.tsx, add-record-image.test.ts, record-image.test.ts, record-image-action.test.ts, images-editor.test.tsx. Criterio 2 (alergias, sensibilidades, condiciones): clients_record_versions.test.sql (categorias), record-content.test.ts, precautions-editor.test.tsx. Criterio 3 (solo la administradora y cada acceso en la bitacora): clients_record_versions.test.sql y clients_record_images_bucket.test.sql (aislamiento SEC-002 frente a clienta y anon), view-record.test.ts (bitacora fail-closed), record-gateways.test.ts, record-actions.test.ts, record-queries.test.ts. Criterio 4 (historial de cambios): clients_record_versions.test.sql (sin UPDATE ni DELETE, una sucesora por version), record-changes.test.ts, record-commands.test.ts (dos cambios simultaneos), record-history.test.ts, record-view.test.tsx. Criterio 5 (imagenes sin URL publica): clients_record_images_bucket.test.sql (bucket privado), record-image-storage.test.ts (URLs firmadas de 5 minutos), images-editor.test.tsx"
@@ -168,7 +169,9 @@ registra con Google, además del alta de esta feature. Le falta lo que US-CLI-05
 El listado con filtros y paginación **no pertenece a esta historia**: es US-CLI-01, que depende de
 esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
-En el historial de citas (US-CLI-02), las anotaciones dicen "Sin dato" hasta US-CLI-03.
+En el historial de citas (US-CLI-02), las anotaciones dicen "Sin dato" hasta US-CLI-03. Esa historia
+arrancó el 2026-11-07 con el contrato (pieza 1/6); todavía no hay tabla, código ni pantalla de
+anotaciones.
 
 ## Contrato público (`src/features/clients/index.ts`)
 
@@ -514,6 +517,38 @@ anon no lee ningún contacto (SEC-002).
   repositorio con `rpc`, `lastVisitAt` y la lectura del rango; 4/4 la columna y el filtro en la
   pantalla. La morosidad sigue diferida (US-MOR-01 está `no_iniciada`), así que la 4/4 no cierra la
   historia.
+- **2026-11-07 — Alcance de US-CLI-03, decidido por José Loría al arrancar la historia.**
+  1. *Varias anotaciones por cita*, no una sola: el criterio 1 habla de «anotaciones asociadas a una
+     cita», en plural.
+  2. *Eliminar es borrar de verdad* (`DELETE`), pidiendo confirmación en la pantalla y sin dejar
+     evento en la bitácora. Las anotaciones no son el expediente: la decisión del 2026-10-17 ya dejó
+     fuera de SEC-006 lo que se escriba en ellas. Si el PO las quiere tratar como expediente, haría
+     falta guardar versiones, y eso es otra historia.
+  3. *Se puede anotar cualquier cita de la clienta*, en cualquiera de sus siete estados, también una
+     cancelada o una ausencia.
+  4. *La base rechaza la anotación cuya cita no es de esa clienta*, por contrato con `scheduling`
+     (opción C). `scheduling` expone `scheduling_appointment_client(p_appointment_id) → uuid`
+     (contrato en `docs/contracts/scheduling-api.md`, INT-003), `SECURITY INVOKER`. Un trigger
+     `BEFORE INSERT` de `clients_appointment_notes` la llama y rechaza la fila si el resultado no es
+     igual a su `client_id`; en UPDATE, `appointment_id` y `client_id` no se pueden cambiar. La
+     server action no comprueba nada por su cuenta: traduce el rechazo de la base a un texto de la
+     pantalla. Se descartaron dos alternativas. Una clave foránea a `scheduling_appointments`
+     (opción A) solo diría que la cita existe, no de quién es, y sería una segunda FK entre features
+     con su ADR (ver la de `payments` en `docs/process/DEPENDENCIES.md`). Comprobar solo en la
+     server action con un caso de uso de TypeScript (opción B) deja pasar a quien llama a PostgREST
+     con el token de administradora, y la lección de la auditoría de US-CLI-04 es que la invariante
+     también va en SQL (SEC-001, SEC-005). Es el mismo camino que `clients_list` con
+     `scheduling_client_last_visits` (2026-11-05).
+- **2026-11-07 — Corte de US-CLI-03 en seis piezas apiladas sobre `main`.** 1/6 el contrato y este
+  SPEC (sin código); 2/6 la migración de `scheduling` con `scheduling_appointment_client` y su pgTAP;
+  3/6 la migración de `clients` con `clients_appointment_notes` (`created_at` y `updated_at`, que
+  mantiene un trigger, criterio 3), el trigger de pertenencia, la RLS solo de administradora y el
+  pgTAP con la prueba de aislamiento SEC-002; 4/6 el dominio (validar la nota y su largo máximo, que
+  se fija en esta pieza, DOM-007) y las órdenes agregar, editar y borrar; 5/6 las server actions, que
+  devuelven `{ ok: false, error }` y no lanzan, y la lectura de las anotaciones de toda la página del
+  historial en una sola consulta con el `id` de cada cita (PERF-005, ítem 8 de «Criterios
+  trasladados»); 6/6 la columna **Anotaciones** con datos, los formularios, la confirmación al
+  borrar y las capturas (INT-010). La 6/6 cierra la historia. Una migración por pieza (INT-008).
 
 ## Listado con última visita (US-CLI-01, piezas 2/4 a 4/4)
 
