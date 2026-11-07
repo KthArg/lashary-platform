@@ -26,6 +26,7 @@ export interface NoteRepository {
   add(note: NewAppointmentNote): Promise<Result<AppointmentNote, AppointmentNotOfClient | NoteStorageFailed>>
   updateBody(noteId: string, clientId: string, body: NoteBody): Promise<Result<AppointmentNote, NoteNotFound | NoteStorageFailed>>
   remove(noteId: string, clientId: string): Promise<Result<void, NoteNotFound | NoteStorageFailed>>
+  listForAppointments(clientId: string, appointmentIds: readonly string[]): Promise<Result<AppointmentNote[], NoteStorageFailed>>
 }
 
 export interface NoteActor {
