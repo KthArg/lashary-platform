@@ -203,6 +203,10 @@ se descartaba, y cada reintento pisaba `last_error`.
 El título del backlog dice «además de WhatsApp», pero el criterio y ADR-0006 piden correo solo si
 WhatsApp falla: no se envían los dos siempre.
 
+## US-NOT-08: confirmación de asistencia
+
+- `scheduling_confirm_appointment` (migración `20261105010000`, feature `scheduling`) lleva una cita de `approved` a `confirmed`. La usa la dueña o el staff; cualquier otra persona recibe el mismo error que con una cita inexistente (SEC-005). Confirmar dos veces no repite el evento `scheduling.appointment.confirmed`, que guarda fecha, hora y quién confirmó (`client` o `staff`). Prueba: `supabase/tests/database/scheduling_confirm_appointment.test.sql`.
+
 ## Qué no hace todavía
 
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
