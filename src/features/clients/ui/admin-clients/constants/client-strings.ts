@@ -7,16 +7,25 @@ export const CLIENTS_LABELS = {
   requiredMark: 'obligatorio', optionalMark: 'opcional',
   clientsListTitle: 'Clientas registradas', clientsListEmpty: 'Todavía no hay clientas registradas. Usa Agregar para registrar la primera.',
   clientsListEmptyForFilter: (name: string) => `Ninguna clienta registrada coincide con «${name}».`,
+  clientsListEmptyForFilters: 'Ninguna clienta coincide con los filtros aplicados.',
   clientsListLoading: 'Cargando clientas…',
   editClientTitle: 'Editar clienta', editClientDescription: 'Cambia solo lo que necesites; los campos marcados siguen siendo obligatorios.',
 } as const
 
 export const CLIENTS_TABLE_HEADERS = {
   fullName: 'Nombre', phone: 'Teléfono', email: 'Correo',
-  delinquencyStatus: 'Morosidad', lastAppointment: 'Última cita', actions: 'Acciones',
+  delinquencyStatus: 'Morosidad', lastVisit: 'Última visita', actions: 'Acciones',
 } as const
 
-export const CLIENTS_TABLE_TEXTS = { pendingColumnValue: 'Sin dato' } as const
+export const CLIENTS_TABLE_TEXTS = { pendingColumnValue: 'Sin dato', neverVisited: 'Sin visitas' } as const
+
+export const CLIENTS_VISIT_FILTER_TEXTS = {
+  formLabel: 'Filtrar por última visita',
+  fromLabel: 'Última visita desde',
+  toLabel: 'Última visita hasta',
+  submit: 'Filtrar',
+  clear: 'Quitar fechas',
+} as const
 
 export const CLIENTS_FILTER_TEXTS = {
   formLabel: 'Buscar clientas',

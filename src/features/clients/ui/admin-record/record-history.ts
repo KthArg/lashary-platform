@@ -1,14 +1,9 @@
-import { STUDIO_TIME_ZONE } from '@/shared/studio-time'
+import { studioDateFormat } from '../shared/studio-date-format'
 import { RECORD_CHANGE_TEXTS } from './constants/record-strings'
 import type { Precaution } from '../../domain/record/record.types'
 import type { RecordVersionView } from './types/record-action-results'
 
-const RECORD_DATE_FORMAT = new Intl.DateTimeFormat('es-CR', {
-  day: 'numeric',
-  month: 'short',
-  year: 'numeric',
-  timeZone: STUDIO_TIME_ZONE,
-})
+const RECORD_DATE_FORMAT = studioDateFormat({ day: 'numeric', month: 'short', year: 'numeric' })
 
 export const formatRecordDate = (isoDate: string): string => RECORD_DATE_FORMAT.format(new Date(isoDate))
 
