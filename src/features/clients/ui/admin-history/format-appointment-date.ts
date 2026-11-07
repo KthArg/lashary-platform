@@ -1,4 +1,4 @@
-import { studioDateFormat } from '@/features/clients/ui/shared/studio-date-format'
+import { studioDateFormat } from '../shared/studio-date-format'
 
 const APPOINTMENT_DATE_FORMAT = studioDateFormat({ dateStyle: 'medium', timeStyle: 'short' })
 

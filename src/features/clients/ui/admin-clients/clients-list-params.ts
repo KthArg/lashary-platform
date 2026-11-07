@@ -1,4 +1,4 @@
-import { readVisitDate } from '@/features/clients/domain/list/visit-range'
+import { readVisitDate } from '../../domain/list/visit-range'
 
 type ClientsListParamName = 'page' | 'pageSize' | 'name' | 'visitFrom' | 'visitTo'
 

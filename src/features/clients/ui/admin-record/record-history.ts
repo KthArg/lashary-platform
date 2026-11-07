@@ -1,4 +1,4 @@
-import { studioDateFormat } from '@/features/clients/ui/shared/studio-date-format'
+import { studioDateFormat } from '../shared/studio-date-format'
 import { RECORD_CHANGE_TEXTS } from './constants/record-strings'
 import type { Precaution } from '../../domain/record/record.types'
 import type { RecordVersionView } from './types/record-action-results'

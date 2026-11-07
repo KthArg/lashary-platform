@@ -1,4 +1,4 @@
-import { studioDateFormat } from '@/features/clients/ui/shared/studio-date-format'
+import { studioDateFormat } from './studio-date-format'
 
 const VISIT_DATE_FORMAT = studioDateFormat({ dateStyle: 'medium' })
 
