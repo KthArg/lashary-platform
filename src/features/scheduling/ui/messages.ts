@@ -28,6 +28,11 @@ export const schedulingMessages = {
     choosePackage: 'O elegí un paquete',
     packageDuration: (minutes: number) => `Tiempo total: ${minutes} min`,
     seePackageSlots: 'Ver espacios disponibles',
+    packageIncludes: (techniqueNames: string[]) => `Incluye: ${techniqueNames.join(', ')}`,
+    packagePromotionBadge: 'Promoción',
+    techniqueDiscountBadge: (percent: number) => `Promoción: ${percent}% de descuento`,
+    packagePriceBefore: 'Antes',
+    packagePriceNow: 'Ahora',
   },
   availability: {
     title: 'Disponibilidad de la agenda',

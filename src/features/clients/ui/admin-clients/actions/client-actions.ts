@@ -51,6 +51,9 @@ export async function getClientAction(id: string): Promise<GetClientResult> {
 export async function listClientsAction(query: ListClientsQuery = {}): Promise<ListClientsResult> {
   await requireAdminSession()
   const result = await listClients(await clientRepository())(query)
-  if (isErr(result)) return { ok: false, error: CLIENTS_ERROR_MESSAGES.loadFailed }
+  if (isErr(result) && result.error === 'inverted-visit-range') {
+    return { ok: false, reason: 'invalid-visit-range', error: CLIENTS_ERROR_MESSAGES.invertedVisitRange }
+  }
+  if (isErr(result)) return { ok: false, reason: 'failed', error: CLIENTS_ERROR_MESSAGES.loadFailed }
   return { ok: true, ...result.value }
 }

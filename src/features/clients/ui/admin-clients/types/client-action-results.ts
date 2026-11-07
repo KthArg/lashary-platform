@@ -1,10 +1,10 @@
-import type { ClientRecord } from '../../../domain/client.types'
+import type { ClientListItem, ClientRecord } from '../../../domain/client.types'
 
 export type SaveClientResult = { ok: true; client: ClientRecord } | { ok: false; error: string }
 
 export type ListClientsResult =
-  | { ok: true; clients: ClientRecord[]; total: number; page: number; pageSize: number }
-  | { ok: false; error: string }
+  | { ok: true; clients: ClientListItem[]; total: number; page: number; pageSize: number }
+  | { ok: false; reason: 'invalid-visit-range' | 'failed'; error: string }
 
 export type GetClientResult =
   | { ok: true; client: ClientRecord }

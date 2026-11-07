@@ -14,6 +14,13 @@ export function buildClientsListUrl(
     else params.delete('name')
   }
 
+  for (const key of ['visitFrom', 'visitTo'] as const) {
+    if (changes[key] === undefined) continue
+    const value = changes[key]
+    if (value) params.set(key, value)
+    else params.delete(key)
+  }
+
   if (changes.pageSize !== undefined) {
     if (changes.pageSize === null) params.delete('pageSize')
     else params.set('pageSize', String(changes.pageSize))

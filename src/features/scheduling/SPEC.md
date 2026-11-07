@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-05
+actualizado: "2026-11-06"
 historias:
   - id: US-AGE-01
     estado: terminada
@@ -48,6 +48,9 @@ deuda:
   - que: "La clienta puede leer closed_by (id de una persona del personal) de sus propias citas: authenticated tiene SELECT de tabla completa y scheduling_appointments_select_own filtra por fila, igual que decided_by"
     aceptada_en: "PR #635, hallazgo B3 del audit del 2026-11-01"
     costo: "3h: GRANT SELECT por columnas en una migración nueva, junto con la de decided_by, y prueba de aislamiento"
+  - que: "bestActiveDiscountsByPackage (ui/package-promotions.ts, US-PROM-02) duplica la regla D-PROM-3 (mayor descuento gana) que landing/ui/technique-view.ts ya implementa para técnicas (bestActiveDiscountsByTechnique). No hay un lugar neutral para esta regla fuera de cada feature que la consume; catalog sería el dueño natural (ya calcula el descuento en catalog_booking_terms/catalog_package_booking_terms), pero exportarla desde ahí es alcance de un PR aparte, no de US-PROM-02"
+    aceptada_en: "hallazgo M1 del code review de US-PROM-02 (PR #708, 2026-11-06)"
+    costo: "2h: exportar desde catalog una función genérica de 'mayor descuento por destino' (técnica o paquete) y que landing y scheduling la consuman por su entry point; dueño por asignar (líder del proyecto o PO)"
 defectos: []
 ---
 
@@ -193,6 +196,21 @@ Al rebasar otra vez contra `main` (2026-11-01, ya con US-AGE-04 integrada), `Con
 **Hallazgo propio de la pieza de paquete:** `max(uuid)` no existe en Postgres. `scheduling_book_package_appointment`/`scheduling_quote_package_booking` agregan con `max()` las columnas repetidas de `catalog_package_booking_terms` (una fila por técnica incluida); para `promotion_id` (`uuid`) eso falla con `42883 function max(uuid) does not exist`, detectado porque las 10 clientas de `package-booking-concurrency.integration.test.ts` fallaban todas en vez de que gane una. Arreglo: `max(promotion_id::text)::uuid` — mismo valor en todas las filas, así que cuál gane la agregación es indiferente.
 
 Pruebas: pgTAP de la pieza de paquete (`catalog_package_booking_terms.test.sql`, `scheduling_quote_package_booking.test.sql`, `scheduling_book_package_appointment.test.sql`); del lado TypeScript, `db/__tests__/package-booking-quote-repository.test.ts` y `db/__tests__/package-booking-repository.test.ts` (el mapeo de fila, más el caso con promoción aplicada), `ui/booking-confirm/__tests__/booking-confirm.test.ts` y `perform-booking.test.ts` (el aviso antes y después de confirmar, caso paquete).
+
+## Incremento de US-PROM-02: ver paquetes y promociones antes de agendar (`catalog` es la dueña)
+
+US-PROM-02 ("ver paquetes y promociones antes de agendar") la declara `catalog/SPEC.md`; el código cae entero en esta feature porque la pantalla ya existía (`/portal/citas`, la puerta de entrada de US-AGE-04) y todo lo que necesita ya era público en el contrato de `catalog` (`listPackages`, `listActivePromotions`, `applyDiscount`, `PromotionView`) — cero cambios en `catalog`.
+
+- Criterio 1 (paquetes activos con precio y servicios incluidos): `PackageSelectorItem` (`ui/load-technique-selection-page.ts`) agrega `price`, `techniqueNames` y `discountPercent`/`priceDiscounted` a lo que ya mostraba `PackageSelector` (nombre y duración). Los nombres de las técnicas incluidas se resuelven contra la lista de técnicas que `loadTechniqueSelectionPageData` ya pedía para el selector de técnicas — sin consulta nueva (PERF-005); una técnica incluida que ya no esté activa simplemente no aporta nombre, en vez de reventar el mapeo (no debería ocurrir en un paquete activo: `catalog_deactivate_technique_cascade` desactiva el paquete junto con la técnica, pero el código no lo asume).
+- Criterio 2 (promociones activas destacadas visualmente): `bestActiveDiscountsByPackage` (`ui/package-promotions.ts`) es el espejo exacto de `bestActiveDiscountsByTechnique` de `landing/ui/technique-view.ts` (D-PROM-3: mayor descuento gana; el desempate por vigencia no cambia el número mostrado) — duplicado en vez de compartido porque hoy no existe un lugar neutral para esta regla fuera de cada feature que la consume (`ui/package-promotions.ts` sí puede importar `@/features/catalog`, está en `ui/`, no en `domain/`: ARCH-004 no es la razón de la duplicación, ver deuda M1 abajo). `PackageSelector` pinta una insignia visible "Promoción" (no solo color, UI-004) y el precio anterior tachado (`<s>`) junto al precio rebajado, con las etiquetas visibles "Antes"/"Ahora" para que el cambio se entienda sin depender del tachado. El formateo del precio (`moneyFromColones`/`formatMoney`) vive en `PackageSelector.format.ts`, no en el componente, siguiendo el mismo patrón que `booking-confirm-format.ts`.
+- Criterio 3 (seleccionar dirige al flujo de agendamiento): ya estaba cubierto por el enlace a `calendarHref` de US-AGE-04; sin cambios.
+
+Pruebas: `ui/__tests__/package-promotions.test.ts` (D-PROM-3), `ui/__tests__/load-technique-selection-page.test.ts` (precio, servicios incluidos, técnica inactiva omitida sin reventar, descuento con empate, y el redondeo al colón con el `applyDiscount` real de `catalog` — no un reimplementado a mano, DOM-001) y `ui/__tests__/TechniqueSelectionPageView.test.tsx` (precio visible, insignia y precio tachado solo con promoción vigente).
+
+Criterio 2 también para técnicas sueltas (cierra el hallazgo M2 del code review de #708): `loadTechniqueSelectionPageData` agrega `discountPercent` a cada `SelectableTechniqueOption` con `bestActiveDiscountsByTechnique` (`ui/package-promotions.ts`, misma regla D-PROM-3 y misma lista `listActivePromotions` que ya se pedía, sin consulta nueva) y `TechniqueSelector` pinta la insignia «Promoción: N% de descuento» junto al nombre. No muestra precio rebajado porque el precio de la técnica depende de si es primera vez o retoque, que la clienta aún no eligió en esa pantalla; el precio con descuento se ve en la confirmación (US-PROM-01). Pruebas: `package-promotions.test.ts`, `load-technique-selection-page.test.ts` y `TechniqueSelector.test.tsx`.
+
+**Verificación visual (INT-010):** esta sesión no podía montar una sesión de clienta en un navegador por su cuenta (la clienta entra por Google OAuth, US-AUTH-02, sin fixture de sesión en `e2e/`, cuyos specs hoy solo cubren páginas públicas; y crear una clienta por `signUp` contra `lashary-pruebas` quedó sin sesión por requerir confirmar el correo, sin tocar la service-role key, SEC-003). Erick Durán la hizo a mano contra `lashary-pruebas` el 2026-11-06, con su cuenta real: `/portal/citas` → "O elegí un paquete" mostró "Set volumen" con `Incluye: Set clásico, Set volumen extra, Diseño de cejas`, `Tiempo total: 390 min` y `₡450 000` sin promoción; tras crear una promoción de ejemplo sobre ese paquete desde `/admin/catalog/promotions`, la misma sección mostró la insignia "Promoción" junto al nombre y `Antes ₡450 000` (tachado) `Ahora ₡409 500`. De paso se descartó el falso positivo más probable: una promoción creada primero sobre una técnica suelta (Set clásico) solo afectó la pantalla de confirmación de esa técnica (US-PROM-01, ya terminada) y no la insignia del paquete — confirma que `bestActiveDiscountsByPackage` filtra `target.type === 'package'` como se esperaba.
+
 ## Faltantes de US-AGE-05
 
 US-AGE-05 queda `terminada` con estos faltantes aprobados por el PO, cada uno con su dueño:
@@ -440,3 +458,9 @@ Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el
 - `db/client-appointments-repository.ts`: una sola consulta con `count: 'exact'`, solo las columnas de `CLIENT_APPOINTMENT_COLUMNS` (`id, starts_at, status, technique_name, deposit_required, deposit_registered`), filtrada por `client_id`, ordenada por `starts_at` y después `id`, las dos descendentes, y cortada con `range`. Una página más allá de la última hace que PostgREST responda `PGRST103` (`RANGE_NOT_SATISFIABLE_CODE`): no es un fallo, el repositorio cuenta las citas aparte (`head: true`) y devuelve una página vacía con el total. `technique_name` y los montos llegan siempre con valor: la clienta tiene `client_id` y el `CHECK` `scheduling_appointments_booking_snapshot_complete` obliga a que la cita traiga todo el snapshot. `clientAppointmentsRepository()` lo arma con el cliente de servidor y la sesión de quien llama (SEC-001, SEC-003).
 - `index.ts` expone `listClientAppointments(query)`, que arma el repositorio y llama al caso de uso, como `listTechniques` de `catalog`.
 - Pruebas: `application/__tests__/list-client-appointments.test.ts` (página y tamaño saneados, recorte al máximo, fallo como `StorageFailed`) y `db/__tests__/client-appointments-repository.test.ts` (columnas, filtro, orden, rango, conteo, página vacía y fallo). El aislamiento de la RLS ya lo prueban `scheduling_appointment_client_snapshot.test.sql` y `__tests__/rls-isolation.test.ts` (SEC-002).
+
+### Última visita de cada clienta (para US-CLI-01 de `clients`)
+
+- Pactado el 2026-11-05 en `docs/contracts/scheduling-api.md` (INT-003) e implementado en la pieza 2/4 de US-CLI-01: la función SQL `scheduling_client_last_visits()` está en `supabase/migrations/20261105000000_clients_list_last_visit.sql`, la misma migración que `clients_list` de `clients`, que es su único consumidor.
+- Devuelve `(client_id, last_visit_at)`: el `starts_at` de la cita `completed` más reciente de cada clienta. Las demás citas, y las que no tienen clienta, no cuentan. `SECURITY INVOKER`: la RLS de `scheduling_appointments` decide qué ve quien llama (SEC-001).
+- Prueba: `supabase/tests/database/scheduling_client_last_visits.test.sql` (solo `completed`, la más reciente, sin citas sin clienta, personal ve todas, clienta solo la suya, `anon` no la ejecuta, `SECURITY INVOKER`).

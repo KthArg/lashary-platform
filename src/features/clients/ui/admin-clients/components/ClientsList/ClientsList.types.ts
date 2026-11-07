@@ -1,8 +1,10 @@
-import type { ClientRecord } from '../../../../domain/client.types'
+import type { ClientListItem } from '../../../../domain/client.types'
 
 export interface ClientsListProps {
-  clients: readonly ClientRecord[]
+  clients: readonly ClientListItem[]
   isLoading?: boolean
   loadError?: string | null
+  filterError?: string | null
   activeNameFilter?: string | null
+  hasVisitRangeFilter?: boolean
 }

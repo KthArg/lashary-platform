@@ -31,6 +31,9 @@ export function TechniqueSelector({ techniques }: { techniques: SelectableTechni
               className={STYLES.radio}
             />
             <span className={STYLES.optionName}>{technique.name}</span>
+            {technique.discountPercent !== null && (
+              <span className={STYLES.badge}>{selectorMessages.techniqueDiscountBadge(technique.discountPercent)}</span>
+            )}
           </label>
         ))}
       </fieldset>
