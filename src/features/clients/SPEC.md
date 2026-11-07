@@ -6,7 +6,7 @@ actualizado: 2026-11-05
 historias:
   - id: US-CLI-01
     estado: en_progreso
-    falta: "la columna de morosidad existe sin dato y sin filtro: espera a US-MOR-01 (criterio diferido). La ultima visita y su filtro por rango de fechas estan en construccion en las piezas 1/4 a 4/4 (contrato en la 1/4)"
+    falta: "la columna de morosidad existe sin dato y sin filtro: espera a US-MOR-01 (criterio diferido). La ultima visita y su filtro por rango de fechas estan en construccion en las piezas 1/4 a 4/4 (contrato en la 1/4, funciones SQL en la 2/4; faltan el repositorio en la 3/4 y la pantalla en la 4/4)"
   - id: US-CLI-02
     estado: terminada
     evidencia: "Pila de 5 piezas sobre main: PRs #481 (1/5, contrato scheduling-api.md), #483 (2/5, listClientAppointments), #505 (3/5, caso de uso y estado del anticipo), #506 (4/5, pestaña Citas) y #507 (5/5, paginacion y enlace desde el listado), y el PR de cierre us/US-CLI-02 a main. Criterio 1 (servicio, fecha, estado de la cita y estado de pago; las anotaciones trasladadas a US-CLI-03): deposit-status.test.ts, view-appointment-history.test.ts, history-gateways.test.ts, history-queries.test.ts, appointment-history.test.tsx. Criterio 2 (de la mas reciente a la mas antigua): client-appointments-repository.test.ts de scheduling (ordena por starts_at descendente) y appointment-history.test.tsx (la tabla respeta el orden recibido). Criterio 3 (desde el listado y desde la vista diaria): clients-list.test.tsx (listado), src/app/admin/citas/agenda/page.test.tsx (la agenda arma el enlace con clientAppointmentsPath) y DailyAgendaView.test.tsx de scheduling (la tarjeta pinta el enlace «Ver sus citas»)"
@@ -512,6 +512,14 @@ anon no lee ningún contacto (SEC-002).
   repositorio con `rpc`, `lastVisitAt` y la lectura del rango; 4/4 la columna y el filtro en la
   pantalla. La morosidad sigue diferida (US-MOR-01 está `no_iniciada`), así que la 4/4 no cierra la
   historia.
+
+## Listado con última visita (US-CLI-01, pieza 2/4)
+
+- Migración `20261105000000_clients_list_last_visit.sql`, la única de la pieza (INT-008), con dos funciones `STABLE` y `SECURITY INVOKER`, solo para `authenticated`: primero `scheduling_client_last_visits()`, el contrato de `scheduling` (`docs/contracts/scheduling-api.md`), y después `clients_list(p_name_pattern text, p_visit_from date, p_visit_to date)`, que es de `clients`.
+- `clients_list` devuelve `id, full_name, phone, email, notes, created_at, last_visit_at`: las columnas que ya lee el listado más la última visita. Une los perfiles con la función de `scheduling` con `LEFT JOIN`, así que una clienta sin visitas sale con `last_visit_at` nulo. Cada filtro se aplica solo si viene: el nombre con `ILIKE` sobre el patrón que arma el repositorio, y el rango comparando `(last_visit_at AT TIME ZONE 'America/Costa_Rica')::date`, inclusivo en los dos extremos. Con rango, una clienta sin visitas no entra. No ordena ni pagina: eso lo hace PostgREST desde el repositorio.
+- La RLS de `clients_profiles` y de `scheduling_appointments` sigue siendo la frontera (SEC-001): la administradora ve todas las clientas con su visita, una clienta que llama por PostgREST solo se ve a sí misma, y `anon` no ejecuta ninguna de las dos.
+- Todavía no la usa ningún código: el repositorio pasa a llamarla en la pieza 3/4.
+- Prueba: `supabase/tests/database/clients_list.test.sql` (sin filtros con la visita de cada una, rango inclusivo, los dos bordes de la hora del estudio, rangos abiertos, sin visitas fuera de todo rango, nombre y rango juntos, rango al revés vacío, RLS de la clienta y `anon`).
 
 ## Contrato para scheduling (US-AGE-05)
 
