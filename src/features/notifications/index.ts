@@ -11,6 +11,8 @@ import {
 import { getClientContactForReminders } from '@/features/clients'
 import { confirmationRequestRepository } from './db/confirmation-request-repository'
 import { reminderRepository } from './db/reminder-repository'
+import { clientNoticeDeliveryRepository } from './db/client-notice-delivery-repository'
+import { droppedNoticesRepository } from './db/dropped-notices-repository'
 import { runReminderCycle, type RunReminderCycleSummary } from './application/run-reminder-cycle'
 import { buildAppointmentsUrl } from './domain/appointments-url'
 import { sendConfirmationRequests, type SendConfirmationRequestsSummary } from './application/send-confirmation-requests'
@@ -90,6 +92,8 @@ export async function runNotificationsReminderCycle(): Promise<
       markSent: repo.markSent,
       markRetry: repo.markRetry,
       markExhausted: repo.markExhausted,
+      clientNotices: clientNoticeDeliveryRepository(db),
+      droppedNotices: droppedNoticesRepository(db),
       recordAttempt: repo.recordAttempt,
       primaryChannel,
       backupChannel,
@@ -105,6 +109,9 @@ export { receiveReminderCronRequest } from './http/cron-handler'
 export { loadAdminInbox } from './ui/inbox/services/inbox-service'
 export { markNoticeAction } from './ui/inbox/actions/inbox-actions'
 export { AdminInbox } from './ui/inbox/components/AdminInbox'
+export { loadMyClientNotices } from './ui/client-notices/services/client-notices-service'
+export { ClientNotices } from './ui/client-notices/components/ClientNotices'
+export type { ClientNoticesResult } from './ui/client-notices/services/client-notices-service'
 export type { AdminInboxResult, MarkNoticeActionResult } from './ui/inbox/types/inbox-results'
 export type { InboxView } from './application/inbox'
 export type { InboxNotice } from './domain/inbox-notice'

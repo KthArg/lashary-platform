@@ -391,7 +391,9 @@ Acceptance Criteria:
 • Al cancelarse o reagendarse una cita se genera una notificacion con los datos correspondientes.
 • En una cancelacion la notificacion indica si el cliente perdio el anticipo segun la politica.
 • En un reagendado la notificacion muestra el horario anterior y el nuevo.
-• El espacio liberado se refleja automaticamente en el calendario.","8","US-NOT-02","Administración","Administrador","High","3","To Do","","","Administracion"
+• El espacio liberado se refleja automaticamente en el calendario.
+
+Recibe de US-AGE-06 notificar la cancelacion a la administradora y de US-AGE-10 notificar el reagendado con el horario anterior y el nuevo (docs/process/DEPENDENCIES.md, items 9 y 12 de Criterios trasladados). Recibe ademas un criterio nuevo, aprobado por el PO: la clienta recibe aviso cuando su reagendado se rechaza o vence, con el horario que conserva (item 13); llega en «Mis citas» del portal y por WhatsApp o correo (decision del 2026-11-03).","8","US-NOT-02","Administración","Administrador","High","3","To Do","","","Administracion"
 "58","Story","Recordatorio de cita por correo electronico","User Story:
 Como cliente, quiero recibir el recordatorio de mi cita por correo electronico ademas de WhatsApp, para no olvidar mi cita aunque el envio por WhatsApp no este disponible.
 

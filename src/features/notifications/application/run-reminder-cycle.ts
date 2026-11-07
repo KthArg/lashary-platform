@@ -1,13 +1,17 @@
 import { ok, isErr, type Result } from '@/shared/result'
+import { logError } from '@/shared/logger'
 import { discoverReminders, type DiscoverRemindersDeps } from './discover-reminders'
 import { reconcileReminders, type ReconcileRemindersDeps } from './reconcile-reminders'
 import { sendDueReminders, type SendDueRemindersDeps } from './send-due-reminders'
+import { sendClientNotices, type SendClientNoticesDeps } from './send-client-notices'
 import type { SendConfirmationRequestsSummary } from './send-confirmation-requests'
-import type { RepositoryFailure, SchedulingMaintenancePort } from './ports'
+import type { DroppedNoticesRepository, RepositoryFailure, SchedulingMaintenancePort } from './ports'
 
 export type RunReminderCycleDeps = DiscoverRemindersDeps &
   ReconcileRemindersDeps &
-  SendDueRemindersDeps & {
+  SendDueRemindersDeps &
+  SendClientNoticesDeps & {
+    droppedNotices: DroppedNoticesRepository
     expireUndecidedReschedules: SchedulingMaintenancePort['expireUndecidedReschedules']
     sendConfirmationRequests: () => Promise<Result<SendConfirmationRequestsSummary, RepositoryFailure>>
   }
@@ -25,6 +29,14 @@ export type RunReminderCycleSummary = {
   retried: number
   exhausted: number
   sendErrored: number
+  noticesSent: number
+  noticesRetried: number
+  noticesExhausted: number
+  noticesErrored: number
+  noticesFailed: number
+  droppedResolved: number
+  droppedOpen: number
+  droppedFailed: number
   confirmationsSent: number
   confirmationsRetried: number
   confirmationsExhausted: number
@@ -47,6 +59,16 @@ export const runReminderCycle =
   (deps: RunReminderCycleDeps) =>
   async (): Promise<Result<RunReminderCycleSummary, RepositoryFailure>> => {
     const expiry = await deps.expireUndecidedReschedules()
+    const dropped = await deps.droppedNotices.reconcile()
+    if (isErr(dropped)) {
+      logError('notifications', 'no se pudieron reintentar los avisos perdidos', dropped.error)
+    } else if (dropped.value.open > 0) {
+      logError('notifications', `quedan ${dropped.value.open} avisos perdidos sin registrar tras reintentarlos`)
+    }
+    const notices = await sendClientNotices(deps)()
+
+    const confirmations = await deps.sendConfirmationRequests()
+    const confirmationSummary = isErr(confirmations) ? NO_CONFIRMATIONS_SENT : confirmations.value
 
     const discovery = await discoverReminders(deps)()
     if (isErr(discovery)) return discovery
@@ -56,9 +78,6 @@ export const runReminderCycle =
 
     const sending = await sendDueReminders(deps)()
     if (isErr(sending)) return sending
-
-    const confirmations = await deps.sendConfirmationRequests()
-    const confirmationSummary = isErr(confirmations) ? NO_CONFIRMATIONS_SENT : confirmations.value
 
     return ok({
       expiredReschedules: isErr(expiry) ? 0 : expiry.value,
@@ -73,6 +92,14 @@ export const runReminderCycle =
       retried: sending.value.retried,
       exhausted: sending.value.exhausted,
       sendErrored: sending.value.errored,
+      noticesSent: isErr(notices) ? 0 : notices.value.sent,
+      noticesRetried: isErr(notices) ? 0 : notices.value.retried,
+      noticesExhausted: isErr(notices) ? 0 : notices.value.exhausted,
+      noticesErrored: isErr(notices) ? 0 : notices.value.errored,
+      noticesFailed: isErr(notices) ? 1 : 0,
+      droppedResolved: isErr(dropped) ? 0 : dropped.value.resolved,
+      droppedOpen: isErr(dropped) ? 0 : dropped.value.open,
+      droppedFailed: isErr(dropped) ? 1 : 0,
       confirmationsSent: confirmationSummary.sent,
       confirmationsRetried: confirmationSummary.retried,
       confirmationsExhausted: confirmationSummary.exhausted,

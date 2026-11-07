@@ -98,4 +98,11 @@ describe('MyAppointmentsView', () => {
 
     expect(screen.queryByRole('link', { name: copy.bookCta })).toBeNull()
   })
+
+  it('pinta los avisos que le pasa la página entre el encabezado y la lista (US-NOT-02, ítem 13)', () => {
+    render(<MyAppointmentsView view={{ status: 'empty' }} notices={<p>aviso de prueba</p>} />)
+    const heading = screen.getByRole('heading', { level: 1 })
+    const notice = screen.getByText('aviso de prueba')
+    expect(heading.compareDocumentPosition(notice) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
 })

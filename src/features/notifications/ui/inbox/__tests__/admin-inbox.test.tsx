@@ -2,14 +2,14 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, cleanup, fireEvent, waitFor, within } from '@testing-library/react'
 import { fixedDate } from '@/shared/testing/fixed-clock'
 import { INBOX_LIMIT, type InboxNotice } from '@/features/notifications/domain/inbox-notice'
-import { AdminInbox } from '@/features/notifications/ui/inbox/components/AdminInbox'
-import { INBOX_TEXTS } from '@/features/notifications/ui/inbox/constants/inbox-strings'
+import { AdminInbox } from '../components/AdminInbox'
+import { INBOX_TEXTS } from '../constants/inbox-strings'
 
 const mockMarkNotice = vi.fn()
 const mockLoadMore = vi.fn()
 const mockRefresh = vi.fn()
 
-vi.mock('@/features/notifications/ui/inbox/actions/inbox-actions', () => ({
+vi.mock('../actions/inbox-actions', () => ({
   markNoticeAction: (input: unknown) => mockMarkNotice(input),
   loadMoreNoticesAction: (input: unknown) => mockLoadMore(input),
 }))
@@ -61,6 +61,26 @@ describe('AdminInbox', () => {
     expect(within(panel).getByText('Lifting de pestañas')).toBeDefined()
     expect(within(panel).getByText(/5 de noviembre.*9:00/)).toBeDefined()
     expect(within(panel).getByText(INBOX_TEXTS.unread)).toBeDefined()
+  })
+
+  it('muestra los avisos de cancelación y de reagendado con sus datos (US-NOT-02, criterios 1 a 3)', () => {
+    const cancelled: InboxNotice = { ...unreadNotice, id: 'aviso-3', kind: 'appointment_cancelled', forfeitedDeposit: 10000 }
+    const rescheduled: InboxNotice = {
+      ...unreadNotice,
+      id: 'aviso-4',
+      clientName: 'Eva Solís',
+      kind: 'appointment_rescheduled',
+      previousStartsAt: fixedDate('2026-11-04T15:00:00Z'),
+    }
+    render(<AdminInbox inbox={{ ok: true, inbox: { notices: [cancelled, rescheduled], unreadCount: 2, hasMore: false } }} />)
+    const panel = openPanel()
+
+    const [cancelledItem, rescheduledItem] = within(panel).getAllByRole('listitem')
+    expect(within(cancelledItem).getByText(INBOX_TEXTS.appointmentCancelled('Ana Pérez'))).toBeDefined()
+    expect(within(cancelledItem).getByText(/^Perdió el anticipo de ₡/)).toBeDefined()
+    expect(within(rescheduledItem).getByText(INBOX_TEXTS.appointmentRescheduled('Eva Solís'))).toBeDefined()
+    expect(within(rescheduledItem).getByText(/^Horario anterior: /)).toBeDefined()
+    expect(within(rescheduledItem).getByText(/^Horario nuevo, por aprobar: /)).toBeDefined()
   })
 
   it('marca un aviso sin leer como leído, y uno leído como no leído (criterio 3)', async () => {

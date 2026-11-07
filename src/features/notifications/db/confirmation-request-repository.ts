@@ -3,7 +3,7 @@ import { ok, err } from '@/shared/result'
 import type { ConfirmationRequest, ConfirmationRequestStatus } from '../domain/confirmation-request'
 import type { ReminderChannelKind } from '../domain/reminder'
 import type { ConfirmationRequestRepository } from '../application/ports'
-import { CHANNEL_SEND_TIMEOUT_MS } from '../channels/send-timeout'
+import { CLAIM_BATCH_SIZE, CLAIM_TTL_MINUTES } from './claim-limits'
 
 const TABLE = 'notifications_confirmation_requests'
 const CLAIM_FUNCTION = 'notifications_claim_confirmation_requests'
@@ -14,12 +14,6 @@ const PENDING_STATUS: ConfirmationRequestStatus = 'pending'
 const SENT_STATUS: ConfirmationRequestStatus = 'sent'
 const EXHAUSTED_STATUS: ConfirmationRequestStatus = 'failed'
 
-const CLAIM_TTL_MINUTES = 10
-const CLAIM_TTL_MS = CLAIM_TTL_MINUTES * 60_000
-const CHANNELS_PER_REQUEST = 2
-const WORST_CASE_MS_PER_REQUEST = CHANNEL_SEND_TIMEOUT_MS * CHANNELS_PER_REQUEST
-const CLAIM_TTL_SAFETY_MARGIN = 2
-const CLAIM_BATCH_SIZE = Math.floor(CLAIM_TTL_MS / WORST_CASE_MS_PER_REQUEST / CLAIM_TTL_SAFETY_MARGIN)
 
 interface ConfirmationRequestRow {
   id: string
