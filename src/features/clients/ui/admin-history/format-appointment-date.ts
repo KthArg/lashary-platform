@@ -1,9 +1,5 @@
-import { STUDIO_TIME_ZONE } from '@/shared/studio-time'
+import { studioDateFormat } from '@/features/clients/ui/shared/studio-date-format'
 
-const APPOINTMENT_DATE_FORMAT = new Intl.DateTimeFormat('es-CR', {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-  timeZone: STUDIO_TIME_ZONE,
-})
+const APPOINTMENT_DATE_FORMAT = studioDateFormat({ dateStyle: 'medium', timeStyle: 'short' })
 
 export const formatAppointmentDate = (startsAtMs: number): string => APPOINTMENT_DATE_FORMAT.format(startsAtMs)

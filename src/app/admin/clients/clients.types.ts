@@ -1,3 +1,5 @@
+import type { ClientsListSearchParams } from '@/features/clients'
+
 export interface AdminClientsPageProps {
-  searchParams?: Promise<{ page?: string; pageSize?: string; name?: string; visitFrom?: string; visitTo?: string }>
+  searchParams?: Promise<ClientsListSearchParams>
 }

@@ -7,7 +7,7 @@ import { clientAppointmentsPath, clientRecordPath } from '../../../client-routes
 import { CLIENTS_ARIA_LABELS, CLIENTS_BUTTON_TEXTS, CLIENTS_LABELS, CLIENTS_TABLE_HEADERS, CLIENTS_TABLE_TEXTS } from '../../constants/client-strings'
 import { CLIENTS_ICON_PATHS } from '../../constants/client-icons'
 import { EditClientDialog } from '../EditClientDialog'
-import { formatVisitDate } from '../../../shared/format-visit-date'
+import { formatVisitDate } from '@/features/clients/ui/shared/format-visit-date'
 import { clientsListStyles as STYLES } from './ClientsList.styles'
 import type { ClientRecord } from '../../../../domain/client.types'
 import type { ClientsListProps } from './ClientsList.types'

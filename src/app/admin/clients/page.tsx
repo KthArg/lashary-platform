@@ -7,6 +7,7 @@ import {
   ClientsVisitFilter,
   CLIENTS_LABELS,
   listClientsAction,
+  readClientsListParams,
 } from '@/features/clients'
 import { adminClientsStyles as STYLES } from './clients.styles'
 import type { AdminClientsPageProps } from './clients.types'
@@ -16,20 +17,12 @@ export const metadata = {
   description: 'Registro de clientas del estudio',
 }
 
-const readNumber = (value: string | undefined): number | undefined => {
-  const parsed = Number(value)
-  return value !== undefined && Number.isFinite(parsed) ? parsed : undefined
-}
-
 export default async function AdminClientsPage({ searchParams }: AdminClientsPageProps) {
   await requireAdminSession()
-  const params = (await searchParams) ?? {}
-  const name = params.name?.trim() ?? ''
-  const visitFrom = params.visitFrom ?? ''
-  const visitTo = params.visitTo ?? ''
+  const { page, pageSize, name, visitFrom, visitTo } = readClientsListParams((await searchParams) ?? {})
   const result = await listClientsAction({
-    page: readNumber(params.page),
-    pageSize: readNumber(params.pageSize),
+    page,
+    pageSize,
     name: name || undefined,
     visitFrom: visitFrom || undefined,
     visitTo: visitTo || undefined,
