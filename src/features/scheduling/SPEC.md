@@ -440,8 +440,8 @@ Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el
 - `index.ts` expone `listClientAppointments(query)`, que arma el repositorio y llama al caso de uso, como `listTechniques` de `catalog`.
 - Pruebas: `application/__tests__/list-client-appointments.test.ts` (página y tamaño saneados, recorte al máximo, fallo como `StorageFailed`) y `db/__tests__/client-appointments-repository.test.ts` (columnas, filtro, orden, rango, conteo, página vacía y fallo). El aislamiento de la RLS ya lo prueban `scheduling_appointment_client_snapshot.test.sql` y `__tests__/rls-isolation.test.ts` (SEC-002).
 
-### Última cita de cada clienta (para US-CLI-01 de `clients`)
+### Última visita de cada clienta (para US-CLI-01 de `clients`)
 
-- Pactado el 2026-11-05 en `docs/contracts/scheduling-api.md` (INT-003) y cambiado el 2026-11-06 a cualquier estado, sin implementar todavía: la función SQL `scheduling_client_last_appointments()` llega en la pieza 2/4 de US-CLI-01, en la misma migración que `clients_list` de `clients`, que es su único consumidor.
-- Devuelve `(client_id, last_appointment_at)`: el `starts_at` de la cita más reciente de cada clienta, en cualquier estado y aunque sea futura. Las citas sin clienta no cuentan. `SECURITY INVOKER`: la RLS de `scheduling_appointments` decide qué ve quien llama (SEC-001).
-- Prueba prevista: `supabase/tests/database/scheduling_client_last_appointments.test.sql`.
+- Pactado el 2026-11-05 en `docs/contracts/scheduling-api.md` (INT-003), sin implementar todavía: la función SQL `scheduling_client_last_visits()` llega en la pieza 2/4 de US-CLI-01, en la misma migración que `clients_list` de `clients`, que es su único consumidor.
+- Devuelve `(client_id, last_visit_at)`: el `starts_at` de la cita `completed` más reciente de cada clienta. Las demás citas, y las que no tienen clienta, no cuentan. `SECURITY INVOKER`: la RLS de `scheduling_appointments` decide qué ve quien llama (SEC-001).
+- Prueba prevista: `supabase/tests/database/scheduling_client_last_visits.test.sql`.
