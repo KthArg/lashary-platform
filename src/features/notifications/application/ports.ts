@@ -1,6 +1,7 @@
 import type { Result } from '@/shared/result'
 import type { ReminderChannelKind, ReminderSnapshot } from '../domain/reminder'
 import type { ReminderAttempt } from '../domain/reminder-attempt'
+import type { ConfirmationRequest } from '../domain/confirmation-request'
 import type { InboxNotice } from '../domain/inbox-notice'
 import type { ChannelNotConfigured, ChannelSendFailed, InboxStorageFailed } from '../domain/errors'
 
@@ -57,6 +58,19 @@ export interface ReminderRepository {
   recordAttempt(attempt: ReminderAttempt): Promise<Result<void, RepositoryFailure>>
 }
 
+export type NotClaimed = 'not-claimed'
+
+export type ClaimedUpdateFailure = RepositoryFailure | NotClaimed
+
+export interface ConfirmationRequestRepository {
+  claimPending(now: Date): Promise<Result<ConfirmationRequest[], RepositoryFailure>>
+  isStillClaimed(id: string): Promise<Result<boolean, RepositoryFailure>>
+  releaseToPending(id: string): Promise<Result<void, ClaimedUpdateFailure>>
+  markSent(id: string, channel: ReminderChannelKind, sentAt: Date): Promise<Result<void, ClaimedUpdateFailure>>
+  markRetry(id: string, attempts: number, error: string): Promise<Result<void, ClaimedUpdateFailure>>
+  markExhausted(id: string, attempts: number, error: string): Promise<Result<void, ClaimedUpdateFailure>>
+}
+
 export type NoticeNotFound = 'notice-not-found'
 
 export type SetReadOutcome = { updated: boolean }
@@ -71,7 +85,15 @@ export interface InboxRepository {
   setReadAt(id: string, readAt: Date | null): Promise<Result<SetReadOutcome, InboxStorageFailed>>
 }
 
-export type ChannelSendInput ={ reminderId: string; contact: ContactInfo; message: string; templateVariables: string[] }
+export type MessagePurpose = 'reminder' | 'appointment_confirmation'
+
+export type ChannelSendInput = {
+  messageId: string
+  purpose: MessagePurpose
+  contact: ContactInfo
+  message: string
+  templateVariables: string[]
+}
 
 export interface NotificationChannel {
   readonly kind: ReminderChannelKind

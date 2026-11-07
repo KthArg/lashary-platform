@@ -13,6 +13,8 @@ export type MyAppointmentView = {
   status: string
   amounts: string | null
   heldNote: string | null
+  canConfirm: boolean
+  confirmedNote: string | null
 }
 
 export type MyAppointmentsScreen =

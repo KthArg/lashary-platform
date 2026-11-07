@@ -25,13 +25,21 @@ export type AgendaEntryView = {
   status: string
   isPending: boolean
   isRejected: boolean
+  isUnconfirmed: boolean
+  confirmLabel: string | null
   links: (ClientLinkTargets & { recordLabel: string; appointmentsLabel: string }) | null
 }
 
 export type DailyAgendaViewModel = { nav: AgendaDayNav } & (
   | { status: 'error' }
   | { status: 'empty' }
-  | { status: 'ready'; entries: AgendaEntryView[]; truncatedNotice: string | null; delinquencyNotice: string | null }
+  | {
+      status: 'ready'
+      entries: AgendaEntryView[]
+      truncatedNotice: string | null
+      delinquencyNotice: string | null
+      confirmationNotice: string | null
+    }
 )
 
 export type ClosingOptionView = { outcome: 'completed' | 'no_show'; label: string; summary: string }

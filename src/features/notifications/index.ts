@@ -6,10 +6,14 @@ import {
   listSchedulingAppointmentsForReminders,
   getSchedulingAppointmentForReminder,
   expireSchedulingUndecidedReschedules,
+  SCHEDULING_MY_APPOINTMENTS_PATH,
 } from '@/features/scheduling'
 import { getClientContactForReminders } from '@/features/clients'
+import { confirmationRequestRepository } from './db/confirmation-request-repository'
 import { reminderRepository } from './db/reminder-repository'
 import { runReminderCycle, type RunReminderCycleSummary } from './application/run-reminder-cycle'
+import { buildAppointmentsUrl } from './domain/appointments-url'
+import { sendConfirmationRequests, type SendConfirmationRequestsSummary } from './application/send-confirmation-requests'
 import type { AppointmentSnapshot, ContactInfo, RepositoryFailure } from './application/ports'
 import { metaWhatsAppChannel, readMetaWhatsAppConfigFromEnv } from './channels/meta-whatsapp-channel'
 import { resendEmailChannel, readResendEmailConfigFromEnv } from './channels/resend-email-channel'
@@ -51,6 +55,24 @@ export async function runNotificationsReminderCycle(): Promise<
       return isErr(result) ? err(REPOSITORY_FAILURE) : ok(result.value)
     }
 
+    const primaryChannel = metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env))
+    const backupChannel = resendEmailChannel(readResendEmailConfigFromEnv(process.env))
+
+    const appointmentsUrl = buildAppointmentsUrl(process.env.NEXT_PUBLIC_SITE_URL, SCHEDULING_MY_APPOINTMENTS_PATH)
+    const sendConfirmations = appointmentsUrl
+      ? sendConfirmationRequests({
+          requests: confirmationRequestRepository(db),
+          getContact,
+          primaryChannel,
+          backupChannel,
+          appointmentsUrl,
+          clock: systemClock,
+        })
+      : async (): Promise<Result<SendConfirmationRequestsSummary, RepositoryFailure>> => {
+          console.error('[notifications] NEXT_PUBLIC_SITE_URL no es una URL absoluta: no se mandan confirmaciones sin enlace')
+          return err(REPOSITORY_FAILURE)
+        }
+
     return await runReminderCycle({
       expireUndecidedReschedules,
       listUpcoming,
@@ -69,8 +91,9 @@ export async function runNotificationsReminderCycle(): Promise<
       markRetry: repo.markRetry,
       markExhausted: repo.markExhausted,
       recordAttempt: repo.recordAttempt,
-      primaryChannel: metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env)),
-      backupChannel: resendEmailChannel(readResendEmailConfigFromEnv(process.env)),
+      primaryChannel,
+      backupChannel,
+      sendConfirmationRequests: sendConfirmations,
     })()
   } finally {
     await closeSystemClient(db)

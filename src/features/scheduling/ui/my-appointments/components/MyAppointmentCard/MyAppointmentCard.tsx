@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { reschedulePageMessages, reschedulePath } from '../../../reschedule/constants/reschedule-page-strings'
 import { CancelAppointment } from '../CancelAppointment'
+import { ConfirmAppointment } from '../ConfirmAppointment'
 import { myAppointmentCardStyles as STYLES } from './MyAppointmentCard.styles'
 import type { MyAppointmentCardProps } from './MyAppointmentCard.types'
 
@@ -18,6 +19,14 @@ export function MyAppointmentCard({ appointment, onCancelled }: MyAppointmentCar
         <p role="note" className={STYLES.heldNote}>
           {appointment.heldNote}
         </p>
+      )}
+      {appointment.confirmedNote && (
+        <p role="note" className={STYLES.heldNote}>
+          {appointment.confirmedNote}
+        </p>
+      )}
+      {appointment.canConfirm && (
+        <ConfirmAppointment appointmentId={appointment.id} slot={appointment.slot} onConfirmed={onCancelled} />
       )}
       <Link
         href={reschedulePath(appointment.id)}

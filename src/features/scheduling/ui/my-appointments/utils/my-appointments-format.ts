@@ -1,6 +1,8 @@
 import type { MyAppointment } from '../../../application/ports'
+import { CONFIRMABLE_STATUS } from '../../../domain/appointment-confirmation.constants'
 import { formatAppointmentSlot } from '../../appointment-display/utils/format-appointment-slot'
 import { formatAppointmentSummary } from '../../appointment-display/utils/format-appointment-summary'
+import { CONFIRMED_APPOINTMENT_STATUS, confirmationMessages } from '../constants/confirmation-strings'
 import { myAppointmentsMessages } from '../constants/my-appointments-strings'
 import type { MyAppointmentsData, MyAppointmentView, MyAppointmentsScreen } from '../types/my-appointments.types'
 
@@ -24,6 +26,11 @@ export function toMyAppointmentView(appointment: MyAppointment): MyAppointmentVi
           formatAppointmentSlot(appointment.heldSchedule.startsAtMs, appointment.heldSchedule.endsAtMs),
         )
       : null,
+    canConfirm: appointment.status === CONFIRMABLE_STATUS,
+    confirmedNote:
+      appointment.status === CONFIRMED_APPOINTMENT_STATUS && appointment.depositRequired > 0
+        ? confirmationMessages.confirmedNote
+        : null,
   }
 }
 

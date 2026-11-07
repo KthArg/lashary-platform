@@ -362,6 +362,15 @@ Citas de paquete (pieza 11, hallazgo M1 del audit del 2026-11-01): una cita de p
 
 El ledger solo se escribe al cerrar (pieza 12, hallazgos M3 y B4 del audit del 2026-11-01): la migración `20261102000001` quita a staff el `INSERT` directo sobre `payments_ledger_entries` y el `EXECUTE` de `payments_record_close_entries`; solo la escribe `scheduling_close_appointment` (`SECURITY DEFINER`), así que un asiento suelto ya no puede bloquear el cierre de una cita. Dos `CHECK` en `scheduling_appointments`: una cita con `closed_at` solo puede estar `completed` o `no_show`, y una ausencia no lleva servicio prestado. **Deuda:** el sentido contrario (estado terminal implica `closed_at`) no se fuerza porque otras historias siembran citas completadas sin cerrarlas; hoy lo garantiza solo la función de cierre. Pruebas: `payments_ledger_write_only_through_close.test.sql` (8 aserciones), `payments_ledger_entries.test.sql` ajustada al nuevo contexto y `ledger-rls-isolation.test.ts`.
 
+## US-NOT-08 — confirmar la asistencia
+
+- Capas de confirmar una cita y de su plazo: `application/confirm-appointment.ts`, `db/appointment-confirmation-repository.ts` y `domain/appointment-confirmation.ts`. El detalle de la historia está en el SPEC de `notifications`, su dueña.
+- «Mis citas»: `ui/my-appointments/components/ConfirmAppointment` y `confirmAppointmentAction`, con la política de cancelación al confirmar y en la tarjeta de una cita `confirmed` con anticipo.
+- Agenda diaria: etiqueta «Sin confirmar» dentro del plazo y `ManualConfirmationControl`, con `confirmAppointmentManuallyAction` para la administradora.
+- Lógica del plazo en el panel: `ui/confirmation-policy` (action, servicio y validación).
+- Pantalla `/admin/citas/confirmacion`: `ConfirmationPolicyPage` en `index.ts` y `ConfirmationPolicyLoading` y `confirmationPolicyMessages` en `client.ts`.
+- `index.ts` exporta `SCHEDULING_MY_APPOINTMENTS_PATH`, la ruta de «Mis citas» que enlaza el mensaje de `notifications` (docs/contracts/scheduling-api.md). La nota de la tarjeta dice «Tu asistencia está confirmada» porque también la ve la clienta cuya confirmación registró la administradora.
+
 ## Criterios recibidos de US-AGE-01
 
 Traslado aprobado por el PO el 2026-10-14 y registrado en `docs/process/DEPENDENCIES.md`.

@@ -6,6 +6,7 @@ export const CITAS_SECTION = {
     availability: 'Disponibilidad',
     alerts: 'Alertas',
     cancellation: 'Cancelación',
+    confirmation: 'Confirmación',
     reschedule: 'Reagendados',
   },
 } as const
@@ -16,5 +17,6 @@ export const CITAS_ROUTES = {
   availability: '/admin/citas/disponibilidad',
   alerts: '/admin/citas/alertas',
   cancellation: '/admin/citas/cancelacion',
+  confirmation: '/admin/citas/confirmacion',
   reschedule: '/admin/citas/reagendados',
 } as const

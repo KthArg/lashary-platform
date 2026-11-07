@@ -14,11 +14,12 @@ export async function DailyAgendaPage({
   clientLinks: ClientLinks
 }) {
   await requireAdminSession()
-  const today = studioDateOf(systemClock())
+  const now = systemClock()
+  const today = studioDateOf(now)
   const date = readAgendaDate(searchParams, today)
   const [view, unclosed] = await Promise.all([
-    dailyAgendaService.load({ date, today, clientLinks }),
-    dailyAgendaService.loadUnclosed(systemClock().getTime()),
+    dailyAgendaService.load({ date, today, nowMs: now.getTime(), clientLinks }),
+    dailyAgendaService.loadUnclosed(now.getTime()),
   ])
   return <DailyAgendaView view={view} unclosed={unclosed} />
 }

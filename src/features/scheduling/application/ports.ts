@@ -10,9 +10,11 @@ import type {
   AppointmentNotPending,
   AppointmentScheduleChanged,
   AppointmentNotReschedulable,
+  AppointmentNotConfirmable,
   CancellationConsequenceChanged,
   ClientNotRegistered,
   InvalidCancellationWindow,
+  InvalidConfirmationDeadline,
   InvalidRescheduleLimit,
   PackageNotAvailable,
   PriceChanged,
@@ -262,6 +264,21 @@ export type CancellationWindowChange = { previousHours: number; newHours: number
 export interface CancellationPolicyRepository {
   getWindowHours(): Promise<Result<number, StorageFailed>>
   changeWindowHours(hours: number): Promise<Result<CancellationWindowChange, StorageFailed | InvalidCancellationWindow>>
+}
+
+export type ConfirmedAppointment = { appointmentId: string; windowHours: number; depositRequired: number }
+
+export type ConfirmationError = AppointmentNotConfirmable | StorageFailed
+
+export interface AppointmentConfirmationRepository {
+  confirm(appointmentId: string): Promise<Result<ConfirmedAppointment, ConfirmationError>>
+}
+
+export type ConfirmationDeadlineChange = { previousHours: number; newHours: number }
+
+export interface ConfirmationPolicyRepository {
+  getDeadlineHours(): Promise<Result<number, StorageFailed>>
+  changeDeadlineHours(hours: number): Promise<Result<ConfirmationDeadlineChange, StorageFailed | InvalidConfirmationDeadline>>
 }
 
 export type RescheduleLimitChange = { previousMax: number; newMax: number }
