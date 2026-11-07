@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { loadTechniqueSelectionPageData } from '../load-technique-selection-page'
+import { MAX_SELECTION_PAGE_SERVICES } from '../constants'
 
 const mockGetAuthSession = vi.fn()
 const mockListTechniques = vi.fn()
@@ -10,17 +11,20 @@ vi.mock('@/features/auth', () => ({
   getAuthSession: () => mockGetAuthSession(),
   AUTH_ROLES: { SUPERADMIN: 'superadmin', ADMIN: 'admin', CLIENTE: 'cliente' },
 }))
-vi.mock('@/features/catalog', () => ({
-  listTechniques: (query: unknown) => mockListTechniques(query),
-  listPackages: (query: unknown) => mockListPackages(query),
-  listActivePromotions: (query: unknown) => mockListActivePromotions(query),
-  applyDiscount: (price: number, discountPercent: number) => Math.round((price * (100 - discountPercent)) / 100),
-}))
+vi.mock('@/features/catalog', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/features/catalog')>()
+  return {
+    listTechniques: (query: unknown) => mockListTechniques(query),
+    listPackages: (query: unknown) => mockListPackages(query),
+    listActivePromotions: (query: unknown) => mockListActivePromotions(query),
+    applyDiscount: actual.applyDiscount,
+  }
+})
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mockListPackages.mockResolvedValue({ items: [], page: 1, pageSize: 100, total: 0 })
-  mockListActivePromotions.mockResolvedValue({ items: [], page: 1, pageSize: 100, total: 0 })
+  mockListPackages.mockResolvedValue({ items: [], page: 1, pageSize: MAX_SELECTION_PAGE_SERVICES, total: 0 })
+  mockListActivePromotions.mockResolvedValue({ items: [], page: 1, pageSize: MAX_SELECTION_PAGE_SERVICES, total: 0 })
 })
 
 describe('loadTechniqueSelectionPageData', () => {
@@ -51,21 +55,21 @@ describe('loadTechniqueSelectionPageData', () => {
         { id: 't2', name: 'Laminado de cejas' },
       ],
       page: 1,
-      pageSize: 100,
+      pageSize: MAX_SELECTION_PAGE_SERVICES,
       total: 2,
     })
     mockListPackages.mockResolvedValue({
       items: [{ id: 'p1', name: 'Combo clásicas', durationTotalMin: 110, price: 20000, techniqueIds: [] }],
       page: 1,
-      pageSize: 100,
+      pageSize: MAX_SELECTION_PAGE_SERVICES,
       total: 1,
     })
 
     const data = await loadTechniqueSelectionPageData()
 
-    expect(mockListTechniques).toHaveBeenCalledWith({ activeOnly: true, pageSize: 100 })
-    expect(mockListPackages).toHaveBeenCalledWith({ activeOnly: true, pageSize: 100 })
-    expect(mockListActivePromotions).toHaveBeenCalledWith({ pageSize: 100 })
+    expect(mockListTechniques).toHaveBeenCalledWith({ activeOnly: true, pageSize: MAX_SELECTION_PAGE_SERVICES })
+    expect(mockListPackages).toHaveBeenCalledWith({ activeOnly: true, pageSize: MAX_SELECTION_PAGE_SERVICES })
+    expect(mockListActivePromotions).toHaveBeenCalledWith({ pageSize: MAX_SELECTION_PAGE_SERVICES })
     expect(data).toEqual({
       status: 'ok',
       techniques: [
@@ -94,7 +98,7 @@ describe('loadTechniqueSelectionPageData', () => {
         { id: 't2', name: 'Laminado de cejas' },
       ],
       page: 1,
-      pageSize: 100,
+      pageSize: MAX_SELECTION_PAGE_SERVICES,
       total: 2,
     })
     mockListPackages.mockResolvedValue({
@@ -108,7 +112,7 @@ describe('loadTechniqueSelectionPageData', () => {
         },
       ],
       page: 1,
-      pageSize: 100,
+      pageSize: MAX_SELECTION_PAGE_SERVICES,
       total: 1,
     })
 
@@ -139,7 +143,7 @@ describe('loadTechniqueSelectionPageData', () => {
     mockListTechniques.mockResolvedValue({
       items: [{ id: 't1', name: 'Volumen ruso' }],
       page: 1,
-      pageSize: 100,
+      pageSize: MAX_SELECTION_PAGE_SERVICES,
       total: 1,
     })
     mockListPackages.mockResolvedValue({
@@ -153,7 +157,7 @@ describe('loadTechniqueSelectionPageData', () => {
         },
       ],
       page: 1,
-      pageSize: 100,
+      pageSize: MAX_SELECTION_PAGE_SERVICES,
       total: 1,
     })
 
@@ -167,11 +171,11 @@ describe('loadTechniqueSelectionPageData', () => {
 
   it('un paquete con promoción vigente trae el descuento y el precio ya rebajado (D-PROM-3)', async () => {
     mockGetAuthSession.mockResolvedValue({ user: { id: 'u1' }, role: 'cliente' })
-    mockListTechniques.mockResolvedValue({ items: [], page: 1, pageSize: 100, total: 0 })
+    mockListTechniques.mockResolvedValue({ items: [], page: 1, pageSize: MAX_SELECTION_PAGE_SERVICES, total: 0 })
     mockListPackages.mockResolvedValue({
       items: [{ id: 'p1', name: 'Combo clásicas', durationTotalMin: 110, price: 20000, techniqueIds: [] }],
       page: 1,
-      pageSize: 100,
+      pageSize: MAX_SELECTION_PAGE_SERVICES,
       total: 1,
     })
     mockListActivePromotions.mockResolvedValue({
@@ -181,7 +185,7 @@ describe('loadTechniqueSelectionPageData', () => {
         { id: 'c', target: { type: 'technique', techniqueId: 't1' }, discountPercent: 99 },
       ],
       page: 1,
-      pageSize: 100,
+      pageSize: MAX_SELECTION_PAGE_SERVICES,
       total: 3,
     })
 
@@ -191,6 +195,32 @@ describe('loadTechniqueSelectionPageData', () => {
     if (data.status === 'ok') {
       expect(data.packages[0].discountPercent).toBe(30)
       expect(data.packages[0].priceDiscounted).toBe(14000)
+    }
+  })
+
+  it('el precio rebajado redondea al colón con el applyDiscount real de catalog (DOM-001)', async () => {
+    mockGetAuthSession.mockResolvedValue({ user: { id: 'u1' }, role: 'cliente' })
+    mockListTechniques.mockResolvedValue({ items: [], page: 1, pageSize: MAX_SELECTION_PAGE_SERVICES, total: 0 })
+    mockListPackages.mockResolvedValue({
+      items: [{ id: 'p1', name: 'Combo clásicas', durationTotalMin: 110, price: 12345, techniqueIds: [] }],
+      page: 1,
+      pageSize: MAX_SELECTION_PAGE_SERVICES,
+      total: 1,
+    })
+    mockListActivePromotions.mockResolvedValue({
+      items: [{ id: 'a', target: { type: 'package', packageId: 'p1' }, discountPercent: 15 }],
+      page: 1,
+      pageSize: MAX_SELECTION_PAGE_SERVICES,
+      total: 1,
+    })
+
+    const data = await loadTechniqueSelectionPageData()
+
+    expect(data.status).toBe('ok')
+    if (data.status === 'ok') {
+      // round(12345 * (100 - 15) / 100) = round(10493.25) = 10493, misma fórmula que
+      // catalog_booking_terms/catalog_package_booking_terms en SQL.
+      expect(data.packages[0].priceDiscounted).toBe(10493)
     }
   })
 })
