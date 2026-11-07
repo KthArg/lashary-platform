@@ -12,7 +12,7 @@ historias:
     evidencia: "Pila de 5 piezas sobre main: PRs #481 (1/5, contrato scheduling-api.md), #483 (2/5, listClientAppointments), #505 (3/5, caso de uso y estado del anticipo), #506 (4/5, pestaña Citas) y #507 (5/5, paginacion y enlace desde el listado), y el PR de cierre us/US-CLI-02 a main. Criterio 1 (servicio, fecha, estado de la cita y estado de pago; las anotaciones trasladadas a US-CLI-03): deposit-status.test.ts, view-appointment-history.test.ts, history-gateways.test.ts, history-queries.test.ts, appointment-history.test.tsx. Criterio 2 (de la mas reciente a la mas antigua): client-appointments-repository.test.ts de scheduling (ordena por starts_at descendente) y appointment-history.test.tsx (la tabla respeta el orden recibido). Criterio 3 (desde el listado y desde la vista diaria): clients-list.test.tsx (listado), src/app/admin/citas/agenda/page.test.tsx (la agenda arma el enlace con clientAppointmentsPath) y DailyAgendaView.test.tsx de scheduling (la tarjeta pinta el enlace «Ver sus citas»)"
   - id: US-CLI-03
     estado: en_progreso
-    falta: "Piezas 1/6 y 2/6 hechas: contrato y funcion scheduling_appointment_client con su pgTAP. Faltan la tabla clients_appointment_notes con su trigger, RLS y prueba SEC-002 (3/6), dominio y ordenes (4/6), actions y lectura por lote (5/6) y la pantalla (6/6). Ningun criterio esta demostrado todavia"
+    falta: "Piezas 1/6 a 3/6 hechas: contrato, funcion scheduling_appointment_client y tabla clients_appointment_notes con sus triggers, RLS de administradora y pgTAP con SEC-002. El criterio 3 (fecha de creacion y de modificacion) esta demostrado en la base por clients_appointment_notes.test.sql; falta mostrarlas en pantalla. Faltan dominio y ordenes (4/6), actions y lectura por lote (5/6) y la pantalla (6/6); los criterios 1 y 2 no estan demostrados todavia"
   - id: US-CLI-04
     estado: terminada
     evidencia: "Pila de 20 piezas: PRs #369 (1/20, esquema), #370 (2/20, bucket), #372, #374, #384, #385, #394, #395, #396, #404, #405, #406, #407, #408 (14/20, cierre funcional), #409 y #410 (mejoras visuales) y los PRs de las piezas 17/20 a 20/20 (auditoria del 2026-10-19). Criterio 1 (estudio con texto e imagenes): record-content.test.ts, record-changes.test.ts, record-commands.test.ts, study-editor.test.tsx, add-record-image.test.ts, record-image.test.ts, record-image-action.test.ts, images-editor.test.tsx. Criterio 2 (alergias, sensibilidades, condiciones): clients_record_versions.test.sql (categorias), record-content.test.ts, precautions-editor.test.tsx. Criterio 3 (solo la administradora y cada acceso en la bitacora): clients_record_versions.test.sql y clients_record_images_bucket.test.sql (aislamiento SEC-002 frente a clienta y anon), view-record.test.ts (bitacora fail-closed), record-gateways.test.ts, record-actions.test.ts, record-queries.test.ts. Criterio 4 (historial de cambios): clients_record_versions.test.sql (sin UPDATE ni DELETE, una sucesora por version), record-changes.test.ts, record-commands.test.ts (dos cambios simultaneos), record-history.test.ts, record-view.test.tsx. Criterio 5 (imagenes sin URL publica): clients_record_images_bucket.test.sql (bucket privado), record-image-storage.test.ts (URLs firmadas de 5 minutos), images-editor.test.tsx"
@@ -170,8 +170,8 @@ El listado con filtros y paginación **no pertenece a esta historia**: es US-CLI
 esta. US-CLI-05 solo necesita buscar por teléfono para detectar el duplicado.
 
 En el historial de citas (US-CLI-02), las anotaciones dicen "Sin dato" hasta US-CLI-03. Esa historia
-arrancó el 2026-11-07 con el contrato (pieza 1/6); todavía no hay tabla, código ni pantalla de
-anotaciones.
+arrancó el 2026-11-07; ya existe la tabla `clients_appointment_notes` (pieza 3/6, ver «Anotaciones por
+cita»), pero todavía no hay código ni pantalla que la use.
 
 ## Contrato público (`src/features/clients/index.ts`)
 
@@ -564,6 +564,37 @@ anon no lee ningún contacto (SEC-002).
 - `buildClientsListUrl` escribe y borra `visitFrom` y `visitTo` como `name`, conservando el resto de la consulta. `page.tsx` lee la URL con `readClientsListParams` (`ui/admin-clients/clients-list-params.ts`): de un parámetro repetido toma el primer valor, y las fechas pasan por `readVisitDate`, así que una fecha que no existe (`2026-02-30`) no cuenta como filtro aplicado ni queda escrita en el campo.
 - Con `reason: 'invalid-visit-range'` la lista muestra el aviso (`filterError`, `role="alert"`) **sin** *Reintentar*, porque reintentar no arregla un rango al revés; un fallo de la base sigue saliendo como `loadError` con *Reintentar*. Con un rango activo y sin resultados, la lista dice «Ninguna clienta coincide con los filtros aplicados» y no que no hay clientas registradas (UI-003).
 - Pruebas: `ui/shared/__tests__/format-visit-date.test.ts` (el borde de la hora del estudio, solo el día), `ui/admin-clients/__tests__/clients-visit-filter.test.tsx` (dos campos de fecha, un extremo, conserva el nombre y vuelve a la primera página, quitar fechas), `clients-list-url.test.ts` (rango, extremos vacíos, el nombre conserva el rango), `clients-list-params.test.ts` (fecha inexistente, parámetro repetido, número ilegible) y `clients-list.test.tsx` (la fecha, «Sin visitas», el vacío con filtros y el aviso sin *Reintentar*). `CLIENT_LIST_FIXTURES` (`__tests__/client-fixtures.ts`) da una clienta con visita y otra sin ella.
+
+## Anotaciones por cita (US-CLI-03, piezas 2/6 y 3/6)
+
+- Pieza 2/6: `scheduling` expone `scheduling_appointment_client(p_appointment_id) → uuid`
+  (`20261107000000_scheduling_appointment_client_fn.sql`), contrato en `docs/contracts/scheduling-api.md`.
+- Pieza 3/6: migración `20261107000001_clients_appointment_notes.sql`, la única de la pieza (INT-008).
+  Tabla `clients_appointment_notes`: `id`, `client_id` (FK a `clients_profiles`, `ON DELETE RESTRICT`,
+  ADR-0009), `appointment_id` (sin FK, ARCH-005), `body`, `created_by` (FK a `auth.users`),
+  `created_at` y `updated_at`. Índice en `appointment_id`, porque toda lectura filtra por esa columna
+  (la página del historial pide las anotaciones de sus citas en una sola consulta, PERF-005), y en
+  las dos FK, `client_id` y `created_by` (PERF-003).
+- `body` no lleva espacios al inicio ni al final y tiene entre 1 y 2000 caracteres (`CHECK`). La 4/6
+  usará el mismo tope en TypeScript (DOM-007).
+- Trigger `clients_appointment_notes_belongs` (`BEFORE INSERT OR UPDATE`, `SECURITY INVOKER`). En
+  INSERT llama a `scheduling_appointment_client` y, si la cita no es de `client_id` (de otra clienta,
+  inexistente o sin clienta), rechaza con `23503` y la restricción
+  `clients_appointment_notes_appointment_of_client`. En UPDATE solo deja cambiar `body`: tocar
+  `appointment_id`, `client_id`, `created_by` o `created_at` da `23514` con
+  `clients_appointment_notes_only_body_changes`. La 5/6 traduce esos dos nombres a textos de pantalla.
+- Trigger `clients_appointment_notes_set_updated_at` con `clients_set_updated_at()`: la base pone
+  `updated_at = now()` en cada UPDATE, no la app (criterio 3).
+- RLS solo de administradora (`auth_is_admin()`) en SELECT, INSERT, UPDATE y DELETE; INSERT exige
+  además `created_by = auth.uid()`. Cualquier administradora edita o borra cualquier anotación.
+  `anon` no tiene ningún permiso sobre la tabla. Una clienta no ve ni las anotaciones de sus propias
+  citas (SEC-001).
+- Prueba: `supabase/tests/database/clients_appointment_notes.test.sql`, 20 aserciones. Cubren varias
+  anotaciones por cita; la cita de otra clienta o inexistente, rechazada; el texto vacío, con espacios
+  o de 2001 caracteres, rechazado (2000 entra); firmar a nombre de otra persona, rechazado; mover la
+  anotación de cita o reescribir `created_at`, rechazado; editar avanza `updated_at` y conserva
+  `created_at`; eliminar. Para SEC-002: una clienta con token válido no lee, crea, edita ni elimina, y
+  la anotación queda intacta; `anon` no lee ni crea.
 
 ## Contrato para scheduling (US-AGE-05)
 
