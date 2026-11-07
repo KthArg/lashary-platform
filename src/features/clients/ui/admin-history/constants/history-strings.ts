@@ -14,6 +14,24 @@ export const NOTE_ERROR_MESSAGES = {
   storageFailed: 'No se pudo guardar el cambio en la anotación. Intenta de nuevo.',
 } as const
 
+export const NOTE_LABELS = {
+  empty: 'Sin anotaciones',
+  add: 'Agregar anotación',
+  newField: 'Nueva anotación',
+  editField: 'Editar anotación',
+  edit: 'Editar',
+  editButton: (createdAt: string) => `Editar la anotación del ${createdAt}`,
+  remove: 'Eliminar',
+  removeButton: (createdAt: string) => `Eliminar la anotación del ${createdAt}`,
+  save: 'Guardar',
+  saving: 'Guardando…',
+  cancel: 'Cancelar',
+  created: (date: string) => `Creada ${date}`,
+  edited: (date: string) => `Editada ${date}`,
+  confirmTitle: '¿Eliminar esta anotación?',
+  confirmMessage: 'Se borra para siempre y no se puede recuperar.',
+} as const
+
 export const HISTORY_ERROR_MESSAGES = {
   clientNotFound: 'No encontramos a esta clienta.',
   historyUnavailable: 'No se pudo cargar el historial de citas. Intenta de nuevo.',
@@ -24,7 +42,6 @@ export const HISTORY_LABELS = {
   loading: 'Cargando historial de citas…',
   empty: 'Esta clienta todavía no tiene citas.',
   retry: 'Reintentar',
-  pendingValue: 'Sin dato',
   unexpectedError: 'No se pudo cargar el historial de citas.',
 } as const
 

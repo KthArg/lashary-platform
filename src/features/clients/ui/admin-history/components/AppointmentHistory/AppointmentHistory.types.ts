@@ -1,5 +1,6 @@
-import type { AppointmentHistoryEntry } from '@/features/clients/domain/history/appointment-history.types'
+import type { AppointmentHistoryEntryWithNotes } from '../../types/history-results'
 
 export interface AppointmentHistoryProps {
-  entries: readonly AppointmentHistoryEntry[]
+  clientId: string
+  entries: readonly AppointmentHistoryEntryWithNotes[]
 }

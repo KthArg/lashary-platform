@@ -23,7 +23,7 @@ vi.mock('@/features/clients', async (importOriginal) => ({
 import AdminAppointmentsPage from './page'
 import { HISTORY_LABELS, HISTORY_PAGINATION_TEXTS, appointmentHistoryUrl } from '@/features/clients'
 
-const entry = { id: 'cita-1', startsAtMs: Date.parse('2026-09-15T16:00:00Z'), status: 'completed', serviceName: 'Clásicas', depositStatus: 'none' }
+const entry = { id: 'cita-1', startsAtMs: Date.parse('2026-09-15T16:00:00Z'), status: 'completed', serviceName: 'Clásicas', depositStatus: 'none', notes: [] }
 
 const renderPage = async (page?: string) =>
   render(await AdminAppointmentsPage({ params: Promise.resolve({ id: CLIENT_ID }), searchParams: Promise.resolve({ page }) }))
