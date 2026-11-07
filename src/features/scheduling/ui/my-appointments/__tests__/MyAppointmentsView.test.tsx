@@ -25,6 +25,8 @@ const appointment: MyAppointmentView = {
   status: copy.status.approved,
   amounts: 'Precio ₡35.000 · Anticipo ₡10.000',
   heldNote: null,
+  canConfirm: false,
+  confirmedNote: null,
 }
 
 describe('MyAppointmentsView', () => {
