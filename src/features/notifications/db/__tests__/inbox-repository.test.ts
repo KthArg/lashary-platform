@@ -11,6 +11,8 @@ const row = {
   client_name: 'Ana Pérez',
   service_name: 'Lifting de pestañas',
   starts_at: '2026-11-05T15:00:00+00:00',
+  previous_starts_at: null,
+  forfeited_deposit: null,
   read_at: null,
   created_at: '2026-10-29T18:00:00+00:00',
 }
@@ -44,6 +46,26 @@ describe('inboxRepository', () => {
     ])
     const converted = { appointmentId: 'cita-1', clientName: 'Ana Pérez', readAt: null, startsAt: new Date('2026-11-05T15:00:00Z') }
     expect(isOk(result) && result.value).toEqual({ notices: [expect.objectContaining(converted)], hasMore: false })
+  })
+
+  it('convierte los avisos de cancelación y de reagendado con sus datos propios (US-NOT-02, criterios 2 y 3)', async () => {
+    const cancelled = { ...row, id: 'aviso-2', kind: 'appointment_cancelled', forfeited_deposit: 10000 }
+    const rescheduled = { ...row, id: 'aviso-3', kind: 'appointment_rescheduled', previous_starts_at: '2026-11-04T15:00:00+00:00' }
+    const { db } = createFakeDb({ data: [cancelled, rescheduled, row], error: null })
+
+    const result = await inboxRepository(db).listRecent({ offset: 0, limit: INBOX_LIMIT })
+
+    expect(isOk(result) && result.value.notices.map((notice) => notice.kind)).toEqual([
+      'appointment_cancelled',
+      'appointment_rescheduled',
+      'booking_created',
+    ])
+    expect(isOk(result) && result.value.notices[0]).toMatchObject({ forfeitedDeposit: 10000 })
+    expect(isOk(result) && result.value.notices[1]).toMatchObject({
+      previousStartsAt: new Date('2026-11-04T15:00:00Z'),
+      startsAt: new Date('2026-11-05T15:00:00Z'),
+    })
+    expect(isOk(result) && result.value.notices[2]).not.toHaveProperty('forfeitedDeposit')
   })
 
   it('con más de 20 avisos devuelve 20 y avisa que hay más; la página siguiente empieza en el 21', async () => {

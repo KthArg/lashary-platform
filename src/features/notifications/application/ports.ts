@@ -3,7 +3,8 @@ import type { ReminderChannelKind, ReminderSnapshot } from '../domain/reminder'
 import type { ReminderAttempt } from '../domain/reminder-attempt'
 import type { ConfirmationRequest } from '../domain/confirmation-request'
 import type { InboxNotice } from '../domain/inbox-notice'
-import type { ChannelNotConfigured, ChannelSendFailed, InboxStorageFailed } from '../domain/errors'
+import type { ClientNotice, ClientNoticeDelivery } from '../domain/client-notice'
+import type { ChannelNotConfigured, ChannelSendFailed, ClientNoticesStorageFailed, InboxStorageFailed } from '../domain/errors'
 
 export type RepositoryFailure = 'repository-failed'
 
@@ -85,7 +86,19 @@ export interface InboxRepository {
   setReadAt(id: string, readAt: Date | null): Promise<Result<SetReadOutcome, InboxStorageFailed>>
 }
 
-export type MessagePurpose = 'reminder' | 'appointment_confirmation'
+export interface ClientNoticesRepository {
+  listKeptFrom(now: Date, limit: number): Promise<Result<ClientNotice[], ClientNoticesStorageFailed>>
+}
+
+export interface ClientNoticeDeliveryRepository {
+  claimDue(now: Date): Promise<Result<ClientNoticeDelivery[], RepositoryFailure>>
+  releaseToPending(id: string): Promise<Result<void, RepositoryFailure>>
+  markSent(id: string, channel: ReminderChannelKind, sentAt: Date): Promise<Result<void, RepositoryFailure>>
+  markRetry(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
+  markExhausted(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
+}
+
+export type MessagePurpose = 'reminder' | 'appointment_confirmation' | 'reschedule_outcome'
 
 export type ChannelSendInput = {
   messageId: string
@@ -98,4 +111,10 @@ export type ChannelSendInput = {
 export interface NotificationChannel {
   readonly kind: ReminderChannelKind
   send(input: ChannelSendInput): Promise<Result<void, ChannelSendFailed | ChannelNotConfigured>>
+}
+
+export type DroppedNoticesOutcome = { resolved: number; open: number }
+
+export interface DroppedNoticesRepository {
+  reconcile(): Promise<Result<DroppedNoticesOutcome, RepositoryFailure>>
 }
