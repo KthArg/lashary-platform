@@ -20,6 +20,9 @@ const toListItem = (row: ClientListRow): ClientListItem => ({
   ...toRecord(row), lastVisitAtMs: row.last_visit_at === null ? null : Date.parse(row.last_visit_at),
 })
 
+const hasReadableVisit = (item: ClientListItem): boolean =>
+  item.lastVisitAtMs === null || Number.isFinite(item.lastVisitAtMs)
+
 const toRow = (client: ClientWriteModel): Omit<ClientRow, 'id'> => ({
   full_name: client.fullName, phone: client.phone, email: client.email, notes: client.notes,
 })
@@ -66,9 +69,11 @@ export async function clientRepository(): Promise<ClientRepository> {
     async listPage({ offset, limit, name, visitFrom, visitTo }) {
       const filters = { p_name_pattern: toLiteralNamePattern(name), p_visit_from: visitFrom, p_visit_to: visitTo }
       const { data, error, count } = await supabase.rpc(CLIENTS_LIST_FUNCTION, filters, { count: 'exact' })
-        .order('created_at', { ascending: false }).range(offset, offset + limit - 1)
+        .order('created_at', { ascending: false }).order('id').range(offset, offset + limit - 1)
       if (error || !data || count === null) return err(FAILED)
-      return ok({ clients: (data as ClientListRow[]).map(toListItem), total: count })
+      const clients = (data as ClientListRow[]).map(toListItem)
+      if (!clients.every(hasReadableVisit)) return err(FAILED)
+      return ok({ clients, total: count })
     },
   }
 }

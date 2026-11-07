@@ -42,7 +42,7 @@ describe('listClientsAction', () => {
       { p_name_pattern: null, p_visit_from: null, p_visit_to: null },
       { count: 'exact' },
     )
-    expect(mockOrder).toHaveBeenCalledWith('created_at', { ascending: false })
+    expect(mockOrder.mock.calls).toEqual([['created_at', { ascending: false }], ['id']])
     expect(mockRange).toHaveBeenCalledWith(0, defaultPageSize - 1)
     expect(result).toEqual({
       ok: true, total: 31, page: 0, pageSize: defaultPageSize,
@@ -57,6 +57,11 @@ describe('listClientsAction', () => {
     dbResult = { data: [neverVisitedRow], error: null, count: 1 }
     const result = await listClientsAction()
     expect(result).toMatchObject({ ok: true, clients: [{ id: 'c-2', lastVisitAtMs: null }] })
+  })
+
+  it('una ultima visita que no se puede leer es un fallo de lectura, no una fecha invalida en pantalla', async () => {
+    dbResult = { data: [{ ...row, last_visit_at: 'no-es-una-fecha' }], error: null, count: 1 }
+    expect(await listClientsAction()).toEqual({ ok: false, reason: 'failed', error: CLIENTS_ERROR_MESSAGES.loadFailed })
   })
 
   it('criterio 3: pagina en el servidor con el tamano elegido entre los permitidos', async () => {
