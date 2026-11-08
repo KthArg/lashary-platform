@@ -26,7 +26,7 @@ Morosidad: deteccion con gracia y aviso previo (DOM-012), bloqueo, regularizacio
 
 ## Qué hace hoy
 
-Hoy: las tablas de morosidades y de configuración y la función que detecta, con la detección apagada (sección de US-MOR-01). Todavía no hay cron, confirmar y descartar, aviso ni pantalla.
+Hoy: las tablas de morosidades y de configuración la función que detecta y la que confirma o descarta (sección de US-MOR-01). Todavía no hay cron, pantalla ni aviso.
 
 ## Contrato público
 
@@ -106,7 +106,17 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
   morosidades que llenan más de una página; la clienta y `anon` no la corren).
 - Todavía nadie la llama: el cron que la corre llega con la pieza que cablea la aplicación.
 
+### Confirmar y descartar (pieza 6)
+
+- Migración `20261108000003_delinquency_decide_case_fn.sql`: `delinquency_decide_case(morosidad, decisión)`
+  (`SECURITY DEFINER`, solo admin; la clienta y `anon` reciben `42501`). `confirm` deja la morosidad `active` y
+  `dismiss` la deja `dismissed`, con quién y cuándo decidió. Solo se decide una morosidad `pending_review`: una ya
+  decidida es el error `delinquency_case_already_decided` y una inexistente `delinquency_case_not_found`. El
+  evento `delinquency.case.confirmed` o `delinquency.case.dismissed` queda en `audit_events` en la misma
+  transacción (DOM-011). Prueba: pgTAP `delinquency_decide_case.test.sql`.
+- Dominio: `domain/delinquency-case.ts` (estados y decisiones) y `domain/errors.ts` (errores con guarda de tipo, DOM-006).
+- Todavía nadie la llama: el caso de uso, el repositorio y la acción llegan en la pieza siguiente.
+
 ### Qué no hace todavía
 
-No hay todavía el cron que corre la detección, confirmar y descartar, el aviso previo ni la pantalla: son las
-piezas 6 a 8. La detección existe en la base pero nadie la llama y está apagada: ninguna fila se genera sola.
+No hay todavía el cron que corre la detección, la pantalla ni el aviso previo: son piezas siguientes. La detección existe en la base pero nadie la llama: ninguna fila se genera sola.
