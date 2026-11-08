@@ -80,7 +80,7 @@ export function ClientSidebar({ session }: ClientSidebarProps) {
                 title={!isExpanded ? item.label : undefined}
               >
                 {item.icon}
-                {isExpanded && <span>{item.label}</span>}
+                {isExpanded && <span className={STYLES.label}>{item.label}</span>}
               </Link>
             )
           })}
@@ -104,7 +104,7 @@ export function ClientSidebar({ session }: ClientSidebarProps) {
           <svg className={STYLES.siteIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V10" />
           </svg>
-          {isExpanded && <span>{AUTH_LABELS.clientSiteNav}</span>}
+          {isExpanded && <span className={STYLES.label}>{AUTH_LABELS.clientSiteNav}</span>}
         </Link>
         <form action={signOutAction} className={STYLES.signOutForm}>
           <button
@@ -116,7 +116,7 @@ export function ClientSidebar({ session }: ClientSidebarProps) {
             <svg className={STYLES.signOutIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            {isExpanded && <span>{AUTH_BUTTON_TEXTS.signOut}</span>}
+            {isExpanded && <span className={STYLES.label}>{AUTH_BUTTON_TEXTS.signOut}</span>}
           </button>
         </form>
       </div>

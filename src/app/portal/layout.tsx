@@ -25,7 +25,7 @@ export default async function PortalLayout({ children }: PortalLayoutProps) {
     <div className="flex h-screen overflow-hidden bg-brand-cream">
       <InactivityTimeout />
       <ClientSidebar session={session} />
-      <main className="flex-1 overflow-y-auto bg-brand-cream/40 p-6 md:p-8">
+      <main className="flex-1 overflow-y-auto bg-brand-cream/40 p-4 md:p-8">
         {children}
       </main>
     </div>
