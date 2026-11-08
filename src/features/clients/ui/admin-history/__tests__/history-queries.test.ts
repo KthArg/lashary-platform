@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { err, ok } from '@/shared/result'
 import { readAppointmentHistory } from '../queries/history-queries'
 import { HISTORY_ERROR_MESSAGES } from '../constants/history-strings'
+import { savedNote } from '@/features/clients/application/__tests__/note-fakes'
 
 const CLIENT_ID = '11111111-1111-4111-8111-111111111111'
 const MISSING_ID = '99999999-9999-4999-8999-999999999999'
@@ -9,7 +10,11 @@ const FAILING_ID = '88888888-8888-4888-8888-888888888888'
 const STARTS_AT_MS = Date.parse('2026-09-15T16:00:00Z')
 const HISTORY_UNAVAILABLE = { ok: false, error: HISTORY_ERROR_MESSAGES.historyUnavailable }
 
-const mocks = vi.hoisted(() => ({ requireAdminSession: vi.fn(), historySource: vi.fn() }))
+const mocks = vi.hoisted(() => ({ requireAdminSession: vi.fn(), historySource: vi.fn(), listForAppointments: vi.fn() }))
+
+vi.mock('@/features/clients/db/notes/note-repository', () => ({
+  noteRepository: async () => ({ listForAppointments: mocks.listForAppointments }),
+}))
 
 vi.mock('@/features/auth', () => ({ requireAdminSession: mocks.requireAdminSession }))
 vi.mock('@/features/clients/db/client-repository', () => ({
@@ -32,6 +37,7 @@ beforeEach(() => {
       pageSize: 25,
     }),
   )
+  mocks.listForAppointments.mockResolvedValue(ok([]))
 })
 
 describe('readAppointmentHistory — la lectura del historial para la pestaña Citas', () => {
@@ -41,11 +47,24 @@ describe('readAppointmentHistory — la lectura del historial para la pestaña C
     expect(mocks.historySource).toHaveBeenCalledWith({ clientId: CLIENT_ID, page: 0 })
     expect(result).toEqual({
       ok: true,
-      entries: [{ id: 'cita-1', startsAtMs: STARTS_AT_MS, status: 'completed', serviceName: 'Clásicas', depositStatus: 'pending' }],
+      entries: [{ id: 'cita-1', startsAtMs: STARTS_AT_MS, status: 'completed', serviceName: 'Clásicas', depositStatus: 'pending', notes: [] }],
       total: 1,
       page: 0,
       pageSize: 25,
     })
+  })
+
+  it('pide las anotaciones de toda la página en una sola llamada y las pone en su cita (criterio 2)', async () => {
+    mocks.listForAppointments.mockResolvedValue(ok([savedNote({ appointmentId: 'cita-1', body: 'Ojos irritados' })]))
+    const result = await readAppointmentHistory(CLIENT_ID, 0)
+    expect(mocks.listForAppointments).toHaveBeenCalledTimes(1)
+    expect(mocks.listForAppointments).toHaveBeenCalledWith(CLIENT_ID, ['cita-1'])
+    expect(result.ok && result.entries[0].notes.map((note) => note.body)).toEqual(['Ojos irritados'])
+  })
+
+  it('si las anotaciones no se pueden leer, muestra el aviso y no citas sin anotaciones', async () => {
+    mocks.listForAppointments.mockResolvedValue(err('storage-failed'))
+    expect(await readAppointmentHistory(CLIENT_ID)).toEqual(HISTORY_UNAVAILABLE)
   })
 
   it.each([

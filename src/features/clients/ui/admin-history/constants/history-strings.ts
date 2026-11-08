@@ -1,4 +1,18 @@
 import type { AppointmentStatus, DepositStatus } from '@/features/clients/domain/history/appointment-history.types'
+import type { NoteProblem } from '@/features/clients/domain/notes/note-errors'
+import { NOTE_LIMITS } from '@/features/clients/domain/notes/note-limits'
+
+export const NOTE_PROBLEM_MESSAGES: Record<NoteProblem, string> = {
+  'note-empty': 'Escribe la anotación antes de guardarla.',
+  'note-too-long': `La anotación no puede pasar de ${NOTE_LIMITS.bodyMaxLength} caracteres.`,
+}
+
+export const NOTE_ERROR_MESSAGES = {
+  appointmentNotOfClient: 'Esa cita no es de esta clienta.',
+  noteNotFound: 'Esa anotación ya no existe. Recarga la página.',
+  invalidTarget: 'No encontramos esa cita o anotación. Recarga la página.',
+  storageFailed: 'No se pudo guardar el cambio en la anotación. Intenta de nuevo.',
+} as const
 
 export const HISTORY_ERROR_MESSAGES = {
   clientNotFound: 'No encontramos a esta clienta.',
