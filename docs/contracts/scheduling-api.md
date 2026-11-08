@@ -1,6 +1,6 @@
 # Contrato — API pública de citas
 
-> **Autoridad:** qué expone la feature `scheduling` a las demás features y bajo qué garantías. Es un contrato **de demanda**: nace de lo que necesita `clients` para el historial de citas de una clienta (US-CLI-02). Se versiona aquí antes de cualquier cambio de forma (INT-003). **Lectores:** feature `clients`. **Estado:** `listClientAppointments` implementado en la pieza 2 de US-CLI-02 (`application/list-client-appointments.ts` y `db/client-appointments-repository.ts`); `scheduling_client_last_visits` implementado en la pieza 2/4 de US-CLI-01 (`supabase/migrations/20261105000000_clients_list_last_visit.sql`); `scheduling_appointment_client` pactado en la pieza 1/6 de US-CLI-03, sin implementar todavía (llega en la pieza 2/6). **Actualizado:** 2026-11-07.
+> **Autoridad:** qué expone la feature `scheduling` a las demás features y bajo qué garantías. Es un contrato **de demanda**: nace de lo que necesita `clients` para el historial de citas de una clienta (US-CLI-02). Se versiona aquí antes de cualquier cambio de forma (INT-003). **Lectores:** feature `clients`. **Estado:** `listClientAppointments` implementado en la pieza 2 de US-CLI-02 (`application/list-client-appointments.ts` y `db/client-appointments-repository.ts`); `scheduling_client_last_visits` implementado en la pieza 2/4 de US-CLI-01 (`supabase/migrations/20261105000000_clients_list_last_visit.sql`); `scheduling_appointment_client` pactado en la pieza 1/6 de US-CLI-03 e implementado en la pieza 2/6 (`supabase/migrations/20261107010000_scheduling_appointment_client_fn.sql`). **Actualizado:** 2026-11-07.
 
 ## Qué es
 
@@ -107,7 +107,7 @@ Consumidor: el trigger de `clients_appointment_notes` de `clients` (US-CLI-03), 
 
 `scheduling_client_last_visits` lleva su pgTAP en `supabase/tests/database/scheduling_client_last_visits.test.sql`: cuenta solo `completed`, toma la más reciente, deja fuera las citas sin clienta, el personal ve todas, una clienta solo la suya y `anon` no la ejecuta.
 
-`scheduling_appointment_client` llevará su pgTAP en `supabase/tests/database/scheduling_appointment_client.test.sql` (pieza 2/6 de US-CLI-03): devuelve la clienta de una cita propia, `NULL` para una cita inexistente, para una cita sin clienta y para un `id` nulo; el personal ve la clienta de cualquier cita, una clienta recibe `NULL` con la cita de otra, y `anon` no la ejecuta.
+`scheduling_appointment_client` lleva su pgTAP en `supabase/tests/database/scheduling_appointment_client.test.sql` (pieza 2/6 de US-CLI-03): devuelve la clienta de una cita propia, `NULL` para una cita inexistente, para una cita sin clienta y para un `id` nulo; el personal ve la clienta de cualquier cita, una clienta recibe `NULL` con la cita de otra, y `anon` no la ejecuta.
 
 ## Confirmación de asistencia (US-NOT-08)
 

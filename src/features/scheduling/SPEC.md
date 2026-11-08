@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-11-06"
+actualizado: "2026-11-07"
 historias:
   - id: US-AGE-01
     estado: terminada
@@ -464,3 +464,10 @@ Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el
 - Pactado el 2026-11-05 en `docs/contracts/scheduling-api.md` (INT-003) e implementado en la pieza 2/4 de US-CLI-01: la función SQL `scheduling_client_last_visits()` está en `supabase/migrations/20261105000000_clients_list_last_visit.sql`, la misma migración que `clients_list` de `clients`, que es su único consumidor.
 - Devuelve `(client_id, last_visit_at)`: el `starts_at` de la cita `completed` más reciente de cada clienta. Las demás citas, y las que no tienen clienta, no cuentan. `SECURITY INVOKER`: la RLS de `scheduling_appointments` decide qué ve quien llama (SEC-001).
 - Prueba: `supabase/tests/database/scheduling_client_last_visits.test.sql` (solo `completed`, la más reciente, sin citas sin clienta, personal ve todas, clienta solo la suya, `anon` no la ejecuta, `SECURITY INVOKER`).
+
+### Clienta de una cita (para US-CLI-03 de `clients`)
+
+- Pactado el 2026-11-07 en `docs/contracts/scheduling-api.md` (INT-003, pieza 1/6 de US-CLI-03) e implementado en la pieza 2/6: la función SQL `scheduling_appointment_client(p_appointment_id uuid) → uuid` está en `supabase/migrations/20261107010000_scheduling_appointment_client_fn.sql`, sola en su migración (INT-008).
+- Devuelve el `client_id` de la cita, o `NULL` si la cita no existe, si quien llama no la ve o si no tiene clienta. `STABLE` y `SECURITY INVOKER`: la RLS de `scheduling_appointments` decide qué ve quien llama (SEC-001). Solo `authenticated` la ejecuta.
+- Consumidor: el trigger de `clients_appointment_notes` (pieza 3/6 de US-CLI-03), que rechaza la anotación cuya cita no es de la clienta que dice. `scheduling` no sabe nada de las anotaciones.
+- Prueba: `supabase/tests/database/scheduling_appointment_client.test.sql` (la clienta de una cita completada y de una cancelada, nulo para una cita inexistente, sin clienta o con `id` nulo, una clienta ve la suya y no la de otra, `anon` no la ejecuta, `SECURITY INVOKER`).
