@@ -26,7 +26,7 @@ export default async function AdminAppointmentsPage({ params, searchParams }: Ad
   if (result.entries.length === 0 && result.total > 0) redirect(appointmentHistoryUrl(id, 0))
   return (
     <>
-      <AppointmentHistory entries={result.entries} />
+      <AppointmentHistory clientId={id} entries={result.entries} />
       {result.total > 0 && (
         <AppointmentHistoryPagination clientId={id} page={result.page} pageSize={result.pageSize} total={result.total} />
       )}
