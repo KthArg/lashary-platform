@@ -26,7 +26,7 @@ Morosidad: deteccion con gracia y aviso previo (DOM-012), bloqueo, regularizacio
 
 ## Qué hace hoy
 
-Hoy: las tablas de morosidades y de configuración la función que detecta las que confirman o descartan y las del contrato (sección de US-MOR-01). La pantalla de revisión y el reflejo en `clients` existen; todavía no hay cron ni aviso.
+Hoy: las tablas de morosidades y de configuración la función que detecta las que confirman o descartan y las del contrato (sección de US-MOR-01). La pantalla de revisión y el reflejo en `clients` existen y hay una ruta de cron para correr la detección, sin programar; todavía no hay aviso en la bandeja.
 
 ## Contrato público
 
@@ -159,6 +159,16 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
   la clienta, que cubre el reflejo en el expediente del criterio 5. La implementación y sus pruebas están en el SPEC de `clients`
   («Morosidad en el listado y en el perfil»). Si esta feature no responde, `clients` sigue funcionando y muestra «Sin dato».
 
+### Cron de detección (pieza 14)
+
+- Ruta `POST /api/cron/delinquency-detect` (`src/app/api/cron/delinquency-detect/route.ts`). Exige `Authorization: Bearer <CRON_SECRET>` (comparación en tiempo constante, `shared/lib/cron-auth.ts`, que el cron de recordatorios de `notifications` ahora también usa); sin el secreto responde 401 y no toca la base.
+- Entra con la misma cuenta de sistema del cron de recordatorios (`NOTIFICATIONS_CRON_EMAIL` y `NOTIFICATIONS_CRON_PASSWORD`, staff): `delinquency_detect_unpaid()` exige staff y no hay otro camino sin sesión. No usa la service-role key (SEC-003/004). No hay variables nuevas.
+- Llama a `delinquency_detect_unpaid()` y responde `{ "generated": n }`. No hay bandera de encendido (decisión del PO): corre el ledger y deja lo que corresponde; con nada impago o nada nuevo, `generated` es 0. El cron nunca activa una morosidad: solo deja `pending_review` (DOM-012).
+- Fallos: sin cuenta de sistema configurada o si no puede entrar, 503 con ese motivo; si la base falla, 503 con `storage-failed` sin filtrar el mensaje; una excepción inesperada, 500. En todos los casos cierra la sesión de sistema.
+- **No está programado.** El repo no tiene programación de crons de la app. Decisión del PO (Kenny, 2026-11-08): `.github/workflows/delinquency-detect.yml` existe con solo `workflow_dispatch`, llama a la ruta con el `CRON_SECRET` como Bearer (secretos `APP_BASE_URL` y `CRON_SECRET`, ver `docs/process/CI_SECRETS.md`), y una corrida diaria basta. **Se activa agregando el `schedule` (ya escrito como comentario en el workflow) cuando US-MOR-03 esté mergeada y Kenny lo confirme**, porque hasta que se puedan registrar pagos toda cita cerrada con cargo parece impaga. Lo programa Jose o Kenneth si lo bloquea. Hasta entonces la detección no corre sola.
+- Capas: `application/detect-unpaid.ts` sobre el puerto `DetectionRepository`, `db/detection-repository.ts` (valida que la respuesta sea un entero no negativo) y `http/cron-handler.ts`. Pruebas: `application/__tests__/detect-unpaid.test.ts`, `db/__tests__/detection-repository.test.ts`, `http/__tests__/cron-handler.test.ts` y `shared/lib/__tests__/cron-auth.test.ts`.
+- Comprobado a mano en local, de punta a punta con el servidor real: sin secreto y con secreto equivocado, 401; con el secreto correcto y tres citas impagas pasada la gracia, `generated: 3` y tres morosidades `pending_review`; una segunda corrida, `generated: 0`; ninguna quedó `active`.
+
 ### Qué no hace todavía
 
-No hay todavía el cron que corre la detección ni el aviso en la bandeja: es la pieza siguiente. La detección existe en la base pero nadie la llama: ninguna fila se genera sola.
+No hay todavía el aviso en la bandeja de la administradora: es la pieza siguiente. El cron existe pero no está programado: ninguna fila se genera sola.

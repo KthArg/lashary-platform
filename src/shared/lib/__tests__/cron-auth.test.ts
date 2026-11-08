@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isAuthorizedCronRequest } from '../cron-handler'
+import { isAuthorizedCronRequest } from '../cron-auth'
 
 describe('isAuthorizedCronRequest', () => {
   it('autoriza cuando el header coincide con el secreto configurado', () => {
