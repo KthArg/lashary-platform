@@ -1,6 +1,6 @@
 # Contrato — API pública de citas
 
-> **Autoridad:** qué expone la feature `scheduling` a las demás features y bajo qué garantías. Es un contrato **de demanda**: nace de lo que necesita `clients` para el historial de citas de una clienta (US-CLI-02). Se versiona aquí antes de cualquier cambio de forma (INT-003). **Lectores:** feature `clients`. **Estado:** `listClientAppointments` implementado en la pieza 2 de US-CLI-02 (`application/list-client-appointments.ts` y `db/client-appointments-repository.ts`); `scheduling_client_last_visits` implementado en la pieza 2/4 de US-CLI-01 (`supabase/migrations/20261105000000_clients_list_last_visit.sql`). **Actualizado:** 2026-11-05.
+> **Autoridad:** qué expone la feature `scheduling` a las demás features y bajo qué garantías. Es un contrato **de demanda**: nace de lo que necesita `clients` para el historial de citas de una clienta (US-CLI-02). Se versiona aquí antes de cualquier cambio de forma (INT-003). **Lectores:** feature `clients`. **Estado:** `listClientAppointments` implementado en la pieza 2 de US-CLI-02 (`application/list-client-appointments.ts` y `db/client-appointments-repository.ts`); `scheduling_client_last_visits` implementado en la pieza 2/4 de US-CLI-01 (`supabase/migrations/20261105000000_clients_list_last_visit.sql`); `scheduling_appointment_client` pactado en la pieza 1/6 de US-CLI-03, sin implementar todavía (llega en la pieza 2/6). **Actualizado:** 2026-11-07.
 
 ## Qué es
 
@@ -71,10 +71,24 @@ La última visita de cada clienta: una fila por clienta que tiene al menos una c
 
 Consumidor: la función `clients_list` de `clients` (US-CLI-01), que une los perfiles con esta función, filtra por nombre y por rango de fechas de la última visita, y deja que PostgREST pagine y cuente. Las dos funciones se crean en la misma migración, primero esta.
 
+### `public.scheduling_appointment_client(p_appointment_id uuid) => uuid`
+
+De qué clienta es una cita: devuelve el `client_id` de la cita, o `NULL`. Nace de US-CLI-03: las anotaciones de `clients` guardan el `id` de la cita y el de la clienta, y la base tiene que rechazar una anotación cuya cita no exista o sea de otra clienta (SEC-001, SEC-005). Sin esta función, `clients` tendría que leer `scheduling_appointments` (ARCH-005) o poner una clave foránea hacia ella, y una clave foránea solo diría que la cita existe, no de quién es.
+
+- **Devuelve `NULL` en tres casos, sin distinguirlos:** la cita no existe, quien llama no la puede ver por RLS, o la cita no tiene clienta (las que crea el personal). Para quien la usa, los tres significan lo mismo: esa cita no es de ninguna clienta que pueda anotar.
+- `p_appointment_id` `NULL` devuelve `NULL`.
+- El resultado es el `id` de `clients_profiles`, como en `listClientAppointments` y `scheduling_client_last_visits`.
+- **El dueño de una cita no cambia:** `authenticated` solo puede hacer UPDATE de `status` y `decision_reason` (`20261014000002_scheduling_appointment_decision.sql`) y ninguna función de `scheduling` reescribe `client_id`. Por eso basta con comprobar al escribir la anotación. Si algún día una cita pudiera cambiar de clienta, ese cambio rompe esta garantía y se versiona aquí antes (INT-003).
+- **Las citas no se borran:** no hay política de DELETE sobre `scheduling_appointments`. Una anotación no puede quedar colgando de una cita que ya no existe.
+- Corre con los permisos de quien llama (`SECURITY INVOKER`) y es `STABLE`: la RLS de `scheduling_appointments` decide qué se ve, como en `scheduling_client_last_visits`. El personal ve todas las citas (`scheduling_appointments_select_staff`), una clienta solo las suyas (`scheduling_appointments_select_own`), y `anon` no puede ejecutarla. No agrega ningún permiso.
+- Lee una sola fila por la llave primaria: no necesita índice nuevo (PERF-001).
+
+Consumidor: el trigger de `clients_appointment_notes` de `clients` (US-CLI-03), que antes de cada INSERT la llama con el `appointment_id` de la fila nueva y la rechaza si el resultado no es igual a su `client_id`. La administradora lo ejecuta con su propia sesión, así que la RLS de las citas la deja ver todas.
+
 ## Qué no expone
 
 - **El pago completo de la cita.** La cita solo guarda el anticipo requerido y el registrado. El cargo al cerrar la cita y su saldo los produce el libro contable de US-AGE-12; cuando exista, el estado de pago se pide por su propio contrato con el `id` de cada cita, sin cambiar la forma de este.
-- **Las anotaciones.** Son de `clients` (US-CLI-03) y se guardan con el `id` de la cita.
+- **Las anotaciones.** Son de `clients` (US-CLI-03) y se guardan con el `id` de la cita. `scheduling` solo responde de quién es una cita (`scheduling_appointment_client`); no lee ni guarda anotaciones.
 - **Datos de la decisión y de la reserva:** `decided_by`, `decision_reason`, `resource_id`, `occupied_range`, `service_price`, `is_first_time` e `is_first_time_detected` no salen por aquí.
 - **Citas sin clienta.** Las que crea el personal tienen `client_id` nulo y no pertenecen al historial de nadie.
 
@@ -92,6 +106,8 @@ Consumidor: la función `clients_list` de `clients` (US-CLI-01), que une los per
 `src/features/scheduling/application/__tests__/list-client-appointments.test.ts` (página y tamaño saneados, el fallo de la base como `StorageFailed`) y `src/features/scheduling/db/__tests__/client-appointments-repository.test.ts` (columnas pedidas, filtro por clienta, orden, rango de la página y conteo). El aislamiento de la RLS ya lo prueban `scheduling_appointment_client_snapshot.test.sql` y `__tests__/rls-isolation.test.ts` (SEC-002).
 
 `scheduling_client_last_visits` lleva su pgTAP en `supabase/tests/database/scheduling_client_last_visits.test.sql`: cuenta solo `completed`, toma la más reciente, deja fuera las citas sin clienta, el personal ve todas, una clienta solo la suya y `anon` no la ejecuta.
+
+`scheduling_appointment_client` llevará su pgTAP en `supabase/tests/database/scheduling_appointment_client.test.sql` (pieza 2/6 de US-CLI-03): devuelve la clienta de una cita propia, `NULL` para una cita inexistente, para una cita sin clienta y para un `id` nulo; el personal ve la clienta de cualquier cita, una clienta recibe `NULL` con la cita de otra, y `anon` no la ejecuta.
 
 ## Confirmación de asistencia (US-NOT-08)
 
