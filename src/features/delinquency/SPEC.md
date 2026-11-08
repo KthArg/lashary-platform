@@ -106,7 +106,7 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
   morosidades que llenan más de una página; la clienta y `anon` no la corren).
 - Todavía nadie la llama: el cron que la corre llega con la pieza que cablea la aplicación.
 
-### Confirmar y descartar (pieza 6)
+### Confirmar y descartar (piezas 6 y 7)
 
 - Migración `20261108000003_delinquency_decide_case_fn.sql`: `delinquency_decide_case(morosidad, decisión)`
   (`SECURITY DEFINER`, solo admin; la clienta y `anon` reciben `42501`). `confirm` deja la morosidad `active` y
@@ -114,8 +114,13 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
   decidida es el error `delinquency_case_already_decided` y una inexistente `delinquency_case_not_found`. El
   evento `delinquency.case.confirmed` o `delinquency.case.dismissed` queda en `audit_events` en la misma
   transacción (DOM-011). Prueba: pgTAP `delinquency_decide_case.test.sql`.
-- Dominio: `domain/delinquency-case.ts` (estados y decisiones) y `domain/errors.ts` (errores con guarda de tipo, DOM-006).
-- Todavía nadie la llama: el caso de uso, el repositorio y la acción llegan en la pieza siguiente.
+- Dominio (pieza 6): `domain/delinquency-case.ts` (estados y decisiones) y `domain/errors.ts` (errores con guarda de tipo, DOM-006).
+- App (pieza 7): `application/decide-case.ts` sobre el puerto `CaseRepository` y `db/case-repository.ts`, que llama a la
+  función de la base, traduce `P0002` y `55000` a «no existe» y «ya se decidió», y valida la fila con Zod. La
+  acción `decideCaseAction` (`ui/review/actions/`) exige sesión de administradora, valida con Zod y refresca la
+  pantalla. Pruebas: `application/__tests__/decide-case.test.ts`, `db/__tests__/case-repository.test.ts` y
+  `ui/review/__tests__/review-actions.test.ts`.
+- Todavía no hay pantalla que la llame: llega en una pieza siguiente.
 
 ### Qué no hace todavía
 
