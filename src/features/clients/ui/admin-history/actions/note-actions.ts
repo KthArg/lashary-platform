@@ -46,7 +46,8 @@ async function runNoteCommand(
     if (isErr(result)) return toFailure(result.error)
     revalidatePath(clientAppointmentsPath(actor.clientId))
     return { ok: true }
-  } catch {
+  } catch (cause) {
+    console.error(`[clients] la orden de anotaciones falló: ${cause instanceof Error ? cause.message : String(cause)}`)
     return failed(NOTE_ERROR_MESSAGES.storageFailed)
   }
 }

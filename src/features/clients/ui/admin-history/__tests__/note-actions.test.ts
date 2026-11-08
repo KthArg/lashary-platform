@@ -73,8 +73,11 @@ describe('acciones de las anotaciones ante errores', () => {
     expect(mocks.revalidatePath).not.toHaveBeenCalled()
   })
 
-  it('una excepción inesperada vuelve como error y no se escapa', async () => {
+  it('una excepción inesperada vuelve como error, no se escapa y deja la causa en el registro', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     mocks.repo.add.mockRejectedValue(new Error('se cayó la red'))
     expect(await addNoteAction(CLIENT_ID, APPOINTMENT_ID, 'Nota')).toEqual({ ok: false, error: NOTE_ERROR_MESSAGES.storageFailed })
+    expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('se cayó la red'))
+    consoleError.mockRestore()
   })
 })

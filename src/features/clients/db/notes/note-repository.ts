@@ -1,11 +1,34 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { ok, err, type Result } from '@/shared/result'
+import { ok, err, type Err, type Result } from '@/shared/result'
 import { createClient } from '@/shared/lib/supabase/server'
 import type { AppointmentNote, NoteRepository, NoteStorageFailed } from '../../application/notes/note-ports'
 
 export const APPOINTMENT_NOTES_TABLE = 'clients_appointment_notes'
 export const FOREIGN_KEY_VIOLATION_CODE = '23503'
 export const NOTE_COLUMNS = 'id, client_id, appointment_id, body, created_by, created_at, updated_at'
+export const APPOINTMENT_OF_CLIENT_MESSAGE = 'no es de la clienta'
+
+interface DatabaseError {
+  code?: string
+  message: string
+}
+
+export const isAppointmentOfClientRejection = (error: DatabaseError | null): boolean =>
+  error?.code === FOREIGN_KEY_VIOLATION_CODE && error.message.includes(APPOINTMENT_OF_CLIENT_MESSAGE)
+
+function describeCause(cause: unknown): string {
+  if (cause instanceof Error) return cause.message
+  if (typeof cause === 'object' && cause !== null && 'message' in cause) {
+    const databaseError = cause as DatabaseError
+    return `${databaseError.code ?? 'sin código'} ${databaseError.message}`
+  }
+  return 'la base no devolvió datos'
+}
+
+function storageFailed(operation: string, cause: unknown): Err<NoteStorageFailed> {
+  console.error(`[clients] no se pudo ${operation} la anotación: ${describeCause(cause)}`)
+  return err('storage-failed')
+}
 
 export interface AppointmentNoteRow {
   id: string
@@ -37,18 +60,21 @@ export function rowToNote(row: AppointmentNoteRow): Result<AppointmentNote, Note
   })
 }
 
-async function withoutThrowing<T, E>(operation: () => Promise<Result<T, E>>): Promise<Result<T, E | NoteStorageFailed>> {
+async function withoutThrowing<T, E>(
+  operationName: string,
+  operation: () => Promise<Result<T, E>>,
+): Promise<Result<T, E | NoteStorageFailed>> {
   try {
     return await operation()
-  } catch {
-    return err('storage-failed')
+  } catch (cause) {
+    return storageFailed(operationName, cause)
   }
 }
 
 export function createSupabaseNoteRepository(db: SupabaseClient): NoteRepository {
   return {
     add: (note) =>
-      withoutThrowing(async () => {
+      withoutThrowing('guardar', async () => {
         const { data, error } = await db
           .from(APPOINTMENT_NOTES_TABLE)
           .insert({
@@ -59,13 +85,13 @@ export function createSupabaseNoteRepository(db: SupabaseClient): NoteRepository
           })
           .select(NOTE_COLUMNS)
           .single()
-        if (error?.code === FOREIGN_KEY_VIOLATION_CODE) return err('appointment-not-of-client')
-        if (error || !data) return err('storage-failed')
+        if (isAppointmentOfClientRejection(error)) return err('appointment-not-of-client')
+        if (error || !data) return storageFailed('guardar', error)
         return rowToNote(data as AppointmentNoteRow)
       }),
 
     updateBody: (noteId, clientId, body) =>
-      withoutThrowing(async () => {
+      withoutThrowing('editar', async () => {
         const { data, error } = await db
           .from(APPOINTMENT_NOTES_TABLE)
           .update({ body: body.text })
@@ -73,26 +99,26 @@ export function createSupabaseNoteRepository(db: SupabaseClient): NoteRepository
           .eq('client_id', clientId)
           .select(NOTE_COLUMNS)
           .maybeSingle()
-        if (error) return err('storage-failed')
+        if (error) return storageFailed('editar', error)
         if (!data) return err('note-not-found')
         return rowToNote(data as AppointmentNoteRow)
       }),
 
     remove: (noteId, clientId) =>
-      withoutThrowing(async () => {
+      withoutThrowing('eliminar', async () => {
         const { data, error } = await db
           .from(APPOINTMENT_NOTES_TABLE)
           .delete()
           .eq('id', noteId)
           .eq('client_id', clientId)
           .select('id')
-        if (error || !data) return err('storage-failed')
+        if (error || !data) return storageFailed('eliminar', error)
         if (data.length === 0) return err('note-not-found')
         return ok(undefined)
       }),
 
     listForAppointments: (clientId, appointmentIds) =>
-      withoutThrowing(async () => {
+      withoutThrowing('leer', async () => {
         if (appointmentIds.length === 0) return ok([])
         const { data, error } = await db
           .from(APPOINTMENT_NOTES_TABLE)
@@ -101,7 +127,7 @@ export function createSupabaseNoteRepository(db: SupabaseClient): NoteRepository
           .in('appointment_id', [...appointmentIds])
           .order('created_at', { ascending: true })
           .order('id', { ascending: true })
-        if (error || !data) return err('storage-failed')
+        if (error || !data) return storageFailed('leer', error)
         const notes: AppointmentNote[] = []
         for (const row of data as AppointmentNoteRow[]) {
           const note = rowToNote(row)

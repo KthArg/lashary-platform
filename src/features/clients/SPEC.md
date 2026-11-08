@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-07
+actualizado: 2026-11-08
 historias:
   - id: US-CLI-01
     estado: en_progreso
@@ -12,7 +12,7 @@ historias:
     evidencia: "Pila de 5 piezas sobre main: PRs #481 (1/5, contrato scheduling-api.md), #483 (2/5, listClientAppointments), #505 (3/5, caso de uso y estado del anticipo), #506 (4/5, pestaña Citas) y #507 (5/5, paginacion y enlace desde el listado), y el PR de cierre us/US-CLI-02 a main. Criterio 1 (servicio, fecha, estado de la cita y estado de pago; las anotaciones trasladadas a US-CLI-03): deposit-status.test.ts, view-appointment-history.test.ts, history-gateways.test.ts, history-queries.test.ts, appointment-history.test.tsx. Criterio 2 (de la mas reciente a la mas antigua): client-appointments-repository.test.ts de scheduling (ordena por starts_at descendente) y appointment-history.test.tsx (la tabla respeta el orden recibido). Criterio 3 (desde el listado y desde la vista diaria): clients-list.test.tsx (listado), src/app/admin/citas/agenda/page.test.tsx (la agenda arma el enlace con clientAppointmentsPath) y DailyAgendaView.test.tsx de scheduling (la tarjeta pinta el enlace «Ver sus citas»)"
   - id: US-CLI-03
     estado: terminada
-    evidencia: "Pila de 7 piezas sobre main: PRs #711 (1/7, contrato scheduling-api.md), #712 (2/7, scheduling_appointment_client), #714 (3/7, tabla, triggers y RLS), #715 (4/7, dominio y ordenes), #716 (5/7, repositorio), #717 (6/7, actions y lectura) y el PR de la 7/7 (pantalla y cierre). Criterio 1 (agregar, editar y eliminar): clients_appointment_notes.test.sql (cita de la clienta, solo cambia el texto, aislamiento SEC-002), note-body.test.ts, note-commands.test.ts, note-repository.test.ts, note-actions.test.ts, appointment-notes.test.tsx (formularios y confirmacion al eliminar). Criterio 2 (visibles en el historial, una consulta por pagina): note-repository.test.ts (listForAppointments con in), history-queries.test.ts, notes-by-appointment.test.ts, appointment-history.test.tsx (cada anotacion en la fila de su cita). Criterio 3 (fecha de creacion y de modificacion): clients_appointment_notes.test.sql (editar avanza updated_at y conserva created_at), notes-by-appointment.test.ts, appointment-notes.test.tsx (Creada y, si cambio, Editada)"
+    evidencia: "Pila de 8 piezas sobre main: PRs #711 (1/7, contrato scheduling-api.md), #712 (2/7, scheduling_appointment_client), #714 (3/7, tabla, triggers y RLS), #715 (4/7, dominio y ordenes), #716 (5/7, repositorio), #717 (6/7, actions y lectura), #718 (7/7, pantalla) y el PR de la 8/8 (correcciones de la auditoria del 2026-11-07). Criterio 1 (agregar, editar y eliminar): clients_appointment_notes.test.sql (cita de la clienta, solo cambia el texto, aislamiento SEC-002), note-body.test.ts, note-commands.test.ts, note-repository.test.ts, note-actions.test.ts, appointment-notes.test.tsx (formularios, confirmacion al eliminar, botones con nombre distinto por anotacion y borrador protegido). Criterio 2 (visibles en el historial, una consulta por pagina): note-repository.test.ts (listForAppointments con in), history-queries.test.ts, notes-by-appointment.test.ts, appointment-history.test.tsx (cada anotacion en la fila de su cita). Criterio 3 (fecha de creacion y de modificacion): clients_appointment_notes.test.sql (editar avanza updated_at y conserva created_at), notes-by-appointment.test.ts, appointment-notes.test.tsx (Creada y, si cambio, Editada)"
   - id: US-CLI-04
     estado: terminada
     evidencia: "Pila de 20 piezas: PRs #369 (1/20, esquema), #370 (2/20, bucket), #372, #374, #384, #385, #394, #395, #396, #404, #405, #406, #407, #408 (14/20, cierre funcional), #409 y #410 (mejoras visuales) y los PRs de las piezas 17/20 a 20/20 (auditoria del 2026-10-19). Criterio 1 (estudio con texto e imagenes): record-content.test.ts, record-changes.test.ts, record-commands.test.ts, study-editor.test.tsx, add-record-image.test.ts, record-image.test.ts, record-image-action.test.ts, images-editor.test.tsx. Criterio 2 (alergias, sensibilidades, condiciones): clients_record_versions.test.sql (categorias), record-content.test.ts, precautions-editor.test.tsx. Criterio 3 (solo la administradora y cada acceso en la bitacora): clients_record_versions.test.sql y clients_record_images_bucket.test.sql (aislamiento SEC-002 frente a clienta y anon), view-record.test.ts (bitacora fail-closed), record-gateways.test.ts, record-actions.test.ts, record-queries.test.ts. Criterio 4 (historial de cambios): clients_record_versions.test.sql (sin UPDATE ni DELETE, una sucesora por version), record-changes.test.ts, record-commands.test.ts (dos cambios simultaneos), record-history.test.ts, record-view.test.tsx. Criterio 5 (imagenes sin URL publica): clients_record_images_bucket.test.sql (bucket privado), record-image-storage.test.ts (URLs firmadas de 5 minutos), images-editor.test.tsx"
@@ -551,6 +551,22 @@ anon no lee ningún contacto (SEC-002).
 - **2026-11-07 — El corte pasa a siete piezas, por decisión de José Loría:** repositorio y actions
   juntos pasaban de las ~400 líneas (INT-002). 4/7 dominio y órdenes; 5/7 repositorio de Supabase;
   6/7 actions y lectura del historial; 7/7 la pantalla. Los PRs 1 a 3 se retitulan a `/7`.
+- **2026-11-08 — Estado final del corte: ocho piezas.** Las siete de arriba más la 8/8, que corrige
+  la auditoría del 2026-11-07 en un PR nuevo para no reescribir las piezas ya revisadas (decisión de
+  José Loría). Las migraciones se renombraron a `20261107010000` y `20261107010001` porque
+  `notifications` ya usaba `20261107000000` y `20261107000001` en `main`.
+- **2026-11-08 — Hallazgos de la auditoría que no se corrigen, por decisión de José Loría (sin
+  migración nueva).** B6: `created_at` y `updated_at` se pueden fijar en un INSERT por PostgREST;
+  solo lo puede hacer una administradora con su token y la app nunca manda esas columnas. B8: el
+  `CHECK` usa `btrim`, que no quita tabs ni saltos de línea en los bordes; `buildNoteBody` los recorta
+  antes de guardar. B9: las funciones de trigger conservan el `EXECUTE` de `PUBLIC`; PostgREST no
+  expone funciones que devuelven `trigger`. Si alguno llega a importar, se corrige con una migración
+  en otra historia.
+- **2026-11-08 — Los errores de la base se devuelven y se registran (M2 de la auditoría).** El
+  repositorio y las actions siguen devolviendo `{ ok: false }` en lugar de lanzar: con un `throw` el
+  error sube a `error.tsx` y se pierde lo escrito (lección de la auditoría de US-CLI-04). Lo que
+  cambia es que cada fallo deja su causa en el registro con `console.error` y el prefijo `[clients]`,
+  como hace `notifications`, sin el texto de la anotación.
 
 ## Listado con última visita (US-CLI-01, piezas 2/4 a 4/4)
 
@@ -567,7 +583,7 @@ anon no lee ningún contacto (SEC-002).
 - Con `reason: 'invalid-visit-range'` la lista muestra el aviso (`filterError`, `role="alert"`) **sin** *Reintentar*, porque reintentar no arregla un rango al revés; un fallo de la base sigue saliendo como `loadError` con *Reintentar*. Con un rango activo y sin resultados, la lista dice «Ninguna clienta coincide con los filtros aplicados» y no que no hay clientas registradas (UI-003).
 - Pruebas: `ui/shared/__tests__/format-visit-date.test.ts` (el borde de la hora del estudio, solo el día), `ui/admin-clients/__tests__/clients-visit-filter.test.tsx` (dos campos de fecha, un extremo, conserva el nombre y vuelve a la primera página, quitar fechas), `clients-list-url.test.ts` (rango, extremos vacíos, el nombre conserva el rango), `clients-list-params.test.ts` (fecha inexistente, parámetro repetido, número ilegible) y `clients-list.test.tsx` (la fecha, «Sin visitas», el vacío con filtros y el aviso sin *Reintentar*). `CLIENT_LIST_FIXTURES` (`__tests__/client-fixtures.ts`) da una clienta con visita y otra sin ella.
 
-## Anotaciones por cita (US-CLI-03, piezas 2/7 a 7/7)
+## Anotaciones por cita (US-CLI-03, piezas 2 a 8)
 
 - Pieza 2/7: `scheduling` expone `scheduling_appointment_client(p_appointment_id) → uuid`
   (`20261107010000_scheduling_appointment_client_fn.sql`), contrato en `docs/contracts/scheduling-api.md`.
@@ -577,14 +593,15 @@ anon no lee ningún contacto (SEC-002).
   `created_at` y `updated_at`. Índice en `appointment_id`, porque toda lectura filtra por esa columna
   (la página del historial pide las anotaciones de sus citas en una sola consulta, PERF-005), y en
   las dos FK, `client_id` y `created_by` (PERF-003).
-- `body` no lleva espacios al inicio ni al final y tiene entre 1 y 2000 caracteres (`CHECK`). La 4/6
-  usará el mismo tope en TypeScript (DOM-007).
+- `body` no lleva espacios al inicio ni al final y tiene entre 1 y 2000 caracteres (`CHECK`). La 4/7
+  usa el mismo tope en TypeScript (DOM-007).
 - Trigger `clients_appointment_notes_belongs` (`BEFORE INSERT OR UPDATE`, `SECURITY INVOKER`). En
   INSERT llama a `scheduling_appointment_client` y, si la cita no es de `client_id` (de otra clienta,
   inexistente o sin clienta), rechaza con `23503` y la restricción
   `clients_appointment_notes_appointment_of_client`. En UPDATE solo deja cambiar `body`: tocar
   `appointment_id`, `client_id`, `created_by` o `created_at` da `23514` con
-  `clients_appointment_notes_only_body_changes`. La 5/6 traduce esos dos nombres a textos de pantalla.
+  `clients_appointment_notes_only_body_changes`. El repositorio (5/7) reconoce el rechazo del
+  trigger por su mensaje («no es de la clienta»), no solo por el código.
 - Trigger `clients_appointment_notes_set_updated_at` con `clients_set_updated_at()`: la base pone
   `updated_at = now()` en cada UPDATE, no la app (criterio 3).
 - RLS solo de administradora (`auth_is_admin()`) en SELECT, INSERT, UPDATE y DELETE; INSERT exige
@@ -627,6 +644,21 @@ anon no lee ningún contacto (SEC-002).
   al corregir el texto, el aviso desaparece.
   Sin anotaciones dice «Sin anotaciones»; `HISTORY_LABELS.pendingValue` desapareció porque ya no
   queda dato pendiente. Pruebas: `appointment-notes.test.tsx` y `appointment-history.test.tsx`.
+- Pieza 8/8, correcciones de la auditoría del 2026-11-07:
+  - M1: *Editar* y *Eliminar* se nombran con la posición, «Editar la anotación 2 de 3, del …»: dos
+    notas creadas en el mismo minuto ya no comparten nombre accesible (UI-004).
+  - B1: mientras hay un formulario abierto, *Editar* y *Eliminar* de las demás notas quedan
+    desactivados (`areNoteActionsLocked`), así un clic no reemplaza el borrador.
+  - B7: `23503` es `appointment-not-of-client` solo si el mensaje es el del trigger
+    (`isAppointmentOfClientRejection`); otra FK rota, como una clienta inexistente, es
+    `storage-failed`.
+  - M2: ver la decisión del 2026-11-08 en la bitácora.
+  - B3: la prueba de fechas compara el `textContent` exacto, que no depende de cómo normalice los
+    espacios cada versión de ICU.
+  - B10: `listForAppointments` no lleva `limit`; con 25 citas por página no se espera llegar al
+    `max_rows` de PostgREST. Si una clienta llegara a acumular cientos de notas por página, ahí se
+    pagina.
+  - Pruebas: `appointment-notes.test.tsx`, `note-repository.test.ts` y `note-actions.test.ts`.
 
 ## Contrato para scheduling (US-AGE-05)
 

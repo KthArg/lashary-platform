@@ -23,14 +23,23 @@ const renderNotes = (notes: AppointmentNoteView[] = [untouched]) =>
   render(<AppointmentNotes clientId={CLIENT_ID} appointmentId={APPOINTMENT_ID} notes={notes} />)
 const createdAt = formatAppointmentDate(CREATED_AT_MS)
 const noteField = () => screen.getByRole('textbox') as HTMLTextAreaElement
+const paragraphsReading = (expected: string) =>
+  screen.getAllByRole('paragraph').filter((paragraph) => paragraph.textContent === expected)
 
 beforeEach(() => vi.clearAllMocks())
 
 describe('AppointmentNotes — lo que se ve (criterio 3)', () => {
   it('muestra la fecha de creación, y la de edición solo si la anotación cambió', () => {
     renderNotes([untouched, edited])
-    expect(screen.getAllByText(NOTE_LABELS.created(createdAt))).toHaveLength(1)
-    expect(screen.getByText(`${NOTE_LABELS.created(createdAt)} · ${NOTE_LABELS.edited(formatAppointmentDate(EDITED_AT_MS))}`)).toBeTruthy()
+    expect(paragraphsReading(NOTE_LABELS.created(createdAt))).toHaveLength(1)
+    expect(paragraphsReading(`${NOTE_LABELS.created(createdAt)} · ${NOTE_LABELS.edited(formatAppointmentDate(EDITED_AT_MS))}`)).toHaveLength(1)
+  })
+
+  it('dos anotaciones del mismo minuto tienen botones con nombres distintos', () => {
+    renderNotes([untouched, { ...untouched, id: 'nota-3', body: 'Otra observación' }])
+    expect(screen.getByRole('button', { name: NOTE_LABELS.editButton(1, 2, createdAt) })).toBeTruthy()
+    expect(screen.getByRole('button', { name: NOTE_LABELS.editButton(2, 2, createdAt) })).toBeTruthy()
+    expect(screen.getByRole('button', { name: NOTE_LABELS.removeButton(2, 2, createdAt) })).toBeTruthy()
   })
 
   it('una cita sin anotaciones lo dice y ofrece agregar', () => {
@@ -55,12 +64,24 @@ describe('AppointmentNotes — agregar y editar (criterio 1)', () => {
   it('editar abre el formulario con el texto actual y guarda sobre esa anotación', async () => {
     mocks.edit.mockResolvedValue(SAVED)
     renderNotes()
-    fireEvent.click(screen.getByRole('button', { name: NOTE_LABELS.editButton(createdAt) }))
+    fireEvent.click(screen.getByRole('button', { name: NOTE_LABELS.editButton(1, 1, createdAt) }))
     expect(noteField().value).toBe('Ojos irritados')
     fireEvent.change(noteField(), { target: { value: 'Ojos sin irritación' } })
     fireEvent.click(screen.getByRole('button', { name: NOTE_LABELS.save }))
     await waitFor(() => expect(mocks.refresh).toHaveBeenCalled())
     expect(mocks.edit).toHaveBeenCalledWith(CLIENT_ID, untouched.id, 'Ojos sin irritación')
+  })
+
+  it('con un borrador abierto no se puede editar ni eliminar otra anotación, así no se pierde lo escrito', () => {
+    renderNotes([untouched, edited])
+    fireEvent.click(screen.getByRole('button', { name: NOTE_LABELS.editButton(1, 2, createdAt) }))
+    fireEvent.change(noteField(), { target: { value: 'Texto a medio escribir' } })
+    const otherEdit = screen.getByRole('button', { name: NOTE_LABELS.editButton(2, 2, createdAt) }) as HTMLButtonElement
+    const otherRemove = screen.getByRole('button', { name: NOTE_LABELS.removeButton(2, 2, createdAt) }) as HTMLButtonElement
+    expect(otherEdit.disabled).toBe(true)
+    expect(otherRemove.disabled).toBe(true)
+    fireEvent.click(otherEdit)
+    expect(noteField().value).toBe('Texto a medio escribir')
   })
 
   it('si el servidor rechaza, lo anuncia, conserva lo escrito y no refresca', async () => {
@@ -90,7 +111,7 @@ describe('AppointmentNotes — eliminar (criterio 1)', () => {
   it('pide confirmar y, al confirmar, elimina esa anotación', async () => {
     mocks.remove.mockResolvedValue(SAVED)
     renderNotes()
-    fireEvent.click(screen.getByRole('button', { name: NOTE_LABELS.removeButton(createdAt) }))
+    fireEvent.click(screen.getByRole('button', { name: NOTE_LABELS.removeButton(1, 1, createdAt) }))
     expect(screen.getByRole('alertdialog').textContent).toContain(NOTE_LABELS.confirmMessage)
     fireEvent.click(screen.getByRole('button', { name: NOTE_LABELS.remove }))
     await waitFor(() => expect(mocks.refresh).toHaveBeenCalled())
@@ -99,7 +120,7 @@ describe('AppointmentNotes — eliminar (criterio 1)', () => {
 
   it('cancelar la confirmación no elimina nada', () => {
     renderNotes()
-    fireEvent.click(screen.getByRole('button', { name: NOTE_LABELS.removeButton(createdAt) }))
+    fireEvent.click(screen.getByRole('button', { name: NOTE_LABELS.removeButton(1, 1, createdAt) }))
     fireEvent.click(screen.getByRole('button', { name: NOTE_LABELS.cancel }))
     expect(screen.queryByRole('alertdialog')).toBeNull()
     expect(mocks.remove).not.toHaveBeenCalled()
