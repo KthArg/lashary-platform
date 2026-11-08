@@ -20,6 +20,7 @@ export function AppointmentNotes({ clientId, appointmentId, notes }: Appointment
   const [pendingRemoval, setPendingRemoval] = useState<AppointmentNoteView | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isSaving, startSaving] = useTransition()
+  const areNoteActionsLocked = isSaving || draft !== null
 
   const openForm = (nextDraft: NoteDraft) => {
     setError(null)
@@ -72,19 +73,20 @@ export function AppointmentNotes({ clientId, appointmentId, notes }: Appointment
         <p className={STYLES.empty}>{NOTE_LABELS.empty}</p>
       ) : (
         <ul className={STYLES.list}>
-          {notes.map((note) => {
+          {notes.map((note, index) => {
             const createdAt = formatAppointmentDate(note.createdAtMs)
+            const position = index + 1
             return (
               <li key={note.id} className={STYLES.item}>
                 <p className={STYLES.body}>{note.body}</p>
                 <p className={STYLES.dates}>{noteDatesText(note)}</p>
                 <div className={STYLES.itemActions}>
-                  <button type="button" disabled={isSaving} onClick={() => openForm({ noteId: note.id, body: note.body })}
-                    aria-label={NOTE_LABELS.editButton(createdAt)} className={STYLES.textButton}>
+                  <button type="button" disabled={areNoteActionsLocked} onClick={() => openForm({ noteId: note.id, body: note.body })}
+                    aria-label={NOTE_LABELS.editButton(position, notes.length, createdAt)} className={STYLES.textButton}>
                     {NOTE_LABELS.edit}
                   </button>
-                  <button type="button" disabled={isSaving} onClick={() => setPendingRemoval(note)}
-                    aria-label={NOTE_LABELS.removeButton(createdAt)} className={STYLES.textButton}>
+                  <button type="button" disabled={areNoteActionsLocked} onClick={() => setPendingRemoval(note)}
+                    aria-label={NOTE_LABELS.removeButton(position, notes.length, createdAt)} className={STYLES.textButton}>
                     {NOTE_LABELS.remove}
                   </button>
                 </div>

@@ -20,9 +20,11 @@ export const NOTE_LABELS = {
   newField: 'Nueva anotación',
   editField: 'Editar anotación',
   edit: 'Editar',
-  editButton: (createdAt: string) => `Editar la anotación del ${createdAt}`,
+  editButton: (position: number, total: number, createdAt: string) =>
+    `Editar la anotación ${position} de ${total}, del ${createdAt}`,
   remove: 'Eliminar',
-  removeButton: (createdAt: string) => `Eliminar la anotación del ${createdAt}`,
+  removeButton: (position: number, total: number, createdAt: string) =>
+    `Eliminar la anotación ${position} de ${total}, del ${createdAt}`,
   save: 'Guardar',
   saving: 'Guardando…',
   cancel: 'Cancelar',
