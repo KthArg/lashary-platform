@@ -5,3 +5,4 @@ export {
   isDelinquencyStorageFailed,
 } from './domain/errors'
 export type { CaseAlreadyDecided, CaseNotFound, DelinquencyStorageFailed } from './domain/errors'
+export { ReviewPage } from './ui/review/components/ReviewPage'

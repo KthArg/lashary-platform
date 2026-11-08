@@ -26,7 +26,7 @@ Morosidad: deteccion con gracia y aviso previo (DOM-012), bloqueo, regularizacio
 
 ## Qué hace hoy
 
-Hoy: las tablas de morosidades y de configuración la función que detecta las que confirman o descartan y las del contrato (sección de US-MOR-01). Todavía no hay cron, pantalla ni aviso.
+Hoy: las tablas de morosidades y de configuración la función que detecta las que confirman o descartan y las del contrato (sección de US-MOR-01). La pantalla de revisión existe; todavía no hay cron, reflejo en `clients` ni aviso.
 
 ## Contrato público
 
@@ -136,24 +136,23 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 
 ### Pantalla de morosidades (piezas 9 a 11)
 
-- Datos (pieza 9): `db/case-list-repository.ts` lee la tabla propia y `delinquency_list_active`; `db/client-names.ts` pide el
-  nombre a `clients_display_names` (ARCH-005, una sola llamada con las clientas sin repetir); `db/case-row.ts` comparte el
-  esquema de la fila con el repositorio de decisiones. Puertos `CaseListRepository` y `ClientNamesPort`.
-- Prueba: `db/__tests__/case-list-repository.test.ts` (listas por estado, activas por el contrato, nombres y errores).
-- Todavía no hay caso de uso ni pantalla: llegan en las piezas siguientes.
-
-### Pantalla de morosidades (piezas 9 a 11)
-
-- Datos (pieza 9): `db/case-list-repository.ts` lee la tabla propia y `delinquency_list_active`; `db/client-names.ts` pide el
-  nombre a `clients_display_names` (ARCH-005, una sola llamada con las clientas sin repetir); `db/case-row.ts` comparte el
-  esquema de la fila con el repositorio de decisiones. Puertos `CaseListRepository` y `ClientNamesPort`.
-- Lectura (pieza 10): `application/load-review.ts` arma la vista con esos puertos. Cada lista tiene tope de 50 (PERF-002); las
-  por revisar van de la más antigua a la más reciente, para decidir primero las que llevan más tiempo. Una clienta sin nombre
-  visible se muestra como «Clienta sin nombre». `ui/review/services/review-service.ts` la expone a la página y quedan listos
-  los estados de carga (`ReviewLoading`) y de error con reintento (`ReviewError`).
-- Pruebas: `db/__tests__/case-list-repository.test.ts` y `application/__tests__/load-review.test.ts`.
-- Todavía no hay vista ni ruta: llegan en la pieza siguiente.
+- Ruta `/admin/morosidades` (`src/app/admin/morosidades/`, con `loading.tsx` y `error.tsx`), solo para administradora, con un
+  ítem «Morosidades» en el menú (`auth`, `ADMIN_PORTAL_ROUTES.delinquency`). Muestra dos secciones: **Por revisar**, con lo
+  que debe cada clienta y los botones «Confirmar morosidad» y «Descartar», y **Morosidades activas**, con lo que debe y desde
+  cuándo. Cada lista tiene tope de 50 (PERF-002); las por revisar van de la más antigua a la más reciente, para decidir primero
+  las que llevan más tiempo.
+- App: `application/load-review.ts` arma la vista con `CaseListRepository` (`db/case-list-repository.ts`, que lee la tabla
+  propia y `delinquency_list_active`) y `ClientNamesPort` (`db/client-names.ts`, que pide el nombre a `clients_display_names`,
+  ARCH-005, una sola llamada con las clientas sin repetir). Una clienta sin nombre visible se muestra como «Clienta sin
+  nombre». `ui/review/components/CaseDecisionButtons.tsx` llama a `decideCaseAction`, deshabilita los botones mientras guarda y
+  muestra el resultado o el motivo del error junto a esa morosidad.
+- Estados (UI-003): vacío por sección, carga (`ReviewLoading`) y error con reintento (`ReviewError` y el aviso de lectura).
+  Los montos usan `formatMoney` y las fechas `formatStudioDateTime` (DOM-003).
+- Pruebas: `application/__tests__/load-review.test.ts`, `db/__tests__/case-list-repository.test.ts` y
+  `ui/review/__tests__/review-view.test.tsx` (listas, monto en colones, nombre por defecto, vacío, error y carga, y los botones
+  con éxito y con fallo).
+- Todavía no refleja la morosidad en el listado ni el expediente de `clients`, ni avisa en la bandeja: piezas siguientes.
 
 ### Qué no hace todavía
 
-No hay todavía el cron que corre la detección, la pantalla ni el aviso previo: son piezas siguientes. La detección existe en la base pero nadie la llama: ninguna fila se genera sola.
+No hay todavía el cron que corre la detección, el reflejo en `clients` ni el aviso en la bandeja: son las piezas siguientes. La detección existe en la base pero nadie la llama: ninguna fila se genera sola.
