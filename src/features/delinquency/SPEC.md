@@ -134,6 +134,14 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
   tope de ids, el orden y la paginación del listado, y la clienta y `anon` no ven nada).
 - Todavía nadie las llama: las consumen la pantalla y `clients` en las piezas siguientes.
 
+### Pantalla de morosidades (piezas 9 a 11)
+
+- Datos (pieza 9): `db/case-list-repository.ts` lee la tabla propia y `delinquency_list_active`; `db/client-names.ts` pide el
+  nombre a `clients_display_names` (ARCH-005, una sola llamada con las clientas sin repetir); `db/case-row.ts` comparte el
+  esquema de la fila con el repositorio de decisiones. Puertos `CaseListRepository` y `ClientNamesPort`.
+- Prueba: `db/__tests__/case-list-repository.test.ts` (listas por estado, activas por el contrato, nombres y errores).
+- Todavía no hay caso de uso ni pantalla: llegan en las piezas siguientes.
+
 ### Qué no hace todavía
 
 No hay todavía el cron que corre la detección, la pantalla ni el aviso previo: son piezas siguientes. La detección existe en la base pero nadie la llama: ninguna fila se genera sola.
