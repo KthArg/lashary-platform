@@ -571,8 +571,8 @@ anon no lee ningún contacto (SEC-002).
 ## Anotaciones por cita (US-CLI-03, piezas 2/7 a 4/7)
 
 - Pieza 2/7: `scheduling` expone `scheduling_appointment_client(p_appointment_id) → uuid`
-  (`20261107000000_scheduling_appointment_client_fn.sql`), contrato en `docs/contracts/scheduling-api.md`.
-- Pieza 3/7: migración `20261107000001_clients_appointment_notes.sql`, la única de la pieza (INT-008).
+  (`20261107010000_scheduling_appointment_client_fn.sql`), contrato en `docs/contracts/scheduling-api.md`.
+- Pieza 3/7: migración `20261107010001_clients_appointment_notes.sql`, la única de la pieza (INT-008).
   Tabla `clients_appointment_notes`: `id`, `client_id` (FK a `clients_profiles`, `ON DELETE RESTRICT`,
   ADR-0009), `appointment_id` (sin FK, ARCH-005), `body`, `created_by` (FK a `auth.users`),
   `created_at` y `updated_at`. Índice en `appointment_id`, porque toda lectura filtra por esa columna
