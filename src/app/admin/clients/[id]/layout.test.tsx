@@ -34,6 +34,7 @@ beforeEach(() => {
   mocks.getClientAction.mockResolvedValue({
     ok: true,
     client: { id: CLIENT_ID, fullName: 'Ana Solís', phone: '+50688887777', email: 'ana@correo.com', notes: '' },
+    delinquencyLabel: null,
   })
 })
 
@@ -44,6 +45,21 @@ describe('/admin/clients/<id>: la ficha de la clienta', () => {
     expect(screen.getByText('+50688887777')).toBeTruthy()
     expect(screen.getByRole('link', { name: CLIENT_PROFILE_LABELS.backToClients }).getAttribute('href')).toBe(CLIENTS_PATH)
     expect(screen.getByText('contenido')).toBeTruthy()
+  })
+
+  it('si la clienta tiene morosidad, la muestra bajo el teléfono en el expediente y en las citas', async () => {
+    mocks.getClientAction.mockResolvedValue({
+      ok: true,
+      client: { id: CLIENT_ID, fullName: 'Ana Solís', phone: '+50688887777', email: 'ana@correo.com', notes: '' },
+      delinquencyLabel: 'Morosidad: Activa · ₡20 000',
+    })
+    await renderLayout()
+    expect(screen.getByText('Morosidad: Activa · ₡20 000')).toBeTruthy()
+  })
+
+  it('sin morosidad no muestra ninguna etiqueta de morosidad', async () => {
+    await renderLayout()
+    expect(screen.queryByText(CLIENT_PROFILE_LABELS.delinquencyPrefix, { exact: false })).toBeNull()
   })
 
   it('la pestaña Expediente apunta al expediente y se marca activa en su ruta', async () => {

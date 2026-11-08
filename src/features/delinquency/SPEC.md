@@ -26,7 +26,7 @@ Morosidad: deteccion con gracia y aviso previo (DOM-012), bloqueo, regularizacio
 
 ## Qué hace hoy
 
-Hoy: las tablas de morosidades y de configuración la función que detecta las que confirman o descartan y las del contrato (sección de US-MOR-01). La pantalla de revisión y la columna de morosidad del listado de `clients` existen; todavía no hay encabezado del perfil, cron ni aviso.
+Hoy: las tablas de morosidades y de configuración la función que detecta las que confirman o descartan y las del contrato (sección de US-MOR-01). La pantalla de revisión y el reflejo en `clients` existen; todavía no hay cron ni aviso.
 
 ## Contrato público
 
@@ -153,12 +153,12 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
   con éxito y con fallo).
 - Todavía no refleja la morosidad en el listado ni el expediente de `clients`, ni avisa en la bandeja: piezas siguientes.
 
-### Morosidad en `clients` (pieza 12)
+### Morosidad en `clients` (piezas 12 y 13)
 
-- `clients` consume el contrato (`delinquency_client_states`) para la columna «Morosidad» del listado de clientas. El
-  encabezado del perfil, que cubre el reflejo en el expediente del criterio 5, es la pieza 13. La implementación y sus pruebas están en el SPEC de `clients`
-  («Morosidad en el listado»). Si esta feature no responde, `clients` sigue funcionando y muestra «Sin dato».
+- `clients` consume el contrato (`delinquency_client_states`) para la columna «Morosidad» del listado y el encabezado del perfil de
+  la clienta, que cubre el reflejo en el expediente del criterio 5. La implementación y sus pruebas están en el SPEC de `clients`
+  («Morosidad en el listado y en el perfil»). Si esta feature no responde, `clients` sigue funcionando y muestra «Sin dato».
 
 ### Qué no hace todavía
 
-No hay todavía el encabezado del perfil, el cron que corre la detección ni el aviso en la bandeja: son las piezas siguientes. La detección existe en la base pero nadie la llama: ninguna fila se genera sola.
+No hay todavía el cron que corre la detección ni el aviso en la bandeja: es la pieza siguiente. La detección existe en la base pero nadie la llama: ninguna fila se genera sola.

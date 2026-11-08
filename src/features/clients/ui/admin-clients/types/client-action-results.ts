@@ -16,5 +16,5 @@ export type ListClientsResult =
   | { ok: false; reason: 'invalid-visit-range' | 'failed'; error: string }
 
 export type GetClientResult =
-  | { ok: true; client: ClientRecord }
+  | { ok: true; client: ClientRecord; delinquencyLabel: string | null }
   | { ok: false; reason: 'not-found' | 'failed'; error: string }
