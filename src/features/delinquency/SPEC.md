@@ -142,6 +142,18 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - Prueba: `db/__tests__/case-list-repository.test.ts` (listas por estado, activas por el contrato, nombres y errores).
 - Todavía no hay caso de uso ni pantalla: llegan en las piezas siguientes.
 
+### Pantalla de morosidades (piezas 9 a 11)
+
+- Datos (pieza 9): `db/case-list-repository.ts` lee la tabla propia y `delinquency_list_active`; `db/client-names.ts` pide el
+  nombre a `clients_display_names` (ARCH-005, una sola llamada con las clientas sin repetir); `db/case-row.ts` comparte el
+  esquema de la fila con el repositorio de decisiones. Puertos `CaseListRepository` y `ClientNamesPort`.
+- Lectura (pieza 10): `application/load-review.ts` arma la vista con esos puertos. Cada lista tiene tope de 50 (PERF-002); las
+  por revisar van de la más antigua a la más reciente, para decidir primero las que llevan más tiempo. Una clienta sin nombre
+  visible se muestra como «Clienta sin nombre». `ui/review/services/review-service.ts` la expone a la página y quedan listos
+  los estados de carga (`ReviewLoading`) y de error con reintento (`ReviewError`).
+- Pruebas: `db/__tests__/case-list-repository.test.ts` y `application/__tests__/load-review.test.ts`.
+- Todavía no hay vista ni ruta: llegan en la pieza siguiente.
+
 ### Qué no hace todavía
 
 No hay todavía el cron que corre la detección, la pantalla ni el aviso previo: son piezas siguientes. La detección existe en la base pero nadie la llama: ninguna fila se genera sola.
