@@ -55,6 +55,10 @@ export function fakeNoteStore(initialNotes: AppointmentNote[] = [], options: { f
       notes.splice(index, 1)
       return ok(undefined)
     },
+    async listForAppointments(clientId, appointmentIds) {
+      if (!reached('listForAppointments')) return err('storage-failed')
+      return ok(notes.filter((note) => note.clientId === clientId && appointmentIds.includes(note.appointmentId)))
+    },
   }
 
   return { repo, notes, calls }
