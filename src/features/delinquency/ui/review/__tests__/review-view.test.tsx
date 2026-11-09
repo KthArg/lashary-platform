@@ -8,8 +8,10 @@ import { ReviewLoading } from '@/features/delinquency/ui/review/components/Revie
 import { ReviewError } from '@/features/delinquency/ui/review/components/ReviewError'
 
 const decideCaseAction = vi.fn()
+const setGraceDaysAction = vi.fn()
 vi.mock('@/features/delinquency/ui/review/actions/review-actions', () => ({
   decideCaseAction: (...args: unknown[]) => decideCaseAction(...args),
+  setGraceDaysAction: (...args: unknown[]) => setGraceDaysAction(...args),
 }))
 
 // El formato de colones usa un espacio de no separación; testing-library normaliza los espacios del texto del DOM.
@@ -19,6 +21,7 @@ const CASE_ID = '7b0e5f8e-3c1a-4c55-9c1e-2f4a6b8d0e11'
 
 const ready: ReviewViewModel = {
   status: 'ready',
+  graceDays: 7,
   view: {
     toReview: [
       { caseId: CASE_ID, clientId: 'c1', clientName: 'Ana Pérez', pending: 20000, detectedAt: new Date('2026-11-01T18:00:00Z') },
@@ -28,7 +31,10 @@ const ready: ReviewViewModel = {
   },
 }
 
-beforeEach(() => decideCaseAction.mockReset())
+beforeEach(() => {
+  decideCaseAction.mockReset()
+  setGraceDaysAction.mockReset()
+})
 afterEach(cleanup)
 
 describe('ReviewView', () => {
@@ -66,7 +72,7 @@ describe('ReviewView', () => {
   })
 
   it('sin morosidades dice que no hay ninguna en cada sección', () => {
-    render(<ReviewView model={{ status: 'ready', view: { toReview: [], active: [] } }} />)
+    render(<ReviewView model={{ status: 'ready', graceDays: 7, view: { toReview: [], active: [] } }} />)
 
     expect(screen.getByText(reviewMessages.toReview.empty)).toBeTruthy()
     expect(screen.getByText(reviewMessages.active.empty)).toBeTruthy()
@@ -109,6 +115,64 @@ describe('CaseDecisionButtons', () => {
     fireEvent.click(screen.getAllByRole('button', { name: reviewMessages.confirm })[0])
 
     await waitFor(() => expect(screen.getByText('No se pudo guardar la decisión. Inténtelo nuevamente.')).toBeTruthy())
+  })
+})
+
+describe('periodo de gracia', () => {
+  const field = () => screen.getByLabelText(reviewMessages.grace.label) as HTMLInputElement
+  const save = () => fireEvent.click(screen.getByRole('button', { name: reviewMessages.grace.save }))
+
+  it('muestra la gracia que tiene el estudio y explica que rige solo para las detecciones nuevas', () => {
+    render(<ReviewView model={ready} />)
+
+    expect(screen.getByRole('heading', { level: 2, name: reviewMessages.grace.title })).toBeTruthy()
+    expect(screen.getByText(reviewMessages.grace.hint)).toBeTruthy()
+    expect(field().value).toBe('7')
+    expect(field().min).toBe('1')
+    expect(field().max).toBe('90')
+  })
+
+  it('guarda la gracia nueva como número y lo confirma', async () => {
+    setGraceDaysAction.mockResolvedValue({ ok: true, graceDays: 14 })
+    render(<ReviewView model={ready} />)
+
+    fireEvent.change(field(), { target: { value: '14' } })
+    save()
+
+    await waitFor(() => expect(screen.getByText(reviewMessages.grace.saved)).toBeTruthy())
+    expect(setGraceDaysAction).toHaveBeenCalledWith({ graceDays: 14 })
+    expect(field().value).toBe('14')
+  })
+
+  it('si el campo está vacío no inventa un valor: manda un número inválido y muestra el error', async () => {
+    setGraceDaysAction.mockResolvedValue({ ok: false, error: 'Ingrese un número entero de 1 a 90.' })
+    render(<ReviewView model={ready} />)
+
+    fireEvent.change(field(), { target: { value: '' } })
+    save()
+
+    await waitFor(() => expect(screen.getByText('Ingrese un número entero de 1 a 90.')).toBeTruthy())
+    expect(setGraceDaysAction).toHaveBeenCalledWith({ graceDays: Number.NaN })
+  })
+
+  it('si no se pudo guardar, muestra el motivo y conserva lo escrito', async () => {
+    setGraceDaysAction.mockResolvedValue({ ok: false, error: 'No se pudo guardar el periodo de gracia. Inténtelo nuevamente.' })
+    render(<ReviewView model={ready} />)
+
+    fireEvent.change(field(), { target: { value: '30' } })
+    save()
+
+    await waitFor(() =>
+      expect(screen.getByText('No se pudo guardar el periodo de gracia. Inténtelo nuevamente.')).toBeTruthy(),
+    )
+    expect(field().value).toBe('30')
+  })
+
+  it('si no se pudo leer la gracia, lo dice y no muestra un formulario con un valor inventado', () => {
+    render(<ReviewView model={{ ...ready, graceDays: null } as ReviewViewModel} />)
+
+    expect(screen.getByText(reviewMessages.grace.unavailable)).toBeTruthy()
+    expect(screen.queryByLabelText(reviewMessages.grace.label)).toBeNull()
   })
 })
 

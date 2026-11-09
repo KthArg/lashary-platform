@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { decideCaseAction } from '@/features/delinquency/ui/review/actions/review-actions'
+import { decideCaseAction, setGraceDaysAction } from '@/features/delinquency/ui/review/actions/review-actions'
 import { DELINQUENCY_ADMIN_PATH, REVIEW_ERRORS } from '@/features/delinquency/ui/review/constants/review-strings'
 
 const CASE_ID = '7b0e5f8e-3c1a-4c55-9c1e-2f4a6b8d0e11'
@@ -78,5 +78,52 @@ describe('decideCaseAction', () => {
     const result = await decideCaseAction({ caseId: CASE_ID, decision: 'confirm' })
 
     expect(result).toEqual({ ok: false, error: REVIEW_ERRORS.saveFailed })
+  })
+})
+
+describe('setGraceDaysAction', () => {
+  it('guarda la gracia, exige sesión de administradora y refresca la pantalla', async () => {
+    rpcResponse = { data: 14, error: null }
+
+    const result = await setGraceDaysAction({ graceDays: 14 })
+
+    expect(result).toEqual({ ok: true, graceDays: 14 })
+    expect(mockRequireAdmin).toHaveBeenCalledOnce()
+    expect(rpcCalls).toEqual([['delinquency_set_grace_days', { p_days: 14 }]])
+    expect(mockRevalidate).toHaveBeenCalledWith(DELINQUENCY_ADMIN_PATH)
+  })
+
+  it.each([[0], [91], [7.5], ['7'], [null], [Number.NaN]])(
+    'rechaza %o sin tocar la base ni refrescar',
+    async (graceDays) => {
+      const result = await setGraceDaysAction({ graceDays })
+
+      expect(result).toEqual({ ok: false, error: REVIEW_ERRORS.invalidGraceDays })
+      expect(rpcCalls).toEqual([])
+      expect(mockRevalidate).not.toHaveBeenCalled()
+    },
+  )
+
+  it('rechaza una entrada sin el campo', async () => {
+    const result = await setGraceDaysAction({})
+
+    expect(result).toEqual({ ok: false, error: REVIEW_ERRORS.invalidGraceDays })
+  })
+
+  it('si la base rechaza el valor, lo dice como valor inválido', async () => {
+    rpcResponse = { data: null, error: { message: 'delinquency_invalid_grace_days', code: '22023' } }
+
+    const result = await setGraceDaysAction({ graceDays: 30 })
+
+    expect(result).toEqual({ ok: false, error: REVIEW_ERRORS.invalidGraceDays })
+    expect(mockRevalidate).not.toHaveBeenCalled()
+  })
+
+  it('un fallo de la base se dice sin mostrar el texto interno', async () => {
+    rpcResponse = { data: null, error: { message: 'connection reset by peer', code: '08006' } }
+
+    const result = await setGraceDaysAction({ graceDays: 30 })
+
+    expect(result).toEqual({ ok: false, error: REVIEW_ERRORS.graceSaveFailed })
   })
 })

@@ -5,6 +5,7 @@ import type { ReviewViewModel } from '@/features/delinquency/ui/review/services/
 import { DELINQUENCY_ADMIN_PATH, reviewMessages as copy } from '@/features/delinquency/ui/review/constants/review-strings'
 import { reviewStyles as STYLES } from '@/features/delinquency/ui/review/styles/review.styles'
 import { CaseDecisionButtons } from './CaseDecisionButtons'
+import { GraceDaysForm } from './GraceDaysForm'
 
 const amount = (colones: number): string => formatMoney(moneyFromColones(colones))
 
@@ -68,6 +69,18 @@ function ReviewBody({ model }: { model: ReviewViewModel }) {
               </li>
             ))}
           </ul>
+        )}
+      </section>
+
+      <section className={STYLES.section} aria-labelledby="delinquency-grace">
+        <h2 id="delinquency-grace" className={STYLES.sectionTitle}>
+          {copy.grace.title}
+        </h2>
+        <p className={STYLES.hint}>{copy.grace.hint}</p>
+        {model.graceDays === null ? (
+          <p className={STYLES.empty}>{copy.grace.unavailable}</p>
+        ) : (
+          <GraceDaysForm graceDays={model.graceDays} />
         )}
       </section>
     </>
