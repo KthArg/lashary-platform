@@ -61,7 +61,7 @@ El backlog se mantiene en sus 51 historias; estas capacidades se construyen **de
 | US-CLI-03 anotaciones | US-CLI-02 | recibe de US-CLI-02 mostrar las anotaciones en el historial (ítem 8 de «Criterios trasladados»); **hecho** |
 | US-CLI-04 expediente | US-CLI-05, US-AGE-13 (bitácora) | dato sensible (SEC-006); test RLS obligatorio |
 | US-CLI-06 cuidados post | US-AGE-12, US-NOT-03, US-AGE-08 | **co-porta la vista de cuenta** (indicaciones visibles) |
-| US-MOR-01 detección | US-AGE-12 | **en curso** (2026-11-06); co-porta el ledger (saldo = suma de asientos, ya existe `payments_client_balance`); gracia + aviso previo (DOM-012) |
+| US-MOR-01 detección | US-AGE-12 | **terminada** (2026-11-08); co-porta el ledger (saldo = suma de asientos, ya existe `payments_client_balance`); gracia + aviso previo (DOM-012); qué cuenta como pago registrado **trasladado** a US-MOR-03 (ítem 14 de «Criterios trasladados»); el cron de detección existe sin programar (ver el SPEC de `delinquency`) |
 | US-MOR-02 bloqueo agenda | US-MOR-01 | incluye su cláusula de admin-agenda-por-clienta; recibe el criterio de morosidad trasladado desde US-AGE-05 y el indicador de morosidad de US-AGE-11 en la agenda diaria (ítem 11 de «Criterios trasladados») |
 | US-MOR-03 regularizar | US-MOR-02, US-AUTH-02 | **porta el registro de pago con comprobante y la vista de estado de cuenta**; recibe de US-MOR-01 qué cuenta como pago registrado (ítem 14 de «Criterios trasladados»): cada pago es un asiento del ledger que baja el saldo de la cita, y es lo que activa la detección y devuelve el acceso (US-MOR-02) |
 | US-MOR-04 histórico | US-MOR-01 | **porta el export tabular del ledger** |
