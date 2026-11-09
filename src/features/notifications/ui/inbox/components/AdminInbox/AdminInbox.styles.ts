@@ -16,6 +16,7 @@ export const adminInboxStyles = {
   itemTitle: 'flex items-center gap-2 text-sm font-semibold',
   dot: 'w-2 h-2 rounded-full bg-brand-gold shrink-0',
   itemDetail: 'text-sm',
+  itemLink: 'link link-hover mt-2 mr-3 inline-block text-xs font-medium text-brand-gold',
   markButton: 'btn btn-ghost btn-xs mt-2 text-brand-gold',
   loadMore: 'btn btn-outline btn-sm m-4',
   srOnly: 'sr-only',

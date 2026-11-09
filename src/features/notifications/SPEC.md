@@ -212,7 +212,12 @@ Decisiones:
   `pending_amount` y sin servicio ni hora de cita (`service_name` y `starts_at` pasan a ser opcionales; la restricción
   `notifications_admin_inbox_fields_by_kind` fija las columnas de cada tipo). `notifications_record_delinquency_review` es `SECURITY
   DEFINER` sin `EXECUTE` para nadie y la llama el trigger de `delinquency` ([delinquency-api.md](../../../docs/contracts/delinquency-api.md)).
-  Prueba: pgTAP `delinquency_notify_case_detected.test.sql`. La bandeja todavía no dibuja este tipo: es la pieza siguiente.
+  Prueba: pgTAP `delinquency_notify_case_detected.test.sql`.
+- App (US-MOR-01, pieza 16): `InboxNotice` suma `DelinquencyReviewNotice` (`pending`, sin servicio ni hora). `inbox-repository` pide
+  `pending_amount` y arma el aviso; `ui/inbox/utils/notice-lines.ts` dice «{clienta} tiene un pago sin registrar por revisar» y
+  «Debe ₡X», y devuelve una acción hacia `/admin/morosidades` (la ruta es una constante propia, `DELINQUENCY_REVIEW_PATH`: el panel es un componente de cliente y el entry point de `delinquency`, el único importable por ARCH-003, arrastra código de servidor; una prueba la compara con `DELINQUENCY_ADMIN_PATH`) que `AdminInbox`
+  dibuja como enlace y que cierra el panel al hacer clic. Los avisos de una cita no llevan enlace. Pruebas:
+  `db/__tests__/inbox-repository.test.ts`, `ui/inbox/__tests__/notice-lines.test.ts` y `admin-inbox.test.tsx`.
 - App: `InboxNotice` es una unión por `kind`; `ui/inbox/utils/notice-lines.ts` dice el monto perdido o «No
   perdió el anticipo» y el horario anterior y el nuevo. Pruebas: `domain/__tests__/inbox-notice.test.ts`,
   `db/__tests__/inbox-repository.test.ts`, `ui/inbox/__tests__/notice-lines.test.ts` y `admin-inbox.test.tsx`.

@@ -1,6 +1,6 @@
 export const INBOX_LIMIT = 20
 
-export type InboxNoticeKind = 'booking_created' | 'appointment_cancelled' | 'appointment_rescheduled'
+export type InboxNoticeKind = 'booking_created' | 'appointment_cancelled' | 'appointment_rescheduled' | 'delinquency_review'
 
 type InboxNoticeBase = {
   id: string
@@ -18,7 +18,22 @@ export type AppointmentCancelledNotice = InboxNoticeBase & { kind: 'appointment_
 
 export type AppointmentRescheduledNotice = InboxNoticeBase & { kind: 'appointment_rescheduled'; previousStartsAt: Date }
 
-export type InboxNotice = BookingCreatedNotice | AppointmentCancelledNotice | AppointmentRescheduledNotice
+// Una morosidad por revisar no es de una cita: lleva lo que debe la clienta y la cita de origen, sin servicio ni hora.
+export type DelinquencyReviewNotice = {
+  id: string
+  kind: 'delinquency_review'
+  appointmentId: string
+  clientName: string
+  pending: number
+  readAt: Date | null
+  createdAt: Date
+}
+
+export type InboxNotice =
+  | BookingCreatedNotice
+  | AppointmentCancelledNotice
+  | AppointmentRescheduledNotice
+  | DelinquencyReviewNotice
 
 export function isUnread(notice: InboxNotice): boolean {
   return notice.readAt === null
