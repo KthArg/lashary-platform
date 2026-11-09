@@ -32,6 +32,25 @@ Las morosidades `active`, de la más reciente a la más antigua, paginadas por `
 
 Quien la necesita: el listado de morosidades activas del panel (criterio 5).
 
+## Aviso a la bandeja de la administradora (criterio 3 de US-MOR-01)
+
+`delinquency` le avisa a `notifications` cuándo hay una morosidad por revisar. Va por una función SQL de `notifications` que llama un trigger de `delinquency_cases`, en la misma transacción que la detección, igual que `notifications_record_booking` de `scheduling`:
+
+```sql
+notifications_record_delinquency_review(
+  p_case_id        uuid,
+  p_appointment_id uuid,
+  p_client_name    text,
+  p_pending        bigint
+) RETURNS void
+```
+
+- **Quién la llama:** solo el trigger `delinquency_cases_notify_detected`, al insertarse una morosidad en `pending_review`. Es `SECURITY DEFINER` y no tiene `EXECUTE` para `anon` ni `authenticated`.
+- **Un aviso por morosidad:** `p_case_id` es único; repetirlo no duplica. Una morosidad que nace activa o descartada no avisa.
+- **Qué lleva el aviso:** el nombre de la clienta (se pide a `clients_display_names`, ARCH-005; «Clienta» si no hay), lo que debe y la cita de origen. No lleva servicio ni hora de cita.
+- **No bloquea:** si registrar el aviso falla, la morosidad se crea igual y el fallo queda en el log.
+- **`pending_review` sigue sin consecuencias:** el aviso solo informa; la administradora decide en `/admin/morosidades` (DOM-012).
+
 ## Garantías
 
 1. **La forma de la fila es contrato:** un cambio de columnas, de firma o de estados se versiona aquí antes del cambio (INT-003).

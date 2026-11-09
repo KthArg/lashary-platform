@@ -208,6 +208,11 @@ Decisiones:
 - Disparo: el trigger `audit_events_notify_appointment_changed` (migración `20261103000001`) cubre los criterios
   1 a 3 y deja el espacio liberado fuera de `scheduling_busy_ranges` (criterio 4). Prueba: pgTAP
   `scheduling_notify_appointment_changed.test.sql`.
+- Morosidad por revisar (US-MOR-01, migración `20261108000005`): `notifications_admin_inbox` suma el tipo `delinquency_review`, con
+  `pending_amount` y sin servicio ni hora de cita (`service_name` y `starts_at` pasan a ser opcionales; la restricción
+  `notifications_admin_inbox_fields_by_kind` fija las columnas de cada tipo). `notifications_record_delinquency_review` es `SECURITY
+  DEFINER` sin `EXECUTE` para nadie y la llama el trigger de `delinquency` ([delinquency-api.md](../../../docs/contracts/delinquency-api.md)).
+  Prueba: pgTAP `delinquency_notify_case_detected.test.sql`. La bandeja todavía no dibuja este tipo: es la pieza siguiente.
 - App: `InboxNotice` es una unión por `kind`; `ui/inbox/utils/notice-lines.ts` dice el monto perdido o «No
   perdió el anticipo» y el horario anterior y el nuevo. Pruebas: `domain/__tests__/inbox-notice.test.ts`,
   `db/__tests__/inbox-repository.test.ts`, `ui/inbox/__tests__/notice-lines.test.ts` y `admin-inbox.test.tsx`.
