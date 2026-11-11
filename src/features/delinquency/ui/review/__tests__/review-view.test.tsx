@@ -3,6 +3,7 @@ import { render, screen, cleanup, fireEvent, waitFor, within } from '@testing-li
 import { formatMoney, moneyFromColones } from '@/shared/money'
 import type { ReviewViewModel } from '@/features/delinquency/ui/review/services/review-service'
 import { reviewMessages } from '@/features/delinquency/ui/review/constants/review-strings'
+import { ACTIVE_LIST_LIMIT, REVIEW_LIST_LIMIT } from '@/features/delinquency/domain/active-client'
 import { ReviewView } from '@/features/delinquency/ui/review/components/ReviewView'
 import { ReviewLoading } from '@/features/delinquency/ui/review/components/ReviewLoading'
 import { ReviewError } from '@/features/delinquency/ui/review/components/ReviewError'
@@ -28,6 +29,8 @@ const ready: ReviewViewModel = {
       { caseId: 'caso-2', clientId: 'c2', clientName: null, pending: 7500, detectedAt: new Date('2026-11-02T18:00:00Z') },
     ],
     active: [{ clientId: 'c3', clientName: 'Lucía Mora', pending: 9000, since: new Date('2026-10-20T18:00:00Z') }],
+    moreToReview: false,
+    moreActive: false,
   },
 }
 
@@ -64,6 +67,20 @@ describe('ReviewView', () => {
     expect(screen.getByText(reviewMessages.clientFallback)).toBeTruthy()
   })
 
+  it('si hay más de lo que se muestra, lo avisa en cada lista y no lo calla', () => {
+    render(<ReviewView model={{ ...ready, view: { ...ready.view, moreToReview: true, moreActive: true } }} />)
+
+    expect(screen.getByText(reviewMessages.toReview.more(REVIEW_LIST_LIMIT))).toBeTruthy()
+    expect(screen.getByText(reviewMessages.active.more(ACTIVE_LIST_LIMIT))).toBeTruthy()
+  })
+
+  it('si no hay más de lo que se muestra, no pone el aviso', () => {
+    render(<ReviewView model={ready} />)
+
+    expect(screen.queryByText(reviewMessages.toReview.more(REVIEW_LIST_LIMIT))).toBeNull()
+    expect(screen.queryByText(reviewMessages.active.more(ACTIVE_LIST_LIMIT))).toBeNull()
+  })
+
   it('cada morosidad por revisar tiene sus botones de confirmar y descartar; las activas no', () => {
     render(<ReviewView model={ready} />)
 
@@ -72,7 +89,7 @@ describe('ReviewView', () => {
   })
 
   it('sin morosidades dice que no hay ninguna en cada sección', () => {
-    render(<ReviewView model={{ status: 'ready', graceDays: 7, view: { toReview: [], active: [] } }} />)
+    render(<ReviewView model={{ status: 'ready', graceDays: 7, view: { toReview: [], active: [], moreToReview: false, moreActive: false } }} />)
 
     expect(screen.getByText(reviewMessages.toReview.empty)).toBeTruthy()
     expect(screen.getByText(reviewMessages.active.empty)).toBeTruthy()

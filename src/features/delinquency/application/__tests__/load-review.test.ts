@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { ok, err, isOk, isErr } from '@/shared/result'
 import { loadReview } from '../load-review'
+import { ACTIVE_LIST_LIMIT, REVIEW_LIST_LIMIT } from '../../domain/active-client'
 import type { CaseListRepository, ClientNamesPort } from '../ports'
 import type { DelinquencyCase } from '../../domain/delinquency-case'
 import { delinquencyStorageFailed } from '../../domain/errors'
@@ -74,7 +75,39 @@ describe('loadReview', () => {
       deps({ listByState: async () => ok([]), listActiveClients: async () => ok([]) }),
     )()
 
-    expect(isOk(result) && result.value).toEqual({ toReview: [], active: [] })
+    expect(isOk(result) && result.value).toEqual({ toReview: [], active: [], moreToReview: false, moreActive: false })
+  })
+
+  it('pide una fila más que el tope y, si llega, avisa que hay más y muestra solo el tope', async () => {
+    const manyCases = Array.from({ length: REVIEW_LIST_LIMIT + 1 }, (_, i) => ({ ...toReview, id: `caso-${i}` }))
+    const manyActive = Array.from({ length: ACTIVE_LIST_LIMIT + 1 }, () => ({
+      clientId: LUCIA,
+      pending: 9000,
+      since: new Date('2026-10-20T15:00:00Z'),
+    }))
+    const listByState = vi.fn(async () => ok(manyCases))
+    const listActiveClients = vi.fn(async () => ok(manyActive))
+
+    const result = await loadReview(deps({ listByState, listActiveClients }))()
+
+    expect(listByState).toHaveBeenCalledWith('pending_review', REVIEW_LIST_LIMIT + 1)
+    expect(listActiveClients).toHaveBeenCalledWith(ACTIVE_LIST_LIMIT + 1)
+    expect(isOk(result)).toBe(true)
+    if (!isOk(result)) return
+    expect(result.value.toReview).toHaveLength(REVIEW_LIST_LIMIT)
+    expect(result.value.active).toHaveLength(ACTIVE_LIST_LIMIT)
+    expect(result.value.moreToReview).toBe(true)
+    expect(result.value.moreActive).toBe(true)
+  })
+
+  it('con exactamente el tope no avisa de más', async () => {
+    const exactCases = Array.from({ length: REVIEW_LIST_LIMIT }, (_, i) => ({ ...toReview, id: `caso-${i}` }))
+
+    const result = await loadReview(deps({ listByState: async () => ok(exactCases) }))()
+
+    expect(isOk(result) && result.value.toReview).toHaveLength(REVIEW_LIST_LIMIT)
+    expect(isOk(result) && result.value.moreToReview).toBe(false)
+    expect(isOk(result) && result.value.moreActive).toBe(false)
   })
 
   it('si falla la lectura de las morosidades o de los nombres, devuelve el error', async () => {

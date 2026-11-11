@@ -32,7 +32,7 @@ export function caseListRepository(db: SupabaseClient): CaseListRepository {
     },
 
     async listActiveClients(limit) {
-      const { data, error } = await db.rpc(LIST_ACTIVE_FUNCTION, { p_limit: limit, p_after: null })
+      const { data, error } = await db.rpc(LIST_ACTIVE_FUNCTION, { p_limit: limit, p_after_since: null, p_after_client_id: null })
       if (error) return err(delinquencyStorageFailed(error.message))
       const parsed = z.array(activeRowSchema).safeParse(data ?? [])
       if (!parsed.success) return err(delinquencyStorageFailed(UNEXPECTED_ROW))

@@ -17,10 +17,13 @@ export const reviewMessages = {
     title: 'Por revisar',
     hint: 'Pago sin registrar pasado el plazo de gracia. Confirme si la morosidad procede o descártela si la clienta sí pagó.',
     empty: 'No hay morosidades por revisar.',
+    more: (shown: number) =>
+      `Hay más morosidades por revisar. Se muestran las ${shown} más antiguas; al decidirlas aparecerán las demás.`,
   },
   active: {
     title: 'Morosidades activas',
     empty: 'Ninguna clienta tiene una morosidad activa.',
+    more: (shown: number) => `Hay más morosidades activas. Se muestran las ${shown} más recientes.`,
   },
   grace: {
     title: 'Periodo de gracia',
