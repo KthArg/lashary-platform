@@ -11,7 +11,8 @@ historias:
     estado: terminada
     evidencia: "PR de cierre us/US-MOR-02 a main, con 12 piezas apiladas contra la rama de la historia (#802 a #812 y #856). Criterio 1 (al intentar agendar, el sistema valida la morosidad): el bloqueo vive en la base, dentro de las funciones de reserva de la clienta: supabase/tests/database/delinquency_booking_block.test.sql, scheduling_book_blocked_by_delinquency.test.sql (técnica) y scheduling_book_package_blocked_by_delinquency.test.sql (paquete); scheduling/application/__tests__/book-appointment.test.ts y book-package-appointment.test.ts, y db/__tests__/delinquency-block-repository.test.ts. Comprobado a mano en el navegador con una clienta de prueba y el servidor real: «Confirmar reserva» muestra el rechazo. Criterio 2 (mensaje claro con motivo, monto y opción de regularizar): ui/booking-confirm/__tests__/perform-booking.test.ts (el texto del PO con el monto de hoy y la fecha de la cita; sin fecha dice «de una cita anterior») y studio-time.test.ts; comprobado a mano: «No pudimos agendar tu cita porque tienes un saldo pendiente de ₡18 000 de tu cita del 13 de septiembre de 2027. Comunícate con el estudio para regularizarlo y poder agendar de nuevo.» La «opción de regularizar» es «comunícate con el estudio» hasta que exista US-MOR-03 (decisión del PO del 2026-11-08). Criterio 3 (al saldarse, la clienta recupera la posibilidad de agendar sola): payments_appointment_balances.test.sql y delinquency_booking_block.test.sql (al saldarse la cita la fila deja de bloquear sin tocar ninguna tabla de morosidad) y scheduling_book_blocked_by_delinquency.test.sql (vuelve a agendar); comprobado a mano: se asienta el pago de la cita en el ledger y la misma clienta reserva, con la morosidad todavía `active`. Hoy no hay forma de registrar un pago desde la app: lo trae US-MOR-03, que cerrará la morosidad (deuda registrada abajo). Criterio 4 (la restricción rige también cuando la administradora agenda por la clienta, y ella puede autorizar la excepción): scheduling_admin_book_appointment.test.sql (bloqueada sin autorización devuelve id nulo y registra; con motivo de al menos 10 caracteres agenda y deja el evento con quién la autorizó, la clienta, la cita y el motivo; la clienta no lo ve); solo función SQL, sin pantalla (decisión del 2026-11-11, deuda registrada abajo). Criterio 5 (todo bloqueo queda registrado): el evento scheduling.booking.blocked_by_delinquency, con las citas que bloquean y su saldo de hoy, probado en scheduling_book_blocked_by_delinquency.test.sql, scheduling_book_package_blocked_by_delinquency.test.sql y scheduling_admin_book_appointment.test.sql; comprobado a mano: cada intento de la clienta y de la administradora deja su evento. Recibido de US-AGE-05 (ítem 7 de «Criterios trasladados»): la validación dentro de scheduling_book_appointment (y de paquete) por la base, SEC-001. Recibido de US-AGE-11 (ítem 11): el indicador «Morosidad activa» en la agenda diaria, con el adaptador real de DelinquentClientsPort: scheduling/db/__tests__/delinquent-clients-repository.test.ts; comprobado a mano: en la agenda del 6 de septiembre de 2027 solo la clienta con morosidad confirmada lleva la etiqueta y la que está por revisar no. Confirmado por el PO (Kenny, 2026-11-11, comunicado por Jose Lorenzo): el mínimo de 10 caracteres del motivo, que la cita que agenda la administradora queda pending_approval y que la pantalla va como historia aparte. Decisiones del PO del 2026-11-08 y de alcance del 2026-11-11 en docs/process/DEPENDENCIES.md."
   - id: US-MOR-03
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "casi toda: solo existe el arranque en docs (2026-11-12), sobre `main`, que ya trae US-MOR-02 (#875); con las decisiones del PO del 2026-11-13 (sección US-MOR-03); pendiente verificar el peso promedio del comprobante y recibir el texto real de la cuenta de pago"
   - id: US-MOR-04
     estado: no_iniciada
   - id: US-MOR-05
@@ -36,6 +37,9 @@ deuda:
   - que: "Cada intento bloqueado deja un evento en la bitácora, sin tope ni agrupación: una clienta que insiste, o un reintento automático, llena la bitácora con eventos iguales y la vuelve difícil de revisar (criterio 5)"
     aceptada_en: "US-MOR-02, 2026-11-11: el criterio pide que todo bloqueo quede registrado; no se agrupó para no perder ninguno"
     costo: "Dueño: Jose Lorenzo. Aprox. 2 h: agrupar por clienta y hora (un evento con un contador) o mostrar el resumen en la pantalla de revisión, y su pgTAP. Medir primero cuántos eventos hay (PERF-001)"
+  - que: "Los avisos de la regularización (comprobante recibido, aprobado o rechazado) solo llegan por la bandeja de la administradora y por el estado de cuenta de la clienta: falta la implementación por otros canales (WhatsApp y correo), que el PO pidió dejar anotada"
+    aceptada_en: "Respuesta del PO (Kenny) del 2026-11-13 a las preguntas de arranque de US-MOR-03"
+    costo: "Dueño: US-NOT-04 (recordatorio de pago) y Jose Lorenzo. Aprox. 1 a 2 días: usar el canal de US-NOT-03 (WhatsApp con respaldo por correo) para avisar a la clienta que su comprobante se aprobó o se rechazó, con su motivo, y su pgTAP y pruebas"
 defectos: []
 ---
 
@@ -369,3 +373,68 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - La validación de franja está copiada en las tres funciones de reserva (deuda en el SPEC de `scheduling`).
 - Varias personas atendiendo a la misma hora: el PO decidió terminar bien la base de un estudio de una persona y tratarlo
   después como historia o cambio posterior.
+
+## US-MOR-03: regularizar la deuda desde la plataforma
+
+Criterios del backlog:
+
+1. La clienta puede iniciar el flujo desde el recordatorio o desde su estado de cuenta.
+2. Al completar el flujo simulado o subir el comprobante, la morosidad pasa a estado «pendiente de aprobación».
+3. Una vez aprobado por la administradora, la morosidad se marca como saldada y se libera la restricción.
+4. La clienta ve en todo momento en qué estado está su regularización.
+
+Porta además, sin historia propia (ADR-0007): el **registro de pago con comprobante** (DOM-008, que reutilizará US-SHOP-02) y la **vista de estado de cuenta** de la clienta (que comparte con US-CLI-06). Recibe de US-MOR-01 (ítem 14 de «Criterios trasladados») qué cuenta como pago registrado: cada pago es un asiento del ledger, append-only (DOM-005), que baja el saldo de la cita; esos asientos son los que la detección de US-MOR-01 y el acceso de US-MOR-02 ya leen, así que aprobar un pago devuelve el acceso solo.
+
+Depende de US-MOR-02, ya en `main` (#875, 2026-11-16): el bloqueo de la agenda mira el saldo de la cita, así que aprobar un pago devuelve el acceso sin otra acción.
+
+Reglas: DOM-005 (el pago es un asiento nuevo, nunca un UPDATE), DOM-008 (el comprobante se valida por su contenido en el servidor), DOM-011 (aprobar y asentar en la misma transacción), DOM-012 (solo una morosidad confirmada se regulariza), SEC-001, SEC-002 y SEC-006 (el comprobante es privado, con RLS y su prueba de aislamiento), ARCH-003/005 (otras features piden por funciones del contrato), INT-003 (contrato primero), INT-008 (una migración por pieza, hacia adelante).
+
+### Diseño propuesto
+
+- **Dueña: `delinquency`.** La solicitud de regularización cuelga de una morosidad (`delinquency_cases`), así que vive en `delinquency` y llama a `payments` para asentar el pago. La dirección de la dependencia se mantiene: `delinquency` ya lee de `payments`; `payments` no llama a `delinquency`.
+- **Una solicitud es:** la morosidad, el monto que dice haber pagado, la referencia, el comprobante y su estado: `pending_approval` (la clienta la envió), `approved` (la administradora la aprobó) o `rejected` (con motivo).
+- **Aprobar asienta el pago en la misma transacción** (DOM-011): una función `SECURITY DEFINER` solo para la administradora llama a la función de `payments` que escribe un asiento nuevo, de tipo pago y negativo, deja el evento en la bitácora y, si la cita queda saldada, la morosidad pasa a `settled` («saldada»). La clienta recupera el acceso porque el saldo de la cita llega a cero (US-MOR-02), no porque nadie se lo devuelva.
+- **El ledger admite más de un pago por cita.** Hoy tiene un índice único por (cita, tipo) para que un cargo no se duplique; un pago parcial exige varios asientos de pago por la misma cita, así que ese índice se acota a los tipos que sí son únicos.
+- **El comprobante es un archivo privado** en un bucket nuevo de Supabase Storage, validado en el servidor por sus primeros bytes y su tamaño, no por la extensión (DOM-008). Solo la dueña de la solicitud y la administradora lo ven, por URL firmada de corta vida.
+- **El estado de cuenta** es la pantalla `/portal/cuenta` de la clienta (feature `account`, hoy sin código): su saldo, sus morosidades confirmadas, y el estado de su regularización (sin enviar, pendiente, aprobada o rechazada con el motivo), con el formulario para enviar el comprobante.
+- **La administradora** ve las solicitudes por aprobar en una pantalla nueva, con el comprobante, y las aprueba o las rechaza con motivo. Cuando llega un comprobante nuevo, le avisa su bandeja (`notifications`).
+- **«Desde el recordatorio»:** el recordatorio de pago es US-NOT-04, que depende de esta historia. Aquí queda una ruta estable para regularizar a la que ese recordatorio enlazará.
+
+### Decisiones del PO (Kenny, 2026-11-13)
+
+Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md`.
+
+1. **Pagos parciales: sí, incluso pagos pequeños («micropagos»).** El monto va de 1 colón hasta el saldo de la cita, y el bloqueo sigue hasta que el saldo llegue a cero.
+2. **Solo comprobante, por el momento.** No hay botón de pago ni pasarela: el sistema no mueve dinero (DOM-005).
+3. **Dónde paga la clienta:** por ahora un **texto genérico de relleno** («placeholder») con la cuenta y las instrucciones; cuando el estudio tenga la información real, se actualiza en los mensajes de la pantalla.
+4. **Comprobante: imágenes y PDF**, con un límite de entre 3 y 5 MB. Kenny pidió verificar cuál es el peso promedio de un comprobante antes de fijarlo; mientras tanto pidió usar 5 MB. Como Vercel acepta como mucho 4,5 MB por petición, se usa **4 MB**, dentro de su rango, y queda anotado para revisarlo (ver «Pendiente de verificar»).
+5. **Rechazo:** la administradora **debe dar un motivo**, y la clienta puede **reemplazar** el comprobante que ya envió por uno nuevo. Interpretación mía, por confirmar: reenviar reemplaza la solicitud vigente de esa morosidad (queda una sola a la vez) y el historial de rechazos se conserva en la base.
+6. **Monto aprobado:** la administradora puede aprobar un monto distinto del que declaró la clienta, y la pantalla debe dejar en claro que **hay que verificar el comprobante y no confiar a ciegas en el monto de la clienta**. Quedan los dos montos en la bitácora.
+7. **Avisos:** a la administradora le avisa su bandeja cuando llega un comprobante; la clienta se entera en su estado de cuenta. Kenny pidió **dejar anotado que falta la implementación por otros canales** (WhatsApp y correo): queda registrado como deuda de esta historia.
+8. **Alcance:** solo se regularizan las morosidades confirmadas (`active`).
+
+### Pendiente de verificar
+
+- El peso promedio de un comprobante (foto de celular o PDF de banco) para fijar el límite entre 3 y 5 MB. Hasta tenerlo, el tope es 4 MB: dentro del rango de Kenny, y no 5 porque Vercel acepta como mucho 4,5 MB por petición (decisión de Jose Lorenzo, 2026-11-16).
+- El texto real de la cuenta o SINPE y las instrucciones de pago, que entrega el estudio.
+
+### Piezas previstas
+
+Pueden cambiar con las respuestas del PO. Una migración por pieza (INT-008).
+
+1. Arranque en docs (esta sección).
+2. Contratos: lo que `payments` ofrece a `delinquency` (registrar un pago), lo que `delinquency` guarda y expone (solicitudes, `settled`) y la vista de estado de cuenta.
+3. Base de `payments`: el ledger admite varios asientos de pago por cita.
+4. Base de `payments`: `payments_record_payment` (sin `EXECUTE` para nadie: solo la llaman funciones `SECURITY DEFINER`).
+5. Base de `delinquency`: el estado `settled` y la tabla de solicitudes de regularización, con RLS.
+6. Base: el bucket privado de comprobantes y sus políticas.
+7. Base de `delinquency`: la clienta envía una solicitud (valida que la morosidad sea suya y esté `active`, el monto contra el saldo, y una pendiente a la vez).
+8. Base de `delinquency`: la administradora aprueba (asienta el pago, cierra la morosidad si queda saldada y deja la bitácora).
+9. Base de `delinquency`: la administradora rechaza con motivo.
+10. Aplicación: validar el comprobante por su contenido (DOM-008) y subirlo.
+11. Aplicación: el caso de uso y la acción de la clienta para enviar la solicitud.
+12. Pantalla: el estado de cuenta de la clienta en `/portal/cuenta`.
+13. Aplicación: la lectura de las solicitudes por aprobar y su pantalla en el panel.
+14. Aplicación: las acciones de aprobar y rechazar.
+15. Aviso a la bandeja de la administradora cuando llega un comprobante.
+16. Cierre: evidencia y estado.
