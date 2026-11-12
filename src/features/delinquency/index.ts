@@ -6,3 +6,4 @@ export {
 } from './domain/errors'
 export type { CaseAlreadyDecided, CaseNotFound, DelinquencyStorageFailed } from './domain/errors'
 export { ReviewPage } from './ui/review/components/ReviewPage'
+export { receiveDetectionCronRequest } from './http/cron-handler'

@@ -17,3 +17,8 @@ export interface CaseListRepository {
 export interface ClientNamesPort {
   namesFor(clientIds: string[]): Promise<Result<Map<string, string>, DelinquencyStorageFailed>>
 }
+
+export interface DetectionRepository {
+  // Cuántas morosidades por revisar generó la corrida; 0 si no había nada nuevo.
+  detectUnpaid(): Promise<Result<number, DelinquencyStorageFailed>>
+}

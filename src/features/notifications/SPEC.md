@@ -129,11 +129,11 @@ US-NOT-03 (ADR-0007); el resto lo reusa vía el puerto que US-NOT-08 exige.
   y con plantilla) y `resend-email-channel.test.ts` (mock de `fetch`).
 - Disparo (`http/cron-handler.ts`, `src/app/api/cron/notifications-reminders/route.ts`): la ruta
   recibe un `POST` con `Authorization: Bearer <CRON_SECRET>`; sin ese secreto configurado el endpoint
-  se niega siempre (fail-closed). Hoy nadie la llama: no hay `vercel.json` ni un workflow de GitHub
+  se niega siempre (fail-closed). La comprobación del secreto (`isAuthorizedCronRequest`, en tiempo constante) vive en `shared/lib/cron-auth.ts`, compartida con el cron de detección de morosidad de `delinquency`. Hoy nadie la llama: no hay `vercel.json` ni un workflow de GitHub
   Actions que lo haga (ver «Antes de producción», punto 5, y la activación en `docs/process/DEPENDENCIES.md`). Sin sesión de usuario (sin cookies): el
   cron se autentica como una cuenta de staff (`shared/lib/supabase/system.ts`,
   `NOTIFICATIONS_CRON_EMAIL`/`NOTIFICATIONS_CRON_PASSWORD`) y queda sujeto a la misma RLS que
-  cualquier sesión real — nunca la service-role key (SEC-001/003). Prueba: `http/__tests__/cron-handler.test.ts`.
+  cualquier sesión real — nunca la service-role key (SEC-001/003). Prueba de la autenticación: `shared/lib/__tests__/cron-auth.test.ts`.
 - `index.ts` (`runNotificationsReminderCycle`) arma los adaptadores reales y expone la única puerta
   de entrada (ARCH-003): scheduling y clients por su índice público, los canales por ADR-0006.
 
