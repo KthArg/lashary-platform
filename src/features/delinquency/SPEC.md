@@ -169,6 +169,22 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - Capas: `application/detect-unpaid.ts` sobre el puerto `DetectionRepository`, `db/detection-repository.ts` (valida que la respuesta sea un entero no negativo) y `http/cron-handler.ts`. Pruebas: `application/__tests__/detect-unpaid.test.ts`, `db/__tests__/detection-repository.test.ts`, `http/__tests__/cron-handler.test.ts` y `shared/lib/__tests__/cron-auth.test.ts`.
 - Comprobado a mano en local, de punta a punta con el servidor real: sin secreto y con secreto equivocado, 401; con el secreto correcto y tres citas impagas pasada la gracia, `generated: 3` y tres morosidades `pending_review`; una segunda corrida, `generated: 0`; ninguna quedó `active`.
 
+### Aviso en la bandeja (piezas 15 y 16)
+
+- Contrato: [delinquency-api.md](../../../docs/contracts/delinquency-api.md), «Aviso a la bandeja de la administradora». Migración
+  `20261108000005_delinquency_review_notice.sql` (INT-008, una sola): el trigger `delinquency_cases_notify_detected` llama, al insertarse
+  una morosidad `pending_review`, a `notifications_record_delinquency_review`. Un aviso por morosidad; una que nace activa no avisa; un
+  fallo al registrar el aviso no bloquea la morosidad (queda en el log, igual que en `scheduling`).
+- La bandeja nació para avisos de una cita; el de morosidad lleva lo que debe la clienta. `notifications_admin_inbox` suma
+  `pending_amount`, `service_name` y `starts_at` pasan a ser opcionales y la combinación válida de columnas queda fijada por tipo
+  (restricción `notifications_admin_inbox_fields_by_kind`).
+- Prueba: pgTAP `delinquency_notify_case_detected.test.sql` (el aviso con la clienta y lo que debe, una activa no avisa, la detección
+  real deja uno por morosidad y una segunda corrida no repite, la clienta no ve ni registra, un fallo del aviso no bloquea y la tabla
+  exige las columnas de cada tipo).
+- Pieza 15: la base de datos. La pieza 16 muestra el aviso en la bandeja de `notifications`.
+- **Volumen conocido:** como hay un aviso por morosidad, la primera corrida con pagos reales (cuando US-MOR-03 exista) puede dejar muchos
+  de una vez. La bandeja pagina de 20 en 20; si se vuelve un problema, un aviso resumen por corrida es un cambio posterior.
+
 ### Qué no hace todavía
 
-No hay todavía el aviso en la bandeja de la administradora: es la pieza siguiente. El cron existe pero no está programado: ninguna fila se genera sola.
+El aviso queda registrado en la base pero la bandeja todavía no lo muestra: es la pieza siguiente. El cron existe pero no está programado: ninguna fila se genera sola.
