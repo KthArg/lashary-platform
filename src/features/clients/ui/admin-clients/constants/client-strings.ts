@@ -17,7 +17,13 @@ export const CLIENTS_TABLE_HEADERS = {
   delinquencyStatus: 'Morosidad', lastVisit: 'Última visita', actions: 'Acciones',
 } as const
 
-export const CLIENTS_TABLE_TEXTS = { pendingColumnValue: 'Sin dato', neverVisited: 'Sin visitas' } as const
+export const CLIENTS_TABLE_TEXTS = {
+  pendingColumnValue: 'Sin dato',
+  neverVisited: 'Sin visitas',
+  noDelinquency: 'Sin morosidad',
+  delinquencyActive: (amount: string) => `Activa · ${amount}`,
+  delinquencyToReview: 'Por revisar',
+} as const
 
 export const CLIENTS_VISIT_FILTER_TEXTS = {
   formLabel: 'Filtrar por última visita',

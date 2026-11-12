@@ -2,9 +2,18 @@ import { ok, err, isErr, type Result } from '@/shared/result'
 import { CLIENTS_LIST_LIMITS } from './clients-list-limits'
 import { readVisitRange, type VisitRangeError } from '../domain/list/visit-range'
 import type { ClientListItem, ClientRecord } from '../domain/client.types'
-import type { ClientRepository, ListClientsQuery } from './ports'
+import type { ClientDelinquency } from '../domain/client-delinquency'
+import type { ClientRepository, DelinquencyStatesPort, ListClientsQuery } from './ports'
 
-export interface ClientsListPage { clients: ClientListItem[]; total: number; page: number; pageSize: number }
+export interface ClientsListPage {
+  clients: ClientListItem[]
+  total: number
+  page: number
+  pageSize: number
+  // La morosidad es de otra feature: si no se pudo leer, el listado sigue y la columna dice «Sin dato».
+  delinquency: Record<string, ClientDelinquency>
+  delinquencyAvailable: boolean
+}
 
 export type ListClientsError = 'failed' | VisitRangeError
 
@@ -29,7 +38,7 @@ export const getClient =
   }
 
 export const listClients =
-  (repo: ClientRepository) =>
+  (repo: ClientRepository, delinquency?: DelinquencyStatesPort) =>
   async (query: ListClientsQuery = {}): Promise<Result<ClientsListPage, ListClientsError>> => {
     const visitRange = readVisitRange(query?.visitFrom, query?.visitTo)
     if (isErr(visitRange)) return visitRange
@@ -43,5 +52,16 @@ export const listClients =
       visitTo: visitRange.value.to,
     })
     if (isErr(found)) return err('failed')
-    return ok({ ...found.value, page, pageSize })
+
+    const states = delinquency
+      ? await delinquency.statesFor(found.value.clients.map((client) => client.id))
+      : null
+    const available = states !== null && !isErr(states)
+    return ok({
+      ...found.value,
+      page,
+      pageSize,
+      delinquency: states !== null && !isErr(states) ? Object.fromEntries(states.value) : {},
+      delinquencyAvailable: available,
+    })
   }

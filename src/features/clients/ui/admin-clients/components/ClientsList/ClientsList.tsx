@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { clientAppointmentsPath, clientRecordPath } from '../../../client-routes'
+import { delinquencyLabel } from '../../delinquency-label'
 import { CLIENTS_ARIA_LABELS, CLIENTS_BUTTON_TEXTS, CLIENTS_LABELS, CLIENTS_TABLE_HEADERS, CLIENTS_TABLE_TEXTS } from '../../constants/client-strings'
 import { CLIENTS_ICON_PATHS } from '../../constants/client-icons'
 import { EditClientDialog } from '../EditClientDialog'
@@ -13,9 +14,23 @@ import type { ClientRecord } from '../../../../domain/client.types'
 import type { ClientsListProps } from './ClientsList.types'
 
 export function ClientsList({
-  clients, isLoading = false, loadError = null, filterError = null, activeNameFilter = null, hasVisitRangeFilter = false,
+  clients,
+  delinquency = {},
+  delinquencyAvailable = false,
+  isLoading = false,
+  loadError = null,
+  filterError = null,
+  activeNameFilter = null,
+  hasVisitRangeFilter = false,
 }: ClientsListProps) {
   const router = useRouter()
+
+  // Solo `active` es morosidad; «Por revisar» todavía no tiene consecuencias (DOM-012). Sin dato, la columna no inventa nada.
+  const delinquencyText = (clientId: string): string => {
+    if (!delinquencyAvailable) return CLIENTS_TABLE_TEXTS.pendingColumnValue
+    const found = delinquency[clientId]
+    return found ? delinquencyLabel(found) : CLIENTS_TABLE_TEXTS.noDelinquency
+  }
   const [editing, setEditing] = useState<ClientRecord | null>(null)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
 
@@ -61,7 +76,7 @@ export function ClientsList({
                 <th scope="row" className={STYLES.nameCell}>{client.fullName}</th>
                 <td className={STYLES.contactCell}>{client.phone}</td>
                 <td className={STYLES.contactCell}>{client.email}</td>
-                <td className={STYLES.pendingCell}>{CLIENTS_TABLE_TEXTS.pendingColumnValue}</td>
+                <td className={delinquencyAvailable ? STYLES.contactCell : STYLES.pendingCell}>{delinquencyText(client.id)}</td>
                 {client.lastVisitAtMs === null
                   ? <td className={STYLES.pendingCell}>{CLIENTS_TABLE_TEXTS.neverVisited}</td>
                   : <td className={STYLES.contactCell}>{formatVisitDate(client.lastVisitAtMs)}</td>}
