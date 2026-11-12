@@ -26,7 +26,7 @@ Morosidad: deteccion con gracia y aviso previo (DOM-012), bloqueo, regularizacio
 
 ## Qué hace hoy
 
-Hoy: las tablas de morosidades y de configuración la función que detecta las que confirman o descartan y las del contrato (sección de US-MOR-01). La pantalla de revisión y el reflejo en `clients` existen y hay una ruta de cron para correr la detección, sin programar; todavía no hay aviso en la bandeja.
+Hoy: las tablas de morosidades y de configuración la función que detecta las que confirman o descartan y las del contrato (sección de US-MOR-01). La pantalla de revisión y el reflejo en `clients` existen y hay una ruta de cron para correr la detección, sin programar y cada morosidad por revisar deja un aviso en la bandeja de la administradora.
 
 ## Contrato público
 
@@ -181,10 +181,12 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - Prueba: pgTAP `delinquency_notify_case_detected.test.sql` (el aviso con la clienta y lo que debe, una activa no avisa, la detección
   real deja uno por morosidad y una segunda corrida no repite, la clienta no ve ni registra, un fallo del aviso no bloquea y la tabla
   exige las columnas de cada tipo).
-- Pieza 15: la base de datos. La pieza 16 muestra el aviso en la bandeja de `notifications`.
+- Pieza 15: la base de datos. Pieza 16: `notifications` dibuja el aviso en la bandeja de la administradora («{clienta} tiene un pago sin
+  registrar por revisar», lo que debe y un enlace a `/admin/morosidades`); el detalle está en el SPEC de `notifications`.
+- Comprobado a mano en local, con el servidor real y un navegador: el cron genera 3 morosidades y deja 3 avisos; la segunda corrida no repite; la administradora ve «3 sin leer» en Notificaciones, cada aviso con la clienta y lo que debe, y el enlace «Revisar morosidades» cierra el panel y lleva a `/admin/morosidades`, donde están las 3 por revisar.
 - **Volumen conocido:** como hay un aviso por morosidad, la primera corrida con pagos reales (cuando US-MOR-03 exista) puede dejar muchos
   de una vez. La bandeja pagina de 20 en 20; si se vuelve un problema, un aviso resumen por corrida es un cambio posterior.
 
 ### Qué no hace todavía
 
-El aviso queda registrado en la base pero la bandeja todavía no lo muestra: es la pieza siguiente. El cron existe pero no está programado: ninguna fila se genera sola.
+Falta el cierre de la historia. El cron existe pero no está programado: ninguna fila se genera sola.

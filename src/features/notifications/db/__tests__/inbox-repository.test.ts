@@ -13,6 +13,7 @@ const row = {
   starts_at: '2026-11-05T15:00:00+00:00',
   previous_starts_at: null,
   forfeited_deposit: null,
+  pending_amount: null,
   read_at: null,
   created_at: '2026-10-29T18:00:00+00:00',
 }
@@ -66,6 +67,29 @@ describe('inboxRepository', () => {
       startsAt: new Date('2026-11-05T15:00:00Z'),
     })
     expect(isOk(result) && result.value.notices[2]).not.toHaveProperty('forfeitedDeposit')
+  })
+
+  it('convierte el aviso de una morosidad por revisar: lleva lo que debe y no lleva servicio ni hora (US-MOR-01, criterio 3)', async () => {
+    const delinquency = {
+      ...row, id: 'aviso-4', kind: 'delinquency_review', service_name: null, starts_at: null, pending_amount: 20000,
+    }
+    const { db } = createFakeDb({ data: [delinquency], error: null })
+
+    const result = await inboxRepository(db).listRecent({ offset: 0, limit: INBOX_LIMIT })
+
+    expect(isOk(result) && result.value.notices[0]).toEqual({
+      id: 'aviso-4',
+      kind: 'delinquency_review',
+      appointmentId: 'cita-1',
+      clientName: 'Ana Pérez',
+      pending: 20000,
+      readAt: null,
+      createdAt: new Date('2026-10-29T18:00:00Z'),
+    })
+  })
+
+  it('pide la columna del monto de la morosidad', () => {
+    expect(INBOX_COLUMNS).toContain('pending_amount')
   })
 
   it('con más de 20 avisos devuelve 20 y avisa que hay más; la página siguiente empieza en el 21', async () => {
