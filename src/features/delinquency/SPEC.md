@@ -203,7 +203,13 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
   `application/grace-days.ts` sobre el puerto `SettingsRepository` y `db/settings-repository.ts`, que lee la fila única, llama a la
   función de la base y traduce `22023` a «gracia inválida». Un valor fuera de rango no llega a la base: se rechaza antes (la base lo
   vuelve a exigir). Pruebas: `application/__tests__/grace-days.test.ts` y `db/__tests__/settings-repository.test.ts`.
-- Pieza 17: la base de datos. Pieza 18: dominio, aplicación y repositorio. Pieza 19: el formulario en la pantalla de morosidades.
+- Pantalla (pieza 19): una sección «Periodo de gracia» al final de `/admin/morosidades`, con la explicación de que rige solo para las
+  detecciones nuevas y un campo numérico de 1 a 90 con su botón «Guardar» (`ui/review/components/GraceDaysForm.tsx`). La acción
+  `setGraceDaysAction` exige sesión de administradora, valida con Zod (entero de 1 a 90), llama al caso de uso y refresca la pantalla;
+  un fallo de la base se dice sin mostrar su texto interno. `review-service` lee la gracia junto con la vista y, si no se pudo leer,
+  la pantalla sigue y esa sección dice que no está disponible, sin un formulario con un valor inventado. Pruebas:
+  `ui/review/__tests__/review-actions.test.ts` y `review-view.test.tsx`.
+- Pieza 17: la base de datos. Pieza 18: dominio, aplicación y repositorio. Pieza 19: la acción y el formulario en la pantalla.
 
 ### Qué no hace todavía
 
