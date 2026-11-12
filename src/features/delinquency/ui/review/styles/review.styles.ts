@@ -21,6 +21,7 @@ export const reviewStyles = {
   feedback: 'text-sm',
   feedbackError: 'text-sm text-error',
   empty: 'rounded-box bg-base-200 p-4 text-sm',
+  more: 'rounded-box border border-warning/50 bg-warning/10 p-3 text-sm',
   alertError: 'alert alert-error flex flex-wrap items-center gap-3',
   retry: 'btn btn-outline btn-sm',
   loadingBox: 'flex items-center gap-3 rounded-box border border-base-300 p-10',

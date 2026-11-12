@@ -74,7 +74,7 @@ describe('caseListRepository.listActiveClients', () => {
 
     const result = await caseListRepository(db).listActiveClients(50)
 
-    expect(calls).toEqual([['rpc', LIST_ACTIVE_FUNCTION, { p_limit: 50, p_after: null }]])
+    expect(calls).toEqual([['rpc', LIST_ACTIVE_FUNCTION, { p_limit: 50, p_after_since: null, p_after_client_id: null }]])
     expect(isOk(result) && result.value).toEqual([
       { clientId: ANA, pending: 9000, since: new Date('2026-10-20T15:00:00Z') },
     ])

@@ -4,6 +4,7 @@ import { formatStudioDateTime } from '@/shared/studio-time'
 import type { ReviewViewModel } from '@/features/delinquency/ui/review/services/review-service'
 import { DELINQUENCY_ADMIN_PATH, reviewMessages as copy } from '@/features/delinquency/ui/review/constants/review-strings'
 import { reviewStyles as STYLES } from '@/features/delinquency/ui/review/styles/review.styles'
+import { ACTIVE_LIST_LIMIT, REVIEW_LIST_LIMIT } from '@/features/delinquency/domain/active-client'
 import { CaseDecisionButtons } from './CaseDecisionButtons'
 import { GraceDaysForm } from './GraceDaysForm'
 
@@ -21,7 +22,7 @@ function ReviewBody({ model }: { model: ReviewViewModel }) {
     )
   }
 
-  const { toReview, active } = model.view
+  const { toReview, active, moreToReview, moreActive } = model.view
   return (
     <>
       <section className={STYLES.section} aria-labelledby="delinquency-to-review">
@@ -47,6 +48,7 @@ function ReviewBody({ model }: { model: ReviewViewModel }) {
             ))}
           </ul>
         )}
+        {moreToReview ? <p className={STYLES.more}>{copy.toReview.more(REVIEW_LIST_LIMIT)}</p> : null}
       </section>
 
       <section className={STYLES.section} aria-labelledby="delinquency-active">
@@ -70,6 +72,7 @@ function ReviewBody({ model }: { model: ReviewViewModel }) {
             ))}
           </ul>
         )}
+        {moreActive ? <p className={STYLES.more}>{copy.active.more(ACTIVE_LIST_LIMIT)}</p> : null}
       </section>
 
       <section className={STYLES.section} aria-labelledby="delinquency-grace">
