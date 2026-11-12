@@ -297,6 +297,14 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
   con un mínimo de caracteres. Queda en la bitácora con su nombre, la clienta y la cita. La clienta no lo ve. Kenny no fijó el
   mínimo: **pendiente** fijar el número al construir la pieza 5 (propongo 10) y confirmarlo con él.
 
+### Diseño de la reserva bloqueada (pieza 2)
+
+- **Cómo se dice «bloqueada» sin perder el registro.** Una excepción revertiría la transacción y se llevaría el evento. Las funciones de reserva ya devuelven una fila con `id` nulo cuando rechazan por solape y lo registran en `scheduling_alerts` en la misma transacción; el bloqueo usa el mismo camino: devuelve la fila con `id` nulo y deja el evento `scheduling.booking.blocked` en la bitácora. La aplicación distingue el bloqueo del solape preguntando a `delinquency_booking_block` (de solo lectura) y arma el mensaje con su monto y la fecha de la cita. El bloqueo se revisa **antes** del solape, así que si ambos ocurren gana el bloqueo; y si el bloqueo se levantó entre las dos llamadas la clienta ve «el espacio no está disponible» y puede reintentar.
+- **La excepción de la administradora** es `scheduling_admin_book_appointment`, una función nueva con los mismos parámetros que la de la clienta más `p_client_id`, `p_authorize_exception` y `p_exception_reason`. Solo staff la puede ejecutar. Con una clienta bloqueada y sin autorización devuelve la fila con `id` nulo y registra el bloqueo igual que la de la clienta; con `p_authorize_exception = true` exige un motivo de al menos el mínimo de caracteres, agenda y deja `scheduling.booking.block_exception_authorized` con quién autorizó, la clienta, la cita y el motivo.
+- **Sin pantalla.** Decisión del 2026-11-11: esta historia construye la función de la administradora y no su pantalla; agendar por una clienta desde el panel queda como historia aparte. La función se prueba con pgTAP.
+- **Solo técnica suelta.** La función de la administradora cubre la reserva de una técnica, no la de un paquete (`scheduling_book_package_appointment` solo rechaza y registra, como la de la clienta). Si la administradora necesita agendar un paquete por una clienta, se agrega con su pantalla.
+- **Pendiente de confirmar con Kenny:** en qué estado queda una cita que agenda la administradora (hoy, igual que la de la clienta: `pending_approval`) y el mínimo de caracteres del motivo (propongo 10).
+
 ### Fuera de alcance
 
 Varias personas atendiendo a la misma hora no se hace ahora: el PO decidió terminar bien la base de un estudio de una persona y
