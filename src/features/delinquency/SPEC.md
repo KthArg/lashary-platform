@@ -30,7 +30,9 @@ Hoy: solo está el arranque de US-MOR-01 (sección de abajo). No hay código, ta
 
 ## Contrato público
 
-Sin contrato todavía. Al crearse, entra por `index.ts` (ARCH-003).
+El contrato de lo que `delinquency` ofrecerá a `clients` está en [delinquency-api.md](../../../docs/contracts/delinquency-api.md): `delinquency_client_states` y `delinquency_list_active`, con los estados `pending_review`, `active` y `dismissed`. Todavía no hay implementación. El código entra por `index.ts` (ARCH-003).
+
+Lo que `delinquency` necesita de `payments` está en [payments-api.md](../../../docs/contracts/payments-api.md): `payments_client_balance` y `payments_unpaid_charges`.
 
 ## US-MOR-01: detección automática de pagos pendientes
 
