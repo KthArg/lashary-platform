@@ -1,0 +1,15 @@
+export const reviewBodyStyles = {
+  section: 'flex flex-col gap-3',
+  sectionTitle: 'font-serif text-xl font-semibold text-brand-dark',
+  hint: 'text-sm text-brand-muted',
+  list: 'flex flex-col gap-3',
+  card: 'flex flex-col gap-3 rounded-box border border-warning/50 bg-warning/10 p-4',
+  activeCard: 'flex flex-col gap-1 rounded-box border border-error/40 bg-error/5 p-4',
+  cardTitle: 'font-semibold text-brand-dark',
+  meta: 'grid grid-cols-1 gap-1 text-sm sm:grid-cols-[auto_1fr] sm:gap-x-4',
+  term: 'font-medium',
+  empty: 'rounded-box bg-base-200 p-4 text-sm',
+  more: 'rounded-box border border-warning/50 bg-warning/10 p-3 text-sm',
+  alertError: 'alert alert-error flex flex-wrap items-center gap-3',
+  retry: 'btn btn-outline btn-sm',
+}

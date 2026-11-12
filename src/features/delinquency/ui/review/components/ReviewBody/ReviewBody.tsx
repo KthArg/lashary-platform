@@ -1,16 +1,16 @@
 import Link from 'next/link'
 import { formatMoney, moneyFromColones } from '@/shared/money'
 import { formatStudioDateTime } from '@/shared/studio-time'
-import type { ReviewViewModel } from '@/features/delinquency/ui/review/services/review-service'
-import { DELINQUENCY_ADMIN_PATH, reviewMessages as copy } from '@/features/delinquency/ui/review/constants/review-strings'
-import { reviewStyles as STYLES } from '@/features/delinquency/ui/review/styles/review.styles'
 import { ACTIVE_LIST_LIMIT, REVIEW_LIST_LIMIT } from '@/features/delinquency/domain/active-client'
-import { CaseDecisionButtons } from './CaseDecisionButtons'
-import { GraceDaysForm } from './GraceDaysForm'
+import { DELINQUENCY_ADMIN_PATH, reviewMessages as copy } from '@/features/delinquency/ui/review/constants/review-strings'
+import { CaseDecisionButtons } from '../CaseDecisionButtons'
+import { GraceDaysForm } from '../GraceDaysForm'
+import { reviewBodyStyles as STYLES } from './ReviewBody.styles'
+import type { ReviewBodyProps } from './ReviewBody.types'
 
 const amount = (colones: number): string => formatMoney(moneyFromColones(colones))
 
-function ReviewBody({ model }: { model: ReviewViewModel }) {
+export function ReviewBody({ model }: ReviewBodyProps) {
   if (model.status === 'error') {
     return (
       <div role="alert" className={STYLES.alertError}>
@@ -87,17 +87,5 @@ function ReviewBody({ model }: { model: ReviewViewModel }) {
         )}
       </section>
     </>
-  )
-}
-
-export function ReviewView({ model }: { model: ReviewViewModel }) {
-  return (
-    <div className={STYLES.main}>
-      <header className={STYLES.header}>
-        <h1 className={STYLES.title}>{copy.title}</h1>
-        <p className={STYLES.subtitle}>{copy.subtitle}</p>
-      </header>
-      <ReviewBody model={model} />
-    </div>
   )
 }

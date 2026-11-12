@@ -3,11 +3,11 @@
 import { useState, useTransition } from 'react'
 import { decideCaseAction } from '@/features/delinquency/ui/review/actions/review-actions'
 import { reviewMessages } from '@/features/delinquency/ui/review/constants/review-strings'
-import { reviewStyles as STYLES } from '@/features/delinquency/ui/review/styles/review.styles'
+import { FeedbackMessage, type Feedback } from '../FeedbackMessage'
+import { caseDecisionButtonsStyles as STYLES } from './CaseDecisionButtons.styles'
+import type { CaseDecisionButtonsProps } from './CaseDecisionButtons.types'
 
-type Feedback = { kind: 'ok'; text: string } | { kind: 'error'; text: string } | null
-
-export function CaseDecisionButtons({ caseId }: { caseId: string }) {
+export function CaseDecisionButtons({ caseId }: CaseDecisionButtonsProps) {
   const [pending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState<Feedback>(null)
 
@@ -36,9 +36,7 @@ export function CaseDecisionButtons({ caseId }: { caseId: string }) {
           {reviewMessages.dismiss}
         </button>
       </div>
-      <div role="status" aria-live="polite" className={feedback?.kind === 'error' ? STYLES.feedbackError : STYLES.feedback}>
-        {feedback?.text ?? null}
-      </div>
+      <FeedbackMessage feedback={feedback} />
     </div>
   )
 }

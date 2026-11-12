@@ -4,13 +4,13 @@ import { useState, useTransition, type FormEvent } from 'react'
 import { GRACE_DAYS_MAX, GRACE_DAYS_MIN } from '@/features/delinquency/domain/grace-days'
 import { setGraceDaysAction } from '@/features/delinquency/ui/review/actions/review-actions'
 import { reviewMessages as copy } from '@/features/delinquency/ui/review/constants/review-strings'
-import { reviewStyles as STYLES } from '@/features/delinquency/ui/review/styles/review.styles'
-
-type Feedback = { kind: 'ok'; text: string } | { kind: 'error'; text: string } | null
+import { FeedbackMessage, type Feedback } from '../FeedbackMessage'
+import { graceDaysFormStyles as STYLES } from './GraceDaysForm.styles'
+import type { GraceDaysFormProps } from './GraceDaysForm.types'
 
 const INPUT_ID = 'delinquency-grace-days'
 
-export function GraceDaysForm({ graceDays }: { graceDays: number }) {
+export function GraceDaysForm({ graceDays }: GraceDaysFormProps) {
   const [value, setValue] = useState(String(graceDays))
   const [pending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState<Feedback>(null)
@@ -30,9 +30,9 @@ export function GraceDaysForm({ graceDays }: { graceDays: number }) {
   }
 
   return (
-    <form onSubmit={save} className={STYLES.graceForm}>
-      <div className={STYLES.graceField}>
-        <label htmlFor={INPUT_ID} className={STYLES.term}>
+    <form onSubmit={save} className={STYLES.form}>
+      <div className={STYLES.field}>
+        <label htmlFor={INPUT_ID} className={STYLES.label}>
           {copy.grace.label}
         </label>
         <input
@@ -45,15 +45,13 @@ export function GraceDaysForm({ graceDays }: { graceDays: number }) {
           value={value}
           disabled={pending}
           onChange={(event) => setValue(event.target.value)}
-          className={STYLES.graceInput}
+          className={STYLES.input}
         />
       </div>
-      <button type="submit" className={STYLES.confirmButton} disabled={pending}>
+      <button type="submit" className={STYLES.saveButton} disabled={pending}>
         {pending ? copy.saving : copy.grace.save}
       </button>
-      <div role="status" aria-live="polite" className={feedback?.kind === 'error' ? STYLES.feedbackError : STYLES.feedback}>
-        {feedback?.text ?? null}
-      </div>
+      <FeedbackMessage feedback={feedback} />
     </form>
   )
 }
