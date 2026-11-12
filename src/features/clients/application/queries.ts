@@ -37,6 +37,14 @@ export const getClient =
     return found.value ? ok(found.value) : err('not-found')
   }
 
+// La morosidad es de otra feature: si no se pudo leer o la clienta no tiene, devuelve null y la pantalla no muestra nada.
+export const getClientDelinquency =
+  (delinquency: DelinquencyStatesPort) =>
+  async (id: string): Promise<ClientDelinquency | null> => {
+    const states = await delinquency.statesFor([id])
+    return isErr(states) ? null : (states.value.get(id) ?? null)
+  }
+
 export const listClients =
   (repo: ClientRepository, delinquency?: DelinquencyStatesPort) =>
   async (query: ListClientsQuery = {}): Promise<Result<ClientsListPage, ListClientsError>> => {

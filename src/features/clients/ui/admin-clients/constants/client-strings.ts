@@ -89,4 +89,5 @@ export const CLIENT_PROFILE_LABELS = {
   tabsLabel: 'Secciones de la clienta',
   recordTab: 'Expediente',
   appointmentsTab: 'Citas',
+  delinquencyPrefix: 'Morosidad: ',
 } as const
