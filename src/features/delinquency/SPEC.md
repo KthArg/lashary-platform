@@ -318,7 +318,12 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - El evento lo escribe una función auxiliar `SECURITY DEFINER`, `scheduling_booking_blocked_by_delinquency`, sin `EXECUTE` para nadie: solo la llaman las funciones de reserva, así que una clienta no puede falsear eventos llamándola aparte.
 - La aplicación todavía no lo distingue: hasta la pieza 7 un bloqueo se lee como «el espacio no está disponible», que no cambia nada para quien no está bloqueada. La pieza 7 arma el mensaje con el monto y la fecha de la cita.
 - Prueba: pgTAP `scheduling_book_blocked_by_delinquency.test.sql` (10 pruebas: id nulo sin excepción, ninguna cita creada, el evento con el monto, el actor, un evento por intento, una clienta limpia y una con la morosidad por revisar agendan normal, al saldar la cita vuelve a agendar, y la función auxiliar no se puede llamar desde fuera). Siguen pasando `scheduling_book_appointment.test.sql` y `scheduling_booking_limits.test.sql`.
-- Falta la reserva de paquete (pieza 6).
+- La reserva de paquete es la pieza 6.
+
+### La reserva de un paquete rechaza igual (pieza 6)
+
+- Migración `20261110000003_scheduling_book_package_appointment_blocks_delinquent.sql`: `scheduling_book_package_appointment` aplica la misma guarda que la de técnica, con la misma función auxiliar: devuelve la fila con `id` nulo y deja el evento `scheduling.booking.blocked_by_delinquency` (su `serviceId` es el paquete). Se revisa antes que el solape.
+- Prueba: pgTAP `scheduling_book_package_blocked_by_delinquency.test.sql` (6 pruebas: id nulo, ninguna cita creada, el evento con el paquete y el monto, una clienta limpia y una con la morosidad por revisar agendan normal, y al saldar la cita vuelve a agendar). Sigue pasando `scheduling_book_package_appointment.test.sql`.
 
 ### Fuera de alcance
 
