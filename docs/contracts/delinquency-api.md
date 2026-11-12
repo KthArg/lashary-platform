@@ -26,9 +26,9 @@ El estado de morosidad más relevante de cada clienta pedida que tenga alguna: `
 
 Quien la necesita: el listado y el expediente de `clients`, que hoy dibujan la columna de morosidad sin dato.
 
-### `public.delinquency_list_active(p_limit integer, p_after timestamptz) => TABLE (client_id uuid, pending bigint, since timestamptz)`
+### `public.delinquency_list_active(p_limit integer, p_after_since timestamptz, p_after_client_id uuid) => TABLE (client_id uuid, pending bigint, since timestamptz)`
 
-Las morosidades `active`, de la más reciente a la más antigua, paginadas por `since`: `p_after` devuelve las generadas antes de esa fecha. `p_limit` va de 1 a 100.
+Las morosidades `active`, de la más reciente a la más antigua y, a igual fecha, por clienta. Se pagina por cursor `(since, client_id)`: `p_after_since` y `p_after_client_id` son los de la última fila de la página anterior, y la siguiente empieza justo después de ella. Las morosidades de una misma corrida de detección comparten `since`, así que un cursor solo por fecha se saltaría a las que empatan. `p_after_client_id` es opcional; sin él, entran todas las que empatan con `p_after_since`. `p_limit` va de 1 a 100.
 
 Quien la necesita: el listado de morosidades activas del panel (criterio 5).
 

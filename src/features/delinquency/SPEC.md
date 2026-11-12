@@ -125,7 +125,7 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 ### Funciones del contrato (pieza 8)
 
 - Migración `20261108000004_delinquency_contract_fns.sql`: `delinquency_client_states(ids)` y
-  `delinquency_list_active(tope, después_de)`, las dos del contrato [delinquency-api.md](../../../docs/contracts/delinquency-api.md).
+  `delinquency_list_active(tope, después_de)` (la pieza 21 cambia su cursor), las dos del contrato [delinquency-api.md](../../../docs/contracts/delinquency-api.md).
   Son de solo lectura y `SECURITY INVOKER`: la RLS deja ver las filas solo a staff. El estado de una clienta es el
   más relevante: `active` gana a `pending_review` y `dismissed` no se devuelve; el saldo es el de las morosidades de ese
   estado. Más de 200 ids es el error `delinquency_too_many_ids`. El listado de activas va de la más reciente a la más
@@ -210,6 +210,12 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
   la pantalla sigue y esa sección dice que no está disponible, sin un formulario con un valor inventado. Pruebas:
   `ui/review/__tests__/review-actions.test.ts` y `review-view.test.tsx`.
 - Pieza 17: la base de datos. Pieza 18: dominio, aplicación y repositorio. Pieza 19: la acción y el formulario en la pantalla.
+
+### Correcciones de la revisión (piezas 21 a 24)
+
+La revisión de la pila encontró cuatro cosas medias, ninguna bloqueante. Se corrigen en piezas nuevas sobre la pila, sin reescribir las ya publicadas.
+
+- Pieza 21: el cursor del listado de activas. `delinquency_list_active` paginaba solo por `since` (`since < p_after`), que se salta a todas las clientas que empatan con la última de la página, y las morosidades de una misma corrida de detección comparten la marca de tiempo. La migración `20261108000007_delinquency_list_active_cursor.sql` cambia la firma a `(p_limit, p_after_since, p_after_client_id)` y pagina por el par `(since, client_id)`, como `payments_unpaid_charges`. Prueba: pgTAP `delinquency_list_active_cursor.test.sql`, con tres clientas de la misma marca paginadas de a dos.
 
 ### Qué no hace todavía
 
