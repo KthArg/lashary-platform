@@ -333,6 +333,15 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - Prueba: pgTAP `scheduling_admin_book_appointment.test.sql` (14 pruebas: una clienta no la puede usar, la cita queda a nombre de la clienta del parámetro, clienta inexistente, bloqueada sin autorización devuelve id nulo y registra, motivo ausente o corto se rechaza, con motivo agenda, el evento tiene actor, clienta, motivo y saldo, autorizar sin bloqueo no deja evento, y la clienta no ve la bitácora).
 - Pendiente de confirmar con Kenny: el mínimo de 10 caracteres del motivo y el estado en que debe quedar una cita que agenda la administradora.
 
+### El mensaje a la clienta (pieza 8)
+
+- `DelinquencyPort` pasa de `hasActiveDelinquency(): boolean` a `activeBlock()`, que devuelve la morosidad que hoy bloquea a la clienta de la sesión (la cita que debe, lo que debe hoy y la fecha de esa cita; la más antigua si son varias) o `null`. Su adaptador real llega en la pieza siguiente (`scheduling/db/delinquency-block-repository.ts`): pregunta a `clients_current_profile_id` quién es la clienta, a `delinquency_booking_block` si está bloqueada y lee la fecha de la cita en `scheduling_appointments`. Un fallo de la base es un `StorageFailed`, nunca «sin bloqueo».
+- El bloqueo lo aplica la base (piezas 5 y 6). Por eso `bookAppointment` y `bookPackageAppointment` ya no revisan antes de reservar: reservan, y **solo si la base rechaza como espacio no disponible** preguntan al puerto si fue por morosidad. Si el puerto dice que sí, devuelven `SCHEDULING_CLIENT_HAS_ACTIVE_DELINQUENCY` con la cita, el monto y la fecha; si la pregunta falla o no hay bloqueo, queda el rechazo original. Una reserva que sale bien o falla por otra causa no hace la pregunta, así que el camino normal no paga una consulta de más.
+- Mensaje (texto del PO, Kenny, 2026-11-08): «No pudimos agendar tu cita porque tienes un saldo pendiente de ₡{monto} de tu cita del {fecha}. Comunícate con el estudio para regularizarlo y poder agendar de nuevo.» El monto es el saldo de hoy en colones y la fecha es la de la cita en la zona del estudio (`formatStudioDate`, nuevo en `shared/studio-time.ts`). Sin la fecha, dice «de una cita anterior» y no inventa una.
+- Hasta la pieza siguiente la reserva sigue usando `noDelinquencyYet`, ya con la forma nueva del puerto, así que el mensaje no se ve todavía; después ese puerto queda solo para las pruebas de reserva sin morosidad.
+- Pruebas: `application/__tests__/book-appointment.test.ts` y `book-package-appointment.test.ts` (explica el rechazo con monto y cita, sin bloqueo queda el espacio ocupado, si falla la pregunta queda el rechazo original, y las reservas que salen bien o fallan por otra causa no preguntan), `ui/booking-confirm/__tests__/perform-booking.test.ts` y `shared/__tests__/studio-time.test.ts`.
+- Pendiente: la agenda diaria sigue sin indicar la morosidad (pieza 9).
+
 ### Fuera de alcance
 
 Varias personas atendiendo a la misma hora no se hace ahora: el PO decidió terminar bien la base de un estudio de una persona y
@@ -348,8 +357,9 @@ tratarlo después como historia o cambio posterior. Esta historia solo cuida no 
 4. Base de `delinquency`: `delinquency_booking_block` (¿está bloqueada esta clienta?) con pgTAP.
 5. Base de `scheduling`: las dos funciones de reserva de la clienta rechazan y registran el bloqueo.
 6. Base de `scheduling`: la excepción autorizada por la administradora y su evento.
-7. Aplicación: el adaptador real de `DelinquencyPort` y el mensaje con motivo y monto.
-8. Agenda diaria: el adaptador real de `DelinquentClientsPort`.
-9. Cierre: evidencia y estado.
+7. Base de `scheduling`: la excepción autorizada por la administradora y su evento.
+8. Aplicación: el adaptador real de `DelinquencyPort` y el mensaje con motivo y monto.
+9. Agenda diaria: el adaptador real de `DelinquentClientsPort`.
+10. Cierre: evidencia y estado.
 
-(La pieza 1 y la 2 se escribieron pensando en 8 piezas; las bases de `payments` y `delinquency` van en piezas separadas por INT-008, así que son 9.)
+(La pieza 1 y la 2 se escribieron pensando en 8 piezas. Por INT-008 las bases de `payments`, `delinquency` y las reservas de técnica y de paquete van cada una en su pieza, y la excepción de la administradora en otra, así que son 10.)
