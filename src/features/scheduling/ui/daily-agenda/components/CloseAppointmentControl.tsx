@@ -1,5 +1,6 @@
 'use client'
 
+import { CLOSE_AFTERCARE_NOTE_MAX_LENGTH } from '../constants/close-appointment.constants'
 import { dailyAgendaMessages as COPY } from '../constants/daily-agenda-strings'
 import { useCloseAppointment } from '../hooks/useCloseAppointment'
 import { dailyAgendaStyles as STYLES } from '../styles/daily-agenda.styles'
@@ -12,10 +13,11 @@ export function CloseAppointmentControl({
   item: UnclosedItemView
   onClosed: (message: string) => void
 }) {
-  const { state, start, choose, chooseService, back, confirm } = useCloseAppointment(item, onClosed)
+  const { state, start, choose, chooseService, writeAftercareNote, back, confirm } = useCloseAppointment(item, onClosed)
 
   if (state.status === 'choosing' || state.status === 'closing') {
     const isClosing = state.status === 'closing'
+    const noteId = `aftercare-note-${item.id}`
     const chosenService = item.serviceChoices.find((service) => service.techniqueId === state.deliveredTechniqueId)
     return (
       <fieldset className={STYLES.closeBox} disabled={isClosing}>
@@ -51,6 +53,25 @@ export function CloseAppointmentControl({
               ))}
             </select>
           </label>
+        ) : null}
+        {state.outcome === 'completed' ? (
+          <div className={STYLES.closeBox}>
+            <label htmlFor={noteId} className={STYLES.closeOptionLabel}>
+              {COPY.close.aftercareNoteLabel}
+            </label>
+            <textarea
+              id={noteId}
+              className={STYLES.closeNoteInput}
+              value={state.aftercareNote}
+              maxLength={CLOSE_AFTERCARE_NOTE_MAX_LENGTH}
+              aria-describedby={`${noteId}-hint`}
+              onChange={(event) => writeAftercareNote(event.target.value)}
+            />
+            <span id={`${noteId}-hint`} className={STYLES.closeNoteHint}>
+              {COPY.close.aftercareNoteHelp}{' '}
+              {COPY.close.aftercareNoteCounter(state.aftercareNote.length, CLOSE_AFTERCARE_NOTE_MAX_LENGTH)}
+            </span>
+          </div>
         ) : null}
         <p className={STYLES.closeWarning}>{COPY.close.irreversibleWarning}</p>
         <div className={STYLES.actions}>

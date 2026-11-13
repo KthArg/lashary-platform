@@ -13,6 +13,12 @@ export interface TechniqueNotAvailable {
   readonly message: string
 }
 
+export interface CloseNoteNotAllowed {
+  readonly code: 'SCHEDULING_CLOSE_NOTE_NOT_ALLOWED'
+  readonly appointmentId: string
+  readonly message: string
+}
+
 export interface PackageNotAvailable {
   readonly code: 'SCHEDULING_PACKAGE_NOT_AVAILABLE'
   readonly packageId: string
@@ -231,6 +237,12 @@ export const techniqueNotAvailable = (techniqueId: string): TechniqueNotAvailabl
   code: 'SCHEDULING_TECHNIQUE_NOT_AVAILABLE',
   techniqueId,
   message: `no existe la técnica ${techniqueId} en el catálogo`,
+})
+
+export const closeNoteNotAllowed = (appointmentId: string): CloseNoteNotAllowed => ({
+  code: 'SCHEDULING_CLOSE_NOTE_NOT_ALLOWED',
+  appointmentId,
+  message: `la cita ${appointmentId} se cierra como ausencia: no admite indicaciones de cuidado`,
 })
 
 export const packageNotAvailable = (packageId: string): PackageNotAvailable => ({
