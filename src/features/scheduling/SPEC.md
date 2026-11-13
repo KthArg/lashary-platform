@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-11-07"
+actualizado: "2026-11-13"
 historias:
   - id: US-AGE-01
     estado: terminada
@@ -375,6 +375,34 @@ El ledger solo se escribe al cerrar (pieza 12, hallazgos M3 y B4 del audit del 2
 - Lógica del plazo en el panel: `ui/confirmation-policy` (action, servicio y validación).
 - Pantalla `/admin/citas/confirmacion`: `ConfirmationPolicyPage` en `index.ts` y `ConfirmationPolicyLoading` y `confirmationPolicyMessages` en `client.ts`.
 - `index.ts` exporta `SCHEDULING_MY_APPOINTMENTS_PATH`, la ruta de «Mis citas» que enlaza el mensaje de `notifications` (docs/contracts/scheduling-api.md). La nota de la tarjeta dice «Tu asistencia está confirmada» porque también la ve la clienta cuya confirmación registró la administradora.
+
+## US-NOT-05 — candidatos de re-aplicación
+
+Contrato nuevo para el cron de `notifications` (criterio 4 de US-NOT-05, parte scheduling: «no se envía
+a quienes ya tienen una cita futura agendada»). El detalle completo de la historia vive en el SPEC de
+`notifications`, su dueña; aquí solo lo que `scheduling` expone.
+
+- `public.scheduling_reapplication_candidates() => TABLE (client_id uuid, technique_id uuid, last_completed_at timestamptz)`
+  (migración `20261113000000_scheduling_reapplication_candidates_fn.sql`): por cada clienta y técnica con al
+  menos una cita `completed`, devuelve la fecha de la más reciente (`delivered_technique_id`/`ends_at`, el
+  servicio efectivamente prestado de US-AGE-12, no el reservado) — una sola fila por par mediante
+  `DISTINCT ON`. Excluye por completo a una clienta que tenga cualquier cita futura en un estado activo
+  (`pending_approval`, `approved` o `confirmed`, el mismo conjunto del exclusion constraint de US-AGE-09),
+  sin importar la técnica: decisión del líder del proyecto del 2026-11-13 (`docs/process/DEPENDENCIES.md`).
+  Una cita futura cancelada o rechazada no excluye. Los paquetes no entran: `delivered_technique_id` es
+  siempre `NULL` en una cita de paquete, y el criterio 1 de US-NOT-05 solo habla de técnicas.
+- `SECURITY INVOKER`, igual que `scheduling_client_last_visits`: corre con los permisos de quien llama, así
+  que la RLS de `scheduling_appointments` decide — el cron autenticado como staff ve a todas las clientas;
+  una clienta que la llamara por PostgREST solo vería su propia candidatura, sin filas ajenas.
+  `GRANT EXECUTE` a `authenticated`, revocado de `anon` y `PUBLIC`.
+- Prueba: pgTAP `supabase/tests/database/scheduling_reapplication_candidates.test.sql` (10 aserciones): la
+  técnica completada es candidata y la ausencia de otra técnica no cuenta; con dos citas completadas de la
+  misma técnica gana la más reciente; una cita futura pendiente de **otra** técnica excluye por completo;
+  una cita futura cancelada no excluye; una técnica solo marcada como ausencia no genera candidatura; una
+  cita completada sin clienta no es candidata de nadie; un paquete completado no entra; aislamiento por rol
+  (SEC-002) y `SECURITY INVOKER` confirmado contra `pg_proc`.
+- Qué falta: el envoltorio de TypeScript (análogo a `reminders-api.ts`) que `notifications` consuma desde su
+  `index.ts` — todavía no existe ninguna pieza de ese lado.
 
 ## Criterios recibidos de US-AGE-01
 
