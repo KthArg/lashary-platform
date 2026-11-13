@@ -18,7 +18,7 @@ Regularizar y levantar o perdonar (US-MOR-03 y US-MOR-05) agregan sus propios es
 
 ## Funciones SQL
 
-Corren con los permisos de quien llama (`SECURITY INVOKER`): la RLS de las tablas de morosidad decide qué se ve y hoy solo staff las lee. Solo `authenticated` tiene `EXECUTE`.
+Corren con los permisos de quien llama (`SECURITY INVOKER`): la RLS de las tablas de morosidad decide qué se ve y hoy solo staff las lee. Las dos primeras corren así; la de bloqueo es la excepción y se explica en su sección. Solo `authenticated` tiene `EXECUTE`.
 
 ### `public.delinquency_client_states(p_client_ids uuid[]) => TABLE (client_id uuid, state text, pending bigint, since timestamptz)`
 
@@ -31,6 +31,25 @@ Quien la necesita: el listado y el expediente de `clients`, que hoy dibujan la c
 Las morosidades `active`, de la más reciente a la más antigua y, a igual fecha, por clienta. Se pagina por cursor `(since, client_id)`: `p_after_since` y `p_after_client_id` son los de la última fila de la página anterior, y la siguiente empieza justo después de ella. Las morosidades de una misma corrida de detección comparten `since`, así que un cursor solo por fecha se saltaría a las que empatan. `p_after_client_id` es opcional; sin él, entran todas las que empatan con `p_after_since`. `p_limit` va de 1 a 100.
 
 Quien la necesita: el listado de morosidades activas del panel (criterio 5).
+
+## Bloqueo de la agenda (US-MOR-02)
+
+`scheduling` le pregunta a `delinquency` si una clienta puede agendar. Es la única función de este contrato que corre con permisos de la base (`SECURITY DEFINER`), porque la clienta llama a las funciones de reserva directo por PostgREST y no puede leer las tablas de morosidad ni el ledger (RLS, SEC-001).
+
+### `public.delinquency_booking_block(p_client_id uuid) => TABLE (appointment_id uuid, pending bigint, since timestamptz)`
+
+Las morosidades que bloquean a la clienta, la más antigua primero (`since`, con desempate por `appointment_id`). Una fila bloquea si cumple **las dos** condiciones:
+
+1. su estado es `active` (solo una morosidad confirmada bloquea: `pending_review` y `dismissed` no tienen ninguna consecuencia, DOM-012), y
+2. su cita **todavía** tiene saldo pendiente en el ledger. El saldo se lee en el momento por `payments_appointment_balances` ([payments-api.md](payments-api.md)); `pending` de la fila es ese saldo de hoy, **no** la foto que guardó la detección.
+
+Sin filas, la clienta puede agendar. Quien necesita el motivo y el monto toma la primera fila: `pending` es lo que debe esa cita y `appointment_id` es la cita, de la que `scheduling` lee su fecha (la cita es de `scheduling`, no se pide aquí). Pagar una cita saca solo esa fila; si queda otra, el bloqueo sigue con la siguiente.
+
+Quién puede preguntar: la propia clienta (el `p_client_id` es el de su perfil) y el personal. Para cualquier otra sesión devuelve vacío, sin error y sin indicar si la clienta existe: así preguntar por otra persona no revela su morosidad. `anon` no tiene `EXECUTE`.
+
+Recuperar el acceso es derivado, no una acción: cuando el saldo de la cita llega a cero la fila deja de salir, sin tocar ninguna tabla de morosidad. Levantar o perdonar a mano es de US-MOR-05.
+
+Quien la necesita: las funciones de reserva de `scheduling` (criterios 1 y 3 de US-MOR-02), la excepción de la administradora (criterio 4). La agenda diaria (ítem 11 de «Criterios trasladados») no usa esta función: pide a muchas clientas a la vez por `delinquency_client_states`, que ya existe.
 
 ## Aviso a la bandeja de la administradora (criterio 3 de US-MOR-01)
 
@@ -54,10 +73,13 @@ notifications_record_delinquency_review(
 ## Garantías
 
 1. **La forma de la fila es contrato:** un cambio de columnas, de firma o de estados se versiona aquí antes del cambio (INT-003).
-2. **Solo lectura:** ninguna función de este contrato cambia una morosidad. Confirmar y descartar son acciones propias de `delinquency`.
+2. **Solo lectura:** ninguna función de este contrato cambia una morosidad ni escribe en otra feature. Confirmar y descartar son acciones propias de `delinquency`.
 3. **`pending_review` no bloquea:** quien consuma el contrato para decidir algo (US-MOR-02) solo puede tratar `active` como morosidad (DOM-012).
-4. **Sin datos de contacto:** salen ids, un monto y una fecha; el nombre se pide a `clients`.
+4. **El bloqueo es de la base, no de la pantalla:** `delinquency_booking_block` lo consultan las funciones de reserva dentro de la misma transacción, así que una llamada directa a PostgREST no se lo salta (SEC-001).
+5. **Sin datos de contacto:** salen ids, un monto y una fecha; el nombre se pide a `clients`.
 
 ## Pruebas
+
+pgTAP `supabase/tests/database/delinquency_booking_block.test.sql` (pieza de la base de datos de US-MOR-02): una `active` con saldo bloquea con el saldo de hoy y no con la foto, una `active` ya saldada no bloquea, `pending_review` y `dismissed` no bloquean, el orden de la más antigua primero, una clienta solo pregunta por sí misma, el personal por cualquiera, y `anon` no la ejecuta.
 
 pgTAP `supabase/tests/database/delinquency_contract.test.sql` (pieza de la base de datos): `active` gana a `pending_review`, `dismissed` no sale, el tope de ids, el orden y la paginación del listado, y que una clienta o `anon` no vean nada.
