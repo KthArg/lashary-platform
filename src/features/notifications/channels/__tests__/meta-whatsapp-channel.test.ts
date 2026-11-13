@@ -16,7 +16,7 @@ describe('readMetaWhatsAppConfigFromEnv', () => {
   it('lee la configuración completa, sin plantilla y en español por defecto', () => {
     expect(readMetaWhatsAppConfigFromEnv({
       META_WHATSAPP_ACCESS_TOKEN: 'token', META_WHATSAPP_PHONE_NUMBER_ID: '123456',
-    })).toEqual({ accessToken: 'token', phoneNumberId: '123456', templateName: null, confirmationTemplateName: null, rescheduleOutcomeTemplateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0' })
+    })).toEqual({ accessToken: 'token', phoneNumberId: '123456', templateName: null, confirmationTemplateName: null, rescheduleOutcomeTemplateName: null, aftercareTemplateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0' })
   })
 
   it('lee la plantilla y el idioma cuando están presentes', () => {
@@ -25,10 +25,12 @@ describe('readMetaWhatsAppConfigFromEnv', () => {
       META_WHATSAPP_TEMPLATE_NAME: 'recordatorio_cita', META_WHATSAPP_TEMPLATE_LANGUAGE: 'es_CR',
       META_WHATSAPP_CONFIRMATION_TEMPLATE_NAME: 'confirmar_cita',
       META_WHATSAPP_RESCHEDULE_OUTCOME_TEMPLATE_NAME: 'cambio_de_cita',
+      META_WHATSAPP_AFTERCARE_TEMPLATE_NAME: 'cuidados_post_tratamiento',
     })
     expect(config?.templateName).toBe('recordatorio_cita')
     expect(config?.confirmationTemplateName).toBe('confirmar_cita')
     expect(config?.rescheduleOutcomeTemplateName).toBe('cambio_de_cita')
+    expect(config?.aftercareTemplateName).toBe('cuidados_post_tratamiento')
     expect(config?.templateLanguage).toBe('es_CR')
   })
 
@@ -56,7 +58,7 @@ describe('metaWhatsAppChannel', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     const result = await metaWhatsAppChannel({
-      accessToken: 'token', phoneNumberId: '123456', templateName: null, confirmationTemplateName: null, rescheduleOutcomeTemplateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0',
+      accessToken: 'token', phoneNumberId: '123456', templateName: null, confirmationTemplateName: null, rescheduleOutcomeTemplateName: null, aftercareTemplateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0',
     }).send({ messageId: 'rem-1', purpose: 'reminder', contact: { phone: '+506 8888-7777', email: 'a@b.com' }, message: 'hola clienta', templateVariables: [] })
 
     expect(isOk(result)).toBe(true)
@@ -75,7 +77,7 @@ describe('metaWhatsAppChannel', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     const result = await metaWhatsAppChannel({
-      accessToken: 'token', phoneNumberId: '123456', templateName: 'recordatorio_cita', confirmationTemplateName: null, rescheduleOutcomeTemplateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0',
+      accessToken: 'token', phoneNumberId: '123456', templateName: 'recordatorio_cita', confirmationTemplateName: null, rescheduleOutcomeTemplateName: null, aftercareTemplateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0',
     }).send({
       messageId: 'rem-1', purpose: 'reminder', contact: { phone: '+50688887777', email: 'a@b.com' }, message: 'hola clienta',
       templateVariables: ['Técnica A', 'hoy 3pm'],
@@ -102,7 +104,7 @@ describe('metaWhatsAppChannel', () => {
     }))
 
     const result = await metaWhatsAppChannel({
-      accessToken: 'token', phoneNumberId: '123456', templateName: null, confirmationTemplateName: null, rescheduleOutcomeTemplateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0',
+      accessToken: 'token', phoneNumberId: '123456', templateName: null, confirmationTemplateName: null, rescheduleOutcomeTemplateName: null, aftercareTemplateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0',
     }).send({ messageId: 'rem-1', purpose: 'reminder', contact: { phone: '+50688887777', email: 'a@b.com' }, message: 'hola', templateVariables: [] })
 
     expect(isErr(result)).toBe(true)
@@ -117,7 +119,7 @@ describe('metaWhatsAppChannel', () => {
 
     const result = await metaWhatsAppChannel({
       accessToken: 'token', phoneNumberId: '123456', templateName: 'recordatorio_cita',
-      confirmationTemplateName: null, rescheduleOutcomeTemplateName: 'cambio_de_cita', templateLanguage: 'es', graphApiVersion: 'v21.0',
+      confirmationTemplateName: null, rescheduleOutcomeTemplateName: 'cambio_de_cita', aftercareTemplateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0',
     }).send({
       messageId: 'aviso-1', purpose: 'reschedule_outcome', contact: { phone: '+50688887777', email: 'a@b.com' },
       message: 'tu cita sigue', templateVariables: ['Lifting', 'martes 9:00', 'lunes 9:00'],
@@ -135,7 +137,7 @@ describe('metaWhatsAppChannel', () => {
 
     await metaWhatsAppChannel({
       accessToken: 'token', phoneNumberId: '123456', templateName: 'recordatorio_cita',
-      confirmationTemplateName: 'confirmar_cita', rescheduleOutcomeTemplateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0',
+      confirmationTemplateName: 'confirmar_cita', rescheduleOutcomeTemplateName: null, aftercareTemplateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0',
     }).send({
       messageId: 'sol-1', purpose: 'appointment_confirmation', contact: { phone: '+50688887777', email: 'a@b.com' },
       message: 'confirmá', templateVariables: ['Lifting', 'martes 9:00', 'https://lashary.example'],
@@ -152,7 +154,7 @@ describe('metaWhatsAppChannel', () => {
 
     const result = await metaWhatsAppChannel({
       accessToken: 'token', phoneNumberId: '123456', templateName: 'recordatorio_cita',
-      confirmationTemplateName: 'confirmar_cita', rescheduleOutcomeTemplateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0',
+      confirmationTemplateName: 'confirmar_cita', rescheduleOutcomeTemplateName: null, aftercareTemplateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0',
     }).send({
       messageId: 'aviso-1', purpose: 'reschedule_outcome', contact: { phone: '+50688887777', email: 'a@b.com' },
       message: 'tu cita sigue', templateVariables: [],
@@ -168,10 +170,44 @@ describe('metaWhatsAppChannel', () => {
 
     const result = await metaWhatsAppChannel({
       accessToken: 'token', phoneNumberId: '123456', templateName: 'recordatorio_cita',
-      confirmationTemplateName: null, rescheduleOutcomeTemplateName: 'cambio_de_cita', templateLanguage: 'es', graphApiVersion: 'v21.0',
+      confirmationTemplateName: null, rescheduleOutcomeTemplateName: 'cambio_de_cita', aftercareTemplateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0',
     }).send({
       messageId: 'sol-1', purpose: 'appointment_confirmation', contact: { phone: '+50688887777', email: 'a@b.com' },
       message: 'confirmá', templateVariables: [],
+    })
+
+    expect(isErr(result) && isChannelNotConfigured(result.error)).toBe(true)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('unas indicaciones de cuidado usan su propia plantilla con el servicio y el enlace (US-CLI-06)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await metaWhatsAppChannel({
+      accessToken: 'token', phoneNumberId: '123456', templateName: 'recordatorio_cita',
+      confirmationTemplateName: null, rescheduleOutcomeTemplateName: null, aftercareTemplateName: 'cuidados_post_tratamiento', templateLanguage: 'es', graphApiVersion: 'v21.0',
+    }).send({
+      messageId: 'indicacion-1', purpose: 'aftercare', contact: { phone: '+50688887777', email: 'a@b.com' },
+      message: 'cuida tus pestañas', templateVariables: ['Lifting', 'https://lashary.example/mis-citas'],
+    })
+
+    expect(isOk(result)).toBe(true)
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body)
+    expect(body.template.name).toBe('cuidados_post_tratamiento')
+    expect(body.template.components[0].parameters).toHaveLength(2)
+  })
+
+  it('con plantillas en uso pero sin la de indicaciones de cuidado, no manda texto libre', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await metaWhatsAppChannel({
+      accessToken: 'token', phoneNumberId: '123456', templateName: 'recordatorio_cita',
+      confirmationTemplateName: null, rescheduleOutcomeTemplateName: null, aftercareTemplateName: null, templateLanguage: 'es', graphApiVersion: 'v21.0',
+    }).send({
+      messageId: 'indicacion-1', purpose: 'aftercare', contact: { phone: '+50688887777', email: 'a@b.com' },
+      message: 'cuida tus pestañas', templateVariables: [],
     })
 
     expect(isErr(result) && isChannelNotConfigured(result.error)).toBe(true)
