@@ -2,7 +2,7 @@
 feature: catalog
 dri: pendiente
 estado: terminada
-actualizado: 2026-11-06
+actualizado: 2026-11-13
 historias:
   - id: US-AGE-08
     estado: terminada
@@ -141,6 +141,7 @@ Detalle y garantías: [docs/contracts/catalog-api.md](../../../docs/contracts/ca
 - Tipos: `TechniqueView`, `ServiceFamily`, `TechniqueSnapshot`. La entidad de dominio `Technique` (usa `Money`) no cruza la frontera.
 - `create` / `update` / `deactivate` **no se exportan**: son admin, se usan por server action dentro de `catalog/ui/`.
 - Contrato SQL `public.catalog_booking_terms(technique_id, is_first_time)` (migración `20261018000003_catalog_booking_terms_fn.sql`): las condiciones de la técnica que usa la reserva de US-AGE-05, para que `scheduling` no lea `catalog_techniques`. Detalle en [catalog-api.md](../../../docs/contracts/catalog-api.md). Prueba: pgTAP `catalog_booking_terms.test.sql`.
+- Contrato SQL `public.catalog_service_aftercare(technique_id, package_id)` (migración `20261113000000_catalog_service_aftercare_fn.sql`): el `aftercare_text` de una técnica, o de cada técnica de un paquete, sin filtrar `is_active`; lo consume `notifications` en US-CLI-06. Detalle en [catalog-api.md](../../../docs/contracts/catalog-api.md). Prueba: pgTAP `catalog_service_aftercare.test.sql`.
 
 ## Decisiones
 
