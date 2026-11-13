@@ -5,7 +5,7 @@ import { productStrings } from '../constants/product-strings'
 
 const validationMessages = productStrings.form.validation
 
-export type ProductFormFields = Omit<ProductWrite, 'imageUrl'>
+export type ProductFormFields = Omit<ProductWrite, 'imageUrl' | 'displayOrder'>
 
 export const productSchema = z
   .object({
@@ -16,7 +16,6 @@ export const productSchema = z
       .refine((name) => slugFromName(name).length > 0, validationMessages.nameWithoutLetters),
     description: z.string().trim().optional().default(''),
     priceCrc: z.coerce.number().int().positive(validationMessages.priceCrc),
-    displayOrder: z.coerce.number().int().min(0, validationMessages.displayOrder),
     stock: z
       .string({ message: validationMessages.stockRequired })
       .trim()
@@ -29,7 +28,6 @@ export const productSchema = z
       name: data.name,
       description: data.description,
       priceCrc: data.priceCrc,
-      displayOrder: data.displayOrder,
       stock: data.stock,
     }),
   )

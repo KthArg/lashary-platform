@@ -89,6 +89,8 @@ export type ProductInput = {
   stock: number
 }
 
+export const NEW_PRODUCT_DISPLAY_ORDER = 0
+
 const isNonNegativeInteger = (value: number): boolean => Number.isInteger(value) && value >= 0
 const isPositiveInteger = (value: number): boolean => Number.isInteger(value) && value > 0
 

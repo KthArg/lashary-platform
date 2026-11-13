@@ -6,7 +6,6 @@ const validForm = {
   name: 'Serum nutritivo Lashary',
   description: 'Tratamiento nutritivo para mantenimiento de pestañas.',
   priceCrc: '18000',
-  displayOrder: '1',
   stock: '5',
 }
 
@@ -19,7 +18,6 @@ describe('productSchema (DOM-007 — validación en el borde)', () => {
       name: 'Serum nutritivo Lashary',
       description: 'Tratamiento nutritivo para mantenimiento de pestañas.',
       priceCrc: 18000,
-      displayOrder: 1,
       stock: 5,
     })
   })
@@ -69,18 +67,14 @@ describe('productSchema (DOM-007 — validación en el borde)', () => {
     expect(parsed.data).not.toHaveProperty('slug')
   })
 
-  it('acepta orden de presentación en cero', () => {
-    const parsed = productSchema.safeParse({ ...validForm, displayOrder: '0' })
-    expect(parsed.success).toBe(true)
+  it('descarta un orden de presentación enviado en el formulario: lo decide el sistema', () => {
+    const parsed = productSchema.safeParse({ ...validForm, displayOrder: '99' })
+    if (!parsed.success) throw new Error('esperaba éxito')
+    expect(parsed.data).not.toHaveProperty('displayOrder')
   })
 
   it('rechaza un precio no entero', () => {
     const parsed = productSchema.safeParse({ ...validForm, priceCrc: '18000.5' })
-    expect(parsed.success).toBe(false)
-  })
-
-  it('rechaza un orden de presentación negativo', () => {
-    const parsed = productSchema.safeParse({ ...validForm, displayOrder: '-1' })
     expect(parsed.success).toBe(false)
   })
 
