@@ -5,6 +5,7 @@ export const NOTIFICATIONS_ERROR_CODES = {
   contactMissing: 'NOTIFICATIONS_CONTACT_MISSING',
   inboxStorageFailed: 'NOTIFICATIONS_INBOX_STORAGE_FAILED',
   clientNoticesStorageFailed: 'NOTIFICATIONS_CLIENT_NOTICES_STORAGE_FAILED',
+  aftercareStorageFailed: 'NOTIFICATIONS_AFTERCARE_STORAGE_FAILED',
 } as const
 
 type NotificationsErrorCode = (typeof NOTIFICATIONS_ERROR_CODES)[keyof typeof NOTIFICATIONS_ERROR_CODES]
@@ -98,3 +99,20 @@ export function clientNoticesStorageFailed(cause: string): ClientNoticesStorageF
 
 export const isClientNoticesStorageFailed = (error: unknown): error is ClientNoticesStorageFailed =>
   hasCode<ClientNoticesStorageFailed>(error, NOTIFICATIONS_ERROR_CODES.clientNoticesStorageFailed)
+
+export interface AftercareStorageFailed {
+  readonly code: typeof NOTIFICATIONS_ERROR_CODES.aftercareStorageFailed
+  readonly message: string
+  readonly cause: string
+}
+
+export function aftercareStorageFailed(cause: string): AftercareStorageFailed {
+  return {
+    code: NOTIFICATIONS_ERROR_CODES.aftercareStorageFailed,
+    message: `las indicaciones de la clienta no respondieron: ${cause}`,
+    cause,
+  }
+}
+
+export const isAftercareStorageFailed = (error: unknown): error is AftercareStorageFailed =>
+  hasCode<AftercareStorageFailed>(error, NOTIFICATIONS_ERROR_CODES.aftercareStorageFailed)

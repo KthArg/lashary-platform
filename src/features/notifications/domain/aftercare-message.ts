@@ -10,3 +10,7 @@ export type AftercareMessage = {
   attempts: number
   createdAt: Date
 }
+
+export const MY_AFTERCARE_PAGE_SIZE = 10
+
+export type ClientAftercare = Pick<AftercareMessage, 'id' | 'appointmentId' | 'serviceName' | 'aftercareText' | 'clientNote' | 'createdAt'>

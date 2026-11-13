@@ -4,8 +4,8 @@ import type { ReminderAttempt } from '../domain/reminder-attempt'
 import type { ConfirmationRequest } from '../domain/confirmation-request'
 import type { InboxNotice } from '../domain/inbox-notice'
 import type { ClientNotice, ClientNoticeDelivery } from '../domain/client-notice'
-import type { AftercareMessage } from '../domain/aftercare-message'
-import type { ChannelNotConfigured, ChannelSendFailed, ClientNoticesStorageFailed, InboxStorageFailed } from '../domain/errors'
+import type { AftercareMessage, ClientAftercare } from '../domain/aftercare-message'
+import type { AftercareStorageFailed, ChannelNotConfigured, ChannelSendFailed, ClientNoticesStorageFailed, InboxStorageFailed } from '../domain/errors'
 
 export type RepositoryFailure = 'repository-failed'
 
@@ -85,6 +85,10 @@ export interface InboxRepository {
   listRecent(page: InboxPageRequest): Promise<Result<InboxPage, InboxStorageFailed>>
   countUnread(): Promise<Result<number, InboxStorageFailed>>
   setReadAt(id: string, readAt: Date | null): Promise<Result<SetReadOutcome, InboxStorageFailed>>
+}
+
+export interface ClientAftercareRepository {
+  listRecent(limit: number): Promise<Result<ClientAftercare[], AftercareStorageFailed>>
 }
 
 export interface ClientNoticesRepository {
