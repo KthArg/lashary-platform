@@ -1,11 +1,21 @@
 import { AUTH_LABELS } from '@/features/auth'
 import { MyAppointmentsPage, myAppointmentsMessages } from '@/features/scheduling'
-import { ClientNotices, loadMyClientNotices } from '@/features/notifications'
+import { ClientNotices, MyAftercare, loadMyAftercare, loadMyClientNotices } from '@/features/notifications'
 
 export const metadata = {
   title: `${myAppointmentsMessages.title} | ${AUTH_LABELS.clientPortalTitle} LASHARY`,
 }
 
 export default async function MyAppointmentsRoute() {
-  return <MyAppointmentsPage notices={<ClientNotices result={await loadMyClientNotices()} />} />
+  const [noticesResult, aftercareResult] = await Promise.all([loadMyClientNotices(), loadMyAftercare()])
+  return (
+    <MyAppointmentsPage
+      notices={
+        <>
+          <ClientNotices result={noticesResult} />
+          <MyAftercare result={aftercareResult} />
+        </>
+      }
+    />
+  )
 }
