@@ -340,13 +340,19 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - Mensaje (texto del PO, Kenny, 2026-11-08): «No pudimos agendar tu cita porque tienes un saldo pendiente de ₡{monto} de tu cita del {fecha}. Comunícate con el estudio para regularizarlo y poder agendar de nuevo.» El monto es el saldo de hoy en colones y la fecha es la de la cita en la zona del estudio (`formatStudioDate`, nuevo en `shared/studio-time.ts`). Sin la fecha, dice «de una cita anterior» y no inventa una.
 - Hasta la pieza siguiente la reserva sigue usando `noDelinquencyYet`, ya con la forma nueva del puerto, así que el mensaje no se ve todavía; después ese puerto queda solo para las pruebas de reserva sin morosidad.
 - Pruebas: `application/__tests__/book-appointment.test.ts` y `book-package-appointment.test.ts` (explica el rechazo con monto y cita, sin bloqueo queda el espacio ocupado, si falla la pregunta queda el rechazo original, y las reservas que salen bien o fallan por otra causa no preguntan), `ui/booking-confirm/__tests__/perform-booking.test.ts` y `shared/__tests__/studio-time.test.ts`.
-- Pendiente: la agenda diaria sigue sin indicar la morosidad (pieza 9).
+- Pendiente: la agenda diaria sigue sin indicar la morosidad (pieza 10).
 
 ### El adaptador real del bloqueo (pieza 9)
 
 - `scheduling/db/delinquency-block-repository.ts` (`createSupabaseDelinquencyPort`) pregunta a `clients_current_profile_id` quién es la clienta de la sesión, a `delinquency_booking_block` si está bloqueada y lee la fecha de esa cita en `scheduling_appointments`; devuelve la primera, que es la más antigua. Sin perfil de clienta devuelve «sin bloqueo» sin consultar la morosidad. Si no se puede leer la fecha, el bloqueo sale sin ella y el mensaje dice «de una cita anterior». Un fallo de la base es un `StorageFailed`, nunca «sin bloqueo». Los ids se validan con `guid()` y no con `uuid()`: Postgres acepta cualquier uuid y una respuesta válida no debe tumbar la reserva.
 - `ui/booking-confirm/services/booking-service.ts` usa este adaptador en lugar de `noDelinquencyYet`, que queda para las pruebas de reserva sin morosidad. Con esto el mensaje de la pieza anterior llega a la pantalla.
 - Prueba: `scheduling/db/__tests__/delinquency-block-repository.test.ts` (las llamadas y el orden, sin bloqueo no busca ninguna cita, sin perfil no consulta, sin fecha de la cita, cualquier uuid de la base, y cada fallo de lectura es un fallo de almacenamiento).
+
+### La agenda diaria indica la morosidad (pieza 10)
+
+- Ítem 11 de «Criterios trasladados» (recibido de US-AGE-11): el puerto por lote `DelinquentClientsPort` pasa de un adaptador que no marca a ninguna a `createSupabaseDelinquentClientsPort` (`scheduling/db/delinquent-clients-repository.ts`). Una sola llamada por día a `delinquency_client_states` con las clientas que la agenda pinta (como mucho 100, dentro del tope de 200 de la función); solo el estado `active` marca «Morosidad activa», no `pending_review` (DOM-012). Si la consulta falla, la agenda sale igual, sin etiquetas y con el aviso que ya existía.
+- Una diferencia que queda hasta US-MOR-03: el indicador usa el estado `active` de la morosidad, mientras el bloqueo de la reserva exige además que la cita todavía deba. Cuando una cita se salde, la clienta puede agendar pero la agenda la seguirá marcando hasta que US-MOR-03 cierre la morosidad. Es la deuda registrada en el front-matter de este SPEC («La morosidad no se cierra…»).
+- Prueba: `scheduling/db/__tests__/delinquent-clients-repository.test.ts` (una sola llamada con todas las clientas, solo `active` marca, un día sin clientas no llama a la base, y un fallo es un fallo y no una agenda sin morosas). El resto de la agenda ya estaba probado en US-AGE-11.
 
 ### Fuera de alcance
 

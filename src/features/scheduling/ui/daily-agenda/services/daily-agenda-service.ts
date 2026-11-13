@@ -5,8 +5,8 @@ import { listUnclosedAppointments } from '@/features/scheduling/application/list
 import { getConfirmationDeadline } from '@/features/scheduling/application/confirm-appointment'
 import { getDailyAgenda } from '@/features/scheduling/application/daily-agenda'
 import { createSupabaseConfirmationPolicyRepository } from '@/features/scheduling/db/appointment-confirmation-repository'
-import { noDelinquentClientsYet } from '@/features/scheduling/application/no-delinquency'
 import { createSupabaseDailyAgendaRepository } from '@/features/scheduling/db/daily-agenda-repository'
+import { createSupabaseDelinquentClientsPort } from '@/features/scheduling/db/delinquent-clients-repository'
 import { createSupabaseUnclosedAppointmentsRepository } from '@/features/scheduling/db/unclosed-appointments-repository'
 import { MAX_CONFIRM_SERVICES } from '../../booking-confirm/constants/booking-confirm-strings'
 import {
@@ -27,7 +27,7 @@ export const dailyAgendaService = {
     const [agenda, deadline] = await Promise.all([
       getDailyAgenda({
         repo: createSupabaseDailyAgendaRepository(db),
-        delinquency: noDelinquentClientsYet,
+        delinquency: createSupabaseDelinquentClientsPort(db),
       })(input.date),
       getConfirmationDeadline(createSupabaseConfirmationPolicyRepository(db))(),
     ])
