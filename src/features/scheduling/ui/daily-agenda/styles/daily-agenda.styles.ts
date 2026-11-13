@@ -37,6 +37,8 @@ export const dailyAgendaStyles = {
   closeOption: 'flex items-start gap-2',
   closeOptionLabel: 'block font-medium',
   closeOptionSummary: 'block text-xs',
+  closeNoteInput: 'textarea textarea-bordered w-full text-sm',
+  closeNoteHint: 'block text-xs',
   closeConfirm: 'btn btn-primary btn-sm',
   closeError: 'text-error text-xs',
   closeWarning: 'text-xs font-medium',
