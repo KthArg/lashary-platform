@@ -316,9 +316,12 @@ tratarlo después como historia o cambio posterior. Esta historia solo cuida no 
 1. Arranque en docs (esta sección).
 2. Contrato: lo que `delinquency` ofrece a `scheduling` (¿está bloqueada esta clienta?, con motivo y monto) y lo que `payments`
    ofrece a `delinquency` (saldo por cita).
-3. Base: la función de «bloqueada» con pgTAP.
-4. Base: las dos funciones de reserva rechazan y registran el bloqueo.
-5. Base: la excepción autorizada por la administradora y su evento.
-6. Aplicación: el adaptador real de `DelinquencyPort` y el mensaje con motivo y monto.
-7. Agenda diaria: el adaptador real de `DelinquentClientsPort`.
-8. Cierre: evidencia y estado.
+3. Base de `payments`: `payments_appointment_balances` (el saldo actual por cita) con pgTAP. Una migración por pieza (INT-008).
+4. Base de `delinquency`: `delinquency_booking_block` (¿está bloqueada esta clienta?) con pgTAP.
+5. Base de `scheduling`: las dos funciones de reserva de la clienta rechazan y registran el bloqueo.
+6. Base de `scheduling`: la excepción autorizada por la administradora y su evento.
+7. Aplicación: el adaptador real de `DelinquencyPort` y el mensaje con motivo y monto.
+8. Agenda diaria: el adaptador real de `DelinquentClientsPort`.
+9. Cierre: evidencia y estado.
+
+(La pieza 1 y la 2 se escribieron pensando en 8 piezas; las bases de `payments` y `delinquency` van en piezas separadas por INT-008, así que son 9.)
