@@ -342,6 +342,12 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - Pruebas: `application/__tests__/book-appointment.test.ts` y `book-package-appointment.test.ts` (explica el rechazo con monto y cita, sin bloqueo queda el espacio ocupado, si falla la pregunta queda el rechazo original, y las reservas que salen bien o fallan por otra causa no preguntan), `ui/booking-confirm/__tests__/perform-booking.test.ts` y `shared/__tests__/studio-time.test.ts`.
 - Pendiente: la agenda diaria sigue sin indicar la morosidad (pieza 9).
 
+### El adaptador real del bloqueo (pieza 9)
+
+- `scheduling/db/delinquency-block-repository.ts` (`createSupabaseDelinquencyPort`) pregunta a `clients_current_profile_id` quién es la clienta de la sesión, a `delinquency_booking_block` si está bloqueada y lee la fecha de esa cita en `scheduling_appointments`; devuelve la primera, que es la más antigua. Sin perfil de clienta devuelve «sin bloqueo» sin consultar la morosidad. Si no se puede leer la fecha, el bloqueo sale sin ella y el mensaje dice «de una cita anterior». Un fallo de la base es un `StorageFailed`, nunca «sin bloqueo». Los ids se validan con `guid()` y no con `uuid()`: Postgres acepta cualquier uuid y una respuesta válida no debe tumbar la reserva.
+- `ui/booking-confirm/services/booking-service.ts` usa este adaptador en lugar de `noDelinquencyYet`, que queda para las pruebas de reserva sin morosidad. Con esto el mensaje de la pieza anterior llega a la pantalla.
+- Prueba: `scheduling/db/__tests__/delinquency-block-repository.test.ts` (las llamadas y el orden, sin bloqueo no busca ninguna cita, sin perfil no consulta, sin fecha de la cita, cualquier uuid de la base, y cada fallo de lectura es un fallo de almacenamiento).
+
 ### Fuera de alcance
 
 Varias personas atendiendo a la misma hora no se hace ahora: el PO decidió terminar bien la base de un estudio de una persona y

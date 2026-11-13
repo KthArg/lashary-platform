@@ -114,6 +114,8 @@ En `/portal/citas/calendario` (la sesión la exige el layout del portal), sobre 
 
 ### US-AGE-05 — reservar
 
+- El adaptador real del puerto de morosidad de la reserva (US-MOR-02, pieza 9): `db/delinquency-block-repository.ts` (`createSupabaseDelinquencyPort`) pregunta a `clients_current_profile_id` y a `delinquency_booking_block` si la clienta está bloqueada y lee la fecha de esa cita; `ui/booking-confirm/services/booking-service.ts` lo usa. Detalle y pruebas en el SPEC de `delinquency`.
+
 - Agendar en nombre de una clienta (cláusula de US-MOR-02, ADR-0007; pieza 7): `scheduling_admin_book_appointment` es la reserva de una técnica hecha por la administradora, con la misma regla de morosidad y la excepción autorizada con motivo (`scheduling.booking.block_exception_authorized`). Solo función SQL, sin pantalla ni paquete (decisión del 2026-11-11). Migración `20261110000004_scheduling_admin_book_appointment_fn.sql`; detalle y pruebas en el SPEC de `delinquency`.
 
 - Criterio de morosidad (ítem 7 de «Criterios trasladados», recibido por US-MOR-02): `scheduling_book_appointment` rechaza a la clienta con una morosidad confirmada que todavía debe, preguntando a `delinquency_booking_block` (migración `20261110000002_scheduling_book_appointment_blocks_delinquent.sql`, pieza 5 de US-MOR-02). El rechazo devuelve la fila con `id` nulo, como el solape, y deja el evento `scheduling.booking.blocked_by_delinquency` en la bitácora; el bloqueo se revisa antes que el solape. Detalle y pruebas en el SPEC de `delinquency`. `scheduling_book_package_appointment` hace lo mismo con la misma función auxiliar (migración `20261110000003_scheduling_book_package_appointment_blocks_delinquent.sql`, pieza 6).
