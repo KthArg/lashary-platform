@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { err, isErr, isOk, ok } from '@/shared/result'
-import { slotNotOffered, spaceNotAvailable } from '../../domain/errors'
+import { slotNotOffered, spaceNotAvailable, storageFailed } from '../../domain/errors'
 import { MS_PER_MINUTE } from '../../domain/appointment-window.constants'
 import { bookAppointment } from '../book-appointment'
-import { noDelinquencyYet } from '../no-delinquency'
 import type {
   BookAppointmentInput,
   BookedAppointment,
@@ -45,30 +44,77 @@ function createFakeBookingRepository(result: Awaited<ReturnType<BookingRepositor
   return { repository, received }
 }
 
-const withDelinquency: DelinquencyPort = { hasActiveDelinquency: async () => true }
+const notBlocked: DelinquencyPort = { activeBlock: async () => ok(null) }
+const BLOCK = { appointmentId: 'cita-con-deuda', pending: 25000, appointmentStartsAtMs: Date.parse('2026-11-05T15:00:00Z') }
+const blocked: DelinquencyPort = { activeBlock: async () => ok(BLOCK) }
 
 describe('bookAppointment', () => {
   it('entrega al repositorio lo que pidió la clienta y devuelve la cita reservada', async () => {
     const { repository, received } = createFakeBookingRepository(ok(booked))
-    const result = await bookAppointment({ bookings: repository, delinquency: noDelinquencyYet })(input)
+    const result = await bookAppointment({ bookings: repository, delinquency: notBlocked })(input)
 
     expect(isOk(result)).toBe(true)
     if (isOk(result)) expect(result.value).toEqual(booked)
     expect(received).toEqual([input])
   })
 
-  it('una clienta con morosidad activa no llega a reservar', async () => {
-    const { repository, received } = createFakeBookingRepository(ok(booked))
-    const result = await bookAppointment({ bookings: repository, delinquency: withDelinquency })(input)
+  it('si la base rechaza por morosidad, dice cuánto debe, de qué cita y cuándo fue', async () => {
+    const { repository, received } = createFakeBookingRepository(err(spaceNotAvailable(RESOURCE_ID)))
+    const result = await bookAppointment({ bookings: repository, delinquency: blocked })(input)
 
     expect(isErr(result)).toBe(true)
-    if (isErr(result)) expect(result.error.code).toBe('SCHEDULING_CLIENT_HAS_ACTIVE_DELINQUENCY')
-    expect(received).toHaveLength(0)
+    if (isErr(result)) expect(result.error).toMatchObject({ code: 'SCHEDULING_CLIENT_HAS_ACTIVE_DELINQUENCY', ...BLOCK })
+    expect(received).toEqual([input])
+  })
+
+  it('si la base rechaza el espacio y la clienta no está bloqueada, queda el espacio ocupado', async () => {
+    const { repository } = createFakeBookingRepository(err(spaceNotAvailable(RESOURCE_ID)))
+    const result = await bookAppointment({ bookings: repository, delinquency: notBlocked })(input)
+
+    expect(isErr(result) && result.error.code).toBe('SCHEDULING_SPACE_NOT_AVAILABLE')
+  })
+
+  it('si no se puede preguntar por el bloqueo, queda el rechazo original', async () => {
+    const { repository } = createFakeBookingRepository(err(spaceNotAvailable(RESOURCE_ID)))
+    const failing: DelinquencyPort = { activeBlock: async () => err(storageFailed('caída')) }
+    const result = await bookAppointment({ bookings: repository, delinquency: failing })(input)
+
+    expect(isErr(result) && result.error.code).toBe('SCHEDULING_SPACE_NOT_AVAILABLE')
+  })
+
+  it('un rechazo que no es el espacio ocupado no pregunta por morosidad', async () => {
+    const { repository } = createFakeBookingRepository(err(slotNotOffered(RESOURCE_ID)))
+    let asked = false
+    const spy: DelinquencyPort = {
+      activeBlock: async () => {
+        asked = true
+        return ok(BLOCK)
+      },
+    }
+    const result = await bookAppointment({ bookings: repository, delinquency: spy })(input)
+
+    expect(isErr(result) && result.error.code).toBe('SCHEDULING_SLOT_NOT_OFFERED')
+    expect(asked).toBe(false)
+  })
+
+  it('una reserva que sale bien no pregunta por morosidad', async () => {
+    const { repository } = createFakeBookingRepository(ok(booked))
+    let asked = false
+    const spy: DelinquencyPort = {
+      activeBlock: async () => {
+        asked = true
+        return ok(null)
+      },
+    }
+    const result = await bookAppointment({ bookings: repository, delinquency: spy })(input)
+
+    expect(isOk(result)).toBe(true)
+    expect(asked).toBe(false)
   })
 
   it('el espacio ocupado llega como valor, no como excepción', async () => {
     const { repository } = createFakeBookingRepository(err(spaceNotAvailable(RESOURCE_ID)))
-    const result = await bookAppointment({ bookings: repository, delinquency: noDelinquencyYet })(input)
+    const result = await bookAppointment({ bookings: repository, delinquency: notBlocked })(input)
 
     expect(isErr(result)).toBe(true)
     if (isErr(result)) expect(result.error.code).toBe('SCHEDULING_SPACE_NOT_AVAILABLE')
@@ -76,13 +122,10 @@ describe('bookAppointment', () => {
 
   it('un horario que el calendario no ofrece también llega como valor', async () => {
     const { repository } = createFakeBookingRepository(err(slotNotOffered(RESOURCE_ID)))
-    const result = await bookAppointment({ bookings: repository, delinquency: noDelinquencyYet })(input)
+    const result = await bookAppointment({ bookings: repository, delinquency: notBlocked })(input)
 
     expect(isErr(result)).toBe(true)
     if (isErr(result)) expect(result.error.code).toBe('SCHEDULING_SLOT_NOT_OFFERED')
   })
 
-  it('mientras no exista la morosidad (US-MOR-02), nadie queda bloqueada', async () => {
-    expect(await noDelinquencyYet.hasActiveDelinquency()).toBe(false)
-  })
 })
