@@ -129,11 +129,11 @@ US-NOT-03 (ADR-0007); el resto lo reusa vía el puerto que US-NOT-08 exige.
   y con plantilla) y `resend-email-channel.test.ts` (mock de `fetch`).
 - Disparo (`http/cron-handler.ts`, `src/app/api/cron/notifications-reminders/route.ts`): la ruta
   recibe un `POST` con `Authorization: Bearer <CRON_SECRET>`; sin ese secreto configurado el endpoint
-  se niega siempre (fail-closed). Hoy nadie la llama: no hay `vercel.json` ni un workflow de GitHub
+  se niega siempre (fail-closed). La comprobación del secreto (`isAuthorizedCronRequest`, en tiempo constante) vive en `shared/lib/cron-auth.ts`, compartida con el cron de detección de morosidad de `delinquency`. Hoy nadie la llama: no hay `vercel.json` ni un workflow de GitHub
   Actions que lo haga (ver «Antes de producción», punto 5, y la activación en `docs/process/DEPENDENCIES.md`). Sin sesión de usuario (sin cookies): el
   cron se autentica como una cuenta de staff (`shared/lib/supabase/system.ts`,
   `NOTIFICATIONS_CRON_EMAIL`/`NOTIFICATIONS_CRON_PASSWORD`) y queda sujeto a la misma RLS que
-  cualquier sesión real — nunca la service-role key (SEC-001/003). Prueba: `http/__tests__/cron-handler.test.ts`.
+  cualquier sesión real — nunca la service-role key (SEC-001/003). Prueba de la autenticación: `shared/lib/__tests__/cron-auth.test.ts`.
 - `index.ts` (`runNotificationsReminderCycle`) arma los adaptadores reales y expone la única puerta
   de entrada (ARCH-003): scheduling y clients por su índice público, los canales por ADR-0006.
 
@@ -208,6 +208,16 @@ Decisiones:
 - Disparo: el trigger `audit_events_notify_appointment_changed` (migración `20261103000001`) cubre los criterios
   1 a 3 y deja el espacio liberado fuera de `scheduling_busy_ranges` (criterio 4). Prueba: pgTAP
   `scheduling_notify_appointment_changed.test.sql`.
+- Morosidad por revisar (US-MOR-01, migración `20261108000005`): `notifications_admin_inbox` suma el tipo `delinquency_review`, con
+  `pending_amount` y sin servicio ni hora de cita (`service_name` y `starts_at` pasan a ser opcionales; la restricción
+  `notifications_admin_inbox_fields_by_kind` fija las columnas de cada tipo). `notifications_record_delinquency_review` es `SECURITY
+  DEFINER` sin `EXECUTE` para nadie y la llama el trigger de `delinquency` ([delinquency-api.md](../../../docs/contracts/delinquency-api.md)).
+  Prueba: pgTAP `delinquency_notify_case_detected.test.sql`.
+- App (US-MOR-01, pieza 16): `InboxNotice` suma `DelinquencyReviewNotice` (`pending`, sin servicio ni hora). `inbox-repository` pide
+  `pending_amount` y arma el aviso; `ui/inbox/utils/notice-lines.ts` dice «{clienta} tiene un pago sin registrar por revisar» y
+  «Debe ₡X», y devuelve una acción hacia `/admin/morosidades` (la ruta es una constante propia, `DELINQUENCY_REVIEW_PATH`: el panel es un componente de cliente y el entry point de `delinquency`, el único importable por ARCH-003, arrastra código de servidor; una prueba la compara con `DELINQUENCY_ADMIN_PATH`) que `AdminInbox`
+  dibuja como enlace y que cierra el panel al hacer clic. Los avisos de una cita no llevan enlace. Pruebas:
+  `db/__tests__/inbox-repository.test.ts`, `ui/inbox/__tests__/notice-lines.test.ts` y `admin-inbox.test.tsx`.
 - App: `InboxNotice` es una unión por `kind`; `ui/inbox/utils/notice-lines.ts` dice el monto perdido o «No
   perdió el anticipo» y el horario anterior y el nuevo. Pruebas: `domain/__tests__/inbox-notice.test.ts`,
   `db/__tests__/inbox-repository.test.ts`, `ui/inbox/__tests__/notice-lines.test.ts` y `admin-inbox.test.tsx`.

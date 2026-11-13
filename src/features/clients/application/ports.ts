@@ -1,5 +1,6 @@
 import type { Result } from '@/shared/result'
 import type { ClientListItem, ClientRecord } from '../domain/client.types'
+import type { ClientDelinquency } from '../domain/client-delinquency'
 
 export interface ListClientsQuery { page?: number; pageSize?: number; name?: string; visitFrom?: string; visitTo?: string }
 
@@ -14,6 +15,10 @@ export interface ClientsPageRequest {
 export interface ClientsPage { clients: ClientListItem[]; total: number }
 
 export type RepositoryFailure = 'repository-failed'
+
+export interface DelinquencyStatesPort {
+  statesFor(clientIds: string[]): Promise<Result<Map<string, ClientDelinquency>, RepositoryFailure>>
+}
 
 export interface ClientRepository {
   findById(id: string): Promise<Result<ClientRecord | null, RepositoryFailure>>

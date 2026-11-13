@@ -13,7 +13,13 @@ const chain = {
 const mockRequireAdmin = vi.fn()
 
 vi.mock('@/shared/lib/supabase/server', () => ({
-  createClient: vi.fn(async () => ({ rpc: (...args: unknown[]) => { mockRpc(...args); return chain } })),
+  createClient: vi.fn(async () => ({
+    rpc: (...args: unknown[]) => {
+      mockRpc(...args)
+      // La morosidad es de otra feature y se pide aparte: aquí responde que nadie debe nada.
+      return args[0] === 'delinquency_client_states' ? Promise.resolve({ data: [], error: null }) : chain
+    },
+  })),
 }))
 vi.mock('@/features/auth', () => ({ requireAdminSession: () => mockRequireAdmin() }))
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }))
@@ -26,7 +32,8 @@ const row = {
 const neverVisitedRow = { ...row, id: 'c-2', full_name: 'Bea Mora', last_visit_at: null }
 const { defaultPageSize, pageSizes } = CLIENTS_LIST_LIMITS
 
-const lastRpcArgs = () => mockRpc.mock.lastCall?.[1]
+// Después de listar, `clients` pide la morosidad por otra función: aquí interesa solo la llamada del listado.
+const lastRpcArgs = () => mockRpc.mock.calls.findLast((call) => call[0] === 'clients_list')?.[1]
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -50,6 +57,7 @@ describe('listClientsAction', () => {
         id: 'c-1', fullName: 'Ana Solís', phone: '+50688887777', email: 'ana@correo.com', notes: '',
         lastVisitAtMs: Date.parse(LAST_VISIT_AT),
       }],
+      delinquency: {}, delinquencyAvailable: true,
     })
   })
 

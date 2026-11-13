@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, useTransition } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { isUnread, type InboxNotice } from '@/features/notifications/domain/inbox-notice'
 import { loadMoreNoticesAction, markNoticeAction } from '../../actions/inbox-actions'
@@ -110,6 +111,15 @@ export function AdminInbox({ inbox }: AdminInboxProps) {
                     {lines.details.map((detail) => (
                       <p key={detail} className={STYLES.itemDetail}>{detail}</p>
                     ))}
+                    {lines.action && (
+                      <Link
+                        href={lines.action.href}
+                        onClick={() => dialogRef.current?.close()}
+                        className={STYLES.itemLink}
+                      >
+                        {lines.action.label}
+                      </Link>
+                    )}
                     <button
                       type="button"
                       disabled={isSaving}

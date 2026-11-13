@@ -1,0 +1,44 @@
+# Corrida diaria de la detección de morosidades (US-MOR-01): llama a POST /api/cron/delinquency-detect
+# con el CRON_SECRET como Bearer. Solo workflow_dispatch: NO está programado todavía.
+# La detección ya funciona sola, así que lo que la mantiene quieta es la ausencia del `schedule`.
+# Decisión del PO (Kenny, 2026-11-08): se activa agregando el `schedule` de abajo cuando US-MOR-03 esté
+# mergeada (porque desde entonces hay pagos que registrar) y Kenny lo confirme. Una corrida diaria basta:
+#
+#   schedule:
+#     - cron: "0 11 * * *" # 05:00 en Costa Rica (UTC-6, sin horario de verano)
+#
+# Secretos (SEC-003, solo en este job; ver docs/process/CI_SECRETS.md):
+#   APP_BASE_URL  URL pública de la app, con https:// y sin barra final
+#   CRON_SECRET   el mismo valor que la variable CRON_SECRET de la app desplegada
+# Sin acciones de terceros: solo curl (SEC-008).
+name: delinquency-detect
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: delinquency-detect
+  cancel-in-progress: false # nunca dos corridas a la vez
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+    steps:
+      - name: Llamar a la ruta de detección
+        run: |
+          if [ -z "$APP_BASE_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "Faltan los secretos APP_BASE_URL o CRON_SECRET (docs/process/CI_SECRETS.md)." >&2
+            exit 1
+          fi
+          # --fail-with-body: un 401/503/500 de la ruta hace fallar el job y muestra el motivo sin el secreto.
+          curl --silent --show-error --fail-with-body --max-time 120 \
+            --request POST \
+            --header "Authorization: Bearer ${CRON_SECRET}" \
+            "${APP_BASE_URL}/api/cron/delinquency-detect"
+          echo

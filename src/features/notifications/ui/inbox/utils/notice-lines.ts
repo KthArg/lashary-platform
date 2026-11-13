@@ -1,9 +1,10 @@
 import { moneyFromColones, formatMoney } from '@/shared/money'
 import { formatStudioDateTime } from '@/shared/studio-time'
 import { lostDeposit, type InboxNotice } from '@/features/notifications/domain/inbox-notice'
-import { INBOX_TEXTS } from '../constants/inbox-strings'
+import { DELINQUENCY_REVIEW_PATH, INBOX_TEXTS } from '../constants/inbox-strings'
 
-export type NoticeLines = { title: string; details: string[] }
+export type NoticeAction = { label: string; href: string }
+export type NoticeLines = { title: string; details: string[]; action?: NoticeAction }
 
 export function noticeLines(notice: InboxNotice): NoticeLines {
   switch (notice.kind) {
@@ -31,6 +32,12 @@ export function noticeLines(notice: InboxNotice): NoticeLines {
           INBOX_TEXTS.previousSchedule(formatStudioDateTime(notice.previousStartsAt)),
           INBOX_TEXTS.newSchedule(formatStudioDateTime(notice.startsAt)),
         ],
+      }
+    case 'delinquency_review':
+      return {
+        title: INBOX_TEXTS.delinquencyReview(notice.clientName),
+        details: [INBOX_TEXTS.owes(formatMoney(moneyFromColones(notice.pending)))],
+        action: { label: INBOX_TEXTS.reviewDelinquencies, href: DELINQUENCY_REVIEW_PATH },
       }
   }
 }

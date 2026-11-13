@@ -20,6 +20,7 @@ export default async function ClientProfileLayout({ children, params }: ClientPr
           <>
             <h1 className={STYLES.title}>{result.client.fullName}</h1>
             <p className={STYLES.subtitle}>{result.client.phone}</p>
+            {result.delinquencyLabel ? <p className={STYLES.delinquency}>{result.delinquencyLabel}</p> : null}
           </>
         ) : (
           <p role="alert" className={STYLES.error}>{result.error}</p>
