@@ -11,10 +11,12 @@ import {
 import { getClientContactForReminders } from '@/features/clients'
 import { confirmationRequestRepository } from './db/confirmation-request-repository'
 import { reminderRepository } from './db/reminder-repository'
+import { aftercareDeliveryRepository } from './db/aftercare-delivery-repository'
 import { clientNoticeDeliveryRepository } from './db/client-notice-delivery-repository'
 import { droppedNoticesRepository } from './db/dropped-notices-repository'
 import { runReminderCycle, type RunReminderCycleSummary } from './application/run-reminder-cycle'
 import { buildAppointmentsUrl } from './domain/appointments-url'
+import { sendAftercareMessages, type SendAftercareMessagesSummary } from './application/send-aftercare-messages'
 import { sendConfirmationRequests, type SendConfirmationRequestsSummary } from './application/send-confirmation-requests'
 import type { AppointmentSnapshot, ContactInfo, RepositoryFailure } from './application/ports'
 import { metaWhatsAppChannel, readMetaWhatsAppConfigFromEnv } from './channels/meta-whatsapp-channel'
@@ -75,6 +77,20 @@ export async function runNotificationsReminderCycle(): Promise<
           return err(REPOSITORY_FAILURE)
         }
 
+    const sendAftercare = appointmentsUrl
+      ? sendAftercareMessages({
+          aftercareMessages: aftercareDeliveryRepository(db),
+          getContact,
+          primaryChannel,
+          backupChannel,
+          appointmentsUrl,
+          clock: systemClock,
+        })
+      : async (): Promise<Result<SendAftercareMessagesSummary, RepositoryFailure>> => {
+          console.error('[notifications] NEXT_PUBLIC_SITE_URL no es una URL absoluta: no se mandan indicaciones sin enlace')
+          return err(REPOSITORY_FAILURE)
+        }
+
     return await runReminderCycle({
       expireUndecidedReschedules,
       listUpcoming,
@@ -98,6 +114,7 @@ export async function runNotificationsReminderCycle(): Promise<
       primaryChannel,
       backupChannel,
       sendConfirmationRequests: sendConfirmations,
+      sendAftercareMessages: sendAftercare,
     })()
   } finally {
     await closeSystemClient(db)
