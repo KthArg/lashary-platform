@@ -2,7 +2,7 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-07
+actualizado: 2026-11-13
 historias:
   - id: US-NOT-01
     estado: terminada
@@ -16,7 +16,8 @@ historias:
   - id: US-NOT-04
     estado: no_iniciada
   - id: US-NOT-05
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "toda la historia: se abrió el 2026-11-13 y solo existe el arranque en docs (sección US-NOT-05, «Para aprobar por el PO», ya resuelta) y el contrato planeado con scheduling. Pendiente: tabla y función SQL de scheduling (candidatos de re-aplicación), dominio de la fecha estimada, política de anticipación con su pantalla, integración al ciclo de recordatorios, persistencia e idempotencia por ciclo, y las pruebas de cada pieza"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -348,12 +349,65 @@ WhatsApp falla: no se envían los dos siempre.
 - Canales por tipo de mensaje: `ChannelSendInput` lleva `messageId` (antes `reminderId`) y `purpose` (`reminder` o `appointment_confirmation`). WhatsApp usa `META_WHATSAPP_TEMPLATE_NAME` para el recordatorio y `META_WHATSAPP_CONFIRMATION_TEMPLATE_NAME` para la confirmación; sin ninguna plantilla manda texto libre, y con la del recordatorio pero sin la de confirmación responde `channelNotConfigured` y el mensaje pasa al correo. El correo toma el asunto del tipo y la clave `notifications-<tipo>-<id>`; la del recordatorio no cambia. Es la misma forma de #667 (US-NOT-02): al integrar queda un solo `MessagePurpose` con los tres tipos. Pruebas: `channels/__tests__/meta-whatsapp-channel.test.ts` y `resend-email-channel.test.ts`.
 - Envío: `application/send-confirmation-requests.ts` corre dentro de `runReminderCycle`, después de los recordatorios, por el mismo canal primario y de respaldo (criterio 6, ADR-0006). El mensaje enlaza `NEXT_PUBLIC_SITE_URL` más `SCHEDULING_MY_APPOINTMENTS_PATH` (`domain/appointments-url.ts`); si esa variable no es una URL absoluta http(s), no se manda ninguna confirmación (sin enlace no hay medio para confirmar) y el resumen lo cuenta en `confirmationsFailed`, sin frenar los recordatorios. Reintenta hasta `MAX_REMINDER_ATTEMPTS`; sin ningún canal configurado la solicitud vuelve a `pending` sin gastar un intento y el resumen la cuenta en `confirmationsUnconfigured`, `confirmationsCancelled`, `confirmationsCancelled`, así que no se pierde si el cron se activa antes que el canal. El error del proveedor se guarda con `sanitizeProviderError` (sin teléfonos, US-NOT-07). Si reclamar falla, el resumen lo cuenta en `confirmationsFailed` y la corrida conserva lo demás. Prueba: `application/__tests__/send-confirmation-requests.test.ts` y `run-reminder-cycle.test.ts`. Antes de mandar se relee que la solicitud siga reclamada: si la clienta confirmó entre el reclamo y el envío, no se manda y cuenta como `cancelled`. Queda una ventana de milisegundos entre esa lectura y la llamada al canal, que no se puede cerrar (el proveedor no tiene transacción); si ahí se cancela, `markSent` no encuentra la fila reclamada y también cuenta `cancelled`, no `sent`.
 
+## US-NOT-05: recordatorio de re-aplicación de tratamiento
+
+Criterios del backlog:
+
+1. El sistema calcula la fecha estimada de re-aplicación usando el intervalo definido en el catálogo de técnicas y la fecha de la última cita completada.
+2. Se envía una notificación cuando se acerca la fecha estimada.
+3. La administradora configura con cuántos días de anticipación se envía.
+4. No se envía a clientas con morosidad activa ni a quienes ya tienen una cita futura agendada.
+
+Depende de US-NOT-03, US-AGE-08 y US-AGE-12 (todas `terminada`) y, para el criterio 4, de US-MOR-01 (`terminada`
+desde el 2026-11-08) — dependencia que no estaba registrada en `docs/process/DEPENDENCIES.md` hasta esta pieza.
+Reglas: ARCH-003/004/005 (fronteras entre features; esta historia lee de `catalog`, `scheduling` y `delinquency`
+por sus entry points, nunca sus tablas), ARCH-006 (tabla propia con prefijo `notifications_`), DOM-004 (reloj
+inyectado), DOM-006 (errores tipados), DOM-009 (texto externalizado), DOM-012 (ninguna consecuencia automática —
+aquí, no enviar un mensaje— corre sin la decisión del PO que está más abajo), SEC-002 (test de aislamiento),
+PERF-005 (sin queries en loop, igual que `send-due-reminders`), INT-003 (contrato primero) e INT-007.
+
+### Lo que ya existe
+
+- `catalog`: `getTechnique`/`listTechniques` (entry point `@/features/catalog`) ya expone
+  `reapplicationIntervalDays: number | null` por técnica (US-AGE-08). Una técnica sin intervalo no entra al
+  cálculo.
+- `scheduling`: no expone todavía nada a nivel de lote (el único punto cercano, `ClientHistoryPort.hasCompletedAppointment`,
+  responde solo para la clienta autenticada al reservar — US-AGE-03 — y no sirve para un cron que recorra a todas).
+  Este historia necesita un contrato nuevo, análogo a `reminders-api.ts` (el que ya usa US-NOT-03): una función a
+  nivel de sistema que, por técnica, devuelva candidatos (clienta, técnica, fecha de la última cita `completed`)
+  excluyendo ya en la base a quien tenga una cita futura activa de cualquier técnica (criterio 4, parte scheduling).
+  Se documentará en este SPEC cuando se implemente (mismo patrón que la nota del ciclo de reagendados, arriba),
+  no en `docs/contracts/scheduling-api.md` (ese contrato es el que consume `clients`, no este).
+- `delinquency`: `delinquency_client_states(p_client_ids uuid[])` (`docs/contracts/delinquency-api.md`, US-MOR-01)
+  ya resuelve la parte de morosidad del criterio 4. Solo `active` cuenta como morosidad (DOM-012); `pending_review`
+  no bloquea nada.
+- `notifications`: el canal (`NotificationChannel`, ADR-0006), `ClientContactPort` y el ciclo `run-reminder-cycle.ts`
+  ya existen y están pensados para sumar casos de uso nuevos (como ya hizo US-NOT-08 con las confirmaciones).
+
+### Decisiones del PO (DOM-012, Erick Duran — líder del proyecto, 2026-11-13)
+
+Registradas en `docs/process/DEPENDENCIES.md`.
+
+- **Cita futura:** cualquier cita futura agendada (de cualquier técnica) descarta el aviso, no solo una de la
+  técnica que vence.
+- **Reenvío:** una sola vez por ciclo de re-aplicación. No se repite en corridas siguientes del cron; solo una
+  nueva cita completada (que recalcula la fecha estimada) vuelve a habilitar el aviso para esa clienta y técnica.
+- **Anticipación:** 7 días por defecto, configurable de 1 a 30 por la administradora (mismo patrón que la gracia
+  de US-MOR-01 y el plazo de confirmación de US-NOT-08).
+- **Alcance de la pieza 1:** solo técnicas sueltas, tal como dice el criterio 1 («intervalo definido en el catálogo
+  de técnicas»); el backlog de esta historia no menciona paquetes, así que no entran a este cálculo.
+
+### Qué no hace todavía
+
+Nada del criterio 1 al 4: no hay contrato de `scheduling`, tabla, función SQL, dominio, política de anticipación,
+pantalla ni integración al ciclo. El plan de piezas está en el PR de cada incremento.
+
 ## Qué no hace todavía
 
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
   mano. No lo pide ningún criterio de US-NOT-03 ni de US-NOT-07.
-- US-NOT-04, 05, 06 y US-CLI-06 reusan el canal pero no están construidas. US-NOT-02 y US-NOT-08 están construidas y
-  tienen pendiente lo de su sección.
+- US-NOT-04, 06 y US-CLI-06 reusan el canal pero no están construidas. US-NOT-05 se abrió (sección de arriba).
+  US-NOT-02 y US-NOT-08 están construidas y tienen pendiente lo de su sección.
 
 ## Correcciones de la auditoría del 2026-10-23 (AUDIT.md, líder del proyecto)
 
