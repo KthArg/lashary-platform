@@ -1,6 +1,7 @@
 import type { Result } from '@/shared/result'
 import type { Clock } from '@/shared/clock'
-import { studioDateOf, studioLocalToUtc } from '@/shared/studio-time'
+import { formatMoney, moneyFromColones } from '@/shared/money'
+import { formatStudioDate, studioDateOf, studioLocalToUtc } from '@/shared/studio-time'
 import {
   findServiceOption,
   packageServiceOptionsOf,
@@ -46,7 +47,6 @@ type FailureCode = (BookAppointmentFailure | BookPackageAppointmentFailure)['cod
 
 const failureMessages: Partial<Record<FailureCode, string>> = {
   SCHEDULING_CLIENT_NOT_REGISTERED: bookingConfirmMessages.clientNotRegistered,
-  SCHEDULING_CLIENT_HAS_ACTIVE_DELINQUENCY: bookingConfirmMessages.delinquency,
   SCHEDULING_TECHNIQUE_NOT_AVAILABLE: bookingConfirmMessages.unavailable,
   SCHEDULING_PACKAGE_NOT_AVAILABLE: bookingConfirmMessages.unavailable,
   SCHEDULING_TOO_MANY_PENDING_APPOINTMENTS: bookingConfirmMessages.tooManyPending,
@@ -112,6 +112,15 @@ export async function performBooking(
           discountPercent: booked.discountPercent,
         }),
       },
+    }
+  }
+
+  if (result.error.code === 'SCHEDULING_CLIENT_HAS_ACTIVE_DELINQUENCY') {
+    const { pending, appointmentStartsAtMs } = result.error
+    const appointmentDate = appointmentStartsAtMs === null ? null : formatStudioDate(new Date(appointmentStartsAtMs))
+    return {
+      kind: 'failed',
+      message: bookingConfirmMessages.delinquency(formatMoney(moneyFromColones(pending)), appointmentDate),
     }
   }
 

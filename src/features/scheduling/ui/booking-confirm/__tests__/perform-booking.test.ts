@@ -152,13 +152,38 @@ describe('performBooking — US-AGE-05', () => {
 
   it.each([
     ['clienta sin perfil', clientNotRegistered(), bookingConfirmMessages.clientNotRegistered],
-    ['morosidad activa', clientHasActiveDelinquency(), bookingConfirmMessages.delinquency],
     ['tope de pendientes alcanzado', tooManyPendingAppointments(), bookingConfirmMessages.tooManyPending],
     ['servicio que ya no está', techniqueNotAvailable('t1'), bookingConfirmMessages.unavailable],
     ['fallo de la base', storageFailed('sin conexión'), bookingConfirmMessages.storageFailed],
   ])('%s: avisa sin salir de la pantalla', async (_name, error, message) => {
     const { deps } = createDeps({ bookTechnique: async () => err(error) })
     expect(await performBooking(fields, deps)).toEqual({ kind: 'failed', message })
+  })
+
+  it('morosidad activa: dice cuánto debe y de qué cita, con el texto del PO', async () => {
+    const error = clientHasActiveDelinquency({
+      appointmentId: 'cita-con-deuda',
+      pending: 25000,
+      appointmentStartsAtMs: Date.parse('2026-11-05T18:00:00Z'),
+    })
+    const { deps } = createDeps({ bookTechnique: async () => err(error) })
+
+    const outcome = await performBooking(fields, deps)
+
+    expect(outcome).toEqual({
+      kind: 'failed',
+      message: bookingConfirmMessages.delinquency(formatMoney(moneyFromColones(25000)), '5 de noviembre de 2026'),
+    })
+    expect(outcome.kind === 'failed' && outcome.message).toContain('Comunícate con el estudio para regularizarlo')
+  })
+
+  it('morosidad activa sin la fecha de la cita: lo dice sin inventarla', async () => {
+    const error = clientHasActiveDelinquency({ appointmentId: 'cita-con-deuda', pending: 25000, appointmentStartsAtMs: null })
+    const { deps } = createDeps({ bookPackage: async () => err(error) })
+
+    const outcome = await performBooking({ servicio: packageOptionKey('p1'), fecha: '2027-03-01', espacio: '600' }, deps)
+
+    expect(outcome.kind === 'failed' && outcome.message).toContain('de una cita anterior')
   })
 
   it('quien no es clienta no reserva', async () => {

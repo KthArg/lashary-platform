@@ -28,7 +28,11 @@ export const bookingConfirmMessages = {
   unavailable: 'Ese servicio ya no está disponible. Elegí otro.',
   loading: 'Preparando tu reserva…',
   clientNotRegistered: 'Completá tu perfil de clienta para poder reservar.',
-  delinquency: 'Tenés un pago pendiente: no podés reservar hasta regularizarlo.',
+  // Texto del PO (Kenny, 2026-11-08). Sin la fecha de la cita, si no se pudo leer, dice «de una cita anterior».
+  delinquency: (amount: string, appointmentDate: string | null) =>
+    `No pudimos agendar tu cita porque tienes un saldo pendiente de ${amount} de ${
+      appointmentDate ? `tu cita del ${appointmentDate}` : 'una cita anterior'
+    }. Comunícate con el estudio para regularizarlo y poder agendar de nuevo.`,
   tooManyPending: 'Ya tenés citas pendientes de aprobación. Esperá a que la administradora las revise para reservar otra.',
   storageFailed: 'No pudimos guardar tu reserva. Intentá de nuevo.',
   pendingApproval: 'Tu reserva quedó pendiente de aprobación de la administradora.',

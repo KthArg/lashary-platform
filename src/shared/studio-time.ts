@@ -78,3 +78,15 @@ const studioDateTimeFormatter = new Intl.DateTimeFormat('es-CR', {
 export function formatStudioDateTime(instant: Date): string {
   return studioDateTimeFormatter.format(instant)
 }
+
+const studioDateFormatter = new Intl.DateTimeFormat('es-CR', {
+  timeZone: STUDIO_TIME_ZONE,
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+})
+
+// Solo la fecha, en la zona del estudio: «5 de noviembre de 2026».
+export function formatStudioDate(instant: Date): string {
+  return studioDateFormatter.format(instant)
+}

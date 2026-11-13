@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   addCalendarDays,
+  formatStudioDate,
   isCalendarDate,
   parseStudioDateTimeInput,
   studioDateOf,
@@ -9,6 +10,11 @@ import {
 } from '../studio-time'
 
 describe('studio-time', () => {
+  it('formatStudioDate dice solo la fecha, en la zona del estudio', () => {
+    // 03:00 UTC del día 6 todavía es el día 5 en Costa Rica (UTC-6).
+    expect(formatStudioDate(new Date('2026-11-06T03:00:00Z'))).toBe('5 de noviembre de 2026')
+  })
+
   it.each([
     ['2026-10-14', true],
     ['2028-02-29', true],
