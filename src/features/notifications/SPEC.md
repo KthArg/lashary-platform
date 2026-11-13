@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "dominio de la fecha estimada (pieza 2/12) y contrato SQL de scheduling_reapplication_candidates (pieza 3/12, pgTAP en verde) ya existen. Pendiente: envoltorio TypeScript que una scheduling y delinquency, tabla de persistencia e idempotencia por ciclo, política de anticipación con su pantalla, integración al ciclo de recordatorios, y las pruebas de cada pieza"
+    falta: "dominio de la fecha estimada (pieza 2/12), contrato SQL de scheduling_reapplication_candidates con pgTAP (pieza 3/12) y su envoltorio TypeScript listSchedulingReapplicationCandidates (pieza 4/12) ya existen. Pendiente: caso de uso que una scheduling y delinquency con el dominio, tabla de persistencia e idempotencia por ciclo, política de anticipación con su pantalla, integración al ciclo de recordatorios, y las pruebas de cada pieza"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -408,13 +408,18 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   criterio 4 (cita futura de cualquier técnica) y da la fecha de la última cita completada por técnica,
   documentado en `src/features/scheduling/SPEC.md`. pgTAP de 10 aserciones en verde contra Supabase local
   (`scheduling_reapplication_candidates.test.sql`), igual que el resto de la suite (91 archivos, 1220 pruebas).
+- **Pieza 4/12 — envoltorio de `scheduling`** (`listSchedulingReapplicationCandidates`, exportada desde
+  `@/features/scheduling`): el lado `scheduling` del contrato ya tiene su caso de uso público, igual que
+  `listSchedulingAppointmentsForReminders` (US-NOT-03). Esta feature todavía no lo importa — eso es la
+  siguiente pieza, junto con el contrato equivalente de `delinquency` (`delinquency_client_states`, ya
+  existente, sin envoltorio propio de esta feature todavía).
 
 ### Qué no hace todavía
 
-La mitad morosidad del criterio 4 todavía no se consume desde aquí (el contrato de `delinquency` ya existe, ver
-arriba): falta el envoltorio de TypeScript que una los dos contratos (`scheduling` y `delinquency`), la tabla de
-persistencia con su idempotencia por ciclo, la política de anticipación con su pantalla, y la integración al
-ciclo de recordatorios. El plan de piezas está en el PR de cada incremento.
+Ninguno de los dos contratos (`scheduling` y `delinquency`) se consume todavía desde aquí: falta el caso de
+uso que una las dos lecturas con el dominio de la pieza 2, la tabla de persistencia con su idempotencia por
+ciclo, la política de anticipación con su pantalla, y la integración al ciclo de recordatorios. El plan de
+piezas está en el PR de cada incremento.
 
 ## Qué no hace todavía
 

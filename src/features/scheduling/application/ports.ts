@@ -77,6 +77,16 @@ export interface RescheduleExpiryRepository {
   expireUndecided(): Promise<Result<number, StorageFailed>>
 }
 
+export type ReapplicationCandidate = {
+  clientId: string
+  techniqueId: string
+  lastCompletedAt: Date
+}
+
+export interface ReapplicationCandidatesRepository {
+  listCandidates(): Promise<Result<ReapplicationCandidate[], StorageFailed>>
+}
+
 export type BookAppointmentInput = {
   resourceId: string
   startsAtMs: number

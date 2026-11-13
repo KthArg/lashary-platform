@@ -46,3 +46,6 @@ export {
   expireUndecidedReschedules as expireSchedulingUndecidedReschedules,
 } from './reminders-api'
 export type { AppointmentReminderSnapshot, ReminderSnapshotsWindow } from './application/ports'
+
+export { listReapplicationCandidates as listSchedulingReapplicationCandidates } from './reapplication-api'
+export type { ReapplicationCandidate } from './application/ports'
