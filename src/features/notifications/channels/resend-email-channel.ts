@@ -3,6 +3,7 @@ import { channelNotConfigured, channelSendFailed } from '../domain/errors'
 import { CONFIRMATION_MESSAGE_TEXTS } from '../domain/confirmation-request'
 import { REMINDER_MESSAGE_TEXTS } from '../domain/reminder-message'
 import { CLIENT_NOTICE_MESSAGE_TEXTS } from '../domain/client-notice-message'
+import { AFTERCARE_MESSAGE_TEXTS } from '../domain/aftercare-message-text'
 import type { MessagePurpose, NotificationChannel } from '../application/ports'
 import { CHANNEL_SEND_TIMEOUT_MS } from './send-timeout'
 
@@ -12,6 +13,7 @@ const SUBJECTS: Record<MessagePurpose, string> = {
   reminder: REMINDER_MESSAGE_TEXTS.emailSubject,
   appointment_confirmation: CONFIRMATION_MESSAGE_TEXTS.emailSubject,
   reschedule_outcome: CLIENT_NOTICE_MESSAGE_TEXTS.emailSubject,
+  aftercare: AFTERCARE_MESSAGE_TEXTS.emailSubject,
 }
 
 export function readResendEmailConfigFromEnv(env: Record<string, string | undefined>): ResendEmailConfig | null {

@@ -3,6 +3,7 @@ import { isErr, isOk } from '@/shared/result'
 import { isChannelNotConfigured, isChannelSendFailed } from '../../domain/errors'
 import { REMINDER_MESSAGE_TEXTS } from '../../domain/reminder-message'
 import { CLIENT_NOTICE_MESSAGE_TEXTS } from '../../domain/client-notice-message'
+import { AFTERCARE_MESSAGE_TEXTS } from '../../domain/aftercare-message-text'
 import { readResendEmailConfigFromEnv, resendEmailChannel } from '../resend-email-channel'
 
 afterEach(() => {
@@ -69,6 +70,20 @@ describe('resendEmailChannel', () => {
     const [, init] = fetchMock.mock.calls[0]
     expect(JSON.parse(init.body).subject).toBe(CLIENT_NOTICE_MESSAGE_TEXTS.emailSubject)
     expect(init.headers['Idempotency-Key']).toBe('notifications-reschedule_outcome-aviso-1')
+  })
+
+  it('unas indicaciones de cuidado van con su propio asunto y su propia clave de idempotencia (US-CLI-06)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await resendEmailChannel({ apiKey: 'key', fromAddress: 'avisos@lashary.example' }).send({
+      messageId: 'indicacion-1', purpose: 'aftercare', contact: { phone: '+50688887777', email: 'clienta@example.com' },
+      message: 'cuida tus pestañas', templateVariables: [],
+    })
+
+    const [, init] = fetchMock.mock.calls[0]
+    expect(JSON.parse(init.body).subject).toBe(AFTERCARE_MESSAGE_TEXTS.emailSubject)
+    expect(init.headers['Idempotency-Key']).toBe('notifications-aftercare-indicacion-1')
   })
 
   it('una confirmación va con su propio asunto y su propia clave de idempotencia (US-NOT-08)', async () => {

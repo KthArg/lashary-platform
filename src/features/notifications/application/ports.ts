@@ -4,6 +4,7 @@ import type { ReminderAttempt } from '../domain/reminder-attempt'
 import type { ConfirmationRequest } from '../domain/confirmation-request'
 import type { InboxNotice } from '../domain/inbox-notice'
 import type { ClientNotice, ClientNoticeDelivery } from '../domain/client-notice'
+import type { AftercareMessage } from '../domain/aftercare-message'
 import type { ChannelNotConfigured, ChannelSendFailed, ClientNoticesStorageFailed, InboxStorageFailed } from '../domain/errors'
 
 export type RepositoryFailure = 'repository-failed'
@@ -98,7 +99,15 @@ export interface ClientNoticeDeliveryRepository {
   markExhausted(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
 }
 
-export type MessagePurpose = 'reminder' | 'appointment_confirmation' | 'reschedule_outcome'
+export interface AftercareDeliveryRepository {
+  claimDue(now: Date): Promise<Result<AftercareMessage[], RepositoryFailure>>
+  releaseToPending(id: string): Promise<Result<void, RepositoryFailure>>
+  markSent(id: string, channel: ReminderChannelKind, sentAt: Date): Promise<Result<void, RepositoryFailure>>
+  markRetry(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
+  markExhausted(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
+}
+
+export type MessagePurpose = 'reminder' | 'appointment_confirmation' | 'reschedule_outcome' | 'aftercare'
 
 export type ChannelSendInput = {
   messageId: string
