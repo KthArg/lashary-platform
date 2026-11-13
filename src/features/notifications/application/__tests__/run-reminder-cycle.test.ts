@@ -13,6 +13,8 @@ const noClientNotices: ClientNoticeDeliveryRepository = {
   markExhausted: async () => ok(undefined),
 }
 
+const noAftercareSent = { sent: 0, retried: 0, exhausted: 0, errored: 0, unconfigured: 0 }
+
 const noDroppedNotices: DroppedNoticesRepository = {
   reconcile: async () => ok({ resolved: 0, open: 0 }),
 }
@@ -30,6 +32,7 @@ describe('runReminderCycle', () => {
 
     const result = await runReminderCycle({
       expireUndecidedReschedules: async () => ok(0),
+      sendAftercareMessages: async () => ok({ ...noAftercareSent, sent: 3 }),
       sendConfirmationRequests: async () => ok({ sent: 2, retried: 0, exhausted: 0, errored: 0, unconfigured: 0, cancelled: 0 }),
       listUpcoming: async () => ok([newAppointment]),
       insertIfAbsent: async (reminderUpsert) => { inserted.push(reminderUpsert); return ok({ inserted: true }) },
@@ -60,6 +63,7 @@ describe('runReminderCycle', () => {
       discovered: 1, discoverFailed: 0, releasedExpiredClaims: 0, cancelled: 0, rescheduled: 0, reconcileFailed: 0,
       sent: 0, retried: 0, exhausted: 0, sendErrored: 0,
       noticesSent: 0, noticesRetried: 0, noticesExhausted: 0, noticesErrored: 0, noticesFailed: 0,
+      aftercareSent: 3, aftercareRetried: 0, aftercareExhausted: 0, aftercareErrored: 0, aftercareUnconfigured: 0, aftercareFailed: 0,
       droppedResolved: 0, droppedOpen: 0, droppedFailed: 0,
       confirmationsSent: 2, confirmationsRetried: 0, confirmationsExhausted: 0, confirmationsErrored: 0, confirmationsUnconfigured: 0, confirmationsCancelled: 0, confirmationsFailed: 0,
     })
@@ -67,6 +71,7 @@ describe('runReminderCycle', () => {
   })
 
   const quietDeps = (steps: string[]) => ({
+    sendAftercareMessages: async () => ok(noAftercareSent),
     sendConfirmationRequests: async () => ok({ sent: 0, retried: 0, exhausted: 0, errored: 0, unconfigured: 0, cancelled: 0 }),
     listUpcoming: async () => (steps.push('discover'), ok([])),
     insertIfAbsent: async () => ok({ inserted: true }),
@@ -193,13 +198,27 @@ describe('runReminderCycle', () => {
     expect(isOk(result) && result.value.confirmationsFailed).toBe(1)
   })
 
-  it('corre los bloques en este orden: vencer, avisos perdidos, avisos a la clienta, confirmaciones, descubrir, reconciliar y recordatorios', async () => {
+  it('si no se pudieron reclamar las indicaciones de cuidado, lo cuenta y los demás pasos siguen (US-CLI-06)', async () => {
+    const steps: string[] = []
+    const result = await runReminderCycle({
+      ...quietDeps(steps),
+      expireUndecidedReschedules: async () => ok(0),
+      sendAftercareMessages: async () => err('repository-failed' as const),
+      claimDuePending: async () => (steps.push('reminders'), ok([])),
+    })()
+
+    expect(steps).toEqual(['discover', 'reminders'])
+    expect(isOk(result) && result.value).toMatchObject({ aftercareFailed: 1, aftercareSent: 0, confirmationsFailed: 0 })
+  })
+
+  it('corre los bloques en este orden: vencer, avisos perdidos, avisos a la clienta, indicaciones de cuidado, confirmaciones, descubrir, reconciliar y recordatorios', async () => {
     const steps: string[] = []
     await runReminderCycle({
       ...quietDeps(steps),
       expireUndecidedReschedules: async () => (steps.push('expire'), ok(0)),
       droppedNotices: { reconcile: async () => (steps.push('dropped'), ok({ resolved: 0, open: 0 })) },
       clientNotices: { ...noClientNotices, claimDue: async () => (steps.push('notices'), ok([])) },
+      sendAftercareMessages: async () => (steps.push('aftercare'), ok(noAftercareSent)),
       sendConfirmationRequests: async () => (
         steps.push('confirmations'),
         ok({ sent: 0, retried: 0, exhausted: 0, errored: 0, unconfigured: 0, cancelled: 0 })
@@ -208,7 +227,7 @@ describe('runReminderCycle', () => {
       claimDuePending: async () => (steps.push('reminders'), ok([])),
     })()
 
-    expect(steps).toEqual(['expire', 'dropped', 'notices', 'confirmations', 'discover', 'reconcile', 'reminders'])
+    expect(steps).toEqual(['expire', 'dropped', 'notices', 'aftercare', 'confirmations', 'discover', 'reconcile', 'reminders'])
   })
 
   it('un fallo en las confirmaciones o en los avisos no corta el ciclo: los recordatorios salen igual', async () => {
