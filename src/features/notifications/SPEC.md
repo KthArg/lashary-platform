@@ -26,8 +26,8 @@ historias:
     estado: terminada
     evidencia: "PR de cierre #688 (us/US-NOT-08 a main), con 13 piezas apiladas: #689 a #701. Criterio 1 (mensaje de confirmación; por decisión del PO del 2026-11-05 sale al aprobar la cita, ADR-0003): trigger scheduling_appointments_notify_confirmation_request y notifications_record_confirmation_request (supabase/tests/database/scheduling_notify_confirmation_request.test.sql y notifications_confirmation_requests.test.sql, SEC-002), domain/__tests__/confirmation-request.test.ts (servicio, hora del estudio y enlace a Mis citas) y application/__tests__/send-confirmation-requests.test.ts. Criterio 2 (la respuesta cambia el estado y queda registrada con fecha y hora): scheduling_confirm_appointment y el evento scheduling.appointment.confirmed (scheduling_confirm_appointment.test.sql), application/__tests__/confirm-appointment.test.ts, ui/my-appointments/__tests__/perform-confirmation.test.ts y ConfirmAppointment.test.tsx; la cancelación usa la de US-AGE-06. Criterio 3 (advertencia del anticipo según la política vigente): ui/my-appointments/__tests__/ConfirmAppointment.test.tsx y my-appointments.test.ts; el aviso usa el anticipo requerido de la cita. Criterio 4 (citas sin confirmar dentro del plazo, destacadas en la vista diaria): scheduling_confirmation_policy.test.sql, domain/__tests__/appointment-confirmation.test.ts, ui/daily-agenda/__tests__/agenda-confirmation.test.tsx y la pantalla /admin/citas/confirmacion (ConfirmationPolicyForm.test.tsx, ConfirmationPolicyView.test.tsx). Criterio 5 (registro manual por la administradora): confirmAppointmentManuallyAction con segundo paso (agenda-confirmation.test.tsx) y scheduling_confirm_appointment.test.sql (staff, evento con actor staff). Criterio 6 (canal de US-NOT-07, sin reescribir al activar WhatsApp): application/send-confirmation-requests.ts corre dentro de runReminderCycle por el mismo canal primario y de respaldo (ADR-0006); application/__tests__/send-confirmation-requests.test.ts, run-reminder-cycle.test.ts y channels/__tests__. El envío revisa que la solicitud siga reclamada antes de mandar y, si se canceló mientras tanto, no manda (cuenta cancelled); queda una ventana de milisegundos que se documenta en este SPEC. Lo que falta para que un mensaje salga en producción no es código: número de WhatsApp Business, plantillas aprobadas por Meta (META_WHATSAPP_CONFIRMATION_TEMPLATE_NAME), dominio de Resend y disparo del ciclo; es la checklist «Antes de producción» de este SPEC y la misma deuda de US-NOT-03. Las 48 horas por defecto las confirmó el PO (Kenny) el 2026-11-06 (docs/process/DEPENDENCIES.md). Las citas ya aprobadas al desplegar no se rellenan (decisión del PO). Pendiente de proceso, no de código: capturas de #693, #694 y #696, y el visto bueno escrito del PO sobre los criterios 1, 3 y 6."
   - id: US-CLI-06
-    estado: en_progreso
-    falta: "Pila de 9 piezas sobre main; la 1/9 pacta los contratos (docs/contracts/catalog-api.md, catalog_service_aftercare; docs/contracts/scheduling-api.md, nota de cuidados en scheduling_close_appointment). Hechas la funcion de catalog (2/9), la tabla notifications_aftercare_messages con RLS y sus funciones (3/9), la nota en el cierre (4/9), el mensaje con su repositorio de entrega y los canales (5/9) y el caso de uso de envio con su lugar en el ciclo del cron (6/9). Hecho el campo en el dialogo de cierre (7/9) y Tus cuidados en Mis citas (8/9). Falta la seccion del expediente con el cierre de la historia (9/9)"
+    estado: terminada
+    evidencia: "Pila de 9 piezas sobre main: 1/9 contratos, 2/9 función de catalog, 3/9 tabla y funciones, 4/9 nota en el cierre, 5/9 mensaje y canales, 6/9 envío en el cron, 7/9 campo en el diálogo de cierre, 8/9 Tus cuidados en Mis citas, 9/9 expediente y cierre (números de PR al abrirse). Criterio 1 (texto de cuidados por técnica): lo cumple US-AGE-08; catalog/domain/techniques/__tests__/technique.test.ts («rechaza texto de cuidados vacío»), catalog/ui/techniques/__tests__/technique-schema.test.ts y catalog/__tests__/seed.integration.test.ts. Criterio 2 (al cerrar, por el canal configurado, la técnica efectivamente aplicada): pgTAP catalog_service_aftercare.test.sql, notifications_aftercare_messages.test.sql y scheduling_close_appointment_aftercare.test.sql; vitest application/__tests__/send-aftercare-messages.test.ts y run-reminder-cycle.test.ts, domain/__tests__/aftercare-message-text.test.ts, db/__tests__/aftercare-delivery-repository.test.ts y channels/__tests__ (meta-whatsapp-channel.test.ts, resend-email-channel.test.ts). El envío real depende de «Antes de producción», punto 8, igual que US-NOT-03. Criterio 3 (nota específica para la clienta): scheduling_close_appointment_aftercare.test.sql y, en scheduling, ui/daily-agenda/__tests__/close-appointment-schema.test.ts, close-appointment-actions.test.ts, UnclosedAppointments.test.tsx y close-aftercare-note-limit.test.ts, y db/__tests__/appointment-closing-repository.test.ts. Criterio 4 (visible en el expediente y en la vista de citas): ui/my-aftercare/__tests__/MyAftercare.test.tsx, db/__tests__/client-aftercare-repository.test.ts, ui/client-record-aftercare/__tests__/ClientRecordAftercare.test.tsx, db/__tests__/client-record-aftercare-repository.test.ts, application/__tests__/client-record-aftercare.test.ts y __tests__/rls-isolation.test.ts (sin el cruce A/B con datos, que cubre el pgTAP de la 3/9). Pendiente de proceso, no de código: visto bueno del PO sobre el ítem 3 de «Criterios diferidos» (sin efecto) y capturas de las piezas 7/9 a 9/9."
 flags: []
 deuda:
   - que: "Consultas una por una: reconcileReminders pide la cita de cada recordatorio pendiente (getActiveById en scheduling/db/reminder-snapshots-repository.ts), discoverReminders inserta de a un recordatorio (insertIfAbsent) y sendDueReminders lee el contacto de cada uno (getContact). Con muchas citas dentro de la ventana son N consultas por corrida"
@@ -48,6 +48,9 @@ deuda:
   - que: "Reseña externa (INT-005) de las 13 funciones SECURITY DEFINER de la pila de US-NOT-02, y dry_run de supabase-migrate con respaldo antes de aplicar las 10 migraciones (20261103000000 a 20261107000002; cinco anteriores a la última de main, dependen de --include-all)"
     aceptada_en: "Decisión de Kenny del 2026-11-06 al cerrar US-NOT-02 como terminada; el dry_run lo corre un admin"
     costo: "2h: reseña externa y corrida del dry_run"
+  - que: "Visto bueno escrito del PO sobre dejar sin efecto el ítem 3 de «Criterios diferidos» de docs/process/DEPENDENCIES.md (las indicaciones de US-CLI-06 van en «Mis citas», no en la vista de cuenta)"
+    aceptada_en: "Decisión de José Loría del 2026-11-13 al planear US-CLI-06"
+    costo: "0.5h: dejarlo escrito con fecha en DEPENDENCIES.md"
 defectos: []
 ---
 
@@ -353,7 +356,7 @@ WhatsApp falla: no se envían los dos siempre.
 
 Al cerrar una cita como completada, la clienta recibe por el canal de ADR-0006 las indicaciones de
 cuidado de lo que se le aplicó, más una nota opcional de la administradora, y las puede volver a leer
-en «Mis citas»; la administradora las ve en la ficha de la clienta. En curso desde el 2026-11-13.
+en «Mis citas»; la administradora las ve en la ficha de la clienta. Terminada el 2026-11-13.
 
 **Cómo queda armado** (contratos en [catalog-api.md](../../../docs/contracts/catalog-api.md#indicaciones-de-cuidado-sql--contrato-de-us-cli-06)
 y [scheduling-api.md](../../../docs/contracts/scheduling-api.md#indicaciones-de-cuidado-al-cerrar-us-cli-06)):
@@ -424,11 +427,15 @@ y [scheduling-api.md](../../../docs/contracts/scheduling-api.md#indicaciones-de-
 - `src/app/portal/citas/mis-citas/page.tsx` compone `ClientNotices` y `MyAftercare` en el espacio `notices` de `MyAppointmentsPage`, sin cambios en `scheduling`.
 - Pruebas: `db/__tests__/client-aftercare-repository.test.ts`, `application/__tests__/client-aftercare.test.ts`, `ui/my-aftercare/__tests__/MyAftercare.test.tsx` y un caso nuevo en `__tests__/rls-isolation.test.ts` (anon sin lectura, columnas internas denegadas; sin filas sembradas porque la prueba no usa service-role).
 
+**Hecho** (pieza 9/9, 2026-11-13): «Indicaciones enviadas» en la pestaña Expediente (`ui/client-record-aftercare/`, `ClientRecordAftercare` y `loadClientAftercareForAdmin`), compuesta por `src/app/admin/clients/[id]/expediente/page.tsx` debajo de `RecordView` sin cambios en `clients`. `listForClient` (`db/client-record-aftercare-repository.ts`) filtra por `client_id` porque la administradora elige la clienta por la URL, después de que `loadClientRecordAftercare` valida el uuid; `deliveryStateOf` resume `status` y `last_channel` en el estado del envío. La lectura no se audita: no es el expediente versionado (SEC-006). Pruebas en la evidencia del frontmatter.
+
+**Cierre (2026-11-13).** Los cuatro criterios quedan demostrados con prueba (evidencia en el frontmatter). Lo que falta es de proceso y de configuración, no de código: el visto bueno del PO sobre el ítem 3 de «Criterios diferidos» (deuda registrada), las capturas de las piezas 7/9 a 9/9 y la plantilla de «Antes de producción», punto 8, sin la cual el envío por WhatsApp no sale (el correo y «Mis citas» no dependen de ella).
+
 ## Qué no hace todavía
 
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
   mano. No lo pide ningún criterio de US-NOT-03 ni de US-NOT-07.
-- US-NOT-04, 05 y 06 reusan el canal pero no están construidas; US-CLI-06 está en curso (su sección). US-NOT-02 y US-NOT-08 están construidas y
+- US-NOT-04, 05 y 06 reusan el canal pero no están construidas. US-NOT-02 y US-NOT-08 están construidas y
   tienen pendiente lo de su sección.
 
 ## Correcciones de la auditoría del 2026-10-23 (AUDIT.md, líder del proyecto)
@@ -682,6 +689,7 @@ en el frontmatter de esta historia).
   `src/app/portal/citas/mis-citas/page.tsx`.
 - `loadMyAftercare`, `MyAftercare` y `MyAftercareResult` (US-CLI-06). Consumidor:
   `src/app/portal/citas/mis-citas/page.tsx`.
+- `loadClientAftercareForAdmin`, `ClientRecordAftercare` y `ClientRecordAftercareResult` (US-CLI-06). Consumidor: `src/app/admin/clients/[id]/expediente/page.tsx`.
 - `AFTERCARE_NOTE_MAX_LENGTH` (US-CLI-06). Consumidor: la prueba
   `src/features/scheduling/ui/daily-agenda/__tests__/close-aftercare-note-limit.test.ts`; el código de
   `scheduling` no lo importa (ver «Hecho», pieza 7/9).

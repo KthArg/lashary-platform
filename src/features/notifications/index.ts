@@ -136,3 +136,6 @@ export type { AdminInboxResult, MarkNoticeActionResult } from './ui/inbox/types/
 export type { InboxView } from './application/inbox'
 export type { InboxNotice } from './domain/inbox-notice'
 export { AFTERCARE_NOTE_MAX_LENGTH } from './domain/aftercare-message'
+export { loadClientAftercareForAdmin } from './ui/client-record-aftercare/services/client-record-aftercare-service'
+export { ClientRecordAftercare } from './ui/client-record-aftercare/components/ClientRecordAftercare'
+export type { ClientRecordAftercareResult } from './ui/client-record-aftercare/services/client-record-aftercare-service'
