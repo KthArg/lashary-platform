@@ -1,6 +1,6 @@
 # Contrato — API pública del catálogo
 
-> **Autoridad:** qué expone la feature `catalog` para el resto de la plataforma y bajo qué garantías. Es un contrato **de demanda**: nace de los criterios del backlog (US-AGE-08, y lo que consumen US-LAND-02, US-AGE-02, US-AGE-03, US-AGE-05). Se versiona aquí antes de cualquier cambio de forma (INT-003). **Lectores:** features `landing`, `scheduling`. **Estado:** borrador — se fija con la implementación de US-AGE-08. **Actualizado:** 2026-09-01.
+> **Autoridad:** qué expone la feature `catalog` para el resto de la plataforma y bajo qué garantías. Es un contrato **de demanda**: nace de los criterios del backlog (US-AGE-08, y lo que consumen US-LAND-02, US-AGE-02, US-AGE-03, US-AGE-05). Se versiona aquí antes de cualquier cambio de forma (INT-003). **Lectores:** features `landing`, `scheduling`, `notifications`. **Estado:** borrador — se fija con la implementación de US-AGE-08; `catalog_service_aftercare` pactada en la pieza 1/8 de US-CLI-06. **Actualizado:** 2026-11-13.
 
 ## Qué es el catálogo
 
@@ -174,3 +174,29 @@ Devuelve una fila `(technique_id, name, price, duration_min, buffer_min, deposit
 - Solo `authenticated` la ejecuta; `anon` no. Corre con los permisos de quien llama (`SECURITY INVOKER`): el catálogo ya es público.
 - La forma de la fila es contrato: un cambio se versiona aquí antes del cambio (INT-003).
 - Prueba: pgTAP `supabase/tests/database/catalog_booking_terms.test.sql`.
+
+## Indicaciones de cuidado (SQL) — contrato de US-CLI-06
+
+Al cerrar una cita como completada, la clienta recibe las indicaciones de cuidado de lo que se le aplicó (US-CLI-06, criterio 2). Quien guarda esas indicaciones es `notifications`, dentro de la misma transacción del cierre de `scheduling`, así que el texto se pide desde la base y no desde TypeScript. `notifications` no lee `catalog_techniques` ni `catalog_package_techniques` (ARCH-005): llama a esta función.
+
+### `public.catalog_service_aftercare(p_technique_id uuid, p_package_id uuid)`
+
+```sql
+catalog_service_aftercare(p_technique_id uuid, p_package_id uuid) RETURNS TABLE (
+  technique_name text,
+  aftercare_text text
+)
+```
+
+- **Se pasa exactamente uno de los dos.** Con `p_technique_id` devuelve una fila: el nombre y el `aftercare_text` de esa técnica. Con `p_package_id` devuelve una fila por cada técnica del paquete, ordenadas por nombre de técnica y luego por `id` (`catalog_package_techniques` no guarda un orden propio). Con los dos o con ninguno no devuelve filas.
+- **Devuelve técnicas y paquetes desactivados.** Una cita se cierra después de reservarse, y entre una cosa y otra la técnica pudo desactivarse; sus indicaciones siguen valiendo para quien ya la recibió (misma garantía 2 de `getTechnique`).
+- Un `id` que no existe no devuelve filas. Quien la usa decide qué significa no tener texto.
+- `aftercare_text` nunca viene vacío: la columna es `NOT NULL` y no admite solo espacios (D5 del [SPEC](../../src/features/catalog/SPEC.md)). El criterio 1 de US-CLI-06 (la administradora administra un texto de cuidados por técnica) ya lo cumple el formulario de técnicas de US-AGE-08.
+- **El texto es el vigente al llamarla**, no uno congelado. Congelarlo es trabajo de quien llama: `notifications` lo copia al cerrar la cita, así que editar una técnica después no cambia las indicaciones que una clienta ya recibió (mismo principio de DOM-002).
+- Corre con los permisos de quien llama (`SECURITY INVOKER`) y es `STABLE`: el catálogo ya es de lectura pública. Solo `authenticated` la ejecuta; `anon` no.
+- Lee por llave primaria y por `catalog_package_techniques_pkey`: no lleva índice nuevo (PERF-001, PERF-003).
+- La forma de la fila es contrato: un cambio se versiona aquí antes del cambio (INT-003).
+
+Consumidor: `notifications_record_aftercare` de `notifications` (US-CLI-06), que arma con estas filas el texto que guarda. Con una sola fila guarda el texto tal cual; con varias, cada técnica lleva su nombre como encabezado.
+
+Prueba: pgTAP `supabase/tests/database/catalog_service_aftercare.test.sql` (pieza 2/8 de US-CLI-06): técnica activa y desactivada, paquete con sus técnicas en orden, paquete desactivado, los dos parámetros o ninguno, `id` inexistente, y `anon` no la ejecuta.
