@@ -401,8 +401,13 @@ a quienes ya tienen una cita futura agendada»). El detalle completo de la histo
   una cita futura cancelada no excluye; una técnica solo marcada como ausencia no genera candidatura; una
   cita completada sin clienta no es candidata de nadie; un paquete completado no entra; aislamiento por rol
   (SEC-002) y `SECURITY INVOKER` confirmado contra `pg_proc`.
-- Qué falta: el envoltorio de TypeScript (análogo a `reminders-api.ts`) que `notifications` consuma desde su
-  `index.ts` — todavía no existe ninguna pieza de ese lado.
+- Envoltorio de TypeScript (análogo a `reminders-api.ts`): `reapplication-api.ts`, `db/reapplication-candidates-repository.ts`
+  (puerto `ReapplicationCandidatesRepository`, tipo `ReapplicationCandidate` en `application/ports.ts`) y el
+  paso directo `application/reapplication-candidates.ts`. `index.ts` exporta `listSchedulingReapplicationCandidates`.
+  Pruebas: `db/__tests__/reapplication-candidates-repository.test.ts` (llamada a la función sin argumentos,
+  mapeo de filas, lista vacía y fallo de la base o fila con forma inválida como `StorageFailed`).
+- Qué falta: que `notifications` lo consuma de verdad desde su `index.ts` — todavía no existe ninguna pieza de
+  ese lado.
 
 ## Criterios recibidos de US-AGE-01
 
