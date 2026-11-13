@@ -325,6 +325,14 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - Migración `20261110000003_scheduling_book_package_appointment_blocks_delinquent.sql`: `scheduling_book_package_appointment` aplica la misma guarda que la de técnica, con la misma función auxiliar: devuelve la fila con `id` nulo y deja el evento `scheduling.booking.blocked_by_delinquency` (su `serviceId` es el paquete). Se revisa antes que el solape.
 - Prueba: pgTAP `scheduling_book_package_blocked_by_delinquency.test.sql` (6 pruebas: id nulo, ninguna cita creada, el evento con el paquete y el monto, una clienta limpia y una con la morosidad por revisar agendan normal, y al saldar la cita vuelve a agendar). Sigue pasando `scheduling_book_package_appointment.test.sql`.
 
+### La administradora agenda por la clienta y autoriza la excepción (pieza 7)
+
+- Migración `20261110000004_scheduling_admin_book_appointment_fn.sql`: `scheduling_admin_book_appointment(clienta, recurso, hora, técnica, primera vez, precio esperado, autorizar excepción, motivo)`. Solo la llama una administradora (otra sesión recibe `scheduling_not_authorized`, 42501). La clienta la da el parámetro; el cálculo y las validaciones son los de `scheduling_book_appointment`, de la que se copia, y la cita nace igual, `pending_approval`.
+- Misma regla de morosidad: si la clienta está bloqueada y no hay autorización, devuelve la fila con `id` nulo y registra el bloqueo con la administradora como actor. Con `p_authorize_exception = true` (la confirmación explícita) exige un motivo de al menos 10 caracteres sin contar espacios (`scheduling_exception_reason_required`, 22023), agenda a nombre de la clienta y deja `scheduling.booking.block_exception_authorized` en la misma transacción: actor la administradora, entidad la cita creada, y en el `payload` la clienta, el motivo y las citas que bloqueaban con su saldo. La clienta no lo ve: la bitácora solo la lee staff. Si la clienta no estaba bloqueada, la autorización no hace nada: ni motivo ni evento.
+- Sin pantalla y solo técnica suelta: es lo decidido el 2026-11-11 (ver «Diseño de la reserva bloqueada»).
+- Prueba: pgTAP `scheduling_admin_book_appointment.test.sql` (14 pruebas: una clienta no la puede usar, la cita queda a nombre de la clienta del parámetro, clienta inexistente, bloqueada sin autorización devuelve id nulo y registra, motivo ausente o corto se rechaza, con motivo agenda, el evento tiene actor, clienta, motivo y saldo, autorizar sin bloqueo no deja evento, y la clienta no ve la bitácora).
+- Pendiente de confirmar con Kenny: el mínimo de 10 caracteres del motivo y el estado en que debe quedar una cita que agenda la administradora.
+
 ### Fuera de alcance
 
 Varias personas atendiendo a la misma hora no se hace ahora: el PO decidió terminar bien la base de un estudio de una persona y
