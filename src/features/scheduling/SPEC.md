@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-11-07"
+actualizado: "2026-11-13"
 historias:
   - id: US-AGE-01
     estado: terminada
@@ -366,6 +366,8 @@ Dónde se cierra (cierre de la historia, 2026-11-03): el ítem 10 de «Criterios
 Citas de paquete (pieza 11, hallazgo M1 del audit del 2026-11-01): una cita de paquete (US-AGE-04) tiene `package_id`/`package_name` y deja `technique_*` en NULL. La migración `20261102000000` hace que `scheduling_close_appointment` nombre el servicio prestado y el evento de la bitácora con el nombre del paquete cuando no hay técnica, y que rechace con `scheduling_technique_not_available` pedir otro servicio prestado sobre un paquete (antes habría cobrado el precio de una técnica suelta). El cargo sigue siendo el precio congelado en la cita (DOM-002). La agenda lee `package_id`/`package_name` (`UnclosedAppointment.isPackage`), muestra el nombre del paquete y no ofrece «Servicio prestado» en un paquete. **Confirmado por el PO el 2026-11-02, comunicado por Bayron:** un paquete solo se cierra tal cual se reservó, al precio completo congelado. Si resulta frecuente que no se use todo el paquete, marcar las partes hechas sería otra historia y exige definir antes cómo se reparte el precio del paquete entre sus partes. Pruebas: `scheduling_close_appointment_package.test.sql` (8 aserciones), `unclosed-appointments-repository.test.ts` y `closing-options.test.ts`.
 
 El ledger solo se escribe al cerrar (pieza 12, hallazgos M3 y B4 del audit del 2026-11-01): la migración `20261102000001` quita a staff el `INSERT` directo sobre `payments_ledger_entries` y el `EXECUTE` de `payments_record_close_entries`; solo la escribe `scheduling_close_appointment` (`SECURITY DEFINER`), así que un asiento suelto ya no puede bloquear el cierre de una cita. Dos `CHECK` en `scheduling_appointments`: una cita con `closed_at` solo puede estar `completed` o `no_show`, y una ausencia no lleva servicio prestado. **Deuda:** el sentido contrario (estado terminal implica `closed_at`) no se fuerza porque otras historias siembran citas completadas sin cerrarlas; hoy lo garantiza solo la función de cierre. Pruebas: `payments_ledger_write_only_through_close.test.sql` (8 aserciones), `payments_ledger_entries.test.sql` ajustada al nuevo contexto y `ledger-rls-isolation.test.ts`.
+
+Nota de cuidados al cerrar (US-CLI-06, pieza 4/8; migración `20261113000002_scheduling_close_appointment_aftercare.sql`): `scheduling_close_appointment` recibe `p_aftercare_note` (cuarto parámetro, `DEFAULT NULL`; reemplaza la función de tres parámetros con los mismos permisos) y devuelve `aftercare_recorded`. Con `completed` llama a `notifications_record_aftercare` después del cargo y de la bitácora; si falla, la cita se cierra igual, `aftercare_recorded` es `false` y queda el evento `scheduling.aftercare.failed` en `audit_events`. Una ausencia con nota se rechaza con `scheduling_close_note_not_allowed` antes de cerrar. Prueba: pgTAP `supabase/tests/database/scheduling_close_appointment_aftercare.test.sql`.
 
 ## US-NOT-08 — confirmar la asistencia
 

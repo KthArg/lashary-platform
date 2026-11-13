@@ -66,12 +66,14 @@ RESET ROLE;
 
 SELECT is(
   (SELECT payload ->> 'reservedTechniqueName' FROM public.audit_events
-    WHERE entity_id = '00000000-0000-0000-0000-00000000d1a1'),
+    WHERE entity_id = '00000000-0000-0000-0000-00000000d1a1'
+      AND action = 'scheduling.appointment.completed'),
   'zz-test paquete novia', 'el evento de la bitácora nombra el paquete reservado');
 
 SELECT is(
   (SELECT payload ->> 'deliveredTechniqueName' FROM public.audit_events
-    WHERE entity_id = '00000000-0000-0000-0000-00000000d1a1'),
+    WHERE entity_id = '00000000-0000-0000-0000-00000000d1a1'
+      AND action = 'scheduling.appointment.completed'),
   'zz-test paquete novia', 'el evento de la bitácora nombra el paquete prestado');
 
 SET LOCAL ROLE authenticated;
