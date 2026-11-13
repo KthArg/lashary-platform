@@ -305,6 +305,13 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - **Solo técnica suelta.** La función de la administradora cubre la reserva de una técnica, no la de un paquete (`scheduling_book_package_appointment` solo rechaza y registra, como la de la clienta). Si la administradora necesita agendar un paquete por una clienta, se agrega con su pantalla.
 - **Pendiente de confirmar con Kenny:** en qué estado queda una cita que agenda la administradora (hoy, igual que la de la clienta: `pending_approval`) y el mínimo de caracteres del motivo (propongo 10).
 
+### La función de bloqueo (pieza 4)
+
+- Migración `20261110000001_delinquency_booking_block_fn.sql`: `delinquency_booking_block(client_id)` devuelve las morosidades que bloquean a la clienta, la más antigua primero, con el saldo **de hoy** (lo lee de `payments_appointment_balances`, pieza 3) y no la foto de la detección. Bloquea una morosidad `active` cuya cita todavía debe; `pending_review`, `dismissed` y una `active` ya saldada no bloquean. Al saldarse la cita, la fila sale sola: así se cumple el criterio 3 sin ninguna acción.
+- `SECURITY DEFINER`, porque la clienta no puede leer la tabla de morosidades ni el ledger. Responde solo a la propia clienta y a la administradora; a cualquier otra sesión, vacío y sin error. `anon` no tiene `EXECUTE`. Solo lectura. Mira como máximo las 200 morosidades activas más antiguas de la clienta (el tope de la función de saldos).
+- Prueba: pgTAP `delinquency_booking_block.test.sql` (9 pruebas: el orden, el saldo de hoy contra la foto, la saldada, las no confirmadas, sin morosidad o id nulo, recuperar el acceso al saldar la cita, la clienta ve la suya y no la de otra, y `anon`).
+- Todavía nadie la llama: la usan las funciones de reserva en las piezas siguientes.
+
 ### Fuera de alcance
 
 Varias personas atendiendo a la misma hora no se hace ahora: el PO decidió terminar bien la base de un estudio de una persona y
