@@ -24,3 +24,9 @@ export function computeReapplicationDueDate(lastCompletedAt: Date, intervalDays:
 export function isReapplicationDue(dueDate: Date, anticipationDays: number, now: Date): boolean {
   return addDays(dueDate, -anticipationDays).getTime() <= now.getTime()
 }
+
+// Identifica un ciclo de re-aplicación: mismo trío = mismo intento de aviso. Cambia solo cuando una
+// nueva cita completada mueve lastCompletedAt, que es justo lo que debe volver a habilitar el aviso.
+export function reapplicationCycleKey(clientId: string, techniqueId: string, lastCompletedAt: Date): string {
+  return `${clientId}:${techniqueId}:${lastCompletedAt.toISOString()}`
+}

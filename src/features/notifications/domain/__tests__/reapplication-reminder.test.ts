@@ -4,6 +4,7 @@ import {
   computeReapplicationDueDate,
   isReapplicationDue,
   isValidAnticipationDays,
+  reapplicationCycleKey,
   REAPPLICATION_ANTICIPATION_DAYS_MIN,
   REAPPLICATION_ANTICIPATION_DAYS_MAX,
   REAPPLICATION_ANTICIPATION_DAYS_DEFAULT,
@@ -49,5 +50,17 @@ describe('isValidAnticipationDays', () => {
 
   it.each([0, -1, 31, 1.5, '7', null, undefined])('rechaza %o fuera del rango o no entero', (value) => {
     expect(isValidAnticipationDays(value)).toBe(false)
+  })
+})
+
+describe('reapplicationCycleKey', () => {
+  it('es la misma clave para el mismo trío y distinta si cambia cualquiera de los tres', () => {
+    const lastCompletedAt = fixedDate('2026-09-01T17:00:00Z')
+    const key = reapplicationCycleKey('client-1', 'tecnica-1', lastCompletedAt)
+
+    expect(reapplicationCycleKey('client-1', 'tecnica-1', lastCompletedAt)).toBe(key)
+    expect(reapplicationCycleKey('client-2', 'tecnica-1', lastCompletedAt)).not.toBe(key)
+    expect(reapplicationCycleKey('client-1', 'tecnica-2', lastCompletedAt)).not.toBe(key)
+    expect(reapplicationCycleKey('client-1', 'tecnica-1', fixedDate('2026-10-01T17:00:00Z'))).not.toBe(key)
   })
 })
