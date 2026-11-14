@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "criterios 1, 2 y 4 completos de punta a punta (piezas 2 a 11) y la tabla de configuración del criterio 3 (pieza 12, notifications_reapplication_settings, 7 días por defecto, rango 1-30, nadie la cambia directo todavía). Pendiente: función de cambio con bitácora, envoltorio TypeScript y pantalla del criterio 3, que el ciclo use el valor configurado en vez del valor por defecto del dominio, y que algo dispare runReapplicationReminderCycle de verdad (hoy nadie la llama)"
+    falta: "criterios 1, 2 y 4 completos de punta a punta (piezas 2 a 11); tabla y función de cambio del criterio 3 ya existen (piezas 12 y 13, notifications_reapplication_settings + notifications_set_reapplication_anticipation_days, 7 días por defecto, rango 1-30, con bitácora). Pendiente: envoltorio TypeScript y pantalla del criterio 3, que el ciclo use el valor configurado en vez del valor por defecto del dominio, y que algo dispare runReapplicationReminderCycle de verdad (hoy nadie la llama)"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -517,12 +517,21 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   aplicado aunque se escriba como dueño). Suite completa corrida de nuevo: 93 archivos, 1239
   pruebas, todo en verde.
 
+- **Pieza 13/14 — función de cambio** (`notifications_set_reapplication_anticipation_days`, migración
+  `20261113000003_notifications_set_reapplication_anticipation_days_fn.sql`): mismo patrón que
+  `delinquency_set_grace_days` (US-MOR-01) — solo admin, de 1 a 30, deja su evento
+  `notifications.settings.reapplication_anticipation_days_changed` en la bitácora con el valor
+  anterior y el nuevo, y poner el mismo valor no deja evento. `SECURITY DEFINER` porque la tabla no
+  tiene escritura directa. Todavía sin envoltorio de TypeScript ni pantalla — siguiente pieza.
+  Prueba: pgTAP `notifications_set_reapplication_anticipation_days.test.sql` (12 aserciones: cambia
+  y devuelve el valor, bitácora con quién/antes/después, mismo valor no deja evento, rango 1-30,
+  clienta y anon denegados). Suite completa: 94 archivos, 1251 pruebas, todo en verde.
+
 ### Qué no hace todavía
 
-Falta la función que cambie la anticipación con su bitácora, el envoltorio de TypeScript y la
-pantalla que la use (criterio 3 completo), que el ciclo lea el valor configurado en vez del valor
-por defecto del dominio, y la integración al disparador del cron
-(`/api/cron/notifications-reminders` o uno propio) — hoy nadie llama a
+Falta el envoltorio de TypeScript y la pantalla que use la función de cambio (criterio 3 completo),
+que el ciclo lea el valor configurado en vez del valor por defecto del dominio, y la integración al
+disparador del cron (`/api/cron/notifications-reminders` o uno propio) — hoy nadie llama a
 `runReapplicationReminderCycle` todavía. El plan de piezas está en el PR de cada incremento.
 
 ## Qué no hace todavía
