@@ -78,3 +78,16 @@ const studioDateTimeFormatter = new Intl.DateTimeFormat('es-CR', {
 export function formatStudioDateTime(instant: Date): string {
   return studioDateTimeFormatter.format(instant)
 }
+
+const studioDateFormatter = new Intl.DateTimeFormat('es-CR', {
+  timeZone: STUDIO_TIME_ZONE,
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+})
+
+// Para fechas sin una hora que importe (ej. la fecha estimada de re-aplicación, US-NOT-05): evita
+// mostrar una hora heredada del cálculo que no significa nada para la clienta.
+export function formatStudioDate(instant: Date): string {
+  return studioDateFormatter.format(instant)
+}

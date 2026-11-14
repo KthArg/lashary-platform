@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   addCalendarDays,
+  formatStudioDate,
   isCalendarDate,
   parseStudioDateTimeInput,
   studioDateOf,
@@ -67,5 +68,10 @@ describe('studio-time', () => {
     const instant = parseStudioDateTimeInput(original)
     expect(instant).not.toBeNull()
     expect(studioDateTimeInputValue(instant as Date)).toBe(original)
+  })
+
+  it('formatStudioDate da la fecha sin hora, en la zona del estudio', () => {
+    expect(formatStudioDate(new Date('2026-11-13T05:00:00Z'))).toBe('12 de noviembre de 2026')
+    expect(formatStudioDate(new Date('2026-11-13T18:00:00Z'))).toBe('13 de noviembre de 2026')
   })
 })

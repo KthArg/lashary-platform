@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "dominio (pieza 2/12), contrato SQL de scheduling (pieza 3/12) con envoltorio TypeScript (pieza 4/12), tabla notifications_reapplication_reminders con su pgTAP (pieza 5/12), el caso de uso discoverDueReapplications (pieza 6/12) y sus adaptadores reales (pieza 7/12: delinquency-states-gateway propio y listTechniquesForReapplication nuevo en catalog) ya existen. Pendiente: escribir en la tabla con su idempotencia por ciclo, política de anticipación configurable con su pantalla (hoy fija en el valor por defecto), integración al ciclo de recordatorios y envío por el canal, y las pruebas de cada pieza"
+    falta: "dominio (pieza 2/12), contrato SQL de scheduling (pieza 3/12) con envoltorio TypeScript (pieza 4/12), tabla notifications_reapplication_reminders con su pgTAP (pieza 5/12), discoverDueReapplications con sus adaptadores reales (piezas 6/12 y 7/12) y el mensaje con su canal propio (pieza 8/12: MessagePurpose 'reapplication_reminder', plantillas y asunto) ya existen. Pendiente: caso de uso que una descubrimiento + mensaje + canal y escriba en la tabla con su idempotencia por ciclo, política de anticipación configurable con su pantalla (hoy fija en el valor por defecto), integración al ciclo de recordatorios, y las pruebas de cada pieza"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -456,12 +456,26 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   cableado de `index.ts` (capa de composición sin lógica propia, igual que `runNotificationsReminderCycle`).
   `npx tsc --noEmit` sin errores.
 
+- **Pieza 8/12 — mensaje y canal** (`domain/reapplication-message.ts`, `REAPPLICATION_MESSAGE_TEXTS`,
+  DOM-009): criterio 2, el texto del aviso (técnica y fecha estimada, sin hora — `formatStudioDate`,
+  nuevo en `shared/studio-time.ts`, igual que `addDays` en la pieza 2: la aritmética/formato de
+  fechas vive en `shared/`). `MessagePurpose` gana `'reapplication_reminder'`; los dos canales
+  (`meta-whatsapp-channel.ts`, `resend-email-channel.ts`) ya saben su asunto y su propia variable de
+  plantilla (`META_WHATSAPP_REAPPLICATION_TEMPLATE_NAME`, documentada en `.env.example`), mismo patrón
+  que `reschedule_outcome` (US-NOT-02) y `appointment_confirmation` (US-NOT-08): sin esa plantilla no
+  manda texto libre (Meta lo rechazaría) y cae al correo. Todavía nadie llama a estas funciones desde
+  un caso de uso de envío — esa es la siguiente pieza.
+  Pruebas: `domain/__tests__/reapplication-message.test.ts`, `shared/__tests__/studio-time.test.ts`
+  (`formatStudioDate`) y los casos nuevos de `channels/__tests__/meta-whatsapp-channel.test.ts` y
+  `resend-email-channel.test.ts` (plantilla propia, sin plantilla no manda texto libre, asunto y clave
+  de idempotencia propios).
+
 ### Qué no hace todavía
 
-Falta escribir en la tabla de la pieza 5 (con su idempotencia por ciclo y los reintentos entre
-corridas), enviar por el canal (ADR-0006), la política de anticipación con su pantalla (hoy fija en el
-valor por defecto), y la integración al ciclo de recordatorios. El plan de piezas está en el PR de cada
-incremento.
+Falta el caso de uso que una el descubrimiento (piezas 6-7) con el mensaje y el canal (pieza 8),
+escriba en la tabla de la pieza 5 (con su idempotencia por ciclo y los reintentos entre corridas), la
+política de anticipación con su pantalla (hoy fija en el valor por defecto), y la integración al ciclo
+de recordatorios. El plan de piezas está en el PR de cada incremento.
 
 ## Qué no hace todavía
 
