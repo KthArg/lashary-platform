@@ -551,6 +551,9 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   siguiente pieza.
   Pruebas: `__tests__/reapplication-settings-actions.test.ts` (10 casos, mismo patrón que
   `review-actions.test.ts` de `delinquency`). `npx tsc --noEmit` sin errores.
+  **Corrección:** `label` e `invalid` repetían «1 a 30» como texto suelto, duplicando el rango que
+  ya vive en `REAPPLICATION_ANTICIPATION_DAYS_MIN`/`MAX` (dominio, pieza 2); ahora son función de
+  esos dos parámetros, así que el texto no puede desalinearse del rango real.
 - **Pieza 16/17 — componentes** (`ui/reapplication-settings/components/`): el formulario, mismo
   patrón liviano que `GraceDaysForm` de `delinquency` (un solo campo, sin `useFormState`):
   `AnticipationDaysForm` llama directo a `setAnticipationDaysAction` con `useTransition`.
