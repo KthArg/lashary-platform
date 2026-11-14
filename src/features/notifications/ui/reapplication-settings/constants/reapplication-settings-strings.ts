@@ -13,4 +13,9 @@ export const reapplicationSettingsMessages = {
   invalid: (minDays: number, maxDays: number) =>
     `La anticipación debe ser un número entero de ${minDays} a ${maxDays} días.`,
   saveFailed: 'No se pudo guardar la anticipación. Intentá de nuevo.',
+  error: {
+    title: 'No pudimos mostrar la anticipación configurada',
+    body: 'Ocurrió un problema al cargarla. Intenta de nuevo.',
+    retry: 'Reintentar',
+  },
 }
