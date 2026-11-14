@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "criterios 1, 2 y 4 completos de punta a punta (piezas 2 a 11); criterio 3 completo del lado de los datos y la lógica (piezas 12 a 14: tabla, función de cambio con bitácora, envoltorio TypeScript; el ciclo ya lee el valor configurado, con el valor por defecto como respaldo si la lectura falla). Pendiente: la pantalla que la administradora use para cambiar la anticipación, y que algo dispare runReapplicationReminderCycle de verdad (hoy nadie la llama) — checklist de activación, no deuda de la historia"
+    falta: "criterios 1, 2 y 4 completos de punta a punta (piezas 2 a 11); criterio 3 completo del lado de los datos y la lógica (piezas 12 a 14); la acción y el servicio de la pantalla ya existen (pieza 15, sin componentes todavía). Pendiente: componentes de la pantalla (pieza 16), ruta /admin/citas/re-aplicacion con su pestaña en CitasTabs (pieza 17, última), y que algo dispare runReapplicationReminderCycle de verdad (hoy nadie la llama) — checklist de activación, no deuda de la historia"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -542,12 +542,36 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   `RepositoryFailure`). `npx tsc --noEmit` sin errores; 254 pruebas en verde en
   `src/features/notifications`, el resto saltado por el mismo problema de entorno preexistente.
 
+- **Pieza 15/17 — acción y servicio** (`ui/reapplication-settings/{constants,types,validation,actions,services}`):
+  decisión de dónde vive la pantalla — pestaña nueva en `/admin/citas` (como las demás políticas de
+  la sección), no una sección "Notificaciones" nueva en la navegación principal ni dentro de la
+  bandeja existente. `setAnticipationDaysAction` exige sesión de administradora, valida con zod
+  (mismo rango que el dominio) y refresca `/admin/citas/re-aplicacion` al guardar; `reapplicationSettingsService.load`
+  envuelve `loadAnticipationDays` con la sesión y el cliente del borde. Sin componentes todavía —
+  siguiente pieza.
+  Pruebas: `__tests__/reapplication-settings-actions.test.ts` (10 casos, mismo patrón que
+  `review-actions.test.ts` de `delinquency`). `npx tsc --noEmit` sin errores.
+  **Corrección:** `label` e `invalid` repetían «1 a 30» como texto suelto, duplicando el rango que
+  ya vive en `REAPPLICATION_ANTICIPATION_DAYS_MIN`/`MAX` (dominio, pieza 2); ahora son función de
+  esos dos parámetros, así que el texto no puede desalinearse del rango real.
+- **Pieza 16/17 — componentes** (`ui/reapplication-settings/components/`): el formulario, mismo
+  patrón liviano que `GraceDaysForm` de `delinquency` (un solo campo, sin `useFormState`):
+  `AnticipationDaysForm` llama directo a `setAnticipationDaysAction` con `useTransition`.
+  `ReapplicationSettingsPage` → `ReapplicationSettingsView` (estados `ready`/`error`, UI-003) →
+  `ReapplicationSettingsLoading` para el `loading.tsx` de la ruta. Todavía sin ruta ni pestaña que
+  la muestre — siguiente y última pieza.
+  Pruebas: `AnticipationDaysForm.test.tsx` (5 casos: guarda y avisa con `role=status`, error en la
+  misma región viva, deshabilita mientras guarda, sin enviar nada no hay aviso, campo vacío manda
+  `NaN` sin romper) y `ReapplicationSettingsView.test.tsx` (2 casos: listo muestra el formulario con
+  el valor vigente, error avisa con `role=alert` y ofrece reintentar sin formulario). `npx tsc
+  --noEmit` sin errores.
+
 ### Qué no hace todavía
 
-Falta la pantalla que use `loadAnticipationDays`/`changeAnticipationDays` (criterio 3 visible para
-la administradora) y la integración al disparador del cron (`/api/cron/notifications-reminders` o
-uno propio) — hoy nadie llama a `runReapplicationReminderCycle` todavía. El plan de piezas está en
-el PR de cada incremento.
+Falta la ruta `/admin/citas/re-aplicacion`, su pestaña en `CitasTabs` y el export desde `index.ts`
+(pieza final), y la integración al disparador del cron (`/api/cron/notifications-reminders` o uno
+propio) — hoy nadie llama a `runReapplicationReminderCycle` todavía. El plan de piezas está en el
+PR de cada incremento.
 
 ## Qué no hace todavía
 
