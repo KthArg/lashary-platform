@@ -6,19 +6,34 @@ import {
   listSchedulingAppointmentsForReminders,
   getSchedulingAppointmentForReminder,
   expireSchedulingUndecidedReschedules,
+  listSchedulingReapplicationCandidates,
   SCHEDULING_MY_APPOINTMENTS_PATH,
 } from '@/features/scheduling'
 import { getClientContactForReminders } from '@/features/clients'
+import { listTechniquesForReapplication } from '@/features/catalog'
 import { confirmationRequestRepository } from './db/confirmation-request-repository'
 import { reminderRepository } from './db/reminder-repository'
 import { clientNoticeDeliveryRepository } from './db/client-notice-delivery-repository'
 import { droppedNoticesRepository } from './db/dropped-notices-repository'
+import { delinquencyStatesGateway } from './db/delinquency-states-gateway'
 import { runReminderCycle, type RunReminderCycleSummary } from './application/run-reminder-cycle'
+import { discoverDueReapplications } from './application/discover-reapplication-reminders'
 import { buildAppointmentsUrl } from './domain/appointments-url'
 import { sendConfirmationRequests, type SendConfirmationRequestsSummary } from './application/send-confirmation-requests'
-import type { AppointmentSnapshot, ContactInfo, RepositoryFailure } from './application/ports'
+import { REAPPLICATION_ANTICIPATION_DAYS_DEFAULT } from './domain/reapplication-reminder'
+import type {
+  AppointmentSnapshot,
+  ContactInfo,
+  DueReapplicationReminder,
+  RepositoryFailure,
+  TechniqueReapplicationInfo,
+} from './application/ports'
 import { metaWhatsAppChannel, readMetaWhatsAppConfigFromEnv } from './channels/meta-whatsapp-channel'
 import { resendEmailChannel, readResendEmailConfigFromEnv } from './channels/resend-email-channel'
+
+// Tope de una sola página: el catálogo de técnicas es chico y acotado (boutique de una persona),
+// no necesita paginar para este cálculo (PERF-005, una sola consulta).
+const CATALOG_TECHNIQUES_PAGE_SIZE = 100
 
 const REPOSITORY_FAILURE: RepositoryFailure = 'repository-failed'
 
@@ -99,6 +114,53 @@ export async function runNotificationsReminderCycle(): Promise<
       backupChannel,
       sendConfirmationRequests: sendConfirmations,
     })()
+  } finally {
+    await closeSystemClient(db)
+  }
+}
+
+// Solo descubre quién ya debería recibir el aviso de re-aplicación (criterios 1 a 4 de US-NOT-05):
+// todavía no escribe en notifications_reapplication_reminders ni envía nada (siguiente pieza). La
+// anticipación usa el valor por defecto del dominio porque la política configurable (criterio 3)
+// aún no tiene su propia tabla.
+export async function discoverReapplicationReminders(): Promise<
+  Result<DueReapplicationReminder[], NotificationsCycleError>
+> {
+  const systemConfig = readSystemClientConfigFromEnv(process.env)
+  if (systemConfig === null) return err('system-client-not-configured')
+
+  const clientResult = await createSystemClient(systemConfig)
+  if (isErr(clientResult)) return clientResult
+  const db = clientResult.value
+
+  try {
+    const listCandidates = async () => {
+      const result = await listSchedulingReapplicationCandidates(db)
+      return isErr(result) ? err(REPOSITORY_FAILURE) : ok(result.value)
+    }
+
+    const listTechniquesWithInterval = async (): Promise<Result<ReadonlyMap<string, TechniqueReapplicationInfo>, RepositoryFailure>> => {
+      try {
+        const result = await listTechniquesForReapplication({ activeOnly: true, pageSize: CATALOG_TECHNIQUES_PAGE_SIZE }, db)
+        const withInterval = new Map<string, TechniqueReapplicationInfo>()
+        for (const technique of result.items) {
+          if (technique.reapplicationIntervalDays !== null) {
+            withInterval.set(technique.id, { name: technique.name, intervalDays: technique.reapplicationIntervalDays })
+          }
+        }
+        return ok(withInterval)
+      } catch {
+        return err(REPOSITORY_FAILURE)
+      }
+    }
+
+    return await discoverDueReapplications({
+      listCandidates,
+      listTechniquesWithInterval,
+      statesFor: delinquencyStatesGateway(db).statesFor,
+      anticipationDays: REAPPLICATION_ANTICIPATION_DAYS_DEFAULT,
+      now: systemClock(),
+    })
   } finally {
     await closeSystemClient(db)
   }

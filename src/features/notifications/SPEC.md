@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "dominio (pieza 2/12), contrato SQL de scheduling (pieza 3/12) con envoltorio TypeScript (pieza 4/12), tabla notifications_reapplication_reminders con su pgTAP (pieza 5/12) y el caso de uso discoverDueReapplications (pieza 6/12, con puertos todavía sin adaptador real) ya existen. Pendiente: conectar los adaptadores reales de scheduling/catalog/delinquency, escribir en la tabla con su idempotencia por ciclo, política de anticipación con su pantalla, integración al ciclo de recordatorios, y las pruebas de cada pieza"
+    falta: "dominio (pieza 2/12), contrato SQL de scheduling (pieza 3/12) con envoltorio TypeScript (pieza 4/12), tabla notifications_reapplication_reminders con su pgTAP (pieza 5/12), el caso de uso discoverDueReapplications (pieza 6/12) y sus adaptadores reales (pieza 7/12: delinquency-states-gateway propio y listTechniquesForReapplication nuevo en catalog) ya existen. Pendiente: escribir en la tabla con su idempotencia por ciclo, política de anticipación configurable con su pantalla (hoy fija en el valor por defecto), integración al ciclo de recordatorios y envío por el canal, y las pruebas de cada pieza"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -439,13 +439,29 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   fuera de la ventana de anticipación, morosidad activa excluye y `pending_review` no, técnica sin
   intervalo no entra, y los tres fallos de lectura como `RepositoryFailure`).
 
+- **Pieza 7/12 — adaptadores reales** (`discoverReapplicationReminders`, exportada desde `index.ts`):
+  conecta de verdad los tres puertos de la pieza 6. `db/delinquency-states-gateway.ts` llama
+  `delinquency_client_states` por RPC — mismo gateway que ya usa `clients`, repetido aquí porque cada
+  feature consume el contrato por su propio puerto (ARCH-004), sin importar el de `clients`. Para el
+  catálogo, `catalog` ganó `listTechniquesForReapplication(query?, db?)` (`catalog/reapplication-api.ts`,
+  documentado en su SPEC): el cron no tiene cookies de sesión, así que `listTechniques` (de borde,
+  `createClient()`) no le serviría — mismo motivo que ya resolvió `reminders-api.ts` de `scheduling`. Una
+  sola consulta con `activeOnly: true` trae todas las técnicas activas; una desactivada no genera aviso,
+  porque la clienta ya no podría reservarla (supuesto técnico, no una decisión de producto confirmada
+  — a revisar si alguna vez importa). La anticipación usa `REAPPLICATION_ANTICIPATION_DAYS_DEFAULT` (7,
+  pieza 2) como valor fijo hasta que exista la política configurable (criterio 3, pieza siguiente).
+  `discoverReapplicationReminders` todavía no escribe en la tabla de la pieza 5 ni envía nada — solo
+  devuelve la lista de quién ya debería recibir el aviso.
+  Pruebas: `db/__tests__/delinquency-states-gateway.test.ts` (3 casos). Sin prueba dedicada para el
+  cableado de `index.ts` (capa de composición sin lógica propia, igual que `runNotificationsReminderCycle`).
+  `npx tsc --noEmit` sin errores.
+
 ### Qué no hace todavía
 
-El caso de uso de la pieza 6 todavía recibe puertos sin adaptador real: falta conectarlo con
-`listSchedulingReapplicationCandidates` (pieza 4), `catalog.listTechniques` y `delinquency_client_states`,
-escribir en la tabla de la pieza 5 (con su idempotencia por ciclo y los reintentos entre corridas), la
-política de anticipación con su pantalla, y la integración al ciclo de recordatorios. El plan de piezas
-está en el PR de cada incremento.
+Falta escribir en la tabla de la pieza 5 (con su idempotencia por ciclo y los reintentos entre
+corridas), enviar por el canal (ADR-0006), la política de anticipación con su pantalla (hoy fija en el
+valor por defecto), y la integración al ciclo de recordatorios. El plan de piezas está en el PR de cada
+incremento.
 
 ## Qué no hace todavía
 
