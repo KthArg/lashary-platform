@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "criterios 1, 2 y 4 completos de punta a punta (piezas 2 a 11: dominio, contrato de scheduling, envoltorios, tabla con idempotencia por ciclo, descubrimiento, repositorio, caso de uso de envío y runReapplicationReminderCycle en index.ts que descubre y manda en la misma corrida). Pendiente: criterio 3 (política de anticipación configurable con su pantalla; hoy fija en 7 días por defecto) y que algo dispare runReapplicationReminderCycle de verdad (hoy nadie la llama)"
+    falta: "criterios 1, 2 y 4 completos de punta a punta (piezas 2 a 11) y la tabla de configuración del criterio 3 (pieza 12, notifications_reapplication_settings, 7 días por defecto, rango 1-30, nadie la cambia directo todavía). Pendiente: función de cambio con bitácora, envoltorio TypeScript y pantalla del criterio 3, que el ciclo use el valor configurado en vez del valor por defecto del dominio, y que algo dispare runReapplicationReminderCycle de verdad (hoy nadie la llama)"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -505,12 +505,25 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   saltado por el mismo problema de entorno preexistente. Sin prueba dedicada para el cableado de
   `index.ts` (capa de composición sin lógica propia).
 
+- **Pieza 12/14 — tabla de configuración** (`notifications_reapplication_settings`, migración
+  `20261113000002_notifications_reapplication_settings.sql`): criterio 3, de a cuántos días de
+  anticipación avisar. Fila única, 7 por defecto, rango 1-30 (decisión del líder del proyecto,
+  2026-11-13), mismo patrón que `delinquency_settings` (US-MOR-01) y `scheduling_confirmation_policy`
+  (US-NOT-08): nadie la cambia directo, ni la administradora — solo la función de la siguiente
+  pieza, para que cada cambio deje su evento en la bitácora. Todavía nadie la lee: el ciclo sigue
+  usando `REAPPLICATION_ANTICIPATION_DAYS_DEFAULT` del dominio hasta la pieza 14.
+  Prueba: pgTAP `notifications_reapplication_settings.test.sql` (7 aserciones: valor por defecto,
+  nadie cambia directo —ni admin ni clienta—, aislamiento SEC-002, anon sin permiso, rango 1-30
+  aplicado aunque se escriba como dueño). Suite completa corrida de nuevo: 93 archivos, 1239
+  pruebas, todo en verde.
+
 ### Qué no hace todavía
 
-Falta la política de anticipación configurable con su pantalla (criterio 3; hoy fija en el valor por
-defecto del dominio) y la integración al disparador del cron (`/api/cron/notifications-reminders` o
-uno propio) — hoy nadie llama a `runReapplicationReminderCycle` todavía. El plan de piezas está en
-el PR de cada incremento.
+Falta la función que cambie la anticipación con su bitácora, el envoltorio de TypeScript y la
+pantalla que la use (criterio 3 completo), que el ciclo lea el valor configurado en vez del valor
+por defecto del dominio, y la integración al disparador del cron
+(`/api/cron/notifications-reminders` o uno propio) — hoy nadie llama a
+`runReapplicationReminderCycle` todavía. El plan de piezas está en el PR de cada incremento.
 
 ## Qué no hace todavía
 
