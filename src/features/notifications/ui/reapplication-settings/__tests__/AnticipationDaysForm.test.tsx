@@ -2,9 +2,12 @@ import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
 import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react'
 import { reapplicationSettingsMessages as copy } from '../constants/reapplication-settings-strings'
 import { AnticipationDaysForm } from '../components/AnticipationDaysForm'
+import { REAPPLICATION_ANTICIPATION_DAYS_MAX, REAPPLICATION_ANTICIPATION_DAYS_MIN } from '@/features/notifications/domain/reapplication-reminder'
 import type { SetAnticipationDaysActionResult } from '../types/reapplication-settings.types'
 
 const mockAction = vi.fn<(input: unknown) => Promise<SetAnticipationDaysActionResult>>()
+const fieldLabel = copy.label(REAPPLICATION_ANTICIPATION_DAYS_MIN, REAPPLICATION_ANTICIPATION_DAYS_MAX)
+const invalidMessage = copy.invalid(REAPPLICATION_ANTICIPATION_DAYS_MIN, REAPPLICATION_ANTICIPATION_DAYS_MAX)
 
 vi.mock('../actions/reapplication-settings-actions', () => ({
   setAnticipationDaysAction: (input: unknown) => mockAction(input),
@@ -14,7 +17,7 @@ beforeEach(() => mockAction.mockReset())
 afterEach(cleanup)
 
 const submitWith = (days: string) => {
-  fireEvent.change(screen.getByLabelText(copy.label), { target: { value: days } })
+  fireEvent.change(screen.getByLabelText(fieldLabel), { target: { value: days } })
   fireEvent.click(screen.getByRole('button', { name: copy.save }))
 }
 
@@ -55,11 +58,11 @@ describe('AnticipationDaysForm', () => {
   })
 
   it('un campo vacío manda NaN, que la acción rechaza, sin romper el formulario', async () => {
-    mockAction.mockResolvedValue({ ok: false, error: copy.invalid })
+    mockAction.mockResolvedValue({ ok: false, error: invalidMessage })
     render(<AnticipationDaysForm anticipationDays={7} />)
     submitWith('')
 
-    expect((await screen.findByRole('status')).textContent).toBe(copy.invalid)
+    expect((await screen.findByRole('status')).textContent).toBe(invalidMessage)
     expect(mockAction).toHaveBeenCalledWith({ anticipationDays: Number.NaN })
   })
 })
