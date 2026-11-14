@@ -8,6 +8,7 @@ export const CITAS_SECTION = {
     cancellation: 'Cancelación',
     confirmation: 'Confirmación',
     reschedule: 'Reagendados',
+    reapplication: 'Re-aplicación',
   },
 } as const
 
@@ -19,4 +20,5 @@ export const CITAS_ROUTES = {
   cancellation: '/admin/citas/cancelacion',
   confirmation: '/admin/citas/confirmacion',
   reschedule: '/admin/citas/reagendados',
+  reapplication: '/admin/citas/re-aplicacion',
 } as const
