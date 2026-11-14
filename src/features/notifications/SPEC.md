@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "criterios 1, 2 y 4 completos de punta a punta (piezas 2 a 11); criterio 3 completo del lado de los datos y la lógica (piezas 12 a 14); la acción y el servicio de la pantalla ya existen (pieza 15, sin componentes todavía). Pendiente: componentes de la pantalla (pieza 16), ruta /admin/citas/re-aplicacion con su pestaña en CitasTabs (pieza 17, última), y que algo dispare runReapplicationReminderCycle de verdad (hoy nadie la llama) — checklist de activación, no deuda de la historia"
+    falta: "los cuatro criterios completos de punta a punta (piezas 2 a 17): dominio, contrato de scheduling, tabla con idempotencia por ciclo, descubrimiento, envío con reintentos, y la política de anticipación con su pantalla en /admin/citas/re-aplicacion. Solo falta integrar runReapplicationReminderCycle al disparador del cron — checklist de activación para producción (mismo criterio que cerró US-NOT-03/07/08 como terminada), no deuda de la historia ni código pendiente"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -568,12 +568,23 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   **Corrección:** el formulario llama ahora a `copy.label(MIN, MAX)` (función, pieza 15) en vez de
   un texto fijo.
 
+- **Pieza 17/17 — ruta y pestaña** (`src/app/admin/citas/re-aplicacion/`, `client.ts` nuevo en
+  `notifications` — mismo propósito que el de `scheduling`: `loading.tsx`/`error.tsx` no cargan todo
+  `index.ts`, solo lo mínimo client-safe): `page.tsx`, `loading.tsx` y `error.tsx` (boundary de
+  Next.js para una excepción real, distinto del estado `'error'` manejado de la vista) siguen el
+  mismo patrón que `/admin/citas/confirmacion`. `CitasTabs` gana la pestaña «Re-aplicación»
+  (`CITAS_SECTION.tabs.reapplication`, `CITAS_ROUTES.reapplication`). Con esto el criterio 3 de
+  US-NOT-05 queda visible para la administradora: los cuatro criterios de la historia están
+  completos de punta a punta.
+  Pruebas: `layout.test.tsx` de `/admin/citas` extendido con la pestaña nueva. `npx tsc --noEmit`
+  sin errores; 274 pruebas en verde entre `src/app/admin/citas` y `src/features/notifications`, el
+  resto saltado por el mismo problema de entorno preexistente.
+
 ### Qué no hace todavía
 
-Falta la ruta `/admin/citas/re-aplicacion`, su pestaña en `CitasTabs` y el export desde `index.ts`
-(pieza final), y la integración al disparador del cron (`/api/cron/notifications-reminders` o uno
-propio) — hoy nadie llama a `runReapplicationReminderCycle` todavía. El plan de piezas está en el
-PR de cada incremento.
+Falta la integración al disparador del cron (`/api/cron/notifications-reminders` o uno propio) —
+hoy nadie llama a `runReapplicationReminderCycle` todavía. Es checklist de activación para
+producción, no deuda de la historia (mismo criterio que cerró US-NOT-03/07/08).
 
 ## Qué no hace todavía
 

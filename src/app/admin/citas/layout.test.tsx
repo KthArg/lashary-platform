@@ -12,7 +12,7 @@ vi.mock('next/navigation', () => ({ usePathname: () => mocks.pathname }))
 import AdminCitasLayout from './layout'
 import { CITAS_ROUTES, CITAS_SECTION } from './citas-section.strings'
 
-describe('/admin/citas: pestañas de aprobaciones, agenda, disponibilidad, alertas, cancelación y reagendados', () => {
+describe('/admin/citas: pestañas de aprobaciones, agenda, disponibilidad, alertas, cancelación, reagendados y re-aplicación', () => {
   it('propaga el redirect de requireAdminSession cuando no hay sesión staff', async () => {
     mocks.requireAdminSession.mockRejectedValueOnce(new Error('NEXT_REDIRECT:/admin'))
     await expect(AdminCitasLayout({ children: <div>citas</div> })).rejects.toThrow('NEXT_REDIRECT:/admin')
@@ -28,18 +28,21 @@ describe('/admin/citas: pestañas de aprobaciones, agenda, disponibilidad, alert
     const alerts = screen.getByRole('link', { name: CITAS_SECTION.tabs.alerts })
     const cancellation = screen.getByRole('link', { name: CITAS_SECTION.tabs.cancellation })
     const reschedule = screen.getByRole('link', { name: CITAS_SECTION.tabs.reschedule })
+    const reapplication = screen.getByRole('link', { name: CITAS_SECTION.tabs.reapplication })
     expect(approvals.getAttribute('href')).toBe(CITAS_ROUTES.approvals)
     expect(agenda.getAttribute('href')).toBe(CITAS_ROUTES.agenda)
     expect(availability.getAttribute('href')).toBe(CITAS_ROUTES.availability)
     expect(alerts.getAttribute('href')).toBe(CITAS_ROUTES.alerts)
     expect(cancellation.getAttribute('href')).toBe(CITAS_ROUTES.cancellation)
     expect(reschedule.getAttribute('href')).toBe(CITAS_ROUTES.reschedule)
+    expect(reapplication.getAttribute('href')).toBe(CITAS_ROUTES.reapplication)
     expect(availability.getAttribute('aria-current')).toBe('page')
     expect(approvals.getAttribute('aria-current')).toBeNull()
     expect(agenda.getAttribute('aria-current')).toBeNull()
     expect(alerts.getAttribute('aria-current')).toBeNull()
     expect(cancellation.getAttribute('aria-current')).toBeNull()
     expect(reschedule.getAttribute('aria-current')).toBeNull()
+    expect(reapplication.getAttribute('aria-current')).toBeNull()
     expect(screen.getByText('contenido')).toBeTruthy()
   })
 })
