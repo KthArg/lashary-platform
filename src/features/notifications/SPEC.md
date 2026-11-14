@@ -2,7 +2,7 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-13
+actualizado: 2026-11-14
 historias:
   - id: US-NOT-01
     estado: terminada
