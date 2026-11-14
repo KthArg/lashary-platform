@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "dominio, contrato de scheduling, envoltorios, tabla con su pgTAP, descubrimiento y el repositorio de persistencia con su idempotencia por ciclo (piezas 2 a 9) ya existen, sin caso de uso que llame al repositorio todavía. Pendiente: caso de uso de envío que una descubrimiento + mensaje + canal + repositorio (pieza 10), criterio 3 (política de anticipación configurable con su pantalla; hoy fija en 7 días por defecto) y que algo dispare el ciclo de verdad (hoy nadie lo llama)"
+    falta: "dominio, contrato de scheduling, envoltorios, tabla, descubrimiento, repositorio y el caso de uso sendDueReapplications (piezas 2 a 10) ya existen, sin cablear a index.ts todavía. Pendiente: cableado en index.ts (pieza 11), criterio 3 (política de anticipación configurable con su pantalla; hoy fija en 7 días por defecto) y que algo dispare el ciclo de verdad (hoy nadie lo llama)"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -481,30 +481,27 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   Pruebas: `db/__tests__/reapplication-reminder-repository.test.ts` (6 casos: lectura por lote, forma
   exacta del `upsert` para `sent` y para `failed`, fallos de la base) y el caso nuevo de
   `domain/__tests__/reapplication-reminder.test.ts` para `reapplicationCycleKey`.
-- **Pieza 10/13 — envío y cableado** (`application/send-due-reapplications.ts`,
-  `runReapplicationReminderCycle` en `index.ts`): cierra los cuatro criterios de US-NOT-05 de punta a
-  punta. A diferencia del recordatorio de 24h, no hay un evento futuro que espere:
-  `discoverDueReapplications` (piezas 6-7) corre y lo que ya está vencido se intenta mandar en el
-  acto, en la misma corrida — no hay un `claimDuePending` previo porque no hay nada "pendiente"
-  guardado de antemano. Antes de intentar, por candidata: si ya hay una fila `'sent'` para ese ciclo,
-  se salta (`skipped`); si hay una `'failed'` con `attempts >= MAX_REMINDER_ATTEMPTS` (reusa la
-  constante de US-NOT-03, mismo tope: 5), también se salta — agotada hasta que una nueva cita
-  completada abra un ciclo nuevo; si no hay fila o es `'failed'` con intentos de sobra, intenta: sin
-  contacto o con los dos canales fallando por error real cuenta como intento gastado (`retried` o
-  `exhausted` según el tope); con los dos canales sin configurar es permanente (`exhausted` de una,
-  sin gastar reintentos, igual que `send-due-reminders.ts`).
+- **Pieza 10/14 — caso de uso de envío** (`application/send-due-reapplications.ts`): a diferencia del
+  recordatorio de 24h, no hay un evento futuro que espere — recibe directo la lista ya descubierta
+  (piezas 6-7) y lo que ya está vencido se intenta mandar en el acto, sin un `claimDuePending` previo
+  porque no hay nada "pendiente" guardado de antemano. Antes de intentar, por candidata: si ya hay
+  una fila `'sent'` para ese ciclo, se salta (`skipped`); si hay una `'failed'` con
+  `attempts >= MAX_REMINDER_ATTEMPTS` (reusa la constante de US-NOT-03, mismo tope: 5), también se
+  salta — agotada hasta que una nueva cita completada abra un ciclo nuevo; si no hay fila o es
+  `'failed'` con intentos de sobra, intenta: sin contacto o con los dos canales fallando por error
+  real cuenta como intento gastado (`retried` o `exhausted` según el tope); con los dos canales sin
+  configurar es permanente (`exhausted` de una, sin gastar reintentos, igual que
+  `send-due-reminders.ts`). Todavía sin cablear a `index.ts` — siguiente pieza.
   Pruebas: `application/__tests__/send-due-reapplications.test.ts` (10 casos: primer envío con
   `attempts: 1`, salto si ya está `sent`, salto si está `failed` y agotado, reintento que suma uno a
   `attempts`, sin contacto, respaldo por correo, los dos canales sin configurar, los dos fallando
-  hasta agotar, fallo al leer los registros). `npx tsc --noEmit` sin errores; 231 pruebas en verde en
-  `src/features/notifications`, el resto saltado por el mismo problema de entorno preexistente.
-
+  hasta agotar, fallo al leer los registros).
 ### Qué no hace todavía
 
-Falta la política de anticipación configurable con su pantalla (criterio 3; hoy fija en el valor por
-defecto del dominio) y la integración de `runReapplicationReminderCycle` al disparador del cron
-(`/api/cron/notifications-reminders` o uno propio) — hoy nadie la llama todavía. El plan de piezas
-está en el PR de cada incremento.
+Falta cablear `sendDueReapplications` a `index.ts` (pieza 11), la política de anticipación
+configurable con su pantalla (criterio 3; hoy fija en el valor por defecto del dominio) y la
+integración al disparador del cron (`/api/cron/notifications-reminders` o uno propio) — hoy nadie
+la llama todavía. El plan de piezas está en el PR de cada incremento.
 
 ## Qué no hace todavía
 
