@@ -27,6 +27,8 @@ export async function listTechniques(
   return listTechniquesUseCase(await techniqueRepository())(query)
 }
 
+export { listTechniquesForReapplication } from './reapplication-api'
+
 export async function getTechnique(id: string) {
   return getTechniqueUseCase(await techniqueRepository())(id)
 }
