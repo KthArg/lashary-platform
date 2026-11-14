@@ -4,7 +4,7 @@ import type { ReminderAttempt } from '../domain/reminder-attempt'
 import type { ConfirmationRequest } from '../domain/confirmation-request'
 import type { InboxNotice } from '../domain/inbox-notice'
 import type { ClientNotice, ClientNoticeDelivery } from '../domain/client-notice'
-import type { ChannelNotConfigured, ChannelSendFailed, ClientNoticesStorageFailed, InboxStorageFailed } from '../domain/errors'
+import type { ChannelNotConfigured, ChannelSendFailed, ClientNoticesStorageFailed, InboxStorageFailed, InvalidAnticipationDays } from '../domain/errors'
 
 export type RepositoryFailure = 'repository-failed'
 
@@ -65,6 +65,13 @@ export type ReapplicationReminderOutcomeInput = {
   lastCompletedAt: Date
   dueAt: Date
   attempts: number
+}
+
+export type ChangeAnticipationDaysFailure = RepositoryFailure | InvalidAnticipationDays
+
+export interface ReapplicationSettingsRepository {
+  anticipationDays(): Promise<Result<number, RepositoryFailure>>
+  setAnticipationDays(days: number): Promise<Result<number, ChangeAnticipationDaysFailure>>
 }
 
 export interface ReapplicationReminderRepository {
