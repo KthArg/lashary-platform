@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
 import { setAnticipationDaysAction } from '../actions/reapplication-settings-actions'
 import { reapplicationSettingsMessages as copy, REAPPLICATION_SETTINGS_PATH } from '../constants/reapplication-settings-strings'
+import { REAPPLICATION_ANTICIPATION_DAYS_MAX, REAPPLICATION_ANTICIPATION_DAYS_MIN } from '@/features/notifications/domain/reapplication-reminder'
+
+const invalidMessage = copy.invalid(REAPPLICATION_ANTICIPATION_DAYS_MIN, REAPPLICATION_ANTICIPATION_DAYS_MAX)
 
 type FakeRpc = { data: unknown; error: { message: string; code?: string } | null }
 
@@ -38,7 +41,7 @@ describe('setAnticipationDaysAction', () => {
 
       const result = await setAnticipationDaysAction({ anticipationDays })
 
-      expect(result).toEqual({ ok: false, error: copy.invalid })
+      expect(result).toEqual({ ok: false, error: invalidMessage })
       expect(rpcCalls).toEqual([])
       expect(mockRevalidate).not.toHaveBeenCalled()
     },
@@ -47,7 +50,7 @@ describe('setAnticipationDaysAction', () => {
   it('rechaza una entrada sin el campo', async () => {
     const result = await setAnticipationDaysAction({})
 
-    expect(result).toEqual({ ok: false, error: copy.invalid })
+    expect(result).toEqual({ ok: false, error: invalidMessage })
   })
 
   it('traduce el rechazo de la base por un valor fuera de rango', async () => {
@@ -55,7 +58,7 @@ describe('setAnticipationDaysAction', () => {
 
     const result = await setAnticipationDaysAction({ anticipationDays: 31 })
 
-    expect(result).toEqual({ ok: false, error: copy.invalid })
+    expect(result).toEqual({ ok: false, error: invalidMessage })
   })
 
   it('cualquier otro error de la base es un fallo de guardado genérico', async () => {
