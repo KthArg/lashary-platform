@@ -565,6 +565,8 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   `NaN` sin romper) y `ReapplicationSettingsView.test.tsx` (2 casos: listo muestra el formulario con
   el valor vigente, error avisa con `role=alert` y ofrece reintentar sin formulario). `npx tsc
   --noEmit` sin errores.
+  **Corrección:** el formulario llama ahora a `copy.label(MIN, MAX)` (función, pieza 15) en vez de
+  un texto fijo.
 
 ### Qué no hace todavía
 
