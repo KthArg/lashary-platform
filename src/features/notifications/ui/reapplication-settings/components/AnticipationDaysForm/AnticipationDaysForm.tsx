@@ -33,7 +33,7 @@ export function AnticipationDaysForm({ anticipationDays }: AnticipationDaysFormP
     <form onSubmit={save} className={STYLES.form}>
       <div className={STYLES.field}>
         <label htmlFor={INPUT_ID} className={STYLES.label}>
-          {copy.label}
+          {copy.label(REAPPLICATION_ANTICIPATION_DAYS_MIN, REAPPLICATION_ANTICIPATION_DAYS_MAX)}
         </label>
         <input
           id={INPUT_ID}
