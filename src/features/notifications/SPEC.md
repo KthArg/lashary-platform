@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "dominio de la fecha estimada (pieza 2/12), contrato SQL de scheduling_reapplication_candidates con pgTAP (pieza 3/12) y su envoltorio TypeScript listSchedulingReapplicationCandidates (pieza 4/12) ya existen. Pendiente: caso de uso que una scheduling y delinquency con el dominio, tabla de persistencia e idempotencia por ciclo, política de anticipación con su pantalla, integración al ciclo de recordatorios, y las pruebas de cada pieza"
+    falta: "dominio (pieza 2/12), contrato SQL de scheduling_reapplication_candidates con pgTAP (pieza 3/12), su envoltorio TypeScript (pieza 4/12) y la tabla notifications_reapplication_reminders con su pgTAP (pieza 5/12) ya existen. Pendiente: caso de uso que una scheduling y delinquency con el dominio y escriba en la tabla, política de anticipación con su pantalla, integración al ciclo de recordatorios, y las pruebas de cada pieza"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -413,13 +413,26 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   `listSchedulingAppointmentsForReminders` (US-NOT-03). Esta feature todavía no lo importa — eso es la
   siguiente pieza, junto con el contrato equivalente de `delinquency` (`delinquency_client_states`, ya
   existente, sin envoltorio propio de esta feature todavía).
+- **Pieza 5/12 — tabla de persistencia** (`notifications_reapplication_reminders`, migración
+  `20261113000001_notifications_reapplication_reminders.sql`): a diferencia de `notifications_reminders`
+  (US-NOT-03), no es una cola que espere un `send_at` futuro — no hay un evento que dispare la fila de
+  antemano, así que cada corrida del cron recalcula la fecha estimada contra `scheduling_reapplication_candidates`
+  (pieza 3) y, si ya toca, intenta enviar de inmediato en esa misma corrida. La fila solo deja constancia del
+  intento: `status` `'sent'` o `'failed'` (sin `'pending'`/`'claimed'`, que no aplican aquí), con `attempts`
+  para reintentar en corridas siguientes hasta el mismo tope que `MAX_REMINDER_ATTEMPTS` de US-NOT-03. La
+  restricción `UNIQUE (client_id, technique_id, last_completed_at)` es el «una vez por ciclo» que aprobó el
+  líder del proyecto: una nueva cita completada cambia `last_completed_at` y habilita una fila nueva. El CHECK
+  `sent_at_matches_status` impide una fila `'sent'` sin `sent_at` o una `'failed'` con `sent_at`. RLS solo
+  staff, mismo patrón que `notifications_reminders`. Prueba: pgTAP
+  `notifications_reapplication_reminders.test.sql` (12 aserciones: aislamiento SEC-002, el `UNIQUE` del ciclo
+  y el `CHECK` en los dos sentidos).
 
 ### Qué no hace todavía
 
 Ninguno de los dos contratos (`scheduling` y `delinquency`) se consume todavía desde aquí: falta el caso de
-uso que una las dos lecturas con el dominio de la pieza 2, la tabla de persistencia con su idempotencia por
-ciclo, la política de anticipación con su pantalla, y la integración al ciclo de recordatorios. El plan de
-piezas está en el PR de cada incremento.
+uso que una las dos lecturas con el dominio de la pieza 2 y escriba en la tabla de la pieza 5, la política de
+anticipación con su pantalla, y la integración al ciclo de recordatorios. El plan de piezas está en el PR de
+cada incremento.
 
 ## Qué no hace todavía
 
