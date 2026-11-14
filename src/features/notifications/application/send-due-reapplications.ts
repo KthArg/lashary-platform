@@ -102,7 +102,7 @@ export const sendDueReapplications =
     const summary: SendDueReapplicationsSummary = { sent: 0, retried: 0, exhausted: 0, skipped: 0, errored: 0 }
     if (due.length === 0) return ok(summary)
 
-    const clientIds = [...new Set(due.map((d) => d.clientId))]
+    const clientIds = [...new Set(due.map((reminder) => reminder.clientId))]
     const records = await deps.listRecords(clientIds)
     if (isErr(records)) return records
 
