@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "criterios 1, 2 y 4 completos de punta a punta (piezas 2 a 11); tabla y función de cambio del criterio 3 ya existen (piezas 12 y 13, notifications_reapplication_settings + notifications_set_reapplication_anticipation_days, 7 días por defecto, rango 1-30, con bitácora). Pendiente: envoltorio TypeScript y pantalla del criterio 3, que el ciclo use el valor configurado en vez del valor por defecto del dominio, y que algo dispare runReapplicationReminderCycle de verdad (hoy nadie la llama)"
+    falta: "criterios 1, 2 y 4 completos de punta a punta (piezas 2 a 11); criterio 3 completo del lado de los datos y la lógica (piezas 12 a 14: tabla, función de cambio con bitácora, envoltorio TypeScript; el ciclo ya lee el valor configurado, con el valor por defecto como respaldo si la lectura falla). Pendiente: la pantalla que la administradora use para cambiar la anticipación, y que algo dispare runReapplicationReminderCycle de verdad (hoy nadie la llama) — checklist de activación, no deuda de la historia"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -527,12 +527,27 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   y devuelve el valor, bitácora con quién/antes/después, mismo valor no deja evento, rango 1-30,
   clienta y anon denegados). Suite completa: 94 archivos, 1251 pruebas, todo en verde.
 
+- **Pieza 14/14 — envoltorio de TypeScript y ciclo configurado** (`db/reapplication-settings-repository.ts`,
+  `application/reapplication-settings.ts`, `InvalidAnticipationDays` nuevo en `domain/errors.ts`):
+  mismo patrón que `delinquency`'s `settings-repository.ts`/`grace-days.ts` (US-MOR-01) — un valor
+  fuera de rango ni siquiera llega a la base, se rechaza en `changeAnticipationDays` reusando
+  `isValidAnticipationDays` del dominio (pieza 2); la base lo vuelve a exigir igual.
+  `buildReapplicationDiscoveryDeps` ahora lee `notifications_reapplication_settings` (pieza 12) antes
+  de armar el ciclo: si la lectura falla, sigue con `REAPPLICATION_ANTICIPATION_DAYS_DEFAULT` en vez
+  de frenar toda la corrida, con el fallo avisado por consola. Con esto el criterio 3 queda completo
+  del lado de los datos y la lógica; falta la pantalla.
+  Pruebas: `application/__tests__/reapplication-settings.test.ts` (8 casos) y
+  `db/__tests__/reapplication-settings-repository.test.ts` (8 casos: lectura, error de forma, llamada
+  a la función con los días, traducción del rechazo por rango, cualquier otro error como
+  `RepositoryFailure`). `npx tsc --noEmit` sin errores; 254 pruebas en verde en
+  `src/features/notifications`, el resto saltado por el mismo problema de entorno preexistente.
+
 ### Qué no hace todavía
 
-Falta el envoltorio de TypeScript y la pantalla que use la función de cambio (criterio 3 completo),
-que el ciclo lea el valor configurado en vez del valor por defecto del dominio, y la integración al
-disparador del cron (`/api/cron/notifications-reminders` o uno propio) — hoy nadie llama a
-`runReapplicationReminderCycle` todavía. El plan de piezas está en el PR de cada incremento.
+Falta la pantalla que use `loadAnticipationDays`/`changeAnticipationDays` (criterio 3 visible para
+la administradora) y la integración al disparador del cron (`/api/cron/notifications-reminders` o
+uno propio) — hoy nadie llama a `runReapplicationReminderCycle` todavía. El plan de piezas está en
+el PR de cada incremento.
 
 ## Qué no hace todavía
 

@@ -17,6 +17,7 @@ import { clientNoticeDeliveryRepository } from './db/client-notice-delivery-repo
 import { droppedNoticesRepository } from './db/dropped-notices-repository'
 import { delinquencyStatesGateway } from './db/delinquency-states-gateway'
 import { reapplicationReminderRepository } from './db/reapplication-reminder-repository'
+import { reapplicationSettingsRepository } from './db/reapplication-settings-repository'
 import { runReminderCycle, type RunReminderCycleSummary } from './application/run-reminder-cycle'
 import { discoverDueReapplications, type DiscoverDueReapplicationsDeps } from './application/discover-reapplication-reminders'
 import { sendDueReapplications, type SendDueReapplicationsSummary } from './application/send-due-reapplications'
@@ -127,9 +128,18 @@ export async function runNotificationsReminderCycle(): Promise<
 }
 
 // Compartido por discoverReapplicationReminders y runReapplicationReminderCycle: las tres lecturas
-// (scheduling, catalog, delinquency) por el mismo cliente de sistema. La anticipación usa el valor
-// por defecto del dominio porque la política configurable (criterio 3) aún no tiene su propia tabla.
-function buildReapplicationDiscoveryDeps(db: SupabaseClient): DiscoverDueReapplicationsDeps {
+// (scheduling, catalog, delinquency) por el mismo cliente de sistema, más la anticipación
+// configurada (criterio 3); si no se puede leer, sigue con el valor por defecto del dominio en vez
+// de frenar toda la corrida.
+async function buildReapplicationDiscoveryDeps(db: SupabaseClient): Promise<DiscoverDueReapplicationsDeps> {
+  const anticipationDaysResult = await reapplicationSettingsRepository(db).anticipationDays()
+  if (isErr(anticipationDaysResult)) {
+    console.error(
+      `[notifications] no se pudo leer la anticipación configurada, se usa el valor por defecto (${REAPPLICATION_ANTICIPATION_DAYS_DEFAULT}): ${anticipationDaysResult.error}`,
+    )
+  }
+  const anticipationDays = isErr(anticipationDaysResult) ? REAPPLICATION_ANTICIPATION_DAYS_DEFAULT : anticipationDaysResult.value
+
   const listCandidates = async () => {
     const result = await listSchedulingReapplicationCandidates(db)
     return isErr(result) ? err(REPOSITORY_FAILURE) : ok(result.value)
@@ -154,7 +164,7 @@ function buildReapplicationDiscoveryDeps(db: SupabaseClient): DiscoverDueReappli
     listCandidates,
     listTechniquesWithInterval,
     statesFor: delinquencyStatesGateway(db).statesFor,
-    anticipationDays: REAPPLICATION_ANTICIPATION_DAYS_DEFAULT,
+    anticipationDays,
     now: systemClock(),
   }
 }
@@ -173,7 +183,7 @@ export async function discoverReapplicationReminders(): Promise<
   const db = clientResult.value
 
   try {
-    return await discoverDueReapplications(buildReapplicationDiscoveryDeps(db))
+    return await discoverDueReapplications(await buildReapplicationDiscoveryDeps(db))
   } finally {
     await closeSystemClient(db)
   }
@@ -194,7 +204,7 @@ export async function runReapplicationReminderCycle(): Promise<
   const db = clientResult.value
 
   try {
-    const due = await discoverDueReapplications(buildReapplicationDiscoveryDeps(db))
+    const due = await discoverDueReapplications(await buildReapplicationDiscoveryDeps(db))
     if (isErr(due)) return due
 
     const repo = await reapplicationReminderRepository(db)
