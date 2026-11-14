@@ -16,8 +16,10 @@ import { reminderRepository } from './db/reminder-repository'
 import { clientNoticeDeliveryRepository } from './db/client-notice-delivery-repository'
 import { droppedNoticesRepository } from './db/dropped-notices-repository'
 import { delinquencyStatesGateway } from './db/delinquency-states-gateway'
+import { reapplicationReminderRepository } from './db/reapplication-reminder-repository'
 import { runReminderCycle, type RunReminderCycleSummary } from './application/run-reminder-cycle'
-import { discoverDueReapplications } from './application/discover-reapplication-reminders'
+import { discoverDueReapplications, type DiscoverDueReapplicationsDeps } from './application/discover-reapplication-reminders'
+import { sendDueReapplications, type SendDueReapplicationsSummary } from './application/send-due-reapplications'
 import { buildAppointmentsUrl } from './domain/appointments-url'
 import { sendConfirmationRequests, type SendConfirmationRequestsSummary } from './application/send-confirmation-requests'
 import { REAPPLICATION_ANTICIPATION_DAYS_DEFAULT } from './domain/reapplication-reminder'
@@ -28,6 +30,7 @@ import type {
   RepositoryFailure,
   TechniqueReapplicationInfo,
 } from './application/ports'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { metaWhatsAppChannel, readMetaWhatsAppConfigFromEnv } from './channels/meta-whatsapp-channel'
 import { resendEmailChannel, readResendEmailConfigFromEnv } from './channels/resend-email-channel'
 
@@ -38,6 +41,13 @@ const CATALOG_TECHNIQUES_PAGE_SIZE = 100
 const REPOSITORY_FAILURE: RepositoryFailure = 'repository-failed'
 
 export type NotificationsCycleError = 'system-client-not-configured' | SystemClientFailure | RepositoryFailure
+
+function buildGetContact(db: SupabaseClient) {
+  return async (clientId: string): Promise<Result<ContactInfo | null, RepositoryFailure>> => {
+    const result = await getClientContactForReminders(clientId, db)
+    return isErr(result) ? err(REPOSITORY_FAILURE) : ok(result.value)
+  }
+}
 
 export async function runNotificationsReminderCycle(): Promise<
   Result<RunReminderCycleSummary, NotificationsCycleError>
@@ -67,10 +77,7 @@ export async function runNotificationsReminderCycle(): Promise<
       return isErr(result) ? err(REPOSITORY_FAILURE) : ok(result.value)
     }
 
-    const getContact = async (clientId: string): Promise<Result<ContactInfo | null, RepositoryFailure>> => {
-      const result = await getClientContactForReminders(clientId, db)
-      return isErr(result) ? err(REPOSITORY_FAILURE) : ok(result.value)
-    }
+    const getContact = buildGetContact(db)
 
     const primaryChannel = metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env))
     const backupChannel = resendEmailChannel(readResendEmailConfigFromEnv(process.env))
@@ -119,10 +126,42 @@ export async function runNotificationsReminderCycle(): Promise<
   }
 }
 
+// Compartido por discoverReapplicationReminders y runReapplicationReminderCycle: las tres lecturas
+// (scheduling, catalog, delinquency) por el mismo cliente de sistema. La anticipación usa el valor
+// por defecto del dominio porque la política configurable (criterio 3) aún no tiene su propia tabla.
+function buildReapplicationDiscoveryDeps(db: SupabaseClient): DiscoverDueReapplicationsDeps {
+  const listCandidates = async () => {
+    const result = await listSchedulingReapplicationCandidates(db)
+    return isErr(result) ? err(REPOSITORY_FAILURE) : ok(result.value)
+  }
+
+  const listTechniquesWithInterval = async (): Promise<Result<ReadonlyMap<string, TechniqueReapplicationInfo>, RepositoryFailure>> => {
+    try {
+      const result = await listTechniquesForReapplication({ activeOnly: true, pageSize: CATALOG_TECHNIQUES_PAGE_SIZE }, db)
+      const withInterval = new Map<string, TechniqueReapplicationInfo>()
+      for (const technique of result.items) {
+        if (technique.reapplicationIntervalDays !== null) {
+          withInterval.set(technique.id, { name: technique.name, intervalDays: technique.reapplicationIntervalDays })
+        }
+      }
+      return ok(withInterval)
+    } catch {
+      return err(REPOSITORY_FAILURE)
+    }
+  }
+
+  return {
+    listCandidates,
+    listTechniquesWithInterval,
+    statesFor: delinquencyStatesGateway(db).statesFor,
+    anticipationDays: REAPPLICATION_ANTICIPATION_DAYS_DEFAULT,
+    now: systemClock(),
+  }
+}
+
 // Solo descubre quién ya debería recibir el aviso de re-aplicación (criterios 1 a 4 de US-NOT-05):
-// todavía no escribe en notifications_reapplication_reminders ni envía nada (siguiente pieza). La
-// anticipación usa el valor por defecto del dominio porque la política configurable (criterio 3)
-// aún no tiene su propia tabla.
+// no escribe en notifications_reapplication_reminders ni envía nada. Sirve para inspección (por
+// ejemplo, una corrida en seco); el envío real es runReapplicationReminderCycle.
 export async function discoverReapplicationReminders(): Promise<
   Result<DueReapplicationReminder[], NotificationsCycleError>
 > {
@@ -134,33 +173,41 @@ export async function discoverReapplicationReminders(): Promise<
   const db = clientResult.value
 
   try {
-    const listCandidates = async () => {
-      const result = await listSchedulingReapplicationCandidates(db)
-      return isErr(result) ? err(REPOSITORY_FAILURE) : ok(result.value)
-    }
+    return await discoverDueReapplications(buildReapplicationDiscoveryDeps(db))
+  } finally {
+    await closeSystemClient(db)
+  }
+}
 
-    const listTechniquesWithInterval = async (): Promise<Result<ReadonlyMap<string, TechniqueReapplicationInfo>, RepositoryFailure>> => {
-      try {
-        const result = await listTechniquesForReapplication({ activeOnly: true, pageSize: CATALOG_TECHNIQUES_PAGE_SIZE }, db)
-        const withInterval = new Map<string, TechniqueReapplicationInfo>()
-        for (const technique of result.items) {
-          if (technique.reapplicationIntervalDays !== null) {
-            withInterval.set(technique.id, { name: technique.name, intervalDays: technique.reapplicationIntervalDays })
-          }
-        }
-        return ok(withInterval)
-      } catch {
-        return err(REPOSITORY_FAILURE)
-      }
-    }
+// Descubre y manda de una vez, en la misma corrida (criterios 1 a 4 completos de US-NOT-05): a
+// diferencia del recordatorio de 24h, no hay un evento futuro que espere — lo que está vencido se
+// intenta en el acto. Registra cada intento en notifications_reapplication_reminders (pieza 5/12),
+// una vez por ciclo, con reintentos entre corridas hasta MAX_REMINDER_ATTEMPTS.
+export async function runReapplicationReminderCycle(): Promise<
+  Result<SendDueReapplicationsSummary, NotificationsCycleError>
+> {
+  const systemConfig = readSystemClientConfigFromEnv(process.env)
+  if (systemConfig === null) return err('system-client-not-configured')
 
-    return await discoverDueReapplications({
-      listCandidates,
-      listTechniquesWithInterval,
-      statesFor: delinquencyStatesGateway(db).statesFor,
-      anticipationDays: REAPPLICATION_ANTICIPATION_DAYS_DEFAULT,
-      now: systemClock(),
-    })
+  const clientResult = await createSystemClient(systemConfig)
+  if (isErr(clientResult)) return clientResult
+  const db = clientResult.value
+
+  try {
+    const due = await discoverDueReapplications(buildReapplicationDiscoveryDeps(db))
+    if (isErr(due)) return due
+
+    const repo = await reapplicationReminderRepository(db)
+
+    return await sendDueReapplications({
+      listRecords: repo.listRecords,
+      recordSent: repo.recordSent,
+      recordFailed: repo.recordFailed,
+      getContact: buildGetContact(db),
+      primaryChannel: metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env)),
+      backupChannel: resendEmailChannel(readResendEmailConfigFromEnv(process.env)),
+      clock: systemClock,
+    })(due.value)
   } finally {
     await closeSystemClient(db)
   }

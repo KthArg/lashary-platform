@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "dominio, contrato de scheduling, envoltorios, tabla, descubrimiento, repositorio y el caso de uso sendDueReapplications (piezas 2 a 10) ya existen, sin cablear a index.ts todavía. Pendiente: cableado en index.ts (pieza 11), criterio 3 (política de anticipación configurable con su pantalla; hoy fija en 7 días por defecto) y que algo dispare el ciclo de verdad (hoy nadie lo llama)"
+    falta: "criterios 1, 2 y 4 completos de punta a punta (piezas 2 a 11: dominio, contrato de scheduling, envoltorios, tabla con idempotencia por ciclo, descubrimiento, repositorio, caso de uso de envío y runReapplicationReminderCycle en index.ts que descubre y manda en la misma corrida). Pendiente: criterio 3 (política de anticipación configurable con su pantalla; hoy fija en 7 días por defecto) y que algo dispare runReapplicationReminderCycle de verdad (hoy nadie la llama)"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -496,12 +496,21 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   `attempts: 1`, salto si ya está `sent`, salto si está `failed` y agotado, reintento que suma uno a
   `attempts`, sin contacto, respaldo por correo, los dos canales sin configurar, los dos fallando
   hasta agotar, fallo al leer los registros).
+- **Pieza 11/14 — cableado** (`runReapplicationReminderCycle`, nueva en `index.ts`): cierra los
+  cuatro criterios de US-NOT-05 de punta a punta — descubre con `discoverDueReapplications` y manda
+  con `sendDueReapplications` en la misma corrida, con el mismo cliente de sistema.
+  `buildReapplicationDiscoveryDeps`/`buildGetContact` quedan compartidas con
+  `discoverReapplicationReminders` y `runNotificationsReminderCycle` para no repetir el cableado.
+  `npx tsc --noEmit` sin errores; 231 pruebas en verde en `src/features/notifications`, el resto
+  saltado por el mismo problema de entorno preexistente. Sin prueba dedicada para el cableado de
+  `index.ts` (capa de composición sin lógica propia).
+
 ### Qué no hace todavía
 
-Falta cablear `sendDueReapplications` a `index.ts` (pieza 11), la política de anticipación
-configurable con su pantalla (criterio 3; hoy fija en el valor por defecto del dominio) y la
-integración al disparador del cron (`/api/cron/notifications-reminders` o uno propio) — hoy nadie
-la llama todavía. El plan de piezas está en el PR de cada incremento.
+Falta la política de anticipación configurable con su pantalla (criterio 3; hoy fija en el valor por
+defecto del dominio) y la integración al disparador del cron (`/api/cron/notifications-reminders` o
+uno propio) — hoy nadie llama a `runReapplicationReminderCycle` todavía. El plan de piezas está en
+el PR de cada incremento.
 
 ## Qué no hace todavía
 
