@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "los cuatro criterios completos de punta a punta (piezas 2 a 18, más 19 a 21 de la revisión): dominio, contrato de scheduling, tabla con idempotencia por ciclo, descubrimiento (con tope de 30 días vencidos y un solo aviso por clienta desde la pieza 19), envío con reintentos, la política de anticipación con su pantalla en /admin/citas/re-aplicacion, y el llamador del ciclo en receiveReminderCronRequest (pieza 18, aislado del ciclo de recordatorios). Queda por abortar la corrida si falla leer la anticipación en vez de usar el valor por defecto en silencio (pieza 20) y la limpieza de estilo de la pieza 21. Después de esas tres, solo falta el disparador en producción (Vercel Cron o GitHub Actions) y la cuenta de sistema del cron en producción — checklist de activación externa, no código"
+    falta: "los cuatro criterios completos de punta a punta (piezas 2 a 18, más 19 y 20 de la revisión): dominio, contrato de scheduling, tabla con idempotencia por ciclo, descubrimiento (con tope de 30 días vencidos y un solo aviso por clienta desde la pieza 19), envío con reintentos, la política de anticipación con su pantalla en /admin/citas/re-aplicacion, y el llamador del ciclo en receiveReminderCronRequest (pieza 18, aislado del ciclo de recordatorios, abortando si falla leer la anticipación en vez de usar el valor por defecto en silencio desde la pieza 20). Queda la limpieza de estilo de la pieza 21 (sin cambio de comportamiento). Después de esa, solo falta el disparador en producción (Vercel Cron o GitHub Actions) y la cuenta de sistema del cron en producción — checklist de activación externa, no código"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -600,6 +600,11 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   Pruebas: `http/__tests__/cron-handler.test.ts` (7 casos, nuevo — no existía prueba de este handler
   ni siquiera para `runNotificationsReminderCycle`: sin secreto, secreto equivocado, los dos ciclos
   bien, falla uno y el otro corre igual, falla el otro, excepción inesperada en uno, fallan los dos).
+  **Nota de la revisión:** `runCycle` no normaliza ni reemplaza el error del dominio — `result.error`
+  viaja tal cual al cuerpo de la respuesta (`NotificationsCycleError` es siempre un literal string,
+  así que no hay nada que tapar). Solo la excepción inesperada se colapsa a `'unexpected-error'` en
+  el cuerpo (no en el log, donde sí queda el mensaje real), igual que ya hacía el cron de
+  `delinquency`: no conviene exponerla tal cual en una respuesta HTTP.
 
 - **Pieza 19/21 — corrección de la revisión: tope de 30 días, un solo aviso por clienta** (`domain/reapplication-reminder.ts`,
   `domain/reapplication-message.ts`, `application/discover-reapplication-reminders.ts`,
@@ -622,6 +627,19 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   `domain/__tests__/reapplication-message.test.ts` (+2, texto según venza o no), `application/__tests__/discover-reapplication-reminders.test.ts`
   (+2, vencida hace más de 30 días y una sola de dos técnicas vencidas), `application/__tests__/send-due-reapplications.test.ts`
   (+1, lotes de 100; los dos casos de «sin contacto»/«sin canal» de la pieza 10 se mantienen en verde).
+
+- **Pieza 20/21 — corrección de la revisión: abortar si falla la anticipación, borrar código muerto**
+  (`index.ts`): `buildReapplicationDiscoveryDeps` ahora devuelve `Result<..., RepositoryFailure>` — si
+  no se puede leer la anticipación configurada, la corrida aborta con el error en vez de usar 7 en
+  silencio (antes de esta corrección, un fallo de lectura pasaba inadvertido). `runReapplicationReminderCycle`
+  revisa ese resultado antes de descubrir o mandar nada, y cierra la sesión igual en cualquier caso.
+  `discoverReapplicationReminders` (la pieza 7) se elimina: nadie la llamaba, ni una pantalla ni una
+  prueba — no era checklist de activación, era código sin dueño.
+  Pruebas nuevas: `__tests__/reapplication-cycle.test.ts` (8 casos — `buildReapplicationDiscoveryDeps`:
+  anticipación configurada, aborta si falla leerla, delega `listCandidates`; `runReapplicationReminderCycle`:
+  sin cuenta de sistema, cuenta que no entra, aborta si falla la anticipación sin descubrir ni mandar
+  nada, caso feliz completo, aborta si falla descubrir). No existía ninguna prueba de esta capa de
+  composición hasta esta pieza.
 
 ### Qué no hace todavía
 

@@ -12,8 +12,6 @@ vi.mock('../../index', () => ({
 import { receiveReminderCronRequest } from '../cron-handler'
 
 const SECRET = 'placeholder-secreto-de-prueba'
-// Resúmenes de muestra: la forma exacta la prueban run-reminder-cycle.test.ts y
-// send-due-reapplications.test.ts — aquí solo importa que el handler los pase tal cual.
 const REMINDERS_SUMMARY = { sent: 3 }
 const REAPPLICATIONS_SUMMARY = { sent: 1 }
 
