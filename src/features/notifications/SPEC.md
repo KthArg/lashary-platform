@@ -481,21 +481,25 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   Pruebas: `db/__tests__/reapplication-reminder-repository.test.ts` (6 casos: lectura por lote, forma
   exacta del `upsert` para `sent` y para `failed`, fallos de la base) y el caso nuevo de
   `domain/__tests__/reapplication-reminder.test.ts` para `reapplicationCycleKey`.
-- **Pieza 10/14 — caso de uso de envío** (`application/send-due-reapplications.ts`): a diferencia del
+- **Pieza 10/17 — caso de uso de envío** (`application/send-due-reapplications.ts`): a diferencia del
   recordatorio de 24h, no hay un evento futuro que espere — recibe directo la lista ya descubierta
   (piezas 6-7) y lo que ya está vencido se intenta mandar en el acto, sin un `claimDuePending` previo
   porque no hay nada "pendiente" guardado de antemano. Antes de intentar, por candidata: si ya hay
   una fila `'sent'` para ese ciclo, se salta (`skipped`); si hay una `'failed'` con
   `attempts >= MAX_REMINDER_ATTEMPTS` (reusa la constante de US-NOT-03, mismo tope: 5), también se
   salta — agotada hasta que una nueva cita completada abra un ciclo nuevo; si no hay fila o es
-  `'failed'` con intentos de sobra, intenta: sin contacto o con los dos canales fallando por error
-  real cuenta como intento gastado (`retried` o `exhausted` según el tope); con los dos canales sin
-  configurar es permanente (`exhausted` de una, sin gastar reintentos, igual que
-  `send-due-reminders.ts`). Todavía sin cablear a `index.ts` — siguiente pieza.
+  `'failed'` con intentos de sobra, intenta. Corrección de la revisión (sin contacto o sin ningún
+  canal configurado no son errores de envío, son recuperables sin tocar la base: no escriben fila
+  ni gastan un intento, se saltan (`skipped`) y la siguiente corrida los vuelve a intentar en cuanto
+  haya contacto o canal — a propósito distinto de `send-due-reminders.ts`/M3, que sí los cuenta
+  como intento). Solo un error real de envío (`channelSendFailed`, de uno o los dos canales) cuenta
+  hacia `MAX_REMINDER_ATTEMPTS` (`retried` o `exhausted` según el tope). Todavía sin cablear a
+  `index.ts` — siguiente pieza.
   Pruebas: `application/__tests__/send-due-reapplications.test.ts` (10 casos: primer envío con
   `attempts: 1`, salto si ya está `sent`, salto si está `failed` y agotado, reintento que suma uno a
-  `attempts`, sin contacto, respaldo por correo, los dos canales sin configurar, los dos fallando
-  hasta agotar, fallo al leer los registros).
+  `attempts`, sin contacto se salta sin escribir fila, respaldo por correo, los dos canales sin
+  configurar se saltan sin escribir fila, los dos fallando por error real hasta agotar, fallo al leer
+  los registros).
 ### Qué no hace todavía
 
 Falta cablear `sendDueReapplications` a `index.ts` (pieza 11), la política de anticipación

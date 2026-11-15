@@ -116,13 +116,13 @@ describe('sendDueReapplications', () => {
     expect(sent[0]).toMatchObject({ attempts: 3 })
   })
 
-  it('sin contacto, registra failed sin gastar un intento prematuro hacia exhausted', async () => {
+  it('sin contacto, no escribe fila ni gasta un intento: se salta para reintentar en la próxima corrida', async () => {
     const { deps, failed } = buildDeps({ hasContact: false })
     const result = await sendDueReapplications(deps)([due])
 
     expect(isOk(result)).toBe(true)
-    if (isOk(result)) expect(result.value).toEqual({ sent: 0, retried: 1, exhausted: 0, skipped: 0, errored: 0 })
-    expect(failed[0]).toMatchObject({ attempts: 1, error: 'sin contacto registrado para la clienta' })
+    if (isOk(result)) expect(result.value).toEqual({ sent: 0, retried: 0, exhausted: 0, skipped: 1, errored: 0 })
+    expect(failed).toEqual([])
   })
 
   it('cae al canal de respaldo si el primario falla', async () => {
@@ -134,13 +134,13 @@ describe('sendDueReapplications', () => {
     expect(sent[0]).toMatchObject({ channel: 'email' })
   })
 
-  it('con los dos canales sin configurar, pasa a exhausted sin gastar reintentos (es permanente)', async () => {
+  it('con los dos canales sin configurar, no escribe fila ni gasta un intento: se salta para reintentar en la próxima corrida', async () => {
     const { deps, failed } = buildDeps({ primary: 'not-configured', backup: 'not-configured' })
     const result = await sendDueReapplications(deps)([due])
 
     expect(isOk(result)).toBe(true)
-    if (isOk(result)) expect(result.value).toEqual({ sent: 0, retried: 0, exhausted: 1, skipped: 0, errored: 0 })
-    expect(failed[0]).toMatchObject({ attempts: 1 })
+    if (isOk(result)) expect(result.value).toEqual({ sent: 0, retried: 0, exhausted: 0, skipped: 1, errored: 0 })
+    expect(failed).toEqual([])
   })
 
   it('con los dos canales fallando por error real, reintenta hasta agotar MAX_REMINDER_ATTEMPTS', async () => {
