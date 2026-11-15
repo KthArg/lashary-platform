@@ -75,8 +75,6 @@ export interface ReapplicationSettingsRepository {
 }
 
 export interface ReapplicationReminderRepository {
-  // Clave de ciclo: `${clientId}:${techniqueId}:${lastCompletedAt.toISOString()}` — una sola
-  // consulta por lote de clientas (PERF-005), no una por candidata.
   listRecords(clientIds: readonly string[]): Promise<Result<ReadonlyMap<string, ReapplicationReminderRecord>, RepositoryFailure>>
   recordSent(input: ReapplicationReminderOutcomeInput & { channel: ReminderChannelKind; sentAt: Date }): Promise<Result<void, RepositoryFailure>>
   recordFailed(input: ReapplicationReminderOutcomeInput & { error: string; failedAt: Date }): Promise<Result<void, RepositoryFailure>>

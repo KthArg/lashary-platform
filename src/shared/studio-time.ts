@@ -39,7 +39,6 @@ export function studioDateOf(instant: Date): string {
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
-// Calcula el desfase de la zona en ese instante; no asume uno fijo
 export function studioLocalToUtc(date: string, minuteOfDay: number): Date {
   const [year, month, day] = date.split('-').map(Number)
   const asIfUtc = Date.UTC(year, month - 1, day, 0, minuteOfDay)
@@ -86,8 +85,6 @@ const studioDateFormatter = new Intl.DateTimeFormat('es-CR', {
   year: 'numeric',
 })
 
-// Para fechas sin una hora que importe (ej. la fecha estimada de re-aplicación, US-NOT-05): evita
-// mostrar una hora heredada del cálculo que no significa nada para la clienta.
 export function formatStudioDate(instant: Date): string {
   return studioDateFormatter.format(instant)
 }
