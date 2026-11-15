@@ -14,7 +14,6 @@ import type {
 } from './ports'
 
 const REAPPLICATION_PURPOSE: MessagePurpose = 'reapplication_reminder'
-const NO_CONTACT_ERROR = 'sin contacto registrado para la clienta'
 
 export type SendDueReapplicationsDeps = {
   listRecords: ReapplicationReminderRepository['listRecords']
@@ -28,7 +27,7 @@ export type SendDueReapplicationsDeps = {
 
 export type SendDueReapplicationsSummary = { sent: number; retried: number; exhausted: number; skipped: number; errored: number }
 
-type SendOutcome = 'sent' | 'retried' | 'exhausted' | 'errored'
+type SendOutcome = 'sent' | 'retried' | 'exhausted' | 'errored' | 'skipped'
 
 const sendOne = async (
   deps: SendDueReapplicationsDeps,
@@ -46,13 +45,17 @@ const sendOne = async (
     attempts: nextAttempts,
   }
 
-  const registerFailure = async (error: string, isPermanent: boolean): Promise<SendOutcome> => {
+  // Reservado para errores reales de envío (channelSendFailed): esos sí cuentan hacia
+  // MAX_REMINDER_ATTEMPTS. Sin contacto o sin ningún canal configurado son recuperables sin tocar
+  // la base — basta con reintentar en la próxima corrida, así que no gastan un intento (ver
+  // 'skipped' más abajo).
+  const registerFailure = async (error: string): Promise<SendOutcome> => {
     const recorded = await deps.recordFailed({ ...base, error, failedAt: now })
     if (isErr(recorded)) {
       console.error(`[notifications] no se pudo registrar el fallo de re-aplicación de ${due.clientId}/${due.techniqueId}: ${recorded.error}`)
       return 'errored'
     }
-    return isPermanent || nextAttempts >= MAX_REMINDER_ATTEMPTS ? 'exhausted' : 'retried'
+    return nextAttempts >= MAX_REMINDER_ATTEMPTS ? 'exhausted' : 'retried'
   }
 
   const contact = await deps.getContact(due.clientId)
@@ -60,7 +63,7 @@ const sendOne = async (
     console.error(`[notifications] no se pudo leer el contacto de ${due.clientId} para la re-aplicación: ${contact.error}`)
     return 'errored'
   }
-  if (contact.value === null) return registerFailure(NO_CONTACT_ERROR, false)
+  if (contact.value === null) return 'skipped'
 
   const message = buildReapplicationMessage(due)
   const templateVariables = buildReapplicationTemplateVariables(due)
@@ -91,8 +94,9 @@ const sendOne = async (
     return 'sent'
   }
 
-  const bothChannelsUnconfigured = isChannelNotConfigured(primary.error) && isChannelNotConfigured(backup.error)
-  return registerFailure(`${primary.error.message}; ${backup.error.message}`, bothChannelsUnconfigured)
+  if (isChannelNotConfigured(primary.error) && isChannelNotConfigured(backup.error)) return 'skipped'
+
+  return registerFailure(`${primary.error.message}; ${backup.error.message}`)
 }
 
 export const sendDueReapplications =
