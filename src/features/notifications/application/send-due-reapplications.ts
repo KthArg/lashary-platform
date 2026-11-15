@@ -1,5 +1,6 @@
 import { ok, isErr, isOk, type Result } from '@/shared/result'
 import type { Clock } from '@/shared/clock'
+import { logError } from '@/shared/logger'
 import { MAX_REMINDER_ATTEMPTS } from '../domain/reminder'
 import { reapplicationCycleKey } from '../domain/reapplication-reminder'
 import { buildReapplicationMessage, buildReapplicationTemplateVariables } from '../domain/reapplication-message'
@@ -9,11 +10,13 @@ import type {
   DueReapplicationReminder,
   MessagePurpose,
   NotificationChannel,
+  ReapplicationReminderRecord,
   ReapplicationReminderRepository,
   RepositoryFailure,
 } from './ports'
 
 const REAPPLICATION_PURPOSE: MessagePurpose = 'reapplication_reminder'
+const LIST_RECORDS_BATCH_SIZE = 100
 
 export type SendDueReapplicationsDeps = {
   listRecords: ReapplicationReminderRepository['listRecords']
@@ -28,6 +31,25 @@ export type SendDueReapplicationsDeps = {
 export type SendDueReapplicationsSummary = { sent: number; retried: number; exhausted: number; skipped: number; errored: number }
 
 type SendOutcome = 'sent' | 'retried' | 'exhausted' | 'errored' | 'skipped'
+
+function chunk<T>(items: readonly T[], size: number): T[][] {
+  const batches: T[][] = []
+  for (let i = 0; i < items.length; i += size) batches.push(items.slice(i, i + size))
+  return batches
+}
+
+async function listRecordsInBatches(
+  listRecords: ReapplicationReminderRepository['listRecords'],
+  clientIds: readonly string[],
+): Promise<Result<ReadonlyMap<string, ReapplicationReminderRecord>, RepositoryFailure>> {
+  const merged = new Map<string, ReapplicationReminderRecord>()
+  for (const batch of chunk(clientIds, LIST_RECORDS_BATCH_SIZE)) {
+    const result = await listRecords(batch)
+    if (isErr(result)) return result
+    for (const [key, record] of result.value) merged.set(key, record)
+  }
+  return ok(merged)
+}
 
 const sendOne = async (
   deps: SendDueReapplicationsDeps,
@@ -45,14 +67,10 @@ const sendOne = async (
     attempts: nextAttempts,
   }
 
-  // Reservado para errores reales de envío (channelSendFailed): esos sí cuentan hacia
-  // MAX_REMINDER_ATTEMPTS. Sin contacto o sin ningún canal configurado son recuperables sin tocar
-  // la base — basta con reintentar en la próxima corrida, así que no gastan un intento (ver
-  // 'skipped' más abajo).
   const registerFailure = async (error: string): Promise<SendOutcome> => {
     const recorded = await deps.recordFailed({ ...base, error, failedAt: now })
     if (isErr(recorded)) {
-      console.error(`[notifications] no se pudo registrar el fallo de re-aplicación de ${due.clientId}/${due.techniqueId}: ${recorded.error}`)
+      logError('notifications', `no se pudo registrar el fallo de re-aplicación de ${due.clientId}/${due.techniqueId}`, recorded.error)
       return 'errored'
     }
     return nextAttempts >= MAX_REMINDER_ATTEMPTS ? 'exhausted' : 'retried'
@@ -60,43 +78,32 @@ const sendOne = async (
 
   const contact = await deps.getContact(due.clientId)
   if (isErr(contact)) {
-    console.error(`[notifications] no se pudo leer el contacto de ${due.clientId} para la re-aplicación: ${contact.error}`)
+    logError('notifications', `no se pudo leer el contacto de ${due.clientId} para la re-aplicación`, contact.error)
     return 'errored'
   }
   if (contact.value === null) return 'skipped'
 
-  const message = buildReapplicationMessage(due)
-  const templateVariables = buildReapplicationTemplateVariables(due)
+  const message = buildReapplicationMessage({ ...due, now })
+  const templateVariables = buildReapplicationTemplateVariables({ ...due, now })
+  const messageId = reapplicationCycleKey(due.clientId, due.techniqueId, due.lastCompletedAt)
 
-  const primary = await deps.primaryChannel.send({
-    messageId: reapplicationCycleKey(due.clientId, due.techniqueId, due.lastCompletedAt),
-    purpose: REAPPLICATION_PURPOSE,
-    contact: contact.value,
-    message,
-    templateVariables,
-  })
-  if (isOk(primary)) {
-    const recorded = await deps.recordSent({ ...base, channel: deps.primaryChannel.kind, sentAt: now })
-    if (isErr(recorded)) { console.error(`[notifications] se mandó la re-aplicación de ${due.clientId}/${due.techniqueId} pero no se pudo registrar: ${recorded.error}`); return 'errored' }
-    return 'sent'
+  const sendErrors: string[] = []
+  for (const channel of [deps.primaryChannel, deps.backupChannel]) {
+    const sent = await channel.send({ messageId, purpose: REAPPLICATION_PURPOSE, contact: contact.value, message, templateVariables })
+    if (isOk(sent)) {
+      const recorded = await deps.recordSent({ ...base, channel: channel.kind, sentAt: now })
+      if (isErr(recorded)) {
+        logError('notifications', `se mandó la re-aplicación de ${due.clientId}/${due.techniqueId} pero no se pudo registrar`, recorded.error)
+        return 'errored'
+      }
+      return 'sent'
+    }
+    if (!isChannelNotConfigured(sent.error)) sendErrors.push(sent.error.message)
   }
 
-  const backup = await deps.backupChannel.send({
-    messageId: reapplicationCycleKey(due.clientId, due.techniqueId, due.lastCompletedAt),
-    purpose: REAPPLICATION_PURPOSE,
-    contact: contact.value,
-    message,
-    templateVariables,
-  })
-  if (isOk(backup)) {
-    const recorded = await deps.recordSent({ ...base, channel: deps.backupChannel.kind, sentAt: now })
-    if (isErr(recorded)) { console.error(`[notifications] se mandó la re-aplicación de ${due.clientId}/${due.techniqueId} pero no se pudo registrar: ${recorded.error}`); return 'errored' }
-    return 'sent'
-  }
+  if (sendErrors.length === 0) return 'skipped'
 
-  if (isChannelNotConfigured(primary.error) && isChannelNotConfigured(backup.error)) return 'skipped'
-
-  return registerFailure(`${primary.error.message}; ${backup.error.message}`)
+  return registerFailure(sendErrors.join('; '))
 }
 
 export const sendDueReapplications =
@@ -107,7 +114,7 @@ export const sendDueReapplications =
     if (due.length === 0) return ok(summary)
 
     const clientIds = [...new Set(due.map((reminder) => reminder.clientId))]
-    const records = await deps.listRecords(clientIds)
+    const records = await listRecordsInBatches(deps.listRecords, clientIds)
     if (isErr(records)) return records
 
     for (const candidate of due) {

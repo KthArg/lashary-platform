@@ -1,5 +1,5 @@
 import { isErr, ok, type Result } from '@/shared/result'
-import { computeReapplicationDueDate, isReapplicationDue } from '../domain/reapplication-reminder'
+import { computeReapplicationDueDate, isReapplicationDue, isReapplicationExpired } from '../domain/reapplication-reminder'
 import type {
   DelinquencyStatesPort,
   DueReapplicationReminder,
@@ -16,9 +16,18 @@ export type DiscoverDueReapplicationsDeps = {
   now: Date
 }
 
-// Criterio 4 (DOM-012): solo la morosidad 'active' bloquea el aviso — 'pending_review' todavía no
-// tiene ninguna consecuencia (docs/contracts/delinquency-api.md).
 const BLOCKING_DELINQUENCY_STATE = 'active'
+
+function oldestPerClient(candidates: readonly DueReapplicationReminder[]): DueReapplicationReminder[] {
+  const oldest = new Map<string, DueReapplicationReminder>()
+  for (const candidate of candidates) {
+    const current = oldest.get(candidate.clientId)
+    if (current === undefined || candidate.dueAt.getTime() < current.dueAt.getTime()) {
+      oldest.set(candidate.clientId, candidate)
+    }
+  }
+  return [...oldest.values()]
+}
 
 export async function discoverDueReapplications(
   deps: DiscoverDueReapplicationsDeps,
@@ -45,6 +54,7 @@ export async function discoverDueReapplications(
 
     const dueAt = computeReapplicationDueDate(candidate.lastCompletedAt, technique.intervalDays)
     if (!isReapplicationDue(dueAt, deps.anticipationDays, deps.now)) continue
+    if (isReapplicationExpired(dueAt, deps.now)) continue
 
     due.push({
       clientId: candidate.clientId,
@@ -55,5 +65,5 @@ export async function discoverDueReapplications(
     })
   }
 
-  return ok(due)
+  return ok(oldestPerClient(due))
 }
