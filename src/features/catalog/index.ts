@@ -45,9 +45,6 @@ export async function listPromotions(query?: ListPromotionsQuery) {
   return listPromotionsUseCase(await promotionRepository())(systemClock())(query)
 }
 
-// Criterios 2 (landing / flujo de agendamiento) y 3 (una promoción vencida deja de aplicarse
-// automáticamente): el reloj se inyecta aquí, en el borde — nunca dentro de domain/application
-// (DOM-004).
 export async function listActivePromotions(query?: ListPromotionsQuery) {
   return listActivePromotionsUseCase(await promotionRepository())(systemClock())(query)
 }
