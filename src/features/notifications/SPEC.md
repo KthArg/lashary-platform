@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "los cuatro criterios completos de punta a punta (piezas 2 a 17): dominio, contrato de scheduling, tabla con idempotencia por ciclo, descubrimiento, envío con reintentos, y la política de anticipación con su pantalla en /admin/citas/re-aplicacion. Solo falta integrar runReapplicationReminderCycle al disparador del cron — checklist de activación para producción (mismo criterio que cerró US-NOT-03/07/08 como terminada), no deuda de la historia ni código pendiente"
+    falta: "los cuatro criterios completos de punta a punta (piezas 2 a 18): dominio, contrato de scheduling, tabla con idempotencia por ciclo, descubrimiento, envío con reintentos (corregido en la pieza 10/17 y de nuevo tras la revisión: sin contacto o sin canal configurado ya no gastan reintentos), la política de anticipación con su pantalla en /admin/citas/re-aplicacion, y el llamador del ciclo en receiveReminderCronRequest (pieza 18/18, aislado del ciclo de recordatorios). Solo falta el disparador en producción (Vercel Cron o GitHub Actions) y la cuenta de sistema del cron en producción — checklist de activación externa, no código"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -578,17 +578,34 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   Next.js para una excepción real, distinto del estado `'error'` manejado de la vista) siguen el
   mismo patrón que `/admin/citas/confirmacion`. `CitasTabs` gana la pestaña «Re-aplicación»
   (`CITAS_SECTION.tabs.reapplication`, `CITAS_ROUTES.reapplication`). Con esto el criterio 3 de
-  US-NOT-05 queda visible para la administradora: los cuatro criterios de la historia están
-  completos de punta a punta.
+  US-NOT-05 queda visible para la administradora.
   Pruebas: `layout.test.tsx` de `/admin/citas` extendido con la pestaña nueva. `npx tsc --noEmit`
   sin errores; 274 pruebas en verde entre `src/app/admin/citas` y `src/features/notifications`, el
   resto saltado por el mismo problema de entorno preexistente.
+- **Corrección de la revisión (2026-11-15):** esta sección decía que conectar
+  `runReapplicationReminderCycle` al disparador del cron era checklist de activación, igual que la
+  plantilla de WhatsApp o el dominio de Resend de US-NOT-03/07/08. El reviewer lo marcó mal: esas
+  son configuración externa; cablear el handler que ya existe en el repo es código, y sin ese
+  cableado el criterio 2 (se manda el aviso cerca de la fecha) no se cumplía en ningún entorno real.
+  Corregido en la pieza 18/18.
+- **Pieza 18/18 — llamador del ciclo** (`http/cron-handler.ts`): `receiveReminderCronRequest` corre
+  `runNotificationsReminderCycle` y `runReapplicationReminderCycle` en paralelo (`Promise.all`), cada
+  uno con su propio `try/catch` (`runCycle`) para que un error o una excepción de uno no tumbe al
+  otro — la respuesta siempre trae los dos resúmenes, bajo `reminders` y `reapplications`. El estado
+  HTTP es 200 solo si los dos salieron bien; 503 si cualquiera falló (error del dominio o excepción
+  inesperada, igual que antes). Con esto los cuatro criterios de US-NOT-05 están completos de punta
+  a punta, incluido el que faltaba.
+  Pruebas: `http/__tests__/cron-handler.test.ts` (7 casos, nuevo — no existía prueba de este handler
+  ni siquiera para `runNotificationsReminderCycle`: sin secreto, secreto equivocado, los dos ciclos
+  bien, falla uno y el otro corre igual, falla el otro, excepción inesperada en uno, fallan los dos).
 
 ### Qué no hace todavía
 
-Falta la integración al disparador del cron (`/api/cron/notifications-reminders` o uno propio) —
-hoy nadie llama a `runReapplicationReminderCycle` todavía. Es checklist de activación para
-producción, no deuda de la historia (mismo criterio que cerró US-NOT-03/07/08).
+Falta el disparador en producción (Vercel Cron o GitHub Actions llamando a
+`/api/cron/notifications-reminders` con el `CRON_SECRET` real) y la cuenta de sistema del cron en
+producción — eso sí es checklist de activación externa, no código (mismo criterio que cerró
+US-NOT-03/07/08). También falta lo ya señalado para el canal compartido: plantilla de WhatsApp
+aprobada por Meta, número de WhatsApp Business real y dominio verificado en Resend.
 
 ## Qué no hace todavía
 
