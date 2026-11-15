@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { ok, err, isErr, type Result } from '@/shared/result'
 import { systemClock } from '@/shared/clock'
+import { logError } from '@/shared/logger'
 import { createSystemClient, closeSystemClient, readSystemClientConfigFromEnv, type SystemClientFailure } from '@/shared/lib/supabase/system'
 import {
   listSchedulingAppointmentsForReminders,
@@ -23,11 +24,9 @@ import { discoverDueReapplications, type DiscoverDueReapplicationsDeps } from '.
 import { sendDueReapplications, type SendDueReapplicationsSummary } from './application/send-due-reapplications'
 import { buildAppointmentsUrl } from './domain/appointments-url'
 import { sendConfirmationRequests, type SendConfirmationRequestsSummary } from './application/send-confirmation-requests'
-import { REAPPLICATION_ANTICIPATION_DAYS_DEFAULT } from './domain/reapplication-reminder'
 import type {
   AppointmentSnapshot,
   ContactInfo,
-  DueReapplicationReminder,
   RepositoryFailure,
   TechniqueReapplicationInfo,
 } from './application/ports'
@@ -35,8 +34,6 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { metaWhatsAppChannel, readMetaWhatsAppConfigFromEnv } from './channels/meta-whatsapp-channel'
 import { resendEmailChannel, readResendEmailConfigFromEnv } from './channels/resend-email-channel'
 
-// Tope de una sola página: el catálogo de técnicas es chico y acotado (boutique de una persona),
-// no necesita paginar para este cálculo (PERF-005, una sola consulta).
 const CATALOG_TECHNIQUES_PAGE_SIZE = 100
 
 const REPOSITORY_FAILURE: RepositoryFailure = 'repository-failed'
@@ -94,7 +91,7 @@ export async function runNotificationsReminderCycle(): Promise<
           clock: systemClock,
         })
       : async (): Promise<Result<SendConfirmationRequestsSummary, RepositoryFailure>> => {
-          console.error('[notifications] NEXT_PUBLIC_SITE_URL no es una URL absoluta: no se mandan confirmaciones sin enlace')
+          logError('notifications', 'NEXT_PUBLIC_SITE_URL no es una URL absoluta: no se mandan confirmaciones sin enlace')
           return err(REPOSITORY_FAILURE)
         }
 
@@ -127,18 +124,12 @@ export async function runNotificationsReminderCycle(): Promise<
   }
 }
 
-// Compartido por discoverReapplicationReminders y runReapplicationReminderCycle: las tres lecturas
-// (scheduling, catalog, delinquency) por el mismo cliente de sistema, más la anticipación
-// configurada (criterio 3); si no se puede leer, sigue con el valor por defecto del dominio en vez
-// de frenar toda la corrida.
-async function buildReapplicationDiscoveryDeps(db: SupabaseClient): Promise<DiscoverDueReapplicationsDeps> {
+export async function buildReapplicationDiscoveryDeps(db: SupabaseClient): Promise<Result<DiscoverDueReapplicationsDeps, RepositoryFailure>> {
   const anticipationDaysResult = await reapplicationSettingsRepository(db).anticipationDays()
   if (isErr(anticipationDaysResult)) {
-    console.error(
-      `[notifications] no se pudo leer la anticipación configurada, se usa el valor por defecto (${REAPPLICATION_ANTICIPATION_DAYS_DEFAULT}): ${anticipationDaysResult.error}`,
-    )
+    logError('notifications', 'no se pudo leer la anticipación configurada, se aborta la corrida', anticipationDaysResult.error)
+    return err(REPOSITORY_FAILURE)
   }
-  const anticipationDays = isErr(anticipationDaysResult) ? REAPPLICATION_ANTICIPATION_DAYS_DEFAULT : anticipationDaysResult.value
 
   const listCandidates = async () => {
     const result = await listSchedulingReapplicationCandidates(db)
@@ -160,39 +151,15 @@ async function buildReapplicationDiscoveryDeps(db: SupabaseClient): Promise<Disc
     }
   }
 
-  return {
+  return ok({
     listCandidates,
     listTechniquesWithInterval,
     statesFor: delinquencyStatesGateway(db).statesFor,
-    anticipationDays,
+    anticipationDays: anticipationDaysResult.value,
     now: systemClock(),
-  }
+  })
 }
 
-// Solo descubre quién ya debería recibir el aviso de re-aplicación (criterios 1 a 4 de US-NOT-05):
-// no escribe en notifications_reapplication_reminders ni envía nada. Sirve para inspección (por
-// ejemplo, una corrida en seco); el envío real es runReapplicationReminderCycle.
-export async function discoverReapplicationReminders(): Promise<
-  Result<DueReapplicationReminder[], NotificationsCycleError>
-> {
-  const systemConfig = readSystemClientConfigFromEnv(process.env)
-  if (systemConfig === null) return err('system-client-not-configured')
-
-  const clientResult = await createSystemClient(systemConfig)
-  if (isErr(clientResult)) return clientResult
-  const db = clientResult.value
-
-  try {
-    return await discoverDueReapplications(await buildReapplicationDiscoveryDeps(db))
-  } finally {
-    await closeSystemClient(db)
-  }
-}
-
-// Descubre y manda de una vez, en la misma corrida (criterios 1 a 4 completos de US-NOT-05): a
-// diferencia del recordatorio de 24h, no hay un evento futuro que espere — lo que está vencido se
-// intenta en el acto. Registra cada intento en notifications_reapplication_reminders (pieza 5/12),
-// una vez por ciclo, con reintentos entre corridas hasta MAX_REMINDER_ATTEMPTS.
 export async function runReapplicationReminderCycle(): Promise<
   Result<SendDueReapplicationsSummary, NotificationsCycleError>
 > {
@@ -204,7 +171,10 @@ export async function runReapplicationReminderCycle(): Promise<
   const db = clientResult.value
 
   try {
-    const due = await discoverDueReapplications(await buildReapplicationDiscoveryDeps(db))
+    const depsResult = await buildReapplicationDiscoveryDeps(db)
+    if (isErr(depsResult)) return depsResult
+
+    const due = await discoverDueReapplications(depsResult.value)
     if (isErr(due)) return due
 
     const repo = await reapplicationReminderRepository(db)

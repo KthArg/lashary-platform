@@ -1,22 +1,20 @@
 import { isErr, type Result } from '@/shared/result'
 import { isAuthorizedCronRequest } from '@/shared/lib/cron-auth'
+import { logError } from '@/shared/logger'
 import { runNotificationsReminderCycle, runReapplicationReminderCycle, type NotificationsCycleError } from '../index'
 
 type CycleReport = { ok: boolean; body: unknown }
 
-// Aísla cada ciclo: si uno lanza una excepción o devuelve un error, el otro corre igual y la
-// respuesta trae ambos resúmenes (criterio 2 de US-NOT-05 — alguien tiene que llamar al ciclo).
 async function runCycle<T>(label: string, run: () => Promise<Result<T, NotificationsCycleError>>): Promise<CycleReport> {
   try {
     const result = await run()
     if (isErr(result)) {
-      const error = typeof result.error === 'string' ? result.error : 'repository-failed'
-      console.error(`[notifications] corrida de ${label} falló: ${error}`)
-      return { ok: false, body: { error } }
+      logError('notifications', `corrida de ${label} falló`, result.error)
+      return { ok: false, body: { error: result.error } }
     }
     return { ok: true, body: result.value }
   } catch (cause) {
-    console.error(`[notifications] corrida de ${label} falló con una excepción inesperada:`, cause)
+    logError('notifications', `corrida de ${label} falló con una excepción inesperada`, cause instanceof Error ? cause.message : String(cause))
     return { ok: false, body: { error: 'unexpected-error' } }
   }
 }
