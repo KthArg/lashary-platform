@@ -49,9 +49,6 @@ deuda:
   - que: "Reseña externa (INT-005) de las 13 funciones SECURITY DEFINER de la pila de US-NOT-02, y dry_run de supabase-migrate con respaldo antes de aplicar las 10 migraciones (20261103000000 a 20261107000002; cinco anteriores a la última de main, dependen de --include-all)"
     aceptada_en: "Decisión de Kenny del 2026-11-06 al cerrar US-NOT-02 como terminada; el dry_run lo corre un admin"
     costo: "2h: reseña externa y corrida del dry_run"
-  - que: "Visto bueno escrito del PO sobre dejar sin efecto el ítem 3 de «Criterios diferidos» de docs/process/DEPENDENCIES.md (las indicaciones de US-CLI-06 van en «Mis citas», no en la vista de cuenta)"
-    aceptada_en: "Decisión de José Loría del 2026-11-13 al planear US-CLI-06"
-    costo: "0.5h: dejarlo escrito con fecha en DEPENDENCIES.md"
   - que: "US-CLI-06: si notifications_record_aftercare falla al cerrar la cita, la cita queda cerrada sin indicaciones (aftercare_recorded false y scheduling.aftercare.failed en la bitácora) y no hay forma de registrarlas ni de reenviar después; tampoco se puede reintentar a mano una indicación en estado failed (M2 y B9 de la auditoría del 2026-11-15)"
     aceptada_en: "Decisión de José Loría del 2026-11-15 al corregir la auditoría de US-CLI-06: el caso es raro (aftercare_text es NOT NULL) y deja rastro en la bitácora"
     costo: "6h: función SECURITY DEFINER para el personal que registre o reencole las indicaciones de una cita completed, botón en el expediente, pgTAP y pruebas de la pantalla"
@@ -289,14 +286,15 @@ Decisiones:
   `dropped*`) sin quitar campos de ninguno; si quedan avisos perdidos abiertos, lo escribe con `logError`, y un fallo en
   uno de esos bloques no corta el ciclo: lo cuenta en `noticesFailed`, `confirmationsFailed` o `droppedFailed`. Pruebas:
   `application/__tests__/send-client-notices.test.ts` y `run-reminder-cycle.test.ts` (el orden y que un fallo no corta).
-- Tiempo del ciclo: el TTL del reclamo (`CLAIM_TTL_MINUTES`, 10), la tanda (`CLAIM_BATCH_SIZE`, 3) y la duración
+- Tiempo del ciclo: el TTL del reclamo (`CLAIM_TTL_MINUTES`, 10), la tanda (`CLAIM_BATCH_SIZE`, 2) y la duración
   de la ruta (`maxDuration` igual a `CYCLE_MAX_DURATION_SECONDS`, 300) van atados en `db/claim-limits.ts`, y los
   repositorios que reclaman mensajes (recordatorios, avisos a la clienta, confirmaciones e indicaciones de cuidado)
   importan de ahí la misma tanda y el mismo TTL. El ciclo corre un envío en serie por cada tipo de `MESSAGE_PURPOSES`
-  (`application/ports.ts`): `MESSAGE_KINDS_SENT_PER_CYCLE` sale de su largo, hoy 4, y la tanda se calcula con uno más de
-  margen. Cada mensaje puede gastar dos canales a `CHANNEL_SEND_TIMEOUT_MS` (10 s): con 4 tipos el peor caso es
-  3 × 4 × 20 s = 240 s y sobran 60 s para vencer, reintentar, descubrir y reconciliar. Agregar un tipo a
-  `MESSAGE_PURPOSES` recalcula la tanda sola (con 5, baja a 2). Corrección M1 de la auditoría del 2026-11-15. Prueba:
+  (`application/ports.ts`): `MESSAGE_KINDS_SENT_PER_CYCLE` sale de su largo, hoy 5 (incluye `reapplication_reminder`: su lote no usa
+  `CLAIM_BATCH_SIZE`, pero se cuenta para reservarle tiempo dentro de los mismos 300 s), y la tanda se calcula con uno más de
+  margen. Cada mensaje puede gastar dos canales a `CHANNEL_SEND_TIMEOUT_MS` (10 s): con 5 tipos y tanda 2 el peor caso es
+  2 × 5 × 20 s = 200 s y sobran 100 s para vencer, reintentar, descubrir y reconciliar. Agregar un tipo a
+  `MESSAGE_PURPOSES` recalcula la tanda sola. Corrección M1 de la auditoría del 2026-11-15. Prueba:
   `db/__tests__/claim-limits.test.ts`, que lee el `maxDuration` de la ruta y comprueba el peor caso con todos los tipos
   y su margen.
 - Las filas se validan con Zod; una forma inesperada es un error que no guarda el texto de Postgres. Los fallos
@@ -442,7 +440,7 @@ y [scheduling-api.md](../../../docs/contracts/scheduling-api.md#indicaciones-de-
 
 **Hecho** (pieza 9/9, 2026-11-13): «Indicaciones enviadas» en la pestaña Expediente (`ui/client-record-aftercare/`, `ClientRecordAftercare` y `loadClientAftercareForAdmin`), compuesta por `src/app/admin/clients/[id]/expediente/page.tsx` debajo de `RecordView` sin cambios en `clients`. `listForClient` (`db/client-record-aftercare-repository.ts`) filtra por `client_id` porque la administradora elige la clienta por la URL, después de que `loadClientRecordAftercare` valida el uuid; `deliveryStateOf` resume `status` y `last_channel` en el estado del envío. La lectura no se audita: no es el expediente versionado (SEC-006). Pruebas en la evidencia del frontmatter.
 
-**Cierre (2026-11-13).** Los cuatro criterios quedan demostrados con prueba (evidencia en el frontmatter). Lo que falta es de proceso y de configuración, no de código: el visto bueno del PO sobre el ítem 3 de «Criterios diferidos» (deuda registrada), las capturas de las piezas 7/9 a 9/9 y la plantilla de «Antes de producción», punto 8, sin la cual el envío por WhatsApp no sale (el correo y «Mis citas» no dependen de ella).
+**Cierre (2026-11-13).** Los cuatro criterios quedan demostrados con prueba (evidencia en el frontmatter). Lo que falta es de proceso y de configuración, no de código: la captura de «Tus cuidados» (pieza 8/10, se toma tras el merge, cuando CI aplique las migraciones a `lashary-pruebas`) y la plantilla de «Antes de producción», punto 8, sin la cual el envío por WhatsApp no sale (el correo y «Mis citas» no dependen de ella).
 
 ## US-NOT-05: recordatorio de re-aplicación de tratamiento
 
@@ -1062,4 +1060,4 @@ en el frontmatter de esta historia).
     de entrega.
   - M3: el WhatsApp con plantilla lleva ahora el texto de cuidados y la nota aplanados en una línea
     (`buildAftercareTemplateVariables`, opción C), en vez de solo el servicio y el enlace. Es provisional: si al
-    probar con Meta no sirve, se pasa a la opción B (mandar siempre también el correo). Falta el visto bueno del PO.
+    probar con Meta no sirve, se pasa a la opción B (mandar siempre también el correo). Visto bueno del PO (Kenny) a la opción C y al ítem 3 de «Criterios diferidos»: 2026-11-15, por mensaje.

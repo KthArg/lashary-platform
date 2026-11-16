@@ -169,9 +169,15 @@ export interface AftercareDeliveryRepository {
   markExhausted(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
 }
 
-export const MESSAGE_PURPOSES = ['reminder', 'appointment_confirmation', 'reschedule_outcome', 'aftercare'] as const
+export const MESSAGE_PURPOSES = [
+  'reminder',
+  'appointment_confirmation',
+  'reschedule_outcome',
+  'aftercare',
+  'reapplication_reminder',
+] as const
 
-export type MessagePurpose = (typeof MESSAGE_PURPOSES)[number] | 'reapplication_reminder'
+export type MessagePurpose = (typeof MESSAGE_PURPOSES)[number]
 
 export type ChannelSendInput = {
   messageId: string
