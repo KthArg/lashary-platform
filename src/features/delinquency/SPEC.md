@@ -309,7 +309,7 @@ transacción (ARCH-005). `delinquency_list_active_cases` da el detalle por caso 
 (US-MOR-01) no tiene, al agregar por clienta. pgTAP `delinquency_lift_and_forgive_case.test.sql` (17 casos) y
 `delinquency_list_active_cases.test.sql` (6 casos).
 
-### Pieza 4 — dominio y aplicación TS
+### Pieza 4a — dominio y aplicación TS
 
 `domain/delinquency-case.ts` (estados nuevos, `exceptionReason`/`exceptionAmount` en `DelinquencyCase`),
 `domain/active-case.ts` (`ActiveCaseItem`, por caso, distinto del `ActiveClient` agregado por clienta de
@@ -318,8 +318,15 @@ US-MOR-01), `domain/errors.ts` (`caseNotActive`, `invalidForgiveAmount`, `invali
 mismo patrón que `decide-case.ts`); `application/load-review.ts` cambia su sección `active` de agregada por
 clienta a por caso (`listActiveCases`), para que la pantalla pueda actuar sobre una morosidad puntual —
 `listActiveClients`/`ActiveClient` quedan sin consumidor en la UI (deuda registrada abajo, no se borra el código
-de US-MOR-01 sin una decisión aparte). `db/case-repository.ts` (`lift`/`forgive`, traducción de `P0002`/`55001`/
-`22004`/`22023`) y `db/case-list-repository.ts` (`listActiveCases`). Pruebas: `application/__tests__/lift-
-case.test.ts`, `forgive-case.test.ts`, `load-review.test.ts` actualizado, `db/__tests__/case-repository.test.ts`
-y `case-list-repository.test.ts` actualizados. `npx tsc --noEmit` sin errores en todo el repo; `npx vitest run
-src/features/delinquency`: 99/99. Todavía sin UI: la pantalla sigue en pieza siguiente.
+de US-MOR-01 sin una decisión aparte).
+
+### Pieza 4b — repositorios `db/`
+
+`db/case-row.ts` agrega `exception_reason`/`exception_amount` a `CASE_COLUMNS` y al mapeo. `db/case-
+repository.ts` agrega `lift`/`forgive` (RPC a `delinquency_lift_case`/`delinquency_forgive_case`, traducción de
+`P0002`→no existe, `55001`→no está active, `22004`→motivo inválido, `22023`→monto inválido). `db/case-list-
+repository.ts` agrega `listActiveCases` (RPC a `delinquency_list_active_cases`). Pruebas:
+`application/__tests__/lift-case.test.ts`, `forgive-case.test.ts`, `load-review.test.ts` actualizado,
+`db/__tests__/case-repository.test.ts` y `case-list-repository.test.ts` actualizados. `npx tsc --noEmit` sin
+errores en todo el repo; `npx vitest run src/features/delinquency`: 99/99. Todavía sin UI: la pantalla sigue en
+pieza siguiente.
