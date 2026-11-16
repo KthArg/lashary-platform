@@ -3,9 +3,6 @@ import { z } from 'zod'
 import { ok, err } from '@/shared/result'
 import type { DelinquencyState, DelinquencyStatesPort } from '../application/ports'
 
-// Función del contrato de `delinquency` (docs/contracts/delinquency-api.md): la morosidad no se lee
-// por su tabla (ARCH-005). Mismo gateway que ya usa `clients` (db/delinquency-states-gateway.ts),
-// repetido aquí porque cada feature consume el contrato por su propio puerto (ARCH-004).
 export const DELINQUENCY_STATES_FUNCTION = 'delinquency_client_states'
 
 const stateRowSchema = z.object({

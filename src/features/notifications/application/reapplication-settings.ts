@@ -7,7 +7,6 @@ export const loadAnticipationDays =
   (repository: ReapplicationSettingsRepository) => (): Promise<Result<number, RepositoryFailure>> =>
     repository.anticipationDays()
 
-// Un valor fuera de rango ni siquiera llega a la base: se rechaza aquí. La base lo vuelve a exigir.
 export const changeAnticipationDays =
   (repository: ReapplicationSettingsRepository) =>
   async (days: number): Promise<Result<number, ChangeAnticipationDaysFailure>> => {

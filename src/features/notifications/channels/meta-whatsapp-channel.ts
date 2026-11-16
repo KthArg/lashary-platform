@@ -37,7 +37,6 @@ function toMetaPhoneNumber(phone: string): string {
   return phone.replace(/\D/g, '')
 }
 
-// Un Record exhaustivo: si se agrega un propósito a MessagePurpose, TypeScript avisa que falta su plantilla.
 const templateFor = (config: MetaWhatsAppConfig, purpose: MessagePurpose): string | null => {
   const templates: Record<MessagePurpose, string | null> = {
     reminder: config.templateName,
@@ -89,7 +88,6 @@ export function metaWhatsAppChannel(config: MetaWhatsAppConfig | null): Notifica
     kind: 'whatsapp',
     async send({ purpose, contact, message, templateVariables }) {
       if (config === null) return err(channelNotConfigured('whatsapp'))
-      // Con la plantilla de recordatorio pero sin la del propósito, no sale por WhatsApp y pasa al correo.
       const templateName = templateFor(config, purpose)
       if (templateName === null && config.templateName !== null) return err(channelNotConfigured('whatsapp'))
 
