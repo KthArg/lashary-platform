@@ -28,7 +28,16 @@ const ready: ReviewViewModel = {
       { caseId: CASE_ID, clientId: 'c1', clientName: 'Ana Pérez', pending: 20000, detectedAt: new Date('2026-11-01T18:00:00Z') },
       { caseId: 'caso-2', clientId: 'c2', clientName: null, pending: 7500, detectedAt: new Date('2026-11-02T18:00:00Z') },
     ],
-    active: [{ clientId: 'c3', clientName: 'Lucía Mora', pending: 9000, since: new Date('2026-10-20T18:00:00Z') }],
+    active: [
+      {
+        caseId: 'caso-activo-1',
+        clientId: 'c3',
+        clientName: 'Lucía Mora',
+        appointmentId: 'cita-1',
+        pending: 9000,
+        since: new Date('2026-10-20T18:00:00Z'),
+      },
+    ],
     moreToReview: false,
     moreActive: false,
   },

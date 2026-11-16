@@ -15,7 +15,7 @@ historias:
     estado: no_iniciada
   - id: US-MOR-05
     estado: en_progreso
-    falta: "Pieza 1/N (contrato en payments-api.md y delinquency-api.md: payments_record_forgiveness_entry, delinquency_lift_case, delinquency_forgive_case, delinquency_list_active_cases). Falta: migraciones, dominio/aplicación, UI de /admin/morosidades y pruebas de los 4 criterios"
+    falta: "Piezas 1 a 4 (contrato, migración en payments, migración en delinquency, dominio/aplicación/db en TS) listas. Falta: UI de /admin/morosidades (botones levantar/condonar por caso, historial) y el cierre con la evidencia criterio por criterio"
 flags: []
 deuda:
   - que: "La morosidad no se cierra ni actualiza su monto cuando se paga: delinquency_cases.pending es una foto del saldo al detectar y ninguna función la vuelve a leer. Una clienta que paga después de confirmada la morosidad sigue figurando activa con el monto viejo hasta que alguien la descarte a mano"
@@ -289,3 +289,37 @@ caso (`delinquency_list_active_cases`, ver el contrato).
 `forgiveness_credit`) y `docs/contracts/delinquency-api.md` (estados nuevos `lifted`/`forgiven`, funciones
 `delinquency_lift_case`, `delinquency_forgive_case` y `delinquency_list_active_cases`), antes de cualquier
 migración (INT-003). Sin código todavía: la implementación sigue en las piezas siguientes.
+
+### Pieza 2 — migración en `payments`
+
+Nuevo asiento `forgiveness_credit` en `payments_ledger_entries` (CHECK ampliado) y
+`payments_record_forgiveness_entry` (`20261116000000_payments_record_forgiveness_entry_fn.sql`), `SECURITY
+INVOKER` con `EXECUTE` revocado de `authenticated` y `anon` — mismo patrón que `payments_record_close_entries`:
+solo una función `SECURITY DEFINER` de quien perdona puede llamarla. pgTAP
+`payments_record_forgiveness_entry.test.sql`.
+
+### Pieza 3 — migración en `delinquency`
+
+`delinquency_cases` admite `lifted`/`forgiven` (CHECK ampliado) con `exception_reason`/`exception_amount`, que
+nunca tocan el `pending` original (criterio 4). `delinquency_lift_case` y `delinquency_forgive_case`
+(`20261116000001_delinquency_lift_and_forgive_case_fn.sql`, `SECURITY DEFINER`, solo admin, solo sobre `active`)
+escriben `decided_at`/`decided_by` y el evento en `audit_events` con fecha, monto y motivo (criterio 3, DOM-011);
+`delinquency_forgive_case` cruza a `payments` llamando a `payments_record_forgiveness_entry` en la misma
+transacción (ARCH-005). `delinquency_list_active_cases` da el detalle por caso que `delinquency_list_active`
+(US-MOR-01) no tiene, al agregar por clienta. pgTAP `delinquency_lift_and_forgive_case.test.sql` (17 casos) y
+`delinquency_list_active_cases.test.sql` (6 casos).
+
+### Pieza 4 — dominio y aplicación TS
+
+`domain/delinquency-case.ts` (estados nuevos, `exceptionReason`/`exceptionAmount` en `DelinquencyCase`),
+`domain/active-case.ts` (`ActiveCaseItem`, por caso, distinto del `ActiveClient` agregado por clienta de
+US-MOR-01), `domain/errors.ts` (`caseNotActive`, `invalidForgiveAmount`, `invalidReason`, ADR-0008).
+`application/lift-case.ts` y `application/forgive-case.ts` (casos de uso sobre `CaseRepository.lift`/`.forgive`,
+mismo patrón que `decide-case.ts`); `application/load-review.ts` cambia su sección `active` de agregada por
+clienta a por caso (`listActiveCases`), para que la pantalla pueda actuar sobre una morosidad puntual —
+`listActiveClients`/`ActiveClient` quedan sin consumidor en la UI (deuda registrada abajo, no se borra el código
+de US-MOR-01 sin una decisión aparte). `db/case-repository.ts` (`lift`/`forgive`, traducción de `P0002`/`55001`/
+`22004`/`22023`) y `db/case-list-repository.ts` (`listActiveCases`). Pruebas: `application/__tests__/lift-
+case.test.ts`, `forgive-case.test.ts`, `load-review.test.ts` actualizado, `db/__tests__/case-repository.test.ts`
+y `case-list-repository.test.ts` actualizados. `npx tsc --noEmit` sin errores en todo el repo; `npx vitest run
+src/features/delinquency`: 99/99. Todavía sin UI: la pantalla sigue en pieza siguiente.

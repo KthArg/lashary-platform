@@ -1,13 +1,16 @@
 import { describe, it, expect, vi } from 'vitest'
 import { ok, err, isOk, isErr } from '@/shared/result'
 import { loadReview } from '../load-review'
-import { ACTIVE_LIST_LIMIT, REVIEW_LIST_LIMIT } from '../../domain/active-client'
+import { ACTIVE_CASES_LIST_LIMIT } from '../../domain/active-case'
+import { REVIEW_LIST_LIMIT } from '../../domain/active-client'
 import type { CaseListRepository, ClientNamesPort } from '../ports'
 import type { DelinquencyCase } from '../../domain/delinquency-case'
 import { delinquencyStorageFailed } from '../../domain/errors'
 
 const ANA = '1c9d1f0e-5a4b-4e0e-8d52-0d6a3e6f9a21'
 const LUCIA = '3e8f3b2a-7c6d-4a2a-8f74-2f8c5a8b1c43'
+const CASO_LUCIA = '4f9a4c3b-8d7e-4b3b-9085-3f9d6b9c2d54'
+const CITA_LUCIA = '5a0b5d4c-9e8f-4c4c-a196-4a0e7c0d3e65'
 
 const toReview: DelinquencyCase = {
   id: '7b0e5f8e-3c1a-4c55-9c1e-2f4a6b8d0e11',
@@ -17,12 +20,17 @@ const toReview: DelinquencyCase = {
   state: 'pending_review',
   detectedAt: new Date('2026-11-01T15:00:00Z'),
   decidedAt: null,
+  exceptionReason: null,
+  exceptionAmount: null,
 }
+
+const activeLucia = { caseId: CASO_LUCIA, clientId: LUCIA, appointmentId: CITA_LUCIA, pending: 9000, since: new Date('2026-10-20T15:00:00Z') }
 
 function deps(overrides: Partial<CaseListRepository> = {}, names?: ClientNamesPort) {
   const cases: CaseListRepository = {
     listByState: async () => ok([toReview]),
-    listActiveClients: async () => ok([{ clientId: LUCIA, pending: 9000, since: new Date('2026-10-20T15:00:00Z') }]),
+    listActiveClients: async () => ok([]),
+    listActiveCases: async () => ok([activeLucia]),
     ...overrides,
   }
   const namesPort: ClientNamesPort = names ?? {
@@ -38,7 +46,7 @@ function deps(overrides: Partial<CaseListRepository> = {}, names?: ClientNamesPo
 }
 
 describe('loadReview', () => {
-  it('arma las morosidades por revisar y las activas con el nombre de cada clienta', async () => {
+  it('arma las morosidades por revisar y las activas, por caso, con el nombre de cada clienta', async () => {
     const result = await loadReview(deps())()
 
     expect(isOk(result)).toBe(true)
@@ -47,7 +55,14 @@ describe('loadReview', () => {
       { caseId: toReview.id, clientId: ANA, clientName: 'Ana Pérez', pending: 20000, detectedAt: toReview.detectedAt },
     ])
     expect(result.value.active).toEqual([
-      { clientId: LUCIA, clientName: 'Lucía Mora', pending: 9000, since: new Date('2026-10-20T15:00:00Z') },
+      {
+        caseId: CASO_LUCIA,
+        clientId: LUCIA,
+        clientName: 'Lucía Mora',
+        appointmentId: CITA_LUCIA,
+        pending: 9000,
+        since: new Date('2026-10-20T15:00:00Z'),
+      },
     ])
   })
 
@@ -55,7 +70,7 @@ describe('loadReview', () => {
     const namesFor = vi.fn(async () => ok(new Map<string, string>()))
     await loadReview(
       deps(
-        { listActiveClients: async () => ok([{ clientId: ANA, pending: 5000, since: new Date('2026-10-20T15:00:00Z') }]) },
+        { listActiveCases: async () => ok([{ ...activeLucia, clientId: ANA }]) },
         { namesFor },
       ),
     )()
@@ -72,7 +87,7 @@ describe('loadReview', () => {
 
   it('sin morosidades devuelve las dos listas vacías', async () => {
     const result = await loadReview(
-      deps({ listByState: async () => ok([]), listActiveClients: async () => ok([]) }),
+      deps({ listByState: async () => ok([]), listActiveCases: async () => ok([]) }),
     )()
 
     expect(isOk(result) && result.value).toEqual({ toReview: [], active: [], moreToReview: false, moreActive: false })
@@ -80,22 +95,18 @@ describe('loadReview', () => {
 
   it('pide una fila más que el tope y, si llega, avisa que hay más y muestra solo el tope', async () => {
     const manyCases = Array.from({ length: REVIEW_LIST_LIMIT + 1 }, (_, i) => ({ ...toReview, id: `caso-${i}` }))
-    const manyActive = Array.from({ length: ACTIVE_LIST_LIMIT + 1 }, () => ({
-      clientId: LUCIA,
-      pending: 9000,
-      since: new Date('2026-10-20T15:00:00Z'),
-    }))
+    const manyActive = Array.from({ length: ACTIVE_CASES_LIST_LIMIT + 1 }, (_, i) => ({ ...activeLucia, caseId: `activa-${i}` }))
     const listByState = vi.fn(async () => ok(manyCases))
-    const listActiveClients = vi.fn(async () => ok(manyActive))
+    const listActiveCases = vi.fn(async () => ok(manyActive))
 
-    const result = await loadReview(deps({ listByState, listActiveClients }))()
+    const result = await loadReview(deps({ listByState, listActiveCases }))()
 
     expect(listByState).toHaveBeenCalledWith('pending_review', REVIEW_LIST_LIMIT + 1)
-    expect(listActiveClients).toHaveBeenCalledWith(ACTIVE_LIST_LIMIT + 1)
+    expect(listActiveCases).toHaveBeenCalledWith(ACTIVE_CASES_LIST_LIMIT + 1)
     expect(isOk(result)).toBe(true)
     if (!isOk(result)) return
     expect(result.value.toReview).toHaveLength(REVIEW_LIST_LIMIT)
-    expect(result.value.active).toHaveLength(ACTIVE_LIST_LIMIT)
+    expect(result.value.active).toHaveLength(ACTIVE_CASES_LIST_LIMIT)
     expect(result.value.moreToReview).toBe(true)
     expect(result.value.moreActive).toBe(true)
   })
@@ -113,7 +124,7 @@ describe('loadReview', () => {
   it('si falla la lectura de las morosidades o de los nombres, devuelve el error', async () => {
     const failing = () => err(delinquencyStorageFailed('boom'))
     const readFails = await loadReview(deps({ listByState: async () => failing() }))()
-    const activeFails = await loadReview(deps({ listActiveClients: async () => failing() }))()
+    const activeFails = await loadReview(deps({ listActiveCases: async () => failing() }))()
     const namesFail = await loadReview(deps({}, { namesFor: async () => failing() }))()
 
     expect(isErr(readFails)).toBe(true)
