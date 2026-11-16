@@ -8,6 +8,7 @@ const INBOX_TABLE = 'notifications_admin_inbox'
 const PERMISSION_DENIED = '42501'
 const CLIENT_NOTICES_TABLE = 'notifications_client_notices'
 const DROPPED_NOTICES_TABLE = 'notifications_dropped_notices'
+const AFTERCARE_TABLE = 'notifications_aftercare_messages'
 const NO_SAVED_SESSION = { auth: { persistSession: false, autoRefreshToken: false } }
 
 const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
@@ -214,5 +215,24 @@ describe.skipIf(!isSupabaseConfigured)('SEC-002 — aislamiento RLS de notificat
       const logged = await client.rpc('notifications_log_dropped_notice', probe)
       expect(logged.error?.code).toBe(PERMISSION_DENIED)
     }
+  })
+
+  itLive('indicaciones de cuidado (US-CLI-06): anon no las lee, la clienta no ve las de otra y no puede pedir columnas internas', async () => {
+    const anonRead = await anonClient.from(AFTERCARE_TABLE).select('id')
+    expect(anonRead.error?.code).toBe(PERMISSION_DENIED)
+
+    const ownColumns = await clientaClient
+      .from(AFTERCARE_TABLE)
+      .select('id, appointment_id, service_name, aftercare_text, client_note, created_at')
+    expect(ownColumns.error).toBeNull()
+    expect(ownColumns.data ?? []).toHaveLength(0)
+
+    for (const internalColumn of ['attempts', 'last_error', 'claimed_at']) {
+      const internal = await clientaClient.from(AFTERCARE_TABLE).select(internalColumn)
+      expect(internal.error?.code).toBe(PERMISSION_DENIED)
+    }
+
+    const marked = await clientaClient.from(AFTERCARE_TABLE).update({ status: 'sent' }).not('id', 'is', null).select('id')
+    expect(marked.data ?? []).toHaveLength(0)
   })
 })
