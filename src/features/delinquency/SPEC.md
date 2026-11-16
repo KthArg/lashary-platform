@@ -307,3 +307,15 @@ actualizados; `application/__tests__/decide-case.test.ts` agrega los stubs `lift
 `listActiveCases` que el tipo de `CaseListRepository` ya exige — `loadReview` todavía no lo llama, eso es de
 la pieza siguiente. `npx tsc --noEmit` sin errores en todo el repo; `npx vitest run src/features/delinquency`:
 95/95. Todavía sin capa de aplicación ni UI: piezas siguientes.
+
+### Pieza 5 — aplicación: casos de uso y cambio de `loadReview`
+
+`application/lift-case.ts` y `application/forgive-case.ts` (casos de uso sobre `CaseRepository.lift`/`.forgive`,
+mismo patrón que `decide-case.ts`). `application/load-review.ts` cambia su sección `active` de agregada por
+clienta a por caso (`listActiveCases`), para que la pantalla pueda actuar sobre una morosidad puntual —
+`listActiveClients`/`ActiveClient` quedan sin consumidor en la UI (deuda registrada arriba, no se borra el
+código de US-MOR-01 sin una decisión aparte). Pruebas: `application/__tests__/lift-case.test.ts`,
+`forgive-case.test.ts`, `load-review.test.ts` reescrito (ya no usa el stub de la pieza anterior) y
+`ui/review/__tests__/review-view.test.tsx` ajustado al nuevo `ActiveItem` (`caseId`/`appointmentId`). `npx tsc
+--noEmit` sin errores en todo el repo; `npx vitest run src/features/delinquency`: 99/99. Todavía sin UI propia
+de levantar/condonar: piezas siguientes.
