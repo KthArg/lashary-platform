@@ -128,7 +128,7 @@ export interface ClientNoticeDeliveryRepository {
   markExhausted(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
 }
 
-export type MessagePurpose = 'reminder' | 'appointment_confirmation' | 'reschedule_outcome'
+export type MessagePurpose = 'reminder' | 'appointment_confirmation' | 'reschedule_outcome' | 'reapplication_reminder'
 
 export type ChannelSendInput = {
   messageId: string
