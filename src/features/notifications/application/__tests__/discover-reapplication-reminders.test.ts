@@ -84,6 +84,38 @@ describe('discoverDueReapplications', () => {
     if (isOk(result)) expect(result.value).toHaveLength(1)
   })
 
+  it('no incluye una candidata cuya fecha estimada venció hace más de 30 días', async () => {
+    const deps = buildDeps({
+      candidates: [{ clientId: 'client-1', techniqueId: 'tecnica-1', lastCompletedAt: fixedDate('2026-08-01T00:00:00Z') }],
+    })
+
+    const result = await discoverDueReapplications(deps)
+
+    expect(isOk(result)).toBe(true)
+    if (isOk(result)) expect(result.value).toEqual([])
+  })
+
+  it('con dos técnicas vencidas de la misma clienta, manda solo el aviso de la más vieja', async () => {
+    const deps = buildDeps({
+      candidates: [
+        { clientId: 'client-1', techniqueId: 'tecnica-vieja', lastCompletedAt: fixedDate('2026-10-01T00:00:00Z') },
+        { clientId: 'client-1', techniqueId: 'tecnica-nueva', lastCompletedAt: fixedDate('2026-10-20T00:00:00Z') },
+      ],
+      techniques: new Map([
+        ['tecnica-vieja', { name: 'Técnica vieja', intervalDays: 30 }],
+        ['tecnica-nueva', { name: 'Técnica nueva', intervalDays: 20 }],
+      ]),
+    })
+
+    const result = await discoverDueReapplications(deps)
+
+    expect(isOk(result)).toBe(true)
+    if (isOk(result)) {
+      expect(result.value).toHaveLength(1)
+      expect(result.value[0].techniqueId).toBe('tecnica-vieja')
+    }
+  })
+
   it('una técnica sin intervalo configurado no entra al cálculo', async () => {
     const deps = buildDeps({
       candidates: [{ clientId: 'client-1', techniqueId: 'tecnica-sin-intervalo', lastCompletedAt: fixedDate('2026-01-01T00:00:00Z') }],

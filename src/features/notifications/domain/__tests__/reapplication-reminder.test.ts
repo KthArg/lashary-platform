@@ -3,6 +3,7 @@ import { fixedDate } from '@/shared/testing/fixed-clock'
 import {
   computeReapplicationDueDate,
   isReapplicationDue,
+  isReapplicationExpired,
   isValidAnticipationDays,
   reapplicationCycleKey,
   REAPPLICATION_ANTICIPATION_DAYS_MIN,
@@ -37,6 +38,26 @@ describe('isReapplicationDue', () => {
 
   it('sigue avisando aunque la fecha estimada ya haya pasado', () => {
     expect(isReapplicationDue(dueDate, 7, fixedDate('2026-11-25T00:00:00Z'))).toBe(true)
+  })
+})
+
+describe('isReapplicationExpired', () => {
+  const dueDate = fixedDate('2026-10-01T00:00:00Z')
+
+  it('no expira dentro de los 30 días de vencida', () => {
+    expect(isReapplicationExpired(dueDate, fixedDate('2026-10-31T00:00:00Z'))).toBe(false)
+  })
+
+  it('no expira justo al cumplirse el plazo', () => {
+    expect(isReapplicationExpired(dueDate, fixedDate('2026-10-31T00:00:00Z'))).toBe(false)
+  })
+
+  it('expira apenas pasa el plazo', () => {
+    expect(isReapplicationExpired(dueDate, new Date(fixedDate('2026-10-31T00:00:00Z').getTime() + 1))).toBe(true)
+  })
+
+  it('tampoco expira antes de que llegue la fecha estimada', () => {
+    expect(isReapplicationExpired(dueDate, fixedDate('2026-09-20T00:00:00Z'))).toBe(false)
   })
 })
 

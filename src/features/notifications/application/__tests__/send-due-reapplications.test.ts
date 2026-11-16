@@ -39,8 +39,12 @@ function buildDeps(options: {
 }) {
   const sent: unknown[] = []
   const failed: unknown[] = []
+  const listRecordsCalls: string[][] = []
   const deps: SendDueReapplicationsDeps = {
-    listRecords: async () => (options.listRecordsFails ? err('repository-failed' as const) : ok(options.records ?? new Map())),
+    listRecords: async (clientIds) => {
+      listRecordsCalls.push([...clientIds])
+      return options.listRecordsFails ? err('repository-failed' as const) : ok(options.records ?? new Map())
+    },
     recordSent: async (input) => {
       sent.push(input)
       return ok(undefined)
@@ -57,10 +61,26 @@ function buildDeps(options: {
     backupChannel: fakeChannel('email', options.backup ?? 'ok'),
     clock: fixedClock(NOW.toISOString()),
   }
-  return { deps, sent, failed }
+  return { deps, sent, failed, listRecordsCalls }
 }
 
 describe('sendDueReapplications', () => {
+  it('con más de 100 clientas, trocea listRecords en lotes de 100', async () => {
+    const { deps, listRecordsCalls } = buildDeps({})
+    const manyDue: DueReapplicationReminder[] = Array.from({ length: 250 }, (_, i) => ({
+      ...due,
+      clientId: `client-${i}`,
+    }))
+
+    await sendDueReapplications(deps)(manyDue)
+
+    expect(listRecordsCalls).toHaveLength(3)
+    expect(listRecordsCalls[0]).toHaveLength(100)
+    expect(listRecordsCalls[1]).toHaveLength(100)
+    expect(listRecordsCalls[2]).toHaveLength(50)
+  })
+
+
   it('sin candidatas no consulta registros ni envía nada', async () => {
     const { deps, sent } = buildDeps({})
     const result = await sendDueReapplications(deps)([])
