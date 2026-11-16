@@ -6,6 +6,7 @@ export const NOTIFICATIONS_ERROR_CODES = {
   inboxStorageFailed: 'NOTIFICATIONS_INBOX_STORAGE_FAILED',
   clientNoticesStorageFailed: 'NOTIFICATIONS_CLIENT_NOTICES_STORAGE_FAILED',
   aftercareStorageFailed: 'NOTIFICATIONS_AFTERCARE_STORAGE_FAILED',
+  invalidAnticipationDays: 'NOTIFICATIONS_INVALID_ANTICIPATION_DAYS',
 } as const
 
 type NotificationsErrorCode = (typeof NOTIFICATIONS_ERROR_CODES)[keyof typeof NOTIFICATIONS_ERROR_CODES]
@@ -116,3 +117,18 @@ export function aftercareStorageFailed(cause: string): AftercareStorageFailed {
 
 export const isAftercareStorageFailed = (error: unknown): error is AftercareStorageFailed =>
   hasCode<AftercareStorageFailed>(error, NOTIFICATIONS_ERROR_CODES.aftercareStorageFailed)
+
+export interface InvalidAnticipationDays {
+  readonly code: typeof NOTIFICATIONS_ERROR_CODES.invalidAnticipationDays
+  readonly message: string
+}
+
+export function invalidAnticipationDays(): InvalidAnticipationDays {
+  return {
+    code: NOTIFICATIONS_ERROR_CODES.invalidAnticipationDays,
+    message: 'la anticipación debe ser un entero de 1 a 30 días',
+  }
+}
+
+export const isInvalidAnticipationDays = (error: unknown): error is InvalidAnticipationDays =>
+  hasCode<InvalidAnticipationDays>(error, NOTIFICATIONS_ERROR_CODES.invalidAnticipationDays)
