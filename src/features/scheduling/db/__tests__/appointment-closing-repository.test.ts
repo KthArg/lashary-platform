@@ -6,6 +6,7 @@ import { CLOSE_APPOINTMENT_FUNCTION, CLOSE_ERROR_MESSAGES } from '../appointment
 
 const APPOINTMENT_ID = 'appointment-1'
 const DELIVERED_TECHNIQUE_ID = 'technique-delivered'
+const AFTERCARE_NOTE = 'Evitar agua 24 horas'
 
 const closedRow = {
   appointment_id: APPOINTMENT_ID,
@@ -14,6 +15,7 @@ const closedRow = {
   deposit_credit: 10000,
   amount_due: 25000,
   forfeited_deposit: 0,
+  aftercare_recorded: true,
 }
 
 function fakeDb(response: { data: unknown; error: { message: string } | null }) {
@@ -35,6 +37,7 @@ describe('createSupabaseAppointmentClosingRepository', () => {
       p_appointment_id: APPOINTMENT_ID,
       p_outcome: 'completed',
       p_delivered_technique_id: DELIVERED_TECHNIQUE_ID,
+      p_aftercare_note: null,
     })
   })
 
@@ -47,7 +50,34 @@ describe('createSupabaseAppointmentClosingRepository', () => {
       p_appointment_id: APPOINTMENT_ID,
       p_outcome: 'no_show',
       p_delivered_technique_id: null,
+      p_aftercare_note: null,
     })
+  })
+
+  it('manda la nota de indicaciones cuando la hay', async () => {
+    const { db, rpc } = fakeDb({ data: [closedRow], error: null })
+
+    await createSupabaseAppointmentClosingRepository(db).close({
+      appointmentId: APPOINTMENT_ID,
+      outcome: 'completed',
+      aftercareNote: AFTERCARE_NOTE,
+    })
+
+    expect(rpc).toHaveBeenCalledWith(
+      CLOSE_APPOINTMENT_FUNCTION,
+      expect.objectContaining({ p_aftercare_note: AFTERCARE_NOTE }),
+    )
+  })
+
+  it.each([true, false])('lee aftercare_recorded = %s del resultado del cierre', async (recorded) => {
+    const { db } = fakeDb({ data: [{ ...closedRow, aftercare_recorded: recorded }], error: null })
+
+    const result = await createSupabaseAppointmentClosingRepository(db).close({
+      appointmentId: APPOINTMENT_ID,
+      outcome: 'completed',
+    })
+
+    expect(isOk(result) && result.value.aftercareRecorded).toBe(recorded)
   })
 
   it('devuelve los montos del cierre como números', async () => {
@@ -65,6 +95,7 @@ describe('createSupabaseAppointmentClosingRepository', () => {
       depositCredit: 10000,
       amountDue: 25000,
       forfeitedDeposit: 0,
+      aftercareRecorded: true,
     })
   })
 
@@ -72,6 +103,7 @@ describe('createSupabaseAppointmentClosingRepository', () => {
     [CLOSE_ERROR_MESSAGES.notClosable, 'SCHEDULING_APPOINTMENT_NOT_CLOSABLE'],
     [CLOSE_ERROR_MESSAGES.notChargeable, 'SCHEDULING_APPOINTMENT_NOT_CHARGEABLE'],
     [CLOSE_ERROR_MESSAGES.techniqueNotAvailable, 'SCHEDULING_TECHNIQUE_NOT_AVAILABLE'],
+    [CLOSE_ERROR_MESSAGES.noteNotAllowed, 'SCHEDULING_CLOSE_NOTE_NOT_ALLOWED'],
     ['connection reset', 'SCHEDULING_STORAGE_FAILED'],
   ])('traduce el error "%s" a %s sin lanzar', async (message, code) => {
     const { db } = fakeDb({ data: null, error: { message } })

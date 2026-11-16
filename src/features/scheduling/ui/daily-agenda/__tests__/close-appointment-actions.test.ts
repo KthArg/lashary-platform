@@ -28,6 +28,7 @@ beforeEach(() => {
         deposit_credit: 10000,
         amount_due: 25000,
         forfeited_deposit: 0,
+        aftercare_recorded: true,
       },
     ],
     error: null,
@@ -54,6 +55,7 @@ describe('closeAppointmentAction', () => {
         depositCredit: 10000,
         amountDue: 25000,
         forfeitedDeposit: 0,
+        aftercareRecorded: true,
       },
     })
     expect(mockRevalidate).toHaveBeenCalledWith(DAILY_AGENDA_PATH)
@@ -72,11 +74,21 @@ describe('closeAppointmentAction', () => {
     )
   })
 
+  it('pasa la nota recortada al caso de uso', async () => {
+    await closeAppointmentAction({ appointmentId: APPOINTMENT_ID, outcome: 'completed', aftercareNote: '  Evitar agua  ' })
+
+    expect(mockRpc).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ p_aftercare_note: 'Evitar agua' }),
+    )
+  })
+
   it.each([
     ['sin cita', { outcome: 'completed' }],
     ['con una cita que no es un id', { appointmentId: 'no-es-un-id', outcome: 'completed' }],
     ['con un resultado desconocido', { appointmentId: APPOINTMENT_ID, outcome: 'cancelled' }],
     ['con un servicio prestado que no es un id', { appointmentId: APPOINTMENT_ID, outcome: 'completed', deliveredTechniqueId: 'x' }],
+    ['con una ausencia que trae nota', { appointmentId: APPOINTMENT_ID, outcome: 'no_show', aftercareNote: 'Evitar agua' }],
     ['con un valor que no es un objeto', 'cerrar'],
   ])('rechaza la petición %s sin llamar a la base', async (_description, input) => {
     const result = await closeAppointmentAction(input)
@@ -90,6 +102,7 @@ describe('closeAppointmentAction', () => {
     [CLOSE_ERROR_MESSAGES.notClosable, closeAppointmentMessages.notClosable],
     [CLOSE_ERROR_MESSAGES.notChargeable, closeAppointmentMessages.notChargeable],
     [CLOSE_ERROR_MESSAGES.techniqueNotAvailable, closeAppointmentMessages.techniqueNotAvailable],
+    [CLOSE_ERROR_MESSAGES.noteNotAllowed, closeAppointmentMessages.noteNotAllowed],
     ['connection reset', closeAppointmentMessages.failed],
   ])('si la base responde "%s", devuelve un mensaje para la administradora y no refresca', async (message, expected) => {
     rpcResult = { data: null, error: { message } }

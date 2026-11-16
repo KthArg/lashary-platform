@@ -26,5 +26,9 @@ export function summarizeClosing(closing: AppointmentClosing): string {
     : COPY.close.noShowWithoutDeposit
 }
 
-export const describeClosed = (closed: ClosedAppointment, clientName: string): string =>
-  COPY.close.closed(clientName, summarizeClosing(closed))
+export const describeClosed = (closed: ClosedAppointment, clientName: string): string => {
+  const summary = summarizeClosing(closed)
+  return closed.outcome === 'completed' && !closed.aftercareRecorded
+    ? COPY.close.closedWithoutAftercare(clientName, summary)
+    : COPY.close.closed(clientName, summary)
+}

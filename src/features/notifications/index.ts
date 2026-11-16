@@ -221,6 +221,7 @@ export type { ClientNoticesResult } from './ui/client-notices/services/client-no
 export type { AdminInboxResult, MarkNoticeActionResult } from './ui/inbox/types/inbox-results'
 export type { InboxView } from './application/inbox'
 export type { InboxNotice } from './domain/inbox-notice'
+export { AFTERCARE_NOTE_MAX_LENGTH } from './domain/aftercare-message'
 
 export { ReapplicationSettingsPage } from './ui/reapplication-settings/components/ReapplicationSettingsPage'
 export { REAPPLICATION_SETTINGS_PATH } from './ui/reapplication-settings/constants/reapplication-settings-strings'
