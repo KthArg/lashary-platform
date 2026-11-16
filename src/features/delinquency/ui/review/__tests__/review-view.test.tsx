@@ -38,8 +38,13 @@ const ready: ReviewViewModel = {
         since: new Date('2026-10-20T18:00:00Z'),
       },
     ],
+    // lifted/forgiven (US-MOR-05, historial del criterio 4): sin consumidor en la UI todavía.
+    lifted: [],
+    forgiven: [],
     moreToReview: false,
     moreActive: false,
+    moreLifted: false,
+    moreForgiven: false,
   },
 }
 
@@ -98,7 +103,15 @@ describe('ReviewView', () => {
   })
 
   it('sin morosidades dice que no hay ninguna en cada sección', () => {
-    render(<ReviewView model={{ status: 'ready', graceDays: 7, view: { toReview: [], active: [], moreToReview: false, moreActive: false } }} />)
+    render(
+      <ReviewView
+        model={{
+          status: 'ready',
+          graceDays: 7,
+          view: { toReview: [], active: [], lifted: [], forgiven: [], moreToReview: false, moreActive: false, moreLifted: false, moreForgiven: false },
+        }}
+      />,
+    )
 
     expect(screen.getByText(reviewMessages.toReview.empty)).toBeTruthy()
     expect(screen.getByText(reviewMessages.active.empty)).toBeTruthy()

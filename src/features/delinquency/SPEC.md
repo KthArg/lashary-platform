@@ -319,3 +319,14 @@ código de US-MOR-01 sin una decisión aparte). Pruebas: `application/__tests__/
 `ui/review/__tests__/review-view.test.tsx` ajustado al nuevo `ActiveItem` (`caseId`/`appointmentId`). `npx tsc
 --noEmit` sin errores en todo el repo; `npx vitest run src/features/delinquency`: 99/99. Todavía sin UI propia
 de levantar/condonar: piezas siguientes.
+
+### Pieza 6 — historial en `loadReview`
+
+`application/load-review.ts` agrega `lifted`/`forgiven` a `ReviewView` (criterio 4: la morosidad original sigue
+visible, con su `pending` de siempre y, si se condono, el monto condonado), leyendo con el `listByState` que ya
+existe (sin SQL nuevo). `domain/delinquency-case.ts` agrega `EXCEPTION_HISTORY_LIST_LIMIT` (50, PERF-002).
+Pruebas: `application/__tests__/load-review.test.ts` reescrito; `ui/review/__tests__/review-view.test.tsx`
+agrega `lifted`/`forgiven`/`moreLifted`/`moreForgiven` (vacíos) al modelo de prueba, que el tipo de
+`ReviewView` ya exige — la pantalla todavía no los muestra. `npx tsc --noEmit` sin errores en todo el repo;
+`npx vitest run src/features/delinquency`: 99/99. Todavía sin UI de levantar/condonar ni secciones de
+historial visibles: piezas siguientes.
