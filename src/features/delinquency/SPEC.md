@@ -15,7 +15,7 @@ historias:
     estado: no_iniciada
   - id: US-MOR-05
     estado: en_progreso
-    falta: "Pieza 1/N (contrato en payments-api.md y delinquency-api.md: payments_record_forgiveness_entry, delinquency_lift_case, delinquency_forgive_case, delinquency_list_active_cases). Falta: migraciones, dominio/aplicación, UI de /admin/morosidades y pruebas de los 4 criterios"
+    falta: "Piezas 1 a 4 (contrato, migraciones, dominio/puertos/db en TS) listas. Falta: aplicación y UI de /admin/morosidades (botones levantar/condonar por caso, historial) y el cierre con la evidencia criterio por criterio"
 flags: []
 deuda:
   - que: "La morosidad no se cierra ni actualiza su monto cuando se paga: delinquency_cases.pending es una foto del saldo al detectar y ninguna función la vuelve a leer. Una clienta que paga después de confirmada la morosidad sigue figurando activa con el monto viejo hasta que alguien la descarte a mano"
@@ -289,3 +289,19 @@ caso (`delinquency_list_active_cases`, ver el contrato).
 `forgiveness_credit`) y `docs/contracts/delinquency-api.md` (estados nuevos `lifted`/`forgiven`, funciones
 `delinquency_lift_case`, `delinquency_forgive_case` y `delinquency_list_active_cases`), antes de cualquier
 migración (INT-003). Sin código todavía: la implementación sigue en las piezas siguientes.
+
+### Pieza 4 — dominio, puertos y repositorios `db/`
+
+`domain/delinquency-case.ts` admite `lifted`/`forgiven` con `exceptionReason`/`exceptionAmount` en
+`DelinquencyCase`; `domain/active-case.ts` (`ActiveCaseItem`, por caso, distinto del `ActiveClient` agregado
+por clienta de US-MOR-01); `domain/errors.ts` (`caseNotActive`, `invalidForgiveAmount`, `invalidReason`,
+ADR-0008). `application/ports.ts` agrega `lift`/`forgive` a `CaseRepository` y `listActiveCases` a
+`CaseListRepository`. `db/case-row.ts` agrega `exception_reason`/`exception_amount` a `CASE_COLUMNS` y al
+mapeo; `db/case-repository.ts` implementa `lift`/`forgive` (RPC a `delinquency_lift_case`/
+`delinquency_forgive_case`, traducción de `P0002`/`55001`/`22004`/`22023`); `db/case-list-repository.ts`
+implementa `listActiveCases` (RPC a `delinquency_list_active_cases`) — la interfaz y su implementación van en
+el mismo commit porque TypeScript no permite dejar un puerto sin quien lo cumpla sin romper la compilación de
+cualquier PR intermedio. Pruebas: `db/__tests__/case-repository.test.ts` y `case-list-repository.test.ts`
+actualizados; `application/__tests__/decide-case.test.ts` agrega los stubs `lift`/`forgive` que el tipo de
+`CaseRepository` ya exige, sin usarlos. `npx tsc --noEmit` sin errores en todo el repo. Todavía sin capa de
+aplicación ni UI: piezas siguientes.
