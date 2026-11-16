@@ -14,6 +14,7 @@ import { getClientContactForReminders } from '@/features/clients'
 import { listTechniquesForReapplication } from '@/features/catalog'
 import { confirmationRequestRepository } from './db/confirmation-request-repository'
 import { reminderRepository } from './db/reminder-repository'
+import { aftercareDeliveryRepository } from './db/aftercare-delivery-repository'
 import { clientNoticeDeliveryRepository } from './db/client-notice-delivery-repository'
 import { droppedNoticesRepository } from './db/dropped-notices-repository'
 import { delinquencyStatesGateway } from './db/delinquency-states-gateway'
@@ -23,6 +24,7 @@ import { runReminderCycle, type RunReminderCycleSummary } from './application/ru
 import { discoverDueReapplications, type DiscoverDueReapplicationsDeps } from './application/discover-reapplication-reminders'
 import { sendDueReapplications, type SendDueReapplicationsSummary } from './application/send-due-reapplications'
 import { buildAppointmentsUrl } from './domain/appointments-url'
+import { sendAftercareMessages, type SendAftercareMessagesSummary } from './application/send-aftercare-messages'
 import { sendConfirmationRequests, type SendConfirmationRequestsSummary } from './application/send-confirmation-requests'
 import type {
   AppointmentSnapshot,
@@ -95,6 +97,20 @@ export async function runNotificationsReminderCycle(): Promise<
           return err(REPOSITORY_FAILURE)
         }
 
+    const sendAftercare = appointmentsUrl
+      ? sendAftercareMessages({
+          aftercareMessages: aftercareDeliveryRepository(db),
+          getContact,
+          primaryChannel,
+          backupChannel,
+          appointmentsUrl,
+          clock: systemClock,
+        })
+      : async (): Promise<Result<SendAftercareMessagesSummary, RepositoryFailure>> => {
+          console.error('[notifications] NEXT_PUBLIC_SITE_URL no es una URL absoluta: no se mandan indicaciones sin enlace')
+          return err(REPOSITORY_FAILURE)
+        }
+
     return await runReminderCycle({
       expireUndecidedReschedules,
       listUpcoming,
@@ -118,6 +134,7 @@ export async function runNotificationsReminderCycle(): Promise<
       primaryChannel,
       backupChannel,
       sendConfirmationRequests: sendConfirmations,
+      sendAftercareMessages: sendAftercare,
     })()
   } finally {
     await closeSystemClient(db)
