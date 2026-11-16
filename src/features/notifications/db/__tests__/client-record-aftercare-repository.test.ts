@@ -3,7 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { isErr, isOk } from '@/shared/result'
 import { isAftercareStorageFailed } from '../../domain/errors'
 import { CLIENT_RECORD_AFTERCARE_PAGE_SIZE } from '../../domain/aftercare-message'
-import { AFTERCARE_MESSAGES_TABLE } from '../client-aftercare-repository'
+import { AFTERCARE_MESSAGES_TABLE } from '../aftercare-messages-table'
 import { clientRecordAftercareRepository, CLIENT_RECORD_AFTERCARE_COLUMNS } from '../client-record-aftercare-repository'
 
 const CLIENT_ID = '3f2b8c1e-5d4a-4e7b-9a10-2c6d8e0f1a23'

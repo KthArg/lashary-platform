@@ -3,7 +3,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { isErr, isOk } from '@/shared/result'
 import { fixedDate } from '@/shared/testing/fixed-clock'
 import { AFTERCARE_NOTE_MAX_LENGTH } from '../../domain/aftercare-message'
-import { aftercareDeliveryRepository, CLAIM_AFTERCARE_MESSAGES_FUNCTION, AFTERCARE_MESSAGES_TABLE } from '../aftercare-delivery-repository'
+import { aftercareDeliveryRepository, CLAIM_AFTERCARE_MESSAGES_FUNCTION } from '../aftercare-delivery-repository'
+import { AFTERCARE_MESSAGES_TABLE } from '../aftercare-messages-table'
 import { CLAIM_BATCH_SIZE, CLAIM_TTL_MINUTES } from '../claim-limits'
 
 const NOW = fixedDate('2047-10-01T12:00:00Z')

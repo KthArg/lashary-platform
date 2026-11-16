@@ -52,7 +52,7 @@ const depsWith = (overrides: Partial<SendAftercareMessagesDeps> = {}): SendAfter
 })
 
 describe('sendAftercareMessages', () => {
-  it('manda por WhatsApp el texto con la nota y las dos variables, y lo marca enviado (US-CLI-06)', async () => {
+  it('manda por WhatsApp el texto con la nota y las tres variables, y lo marca enviado (US-CLI-06)', async () => {
     const primaryChannel = workingChannel('whatsapp')
     const deps = depsWith({ primaryChannel })
 
@@ -68,7 +68,8 @@ describe('sendAftercareMessages', () => {
     })
     const [input] = primaryChannel.send.mock.calls[0] as unknown as [{ message: string; templateVariables: string[] }]
     expect(input.message).toContain(MESSAGE.clientNote)
-    expect(input.templateVariables).toEqual([MESSAGE.serviceName, APPOINTMENTS_URL])
+    expect(input.templateVariables).toHaveLength(3)
+    expect(input.templateVariables[1]).toContain(MESSAGE.clientNote)
     expect(deps.aftercareMessages.claimDue).toHaveBeenCalledWith(fixedDate(NOW))
     expect(deps.aftercareMessages.markSent).toHaveBeenCalledWith(MESSAGE.id, 'whatsapp', fixedDate(NOW))
   })

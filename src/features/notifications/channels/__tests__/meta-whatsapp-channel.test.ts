@@ -180,7 +180,7 @@ describe('metaWhatsAppChannel', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
-  it('unas indicaciones de cuidado usan su propia plantilla con el servicio y el enlace (US-CLI-06)', async () => {
+  it('unas indicaciones de cuidado usan su propia plantilla con el servicio, los cuidados y el enlace (US-CLI-06)', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true })
     vi.stubGlobal('fetch', fetchMock)
 
@@ -189,13 +189,13 @@ describe('metaWhatsAppChannel', () => {
       confirmationTemplateName: null, rescheduleOutcomeTemplateName: null, aftercareTemplateName: 'cuidados_post_tratamiento', templateLanguage: 'es', graphApiVersion: 'v21.0',
     }).send({
       messageId: 'indicacion-1', purpose: 'aftercare', contact: { phone: '+50688887777', email: 'a@b.com' },
-      message: 'cuida tus pestañas', templateVariables: ['Lifting', 'https://lashary.example/mis-citas'],
+      message: 'cuida tus pestañas', templateVariables: ['Lifting', 'No mojes las pestañas · Usa el cepillo', 'https://lashary.example/mis-citas'],
     })
 
     expect(isOk(result)).toBe(true)
     const body = JSON.parse(fetchMock.mock.calls[0][1].body)
     expect(body.template.name).toBe('cuidados_post_tratamiento')
-    expect(body.template.components[0].parameters).toHaveLength(2)
+    expect(body.template.components[0].parameters).toHaveLength(3)
   })
 
   it('con plantillas en uso pero sin la de indicaciones de cuidado, no manda texto libre', async () => {
