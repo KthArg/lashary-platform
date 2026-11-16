@@ -392,7 +392,7 @@ y [scheduling-api.md](../../../docs/contracts/scheduling-api.md#indicaciones-de-
 
 **Hecho** (pieza 3/9, 2026-11-13):
 
-- Migración `supabase/migrations/20261113000001_notifications_aftercare_messages.sql`.
+- Migración `supabase/migrations/20261115000001_notifications_aftercare_messages.sql`.
 - Tabla `notifications_aftercare_messages`: una fila por cita (`UNIQUE (appointment_id)`), sin FK a otras features, con RLS (la clienta lee las suyas, el staff lee y actualiza).
 - `notifications_record_aftercare`: copia el texto de `catalog_service_aftercare` y la nota recortada; sin `EXECUTE` para ningún rol de la API.
 - `notifications_claim_aftercare_messages`: reclamo en tandas con TTL y `FOR UPDATE SKIP LOCKED`, solo staff.
@@ -400,7 +400,7 @@ y [scheduling-api.md](../../../docs/contracts/scheduling-api.md#indicaciones-de-
 
 **Hecho** (pieza 4/9, 2026-11-13):
 
-- Migración `supabase/migrations/20261113000002_scheduling_close_appointment_aftercare.sql`: `scheduling_close_appointment` con `p_aftercare_note` y la columna `aftercare_recorded`; llama a `notifications_record_aftercare` al cerrar como `completed` y, si falla, deja `scheduling.aftercare.failed` en la bitácora.
+- Migración `supabase/migrations/20261115000002_scheduling_close_appointment_aftercare.sql`: `scheduling_close_appointment` con `p_aftercare_note` y la columna `aftercare_recorded`; llama a `notifications_record_aftercare` al cerrar como `completed` y, si falla, deja `scheduling.aftercare.failed` en la bitácora.
 - Prueba pgTAP `supabase/tests/database/scheduling_close_appointment_aftercare.test.sql` (19 aserciones).
 
 **Hecho** (pieza 5/9, 2026-11-13):
