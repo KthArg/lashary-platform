@@ -28,7 +28,7 @@ Quien la necesita: la detección de US-MOR-01 (criterios 1 y 2).
 
 ### `public.payments_record_forgiveness_entry(p_client_id uuid, p_appointment_id uuid, p_amount bigint) => bigint`
 
-Único punto de escritura nuevo desde el hallazgo M3 de la auditoría de US-AGE-12 (migración `20261102000001_payments_ledger_write_only_through_close.sql`), que dejó el ledger sin `INSERT` directo para `authenticated`: deja un asiento `forgiveness_credit` por `-p_amount` (`p_amount` debe ser mayor que cero) contra la clienta y, si se da, la cita. Devuelve el id del asiento. `p_amount` fuera de rango es `payments_forgiveness_amount_invalid`.
+Único punto de escritura nuevo desde el hallazgo M3 de la auditoría de US-AGE-12 (migración `20261102000001_payments_ledger_write_only_through_close.sql`), que dejó el ledger sin `INSERT` directo para `authenticated`: deja un asiento `forgiveness_credit` por `-p_amount` (`p_amount` debe ser mayor que cero) contra la clienta y, si se da, la cita. Devuelve el saldo resultante de la clienta (`payments_client_balance` tras el asiento, mismo patrón que `payments_record_close_entries` devolviendo lo que queda por pagar). `p_amount` fuera de rango es `payments_forgiveness_amount_invalid`.
 
 **Nadie con sesión la ejecuta directo:** `EXECUTE` está revocado de `authenticated` y `anon`, igual que `payments_record_close_entries`. Solo la llama una función `SECURITY DEFINER` de quien perdona el saldo (`delinquency_forgive_case`, US-MOR-05): al correr como su dueña, no necesita el permiso explícito, mismo patrón que `scheduling_close_appointment` con `payments_record_close_entries`.
 
