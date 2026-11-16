@@ -9,6 +9,8 @@ export const noDelinquencyYet: DelinquencyPort = {
   },
 }
 
+// Una agenda sin clientas morosas: para las pruebas. La agenda real usa `createSupabaseDelinquentClientsPort`
+// (db/delinquent-clients-repository.ts).
 export const noDelinquentClientsYet: DelinquentClientsPort = {
   async listWithActiveDelinquency() {
     return ok(new Set<string>())
