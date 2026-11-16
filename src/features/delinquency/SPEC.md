@@ -345,3 +345,19 @@ formularios y el historial. Todavía nadie llama estas acciones desde la pantall
 `ui/review/components/CaseExceptionActions/` (nuevo): dos botones por caso activo, "Levantar bloqueo" (motivo)
 y "Condonar" (monto, con casilla "Condonar todo lo pendiente" que precarga el saldo, y motivo), cada uno con su
 formulario en linea y `FeedbackMessage`. Todavia sin montar en la pantalla: pieza siguiente.
+
+### Pieza 9 — pantalla de /admin/morosidades (última)
+
+`ui/review/components/ReviewBody/ReviewBody.tsx` monta `CaseExceptionActions` en cada caso activo
+(`key={item.caseId}`, no `clientId`, porque una clienta puede tener mas de un caso activo) y agrega dos
+secciones nuevas, "Bloqueos levantados" y "Morosidades condonadas" (criterio 4), con sus estados vacio
+(UI-003). Pruebas: `ui/review/__tests__/review-view.test.tsx` (botones por caso, formularios de levantar y
+condonar, "condonar todo", errores, y las dos secciones de historial). `npx tsc --noEmit` sin errores en todo
+el repo; `npx vitest run src/features/delinquency`: 105/105.
+
+Con las 9 piezas, los 4 criterios de US-MOR-05 quedan demostrados: criterio 1 (`CaseExceptionActions`, boton
+"Levantar bloqueo", sin tocar el ledger, pgTAP `delinquency_lift_and_forgive_case.test.sql`), criterio 2 (boton
+"Condonar", total o parcial, pgTAP idem), criterio 3 (el evento en `audit_events` con fecha, monto y motivo,
+mismo pgTAP) y criterio 4 (las dos secciones de historial de la pantalla, mas el CHECK de la base que nunca
+borra la fila). Falta el cierre: verificacion final contra main (tsc, vitest, supabase test db) y la
+evidencia completa en el front-matter.
