@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isErr, isOk } from '@/shared/result'
-import { createSupabaseBookingRepository, type BookingOverlapEvent } from '../booking-repository'
+import { createSupabaseBookingRepository, logBookingOverlap } from '../booking-repository'
 import { OVERLAP_REJECTED_EVENT } from '../appointment-repository.constants'
 import {
   BOOK_APPOINTMENT_FUNCTION,
@@ -130,21 +130,31 @@ describe('createSupabaseBookingRepository', () => {
     ['sin fila', null],
     ['una fila vacía', { ...row, id: null }],
   ])(
-    'si la función devuelve %s, el constraint rechazó la reserva: espacio no disponible y un evento estructurado',
+    'si la función devuelve %s, es un rechazo sin motivo (solape o morosidad) y el repositorio no lo reporta',
     async (_name, data) => {
       const { db } = createFakeDb({ data: data as typeof row | null, error: null })
-      const reported: BookingOverlapEvent[] = []
-      const result = await createSupabaseBookingRepository(db, (event) => reported.push(event)).book(input)
+      const result = await createSupabaseBookingRepository(db).book(input)
 
-      expect(isErr(result) && result.error).toMatchObject({ code: 'SCHEDULING_SPACE_NOT_AVAILABLE', resourceId: RESOURCE_ID })
-      expect(reported).toEqual([{ event: OVERLAP_REJECTED_EVENT, resourceId: RESOURCE_ID, startsAtMs: STARTS_AT_MS }])
+      expect(isErr(result) && result.error).toMatchObject({
+        code: 'SCHEDULING_SPACE_NOT_AVAILABLE',
+        resourceId: RESOURCE_ID,
+        withoutReason: true,
+      })
     },
   )
 
-  it('una reserva normal no emite ningún evento', async () => {
-    const { db } = createFakeDb({ data: row, error: null })
-    const reported: BookingOverlapEvent[] = []
-    await createSupabaseBookingRepository(db, (event) => reported.push(event)).book(input)
-    expect(reported).toHaveLength(0)
+  it('el horario ya tomado que explica la base no queda como rechazo sin motivo', async () => {
+    const error = await bookExpectingError(BOOKING_ERROR_MESSAGES.slotTaken)
+    expect(error).not.toHaveProperty('withoutReason')
+  })
+
+  it('el log del solape escribe el evento estructurado con su nombre', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    logBookingOverlap({ resourceId: RESOURCE_ID, startsAtMs: STARTS_AT_MS })
+
+    expect(spy).toHaveBeenCalledWith(
+      JSON.stringify({ event: OVERLAP_REJECTED_EVENT, resourceId: RESOURCE_ID, startsAtMs: STARTS_AT_MS }),
+    )
+    spy.mockRestore()
   })
 })

@@ -6,7 +6,7 @@ import { DEFAULT_RESOURCE_ID } from '../../../application/availability-ports'
 import { bookAppointment } from '../../../application/book-appointment'
 import { bookPackageAppointment } from '../../../application/book-package-appointment'
 import { noDelinquencyYet } from '../../../application/no-delinquency'
-import { createSupabaseBookingRepository } from '../../../db/booking-repository'
+import { createSupabaseBookingRepository, logBookingOverlap } from '../../../db/booking-repository'
 import { createSupabasePackageBookingRepository } from '../../../db/package-booking-repository'
 import { MAX_CONFIRM_SERVICES } from '../constants/booking-confirm-strings'
 import { performBooking, type BookingOutcome } from '../utils/perform-booking'
@@ -26,10 +26,12 @@ export const bookingService = {
       bookTechnique: bookAppointment({
         bookings: createSupabaseBookingRepository(db),
         delinquency: noDelinquencyYet,
+        reportOverlap: logBookingOverlap,
       }),
       bookPackage: bookPackageAppointment({
         bookings: createSupabasePackageBookingRepository(db),
         delinquency: noDelinquencyYet,
+        reportOverlap: logBookingOverlap,
       }),
       clock: systemClock,
     })
