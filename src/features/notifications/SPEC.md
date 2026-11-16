@@ -396,7 +396,7 @@ y [scheduling-api.md](../../../docs/contracts/scheduling-api.md#indicaciones-de-
 
 **Hecho** (pieza 4/8, 2026-11-13):
 
-- Migración `supabase/migrations/20261113000002_scheduling_close_appointment_aftercare.sql`: `scheduling_close_appointment` con `p_aftercare_note` y la columna `aftercare_recorded`; llama a `notifications_record_aftercare` al cerrar como `completed` y, si falla, deja `scheduling.aftercare.failed` en la bitácora.
+- Migración `supabase/migrations/20261115000002_scheduling_close_appointment_aftercare.sql`: `scheduling_close_appointment` con `p_aftercare_note` y la columna `aftercare_recorded`; llama a `notifications_record_aftercare` al cerrar como `completed` y, si falla, deja `scheduling.aftercare.failed` en la bitácora.
 - Prueba pgTAP `supabase/tests/database/scheduling_close_appointment_aftercare.test.sql` (19 aserciones).
 
 ## Qué no hace todavía
