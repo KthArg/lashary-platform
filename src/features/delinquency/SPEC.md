@@ -2,7 +2,7 @@
 feature: delinquency
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-15
+actualizado: 2026-11-16
 historias:
   - id: US-MOR-01
     estado: terminada
@@ -392,7 +392,7 @@ Reglas: DOM-005 (el pago es un asiento nuevo, nunca un UPDATE), DOM-008 (el comp
 ### Diseño propuesto
 
 - **Dueña: `delinquency`.** La solicitud de regularización cuelga de una morosidad (`delinquency_cases`), así que vive en `delinquency` y llama a `payments` para asentar el pago. La dirección de la dependencia se mantiene: `delinquency` ya lee de `payments`; `payments` no llama a `delinquency`.
-- **Una solicitud es:** la morosidad, el monto que dice haber pagado, la referencia, el comprobante y su estado: `pending_approval` (la clienta la envió), `approved` (la administradora la aprobó) o `rejected` (con motivo).
+- **Una solicitud es:** la morosidad, el monto que dice haber pagado, la referencia, el comprobante y su estado: `pending_approval` (la clienta la envió), `approved` (la administradora la aprobó), `rejected` (con motivo) o `replaced` (la clienta mandó otro comprobante mientras esta seguía pendiente; lectura provisional de la decisión 5).
 - **Aprobar asienta el pago en la misma transacción** (DOM-011): una función `SECURITY DEFINER` solo para la administradora llama a la función de `payments` que escribe un asiento nuevo, de tipo pago y negativo, deja el evento en la bitácora y, si la cita queda saldada, la morosidad pasa a `settled` («saldada»). La clienta recupera el acceso porque el saldo de la cita llega a cero (US-MOR-02), no porque nadie se lo devuelva.
 - **El ledger admite más de un pago por cita.** Hoy tiene un índice único por (cita, tipo) para que un cargo no se duplique; un pago parcial exige varios asientos de pago por la misma cita, así que ese índice se acota a los tipos que sí son únicos.
 - **El comprobante es un archivo privado** en un bucket nuevo de Supabase Storage, validado en el servidor por sus primeros bytes y su tamaño, no por la extensión (DOM-008). Solo la dueña de la solicitud y la administradora lo ven, por URL firmada de corta vida.
@@ -412,6 +412,12 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 6. **Monto aprobado:** la administradora puede aprobar un monto distinto del que declaró la clienta, y la pantalla debe dejar en claro que **hay que verificar el comprobante y no confiar a ciegas en el monto de la clienta**. Quedan los dos montos en la bitácora.
 7. **Avisos:** a la administradora le avisa su bandeja cuando llega un comprobante; la clienta se entera en su estado de cuenta. Kenny pidió **dejar anotado que falta la implementación por otros canales** (WhatsApp y correo): queda registrado como deuda de esta historia.
 8. **Alcance:** solo se regularizan las morosidades confirmadas (`active`).
+
+### Contratos
+
+- [payments-api.md](../../../docs/contracts/payments-api.md), «Registro de pago»: el asiento `payment` (negativo, varios por cita), el índice único acotado a `charge` y `deposit_credit`, y `payments_record_payment`, que solo llama la aprobación de `delinquency` y no deja pagar más que el saldo de la cita.
+- [delinquency-api.md](../../../docs/contracts/delinquency-api.md), «Regularización»: el estado `settled`, los estados de una solicitud, `delinquency_my_account()` para la vista de estado de cuenta de `account`, el bucket privado `delinquency-receipts`, lo que `delinquency` pide a `payments` y el aviso `notifications_record_regularization_submitted`.
+- La vista de estado de cuenta muestra como total lo que la clienta debe en morosidades confirmadas (la suma de `pending`), no el saldo completo del ledger: las citas recién cerradas dentro de la gracia todavía no son morosidad.
 
 ### Pendiente de verificar
 
