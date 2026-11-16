@@ -16,7 +16,8 @@ historias:
   - id: US-NOT-04
     estado: no_iniciada
   - id: US-NOT-05
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "dominio (pieza 2/12), contrato SQL de scheduling_reapplication_candidates con pgTAP (pieza 3/12), su envoltorio TypeScript (pieza 4/12) y la tabla notifications_reapplication_reminders con su pgTAP (pieza 5/12) ya existen. Pendiente: caso de uso que una scheduling y delinquency con el dominio y escriba en la tabla, política de anticipación con su pantalla, integración al ciclo de recordatorios, y las pruebas de cada pieza"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -417,12 +418,97 @@ y [scheduling-api.md](../../../docs/contracts/scheduling-api.md#indicaciones-de-
 - Campo «Indicaciones para esta clienta» en el diálogo de cierre de la agenda diaria (`scheduling`, ver su SPEC): la nota viaja como `p_aftercare_note` de `scheduling_close_appointment`.
 - El tope de 1000 caracteres vive en tres lugares: el CHECK de `notifications_aftercare_messages`, `AFTERCARE_NOTE_MAX_LENGTH` (`domain/aftercare-message.ts`) y `CLOSE_AFTERCARE_NOTE_MAX_LENGTH` (`scheduling/ui/daily-agenda/constants/close-appointment.constants.ts`). Scheduling no importa `AFTERCARE_NOTE_MAX_LENGTH` porque el barrel de `notifications` importa `scheduling` (ciclo) y arrastraría `node:crypto` y el cliente de sistema al bundle del navegador. `AFTERCARE_NOTE_MAX_LENGTH` se exporta en `index.ts` solo para que una prueba compare los dos valores de TypeScript: `scheduling/ui/daily-agenda/__tests__/close-aftercare-note-limit.test.ts`. El CHECK de SQL lo cubre `supabase/tests/database/notifications_aftercare_messages.test.sql` (nota de 1001 caracteres).
 
+## US-NOT-05: recordatorio de re-aplicación de tratamiento
+
+Criterios del backlog:
+
+1. El sistema calcula la fecha estimada de re-aplicación usando el intervalo definido en el catálogo de técnicas y la fecha de la última cita completada.
+2. Se envía una notificación cuando se acerca la fecha estimada.
+3. La administradora configura con cuántos días de anticipación se envía.
+4. No se envía a clientas con morosidad activa ni a quienes ya tienen una cita futura agendada.
+
+Depende de US-NOT-03, US-AGE-08 y US-AGE-12 (todas `terminada`) y, para el criterio 4, de US-MOR-01 (`terminada`
+desde el 2026-11-08) — dependencia que no estaba registrada en `docs/process/DEPENDENCIES.md` hasta esta pieza.
+Reglas: ARCH-003/004/005 (fronteras entre features; esta historia lee de `catalog`, `scheduling` y `delinquency`
+por sus entry points, nunca sus tablas), ARCH-006 (tabla propia con prefijo `notifications_`), DOM-004 (reloj
+inyectado), DOM-006 (errores tipados), DOM-009 (texto externalizado), DOM-012 (ninguna consecuencia automática —
+aquí, no enviar un mensaje— corre sin la decisión del PO que está más abajo), SEC-002 (test de aislamiento),
+PERF-005 (sin queries en loop, igual que `send-due-reminders`), INT-003 (contrato primero) e INT-007.
+
+### Lo que ya existe
+
+- `catalog`: `getTechnique`/`listTechniques` (entry point `@/features/catalog`) ya expone
+  `reapplicationIntervalDays: number | null` por técnica (US-AGE-08). Una técnica sin intervalo no entra al
+  cálculo.
+- `scheduling`: expone `public.scheduling_reapplication_candidates()` (criterio 4, parte scheduling), documentada
+  en `src/features/scheduling/SPEC.md` («US-NOT-05 — candidatos de re-aplicación»), no en
+  `docs/contracts/scheduling-api.md` (ese contrato es el que consume `clients`, no este). Por clienta y técnica
+  con alguna cita `completed`, da la fecha de la más reciente (servicio efectivamente prestado, no el reservado)
+  y excluye a quien tenga cualquier cita futura activa, de cualquier técnica. Falta todavía el envoltorio de
+  TypeScript (análogo a `reminders-api.ts`) que esta feature consuma desde `scheduling`'s `index.ts`.
+- `delinquency`: `delinquency_client_states(p_client_ids uuid[])` (`docs/contracts/delinquency-api.md`, US-MOR-01)
+  ya resuelve la parte de morosidad del criterio 4. Solo `active` cuenta como morosidad (DOM-012); `pending_review`
+  no bloquea nada.
+- `notifications`: el canal (`NotificationChannel`, ADR-0006), `ClientContactPort` y el ciclo `run-reminder-cycle.ts`
+  ya existen y están pensados para sumar casos de uso nuevos (como ya hizo US-NOT-08 con las confirmaciones).
+
+### Decisiones del PO (DOM-012, Erick Duran — líder del proyecto, 2026-11-13)
+
+Registradas en `docs/process/DEPENDENCIES.md`.
+
+- **Cita futura:** cualquier cita futura agendada (de cualquier técnica) descarta el aviso, no solo una de la
+  técnica que vence.
+- **Reenvío:** una sola vez por ciclo de re-aplicación. No se repite en corridas siguientes del cron; solo una
+  nueva cita completada (que recalcula la fecha estimada) vuelve a habilitar el aviso para esa clienta y técnica.
+- **Anticipación:** 7 días por defecto, configurable de 1 a 30 por la administradora (mismo patrón que la gracia
+  de US-MOR-01 y el plazo de confirmación de US-NOT-08).
+- **Alcance de la pieza 1:** solo técnicas sueltas, tal como dice el criterio 1 («intervalo definido en el catálogo
+  de técnicas»); el backlog de esta historia no menciona paquetes, así que no entran a este cálculo.
+
+### Lo que ya hay (piezas)
+
+- **Pieza 2/12 — dominio puro** (`domain/reapplication-reminder.ts`): `computeReapplicationDueDate` (criterio 1:
+  última cita completada + intervalo del catálogo, con `addDays` nuevo en `shared/date-math.ts`, DOM-004) e
+  `isReapplicationDue` (criterios 2 y 3: entra en la ventana de anticipación configurada, y sigue avisando si la
+  fecha estimada ya pasó, igual que el plazo de US-NOT-08). `isValidAnticipationDays` valida el rango 1-30.
+  Pruebas: `domain/__tests__/reapplication-reminder.test.ts` y `shared/__tests__/date-math.test.ts`.
+- **Pieza 3/12 — contrato de `scheduling`** (`scheduling_reapplication_candidates`, migración
+  `20261113000000_scheduling_reapplication_candidates_fn.sql`): resuelve en SQL la mitad scheduling del
+  criterio 4 (cita futura de cualquier técnica) y da la fecha de la última cita completada por técnica,
+  documentado en `src/features/scheduling/SPEC.md`. pgTAP de 10 aserciones en verde contra Supabase local
+  (`scheduling_reapplication_candidates.test.sql`), igual que el resto de la suite (91 archivos, 1220 pruebas).
+- **Pieza 4/12 — envoltorio de `scheduling`** (`listSchedulingReapplicationCandidates`, exportada desde
+  `@/features/scheduling`): el lado `scheduling` del contrato ya tiene su caso de uso público, igual que
+  `listSchedulingAppointmentsForReminders` (US-NOT-03). Esta feature todavía no lo importa — eso es la
+  siguiente pieza, junto con el contrato equivalente de `delinquency` (`delinquency_client_states`, ya
+  existente, sin envoltorio propio de esta feature todavía).
+- **Pieza 5/12 — tabla de persistencia** (`notifications_reapplication_reminders`, migración
+  `20261114000001_notifications_reapplication_reminders.sql`): a diferencia de `notifications_reminders`
+  (US-NOT-03), no es una cola que espere un `send_at` futuro — no hay un evento que dispare la fila de
+  antemano, así que cada corrida del cron recalcula la fecha estimada contra `scheduling_reapplication_candidates`
+  (pieza 3) y, si ya toca, intenta enviar de inmediato en esa misma corrida. La fila solo deja constancia del
+  intento: `status` `'sent'` o `'failed'` (sin `'pending'`/`'claimed'`, que no aplican aquí), con `attempts`
+  para reintentar en corridas siguientes hasta el mismo tope que `MAX_REMINDER_ATTEMPTS` de US-NOT-03. La
+  restricción `UNIQUE (client_id, technique_id, last_completed_at)` es el «una vez por ciclo» que aprobó el
+  líder del proyecto: una nueva cita completada cambia `last_completed_at` y habilita una fila nueva. El CHECK
+  `sent_at_matches_status` impide una fila `'sent'` sin `sent_at` o una `'failed'` con `sent_at`. RLS solo
+  staff, mismo patrón que `notifications_reminders`. Prueba: pgTAP
+  `notifications_reapplication_reminders.test.sql` (12 aserciones: aislamiento SEC-002, el `UNIQUE` del ciclo
+  y el `CHECK` en los dos sentidos).
+
+### Qué no hace todavía
+
+Ninguno de los dos contratos (`scheduling` y `delinquency`) se consume todavía desde aquí: falta el caso de
+uso que una las dos lecturas con el dominio de la pieza 2 y escriba en la tabla de la pieza 5, la política de
+anticipación con su pantalla, y la integración al ciclo de recordatorios. El plan de piezas está en el PR de
+cada incremento.
+
 ## Qué no hace todavía
 
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
   mano. No lo pide ningún criterio de US-NOT-03 ni de US-NOT-07.
-- US-NOT-04, 05 y 06 reusan el canal pero no están construidas; US-CLI-06 está en curso (su sección). US-NOT-02 y US-NOT-08 están construidas y
-  tienen pendiente lo de su sección.
+- US-NOT-04 y 06 reusan el canal pero no están construidas; US-CLI-06 está en curso y US-NOT-05 se abrió (sus
+  secciones). US-NOT-02 y US-NOT-08 están construidas y tienen pendiente lo de su sección.
 
 ## Correcciones de la auditoría del 2026-10-23 (AUDIT.md, líder del proyecto)
 
