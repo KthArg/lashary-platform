@@ -3,15 +3,21 @@ import { render, screen, cleanup, fireEvent, waitFor, within } from '@testing-li
 import { formatMoney, moneyFromColones } from '@/shared/money'
 import type { ReviewViewModel } from '@/features/delinquency/ui/review/services/review-service'
 import { reviewMessages } from '@/features/delinquency/ui/review/constants/review-strings'
-import { ACTIVE_LIST_LIMIT, REVIEW_LIST_LIMIT } from '@/features/delinquency/domain/active-client'
+import { ACTIVE_CASES_LIST_LIMIT } from '@/features/delinquency/domain/active-case'
+import { REVIEW_LIST_LIMIT } from '@/features/delinquency/domain/active-client'
+import { EXCEPTION_HISTORY_LIST_LIMIT } from '@/features/delinquency/domain/delinquency-case'
 import { ReviewView } from '@/features/delinquency/ui/review/components/ReviewView'
 import { ReviewLoading } from '@/features/delinquency/ui/review/components/ReviewLoading'
 import { ReviewError } from '@/features/delinquency/ui/review/components/ReviewError'
 
 const decideCaseAction = vi.fn()
+const liftCaseAction = vi.fn()
+const forgiveCaseAction = vi.fn()
 const setGraceDaysAction = vi.fn()
 vi.mock('@/features/delinquency/ui/review/actions/review-actions', () => ({
   decideCaseAction: (...args: unknown[]) => decideCaseAction(...args),
+  liftCaseAction: (...args: unknown[]) => liftCaseAction(...args),
+  forgiveCaseAction: (...args: unknown[]) => forgiveCaseAction(...args),
   setGraceDaysAction: (...args: unknown[]) => setGraceDaysAction(...args),
 }))
 
@@ -19,6 +25,7 @@ vi.mock('@/features/delinquency/ui/review/actions/review-actions', () => ({
 const money = (colones: number): string => formatMoney(moneyFromColones(colones)).replace(/\s/g, ' ')
 
 const CASE_ID = '7b0e5f8e-3c1a-4c55-9c1e-2f4a6b8d0e11'
+const ACTIVE_CASE_ID = 'caso-activo-1'
 
 const ready: ReviewViewModel = {
   status: 'ready',
@@ -30,7 +37,7 @@ const ready: ReviewViewModel = {
     ],
     active: [
       {
-        caseId: 'caso-activo-1',
+        caseId: ACTIVE_CASE_ID,
         clientId: 'c3',
         clientName: 'Lucía Mora',
         appointmentId: 'cita-1',
@@ -38,13 +45,39 @@ const ready: ReviewViewModel = {
         since: new Date('2026-10-20T18:00:00Z'),
       },
     ],
+    lifted: [
+      {
+        caseId: 'caso-levantado-1',
+        clientId: 'c4',
+        clientName: 'Marta Soto',
+        pending: 5000,
+        exceptionReason: 'error de registro',
+        exceptionAmount: null,
+        decidedAt: new Date('2026-10-15T18:00:00Z'),
+      },
+    ],
+    forgiven: [
+      {
+        caseId: 'caso-condonado-1',
+        clientId: 'c5',
+        clientName: 'Sofía Rojas',
+        pending: 6000,
+        exceptionReason: 'buena clienta',
+        exceptionAmount: 6000,
+        decidedAt: new Date('2026-10-16T18:00:00Z'),
+      },
+    ],
     moreToReview: false,
     moreActive: false,
+    moreLifted: false,
+    moreForgiven: false,
   },
 }
 
 beforeEach(() => {
   decideCaseAction.mockReset()
+  liftCaseAction.mockReset()
+  forgiveCaseAction.mockReset()
   setGraceDaysAction.mockReset()
 })
 afterEach(cleanup)
@@ -77,31 +110,65 @@ describe('ReviewView', () => {
   })
 
   it('si hay más de lo que se muestra, lo avisa en cada lista y no lo calla', () => {
-    render(<ReviewView model={{ ...ready, view: { ...ready.view, moreToReview: true, moreActive: true } }} />)
+    render(
+      <ReviewView
+        model={{
+          ...ready,
+          view: { ...ready.view, moreToReview: true, moreActive: true, moreLifted: true, moreForgiven: true },
+        }}
+      />,
+    )
 
     expect(screen.getByText(reviewMessages.toReview.more(REVIEW_LIST_LIMIT))).toBeTruthy()
-    expect(screen.getByText(reviewMessages.active.more(ACTIVE_LIST_LIMIT))).toBeTruthy()
+    expect(screen.getByText(reviewMessages.active.more(ACTIVE_CASES_LIST_LIMIT))).toBeTruthy()
+    expect(screen.getByText(reviewMessages.history.liftedMore(EXCEPTION_HISTORY_LIST_LIMIT))).toBeTruthy()
+    expect(screen.getByText(reviewMessages.history.forgivenMore(EXCEPTION_HISTORY_LIST_LIMIT))).toBeTruthy()
   })
 
   it('si no hay más de lo que se muestra, no pone el aviso', () => {
     render(<ReviewView model={ready} />)
 
     expect(screen.queryByText(reviewMessages.toReview.more(REVIEW_LIST_LIMIT))).toBeNull()
-    expect(screen.queryByText(reviewMessages.active.more(ACTIVE_LIST_LIMIT))).toBeNull()
+    expect(screen.queryByText(reviewMessages.active.more(ACTIVE_CASES_LIST_LIMIT))).toBeNull()
   })
 
-  it('cada morosidad por revisar tiene sus botones de confirmar y descartar; las activas no', () => {
+  it('cada morosidad por revisar tiene sus botones de confirmar y descartar; las activas tienen levantar y condonar', () => {
     render(<ReviewView model={ready} />)
 
     expect(screen.getAllByRole('button', { name: reviewMessages.confirm })).toHaveLength(2)
     expect(screen.getAllByRole('button', { name: reviewMessages.dismiss })).toHaveLength(2)
+    expect(screen.getAllByRole('button', { name: reviewMessages.lift.button })).toHaveLength(1)
+    expect(screen.getAllByRole('button', { name: reviewMessages.forgive.button })).toHaveLength(1)
+  })
+
+  it('el historial de bloqueos levantados y de condonaciones muestra el saldo original, el motivo y la fecha', () => {
+    render(<ReviewView model={ready} />)
+
+    expect(screen.getByRole('heading', { level: 2, name: reviewMessages.history.liftedTitle })).toBeTruthy()
+    expect(screen.getByText('Marta Soto')).toBeTruthy()
+    expect(screen.getByText('error de registro')).toBeTruthy()
+
+    expect(screen.getByRole('heading', { level: 2, name: reviewMessages.history.forgivenTitle })).toBeTruthy()
+    expect(screen.getByText('Sofía Rojas')).toBeTruthy()
+    expect(screen.getByText('buena clienta')).toBeTruthy()
+    expect(screen.getAllByText(money(6000)).length).toBeGreaterThan(0)
   })
 
   it('sin morosidades dice que no hay ninguna en cada sección', () => {
-    render(<ReviewView model={{ status: 'ready', graceDays: 7, view: { toReview: [], active: [], moreToReview: false, moreActive: false } }} />)
+    render(
+      <ReviewView
+        model={{
+          status: 'ready',
+          graceDays: 7,
+          view: { toReview: [], active: [], lifted: [], forgiven: [], moreToReview: false, moreActive: false, moreLifted: false, moreForgiven: false },
+        }}
+      />,
+    )
 
     expect(screen.getByText(reviewMessages.toReview.empty)).toBeTruthy()
     expect(screen.getByText(reviewMessages.active.empty)).toBeTruthy()
+    expect(screen.getByText(reviewMessages.history.liftedEmpty)).toBeTruthy()
+    expect(screen.getByText(reviewMessages.history.forgivenEmpty)).toBeTruthy()
   })
 
   it('si no se pudo leer, avisa con un enlace para reintentar', () => {
@@ -141,6 +208,66 @@ describe('CaseDecisionButtons', () => {
     fireEvent.click(screen.getAllByRole('button', { name: reviewMessages.confirm })[0])
 
     await waitFor(() => expect(screen.getByText('No se pudo guardar la decisión. Inténtelo nuevamente.')).toBeTruthy())
+  })
+})
+
+describe('CaseExceptionActions', () => {
+  it('levantar bloqueo pide el motivo y, al confirmar, manda caseId y motivo', async () => {
+    liftCaseAction.mockResolvedValue({ ok: true, state: 'lifted' })
+    render(<ReviewView model={ready} />)
+
+    fireEvent.click(screen.getByRole('button', { name: reviewMessages.lift.button }))
+    fireEvent.change(screen.getByLabelText(reviewMessages.lift.reasonLabel), { target: { value: 'error de registro' } })
+    fireEvent.click(screen.getByRole('button', { name: reviewMessages.lift.confirm }))
+
+    await waitFor(() => expect(screen.getByText(reviewMessages.lift.notice)).toBeTruthy())
+    expect(liftCaseAction).toHaveBeenCalledWith({ caseId: ACTIVE_CASE_ID, reason: 'error de registro' })
+  })
+
+  it('cancelar levantar bloqueo no manda nada y vuelve a los botones', () => {
+    render(<ReviewView model={ready} />)
+
+    fireEvent.click(screen.getByRole('button', { name: reviewMessages.lift.button }))
+    fireEvent.click(screen.getByRole('button', { name: reviewMessages.lift.cancel }))
+
+    expect(liftCaseAction).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: reviewMessages.lift.button })).toBeTruthy()
+  })
+
+  it('condonar pide el monto y el motivo, y manda el monto como número', async () => {
+    forgiveCaseAction.mockResolvedValue({ ok: true, state: 'forgiven' })
+    render(<ReviewView model={ready} />)
+
+    fireEvent.click(screen.getByRole('button', { name: reviewMessages.forgive.button }))
+    fireEvent.change(screen.getByLabelText(reviewMessages.forgive.amountLabel), { target: { value: '4000' } })
+    fireEvent.change(screen.getByLabelText(reviewMessages.forgive.reasonLabel), { target: { value: 'buena clienta' } })
+    fireEvent.click(screen.getByRole('button', { name: reviewMessages.forgive.confirm }))
+
+    await waitFor(() => expect(screen.getByText(reviewMessages.forgive.notice)).toBeTruthy())
+    expect(forgiveCaseAction).toHaveBeenCalledWith({ caseId: ACTIVE_CASE_ID, amount: 4000, reason: 'buena clienta' })
+  })
+
+  it('condonar todo marca la casilla y precarga el monto pendiente completo', () => {
+    render(<ReviewView model={ready} />)
+
+    fireEvent.click(screen.getByRole('button', { name: reviewMessages.forgive.button }))
+    fireEvent.click(screen.getByLabelText(reviewMessages.forgive.forgiveAllLabel))
+
+    expect((screen.getByLabelText(reviewMessages.forgive.amountLabel) as HTMLInputElement).value).toBe('9000')
+  })
+
+  it('si condonar falla, muestra el motivo', async () => {
+    forgiveCaseAction.mockResolvedValue({ ok: false, error: 'El monto debe ser mayor que cero y no mayor que lo que debe la clienta.' })
+    render(<ReviewView model={ready} />)
+
+    fireEvent.click(screen.getByRole('button', { name: reviewMessages.forgive.button }))
+    fireEvent.change(screen.getByLabelText(reviewMessages.forgive.amountLabel), { target: { value: '5000' } })
+    fireEvent.change(screen.getByLabelText(reviewMessages.forgive.reasonLabel), { target: { value: 'motivo' } })
+    fireEvent.click(screen.getByRole('button', { name: reviewMessages.forgive.confirm }))
+
+    await waitFor(() =>
+      expect(screen.getByText('El monto debe ser mayor que cero y no mayor que lo que debe la clienta.')).toBeTruthy(),
+    )
   })
 })
 
