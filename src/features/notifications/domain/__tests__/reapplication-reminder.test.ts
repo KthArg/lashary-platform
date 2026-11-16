@@ -3,7 +3,9 @@ import { fixedDate } from '@/shared/testing/fixed-clock'
 import {
   computeReapplicationDueDate,
   isReapplicationDue,
+  isReapplicationExpired,
   isValidAnticipationDays,
+  reapplicationCycleKey,
   REAPPLICATION_ANTICIPATION_DAYS_MIN,
   REAPPLICATION_ANTICIPATION_DAYS_MAX,
   REAPPLICATION_ANTICIPATION_DAYS_DEFAULT,
@@ -39,6 +41,26 @@ describe('isReapplicationDue', () => {
   })
 })
 
+describe('isReapplicationExpired', () => {
+  const dueDate = fixedDate('2026-10-01T00:00:00Z')
+
+  it('no expira dentro de los 30 días de vencida', () => {
+    expect(isReapplicationExpired(dueDate, fixedDate('2026-10-31T00:00:00Z'))).toBe(false)
+  })
+
+  it('no expira justo al cumplirse el plazo', () => {
+    expect(isReapplicationExpired(dueDate, fixedDate('2026-10-31T00:00:00Z'))).toBe(false)
+  })
+
+  it('expira apenas pasa el plazo', () => {
+    expect(isReapplicationExpired(dueDate, new Date(fixedDate('2026-10-31T00:00:00Z').getTime() + 1))).toBe(true)
+  })
+
+  it('tampoco expira antes de que llegue la fecha estimada', () => {
+    expect(isReapplicationExpired(dueDate, fixedDate('2026-09-20T00:00:00Z'))).toBe(false)
+  })
+})
+
 describe('isValidAnticipationDays', () => {
   it.each([REAPPLICATION_ANTICIPATION_DAYS_MIN, REAPPLICATION_ANTICIPATION_DAYS_DEFAULT, REAPPLICATION_ANTICIPATION_DAYS_MAX])(
     'acepta %i dentro del rango',
@@ -49,5 +71,17 @@ describe('isValidAnticipationDays', () => {
 
   it.each([0, -1, 31, 1.5, '7', null, undefined])('rechaza %o fuera del rango o no entero', (value) => {
     expect(isValidAnticipationDays(value)).toBe(false)
+  })
+})
+
+describe('reapplicationCycleKey', () => {
+  it('es la misma clave para el mismo trío y distinta si cambia cualquiera de los tres', () => {
+    const lastCompletedAt = fixedDate('2026-09-01T17:00:00Z')
+    const key = reapplicationCycleKey('client-1', 'tecnica-1', lastCompletedAt)
+
+    expect(reapplicationCycleKey('client-1', 'tecnica-1', lastCompletedAt)).toBe(key)
+    expect(reapplicationCycleKey('client-2', 'tecnica-1', lastCompletedAt)).not.toBe(key)
+    expect(reapplicationCycleKey('client-1', 'tecnica-2', lastCompletedAt)).not.toBe(key)
+    expect(reapplicationCycleKey('client-1', 'tecnica-1', fixedDate('2026-10-01T17:00:00Z'))).not.toBe(key)
   })
 })

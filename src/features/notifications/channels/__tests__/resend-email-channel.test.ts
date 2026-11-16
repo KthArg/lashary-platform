@@ -3,6 +3,7 @@ import { isErr, isOk } from '@/shared/result'
 import { isChannelNotConfigured, isChannelSendFailed } from '../../domain/errors'
 import { REMINDER_MESSAGE_TEXTS } from '../../domain/reminder-message'
 import { CLIENT_NOTICE_MESSAGE_TEXTS } from '../../domain/client-notice-message'
+import { REAPPLICATION_MESSAGE_TEXTS } from '../../domain/reapplication-message'
 import { readResendEmailConfigFromEnv, resendEmailChannel } from '../resend-email-channel'
 
 afterEach(() => {
@@ -69,6 +70,20 @@ describe('resendEmailChannel', () => {
     const [, init] = fetchMock.mock.calls[0]
     expect(JSON.parse(init.body).subject).toBe(CLIENT_NOTICE_MESSAGE_TEXTS.emailSubject)
     expect(init.headers['Idempotency-Key']).toBe('notifications-reschedule_outcome-aviso-1')
+  })
+
+  it('un aviso de re-aplicación va con su propio asunto y su propia clave de idempotencia (US-NOT-05)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await resendEmailChannel({ apiKey: 'key', fromAddress: 'avisos@lashary.example' }).send({
+      messageId: 'reap-1', purpose: 'reapplication_reminder', contact: { phone: '+50688887777', email: 'clienta@example.com' },
+      message: 'ya se acerca', templateVariables: [],
+    })
+
+    const [, init] = fetchMock.mock.calls[0]
+    expect(JSON.parse(init.body).subject).toBe(REAPPLICATION_MESSAGE_TEXTS.emailSubject)
+    expect(init.headers['Idempotency-Key']).toBe('notifications-reapplication_reminder-reap-1')
   })
 
   it('una confirmación va con su propio asunto y su propia clave de idempotencia (US-NOT-08)', async () => {
