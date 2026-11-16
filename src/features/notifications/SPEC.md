@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "toda la historia: se abrió el 2026-11-13 y solo existe el arranque en docs (sección US-NOT-05, «Para aprobar por el PO», ya resuelta) y el contrato planeado con scheduling. Pendiente: tabla y función SQL de scheduling (candidatos de re-aplicación), dominio de la fecha estimada, política de anticipación con su pantalla, integración al ciclo de recordatorios, persistencia e idempotencia por ciclo, y las pruebas de cada pieza"
+    falta: "dominio de la fecha estimada ya existe (computeReapplicationDueDate, isReapplicationDue, domain/reapplication-reminder.ts, pieza 2/12). Pendiente: contrato y función SQL de scheduling (candidatos de re-aplicación), tabla de persistencia e idempotencia por ciclo, política de anticipación con su pantalla, integración al ciclo de recordatorios, y las pruebas de cada pieza"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -397,10 +397,19 @@ Registradas en `docs/process/DEPENDENCIES.md`.
 - **Alcance de la pieza 1:** solo técnicas sueltas, tal como dice el criterio 1 («intervalo definido en el catálogo
   de técnicas»); el backlog de esta historia no menciona paquetes, así que no entran a este cálculo.
 
+### Lo que ya hay (piezas)
+
+- **Pieza 2/12 — dominio puro** (`domain/reapplication-reminder.ts`): `computeReapplicationDueDate` (criterio 1:
+  última cita completada + intervalo del catálogo, con `addDays` nuevo en `shared/date-math.ts`, DOM-004) e
+  `isReapplicationDue` (criterios 2 y 3: entra en la ventana de anticipación configurada, y sigue avisando si la
+  fecha estimada ya pasó, igual que el plazo de US-NOT-08). `isValidAnticipationDays` valida el rango 1-30.
+  Pruebas: `domain/__tests__/reapplication-reminder.test.ts` y `shared/__tests__/date-math.test.ts`.
+
 ### Qué no hace todavía
 
-Nada del criterio 1 al 4: no hay contrato de `scheduling`, tabla, función SQL, dominio, política de anticipación,
-pantalla ni integración al ciclo. El plan de piezas está en el PR de cada incremento.
+Nada del criterio 4 (morosidad y cita futura se resuelven en SQL, pendiente): falta el contrato y la función SQL de
+`scheduling`, la tabla de persistencia con su idempotencia por ciclo, la política de anticipación con su pantalla,
+y la integración al ciclo de recordatorios. El plan de piezas está en el PR de cada incremento.
 
 ## Qué no hace todavía
 
