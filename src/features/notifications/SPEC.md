@@ -388,7 +388,7 @@ y [scheduling-api.md](../../../docs/contracts/scheduling-api.md#indicaciones-de-
 
 **Hecho** (pieza 3/8, 2026-11-13):
 
-- Migración `supabase/migrations/20261113000001_notifications_aftercare_messages.sql`.
+- Migración `supabase/migrations/20261115000001_notifications_aftercare_messages.sql`.
 - Tabla `notifications_aftercare_messages`: una fila por cita (`UNIQUE (appointment_id)`), sin FK a otras features, con RLS (la clienta lee las suyas, el staff lee y actualiza).
 - `notifications_record_aftercare`: copia el texto de `catalog_service_aftercare` y la nota recortada; sin `EXECUTE` para ningún rol de la API.
 - `notifications_claim_aftercare_messages`: reclamo en tandas con TTL y `FOR UPDATE SKIP LOCKED`, solo staff.
