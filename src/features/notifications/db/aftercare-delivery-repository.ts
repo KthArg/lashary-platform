@@ -5,7 +5,7 @@ import { AFTERCARE_NOTE_MAX_LENGTH, type AftercareMessage } from '../domain/afte
 import type { AftercareDeliveryRepository, RepositoryFailure } from '../application/ports'
 import { CLAIM_BATCH_SIZE, CLAIM_TTL_MINUTES } from './claim-limits'
 
-export const AFTERCARE_MESSAGES_TABLE = 'notifications_aftercare_messages'
+import { AFTERCARE_MESSAGES_TABLE } from './aftercare-messages-table'
 export const CLAIM_AFTERCARE_MESSAGES_FUNCTION = 'notifications_claim_aftercare_messages'
 const FAILED: RepositoryFailure = 'repository-failed'
 

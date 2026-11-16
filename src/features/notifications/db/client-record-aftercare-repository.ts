@@ -4,7 +4,7 @@ import { ok, err } from '@/shared/result'
 import { aftercareStorageFailed } from '../domain/errors'
 import { deliveryStateOf, type AdminAftercare } from '../domain/aftercare-message'
 import type { ClientRecordAftercareRepository } from '../application/ports'
-import { AFTERCARE_MESSAGES_TABLE } from './client-aftercare-repository'
+import { AFTERCARE_MESSAGES_TABLE } from './aftercare-messages-table'
 
 export const CLIENT_RECORD_AFTERCARE_COLUMNS =
   'id, appointment_id, service_name, aftercare_text, client_note, status, last_channel, created_at'

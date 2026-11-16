@@ -21,6 +21,19 @@ export function buildAftercareMessage(message: AftercareMessageContent, myAppoin
   ].join(PARAGRAPH_SEPARATOR)
 }
 
-export function buildAftercareTemplateVariables(message: Pick<AftercareMessage, 'serviceName'>, myAppointmentsUrl: string): string[] {
-  return [message.serviceName, myAppointmentsUrl]
+export const TEMPLATE_LINE_SEPARATOR = ' · '
+
+const LINE_BREAKS = /\s*\n+\s*/
+const REPEATED_SPACES = /\s+/g
+
+const flattenForTemplate = (lines: string[]): string =>
+  lines
+    .flatMap((line) => line.split(LINE_BREAKS))
+    .map((line) => line.replace(REPEATED_SPACES, ' ').trim())
+    .filter((line) => line.length > 0)
+    .join(TEMPLATE_LINE_SEPARATOR)
+
+export function buildAftercareTemplateVariables(message: AftercareMessageContent, myAppointmentsUrl: string): string[] {
+  const noteLine = message.clientNote === null ? [] : [`${AFTERCARE_MESSAGE_TEXTS.noteTitle}: ${message.clientNote}`]
+  return [message.serviceName, flattenForTemplate([message.aftercareText, ...noteLine]), myAppointmentsUrl]
 }
