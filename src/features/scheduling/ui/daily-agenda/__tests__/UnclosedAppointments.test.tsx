@@ -6,7 +6,7 @@ import { storageFailed } from '@/features/scheduling/domain/errors'
 import { UNCLOSED_APPOINTMENTS_LIMIT } from '@/features/scheduling/domain/appointment-closing.constants'
 import type { UnclosedAppointment } from '@/features/scheduling/application/closing-ports'
 import { DailyAgendaView } from '../components/DailyAgendaView'
-import { closeAppointmentMessages } from '../constants/close-appointment.constants'
+import { CLOSE_AFTERCARE_NOTE_MAX_LENGTH, closeAppointmentMessages } from '../constants/close-appointment.constants'
 import { dailyAgendaMessages as COPY } from '../constants/daily-agenda-strings'
 import { toDailyAgendaViewModel, toUnclosedSectionView } from '../utils/daily-agenda-format'
 import type { ClientLinks } from '../types/daily-agenda.types'
@@ -144,6 +144,7 @@ describe('cerrar la cita desde la agenda — US-AGE-12 criterios 1, 3, 4 y 7', (
         depositCredit: DEPOSIT,
         amountDue: SERVICE_PRICE - DEPOSIT,
         forfeitedDeposit: 0,
+        aftercareRecorded: true,
       },
     })
     renderAgenda(sectionOf([unclosed({})]))
@@ -190,6 +191,72 @@ describe('cerrar la cita desde la agenda — US-AGE-12 criterios 1, 3, 4 y 7', (
     fireEvent.click(screen.getByRole('button', { name: COPY.close.confirm }))
 
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe(closeAppointmentMessages.failed))
+  })
+
+  describe('indicaciones para la clienta', () => {
+    const NOTE = 'Evitar agua 24 horas'
+    const completedClosing = (aftercareRecorded: boolean) => ({
+      ok: true,
+      closing: {
+        appointmentId: 'cita-1',
+        outcome: 'completed',
+        chargeAmount: SERVICE_PRICE,
+        depositCredit: DEPOSIT,
+        amountDue: SERVICE_PRICE - DEPOSIT,
+        forfeitedDeposit: 0,
+        aftercareRecorded,
+      },
+    })
+    const noteField = () => screen.queryByLabelText(COPY.close.aftercareNoteLabel) as HTMLTextAreaElement | null
+    const writeNote = () => fireEvent.change(noteField() as HTMLTextAreaElement, { target: { value: NOTE } })
+    const confirmClosing = () => fireEvent.click(screen.getByRole('button', { name: COPY.close.confirm }))
+
+    it('con atendida aparece el campo con su etiqueta y tope, y con ausencia desaparece', () => {
+      renderAgenda(sectionOf([unclosed({})]))
+      openCloseOptions()
+
+      expect(noteField()?.maxLength).toBe(CLOSE_AFTERCARE_NOTE_MAX_LENGTH)
+
+      fireEvent.click(screen.getByLabelText(new RegExp(COPY.close.noShowLabel.slice(0, 11))))
+
+      expect(noteField()).toBeNull()
+    })
+
+    it('manda la nota escrita al cerrar como atendida', async () => {
+      mockCloseAppointment.mockResolvedValue(completedClosing(true))
+      renderAgenda(sectionOf([unclosed({})]))
+      openCloseOptions()
+
+      writeNote()
+      confirmClosing()
+
+      await waitFor(() =>
+        expect(mockCloseAppointment).toHaveBeenCalledWith({ appointmentId: 'cita-1', outcome: 'completed', aftercareNote: NOTE }),
+      )
+    })
+
+    it('si la nota no se guardó, el aviso lo dice distinto del cierre normal', async () => {
+      mockCloseAppointment.mockResolvedValue(completedClosing(false))
+      renderAgenda(sectionOf([unclosed({})]))
+      openCloseOptions()
+
+      confirmClosing()
+
+      await waitFor(() => expect(screen.getByRole('status').textContent).toContain('las indicaciones no se guardaron'))
+    })
+
+    it('si el cierre falla, al volver a abrirlo conserva lo escrito', async () => {
+      mockCloseAppointment.mockResolvedValue({ ok: false, error: closeAppointmentMessages.notClosable })
+      renderAgenda(sectionOf([unclosed({})]))
+      openCloseOptions()
+
+      writeNote()
+      confirmClosing()
+      await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy())
+      openCloseOptions()
+
+      expect(noteField()?.value).toBe(NOTE)
+    })
   })
 
   it('«Volver» cancela sin llamar a la acción', () => {

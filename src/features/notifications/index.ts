@@ -14,6 +14,7 @@ import { getClientContactForReminders } from '@/features/clients'
 import { listTechniquesForReapplication } from '@/features/catalog'
 import { confirmationRequestRepository } from './db/confirmation-request-repository'
 import { reminderRepository } from './db/reminder-repository'
+import { aftercareDeliveryRepository } from './db/aftercare-delivery-repository'
 import { clientNoticeDeliveryRepository } from './db/client-notice-delivery-repository'
 import { droppedNoticesRepository } from './db/dropped-notices-repository'
 import { delinquencyStatesGateway } from './db/delinquency-states-gateway'
@@ -23,6 +24,7 @@ import { runReminderCycle, type RunReminderCycleSummary } from './application/ru
 import { discoverDueReapplications, type DiscoverDueReapplicationsDeps } from './application/discover-reapplication-reminders'
 import { sendDueReapplications, type SendDueReapplicationsSummary } from './application/send-due-reapplications'
 import { buildAppointmentsUrl } from './domain/appointments-url'
+import { sendAftercareMessages, type SendAftercareMessagesSummary } from './application/send-aftercare-messages'
 import { sendConfirmationRequests, type SendConfirmationRequestsSummary } from './application/send-confirmation-requests'
 import type {
   AppointmentSnapshot,
@@ -95,6 +97,20 @@ export async function runNotificationsReminderCycle(): Promise<
           return err(REPOSITORY_FAILURE)
         }
 
+    const sendAftercare = appointmentsUrl
+      ? sendAftercareMessages({
+          aftercareMessages: aftercareDeliveryRepository(db),
+          getContact,
+          primaryChannel,
+          backupChannel,
+          appointmentsUrl,
+          clock: systemClock,
+        })
+      : async (): Promise<Result<SendAftercareMessagesSummary, RepositoryFailure>> => {
+          console.error('[notifications] NEXT_PUBLIC_SITE_URL no es una URL absoluta: no se mandan indicaciones sin enlace')
+          return err(REPOSITORY_FAILURE)
+        }
+
     return await runReminderCycle({
       expireUndecidedReschedules,
       listUpcoming,
@@ -118,6 +134,7 @@ export async function runNotificationsReminderCycle(): Promise<
       primaryChannel,
       backupChannel,
       sendConfirmationRequests: sendConfirmations,
+      sendAftercareMessages: sendAftercare,
     })()
   } finally {
     await closeSystemClient(db)
@@ -201,9 +218,16 @@ export { AdminInbox } from './ui/inbox/components/AdminInbox'
 export { loadMyClientNotices } from './ui/client-notices/services/client-notices-service'
 export { ClientNotices } from './ui/client-notices/components/ClientNotices'
 export type { ClientNoticesResult } from './ui/client-notices/services/client-notices-service'
+export { loadMyAftercare } from './ui/my-aftercare/services/my-aftercare-service'
+export { MyAftercare } from './ui/my-aftercare/components/MyAftercare'
+export type { MyAftercareResult } from './ui/my-aftercare/services/my-aftercare-service'
 export type { AdminInboxResult, MarkNoticeActionResult } from './ui/inbox/types/inbox-results'
 export type { InboxView } from './application/inbox'
 export type { InboxNotice } from './domain/inbox-notice'
+export { AFTERCARE_NOTE_MAX_LENGTH } from './domain/aftercare-message'
+export { loadClientAftercareForAdmin } from './ui/client-record-aftercare/services/client-record-aftercare-service'
+export { ClientRecordAftercare } from './ui/client-record-aftercare/components/ClientRecordAftercare'
+export type { ClientRecordAftercareResult } from './ui/client-record-aftercare/services/client-record-aftercare-service'
 
 export { ReapplicationSettingsPage } from './ui/reapplication-settings/components/ReapplicationSettingsPage'
 export { REAPPLICATION_SETTINGS_PATH } from './ui/reapplication-settings/constants/reapplication-settings-strings'

@@ -27,7 +27,8 @@ historias:
     estado: terminada
     evidencia: "PR de cierre #688 (us/US-NOT-08 a main), con 13 piezas apiladas: #689 a #701. Criterio 1 (mensaje de confirmación; por decisión del PO del 2026-11-05 sale al aprobar la cita, ADR-0003): trigger scheduling_appointments_notify_confirmation_request y notifications_record_confirmation_request (supabase/tests/database/scheduling_notify_confirmation_request.test.sql y notifications_confirmation_requests.test.sql, SEC-002), domain/__tests__/confirmation-request.test.ts (servicio, hora del estudio y enlace a Mis citas) y application/__tests__/send-confirmation-requests.test.ts. Criterio 2 (la respuesta cambia el estado y queda registrada con fecha y hora): scheduling_confirm_appointment y el evento scheduling.appointment.confirmed (scheduling_confirm_appointment.test.sql), application/__tests__/confirm-appointment.test.ts, ui/my-appointments/__tests__/perform-confirmation.test.ts y ConfirmAppointment.test.tsx; la cancelación usa la de US-AGE-06. Criterio 3 (advertencia del anticipo según la política vigente): ui/my-appointments/__tests__/ConfirmAppointment.test.tsx y my-appointments.test.ts; el aviso usa el anticipo requerido de la cita. Criterio 4 (citas sin confirmar dentro del plazo, destacadas en la vista diaria): scheduling_confirmation_policy.test.sql, domain/__tests__/appointment-confirmation.test.ts, ui/daily-agenda/__tests__/agenda-confirmation.test.tsx y la pantalla /admin/citas/confirmacion (ConfirmationPolicyForm.test.tsx, ConfirmationPolicyView.test.tsx). Criterio 5 (registro manual por la administradora): confirmAppointmentManuallyAction con segundo paso (agenda-confirmation.test.tsx) y scheduling_confirm_appointment.test.sql (staff, evento con actor staff). Criterio 6 (canal de US-NOT-07, sin reescribir al activar WhatsApp): application/send-confirmation-requests.ts corre dentro de runReminderCycle por el mismo canal primario y de respaldo (ADR-0006); application/__tests__/send-confirmation-requests.test.ts, run-reminder-cycle.test.ts y channels/__tests__. El envío revisa que la solicitud siga reclamada antes de mandar y, si se canceló mientras tanto, no manda (cuenta cancelled); queda una ventana de milisegundos que se documenta en este SPEC. Lo que falta para que un mensaje salga en producción no es código: número de WhatsApp Business, plantillas aprobadas por Meta (META_WHATSAPP_CONFIRMATION_TEMPLATE_NAME), dominio de Resend y disparo del ciclo; es la checklist «Antes de producción» de este SPEC y la misma deuda de US-NOT-03. Las 48 horas por defecto las confirmó el PO (Kenny) el 2026-11-06 (docs/process/DEPENDENCIES.md). Las citas ya aprobadas al desplegar no se rellenan (decisión del PO). Pendiente de proceso, no de código: capturas de #693, #694 y #696, y el visto bueno escrito del PO sobre los criterios 1, 3 y 6."
   - id: US-CLI-06
-    estado: no_iniciada
+    estado: terminada
+    evidencia: "Pila de 9 piezas sobre main: 1/9 contratos, 2/9 función de catalog, 3/9 tabla y funciones, 4/9 nota en el cierre, 5/9 mensaje y canales, 6/9 envío en el cron, 7/9 campo en el diálogo de cierre, 8/9 Tus cuidados en Mis citas, 9/9 expediente y cierre (números de PR al abrirse). Criterio 1 (texto de cuidados por técnica): lo cumple US-AGE-08; catalog/domain/techniques/__tests__/technique.test.ts («rechaza texto de cuidados vacío»), catalog/ui/techniques/__tests__/technique-schema.test.ts y catalog/__tests__/seed.integration.test.ts. Criterio 2 (al cerrar, por el canal configurado, la técnica efectivamente aplicada): pgTAP catalog_service_aftercare.test.sql, notifications_aftercare_messages.test.sql y scheduling_close_appointment_aftercare.test.sql; vitest application/__tests__/send-aftercare-messages.test.ts y run-reminder-cycle.test.ts, domain/__tests__/aftercare-message-text.test.ts, db/__tests__/aftercare-delivery-repository.test.ts y channels/__tests__ (meta-whatsapp-channel.test.ts, resend-email-channel.test.ts). El envío real depende de «Antes de producción», punto 8, igual que US-NOT-03. Criterio 3 (nota específica para la clienta): scheduling_close_appointment_aftercare.test.sql y, en scheduling, ui/daily-agenda/__tests__/close-appointment-schema.test.ts, close-appointment-actions.test.ts, UnclosedAppointments.test.tsx y close-aftercare-note-limit.test.ts, y db/__tests__/appointment-closing-repository.test.ts. Criterio 4 (visible en el expediente y en la vista de citas): ui/my-aftercare/__tests__/MyAftercare.test.tsx, db/__tests__/client-aftercare-repository.test.ts, ui/client-record-aftercare/__tests__/ClientRecordAftercare.test.tsx, db/__tests__/client-record-aftercare-repository.test.ts, application/__tests__/client-record-aftercare.test.ts y __tests__/rls-isolation.test.ts (sin el cruce A/B con datos, que cubre el pgTAP de la 3/9). Pendiente de proceso, no de código: visto bueno del PO sobre el ítem 3 de «Criterios diferidos» (sin efecto) y capturas de las piezas 7/9 a 9/9."
 flags: []
 deuda:
   - que: "Consultas una por una: reconcileReminders pide la cita de cada recordatorio pendiente (getActiveById en scheduling/db/reminder-snapshots-repository.ts), discoverReminders inserta de a un recordatorio (insertIfAbsent) y sendDueReminders lee el contacto de cada uno (getContact). Con muchas citas dentro de la ventana son N consultas por corrida"
@@ -48,6 +49,9 @@ deuda:
   - que: "Reseña externa (INT-005) de las 13 funciones SECURITY DEFINER de la pila de US-NOT-02, y dry_run de supabase-migrate con respaldo antes de aplicar las 10 migraciones (20261103000000 a 20261107000002; cinco anteriores a la última de main, dependen de --include-all)"
     aceptada_en: "Decisión de Kenny del 2026-11-06 al cerrar US-NOT-02 como terminada; el dry_run lo corre un admin"
     costo: "2h: reseña externa y corrida del dry_run"
+  - que: "Visto bueno escrito del PO sobre dejar sin efecto el ítem 3 de «Criterios diferidos» de docs/process/DEPENDENCIES.md (las indicaciones de US-CLI-06 van en «Mis citas», no en la vista de cuenta)"
+    aceptada_en: "Decisión de José Loría del 2026-11-13 al planear US-CLI-06"
+    costo: "0.5h: dejarlo escrito con fecha en DEPENDENCIES.md"
   - que: "runNotificationsReminderCycle y runReapplicationReminderCycle corren en paralelo desde el mismo receiveReminderCronRequest (pieza 18/21), cada uno con su propio cliente de sistema y sin coordinarse entre sí. Si una clienta cae en la ventana de los dos ciclos en la misma corrida (recordatorio de 24h de una cita y aviso de re-aplicación de una técnica), recibe dos mensajes de WhatsApp separados en vez de uno combinado: más costo de mensajería (si Meta cobra por conversación) y una experiencia peor, aunque cada ciclo sigue siendo idempotente por su propia clave de ciclo (sin duplicado dentro del mismo tipo de aviso)"
     aceptada_en: "Aceptado por Kenny Rodríguez el 2026-11-15 (docs/process/DEPENDENCIES.md)"
     costo: "3h: una cola compartida por clienta entre los dos ciclos (o combinar los dos mensajes en uno solo cuando coinciden en la misma corrida), con su prueba de integración"
@@ -351,6 +355,85 @@ WhatsApp falla: no se envían los dos siempre.
 - Mensaje y persistencia en TypeScript: `domain/confirmation-request.ts` arma el texto con el servicio, la hora del estudio y el enlace a «Mis citas», y las 3 variables de la plantilla de Meta en ese orden. `db/confirmation-request-repository.ts` solo actualiza filas `claimed`, así que una solicitud cancelada durante el envío sigue cancelada. Pruebas: `domain/__tests__/confirmation-request.test.ts` y `db/__tests__/confirmation-request-repository.test.ts`.
 - Canales por tipo de mensaje: `ChannelSendInput` lleva `messageId` (antes `reminderId`) y `purpose` (`reminder` o `appointment_confirmation`). WhatsApp usa `META_WHATSAPP_TEMPLATE_NAME` para el recordatorio y `META_WHATSAPP_CONFIRMATION_TEMPLATE_NAME` para la confirmación; sin ninguna plantilla manda texto libre, y con la del recordatorio pero sin la de confirmación responde `channelNotConfigured` y el mensaje pasa al correo. El correo toma el asunto del tipo y la clave `notifications-<tipo>-<id>`; la del recordatorio no cambia. Es la misma forma de #667 (US-NOT-02): al integrar queda un solo `MessagePurpose` con los tres tipos. Pruebas: `channels/__tests__/meta-whatsapp-channel.test.ts` y `resend-email-channel.test.ts`.
 - Envío: `application/send-confirmation-requests.ts` corre dentro de `runReminderCycle`, después de los recordatorios, por el mismo canal primario y de respaldo (criterio 6, ADR-0006). El mensaje enlaza `NEXT_PUBLIC_SITE_URL` más `SCHEDULING_MY_APPOINTMENTS_PATH` (`domain/appointments-url.ts`); si esa variable no es una URL absoluta http(s), no se manda ninguna confirmación (sin enlace no hay medio para confirmar) y el resumen lo cuenta en `confirmationsFailed`, sin frenar los recordatorios. Reintenta hasta `MAX_REMINDER_ATTEMPTS`; sin ningún canal configurado la solicitud vuelve a `pending` sin gastar un intento y el resumen la cuenta en `confirmationsUnconfigured`, `confirmationsCancelled`, `confirmationsCancelled`, así que no se pierde si el cron se activa antes que el canal. El error del proveedor se guarda con `sanitizeProviderError` (sin teléfonos, US-NOT-07). Si reclamar falla, el resumen lo cuenta en `confirmationsFailed` y la corrida conserva lo demás. Prueba: `application/__tests__/send-confirmation-requests.test.ts` y `run-reminder-cycle.test.ts`. Antes de mandar se relee que la solicitud siga reclamada: si la clienta confirmó entre el reclamo y el envío, no se manda y cuenta como `cancelled`. Queda una ventana de milisegundos entre esa lectura y la llamada al canal, que no se puede cerrar (el proveedor no tiene transacción); si ahí se cancela, `markSent` no encuentra la fila reclamada y también cuenta `cancelled`, no `sent`.
+
+## US-CLI-06: indicaciones de cuidado post-tratamiento
+
+Al cerrar una cita como completada, la clienta recibe por el canal de ADR-0006 las indicaciones de
+cuidado de lo que se le aplicó, más una nota opcional de la administradora, y las puede volver a leer
+en «Mis citas»; la administradora las ve en la ficha de la clienta. Terminada el 2026-11-13.
+
+**Cómo queda armado** (contratos en [catalog-api.md](../../../docs/contracts/catalog-api.md#indicaciones-de-cuidado-sql--contrato-de-us-cli-06)
+y [scheduling-api.md](../../../docs/contracts/scheduling-api.md#indicaciones-de-cuidado-al-cerrar-us-cli-06)):
+
+- Criterio 1 (texto de cuidados por técnica): ya existe desde US-AGE-08, `catalog_techniques.aftercare_text`
+  obligatorio y su campo en el formulario de técnicas. Esta historia no lo cambia; lo cita como prueba.
+- `scheduling_close_appointment` recibe `p_aftercare_note` y, al cerrar como `completed`, llama a
+  `notifications_record_aftercare` en la misma transacción. Si `notifications` falla, la cita se cierra
+  igual, devuelve `aftercare_recorded = false` y deja `scheduling.aftercare.failed` en la bitácora.
+- `notifications_record_aftercare` pide el texto vigente a `catalog_service_aftercare` (de la técnica
+  aplicada o de todas las técnicas del paquete) y lo **copia** en `notifications_aftercare_messages`, junto
+  con la nota. Desde ahí la indicación no depende del catálogo: editar la técnica no cambia lo que ya se
+  envió. Una fila por cita.
+- El ciclo del cron (`runReminderCycle`) reclama esas filas en tandas y las manda por el canal primario y
+  el de respaldo, como la confirmación de US-NOT-08. WhatsApp manda el servicio y el enlace a «Mis citas»
+  con la plantilla `META_WHATSAPP_AFTERCARE_TEMPLATE_NAME`; el correo lleva el texto completo.
+- Lo que ve la clienta no depende del envío: la indicación aparece en «Mis citas» desde el cierre, aunque el
+  canal no esté configurado todavía («Antes de producción»). La administradora ve además el estado del envío.
+
+**Piezas** (pila sobre `main`; 3 migraciones, una por pieza, INT-008):
+
+| Pieza | Qué trae | Feature |
+|---|---|---|
+| 1/9 | Contratos, esta sección y la corrección de `docs/process/DEPENDENCIES.md` | docs |
+| 2/9 | `catalog_service_aftercare` y su pgTAP | catalog |
+| 3/9 | `notifications_aftercare_messages`, RLS, `notifications_record_aftercare` y la función de reclamo, con su pgTAP (SEC-002) | notifications |
+| 4/9 | `p_aftercare_note` en `scheduling_close_appointment` y su pgTAP | scheduling |
+| 5/9 | Mensaje de las indicaciones, repositorio de entrega y soporte en los canales (plantilla y su línea en «Antes de producción») | notifications |
+| 6/9 | Caso de uso de envío y su lugar en el ciclo del cron | notifications |
+| 7/9 | Campo «Indicaciones para esta clienta» en el diálogo de cierre | scheduling |
+| 8/9 | «Tus cuidados» en «Mis citas», con estados vacío, carga y error (UI-003) y aislamiento por rol | notifications |
+| 9/9 | Sección «Indicaciones enviadas» en la pestaña Expediente y cierre de la historia | notifications |
+
+**Hecho** (pieza 3/9, 2026-11-13):
+
+- Migración `supabase/migrations/20261115000001_notifications_aftercare_messages.sql`.
+- Tabla `notifications_aftercare_messages`: una fila por cita (`UNIQUE (appointment_id)`), sin FK a otras features, con RLS (la clienta lee las suyas, el staff lee y actualiza).
+- `notifications_record_aftercare`: copia el texto de `catalog_service_aftercare` y la nota recortada; sin `EXECUTE` para ningún rol de la API.
+- `notifications_claim_aftercare_messages`: reclamo en tandas con TTL y `FOR UPDATE SKIP LOCKED`, solo staff.
+- Prueba pgTAP `supabase/tests/database/notifications_aftercare_messages.test.sql` (24 aserciones, SEC-002).
+
+**Hecho** (pieza 4/9, 2026-11-13):
+
+- Migración `supabase/migrations/20261115000002_scheduling_close_appointment_aftercare.sql`: `scheduling_close_appointment` con `p_aftercare_note` y la columna `aftercare_recorded`; llama a `notifications_record_aftercare` al cerrar como `completed` y, si falla, deja `scheduling.aftercare.failed` en la bitácora.
+- Prueba pgTAP `supabase/tests/database/scheduling_close_appointment_aftercare.test.sql` (19 aserciones).
+
+**Hecho** (pieza 5/9, 2026-11-13):
+
+- `domain/aftercare-message.ts` (`AftercareMessage`, `AFTERCARE_NOTE_MAX_LENGTH`, el mismo tope que el CHECK de SQL) y `domain/aftercare-message-text.ts` (`AFTERCARE_MESSAGE_TEXTS`, `buildAftercareMessage`, `buildAftercareTemplateVariables`).
+- Puerto `AftercareDeliveryRepository` y `db/aftercare-delivery-repository.ts`: reclamo en tandas con los límites de `claim-limits.ts` y actualizaciones solo sobre filas `claimed`.
+- Canales: `aftercare` en `MessagePurpose`, `META_WHATSAPP_AFTERCARE_TEMPLATE_NAME` y el asunto del correo.
+
+**Hecho** (pieza 6/9, 2026-11-13):
+
+- `application/send-aftercare-messages.ts` (`sendAftercareMessages`): reclama con el reloj inyectado, lee el contacto, manda por el canal primario y cae al de respaldo con propósito `aftercare`; marca enviado, reintento o agotado (`MAX_REMINDER_ATTEMPTS`), y sin ningún canal configurado la devuelve a pendiente sin gastar un intento. Sin contacto cuenta un intento fallido.
+- Corre en `runReminderCycle` justo después de los avisos a la clienta (US-NOT-02); un fallo se cuenta en `aftercareFailed` y no frena los demás pasos. Resumen: `aftercareSent`, `aftercareRetried`, `aftercareExhausted`, `aftercareErrored`, `aftercareUnconfigured`, `aftercareFailed`. Sin `NEXT_PUBLIC_SITE_URL` válida no se manda y se cuenta como fallo, como las confirmaciones.
+- Prueba `application/__tests__/send-aftercare-messages.test.ts` (8 casos) y casos nuevos en `application/__tests__/run-reminder-cycle.test.ts`.
+
+**Hecho** (pieza 7/9, 2026-11-13):
+
+- Campo «Indicaciones para esta clienta» en el diálogo de cierre de la agenda diaria (`scheduling`, ver su SPEC): la nota viaja como `p_aftercare_note` de `scheduling_close_appointment`.
+- El tope de 1000 caracteres vive en tres lugares: el CHECK de `notifications_aftercare_messages`, `AFTERCARE_NOTE_MAX_LENGTH` (`domain/aftercare-message.ts`) y `CLOSE_AFTERCARE_NOTE_MAX_LENGTH` (`scheduling/ui/daily-agenda/constants/close-appointment.constants.ts`). Scheduling no importa `AFTERCARE_NOTE_MAX_LENGTH` porque el barrel de `notifications` importa `scheduling` (ciclo) y arrastraría `node:crypto` y el cliente de sistema al bundle del navegador. `AFTERCARE_NOTE_MAX_LENGTH` se exporta en `index.ts` solo para que una prueba compare los dos valores de TypeScript: `scheduling/ui/daily-agenda/__tests__/close-aftercare-note-limit.test.ts`. El CHECK de SQL lo cubre `supabase/tests/database/notifications_aftercare_messages.test.sql` (nota de 1001 caracteres).
+
+**Hecho** (pieza 8/9, 2026-11-13):
+
+- `application/client-aftercare.ts` (`loadClientAftercare`), puerto `ClientAftercareRepository` y `db/client-aftercare-repository.ts`: lee de `notifications_aftercare_messages` solo `id, appointment_id, service_name, aftercare_text, client_note, created_at`, las más recientes primero y con tope `MY_AFTERCARE_PAGE_SIZE` (10) en la consulta. No filtra por clienta: lo hace la RLS (`select_own`). Un fallo de la base o una fila mal formada es `AftercareStorageFailed`, nunca una lista vacía.
+- `ui/my-aftercare/`: `loadMyAftercare` (módulo de servidor, no action) y el componente de servidor `MyAftercare` («Tus cuidados»: servicio, fecha del cierre en hora del estudio, texto con saltos de línea y la nota con su título si existe). Vacío con aviso y error con `role="alert"`; la carga la da `src/app/portal/citas/mis-citas/loading.tsx`.
+- `src/app/portal/citas/mis-citas/page.tsx` compone `ClientNotices` y `MyAftercare` en el espacio `notices` de `MyAppointmentsPage`, sin cambios en `scheduling`.
+- Pruebas: `db/__tests__/client-aftercare-repository.test.ts`, `application/__tests__/client-aftercare.test.ts`, `ui/my-aftercare/__tests__/MyAftercare.test.tsx` y un caso nuevo en `__tests__/rls-isolation.test.ts` (anon sin lectura, columnas internas denegadas; sin filas sembradas porque la prueba no usa service-role).
+
+**Hecho** (pieza 9/9, 2026-11-13): «Indicaciones enviadas» en la pestaña Expediente (`ui/client-record-aftercare/`, `ClientRecordAftercare` y `loadClientAftercareForAdmin`), compuesta por `src/app/admin/clients/[id]/expediente/page.tsx` debajo de `RecordView` sin cambios en `clients`. `listForClient` (`db/client-record-aftercare-repository.ts`) filtra por `client_id` porque la administradora elige la clienta por la URL, después de que `loadClientRecordAftercare` valida el uuid; `deliveryStateOf` resume `status` y `last_channel` en el estado del envío. La lectura no se audita: no es el expediente versionado (SEC-006). Pruebas en la evidencia del frontmatter.
+
+**Cierre (2026-11-13).** Los cuatro criterios quedan demostrados con prueba (evidencia en el frontmatter). Lo que falta es de proceso y de configuración, no de código: el visto bueno del PO sobre el ítem 3 de «Criterios diferidos» (deuda registrada), las capturas de las piezas 7/9 a 9/9 y la plantilla de «Antes de producción», punto 8, sin la cual el envío por WhatsApp no sale (el correo y «Mis citas» no dependen de ella).
 
 ## US-NOT-05: recordatorio de re-aplicación de tratamiento
 
@@ -671,8 +754,8 @@ aprobada por Meta, número de WhatsApp Business real y dominio verificado en Res
 
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
   mano. No lo pide ningún criterio de US-NOT-03 ni de US-NOT-07.
-- US-NOT-04, 06 y US-CLI-06 reusan el canal pero no están construidas. US-NOT-05 se abrió (sección de arriba).
-  US-NOT-02 y US-NOT-08 están construidas y tienen pendiente lo de su sección.
+- US-NOT-04 y 06 reusan el canal pero no están construidas; US-NOT-05 está en curso (su sección). US-NOT-02 y
+  US-NOT-08 están construidas y tienen pendiente lo de su sección.
 
 ## Correcciones de la auditoría del 2026-10-23 (AUDIT.md, líder del proyecto)
 
@@ -898,6 +981,10 @@ recordatorio real le llegue a una clienta; es un checklist de activación, no de
    horario que conserva) y un texto que sirva para el rechazo y para el vencimiento; su nombre va en
    `META_WHATSAPP_RESCHEDULE_OUTCOME_TEMPLATE_NAME` (`.env.example`). Sin ella el aviso sale por correo, y
    sin correo queda `failed`; la nota en «Mis citas» no depende de ningún canal.
+8. **Plantilla de las indicaciones de cuidado (US-CLI-06).** Con un número de WhatsApp Business real hace
+   falta otra plantilla aprobada, con 2 variables (servicio y enlace a «Mis citas»); su nombre va en
+   `META_WHATSAPP_AFTERCARE_TEMPLATE_NAME` (`.env.example`). Sin ella las indicaciones salen por correo con
+   el texto completo, y sin correo queda `failed`; lo que ve la clienta en «Mis citas» no depende del canal.
 
 ## Cierre (2026-10-27)
 
@@ -919,6 +1006,12 @@ en el frontmatter de esta historia).
   `src/app/admin/layout.tsx`.
 - `loadMyClientNotices`, `ClientNotices` y `ClientNoticesResult` (US-NOT-02). Consumidor:
   `src/app/portal/citas/mis-citas/page.tsx`.
+- `loadMyAftercare`, `MyAftercare` y `MyAftercareResult` (US-CLI-06). Consumidor:
+  `src/app/portal/citas/mis-citas/page.tsx`.
+- `loadClientAftercareForAdmin`, `ClientRecordAftercare` y `ClientRecordAftercareResult` (US-CLI-06). Consumidor: `src/app/admin/clients/[id]/expediente/page.tsx`.
+- `AFTERCARE_NOTE_MAX_LENGTH` (US-CLI-06). Consumidor: la prueba
+  `src/features/scheduling/ui/daily-agenda/__tests__/close-aftercare-note-limit.test.ts`; el código de
+  `scheduling` no lo importa (ver «Hecho», pieza 7/9).
 - Dominio y aplicación son superficie interna; ninguna otra feature los consume.
 
 ## Decisiones
@@ -931,3 +1024,21 @@ en el frontmatter de esta historia).
 - ADR-0006 (canal de notificaciones): WhatsApp directo contra la Graph API de Meta (sin Twilio,
   decisión del PO el 2026-10-21: lo exige quien pide el proyecto), Resend como respaldo por email
   (proveedor elegido por el PO el 2026-10-20).
+
+- US-CLI-06, 2026-11-13, decisiones de José Loría al planear la historia:
+  - La nota «para esa clienta» (criterio 3) se escribe en el diálogo de cierre y vale para esa cita.
+    Se descartó un texto fijo por clienta (no sirve para lo que pasó en una cita) y un segundo envío
+    desde la ficha (dos mensajes por cita, y el cierre saldría sin la nota).
+  - «Visible en la vista de citas del cliente» (criterio 4) se cumple en «Mis citas», que ya existe y ya
+    muestra los avisos de US-NOT-02. Esto deja sin efecto el ítem 3 de «Criterios diferidos» de
+    `docs/process/DEPENDENCIES.md`, escrito cuando esa vista no existía; queda pendiente el visto bueno
+    del PO.
+  - Una cita de paquete recibe las indicaciones de todas las técnicas del paquete, cada una con su
+    nombre. Se descartó un texto propio del paquete (columna y formulario nuevos en `catalog`).
+  - WhatsApp no admite saltos de línea en las variables de una plantilla, así que manda el servicio y el
+    enlace a «Mis citas»; el correo de respaldo lleva el texto completo. Una clienta sin cuenta solo lee
+    el texto completo si le llega el correo.
+  - En el expediente, las indicaciones van en una sección aparte y no entran al expediente versionado
+    (SEC-006): no son un dato clínico de la clienta sino un mensaje enviado.
+  - Tres migraciones, no cuatro: la tabla y sus funciones van juntas en la pieza 3/9.
+  - La pieza 5 se partió en dos (5/9 y 6/9) porque medía ~550 líneas contra el tope de INT-002; decisión de José Loría del 2026-11-13.

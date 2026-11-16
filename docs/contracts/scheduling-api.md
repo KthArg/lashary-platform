@@ -1,6 +1,6 @@
 # Contrato — API pública de citas
 
-> **Autoridad:** qué expone la feature `scheduling` a las demás features y bajo qué garantías. Es un contrato **de demanda**: nace de lo que necesita `clients` para el historial de citas de una clienta (US-CLI-02). Se versiona aquí antes de cualquier cambio de forma (INT-003). **Lectores:** feature `clients`. **Estado:** `listClientAppointments` implementado en la pieza 2 de US-CLI-02 (`application/list-client-appointments.ts` y `db/client-appointments-repository.ts`); `scheduling_client_last_visits` implementado en la pieza 2/4 de US-CLI-01 (`supabase/migrations/20261105000000_clients_list_last_visit.sql`); `scheduling_appointment_client` pactado en la pieza 1/7 de US-CLI-03 e implementado en la pieza 2/7 (`supabase/migrations/20261107010000_scheduling_appointment_client_fn.sql`). **Actualizado:** 2026-11-07.
+> **Autoridad:** qué expone la feature `scheduling` a las demás features y bajo qué garantías. Es un contrato **de demanda**: nace de lo que necesita `clients` para el historial de citas de una clienta (US-CLI-02). Se versiona aquí antes de cualquier cambio de forma (INT-003). **Lectores:** features `clients` y `notifications`. **Estado:** `listClientAppointments` implementado en la pieza 2 de US-CLI-02 (`application/list-client-appointments.ts` y `db/client-appointments-repository.ts`); `scheduling_client_last_visits` implementado en la pieza 2/4 de US-CLI-01 (`supabase/migrations/20261105000000_clients_list_last_visit.sql`); `scheduling_appointment_client` pactado en la pieza 1/7 de US-CLI-03 e implementado en la pieza 2/7 (`supabase/migrations/20261107010000_scheduling_appointment_client_fn.sql`). `scheduling_close_appointment` con la nota de cuidados pactada en la pieza 1/8 de US-CLI-06. **Actualizado:** 2026-11-13.
 
 ## Qué es
 
@@ -133,6 +133,55 @@ notifications_cancel_confirmation_request(p_appointment_id uuid) RETURNS void
 Confirmar la cita (`scheduling_confirm_appointment`) y el plazo que destaca las citas sin confirmar son internos de `scheduling`: otra feature no los usa.
 
 `SCHEDULING_MY_APPOINTMENTS_PATH`, exportada en `index.ts`, es la ruta de «Mis citas» que el mensaje enlaza.
+
+## Indicaciones de cuidado al cerrar (US-CLI-06)
+
+Al cerrar una cita como completada (US-AGE-12), `scheduling` le pide a `notifications` que guarde las indicaciones de cuidado de lo que se aplicó, con la nota opcional que la administradora escribe en el diálogo de cierre (criterios 2 y 3 de US-CLI-06). Va por una función SQL de `notifications` que llama la función de cierre, en la misma transacción, igual que los triggers de US-NOT-01 y US-NOT-08. `notifications` no lee la tabla de citas (ARCH-005).
+
+### La función de cierre recibe la nota
+
+```sql
+scheduling_close_appointment(
+  p_appointment_id         uuid,
+  p_outcome                text,
+  p_delivered_technique_id uuid DEFAULT NULL,
+  p_aftercare_note         text DEFAULT NULL
+) RETURNS TABLE (
+  appointment_id     uuid,
+  outcome            text,
+  charge_amount      bigint,
+  deposit_credit     bigint,
+  amount_due         bigint,
+  forfeited_deposit  bigint,
+  aftercare_recorded boolean
+)
+```
+
+- **Cambia la firma:** agrega `p_aftercare_note` al final, con `DEFAULT NULL`, y la columna `aftercare_recorded` al resultado. La migración borra la función de tres parámetros y crea esta, con los mismos permisos (`EXECUTE` solo para `authenticated`). No quedan dos versiones: PostgREST no sabría a cuál llamar. Una llamada que solo pasa los tres parámetros de antes sigue funcionando, porque el cuarto tiene valor por defecto (expand, INT-008).
+- `p_aftercare_note` solo se acepta con `p_outcome = 'completed'`. Con `no_show` y una nota que no sea `NULL` ni esté vacía, la función se rechaza con `scheduling_close_note_not_allowed`, antes de cerrar nada: la clienta no vino y no hay nada que cuidar.
+- El largo y el formato de la nota los valida `notifications` (es su dato); `scheduling` la pasa tal cual.
+- `aftercare_recorded` es `true` si las indicaciones quedaron guardadas, y `false` si la cita se cerró pero `notifications` falló. Con `no_show` es `false`. Sirve para que el diálogo distinga «se cerró» de «se cerró, pero las indicaciones no se guardaron», sin perder el cierre.
+
+### Lo que se le pasa a `notifications`
+
+```sql
+notifications_record_aftercare(
+  p_appointment_id uuid,
+  p_client_id      uuid,
+  p_technique_id   uuid,
+  p_package_id     uuid,
+  p_service_name   text,
+  p_client_note    text
+) RETURNS void
+```
+
+- Se llama solo al cerrar como `completed`, después de registrar el cargo y antes de devolver el resultado. Una cita `completed` siempre tiene clienta: el cierre ya exige `client_id` para cobrar.
+- `p_technique_id` es la técnica **efectivamente aplicada** (`delivered_technique_id`), que puede ser distinta de la reservada. En una cita de paquete va `NULL` y `p_package_id` lleva el paquete; un paquete no admite otro servicio prestado.
+- `p_service_name` es `delivered_technique_name`: la técnica o, en una cita de paquete, el paquete.
+- Ningún rol de la API puede ejecutarla: nadie fabrica indicaciones por PostgREST.
+- **Si `notifications` falla, la cita igual se cierra.** La función de cierre atrapa el error en su propio bloque (`RAISE WARNING`), devuelve `aftercare_recorded = false` y deja `scheduling.aftercare.failed` en `audit_events` con el `id` de la cita: el cierre y su cargo importan más que el mensaje, como en la confirmación de US-NOT-08.
+
+Prueba: pgTAP `supabase/tests/database/scheduling_close_appointment_aftercare.test.sql` (pieza 4/8 de US-CLI-06): cerrar completada registra las indicaciones con la técnica aplicada o el paquete, la nota viaja, `no_show` con nota se rechaza sin cerrar, una falla de `notifications` no tumba el cierre y deja el evento, y la llamada de tres parámetros sigue funcionando.
 
 ## Eventos de dominio
 

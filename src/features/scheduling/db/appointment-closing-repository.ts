@@ -3,6 +3,7 @@ import { err, ok } from '@/shared/result'
 import {
   appointmentNotChargeable,
   appointmentNotClosable,
+  closeNoteNotAllowed,
   storageFailed,
   techniqueNotAvailable,
 } from '../domain/errors'
@@ -22,6 +23,7 @@ type CloseRow = {
   deposit_credit: number
   amount_due: number
   forfeited_deposit: number
+  aftercare_recorded: boolean
 }
 
 function toCloseError(message: string, appointmentId: string, deliveredTechniqueId?: string): CloseAppointmentError {
@@ -32,6 +34,8 @@ function toCloseError(message: string, appointmentId: string, deliveredTechnique
       return appointmentNotChargeable(appointmentId)
     case CLOSE_ERROR_MESSAGES.techniqueNotAvailable:
       return techniqueNotAvailable(deliveredTechniqueId ?? appointmentId)
+    case CLOSE_ERROR_MESSAGES.noteNotAllowed:
+      return closeNoteNotAllowed(appointmentId)
     default:
       return storageFailed(message)
   }
@@ -45,6 +49,7 @@ function toClosedAppointment(row: CloseRow): ClosedAppointment {
     depositCredit: Number(row.deposit_credit),
     amountDue: Number(row.amount_due),
     forfeitedDeposit: Number(row.forfeited_deposit),
+    aftercareRecorded: row.aftercare_recorded === true,
   }
 }
 
@@ -55,6 +60,7 @@ export function createSupabaseAppointmentClosingRepository(db: SupabaseClient): 
         p_appointment_id: input.appointmentId,
         p_outcome: input.outcome,
         p_delivered_technique_id: input.deliveredTechniqueId ?? null,
+        p_aftercare_note: input.aftercareNote ?? null,
       })
 
       if (error) return err(toCloseError(error.message, input.appointmentId, input.deliveredTechniqueId))

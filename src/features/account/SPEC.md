@@ -2,7 +2,7 @@
 feature: account
 dri: pendiente
 estado: no_iniciada
-actualizado: 2026-08-29
+actualizado: 2026-11-13
 historias:
   []
 flags: []
@@ -12,7 +12,7 @@ defectos: []
 
 # account
 
-Vista de cuenta de la clienta (mis citas, saldo, indicaciones). Sin historia propia (ADR-0007): se materializa con US-MOR-03 (estado de cuenta) y US-CLI-06 (indicaciones visibles); esta feature es duena del codigo de la vista.
+Vista de cuenta de la clienta (mis citas, saldo). Sin historia propia (ADR-0007): se materializa con US-MOR-03 (estado de cuenta); esta feature es duena del codigo de la vista. Las indicaciones de cuidado de US-CLI-06 no van aqui: se muestran en «Mis citas» (decision del 2026-11-13, `docs/process/DEPENDENCIES.md`, item 3 de «Criterios diferidos»).
 
 ## Qué hace hoy
 
