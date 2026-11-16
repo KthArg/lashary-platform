@@ -2,7 +2,7 @@
 feature: catalog
 dri: pendiente
 estado: terminada
-actualizado: 2026-11-06
+actualizado: 2026-11-13
 historias:
   - id: US-AGE-08
     estado: terminada
@@ -141,6 +141,7 @@ Detalle y garantías: [docs/contracts/catalog-api.md](../../../docs/contracts/ca
 - Tipos: `TechniqueView`, `ServiceFamily`, `TechniqueSnapshot`. La entidad de dominio `Technique` (usa `Money`) no cruza la frontera.
 - `create` / `update` / `deactivate` **no se exportan**: son admin, se usan por server action dentro de `catalog/ui/`.
 - Contrato SQL `public.catalog_booking_terms(technique_id, is_first_time)` (migración `20261018000003_catalog_booking_terms_fn.sql`): las condiciones de la técnica que usa la reserva de US-AGE-05, para que `scheduling` no lea `catalog_techniques`. Detalle en [catalog-api.md](../../../docs/contracts/catalog-api.md). Prueba: pgTAP `catalog_booking_terms.test.sql`.
+- `listTechniquesForReapplication(query?, db?)` (`reapplication-api.ts`): mismo caso de uso que `listTechniques`, pero acepta un `SupabaseClient` explícito — igual que `reminders-api.ts` de `scheduling` — porque el cron de US-NOT-05 (feature `notifications`) no tiene cookies de sesión y necesita pasar su propio cliente de sistema; `listTechniques` sigue usando `createClient()` de borde para páginas y server actions, sin tocarse. `notifications` la usa para leer `reapplicationIntervalDays` y `name` de todas las técnicas activas en una sola consulta (PERF-005), no una por candidata.
 
 ## Decisiones
 
