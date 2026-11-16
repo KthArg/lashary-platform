@@ -7,6 +7,11 @@ export const REVIEW_ERRORS = {
   saveFailed: 'No se pudo guardar la decisión. Inténtelo nuevamente.',
   invalidGraceDays: 'Ingrese un número entero de 1 a 90.',
   graceSaveFailed: 'No se pudo guardar el periodo de gracia. Inténtelo nuevamente.',
+  caseNotActive: 'Esa morosidad ya no está activa. Recargue la página para ver su estado.',
+  invalidReason: 'Escriba el motivo.',
+  invalidForgiveAmount: 'El monto debe ser mayor que cero y no mayor que lo que debe la clienta.',
+  liftFailed: 'No se pudo levantar el bloqueo. Inténtelo nuevamente.',
+  forgiveFailed: 'No se pudo registrar la condonación. Inténtelo nuevamente.',
 } as const
 
 export const reviewMessages = {
@@ -24,6 +29,36 @@ export const reviewMessages = {
     title: 'Morosidades activas',
     empty: 'Ninguna clienta tiene una morosidad activa.',
     more: (shown: number) => `Hay más morosidades activas. Se muestran las ${shown} más recientes.`,
+  },
+  lift: {
+    button: 'Levantar bloqueo',
+    hint: 'Levanta el bloqueo sin registrar un pago. El saldo original de la clienta no cambia.',
+    reasonLabel: 'Motivo',
+    confirm: 'Levantar',
+    cancel: 'Cancelar',
+    notice: 'Bloqueo levantado.',
+  },
+  forgive: {
+    button: 'Condonar',
+    hint: 'Perdona todo o parte de lo que debe. El caso se cierra con el monto exacto que se condone.',
+    amountLabel: 'Monto a condonar',
+    forgiveAllLabel: 'Condonar todo lo pendiente',
+    reasonLabel: 'Motivo',
+    confirm: 'Condonar',
+    cancel: 'Cancelar',
+    notice: 'Condonación registrada.',
+  },
+  history: {
+    liftedTitle: 'Bloqueos levantados',
+    liftedEmpty: 'Ningún bloqueo levantado todavía.',
+    liftedMore: (shown: number) => `Hay más bloqueos levantados. Se muestran los ${shown} más recientes.`,
+    forgivenTitle: 'Morosidades condonadas',
+    forgivenEmpty: 'Ninguna morosidad condonada todavía.',
+    forgivenMore: (shown: number) => `Hay más morosidades condonadas. Se muestran las ${shown} más recientes.`,
+    originalPendingLabel: 'Saldo original',
+    forgivenAmountLabel: 'Condonado',
+    reasonLabel: 'Motivo',
+    decidedLabel: 'Fecha',
   },
   grace: {
     title: 'Periodo de gracia',

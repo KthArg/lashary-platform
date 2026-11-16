@@ -330,3 +330,12 @@ agrega `lifted`/`forgiven`/`moreLifted`/`moreForgiven` (vacíos) al modelo de pr
 `ReviewView` ya exige — la pantalla todavía no los muestra. `npx tsc --noEmit` sin errores en todo el repo;
 `npx vitest run src/features/delinquency`: 99/99. Todavía sin UI de levantar/condonar ni secciones de
 historial visibles: piezas siguientes.
+
+### Pieza 7 — acciones del servidor
+
+`ui/review/actions/review-actions.ts` agrega `liftCaseAction` y `forgiveCaseAction` (sesión admin,
+validación con Zod, traducción de los errores tipados al texto de `REVIEW_ERRORS`, `revalidatePath` tras
+guardar). `ui/review/validation/lift-case-schema.ts` y `forgive-case-schema.ts` (motivo de 1 a 500
+caracteres, monto entero positivo). `ui/review/types/review-results.ts` agrega `LiftCaseActionResult`/
+`ForgiveCaseActionResult`. `ui/review/constants/review-strings.ts` agrega el texto de los botones, los
+formularios y el historial. Todavía nadie llama estas acciones desde la pantalla: pieza siguiente.
