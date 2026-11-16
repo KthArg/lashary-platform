@@ -2,7 +2,7 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-13
+actualizado: 2026-11-15
 historias:
   - id: US-NOT-01
     estado: terminada
@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "dominio (pieza 2/12), contrato SQL de scheduling_reapplication_candidates con pgTAP (pieza 3/12), su envoltorio TypeScript (pieza 4/12) y la tabla notifications_reapplication_reminders con su pgTAP (pieza 5/12) ya existen. Pendiente: caso de uso que una scheduling y delinquency con el dominio y escriba en la tabla, política de anticipación con su pantalla, integración al ciclo de recordatorios, y las pruebas de cada pieza"
+    falta: "los cuatro criterios completos de punta a punta (piezas 2 a 21): dominio, contrato de scheduling, tabla con idempotencia por ciclo, descubrimiento (con tope de 30 días vencidos y un solo aviso por clienta, pieza 19), envío con reintentos, la política de anticipación con su pantalla en /admin/citas/re-aplicacion, y el llamador del ciclo en receiveReminderCronRequest (pieza 18, aislado del ciclo de recordatorios, abortando si falla leer la anticipación en vez de usar el valor por defecto en silencio, pieza 20). Solo falta el disparador en producción (Vercel Cron o GitHub Actions) y la cuenta de sistema del cron en producción — checklist de activación externa, no código. El riesgo de WhatsApp duplicado entre los dos ciclos del cron queda como deuda aceptada (ver 'deuda' arriba)"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -49,6 +49,9 @@ deuda:
   - que: "Reseña externa (INT-005) de las 13 funciones SECURITY DEFINER de la pila de US-NOT-02, y dry_run de supabase-migrate con respaldo antes de aplicar las 10 migraciones (20261103000000 a 20261107000002; cinco anteriores a la última de main, dependen de --include-all)"
     aceptada_en: "Decisión de Kenny del 2026-11-06 al cerrar US-NOT-02 como terminada; el dry_run lo corre un admin"
     costo: "2h: reseña externa y corrida del dry_run"
+  - que: "runNotificationsReminderCycle y runReapplicationReminderCycle corren en paralelo desde el mismo receiveReminderCronRequest (pieza 18/21), cada uno con su propio cliente de sistema y sin coordinarse entre sí. Si una clienta cae en la ventana de los dos ciclos en la misma corrida (recordatorio de 24h de una cita y aviso de re-aplicación de una técnica), recibe dos mensajes de WhatsApp separados en vez de uno combinado: más costo de mensajería (si Meta cobra por conversación) y una experiencia peor, aunque cada ciclo sigue siendo idempotente por su propia clave de ciclo (sin duplicado dentro del mismo tipo de aviso)"
+    aceptada_en: "Aceptado por Kenny Rodríguez el 2026-11-15 (docs/process/DEPENDENCIES.md)"
+    costo: "3h: una cola compartida por clienta entre los dos ciclos (o combinar los dos mensajes en uno solo cuando coinciden en la misma corrida), con su prueba de integración"
 defectos: []
 ---
 
@@ -447,7 +450,7 @@ PERF-005 (sin queries en loop, igual que `send-due-reminders`), INT-003 (contrat
 - `notifications`: el canal (`NotificationChannel`, ADR-0006), `ClientContactPort` y el ciclo `run-reminder-cycle.ts`
   ya existen y están pensados para sumar casos de uso nuevos (como ya hizo US-NOT-08 con las confirmaciones).
 
-### Decisiones del PO (DOM-012, Erick Duran — líder del proyecto, 2026-11-13)
+### Decisiones del PO (DOM-012, Kenny Rodríguez — líder del proyecto, 2026-11-13)
 
 Registradas en `docs/process/DEPENDENCIES.md`.
 
@@ -462,22 +465,22 @@ Registradas en `docs/process/DEPENDENCIES.md`.
 
 ### Lo que ya hay (piezas)
 
-- **Pieza 2/12 — dominio puro** (`domain/reapplication-reminder.ts`): `computeReapplicationDueDate` (criterio 1:
+- **Pieza 2/21 — dominio puro** (`domain/reapplication-reminder.ts`): `computeReapplicationDueDate` (criterio 1:
   última cita completada + intervalo del catálogo, con `addDays` nuevo en `shared/date-math.ts`, DOM-004) e
   `isReapplicationDue` (criterios 2 y 3: entra en la ventana de anticipación configurada, y sigue avisando si la
   fecha estimada ya pasó, igual que el plazo de US-NOT-08). `isValidAnticipationDays` valida el rango 1-30.
   Pruebas: `domain/__tests__/reapplication-reminder.test.ts` y `shared/__tests__/date-math.test.ts`.
-- **Pieza 3/12 — contrato de `scheduling`** (`scheduling_reapplication_candidates`, migración
+- **Pieza 3/21 — contrato de `scheduling`** (`scheduling_reapplication_candidates`, migración
   `20261113000000_scheduling_reapplication_candidates_fn.sql`): resuelve en SQL la mitad scheduling del
   criterio 4 (cita futura de cualquier técnica) y da la fecha de la última cita completada por técnica,
   documentado en `src/features/scheduling/SPEC.md`. pgTAP de 10 aserciones en verde contra Supabase local
   (`scheduling_reapplication_candidates.test.sql`), igual que el resto de la suite (91 archivos, 1220 pruebas).
-- **Pieza 4/12 — envoltorio de `scheduling`** (`listSchedulingReapplicationCandidates`, exportada desde
+- **Pieza 4/21 — envoltorio de `scheduling`** (`listSchedulingReapplicationCandidates`, exportada desde
   `@/features/scheduling`): el lado `scheduling` del contrato ya tiene su caso de uso público, igual que
   `listSchedulingAppointmentsForReminders` (US-NOT-03). Esta feature todavía no lo importa — eso es la
   siguiente pieza, junto con el contrato equivalente de `delinquency` (`delinquency_client_states`, ya
   existente, sin envoltorio propio de esta feature todavía).
-- **Pieza 5/12 — tabla de persistencia** (`notifications_reapplication_reminders`, migración
+- **Pieza 5/21 — tabla de persistencia** (`notifications_reapplication_reminders`, migración
   `20261114000001_notifications_reapplication_reminders.sql`): a diferencia de `notifications_reminders`
   (US-NOT-03), no es una cola que espere un `send_at` futuro — no hay un evento que dispare la fila de
   antemano, así que cada corrida del cron recalcula la fecha estimada contra `scheduling_reapplication_candidates`
@@ -491,12 +494,242 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   `notifications_reapplication_reminders.test.sql` (12 aserciones: aislamiento SEC-002, el `UNIQUE` del ciclo
   y el `CHECK` en los dos sentidos).
 
+- **Pieza 6/21 — caso de uso `discoverDueReapplications`** (`application/discover-reapplication-reminders.ts`):
+  une las tres lecturas (candidatos de `scheduling`, intervalo y nombre de cada técnica de `catalog` en un
+  solo `listTechniquesWithInterval` — una consulta acotada al catálogo completo, no una por candidata,
+  PERF-005 — y `delinquency_client_states`) con el dominio de la pieza 2. Solo `active` bloquea (DOM-012:
+  `pending_review` todavía no tiene consecuencia); una técnica sin intervalo configurado no entra. Todavía
+  no escribe en la tabla de la pieza 5 ni envía nada — ese es el puerto `ReapplicationCandidatesPort` +
+  `TechniqueReapplicationPort` + `DelinquencyStatesPort` recién declarados en `application/ports.ts`, sin
+  adaptador real todavía (la siguiente pieza conecta `scheduling`, `catalog` y `delinquency` de verdad).
+  Pruebas: `application/__tests__/discover-reapplication-reminders.test.ts` (8 casos: candidata dentro y
+  fuera de la ventana de anticipación, morosidad activa excluye y `pending_review` no, técnica sin
+  intervalo no entra, y los tres fallos de lectura como `RepositoryFailure`).
+
+- **Pieza 7/21 — adaptadores reales** (`discoverReapplicationReminders`, exportada desde `index.ts`):
+  conecta de verdad los tres puertos de la pieza 6. `db/delinquency-states-gateway.ts` llama
+  `delinquency_client_states` por RPC — mismo gateway que ya usa `clients`, repetido aquí porque cada
+  feature consume el contrato por su propio puerto (ARCH-004), sin importar el de `clients`. Para el
+  catálogo, `catalog` ganó `listTechniquesForReapplication(query?, db?)` (`catalog/reapplication-api.ts`,
+  documentado en su SPEC): el cron no tiene cookies de sesión, así que `listTechniques` (de borde,
+  `createClient()`) no le serviría — mismo motivo que ya resolvió `reminders-api.ts` de `scheduling`. Una
+  sola consulta con `activeOnly: true` trae todas las técnicas activas; una desactivada no genera aviso,
+  porque la clienta ya no podría reservarla (supuesto técnico, no una decisión de producto confirmada
+  — a revisar si alguna vez importa). La anticipación usa `REAPPLICATION_ANTICIPATION_DAYS_DEFAULT` (7,
+  pieza 2) como valor fijo hasta que exista la política configurable (criterio 3, pieza siguiente).
+  `discoverReapplicationReminders` todavía no escribe en la tabla de la pieza 5 ni envía nada — solo
+  devuelve la lista de quién ya debería recibir el aviso.
+  Pruebas: `db/__tests__/delinquency-states-gateway.test.ts` (3 casos). Sin prueba dedicada para el
+  cableado de `index.ts` (capa de composición sin lógica propia, igual que `runNotificationsReminderCycle`).
+  `npx tsc --noEmit` sin errores.
+  **Corrección de la revisión (2026-11-15):** `discoverReapplicationReminders` nunca tuvo quien la
+  llamara — ni una pantalla de inspección, ni una prueba, ni otro código. Eliminada en la pieza 19/21.
+
+- **Pieza 8/21 — mensaje y canal** (`domain/reapplication-message.ts`, `REAPPLICATION_MESSAGE_TEXTS`,
+  DOM-009): criterio 2, el texto del aviso (técnica y fecha estimada, sin hora — `formatStudioDate`,
+  nuevo en `shared/studio-time.ts`, igual que `addDays` en la pieza 2: la aritmética/formato de
+  fechas vive en `shared/`). `MessagePurpose` gana `'reapplication_reminder'`; los dos canales
+  (`meta-whatsapp-channel.ts`, `resend-email-channel.ts`) ya saben su asunto y su propia variable de
+  plantilla (`META_WHATSAPP_REAPPLICATION_TEMPLATE_NAME`, documentada en `.env.example`), mismo patrón
+  que `reschedule_outcome` (US-NOT-02) y `appointment_confirmation` (US-NOT-08): sin esa plantilla no
+  manda texto libre (Meta lo rechazaría) y cae al correo. Todavía nadie llama a estas funciones desde
+  un caso de uso de envío — esa es la siguiente pieza.
+  Pruebas: `domain/__tests__/reapplication-message.test.ts`, `shared/__tests__/studio-time.test.ts`
+  (`formatStudioDate`) y los casos nuevos de `channels/__tests__/meta-whatsapp-channel.test.ts` y
+  `resend-email-channel.test.ts` (plantilla propia, sin plantilla no manda texto libre, asunto y clave
+  de idempotencia propios).
+
+- **Pieza 9/21 — repositorio de persistencia** (`db/reapplication-reminder-repository.ts`,
+  `reapplicationCycleKey(clientId, techniqueId, lastCompletedAt)` nueva en
+  `domain/reapplication-reminder.ts`): la clave identifica el ciclo — cambia solo cuando una nueva
+  cita completada mueve `lastCompletedAt`, que es justo lo que debe volver a habilitar el aviso.
+  `listRecords` la lee en una sola consulta por lote de clientas, no una por candidata (PERF-005).
+  `recordSent`/`recordFailed` hacen `upsert` por la clave `(client_id, technique_id, last_completed_at)`
+  — inserta la primera vez, actualiza en los reintentos siguientes. Todavía sin caso de uso que lo
+  llame — esa es la siguiente pieza.
+  Pruebas: `db/__tests__/reapplication-reminder-repository.test.ts` (6 casos: lectura por lote, forma
+  exacta del `upsert` para `sent` y para `failed`, fallos de la base) y el caso nuevo de
+  `domain/__tests__/reapplication-reminder.test.ts` para `reapplicationCycleKey`.
+- **Pieza 10/21 — caso de uso de envío** (`application/send-due-reapplications.ts`): a diferencia del
+  recordatorio de 24h, no hay un evento futuro que espere — recibe directo la lista ya descubierta
+  (piezas 6-7) y lo que ya está vencido se intenta mandar en el acto, sin un `claimDuePending` previo
+  porque no hay nada "pendiente" guardado de antemano. Antes de intentar, por candidata: si ya hay
+  una fila `'sent'` para ese ciclo, se salta (`skipped`); si hay una `'failed'` con
+  `attempts >= MAX_REMINDER_ATTEMPTS` (reusa la constante de US-NOT-03, mismo tope: 5), también se
+  salta — agotada hasta que una nueva cita completada abra un ciclo nuevo; si no hay fila o es
+  `'failed'` con intentos de sobra, intenta. Corrección de la revisión (sin contacto o sin ningún
+  canal configurado no son errores de envío, son recuperables sin tocar la base: no escriben fila
+  ni gastan un intento, se saltan (`skipped`) y la siguiente corrida los vuelve a intentar en cuanto
+  haya contacto o canal — a propósito distinto de `send-due-reminders.ts`/M3, que sí los cuenta
+  como intento). Solo un error real de envío (`channelSendFailed`, de uno o los dos canales) cuenta
+  hacia `MAX_REMINDER_ATTEMPTS` (`retried` o `exhausted` según el tope). Todavía sin cablear a
+  `index.ts` — siguiente pieza.
+  Pruebas: `application/__tests__/send-due-reapplications.test.ts` (10 casos: primer envío con
+  `attempts: 1`, salto si ya está `sent`, salto si está `failed` y agotado, reintento que suma uno a
+  `attempts`, sin contacto se salta sin escribir fila, respaldo por correo, los dos canales sin
+  configurar se saltan sin escribir fila, los dos fallando por error real hasta agotar, fallo al leer
+  los registros).
+- **Pieza 11/21 — cableado** (`runReapplicationReminderCycle`, nueva en `index.ts`): cierra los
+  cuatro criterios de US-NOT-05 de punta a punta — descubre con `discoverDueReapplications` y manda
+  con `sendDueReapplications` en la misma corrida, con el mismo cliente de sistema.
+  `buildReapplicationDiscoveryDeps`/`buildGetContact` quedan compartidas con
+  `discoverReapplicationReminders` y `runNotificationsReminderCycle` para no repetir el cableado.
+  `npx tsc --noEmit` sin errores; 231 pruebas en verde en `src/features/notifications`, el resto
+  saltado por el mismo problema de entorno preexistente. Sin prueba dedicada para el cableado de
+  `index.ts` (capa de composición sin lógica propia).
+
+- **Pieza 12/21 — tabla de configuración** (`notifications_reapplication_settings`, migración
+  `20261114000002_notifications_reapplication_settings.sql`): criterio 3, de a cuántos días de
+  anticipación avisar. Fila única, 7 por defecto, rango 1-30 (decisión del líder del proyecto,
+  2026-11-13), mismo patrón que `delinquency_settings` (US-MOR-01) y `scheduling_confirmation_policy`
+  (US-NOT-08): nadie la cambia directo, ni la administradora — solo la función de la siguiente
+  pieza, para que cada cambio deje su evento en la bitácora. Todavía nadie la lee: el ciclo sigue
+  usando `REAPPLICATION_ANTICIPATION_DAYS_DEFAULT` del dominio hasta la pieza 14.
+  Prueba: pgTAP `notifications_reapplication_settings.test.sql` (7 aserciones: valor por defecto,
+  nadie cambia directo —ni admin ni clienta—, aislamiento SEC-002, anon sin permiso, rango 1-30
+  aplicado aunque se escriba como dueño). Suite completa corrida de nuevo: 93 archivos, 1239
+  pruebas, todo en verde.
+
+- **Pieza 13/21 — función de cambio** (`notifications_set_reapplication_anticipation_days`, migración
+  `20261114000003_notifications_set_reapplication_anticipation_days_fn.sql`): mismo patrón que
+  `delinquency_set_grace_days` (US-MOR-01) — solo admin, de 1 a 30, deja su evento
+  `notifications.settings.reapplication_anticipation_days_changed` en la bitácora con el valor
+  anterior y el nuevo, y poner el mismo valor no deja evento. `SECURITY DEFINER` porque la tabla no
+  tiene escritura directa. Todavía sin envoltorio de TypeScript ni pantalla — siguiente pieza.
+  Prueba: pgTAP `notifications_set_reapplication_anticipation_days.test.sql` (12 aserciones: cambia
+  y devuelve el valor, bitácora con quién/antes/después, mismo valor no deja evento, rango 1-30,
+  clienta y anon denegados). Suite completa: 94 archivos, 1251 pruebas, todo en verde.
+
+- **Pieza 14/21 — envoltorio de TypeScript y ciclo configurado** (`db/reapplication-settings-repository.ts`,
+  `application/reapplication-settings.ts`, `InvalidAnticipationDays` nuevo en `domain/errors.ts`):
+  mismo patrón que `delinquency`'s `settings-repository.ts`/`grace-days.ts` (US-MOR-01) — un valor
+  fuera de rango ni siquiera llega a la base, se rechaza en `changeAnticipationDays` reusando
+  `isValidAnticipationDays` del dominio (pieza 2); la base lo vuelve a exigir igual.
+  `buildReapplicationDiscoveryDeps` ahora lee `notifications_reapplication_settings` (pieza 12) antes
+  de armar el ciclo: si la lectura falla, sigue con `REAPPLICATION_ANTICIPATION_DAYS_DEFAULT` en vez
+  de frenar toda la corrida, con el fallo avisado por consola. Con esto el criterio 3 queda completo
+  del lado de los datos y la lógica; falta la pantalla.
+  Pruebas: `application/__tests__/reapplication-settings.test.ts` (8 casos) y
+  `db/__tests__/reapplication-settings-repository.test.ts` (8 casos: lectura, error de forma, llamada
+  a la función con los días, traducción del rechazo por rango, cualquier otro error como
+  `RepositoryFailure`). `npx tsc --noEmit` sin errores; 254 pruebas en verde en
+  `src/features/notifications`, el resto saltado por el mismo problema de entorno preexistente.
+
+- **Pieza 15/21 — acción y servicio** (`ui/reapplication-settings/{constants,types,validation,actions,services}`):
+  decisión de dónde vive la pantalla — pestaña nueva en `/admin/citas` (como las demás políticas de
+  la sección), no una sección "Notificaciones" nueva en la navegación principal ni dentro de la
+  bandeja existente. `setAnticipationDaysAction` exige sesión de administradora, valida con zod
+  (mismo rango que el dominio) y refresca `/admin/citas/re-aplicacion` al guardar; `reapplicationSettingsService.load`
+  envuelve `loadAnticipationDays` con la sesión y el cliente del borde. Sin componentes todavía —
+  siguiente pieza.
+  Pruebas: `__tests__/reapplication-settings-actions.test.ts` (10 casos, mismo patrón que
+  `review-actions.test.ts` de `delinquency`). `npx tsc --noEmit` sin errores.
+  **Corrección:** `label` e `invalid` repetían «1 a 30» como texto suelto, duplicando el rango que
+  ya vive en `REAPPLICATION_ANTICIPATION_DAYS_MIN`/`MAX` (dominio, pieza 2); ahora son función de
+  esos dos parámetros, así que el texto no puede desalinearse del rango real.
+- **Pieza 16/21 — componentes** (`ui/reapplication-settings/components/`): el formulario, mismo
+  patrón liviano que `GraceDaysForm` de `delinquency` (un solo campo, sin `useFormState`):
+  `AnticipationDaysForm` llama directo a `setAnticipationDaysAction` con `useTransition`.
+  `ReapplicationSettingsPage` → `ReapplicationSettingsView` (estados `ready`/`error`, UI-003) →
+  `ReapplicationSettingsLoading` para el `loading.tsx` de la ruta. Todavía sin ruta ni pestaña que
+  la muestre — siguiente y última pieza.
+  Pruebas: `AnticipationDaysForm.test.tsx` (5 casos: guarda y avisa con `role=status`, error en la
+  misma región viva, deshabilita mientras guarda, sin enviar nada no hay aviso, campo vacío manda
+  `NaN` sin romper) y `ReapplicationSettingsView.test.tsx` (2 casos: listo muestra el formulario con
+  el valor vigente, error avisa con `role=alert` y ofrece reintentar sin formulario). `npx tsc
+  --noEmit` sin errores.
+  **Corrección:** el formulario llama ahora a `copy.label(MIN, MAX)` (función, pieza 15) en vez de
+  un texto fijo.
+
+- **Pieza 17/21 — ruta y pestaña** (`src/app/admin/citas/re-aplicacion/`, `client.ts` nuevo en
+  `notifications` — mismo propósito que el de `scheduling`: `loading.tsx`/`error.tsx` no cargan todo
+  `index.ts`, solo lo mínimo client-safe): `page.tsx`, `loading.tsx` y `error.tsx` (boundary de
+  Next.js para una excepción real, distinto del estado `'error'` manejado de la vista) siguen el
+  mismo patrón que `/admin/citas/confirmacion`. `CitasTabs` gana la pestaña «Re-aplicación»
+  (`CITAS_SECTION.tabs.reapplication`, `CITAS_ROUTES.reapplication`). Con esto el criterio 3 de
+  US-NOT-05 queda visible para la administradora.
+  Pruebas: `layout.test.tsx` de `/admin/citas` extendido con la pestaña nueva. `npx tsc --noEmit`
+  sin errores; 274 pruebas en verde entre `src/app/admin/citas` y `src/features/notifications`, el
+  resto saltado por el mismo problema de entorno preexistente.
+- **Corrección de la revisión (2026-11-15):** esta sección decía que conectar
+  `runReapplicationReminderCycle` al disparador del cron era checklist de activación, igual que la
+  plantilla de WhatsApp o el dominio de Resend de US-NOT-03/07/08. El reviewer lo marcó mal: esas
+  son configuración externa; cablear el handler que ya existe en el repo es código, y sin ese
+  cableado el criterio 2 (se manda el aviso cerca de la fecha) no se cumplía en ningún entorno real.
+  Corregido en la pieza 18/18.
+- **Pieza 18/21 — llamador del ciclo** (`http/cron-handler.ts`): `receiveReminderCronRequest` corre
+  `runNotificationsReminderCycle` y `runReapplicationReminderCycle` en paralelo (`Promise.all`), cada
+  uno con su propio `try/catch` (`runCycle`) para que un error o una excepción de uno no tumbe al
+  otro — la respuesta siempre trae los dos resúmenes, bajo `reminders` y `reapplications`. El estado
+  HTTP es 200 solo si los dos salieron bien; 503 si cualquiera falló (error del dominio o excepción
+  inesperada, igual que antes). Con esto los cuatro criterios de US-NOT-05 están completos de punta
+  a punta, incluido el que faltaba.
+  Pruebas: `http/__tests__/cron-handler.test.ts` (7 casos, nuevo — no existía prueba de este handler
+  ni siquiera para `runNotificationsReminderCycle`: sin secreto, secreto equivocado, los dos ciclos
+  bien, falla uno y el otro corre igual, falla el otro, excepción inesperada en uno, fallan los dos).
+  **Nota de la revisión:** `runCycle` no normaliza ni reemplaza el error del dominio — `result.error`
+  viaja tal cual al cuerpo de la respuesta (`NotificationsCycleError` es siempre un literal string,
+  así que no hay nada que tapar). Solo la excepción inesperada se colapsa a `'unexpected-error'` en
+  el cuerpo (no en el log, donde sí queda el mensaje real), igual que ya hacía el cron de
+  `delinquency`: no conviene exponerla tal cual en una respuesta HTTP.
+
+- **Pieza 19/21 — corrección de la revisión: tope de 30 días, un solo aviso por clienta** (`domain/reapplication-reminder.ts`,
+  `domain/reapplication-message.ts`, `application/discover-reapplication-reminders.ts`,
+  `application/send-due-reapplications.ts`): decisión del PO del 2026-11-15 (Kenny Rodríguez,
+  `docs/process/DEPENDENCIES.md`). `isReapplicationExpired` (nueva, `REAPPLICATION_OVERDUE_CUTOFF_DAYS`
+  = 30) descarta un candidato cuya fecha estimada ya pasó hace más de 30 días — ya no tiene sentido
+  avisar de algo tan viejo. `buildReapplicationMessage`/`buildReapplicationTemplateVariables` reciben
+  `now` y cambian el texto de entrada según si la fecha estimada todavía viene (`introUpcoming`) o ya
+  pasó (`introOverdue`). Si una clienta tiene más de una técnica vencida en la misma corrida,
+  `discoverDueReapplications` agrupa por `clientId` y deja solo la de fecha estimada más vieja — nunca
+  manda dos avisos de re-aplicación a la misma clienta en un mismo ciclo. `sendDueReapplications` ya
+  no repite el bloque de envío por canal primario y de respaldo (antes duplicado): un solo bucle sobre
+  los dos canales, que también simplificó la condición de «ambos sin configurar». `listRecords` se
+  troza en lotes de 100 clientas (`LIST_RECORDS_BATCH_SIZE`) en vez de una sola consulta con todos los
+  ids — la función de candidatas no se acotó en SQL (decisión explícita: no conoce el intervalo por
+  técnica, que vive en `catalog` sin tope documentado; acotar ahí exigiría o un JOIN cruzado nuevo con
+  `catalog_techniques` o un número inventado — el filtro de 30 días vive solo en TypeScript, que ya
+  tiene el intervalo por técnica resuelto).
+  Pruebas: `domain/__tests__/reapplication-reminder.test.ts` (+3 casos de `isReapplicationExpired`),
+  `domain/__tests__/reapplication-message.test.ts` (+2, texto según venza o no), `application/__tests__/discover-reapplication-reminders.test.ts`
+  (+2, vencida hace más de 30 días y una sola de dos técnicas vencidas), `application/__tests__/send-due-reapplications.test.ts`
+  (+1, lotes de 100; los dos casos de «sin contacto»/«sin canal» de la pieza 10 se mantienen en verde).
+
+- **Pieza 20/21 — corrección de la revisión: abortar si falla la anticipación, borrar código muerto**
+  (`index.ts`): `buildReapplicationDiscoveryDeps` ahora devuelve `Result<..., RepositoryFailure>` — si
+  no se puede leer la anticipación configurada, la corrida aborta con el error en vez de usar 7 en
+  silencio (antes de esta corrección, un fallo de lectura pasaba inadvertido). `runReapplicationReminderCycle`
+  revisa ese resultado antes de descubrir o mandar nada, y cierra la sesión igual en cualquier caso.
+  `discoverReapplicationReminders` (la pieza 7) se elimina: nadie la llamaba, ni una pantalla ni una
+  prueba — no era checklist de activación, era código sin dueño.
+  Pruebas nuevas: `__tests__/reapplication-cycle.test.ts` (8 casos — `buildReapplicationDiscoveryDeps`:
+  anticipación configurada, aborta si falla leerla, delega `listCandidates`; `runReapplicationReminderCycle`:
+  sin cuenta de sistema, cuenta que no entra, aborta si falla la anticipación sin descubrir ni mandar
+  nada, caso feliz completo, aborta si falla descubrir). No existía ninguna prueba de esta capa de
+  composición hasta esta pieza.
+
+- **Pieza 21/21 — corrección de la revisión: estilo y documentación** (sin cambio de comportamiento):
+  se quitan los comentarios `//` que quedaban en archivos de la pila (`catalog/index.ts`,
+  `catalog/reapplication-api.ts`, `application/ports.ts`, `application/reapplication-settings.ts`,
+  `channels/meta-whatsapp-channel.ts`, `db/delinquency-states-gateway.ts`, `shared/studio-time.ts`,
+  `ui/reapplication-settings/components/FeedbackMessage/FeedbackMessage.tsx`,
+  `http/__tests__/cron-handler.test.ts`); «Intentá de nuevo» pasa a «Intenta de nuevo» en
+  `reapplication-settings-strings.ts` (tuteo, no voseo). Los imports de `ui/reapplication-settings/`
+  por `@/features/notifications/...` (en vez de ruta relativa) se revisaron y se dejan como están:
+  `.oxlintrc.json` (`no-restricted-imports`) exige el alias `@/` al subir 3 o más niveles y no hay
+  alias más corto por feature — pasarlos a relativo (`../../../...`) los pone en rojo en `oxlint`, así
+  que la forma actual es la correcta según la convención de este repo, no algo por corregir. Decisiones
+  de arranque confirmadas y ampliadas por Kenny Rodríguez el 2026-11-15, y
+  el riesgo de WhatsApp duplicado aceptado como deuda: ver `docs/process/DEPENDENCIES.md` y `deuda` en
+  el frontmatter de este SPEC.
+
 ### Qué no hace todavía
 
-Ninguno de los dos contratos (`scheduling` y `delinquency`) se consume todavía desde aquí: falta el caso de
-uso que una las dos lecturas con el dominio de la pieza 2 y escriba en la tabla de la pieza 5, la política de
-anticipación con su pantalla, y la integración al ciclo de recordatorios. El plan de piezas está en el PR de
-cada incremento.
+Falta el disparador en producción (Vercel Cron o GitHub Actions llamando a
+`/api/cron/notifications-reminders` con el `CRON_SECRET` real) y la cuenta de sistema del cron en
+producción — eso sí es checklist de activación externa, no código (mismo criterio que cerró
+US-NOT-03/07/08). También falta lo ya señalado para el canal compartido: plantilla de WhatsApp
+aprobada por Meta, número de WhatsApp Business real y dominio verificado en Resend.
 
 ## Qué no hace todavía
 
