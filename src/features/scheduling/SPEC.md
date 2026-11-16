@@ -51,6 +51,9 @@ deuda:
   - que: "bestActiveDiscountsByPackage (ui/package-promotions.ts, US-PROM-02) duplica la regla D-PROM-3 (mayor descuento gana) que landing/ui/technique-view.ts ya implementa para técnicas (bestActiveDiscountsByTechnique). No hay un lugar neutral para esta regla fuera de cada feature que la consume; catalog sería el dueño natural (ya calcula el descuento en catalog_booking_terms/catalog_package_booking_terms), pero exportarla desde ahí es alcance de un PR aparte, no de US-PROM-02"
     aceptada_en: "hallazgo M1 del code review de US-PROM-02 (PR #708, 2026-11-06)"
     costo: "2h: exportar desde catalog una función genérica de 'mayor descuento por destino' (técnica o paquete) y que landing y scheduling la consuman por su entry point; dueño por asignar (líder del proyecto o PO)"
+  - que: "La validación de franja (recurso activo, hora futura y en minuto exacto, dentro de un bloque abierto del día, sin día cerrado, alineada a la grilla de 30 minutos y sin pasar del cierre) está copiada en tres funciones: scheduling_book_appointment, scheduling_book_package_appointment y scheduling_admin_book_appointment (~100 líneas cada una). Cuando entren el horizonte y la antelación mínima hay que tocar las tres; si se olvida una, la administradora agenda algo que la clienta no, o al revés. Mientras tanto, supabase/tests/database/scheduling_slot_validation_parity.test.sql compara las tres ante las mismas franjas inválidas y falla si una se separa"
+    aceptada_en: "revisión de Kenny en #808 (US-MOR-02, 2026-11-15): no se refactoriza dentro de la pila por ser forward-only y la pila ya grande"
+    costo: "~medio día (4h): extraer la validación a una función auxiliar (p. ej. scheduling_assert_slot_offered(recurso, inicio, duración + limpieza)) en una migración nueva, que las tres reservas llamen, y dejar la prueba de paridad como regresión; dueño: Jose, antes de la historia que agregue horizonte o antelación mínima"
 defectos: []
 ---
 
