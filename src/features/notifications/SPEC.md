@@ -530,11 +530,8 @@ cada incremento.
 
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
   mano. No lo pide ningún criterio de US-NOT-03 ni de US-NOT-07.
-- US-NOT-04, 05 y 06 reusan el canal pero no están construidas. US-NOT-02 y US-NOT-08 están construidas y
-  tienen pendiente lo de su sección.
-
-- US-NOT-04 y 06 reusan el canal pero no están construidas; US-CLI-06 está en curso y US-NOT-05 se abrió (sus
-  secciones). US-NOT-02 y US-NOT-08 están construidas y tienen pendiente lo de su sección.
+- US-NOT-04 y 06 reusan el canal pero no están construidas; US-NOT-05 está en curso (su sección). US-NOT-02 y
+  US-NOT-08 están construidas y tienen pendiente lo de su sección.
 
 ## Correcciones de la auditoría del 2026-10-23 (AUDIT.md, líder del proyecto)
 
