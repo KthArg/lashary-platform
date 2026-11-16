@@ -55,7 +55,7 @@
 - US-MOR-02 — no_iniciada
 - US-MOR-03 — no_iniciada
 - US-MOR-04 — no_iniciada
-- US-MOR-05 — en_progreso — falta: Piezas 1 a 4 (contrato, migración en payments, migración en delinquency, dominio/aplicación/db en TS) listas. Falta: UI de /admin/morosidades (botones levantar/condonar por caso, historial) y el cierre con la evidencia criterio por criterio
+- US-MOR-05 — en_progreso — falta: Piezas 1 a 5a (contrato, migraciones, dominio/aplicación/db, historial en loadReview) listas. Falta: acciones del servidor y botones de /admin/morosidades, y el cierre con la evidencia criterio por criterio
 
 ### landing (actualizado: 2026-11-05)
 - US-LAND-01 — terminada — PR #49 (us/US-LAND-01 a main); piezas PRs #35 a #45; PR #58 corrige la clave closing-cta del CMS; aprobacion visual del PO el 2026-09-16 sobre las capturas del artefacto capturas-landing; el modelo hero, intro y closing-cta esta en cms.config.ts de lashary-cms y las tres claves responden 200. Pruebas: landing-hero.test.tsx, landing-home.test.tsx, site-header.test.tsx, opening-frame.test.ts, cms-reader.test.ts, landing-source.test.ts, webhook.test.ts, get-landing-content.test.ts; e2e home-hero.spec.ts, home-responsive.spec.ts, home-screenshots.spec.ts
