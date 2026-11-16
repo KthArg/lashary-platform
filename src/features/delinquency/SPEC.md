@@ -369,3 +369,10 @@ bloqueo", sin tocar el ledger, pgTAP `delinquency_lift_and_forgive_case.test.sql
 mismo pgTAP) y criterio 4 (las dos secciones de historial de la pantalla, mas el CHECK de la base que nunca
 borra la fila). Falta el cierre: verificacion final contra main (tsc, vitest, supabase test db) y la evidencia
 completa en el front-matter.
+
+Con las piezas 1 a 5d, los 4 criterios de US-MOR-05 quedan demostrados: criterio 1 (`CaseExceptionActions`,
+boton "Levantar bloqueo", sin tocar el ledger, pgTAP `delinquency_lift_and_forgive_case.test.sql`), criterio 2
+(boton "Condonar", total o parcial, pgTAP idem), criterio 3 (el evento en `audit_events` con fecha, monto y
+motivo, mismo pgTAP) y criterio 4 (las dos secciones de historial de la pantalla, mas el CHECK de la base que
+nunca borra la fila). Falta el cierre: verificacion final contra main (tsc, vitest, supabase test db) y la
+evidencia completa en el front-matter.
