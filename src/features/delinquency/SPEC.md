@@ -15,7 +15,7 @@ historias:
     estado: no_iniciada
   - id: US-MOR-05
     estado: en_progreso
-    falta: "Piezas 1 a 4 (contrato, migración en payments, migración en delinquency, dominio/aplicación/db en TS) listas. Falta: UI de /admin/morosidades (botones levantar/condonar por caso, historial) y el cierre con la evidencia criterio por criterio"
+    falta: "Piezas 1 a 5a (contrato, migraciones, dominio/aplicación/db, historial en loadReview) listas. Falta: acciones del servidor y botones de /admin/morosidades, y el cierre con la evidencia criterio por criterio"
 flags: []
 deuda:
   - que: "La morosidad no se cierra ni actualiza su monto cuando se paga: delinquency_cases.pending es una foto del saldo al detectar y ninguna función la vuelve a leer. Una clienta que paga después de confirmada la morosidad sigue figurando activa con el monto viejo hasta que alguien la descarte a mano"
@@ -330,3 +330,11 @@ repository.ts` agrega `listActiveCases` (RPC a `delinquency_list_active_cases`).
 `db/__tests__/case-repository.test.ts` y `case-list-repository.test.ts` actualizados. `npx tsc --noEmit` sin
 errores en todo el repo; `npx vitest run src/features/delinquency`: 99/99. Todavía sin UI: la pantalla sigue en
 pieza siguiente.
+
+### Pieza 5a — historial en `loadReview`
+
+`application/load-review.ts` agrega `lifted`/`forgiven` a `ReviewView` (criterio 4: la morosidad original sigue
+visible, con su `pending` de siempre y, si se condono, el monto condonado), leyendo con el `listByState` que ya
+existe (sin SQL nuevo: `lifted`/`forgiven` son estados como cualquier otro para esa funcion). `domain/
+delinquency-case.ts` agrega `EXCEPTION_HISTORY_LIST_LIMIT` (50, PERF-002). Pruebas: `application/__tests__/
+load-review.test.ts` actualizado.
