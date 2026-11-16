@@ -42,6 +42,8 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
       <ClientsVisitFilter visitFrom={visitFrom} visitTo={visitTo} />
       <ClientsList
         clients={result.ok ? result.clients : []}
+        delinquency={result.ok ? result.delinquency : {}}
+        delinquencyAvailable={result.ok ? result.delinquencyAvailable : false}
         loadError={!result.ok && !isInvalidRange ? result.error : null}
         filterError={isInvalidRange ? result.error : null}
         activeNameFilter={name || null}

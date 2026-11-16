@@ -66,6 +66,11 @@ export const dailyAgendaMessages = {
     closing: 'Cerrando…',
     back: 'Volver',
     closed: (name: string, summary: string) => `Cita de ${name} cerrada. ${summary}`,
+    closedWithoutAftercare: (name: string, summary: string) =>
+      `La cita de ${name} se cerró, pero las indicaciones no se guardaron. ${summary}`,
+    aftercareNoteLabel: 'Indicaciones para esta clienta',
+    aftercareNoteHelp: 'Opcional. Se envían a la clienta junto con los cuidados de la técnica.',
+    aftercareNoteCounter: (used: number, max: number) => `${used} de ${max} caracteres`,
   },
   unclosed: {
     title: 'Citas pasadas sin cerrar',

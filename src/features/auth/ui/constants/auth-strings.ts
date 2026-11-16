@@ -16,7 +16,7 @@ export const AUTH_LABELS = {
   staffAccessLink: '¿Eres parte del equipo? Acceso administrativo',
   clientAccessLink: '¿Eres clienta? Ingresa con Google',
   adminActiveSession: 'Sesión Administrativa Activa', adminRoleBadge: 'Rol:',
-  dashboardNav: 'Dashboard', citasNav: 'Citas', clientsNav: 'Clientas', catalogNav: 'Catálogo', paymentsNav: 'Pagos',
+  dashboardNav: 'Dashboard', citasNav: 'Citas', clientsNav: 'Clientas', catalogNav: 'Catálogo', paymentsNav: 'Pagos', delinquencyNav: 'Morosidades',
   collapseSidebar: 'Colapsar barra', expandSidebar: 'Expandir barra',
   adminNavAriaLabel: 'Panel de navegación administrativa',
   clientCitasNav: 'Mis Citas', clientCartNav: 'Carrito',
@@ -49,6 +49,7 @@ export const ADMIN_PORTAL_ROUTES = {
   clients: '/admin/clients',
   catalog: '/admin/catalog',
   payments: '/admin/payments',
+  delinquency: '/admin/morosidades',
 } as const
 
 export const AUTH_ERROR_MESSAGES = {

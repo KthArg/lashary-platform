@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-11-07"
+actualizado: "2026-11-13"
 historias:
   - id: US-AGE-01
     estado: terminada
@@ -367,6 +367,10 @@ Citas de paquete (pieza 11, hallazgo M1 del audit del 2026-11-01): una cita de p
 
 El ledger solo se escribe al cerrar (pieza 12, hallazgos M3 y B4 del audit del 2026-11-01): la migración `20261102000001` quita a staff el `INSERT` directo sobre `payments_ledger_entries` y el `EXECUTE` de `payments_record_close_entries`; solo la escribe `scheduling_close_appointment` (`SECURITY DEFINER`), así que un asiento suelto ya no puede bloquear el cierre de una cita. Dos `CHECK` en `scheduling_appointments`: una cita con `closed_at` solo puede estar `completed` o `no_show`, y una ausencia no lleva servicio prestado. **Deuda:** el sentido contrario (estado terminal implica `closed_at`) no se fuerza porque otras historias siembran citas completadas sin cerrarlas; hoy lo garantiza solo la función de cierre. Pruebas: `payments_ledger_write_only_through_close.test.sql` (8 aserciones), `payments_ledger_entries.test.sql` ajustada al nuevo contexto y `ledger-rls-isolation.test.ts`.
 
+Nota de cuidados al cerrar (US-CLI-06, pieza 4/9; migración `20261115000002_scheduling_close_appointment_aftercare.sql`): `scheduling_close_appointment` recibe `p_aftercare_note` (cuarto parámetro, `DEFAULT NULL`; reemplaza la función de tres parámetros con los mismos permisos) y devuelve `aftercare_recorded`. Con `completed` llama a `notifications_record_aftercare` después del cargo y de la bitácora; si falla, la cita se cierra igual, `aftercare_recorded` es `false` y queda el evento `scheduling.aftercare.failed` en `audit_events`. Una ausencia con nota se rechaza con `scheduling_close_note_not_allowed` antes de cerrar. Prueba: pgTAP `supabase/tests/database/scheduling_close_appointment_aftercare.test.sql`.
+
+Campo de indicaciones en el diálogo de cierre (US-CLI-06, pieza 7/9): al elegir «Atendida», `ui/daily-agenda/components/CloseAppointmentControl.tsx` muestra un `<textarea>` opcional «Indicaciones para esta clienta» con `maxLength` de `CLOSE_AFTERCARE_NOTE_MAX_LENGTH` (1000, `ui/daily-agenda/constants/close-appointment.constants.ts`); con «No se presentó» no aparece y no se envía. La nota viaja por `useCloseAppointment` → `closeAppointmentAction` → `closeAppointmentSchema` (recorta, vacía queda sin nota, ausencia con nota es inválida) → `closeAppointment` → `p_aftercare_note`. `scheduling_close_note_not_allowed` se traduce a `SCHEDULING_CLOSE_NOTE_NOT_ALLOWED`. `ClosedAppointment.aftercareRecorded` distingue «cerrada» de «cerrada, pero las indicaciones no se guardaron» (`describeClosed`, solo con `completed`). Si el cierre falla, el estado `failed` conserva el borrador y «Cerrar cita» lo restaura. El tope no se importa de notifications (ciclo notifications ↔ scheduling y bundle cliente). Pruebas: `ui/daily-agenda/__tests__/close-appointment-schema.test.ts`, `close-appointment-actions.test.ts`, `UnclosedAppointments.test.tsx` y `db/__tests__/appointment-closing-repository.test.ts`.
+
 ## US-NOT-08 — confirmar la asistencia
 
 - Capas de confirmar una cita y de su plazo: `application/confirm-appointment.ts`, `db/appointment-confirmation-repository.ts` y `domain/appointment-confirmation.ts`. El detalle de la historia está en el SPEC de `notifications`, su dueña.
@@ -375,6 +379,39 @@ El ledger solo se escribe al cerrar (pieza 12, hallazgos M3 y B4 del audit del 2
 - Lógica del plazo en el panel: `ui/confirmation-policy` (action, servicio y validación).
 - Pantalla `/admin/citas/confirmacion`: `ConfirmationPolicyPage` en `index.ts` y `ConfirmationPolicyLoading` y `confirmationPolicyMessages` en `client.ts`.
 - `index.ts` exporta `SCHEDULING_MY_APPOINTMENTS_PATH`, la ruta de «Mis citas» que enlaza el mensaje de `notifications` (docs/contracts/scheduling-api.md). La nota de la tarjeta dice «Tu asistencia está confirmada» porque también la ve la clienta cuya confirmación registró la administradora.
+
+## US-NOT-05 — candidatos de re-aplicación
+
+Contrato nuevo para el cron de `notifications` (criterio 4 de US-NOT-05, parte scheduling: «no se envía
+a quienes ya tienen una cita futura agendada»). El detalle completo de la historia vive en el SPEC de
+`notifications`, su dueña; aquí solo lo que `scheduling` expone.
+
+- `public.scheduling_reapplication_candidates() => TABLE (client_id uuid, technique_id uuid, last_completed_at timestamptz)`
+  (migración `20261114000000_scheduling_reapplication_candidates_fn.sql`): por cada clienta y técnica con al
+  menos una cita `completed`, devuelve la fecha de la más reciente (`delivered_technique_id`/`ends_at`, el
+  servicio efectivamente prestado de US-AGE-12, no el reservado) — una sola fila por par mediante
+  `DISTINCT ON`. Excluye por completo a una clienta que tenga cualquier cita futura en un estado activo
+  (`pending_approval`, `approved` o `confirmed`, el mismo conjunto del exclusion constraint de US-AGE-09),
+  sin importar la técnica: decisión del líder del proyecto del 2026-11-13 (`docs/process/DEPENDENCIES.md`).
+  Una cita futura cancelada o rechazada no excluye. Los paquetes no entran: `delivered_technique_id` es
+  siempre `NULL` en una cita de paquete, y el criterio 1 de US-NOT-05 solo habla de técnicas.
+- `SECURITY INVOKER`, igual que `scheduling_client_last_visits`: corre con los permisos de quien llama, así
+  que la RLS de `scheduling_appointments` decide — el cron autenticado como staff ve a todas las clientas;
+  una clienta que la llamara por PostgREST solo vería su propia candidatura, sin filas ajenas.
+  `GRANT EXECUTE` a `authenticated`, revocado de `anon` y `PUBLIC`.
+- Prueba: pgTAP `supabase/tests/database/scheduling_reapplication_candidates.test.sql` (10 aserciones): la
+  técnica completada es candidata y la ausencia de otra técnica no cuenta; con dos citas completadas de la
+  misma técnica gana la más reciente; una cita futura pendiente de **otra** técnica excluye por completo;
+  una cita futura cancelada no excluye; una técnica solo marcada como ausencia no genera candidatura; una
+  cita completada sin clienta no es candidata de nadie; un paquete completado no entra; aislamiento por rol
+  (SEC-002) y `SECURITY INVOKER` confirmado contra `pg_proc`.
+- Envoltorio de TypeScript (análogo a `reminders-api.ts`): `reapplication-api.ts`, `db/reapplication-candidates-repository.ts`
+  (puerto `ReapplicationCandidatesRepository`, tipo `ReapplicationCandidate` en `application/ports.ts`) y el
+  paso directo `application/reapplication-candidates.ts`. `index.ts` exporta `listSchedulingReapplicationCandidates`.
+  Pruebas: `db/__tests__/reapplication-candidates-repository.test.ts` (llamada a la función sin argumentos,
+  mapeo de filas, lista vacía y fallo de la base o fila con forma inválida como `StorageFailed`).
+- Qué falta: que `notifications` lo consuma de verdad desde su `index.ts` — todavía no existe ninguna pieza de
+  ese lado.
 
 ## Criterios recibidos de US-AGE-01
 

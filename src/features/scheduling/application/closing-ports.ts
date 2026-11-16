@@ -2,6 +2,7 @@ import type { Result } from '@/shared/result'
 import type { ClosableStatus, CloseOutcome } from '../domain/appointment-closing.constants'
 import type {
   AppointmentNotChargeable,
+  CloseNoteNotAllowed,
   AppointmentNotClosable,
   StorageFailed,
   TechniqueNotAvailable,
@@ -11,6 +12,7 @@ export type CloseAppointmentInput = {
   appointmentId: string
   outcome: CloseOutcome
   deliveredTechniqueId?: string
+  aftercareNote?: string | null
 }
 
 export type ClosedAppointment = {
@@ -20,12 +22,14 @@ export type ClosedAppointment = {
   depositCredit: number
   amountDue: number
   forfeitedDeposit: number
+  aftercareRecorded: boolean
 }
 
 export type CloseAppointmentError =
   | AppointmentNotClosable
   | AppointmentNotChargeable
   | TechniqueNotAvailable
+  | CloseNoteNotAllowed
   | StorageFailed
 
 export interface AppointmentClosingRepository {

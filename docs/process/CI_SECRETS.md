@@ -120,6 +120,17 @@ Cosas que hacen fallar el run aunque los secretos estén bien:
 - `20260901000001_seed_superadmin.sql` crea un índice único parcial: si la base remota ya tiene dos superadmins, esa migración falla; revisá `clients_profiles`/roles antes.
 - El proyecto remoto **pausado** (plan free tras inactividad): restauralo desde el dashboard antes.
 
+## Detección de morosidades (`delinquency-detect.yml`)
+
+Solo `workflow_dispatch`: no está programado todavía (decisión del PO, Kenny, 2026-11-08; ver el SPEC de `delinquency`). Se corre a mano desde *Actions* o se activa agregando el `schedule` que está comentado en el propio workflow.
+
+| Secreto | Qué es | Dónde conseguirlo |
+|---|---|---|
+| `APP_BASE_URL` | URL pública de la app desplegada, con `https://` y sin barra final | La barra del navegador al abrir la app. |
+| `CRON_SECRET` | El mismo valor que la variable `CRON_SECRET` de la app: la ruta compara el `Authorization: Bearer` con él | El panel del hosting de la app. Si no está cargado allí, la ruta responde 401 siempre. |
+
+La app, además, necesita `NOTIFICATIONS_CRON_EMAIL` y `NOTIFICATIONS_CRON_PASSWORD` (la cuenta de staff del cron de recordatorios), que ya existen para ese cron.
+
 ## Después del merge
 
 Con los secretos cargados y la simulación verde, el push a `main` dispara `Supabase Migrations` (cuando cambia `supabase/migrations/**` o el propio workflow) y `Jira Sync` (cuando cambia un `SPEC.md`, el backlog, el script o el workflow). Se revisan con `gh run list --limit 5`; un run rojo se lee con `gh run view <id> --log-failed`.

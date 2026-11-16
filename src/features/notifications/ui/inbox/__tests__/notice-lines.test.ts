@@ -2,8 +2,14 @@ import { describe, it, expect } from 'vitest'
 import { fixedDate } from '@/shared/testing/fixed-clock'
 import { formatMoney, moneyFromColones } from '@/shared/money'
 import { formatStudioDateTime } from '@/shared/studio-time'
-import type { AppointmentCancelledNotice, AppointmentRescheduledNotice, BookingCreatedNotice } from '@/features/notifications/domain/inbox-notice'
-import { INBOX_TEXTS } from '../constants/inbox-strings'
+import type {
+  AppointmentCancelledNotice,
+  AppointmentRescheduledNotice,
+  BookingCreatedNotice,
+  DelinquencyReviewNotice,
+} from '@/features/notifications/domain/inbox-notice'
+import { DELINQUENCY_ADMIN_PATH } from '@/features/delinquency'
+import { DELINQUENCY_REVIEW_PATH, INBOX_TEXTS } from '../constants/inbox-strings'
 import { noticeLines } from '../utils/notice-lines'
 
 const booking: BookingCreatedNotice = {
@@ -23,7 +29,33 @@ const rescheduled: AppointmentRescheduledNotice = {
   previousStartsAt: fixedDate('2026-11-04T15:00:00Z'),
 }
 
+const delinquency: DelinquencyReviewNotice = {
+  id: 'aviso-9',
+  kind: 'delinquency_review',
+  appointmentId: 'cita-1',
+  clientName: 'Ana Pérez',
+  pending: 20000,
+  readAt: null,
+  createdAt: fixedDate('2026-11-08T18:00:00Z'),
+}
+
 describe('noticeLines', () => {
+  it('una morosidad por revisar dice quién, cuánto debe y lleva a la pantalla para decidir (US-MOR-01, criterio 3)', () => {
+    expect(noticeLines(delinquency)).toEqual({
+      title: INBOX_TEXTS.delinquencyReview('Ana Pérez'),
+      details: [INBOX_TEXTS.owes(formatMoney(moneyFromColones(20000)))],
+      action: { label: INBOX_TEXTS.reviewDelinquencies, href: DELINQUENCY_REVIEW_PATH },
+    })
+  })
+
+  it('el enlace del aviso apunta a la misma ruta que la pantalla de morosidades', () => {
+    expect(DELINQUENCY_REVIEW_PATH).toBe(DELINQUENCY_ADMIN_PATH)
+  })
+
+  it('los avisos de una cita no llevan enlace', () => {
+    expect(noticeLines(booking).action).toBeUndefined()
+  })
+
   it('una reserva dice quién reservó, el servicio y la hora (US-NOT-01)', () => {
     expect(noticeLines(booking)).toEqual({
       title: INBOX_TEXTS.bookingCreated('Ana Pérez'),

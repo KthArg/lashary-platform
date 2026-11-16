@@ -83,6 +83,28 @@ describe('AdminInbox', () => {
     expect(within(rescheduledItem).getByText(/^Horario nuevo, por aprobar: /)).toBeDefined()
   })
 
+  it('el aviso de una morosidad por revisar muestra lo que debe y un enlace a /admin/morosidades que cierra el panel (US-MOR-01, criterio 3)', () => {
+    const delinquency: InboxNotice = {
+      id: 'aviso-9',
+      kind: 'delinquency_review',
+      appointmentId: 'cita-1',
+      clientName: 'Eva Solís',
+      pending: 20000,
+      readAt: null,
+      createdAt: fixedDate('2026-11-08T18:00:00Z'),
+    }
+    render(<AdminInbox inbox={{ ok: true, inbox: { notices: [delinquency], unreadCount: 1, hasMore: false } }} />)
+    const panel = openPanel()
+
+    expect(within(panel).getByText(INBOX_TEXTS.delinquencyReview('Eva Solís'))).toBeDefined()
+    expect(within(panel).getByText(/^Debe ₡/)).toBeDefined()
+    const link = within(panel).getByRole('link', { name: INBOX_TEXTS.reviewDelinquencies, hidden: true })
+    expect(link.getAttribute('href')).toBe('/admin/morosidades')
+
+    fireEvent.click(link)
+    expect(panel.hasAttribute('open')).toBe(false)
+  })
+
   it('marca un aviso sin leer como leído, y uno leído como no leído (criterio 3)', async () => {
     render(<AdminInbox inbox={{ ok: true, inbox: { notices: [unreadNotice, readNotice], hasMore: false, unreadCount: 1 } }} />)
     const panel = openPanel()

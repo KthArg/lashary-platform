@@ -668,3 +668,20 @@ anon no lee ningún contacto (SEC-002).
 - No hay código TypeScript nuevo en `clients`: el contrato es SQL. Las tablas del expediente (`clients_record_versions` y las demás) no se tocan ni se comparten.
 - La llave foránea `scheduling_appointments.client_id → clients_profiles(id)` (`ON DELETE RESTRICT`) queda registrada en el anexo del ADR-0009. Cambiar `clients_profiles.id` exige coordinar con `scheduling`.
 - Esto no reabre US-CLI-04 ni cambia su estado.
+
+## Morosidad en el listado y en el perfil (US-MOR-01, piezas 12 y 13)
+
+- La columna «Morosidad» del listado y el encabezado del perfil de la clienta (visible en Expediente y en Citas) muestran la
+  morosidad que informa `delinquency` por su contrato SQL (`delinquency_client_states`, ARCH-005,
+  [delinquency-api.md](../../../docs/contracts/delinquency-api.md)): «Activa · ₡X» si es `active`, «Por revisar» si todavía no la
+  confirmó la administradora, «Sin morosidad» si no tiene. Una morosidad por revisar no es morosidad: no bloquea ni se cuenta
+  como tal (DOM-012). «Descartada» no se muestra.
+- Si `delinquency` no responde, el listado y el perfil cargan igual: la columna dice «Sin dato» y el encabezado no muestra nada
+  (`delinquencyAvailable` en falso, `delinquencyLabel` nulo). La morosidad es de otra feature y no puede tumbar esta pantalla.
+- Capas: puerto `DelinquencyStatesPort` (`application/ports.ts`), gateway `db/delinquency-states-gateway.ts` (valida la fila
+  con Zod y convierte cualquier fallo en «no disponible»), `listClients(repo, delinquency)` pide los estados de la página en una
+  sola llamada y `getClientDelinquency` los de una clienta. `ui/admin-clients/delinquency-label.ts` arma el texto para el listado
+  y el perfil.
+- Pruebas: `application/__tests__/list-clients-delinquency.test.ts`, `db/__tests__/delinquency-states-gateway.test.ts`,
+  `ui/admin-clients/__tests__/clients-list-delinquency.test.tsx`, `get-client-action.test.ts` y el `layout.test.tsx` del perfil.
+- Sigue sin hacer, por US-CLI-01: el filtro por morosidad. La columna de última visita es de US-CLI-01.
