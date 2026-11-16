@@ -2,7 +2,7 @@
 feature: delinquency
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-08
+actualizado: 2026-11-16
 historias:
   - id: US-MOR-01
     estado: terminada
@@ -14,7 +14,8 @@ historias:
   - id: US-MOR-04
     estado: no_iniciada
   - id: US-MOR-05
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "Pieza 1/N (contrato en payments-api.md y delinquency-api.md: payments_record_forgiveness_entry, delinquency_lift_case, delinquency_forgive_case, delinquency_list_active_cases). Falta: migraciones, dominio/aplicación, UI de /admin/morosidades y pruebas de los 4 criterios"
 flags: []
 deuda:
   - que: "La morosidad no se cierra ni actualiza su monto cuando se paga: delinquency_cases.pending es una foto del saldo al detectar y ninguna función la vuelve a leer. Una clienta que paga después de confirmada la morosidad sigue figurando activa con el monto viejo hasta que alguien la descarte a mano"
@@ -237,4 +238,54 @@ La revisión de la pila encontró cuatro cosas medias, ninguna bloqueante. Se co
 
 ### Qué no hace todavía
 
-US-MOR-01 está terminada. El cron existe pero no está programado: ninguna fila se genera sola hasta que se agregue su `schedule`. Qué cuenta como pago registrado y el registro de pagos son de US-MOR-03; mientras no exista, toda cita cerrada con cargo figura impaga. Bloquear la agenda (US-MOR-02), regularizar (US-MOR-03), el histórico (US-MOR-04) y levantar o perdonar (US-MOR-05) no están hechos.
+US-MOR-01 está terminada. El cron existe pero no está programado: ninguna fila se genera sola hasta que se agregue su `schedule`. Qué cuenta como pago registrado y el registro de pagos son de US-MOR-03; mientras no exista, toda cita cerrada con cargo figura impaga. Bloquear la agenda (US-MOR-02), regularizar (US-MOR-03) y el histórico (US-MOR-04) no están hechos.
+
+## US-MOR-05: levantar o perdonar una morosidad manualmente
+
+Criterios del backlog:
+
+1. Puedo levantar el bloqueo de un cliente sin necesidad de registrar un pago.
+2. Puedo condonar total o parcialmente una morosidad indicando el motivo.
+3. Toda excepción queda registrada en la bitácora de auditoría con fecha, monto y motivo.
+4. Una excepción no borra el historial: la morosidad original permanece visible con su estado de condonada.
+
+Depende de US-AGE-13 (bitácora, ya `terminada`) y US-MOR-01 (`terminada`), único prerrequisito en
+`docs/process/DEPENDENCIES.md`. Reglas: DOM-005 (ledger append-only), DOM-006 (errores tipados, ADR-0008),
+DOM-011 (bitácora en la misma transacción), ARCH-005 (cross-feature con `payments`), INT-003 (contrato primero),
+SEC-001/002 (RLS + aislamiento), PERF-002, UI-003.
+
+### Decisiones de diseño (2026-11-16)
+
+Tres preguntas de arranque, respondidas por Erick Durán (líder del proyecto) en la conversación de trabajo de la
+historia, antes de escribir ninguna migración:
+
+- **Levantar y condonar son dos acciones distintas**, no una sola: "levantar el bloqueo" (criterio 1) no toca el
+  ledger — es una decisión administrativa pura ("fue un error de registro") que deja la morosidad en un estado
+  nuevo que ya no cuenta como activa, sin perdonar ni un colón. "Condonar" (criterio 2) sí perdona dinero, total o
+  parcialmente.
+- **Condonar escribe un contra-asiento real en el ledger de `payments`** (no solo dentro de `delinquency`): así
+  `payments_client_balance` también baja lo condonado, consistente con DOM-005 (el saldo siempre es la suma de
+  asientos, nunca un campo aparte que puede divergir). Esto cruza a `payments` (ARCH-005, INT-003): ver
+  `payments_record_forgiveness_entry` en `docs/contracts/payments-api.md`.
+- **Las dos acciones solo aplican sobre una morosidad `active`.** Una `pending_review` ya tiene su propio camino
+  (confirmar o descartar, US-MOR-01); levantarla o condonarla antes de que la administradora la confirme no tiene
+  sentido en este modelo.
+
+Una consecuencia técnica de lo anterior, encontrada al revisar el esquema existente y no una decisión de producto:
+`payments_ledger_entries` tiene un índice único `(appointment_id, kind)` (desde el hallazgo M3 de la auditoría de
+US-AGE-12, `20261102000001_payments_ledger_write_only_through_close.sql`), así que solo puede existir **un**
+asiento `forgiveness_credit` por cita. Condonar, aunque sea parcial, cierra el caso: no hay una segunda condonación
+más adelante sobre la misma morosidad. Si queda saldo sin condonar al condonar parcialmente, se pierde como parte
+de esa misma decisión administrativa — queda registrado en la bitácora con el monto exacto condonado, no con el
+saldo original.
+
+También se encontró que `delinquency_list_active` (US-MOR-01) agrega por clienta (`GROUP BY client_id`), no por
+caso: para que la pantalla pueda levantar o condonar una morosidad puntual hace falta una función nueva a nivel de
+caso (`delinquency_list_active_cases`, ver el contrato).
+
+### Pieza 1 — contrato
+
+`docs/contracts/payments-api.md` (nueva función `payments_record_forgiveness_entry`, nuevo asiento
+`forgiveness_credit`) y `docs/contracts/delinquency-api.md` (estados nuevos `lifted`/`forgiven`, funciones
+`delinquency_lift_case`, `delinquency_forgive_case` y `delinquency_list_active_cases`), antes de cualquier
+migración (INT-003). Sin código todavía: la implementación sigue en las piezas siguientes.

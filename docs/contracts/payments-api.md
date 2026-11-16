@@ -8,7 +8,7 @@
 
 ## Funciones SQL
 
-Las dos corren con los permisos de quien llama (`SECURITY INVOKER`): la RLS del ledger decide qué se ve, así que el contrato no agrega ningún permiso. Hoy solo staff lee el ledger; una clienta o `anon` no ven ningún asiento. Solo `authenticated` tiene `EXECUTE`.
+Corren con los permisos de quien llama (`SECURITY INVOKER`): la RLS del ledger decide qué se ve, así que el contrato no agrega ningún permiso. Hoy solo staff lee el ledger; una clienta o `anon` no ven ningún asiento. Solo `authenticated` tiene `EXECUTE`, salvo `payments_record_forgiveness_entry`, que no la tiene nadie con sesión (ver abajo).
 
 ### `public.payments_client_balance(p_client_id uuid) => bigint`
 
@@ -26,13 +26,25 @@ La función no sabe de gracia, de morosidad ni de bloqueos: solo responde qué c
 
 Quien la necesita: la detección de US-MOR-01 (criterios 1 y 2).
 
+### `public.payments_record_forgiveness_entry(p_client_id uuid, p_appointment_id uuid, p_amount bigint) => bigint`
+
+Único punto de escritura nuevo desde el hallazgo M3 de la auditoría de US-AGE-12 (migración `20261102000001_payments_ledger_write_only_through_close.sql`), que dejó el ledger sin `INSERT` directo para `authenticated`: deja un asiento `forgiveness_credit` por `-p_amount` (`p_amount` debe ser mayor que cero) contra la clienta y, si se da, la cita. Devuelve el id del asiento. `p_amount` fuera de rango es `payments_forgiveness_amount_invalid`.
+
+**Nadie con sesión la ejecuta directo:** `EXECUTE` está revocado de `authenticated` y `anon`, igual que `payments_record_close_entries`. Solo la llama una función `SECURITY DEFINER` de quien perdona el saldo (`delinquency_forgive_case`, US-MOR-05): al correr como su dueña, no necesita el permiso explícito, mismo patrón que `scheduling_close_appointment` con `payments_record_close_entries`.
+
+Un asiento `forgiveness_credit` por cita (`idx_payments_ledger_entries_appointment_kind`, `UNIQUE (appointment_id, kind)`): condonar dos veces la misma cita es un error, no un segundo descuento.
+
+Quien la necesita: `delinquency_forgive_case` (US-MOR-05), para que el saldo que ve `payments_client_balance` baje exactamente lo condonado (DOM-005). Una condonación no mueve una pasarela ni reembolsa nada: es un registro contable.
+
 ## Garantías
 
 1. **La forma de la fila es contrato:** un cambio de columnas o de firma se versiona aquí antes del cambio (INT-003).
-2. **Solo lectura:** ninguna función de este contrato escribe en el ledger. Los asientos los escribe `scheduling_close_appointment` al cerrar la cita y, más adelante, el registro de pago de US-MOR-03.
+2. **Casi solo lectura:** ninguna función de lectura de este contrato escribe en el ledger. Los asientos los escribe `scheduling_close_appointment` al cerrar la cita, el registro de pago de US-MOR-03 y, desde US-MOR-05, `payments_record_forgiveness_entry` al condonar — las tres sin `EXECUTE` para quien tiene sesión, solo para funciones `SECURITY DEFINER` de su propia feature.
 3. **La RLS es la frontera de acceso (SEC-001):** las funciones no la saltan. Si `payments` cambia sus políticas, el contrato cambia con ellas.
 4. **Sin datos de contacto ni de la cita:** salen ids, un monto y una fecha; el nombre de la clienta se pide a `clients` y la cita a `scheduling`.
 
 ## Pruebas
 
 pgTAP `supabase/tests/database/payments_unpaid_charges.test.sql` (pieza de la base de datos): una cita con cargo y anticipo menor entra con su saldo, una pagada por completo no, una cerrada después del corte no, el orden, el tope, el cursor de la página siguiente, y que una clienta o `anon` no vean nada.
+
+pgTAP `supabase/tests/database/payments_record_forgiveness_entry.test.sql`: un asiento negativo que baja `payments_client_balance`, un monto cero o negativo rechazado, una segunda condonación de la misma cita rechazada por el índice único, y que `authenticated` y `anon` no tengan `EXECUTE`.
