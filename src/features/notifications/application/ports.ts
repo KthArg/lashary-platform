@@ -26,6 +26,36 @@ export interface SchedulingMaintenancePort {
   expireUndecidedReschedules(): Promise<Result<number, RepositoryFailure>>
 }
 
+export type ReapplicationCandidate = {
+  clientId: string
+  techniqueId: string
+  lastCompletedAt: Date
+}
+
+export interface ReapplicationCandidatesPort {
+  listCandidates(): Promise<Result<ReapplicationCandidate[], RepositoryFailure>>
+}
+
+export type TechniqueReapplicationInfo = { name: string; intervalDays: number }
+
+export interface TechniqueReapplicationPort {
+  listTechniquesWithInterval(): Promise<Result<ReadonlyMap<string, TechniqueReapplicationInfo>, RepositoryFailure>>
+}
+
+export type DelinquencyState = 'active' | 'pending_review'
+
+export interface DelinquencyStatesPort {
+  statesFor(clientIds: readonly string[]): Promise<Result<ReadonlyMap<string, DelinquencyState>, RepositoryFailure>>
+}
+
+export type DueReapplicationReminder = {
+  clientId: string
+  techniqueId: string
+  techniqueName: string
+  lastCompletedAt: Date
+  dueAt: Date
+}
+
 export type ContactInfo = { phone: string; email: string }
 
 export interface ClientContactPort {

@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "dominio (pieza 2/12), contrato SQL de scheduling_reapplication_candidates con pgTAP (pieza 3/12), su envoltorio TypeScript (pieza 4/12) y la tabla notifications_reapplication_reminders con su pgTAP (pieza 5/12) ya existen. Pendiente: caso de uso que una scheduling y delinquency con el dominio y escriba en la tabla, política de anticipación con su pantalla, integración al ciclo de recordatorios, y las pruebas de cada pieza"
+    falta: "dominio (pieza 2/12), contrato SQL de scheduling (pieza 3/12) con envoltorio TypeScript (pieza 4/12), tabla notifications_reapplication_reminders con su pgTAP (pieza 5/12) y el caso de uso discoverDueReapplications (pieza 6/12, con puertos todavía sin adaptador real) ya existen. Pendiente: conectar los adaptadores reales de scheduling/catalog/delinquency, escribir en la tabla con su idempotencia por ciclo, política de anticipación con su pantalla, integración al ciclo de recordatorios, y las pruebas de cada pieza"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -427,12 +427,25 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   `notifications_reapplication_reminders.test.sql` (12 aserciones: aislamiento SEC-002, el `UNIQUE` del ciclo
   y el `CHECK` en los dos sentidos).
 
+- **Pieza 6/12 — caso de uso `discoverDueReapplications`** (`application/discover-reapplication-reminders.ts`):
+  une las tres lecturas (candidatos de `scheduling`, intervalo y nombre de cada técnica de `catalog` en un
+  solo `listTechniquesWithInterval` — una consulta acotada al catálogo completo, no una por candidata,
+  PERF-005 — y `delinquency_client_states`) con el dominio de la pieza 2. Solo `active` bloquea (DOM-012:
+  `pending_review` todavía no tiene consecuencia); una técnica sin intervalo configurado no entra. Todavía
+  no escribe en la tabla de la pieza 5 ni envía nada — ese es el puerto `ReapplicationCandidatesPort` +
+  `TechniqueReapplicationPort` + `DelinquencyStatesPort` recién declarados en `application/ports.ts`, sin
+  adaptador real todavía (la siguiente pieza conecta `scheduling`, `catalog` y `delinquency` de verdad).
+  Pruebas: `application/__tests__/discover-reapplication-reminders.test.ts` (8 casos: candidata dentro y
+  fuera de la ventana de anticipación, morosidad activa excluye y `pending_review` no, técnica sin
+  intervalo no entra, y los tres fallos de lectura como `RepositoryFailure`).
+
 ### Qué no hace todavía
 
-Ninguno de los dos contratos (`scheduling` y `delinquency`) se consume todavía desde aquí: falta el caso de
-uso que una las dos lecturas con el dominio de la pieza 2 y escriba en la tabla de la pieza 5, la política de
-anticipación con su pantalla, y la integración al ciclo de recordatorios. El plan de piezas está en el PR de
-cada incremento.
+El caso de uso de la pieza 6 todavía recibe puertos sin adaptador real: falta conectarlo con
+`listSchedulingReapplicationCandidates` (pieza 4), `catalog.listTechniques` y `delinquency_client_states`,
+escribir en la tabla de la pieza 5 (con su idempotencia por ciclo y los reintentos entre corridas), la
+política de anticipación con su pantalla, y la integración al ciclo de recordatorios. El plan de piezas
+está en el PR de cada incremento.
 
 ## Qué no hace todavía
 
