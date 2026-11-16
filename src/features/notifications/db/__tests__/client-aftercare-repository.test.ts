@@ -3,7 +3,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { isErr, isOk } from '@/shared/result'
 import { isAftercareStorageFailed } from '../../domain/errors'
 import { MY_AFTERCARE_PAGE_SIZE } from '../../domain/aftercare-message'
-import { clientAftercareRepository, CLIENT_AFTERCARE_COLUMNS, AFTERCARE_MESSAGES_TABLE } from '../client-aftercare-repository'
+import { clientAftercareRepository, CLIENT_AFTERCARE_COLUMNS } from '../client-aftercare-repository'
+import { AFTERCARE_MESSAGES_TABLE } from '../aftercare-messages-table'
 
 const PRIVATE_COLUMNS = ['client_id', 'status', 'attempts', 'last_error', 'claimed_at', 'last_channel', 'sent_at']
 

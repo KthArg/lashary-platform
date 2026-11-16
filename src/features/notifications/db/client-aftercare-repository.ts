@@ -5,7 +5,7 @@ import { aftercareStorageFailed } from '../domain/errors'
 import type { ClientAftercare } from '../domain/aftercare-message'
 import type { ClientAftercareRepository } from '../application/ports'
 
-export const AFTERCARE_MESSAGES_TABLE = 'notifications_aftercare_messages'
+import { AFTERCARE_MESSAGES_TABLE } from './aftercare-messages-table'
 export const CLIENT_AFTERCARE_COLUMNS = 'id, appointment_id, service_name, aftercare_text, client_note, created_at'
 
 const READ_FAILED = 'no se pudieron leer las indicaciones'

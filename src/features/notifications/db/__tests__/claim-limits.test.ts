@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { CHANNEL_SEND_TIMEOUT_MS } from '../../channels/send-timeout'
+import { MESSAGE_PURPOSES } from '../../application/ports'
 import {
   CLAIM_BATCH_SIZE,
   CLAIM_TTL_MINUTES,
@@ -15,7 +16,7 @@ const CHANNELS_PER_MESSAGE = 2
 const MIN_MARGIN_FOR_OTHER_STEPS_MS = 60_000
 
 describe('límites del reclamo', () => {
-  it('las tandas de los tres tipos de mensaje, con los dos canales caídos, caben en lo que dura la ruta', () => {
+  it('las tandas de todos los tipos de mensaje, con los dos canales caídos, caben en lo que dura la ruta', () => {
     const worstCaseMs = CLAIM_BATCH_SIZE * MESSAGE_KINDS_SENT_PER_CYCLE * CHANNELS_PER_MESSAGE * CHANNEL_SEND_TIMEOUT_MS
     expect(worstCaseMs).toBeLessThanOrEqual(CYCLE_MAX_DURATION_SECONDS * 1000)
   })
@@ -25,8 +26,8 @@ describe('límites del reclamo', () => {
     expect(worstCaseMs + MIN_MARGIN_FOR_OTHER_STEPS_MS).toBeLessThanOrEqual(CYCLE_MAX_DURATION_SECONDS * 1000)
   })
 
-  it('son tres tipos de mensaje en serie: recordatorios, avisos a la clienta y confirmaciones', () => {
-    expect(MESSAGE_KINDS_SENT_PER_CYCLE).toBe(3)
+  it('cuenta un envío en serie por cada tipo de mensaje que mandan los canales', () => {
+    expect(MESSAGE_KINDS_SENT_PER_CYCLE).toBe(MESSAGE_PURPOSES.length)
   })
 
   it('un reclamo no vence antes de que termine el peor ciclo', () => {
