@@ -1,30 +1,53 @@
 import { randomUUID } from 'node:crypto'
 import { ok, err, isErr, type Result } from '@/shared/result'
 import { systemClock } from '@/shared/clock'
+import { logError } from '@/shared/logger'
 import { createSystemClient, closeSystemClient, readSystemClientConfigFromEnv, type SystemClientFailure } from '@/shared/lib/supabase/system'
 import {
   listSchedulingAppointmentsForReminders,
   getSchedulingAppointmentForReminder,
   expireSchedulingUndecidedReschedules,
+  listSchedulingReapplicationCandidates,
   SCHEDULING_MY_APPOINTMENTS_PATH,
 } from '@/features/scheduling'
 import { getClientContactForReminders } from '@/features/clients'
+import { listTechniquesForReapplication } from '@/features/catalog'
 import { confirmationRequestRepository } from './db/confirmation-request-repository'
 import { reminderRepository } from './db/reminder-repository'
 import { aftercareDeliveryRepository } from './db/aftercare-delivery-repository'
 import { clientNoticeDeliveryRepository } from './db/client-notice-delivery-repository'
 import { droppedNoticesRepository } from './db/dropped-notices-repository'
+import { delinquencyStatesGateway } from './db/delinquency-states-gateway'
+import { reapplicationReminderRepository } from './db/reapplication-reminder-repository'
+import { reapplicationSettingsRepository } from './db/reapplication-settings-repository'
 import { runReminderCycle, type RunReminderCycleSummary } from './application/run-reminder-cycle'
+import { discoverDueReapplications, type DiscoverDueReapplicationsDeps } from './application/discover-reapplication-reminders'
+import { sendDueReapplications, type SendDueReapplicationsSummary } from './application/send-due-reapplications'
 import { buildAppointmentsUrl } from './domain/appointments-url'
 import { sendAftercareMessages, type SendAftercareMessagesSummary } from './application/send-aftercare-messages'
 import { sendConfirmationRequests, type SendConfirmationRequestsSummary } from './application/send-confirmation-requests'
-import type { AppointmentSnapshot, ContactInfo, RepositoryFailure } from './application/ports'
+import type {
+  AppointmentSnapshot,
+  ContactInfo,
+  RepositoryFailure,
+  TechniqueReapplicationInfo,
+} from './application/ports'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { metaWhatsAppChannel, readMetaWhatsAppConfigFromEnv } from './channels/meta-whatsapp-channel'
 import { resendEmailChannel, readResendEmailConfigFromEnv } from './channels/resend-email-channel'
+
+const CATALOG_TECHNIQUES_PAGE_SIZE = 100
 
 const REPOSITORY_FAILURE: RepositoryFailure = 'repository-failed'
 
 export type NotificationsCycleError = 'system-client-not-configured' | SystemClientFailure | RepositoryFailure
+
+function buildGetContact(db: SupabaseClient) {
+  return async (clientId: string): Promise<Result<ContactInfo | null, RepositoryFailure>> => {
+    const result = await getClientContactForReminders(clientId, db)
+    return isErr(result) ? err(REPOSITORY_FAILURE) : ok(result.value)
+  }
+}
 
 export async function runNotificationsReminderCycle(): Promise<
   Result<RunReminderCycleSummary, NotificationsCycleError>
@@ -54,10 +77,7 @@ export async function runNotificationsReminderCycle(): Promise<
       return isErr(result) ? err(REPOSITORY_FAILURE) : ok(result.value)
     }
 
-    const getContact = async (clientId: string): Promise<Result<ContactInfo | null, RepositoryFailure>> => {
-      const result = await getClientContactForReminders(clientId, db)
-      return isErr(result) ? err(REPOSITORY_FAILURE) : ok(result.value)
-    }
+    const getContact = buildGetContact(db)
 
     const primaryChannel = metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env))
     const backupChannel = resendEmailChannel(readResendEmailConfigFromEnv(process.env))
@@ -73,7 +93,7 @@ export async function runNotificationsReminderCycle(): Promise<
           clock: systemClock,
         })
       : async (): Promise<Result<SendConfirmationRequestsSummary, RepositoryFailure>> => {
-          console.error('[notifications] NEXT_PUBLIC_SITE_URL no es una URL absoluta: no se mandan confirmaciones sin enlace')
+          logError('notifications', 'NEXT_PUBLIC_SITE_URL no es una URL absoluta: no se mandan confirmaciones sin enlace')
           return err(REPOSITORY_FAILURE)
         }
 
@@ -121,6 +141,75 @@ export async function runNotificationsReminderCycle(): Promise<
   }
 }
 
+export async function buildReapplicationDiscoveryDeps(db: SupabaseClient): Promise<Result<DiscoverDueReapplicationsDeps, RepositoryFailure>> {
+  const anticipationDaysResult = await reapplicationSettingsRepository(db).anticipationDays()
+  if (isErr(anticipationDaysResult)) {
+    logError('notifications', 'no se pudo leer la anticipación configurada, se aborta la corrida', anticipationDaysResult.error)
+    return err(REPOSITORY_FAILURE)
+  }
+
+  const listCandidates = async () => {
+    const result = await listSchedulingReapplicationCandidates(db)
+    return isErr(result) ? err(REPOSITORY_FAILURE) : ok(result.value)
+  }
+
+  const listTechniquesWithInterval = async (): Promise<Result<ReadonlyMap<string, TechniqueReapplicationInfo>, RepositoryFailure>> => {
+    try {
+      const result = await listTechniquesForReapplication({ activeOnly: true, pageSize: CATALOG_TECHNIQUES_PAGE_SIZE }, db)
+      const withInterval = new Map<string, TechniqueReapplicationInfo>()
+      for (const technique of result.items) {
+        if (technique.reapplicationIntervalDays !== null) {
+          withInterval.set(technique.id, { name: technique.name, intervalDays: technique.reapplicationIntervalDays })
+        }
+      }
+      return ok(withInterval)
+    } catch {
+      return err(REPOSITORY_FAILURE)
+    }
+  }
+
+  return ok({
+    listCandidates,
+    listTechniquesWithInterval,
+    statesFor: delinquencyStatesGateway(db).statesFor,
+    anticipationDays: anticipationDaysResult.value,
+    now: systemClock(),
+  })
+}
+
+export async function runReapplicationReminderCycle(): Promise<
+  Result<SendDueReapplicationsSummary, NotificationsCycleError>
+> {
+  const systemConfig = readSystemClientConfigFromEnv(process.env)
+  if (systemConfig === null) return err('system-client-not-configured')
+
+  const clientResult = await createSystemClient(systemConfig)
+  if (isErr(clientResult)) return clientResult
+  const db = clientResult.value
+
+  try {
+    const depsResult = await buildReapplicationDiscoveryDeps(db)
+    if (isErr(depsResult)) return depsResult
+
+    const due = await discoverDueReapplications(depsResult.value)
+    if (isErr(due)) return due
+
+    const repo = await reapplicationReminderRepository(db)
+
+    return await sendDueReapplications({
+      listRecords: repo.listRecords,
+      recordSent: repo.recordSent,
+      recordFailed: repo.recordFailed,
+      getContact: buildGetContact(db),
+      primaryChannel: metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env)),
+      backupChannel: resendEmailChannel(readResendEmailConfigFromEnv(process.env)),
+      clock: systemClock,
+    })(due.value)
+  } finally {
+    await closeSystemClient(db)
+  }
+}
+
 export type { RunReminderCycleSummary } from './application/run-reminder-cycle'
 export { receiveReminderCronRequest } from './http/cron-handler'
 export { loadAdminInbox } from './ui/inbox/services/inbox-service'
@@ -133,3 +222,6 @@ export type { AdminInboxResult, MarkNoticeActionResult } from './ui/inbox/types/
 export type { InboxView } from './application/inbox'
 export type { InboxNotice } from './domain/inbox-notice'
 export { AFTERCARE_NOTE_MAX_LENGTH } from './domain/aftercare-message'
+
+export { ReapplicationSettingsPage } from './ui/reapplication-settings/components/ReapplicationSettingsPage'
+export { REAPPLICATION_SETTINGS_PATH } from './ui/reapplication-settings/constants/reapplication-settings-strings'
