@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "dominio de la fecha estimada ya existe (computeReapplicationDueDate, isReapplicationDue, domain/reapplication-reminder.ts, pieza 2/12). Pendiente: contrato y función SQL de scheduling (candidatos de re-aplicación), tabla de persistencia e idempotencia por ciclo, política de anticipación con su pantalla, integración al ciclo de recordatorios, y las pruebas de cada pieza"
+    falta: "dominio de la fecha estimada (pieza 2/12) y contrato SQL de scheduling_reapplication_candidates (pieza 3/12, pgTAP en verde) ya existen. Pendiente: envoltorio TypeScript que una scheduling y delinquency, tabla de persistencia e idempotencia por ciclo, política de anticipación con su pantalla, integración al ciclo de recordatorios, y las pruebas de cada pieza"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -371,13 +371,12 @@ PERF-005 (sin queries en loop, igual que `send-due-reminders`), INT-003 (contrat
 - `catalog`: `getTechnique`/`listTechniques` (entry point `@/features/catalog`) ya expone
   `reapplicationIntervalDays: number | null` por técnica (US-AGE-08). Una técnica sin intervalo no entra al
   cálculo.
-- `scheduling`: no expone todavía nada a nivel de lote (el único punto cercano, `ClientHistoryPort.hasCompletedAppointment`,
-  responde solo para la clienta autenticada al reservar — US-AGE-03 — y no sirve para un cron que recorra a todas).
-  Este historia necesita un contrato nuevo, análogo a `reminders-api.ts` (el que ya usa US-NOT-03): una función a
-  nivel de sistema que, por técnica, devuelva candidatos (clienta, técnica, fecha de la última cita `completed`)
-  excluyendo ya en la base a quien tenga una cita futura activa de cualquier técnica (criterio 4, parte scheduling).
-  Se documentará en este SPEC cuando se implemente (mismo patrón que la nota del ciclo de reagendados, arriba),
-  no en `docs/contracts/scheduling-api.md` (ese contrato es el que consume `clients`, no este).
+- `scheduling`: expone `public.scheduling_reapplication_candidates()` (criterio 4, parte scheduling), documentada
+  en `src/features/scheduling/SPEC.md` («US-NOT-05 — candidatos de re-aplicación»), no en
+  `docs/contracts/scheduling-api.md` (ese contrato es el que consume `clients`, no este). Por clienta y técnica
+  con alguna cita `completed`, da la fecha de la más reciente (servicio efectivamente prestado, no el reservado)
+  y excluye a quien tenga cualquier cita futura activa, de cualquier técnica. Falta todavía el envoltorio de
+  TypeScript (análogo a `reminders-api.ts`) que esta feature consuma desde `scheduling`'s `index.ts`.
 - `delinquency`: `delinquency_client_states(p_client_ids uuid[])` (`docs/contracts/delinquency-api.md`, US-MOR-01)
   ya resuelve la parte de morosidad del criterio 4. Solo `active` cuenta como morosidad (DOM-012); `pending_review`
   no bloquea nada.
@@ -404,12 +403,18 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   `isReapplicationDue` (criterios 2 y 3: entra en la ventana de anticipación configurada, y sigue avisando si la
   fecha estimada ya pasó, igual que el plazo de US-NOT-08). `isValidAnticipationDays` valida el rango 1-30.
   Pruebas: `domain/__tests__/reapplication-reminder.test.ts` y `shared/__tests__/date-math.test.ts`.
+- **Pieza 3/12 — contrato de `scheduling`** (`scheduling_reapplication_candidates`, migración
+  `20261113000000_scheduling_reapplication_candidates_fn.sql`): resuelve en SQL la mitad scheduling del
+  criterio 4 (cita futura de cualquier técnica) y da la fecha de la última cita completada por técnica,
+  documentado en `src/features/scheduling/SPEC.md`. pgTAP de 10 aserciones en verde contra Supabase local
+  (`scheduling_reapplication_candidates.test.sql`), igual que el resto de la suite (91 archivos, 1220 pruebas).
 
 ### Qué no hace todavía
 
-Nada del criterio 4 (morosidad y cita futura se resuelven en SQL, pendiente): falta el contrato y la función SQL de
-`scheduling`, la tabla de persistencia con su idempotencia por ciclo, la política de anticipación con su pantalla,
-y la integración al ciclo de recordatorios. El plan de piezas está en el PR de cada incremento.
+La mitad morosidad del criterio 4 todavía no se consume desde aquí (el contrato de `delinquency` ya existe, ver
+arriba): falta el envoltorio de TypeScript que una los dos contratos (`scheduling` y `delinquency`), la tabla de
+persistencia con su idempotencia por ciclo, la política de anticipación con su pantalla, y la integración al
+ciclo de recordatorios. El plan de piezas está en el PR de cada incremento.
 
 ## Qué no hace todavía
 
