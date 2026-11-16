@@ -8,7 +8,8 @@ historias:
     estado: terminada
     evidencia: "PR de cierre us/US-MOR-01 a main, con 24 piezas apiladas contra la rama de la historia (#765 a #784 y #789 a #792; las piezas 21 a 24 son correcciones de la revisión de la pila). Criterio 1 (detección de las citas cerradas con pago sin registrar): supabase/tests/database/delinquency_detect_unpaid.test.sql y payments_unpaid_charges.test.sql; el cron, en delinquency/http/__tests__/cron-handler.test.ts, application/__tests__/detect-unpaid.test.ts y db/__tests__/detection-repository.test.ts; comprobado a mano en local con el servidor real: el cron genera 3 morosidades por revisar y una segunda corrida genera 0. Criterio 2 (periodo de gracia configurable, de 1 a 90 días y 7 por defecto): delinquency_tables.test.sql, delinquency_set_grace_days.test.sql, application/__tests__/grace-days.test.ts, db/__tests__/settings-repository.test.ts, ui/review/__tests__/review-actions.test.ts y review-view.test.tsx; comprobado a mano en el navegador: guarda 14, deja el evento con el valor anterior y el nuevo y persiste al recargar. Criterio 3 (aviso previo con opción de confirmar o descartar): delinquency_decide_case.test.sql, delinquency_notify_case_detected.test.sql, application/__tests__/decide-case.test.ts, db/__tests__/case-repository.test.ts, ui/review/__tests__/review-view.test.tsx y, en notifications, ui/inbox/__tests__/notice-lines.test.ts, admin-inbox.test.tsx y db/__tests__/inbox-repository.test.ts; comprobado a mano: la administradora ve el aviso en Notificaciones y su enlace lleva a /admin/morosidades. Criterio 4 (el saldo se calcula sumando los asientos, no se guarda a mano): payments_unpaid_charges.test.sql, una cita entra si la suma de todos sus asientos es mayor que cero; la morosidad guarda el saldo que tenía al detectarla y ninguna función lo actualiza. Criterio 5 (estado en el expediente y listado de activas): delinquency_contract.test.sql, delinquency_list_active_cursor.test.sql (el cursor por fecha y clienta no se salta empates), db/__tests__/case-list-repository.test.ts, application/__tests__/load-review.test.ts (avisa cuando hay más de 50), y en clients application/__tests__/list-clients-delinquency.test.ts, ui/admin-clients/__tests__/clients-list-delinquency.test.tsx, get-client-action.test.ts y el layout.test.tsx del perfil. Pasa a US-MOR-03: qué cuenta como pago registrado (ítem 14 de «Criterios trasladados»). Decisiones del PO del 2026-11-08 en docs/process/DEPENDENCIES.md. El cron no está programado: .github/workflows/delinquency-detect.yml solo tiene workflow_dispatch y el schedule se agrega cuando US-MOR-03 esté mergeada y Kenny lo confirme."
   - id: US-MOR-02
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "casi toda: solo existe el arranque en docs (2026-11-06), apilado sobre US-MOR-01 que todavía no es terminada; con las decisiones del PO del 2026-11-08; pendiente fijar el mínimo de caracteres del motivo de la excepción (sección US-MOR-02, «Decisiones del PO»)"
   - id: US-MOR-03
     estado: no_iniciada
   - id: US-MOR-04
@@ -238,3 +239,78 @@ La revisión de la pila encontró cuatro cosas medias, ninguna bloqueante. Se co
 ### Qué no hace todavía
 
 US-MOR-01 está terminada. El cron existe pero no está programado: ninguna fila se genera sola hasta que se agregue su `schedule`. Qué cuenta como pago registrado y el registro de pagos son de US-MOR-03; mientras no exista, toda cita cerrada con cargo figura impaga. Bloquear la agenda (US-MOR-02), regularizar (US-MOR-03), el histórico (US-MOR-04) y levantar o perdonar (US-MOR-05) no están hechos.
+
+## US-MOR-02: bloqueo de agenda por morosidad
+
+Criterios del backlog:
+
+1. Al intentar agendar, el sistema valida si la clienta tiene morosidad activa.
+2. Si la tiene, se muestra un mensaje claro con el motivo, el monto y la opción de regularizar.
+3. Una vez saldada la morosidad, la clienta recupera automáticamente la posibilidad de agendar.
+4. La restricción se aplica también cuando la administradora agenda en nombre de la clienta, pero ella puede autorizar
+   la excepción en el momento.
+5. Todo bloqueo aplicado queda registrado, para poder revisar si el sistema está bloqueando clientas por error.
+
+Recibe además de US-AGE-11 (ítem 11 de «Criterios trasladados») el indicador «Morosidad activa» en la agenda diaria: solo
+cambia el adaptador de `DelinquentClientsPort`. Recibe de US-AGE-05 (ítem 7) la validación dentro de las funciones de reserva.
+
+Depende de US-MOR-01, que quedó `terminada` en su rama pero todavía no está mergeada a `main` (INT-007): este trabajo se
+adelanta apilado sobre esa rama, sin publicarse, y se rebasa sobre `us/US-MOR-01` si esa historia cambia en la revisión. Nada de
+esto se publica antes de que US-MOR-01 esté mergeada a `main`.
+
+Reglas: SEC-001 y SEC-002 (el bloqueo vive en la base, con RLS y su test de aislamiento), DOM-011 (el registro del bloqueo en
+la misma transacción), DOM-012 (solo `active` bloquea; consecuencias automáticas aprobadas por el PO), ARCH-003/005 (otras
+features piden por funciones del contrato), INT-003 (contrato primero), INT-008 (una migración por pieza, hacia adelante).
+
+### Decisiones de diseño
+
+- **El bloqueo es de la base de datos.** La clienta llama a las funciones de reserva directo por PostgREST; un chequeo solo en
+  TypeScript se saltaría. `scheduling_book_appointment` y `scheduling_book_package_appointment` rechazan la reserva de una
+  clienta bloqueada. `scheduling` no lee tablas de `delinquency` (ARCH-005): le pregunta por una función del contrato.
+- **Un bloqueo se registra sin lanzar excepción.** Una excepción revierte la transacción y se llevaría el registro (como ya
+  resolvió `scheduling_alerts` con el solape). La función de reserva devuelve un resultado «bloqueada» con el motivo y el
+  monto, y deja el evento en la misma transacción (DOM-011).
+- **Solo `active` bloquea** (garantía 3 del contrato). `pending_review` y `dismissed` no tienen ninguna consecuencia.
+- **Recuperar el acceso es derivado, no una acción.** La clienta está bloqueada mientras tenga una morosidad `active` cuya
+  cita todavía tenga saldo pendiente en el ledger, calculado en el momento. Cuando US-MOR-03 registre el pago, el saldo de la
+  cita baja a cero y el acceso vuelve solo, sin tocar ninguna tabla de morosidad. Levantar o perdonar a mano es de US-MOR-05.
+- **La administradora agenda en nombre de la clienta con la misma regla** y puede autorizar la excepción en ese momento: la
+  autorización es un parámetro explícito de la llamada, solo admin la puede usar, exige confirmación explícita y un motivo
+  obligatorio, y deja su propio evento de bitácora con quién la autorizó, la clienta y la cita. La clienta no puede
+  autorizarse a sí misma ni ve esa autorización.
+- **No se asume una sola persona donde no haga falta.** El bloqueo es por clienta, no por persona ni por recurso. La
+  excepción registra el id de quien la autorizó, no «la» administradora. Así, cuando el estudio tenga más de una persona
+  atendiendo (ver «Fuera de alcance»), este bloqueo no cambia.
+
+### Decisiones del PO (DOM-012, Kenny, 2026-11-08)
+
+Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md`.
+
+- **«Saldada»:** la clienta recupera el acceso cuando el saldo de la cita que originó la morosidad llega a cero en el ledger,
+  sin acción manual. Levantar o perdonar a mano es de US-MOR-05.
+- **Solo bloquea una morosidad confirmada** (`active`), no una por revisar ni una descartada.
+- **«Opción de regularizar» (criterio 2):** el mensaje dice que se comunique con el estudio; se cambia cuando exista US-MOR-03.
+- **Texto a la clienta:** «No pudimos agendar tu cita porque tienes un saldo pendiente de ₡{monto} de tu cita del {fecha}.
+  Comunícate con el estudio para regularizarlo y poder agendar de nuevo.» (Kenny lo escribió en minúsculas al mensajear; se
+  usa con mayúscula inicial de oración, sin cambiar las palabras.)
+- **Excepción de la administradora:** cuando agenda por una clienta morosa hay confirmación explícita y un motivo obligatorio,
+  con un mínimo de caracteres. Queda en la bitácora con su nombre, la clienta y la cita. La clienta no lo ve. Kenny no fijó el
+  mínimo: **pendiente** fijar el número al construir la pieza 5 (propongo 10) y confirmarlo con él.
+
+### Fuera de alcance
+
+Varias personas atendiendo a la misma hora no se hace ahora: el PO decidió terminar bien la base de un estudio de una persona y
+tratarlo después como historia o cambio posterior. Esta historia solo cuida no asumir una sola persona donde no haga falta (ver
+«Decisiones de diseño»).
+
+### Piezas previstas
+
+1. Arranque en docs (esta sección).
+2. Contrato: lo que `delinquency` ofrece a `scheduling` (¿está bloqueada esta clienta?, con motivo y monto) y lo que `payments`
+   ofrece a `delinquency` (saldo por cita).
+3. Base: la función de «bloqueada» con pgTAP.
+4. Base: las dos funciones de reserva rechazan y registran el bloqueo.
+5. Base: la excepción autorizada por la administradora y su evento.
+6. Aplicación: el adaptador real de `DelinquencyPort` y el mensaje con motivo y monto.
+7. Agenda diaria: el adaptador real de `DelinquentClientsPort`.
+8. Cierre: evidencia y estado.
