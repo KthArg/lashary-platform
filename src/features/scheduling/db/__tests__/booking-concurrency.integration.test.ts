@@ -5,7 +5,7 @@ import { isErr, isOk } from '@/shared/result'
 import { bookAppointment } from '../../application/book-appointment'
 import { noDelinquencyYet } from '../../application/no-delinquency'
 import { MS_PER_MINUTE } from '../../domain/appointment-window.constants'
-import { createSupabaseBookingRepository } from '../booking-repository'
+import { createSupabaseBookingRepository, logBookingOverlap } from '../booking-repository'
 import type { BookingRepository } from '../../application/ports'
 
 const API_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
@@ -166,7 +166,7 @@ describe.skipIf(!reachable)('US-AGE-05 criterio 4 — clientas reservando el mis
 
       const results = await Promise.all(
         clientas.map((clienta) =>
-          bookAppointment({ bookings: clienta.repository, delinquency: noDelinquencyYet })({
+          bookAppointment({ bookings: clienta.repository, delinquency: noDelinquencyYet, reportOverlap: logBookingOverlap })({
             resourceId: STUDIO_RESOURCE_ID,
             startsAtMs,
             techniqueId: technique.id,

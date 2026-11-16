@@ -41,6 +41,8 @@ export interface SpaceNotAvailable {
   readonly code: 'SCHEDULING_SPACE_NOT_AVAILABLE'
   readonly resourceId: string
   readonly message: string
+  // La reserva volvió vacía sin decir por qué: un solape que rechazó el constraint o un bloqueo por morosidad.
+  readonly withoutReason?: true
 }
 
 export interface AppointmentNotPending {
@@ -267,6 +269,11 @@ export const spaceNotAvailable = (resourceId: string): SpaceNotAvailable => ({
   code: 'SCHEDULING_SPACE_NOT_AVAILABLE',
   resourceId,
   message: `el espacio ${resourceId} ya está ocupado en ese horario`,
+})
+
+export const spaceRejectedWithoutReason = (resourceId: string): SpaceNotAvailable => ({
+  ...spaceNotAvailable(resourceId),
+  withoutReason: true,
 })
 
 export const isSpaceNotAvailable = (value: unknown): value is SpaceNotAvailable =>

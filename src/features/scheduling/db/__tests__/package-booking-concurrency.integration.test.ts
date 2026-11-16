@@ -6,6 +6,7 @@ import { bookPackageAppointment } from '../../application/book-package-appointme
 import { noDelinquencyYet } from '../../application/no-delinquency'
 import { MS_PER_MINUTE } from '../../domain/appointment-window.constants'
 import { createSupabasePackageBookingRepository } from '../package-booking-repository'
+import { logBookingOverlap } from '../booking-repository'
 import type { PackageBookingRepository } from '../../application/ports'
 
 const API_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
@@ -150,7 +151,7 @@ describe.skipIf(!reachable)('US-AGE-04 — 10 clientas reservando el mismo paque
 
       const results = await Promise.all(
         clientas.map((clienta) =>
-          bookPackageAppointment({ bookings: clienta.repository, delinquency: noDelinquencyYet })({
+          bookPackageAppointment({ bookings: clienta.repository, delinquency: noDelinquencyYet, reportOverlap: logBookingOverlap })({
             resourceId: STUDIO_RESOURCE_ID,
             startsAtMs,
             packageId: pkg.id,

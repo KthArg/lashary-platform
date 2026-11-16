@@ -1,11 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { err, isErr, isOk, ok } from '@/shared/result'
-import { slotNotOffered, spaceNotAvailable, storageFailed } from '../../domain/errors'
+import { slotNotOffered, spaceNotAvailable, spaceRejectedWithoutReason, storageFailed } from '../../domain/errors'
 import { MS_PER_MINUTE } from '../../domain/appointment-window.constants'
 import { bookPackageAppointment } from '../book-package-appointment'
 import type {
   BookPackageAppointmentInput,
   BookedPackageAppointment,
+  BookingOverlap,
+  BookingOverlapReporter,
   DelinquencyPort,
   PackageBookingRepository,
 } from '../ports'
@@ -44,6 +46,7 @@ function createFakePackageBookingRepository(
   return { repository, received }
 }
 
+const ignoreOverlap: BookingOverlapReporter = () => {}
 const notBlocked: DelinquencyPort = { activeBlock: async () => ok(null) }
 const BLOCK = { appointmentId: 'cita-con-deuda', pending: 25000, appointmentStartsAtMs: Date.parse('2026-11-05T15:00:00Z') }
 const blocked: DelinquencyPort = { activeBlock: async () => ok(BLOCK) }
@@ -51,7 +54,7 @@ const blocked: DelinquencyPort = { activeBlock: async () => ok(BLOCK) }
 describe('bookPackageAppointment', () => {
   it('entrega al repositorio lo que pidió la clienta y devuelve la cita de paquete reservada', async () => {
     const { repository, received } = createFakePackageBookingRepository(ok(booked))
-    const result = await bookPackageAppointment({ bookings: repository, delinquency: notBlocked })(input)
+    const result = await bookPackageAppointment({ bookings: repository, delinquency: notBlocked, reportOverlap: ignoreOverlap })(input)
 
     expect(isOk(result)).toBe(true)
     if (isOk(result)) expect(result.value).toEqual(booked)
@@ -59,8 +62,8 @@ describe('bookPackageAppointment', () => {
   })
 
   it('si la base rechaza por morosidad, dice cuánto debe, de qué cita y cuándo fue', async () => {
-    const { repository, received } = createFakePackageBookingRepository(err(spaceNotAvailable(RESOURCE_ID)))
-    const result = await bookPackageAppointment({ bookings: repository, delinquency: blocked })(input)
+    const { repository, received } = createFakePackageBookingRepository(err(spaceRejectedWithoutReason(RESOURCE_ID)))
+    const result = await bookPackageAppointment({ bookings: repository, delinquency: blocked, reportOverlap: ignoreOverlap })(input)
 
     expect(isErr(result)).toBe(true)
     if (isErr(result)) expect(result.error).toMatchObject({ code: 'SCHEDULING_CLIENT_HAS_ACTIVE_DELINQUENCY', ...BLOCK })
@@ -69,7 +72,7 @@ describe('bookPackageAppointment', () => {
 
   it('si la base rechaza el espacio y la clienta no está bloqueada, queda el espacio ocupado', async () => {
     const { repository } = createFakePackageBookingRepository(err(spaceNotAvailable(RESOURCE_ID)))
-    const result = await bookPackageAppointment({ bookings: repository, delinquency: notBlocked })(input)
+    const result = await bookPackageAppointment({ bookings: repository, delinquency: notBlocked, reportOverlap: ignoreOverlap })(input)
 
     expect(isErr(result) && result.error.code).toBe('SCHEDULING_SPACE_NOT_AVAILABLE')
   })
@@ -77,7 +80,7 @@ describe('bookPackageAppointment', () => {
   it('si no se puede preguntar por el bloqueo, queda el rechazo original', async () => {
     const { repository } = createFakePackageBookingRepository(err(spaceNotAvailable(RESOURCE_ID)))
     const failing: DelinquencyPort = { activeBlock: async () => err(storageFailed('caída')) }
-    const result = await bookPackageAppointment({ bookings: repository, delinquency: failing })(input)
+    const result = await bookPackageAppointment({ bookings: repository, delinquency: failing, reportOverlap: ignoreOverlap })(input)
 
     expect(isErr(result) && result.error.code).toBe('SCHEDULING_SPACE_NOT_AVAILABLE')
   })
@@ -91,7 +94,7 @@ describe('bookPackageAppointment', () => {
         return ok(BLOCK)
       },
     }
-    const result = await bookPackageAppointment({ bookings: repository, delinquency: spy })(input)
+    const result = await bookPackageAppointment({ bookings: repository, delinquency: spy, reportOverlap: ignoreOverlap })(input)
 
     expect(isErr(result) && result.error.code).toBe('SCHEDULING_SLOT_NOT_OFFERED')
     expect(asked).toBe(false)
@@ -106,7 +109,7 @@ describe('bookPackageAppointment', () => {
         return ok(null)
       },
     }
-    const result = await bookPackageAppointment({ bookings: repository, delinquency: spy })(input)
+    const result = await bookPackageAppointment({ bookings: repository, delinquency: spy, reportOverlap: ignoreOverlap })(input)
 
     expect(isOk(result)).toBe(true)
     expect(asked).toBe(false)
@@ -114,7 +117,7 @@ describe('bookPackageAppointment', () => {
 
   it('el espacio ocupado llega como valor, no como excepción', async () => {
     const { repository } = createFakePackageBookingRepository(err(spaceNotAvailable(RESOURCE_ID)))
-    const result = await bookPackageAppointment({ bookings: repository, delinquency: notBlocked })(input)
+    const result = await bookPackageAppointment({ bookings: repository, delinquency: notBlocked, reportOverlap: ignoreOverlap })(input)
 
     expect(isErr(result)).toBe(true)
     if (isErr(result)) expect(result.error.code).toBe('SCHEDULING_SPACE_NOT_AVAILABLE')
@@ -122,9 +125,54 @@ describe('bookPackageAppointment', () => {
 
   it('un horario que el calendario no ofrece también llega como valor', async () => {
     const { repository } = createFakePackageBookingRepository(err(slotNotOffered(RESOURCE_ID)))
-    const result = await bookPackageAppointment({ bookings: repository, delinquency: notBlocked })(input)
+    const result = await bookPackageAppointment({ bookings: repository, delinquency: notBlocked, reportOverlap: ignoreOverlap })(input)
 
     expect(isErr(result)).toBe(true)
     if (isErr(result)) expect(result.error.code).toBe('SCHEDULING_SLOT_NOT_OFFERED')
+  })
+
+  describe('el evento de solape scheduling.appointment_overlap_rejected', () => {
+    function createReporter() {
+      const reported: BookingOverlap[] = []
+      const reportOverlap: BookingOverlapReporter = (overlap) => {
+        reported.push(overlap)
+      }
+      return { reported, reportOverlap }
+    }
+
+    it('un bloqueo por morosidad no emite el evento de solape', async () => {
+      const { repository } = createFakePackageBookingRepository(err(spaceRejectedWithoutReason(RESOURCE_ID)))
+      const { reported, reportOverlap } = createReporter()
+      const result = await bookPackageAppointment({ bookings: repository, delinquency: blocked, reportOverlap })(input)
+
+      expect(isErr(result) && result.error.code).toBe('SCHEDULING_CLIENT_HAS_ACTIVE_DELINQUENCY')
+      expect(reported).toEqual([])
+    })
+
+    it('un solape real sí emite el evento, con el recurso y la hora pedida', async () => {
+      const { repository } = createFakePackageBookingRepository(err(spaceRejectedWithoutReason(RESOURCE_ID)))
+      const { reported, reportOverlap } = createReporter()
+      const result = await bookPackageAppointment({ bookings: repository, delinquency: notBlocked, reportOverlap })(input)
+
+      expect(isErr(result) && result.error.code).toBe('SCHEDULING_SPACE_NOT_AVAILABLE')
+      expect(reported).toEqual([{ resourceId: RESOURCE_ID, startsAtMs: STARTS_AT_MS }])
+    })
+
+    it('un horario ya tomado que la base explica con su mensaje no emite el evento', async () => {
+      const { repository } = createFakePackageBookingRepository(err(spaceNotAvailable(RESOURCE_ID)))
+      const { reported, reportOverlap } = createReporter()
+      await bookPackageAppointment({ bookings: repository, delinquency: notBlocked, reportOverlap })(input)
+
+      expect(reported).toEqual([])
+    })
+
+    it('si no se puede preguntar por el bloqueo, no lo da por solape', async () => {
+      const { repository } = createFakePackageBookingRepository(err(spaceRejectedWithoutReason(RESOURCE_ID)))
+      const failing: DelinquencyPort = { activeBlock: async () => err(storageFailed('caída')) }
+      const { reported, reportOverlap } = createReporter()
+      await bookPackageAppointment({ bookings: repository, delinquency: failing, reportOverlap })(input)
+
+      expect(reported).toEqual([])
+    })
   })
 })

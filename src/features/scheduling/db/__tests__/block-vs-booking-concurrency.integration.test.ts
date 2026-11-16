@@ -10,7 +10,7 @@ import { blockSlots } from '../../application/manual-blocks'
 import { noDelinquencyYet } from '../../application/no-delinquency'
 import { isManualBlockHasAppointment } from '../../domain/availability-errors'
 import { MS_PER_MINUTE } from '../../domain/appointment-window.constants'
-import { createSupabaseBookingRepository } from '../booking-repository'
+import { createSupabaseBookingRepository, logBookingOverlap } from '../booking-repository'
 import { createSupabaseManualBlockRepository } from '../manual-block-repository'
 import { createSupabaseDayAvailabilityRepository } from '../day-availability-repository'
 import type { BookingRepository } from '../../application/ports'
@@ -173,7 +173,7 @@ describe.skipIf(!reachable)('US-AGE-07 criterio 4 — la administradora bloquea 
       })
 
       const attemptBooking = (clienta: Clienta) =>
-        bookAppointment({ bookings: clienta.repository, delinquency: noDelinquencyYet })({
+        bookAppointment({ bookings: clienta.repository, delinquency: noDelinquencyYet, reportOverlap: logBookingOverlap })({
           resourceId: STUDIO_RESOURCE_ID,
           startsAtMs,
           techniqueId,

@@ -327,6 +327,14 @@ export interface DelinquencyPort {
   activeBlock(): Promise<Result<DelinquencyBlock | null, StorageFailed>>
 }
 
+// Un solape que rechazó el constraint pese al lock por recurso: no debería pasar, por eso se reporta.
+export interface BookingOverlap {
+  readonly resourceId: string
+  readonly startsAtMs: number
+}
+
+export type BookingOverlapReporter = (overlap: BookingOverlap) => void
+
 export interface DelinquentClientsPort {
   listWithActiveDelinquency(clientIds: readonly string[]): Promise<Result<ReadonlySet<string>, StorageFailed>>
 }
