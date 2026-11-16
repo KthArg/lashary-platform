@@ -419,6 +419,11 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - [delinquency-api.md](../../../docs/contracts/delinquency-api.md), «Regularización»: el estado `settled`, los estados de una solicitud, `delinquency_my_account()` para la vista de estado de cuenta de `account`, el bucket privado `delinquency-receipts`, lo que `delinquency` pide a `payments` y el aviso `notifications_record_regularization_submitted`.
 - La vista de estado de cuenta muestra como total lo que la clienta debe en morosidades confirmadas (la suma de `pending`), no el saldo completo del ledger: las citas recién cerradas dentro de la gracia todavía no son morosidad.
 
+### Base de datos
+
+- **Pagos en el ledger** (de `payments`; detalle en su SPEC): el asiento `payment`, varios por cita, y `payments_record_payment`, que no deja pagar más que el saldo de la cita y que nadie con sesión llama directo.
+- **Estado `settled` y solicitudes** (migración `20261117040000_delinquency_regularizations.sql`): `delinquency_cases` admite `settled` con su `settled_at` y conserva la decisión de cuando se confirmó. `delinquency_regularizations` guarda la morosidad, la clienta, lo declarado, la referencia opcional y la ruta del comprobante; cada estado exige sus campos (aprobada: monto y asiento de pago; rechazada: motivo no vacío; pendiente y reemplazada: nada de la revisión) y hay como mucho una pendiente por morosidad. Solo staff lee; nadie con sesión escribe: enviar, aprobar y rechazar son funciones `SECURITY DEFINER`. `CASE_STATES` del dominio incluye `settled`. Pruebas: pgTAP `delinquency_regularizations.test.sql` (16: los estados, una pendiente por morosidad, el contrato no devuelve una saldada, y que ni la clienta dueña ni otra clienta lean la tabla) y `db/__tests__/case-row.test.ts`.
+
 ### Pendiente de verificar
 
 - El peso promedio de un comprobante (foto de celular o PDF de banco) para fijar el límite entre 3 y 5 MB. Hasta tenerlo, el tope es 4 MB: dentro del rango de Kenny, y no 5 porque Vercel acepta como mucho 4,5 MB por petición (decisión de Jose Lorenzo, 2026-11-16).
