@@ -338,3 +338,12 @@ visible, con su `pending` de siempre y, si se condono, el monto condonado), leye
 existe (sin SQL nuevo: `lifted`/`forgiven` son estados como cualquier otro para esa funcion). `domain/
 delinquency-case.ts` agrega `EXCEPTION_HISTORY_LIST_LIMIT` (50, PERF-002). Pruebas: `application/__tests__/
 load-review.test.ts` actualizado.
+
+### Pieza 5b — acciones del servidor
+
+`ui/review/actions/review-actions.ts` agrega `liftCaseAction` y `forgiveCaseAction` (sesión admin,
+validacion con Zod, traduccion de los errores tipados al texto de `REVIEW_ERRORS`, `revalidatePath` tras
+guardar). `ui/review/validation/lift-case-schema.ts` y `forgive-case-schema.ts` (motivo de 1 a 500
+caracteres, monto entero positivo). `ui/review/types/review-results.ts` agrega `LiftCaseActionResult`/
+`ForgiveCaseActionResult`. `ui/review/constants/review-strings.ts` agrega el texto de los botones, los
+formularios y el historial.
