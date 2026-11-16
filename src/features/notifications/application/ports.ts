@@ -56,6 +56,25 @@ export type DueReapplicationReminder = {
   dueAt: Date
 }
 
+export type ReapplicationReminderRecord = { status: 'sent' | 'failed'; attempts: number }
+
+export type ReapplicationReminderOutcomeInput = {
+  clientId: string
+  techniqueId: string
+  techniqueName: string
+  lastCompletedAt: Date
+  dueAt: Date
+  attempts: number
+}
+
+export interface ReapplicationReminderRepository {
+  // Clave de ciclo: `${clientId}:${techniqueId}:${lastCompletedAt.toISOString()}` — una sola
+  // consulta por lote de clientas (PERF-005), no una por candidata.
+  listRecords(clientIds: readonly string[]): Promise<Result<ReadonlyMap<string, ReapplicationReminderRecord>, RepositoryFailure>>
+  recordSent(input: ReapplicationReminderOutcomeInput & { channel: ReminderChannelKind; sentAt: Date }): Promise<Result<void, RepositoryFailure>>
+  recordFailed(input: ReapplicationReminderOutcomeInput & { error: string; failedAt: Date }): Promise<Result<void, RepositoryFailure>>
+}
+
 export type ContactInfo = { phone: string; email: string }
 
 export interface ClientContactPort {

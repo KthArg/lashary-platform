@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-NOT-05
     estado: en_progreso
-    falta: "dominio (pieza 2/12), contrato SQL de scheduling (pieza 3/12) con envoltorio TypeScript (pieza 4/12), tabla notifications_reapplication_reminders con su pgTAP (pieza 5/12), discoverDueReapplications con sus adaptadores reales (piezas 6/12 y 7/12) y el mensaje con su canal propio (pieza 8/12: MessagePurpose 'reapplication_reminder', plantillas y asunto) ya existen. Pendiente: caso de uso que una descubrimiento + mensaje + canal y escriba en la tabla con su idempotencia por ciclo, política de anticipación configurable con su pantalla (hoy fija en el valor por defecto), integración al ciclo de recordatorios, y las pruebas de cada pieza"
+    falta: "dominio, contrato de scheduling, envoltorios, tabla con su pgTAP, descubrimiento y el repositorio de persistencia con su idempotencia por ciclo (piezas 2 a 9) ya existen, sin caso de uso que llame al repositorio todavía. Pendiente: caso de uso de envío que una descubrimiento + mensaje + canal + repositorio (pieza 10), criterio 3 (política de anticipación configurable con su pantalla; hoy fija en 7 días por defecto) y que algo dispare el ciclo de verdad (hoy nadie lo llama)"
   - id: US-NOT-06
     estado: no_iniciada
   - id: US-NOT-07
@@ -470,12 +470,41 @@ Registradas en `docs/process/DEPENDENCIES.md`.
   `resend-email-channel.test.ts` (plantilla propia, sin plantilla no manda texto libre, asunto y clave
   de idempotencia propios).
 
+- **Pieza 9/13 — repositorio de persistencia** (`db/reapplication-reminder-repository.ts`,
+  `reapplicationCycleKey(clientId, techniqueId, lastCompletedAt)` nueva en
+  `domain/reapplication-reminder.ts`): la clave identifica el ciclo — cambia solo cuando una nueva
+  cita completada mueve `lastCompletedAt`, que es justo lo que debe volver a habilitar el aviso.
+  `listRecords` la lee en una sola consulta por lote de clientas, no una por candidata (PERF-005).
+  `recordSent`/`recordFailed` hacen `upsert` por la clave `(client_id, technique_id, last_completed_at)`
+  — inserta la primera vez, actualiza en los reintentos siguientes. Todavía sin caso de uso que lo
+  llame — esa es la siguiente pieza.
+  Pruebas: `db/__tests__/reapplication-reminder-repository.test.ts` (6 casos: lectura por lote, forma
+  exacta del `upsert` para `sent` y para `failed`, fallos de la base) y el caso nuevo de
+  `domain/__tests__/reapplication-reminder.test.ts` para `reapplicationCycleKey`.
+- **Pieza 10/13 — envío y cableado** (`application/send-due-reapplications.ts`,
+  `runReapplicationReminderCycle` en `index.ts`): cierra los cuatro criterios de US-NOT-05 de punta a
+  punta. A diferencia del recordatorio de 24h, no hay un evento futuro que espere:
+  `discoverDueReapplications` (piezas 6-7) corre y lo que ya está vencido se intenta mandar en el
+  acto, en la misma corrida — no hay un `claimDuePending` previo porque no hay nada "pendiente"
+  guardado de antemano. Antes de intentar, por candidata: si ya hay una fila `'sent'` para ese ciclo,
+  se salta (`skipped`); si hay una `'failed'` con `attempts >= MAX_REMINDER_ATTEMPTS` (reusa la
+  constante de US-NOT-03, mismo tope: 5), también se salta — agotada hasta que una nueva cita
+  completada abra un ciclo nuevo; si no hay fila o es `'failed'` con intentos de sobra, intenta: sin
+  contacto o con los dos canales fallando por error real cuenta como intento gastado (`retried` o
+  `exhausted` según el tope); con los dos canales sin configurar es permanente (`exhausted` de una,
+  sin gastar reintentos, igual que `send-due-reminders.ts`).
+  Pruebas: `application/__tests__/send-due-reapplications.test.ts` (10 casos: primer envío con
+  `attempts: 1`, salto si ya está `sent`, salto si está `failed` y agotado, reintento que suma uno a
+  `attempts`, sin contacto, respaldo por correo, los dos canales sin configurar, los dos fallando
+  hasta agotar, fallo al leer los registros). `npx tsc --noEmit` sin errores; 231 pruebas en verde en
+  `src/features/notifications`, el resto saltado por el mismo problema de entorno preexistente.
+
 ### Qué no hace todavía
 
-Falta el caso de uso que una el descubrimiento (piezas 6-7) con el mensaje y el canal (pieza 8),
-escriba en la tabla de la pieza 5 (con su idempotencia por ciclo y los reintentos entre corridas), la
-política de anticipación con su pantalla (hoy fija en el valor por defecto), y la integración al ciclo
-de recordatorios. El plan de piezas está en el PR de cada incremento.
+Falta la política de anticipación configurable con su pantalla (criterio 3; hoy fija en el valor por
+defecto del dominio) y la integración de `runReapplicationReminderCycle` al disparador del cron
+(`/api/cron/notifications-reminders` o uno propio) — hoy nadie la llama todavía. El plan de piezas
+está en el PR de cada incremento.
 
 ## Qué no hace todavía
 
