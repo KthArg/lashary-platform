@@ -5,7 +5,7 @@ import type { ConfirmationRequest } from '../domain/confirmation-request'
 import type { InboxNotice } from '../domain/inbox-notice'
 import type { ClientNotice, ClientNoticeDelivery } from '../domain/client-notice'
 import type { AdminAftercare, AftercareMessage, ClientAftercare } from '../domain/aftercare-message'
-import type { AftercareStorageFailed, ChannelNotConfigured, ChannelSendFailed, ClientNoticesStorageFailed, InboxStorageFailed } from '../domain/errors'
+import type { AftercareStorageFailed, ChannelNotConfigured, ChannelSendFailed, ClientNoticesStorageFailed, InboxStorageFailed, InvalidAnticipationDays } from '../domain/errors'
 
 export type RepositoryFailure = 'repository-failed'
 
@@ -25,6 +25,60 @@ export interface SchedulingReadPort {
 
 export interface SchedulingMaintenancePort {
   expireUndecidedReschedules(): Promise<Result<number, RepositoryFailure>>
+}
+
+export type ReapplicationCandidate = {
+  clientId: string
+  techniqueId: string
+  lastCompletedAt: Date
+}
+
+export interface ReapplicationCandidatesPort {
+  listCandidates(): Promise<Result<ReapplicationCandidate[], RepositoryFailure>>
+}
+
+export type TechniqueReapplicationInfo = { name: string; intervalDays: number }
+
+export interface TechniqueReapplicationPort {
+  listTechniquesWithInterval(): Promise<Result<ReadonlyMap<string, TechniqueReapplicationInfo>, RepositoryFailure>>
+}
+
+export type DelinquencyState = 'active' | 'pending_review'
+
+export interface DelinquencyStatesPort {
+  statesFor(clientIds: readonly string[]): Promise<Result<ReadonlyMap<string, DelinquencyState>, RepositoryFailure>>
+}
+
+export type DueReapplicationReminder = {
+  clientId: string
+  techniqueId: string
+  techniqueName: string
+  lastCompletedAt: Date
+  dueAt: Date
+}
+
+export type ReapplicationReminderRecord = { status: 'sent' | 'failed'; attempts: number }
+
+export type ReapplicationReminderOutcomeInput = {
+  clientId: string
+  techniqueId: string
+  techniqueName: string
+  lastCompletedAt: Date
+  dueAt: Date
+  attempts: number
+}
+
+export type ChangeAnticipationDaysFailure = RepositoryFailure | InvalidAnticipationDays
+
+export interface ReapplicationSettingsRepository {
+  anticipationDays(): Promise<Result<number, RepositoryFailure>>
+  setAnticipationDays(days: number): Promise<Result<number, ChangeAnticipationDaysFailure>>
+}
+
+export interface ReapplicationReminderRepository {
+  listRecords(clientIds: readonly string[]): Promise<Result<ReadonlyMap<string, ReapplicationReminderRecord>, RepositoryFailure>>
+  recordSent(input: ReapplicationReminderOutcomeInput & { channel: ReminderChannelKind; sentAt: Date }): Promise<Result<void, RepositoryFailure>>
+  recordFailed(input: ReapplicationReminderOutcomeInput & { error: string; failedAt: Date }): Promise<Result<void, RepositoryFailure>>
 }
 
 export type ContactInfo = { phone: string; email: string }
@@ -115,7 +169,7 @@ export interface AftercareDeliveryRepository {
   markExhausted(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
 }
 
-export type MessagePurpose = 'reminder' | 'appointment_confirmation' | 'reschedule_outcome' | 'aftercare'
+export type MessagePurpose = 'reminder' | 'appointment_confirmation' | 'reschedule_outcome' | 'aftercare' | 'reapplication_reminder'
 
 export type ChannelSendInput = {
   messageId: string
