@@ -17,6 +17,7 @@ import {
   type ProductImageDeps,
 } from '../../../application/admin-products/product-images'
 import { createProductNotFound } from '../../../domain/product-errors'
+import { NEW_PRODUCT_DISPLAY_ORDER } from '../../../domain/product'
 import { adminProductRepository } from '../../../db/admin-product-repository'
 import { productImageStorage } from '../../../db/product-image-storage'
 import { productSchema } from '../validation/product-schema'
@@ -71,7 +72,11 @@ export async function createProductAction(
   const uploaded = await uploadProductImage(images)(productId, image)
   if (isErr(uploaded)) return invalid(uploaded.error.problems)
 
-  const result = await createProduct(products)({ ...parsed.data, imageUrl: uploaded.value })
+  const result = await createProduct(products)({
+    ...parsed.data,
+    displayOrder: NEW_PRODUCT_DISPLAY_ORDER,
+    imageUrl: uploaded.value,
+  })
   if (isErr(result)) {
     await removeStoredProductImage(images)(uploaded.value)
     return invalid(problemsOf(result.error))
@@ -103,7 +108,11 @@ export async function updateProductAction(
   }
   const replacedImage = imageUrl !== existing.imageUrl
 
-  const result = await updateProduct(products)(id, { ...parsed.data, imageUrl })
+  const result = await updateProduct(products)(id, {
+    ...parsed.data,
+    displayOrder: existing.displayOrder,
+    imageUrl,
+  })
   if (isErr(result)) {
     if (replacedImage) await removeStoredProductImage(images)(imageUrl)
     return invalid(problemsOf(result.error))
