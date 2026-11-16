@@ -62,7 +62,7 @@ Quien la necesita: la aprobación de una regularización (criterio 3 de US-MOR-0
 
 ## Pruebas
 
-pgTAP `supabase/tests/database/payments_record_payment.test.sql` (por escribir con la función): un pago baja el saldo de la cita, dos pagos parciales de la misma cita conviven, el cargo sigue sin poder duplicarse, el tope del saldo, monto inválido, cita de otra clienta, y que ni una clienta ni la administradora puedan llamarla directo.
+pgTAP `supabase/tests/database/payments_record_payment.test.sql` (US-MOR-03): un pago baja el saldo de la cita, dos pagos parciales de la misma cita conviven, el tope del saldo (pagarlo exacto sí, uno más no, y una cita saldada no admite pagos), monto inválido, cita de otra clienta o sin asientos, y que ni la administradora pueda llamarla directo. `payments_ledger_payment_kind.test.sql`: el cargo y el anticipo siguen sin poder duplicarse por cita.
 
 pgTAP `supabase/tests/database/payments_appointment_balances.test.sql` (pieza de la base de datos de US-MOR-02): una cita con cargo y anticipo menor devuelve su saldo, una saldada devuelve cero, una sin asientos no devuelve fila, el tope de ids, y que una clienta o `anon` no vean nada.
 
