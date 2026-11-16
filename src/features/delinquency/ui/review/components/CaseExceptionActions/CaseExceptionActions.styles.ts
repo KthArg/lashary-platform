@@ -1,0 +1,15 @@
+export const caseExceptionActionsStyles = {
+  actions: 'mt-2 flex flex-wrap gap-2',
+  liftButton: 'btn btn-outline btn-sm',
+  forgiveButton: 'btn btn-outline btn-sm',
+  form: 'mt-2 flex flex-col gap-2 rounded-box border border-base-300 p-3',
+  hint: 'text-sm opacity-70',
+  field: 'flex flex-col gap-1 text-sm',
+  label: 'font-medium',
+  input: 'input input-bordered input-sm w-32',
+  textarea: 'textarea textarea-bordered textarea-sm',
+  checkboxField: 'flex items-center gap-2 text-sm',
+  formActions: 'flex flex-wrap gap-2',
+  confirmButton: 'btn btn-error btn-sm',
+  cancelButton: 'btn btn-ghost btn-sm',
+}

@@ -339,3 +339,9 @@ guardar). `ui/review/validation/lift-case-schema.ts` y `forgive-case-schema.ts` 
 caracteres, monto entero positivo). `ui/review/types/review-results.ts` agrega `LiftCaseActionResult`/
 `ForgiveCaseActionResult`. `ui/review/constants/review-strings.ts` agrega el texto de los botones, los
 formularios y el historial. Todavía nadie llama estas acciones desde la pantalla: pieza siguiente.
+
+### Pieza 8 — componente `CaseExceptionActions`
+
+`ui/review/components/CaseExceptionActions/` (nuevo): dos botones por caso activo, "Levantar bloqueo" (motivo)
+y "Condonar" (monto, con casilla "Condonar todo lo pendiente" que precarga el saldo, y motivo), cada uno con su
+formulario en linea y `FeedbackMessage`. Todavia sin montar en la pantalla: pieza siguiente.
