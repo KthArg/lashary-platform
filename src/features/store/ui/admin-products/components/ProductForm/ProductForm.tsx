@@ -60,14 +60,6 @@ export function ProductForm({ product }: ProductFormProps) {
           defaultValue={product?.priceCrc}
         />
         <ProductFormField
-          name="displayOrder"
-          label={formMessages.fields.displayOrder}
-          type="number"
-          min={0}
-          required
-          defaultValue={product?.displayOrder ?? 0}
-        />
-        <ProductFormField
           name="stock"
           label={formMessages.fields.stock}
           type="number"

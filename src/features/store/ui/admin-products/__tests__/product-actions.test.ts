@@ -40,6 +40,7 @@ import {
 import { makeProduct } from '@/features/store/application/admin-products/__tests__/product-fixture'
 import { initialProductActionState } from '@/features/store/ui/admin-products/types/product-action-state'
 import { createDuplicateProductSlug } from '@/features/store/domain/product-errors'
+import { NEW_PRODUCT_DISPLAY_ORDER } from '@/features/store/domain/product'
 import { productStrings } from '@/features/store/ui/admin-products/constants/product-strings'
 
 const PNG_BYTES = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00])
@@ -56,7 +57,6 @@ const validFields = {
   name: 'Serum nutritivo Lashary',
   description: 'Tratamiento nutritivo.',
   priceCrc: '18000',
-  displayOrder: '1',
   stock: '4',
 }
 
@@ -112,6 +112,17 @@ describe('acciones administrativas de productos', () => {
     expect(mocks.upload.mock.calls[0][0].startsWith(`${saved.id}/`)).toBe(true)
   })
 
+  it('un producto nuevo entra con el orden por defecto, aunque el formulario mande otro', async () => {
+    await createProductAction(
+      initialProductActionState,
+      form({ ...validFields, displayOrder: '99' }, pngFile()),
+    )
+
+    expect(mocks.save).toHaveBeenCalledWith(
+      expect.objectContaining({ displayOrder: NEW_PRODUCT_DISPLAY_ORDER }),
+    )
+  })
+
   it('crear exige una imagen', async () => {
     const state = await createProductAction(initialProductActionState, form(validFields))
 
@@ -152,6 +163,18 @@ describe('acciones administrativas de productos', () => {
     expect(mocks.upload).not.toHaveBeenCalled()
     expect(mocks.save).toHaveBeenCalledWith(expect.objectContaining({ imageUrl: existing.imageUrl }))
     expect(mocks.remove).not.toHaveBeenCalled()
+  })
+
+  it('editar conserva el orden de presentación que ya tenía el producto', async () => {
+    const existingOrder = NEW_PRODUCT_DISPLAY_ORDER + 7
+    mocks.findById.mockResolvedValue({ ...makeProduct({ id: 'e3' }), displayOrder: existingOrder })
+
+    await updateProductAction(
+      initialProductActionState,
+      form({ ...validFields, id: 'e3', displayOrder: '99' }),
+    )
+
+    expect(mocks.save).toHaveBeenCalledWith(expect.objectContaining({ displayOrder: existingOrder }))
   })
 
   it('editar con una imagen nueva la sube y borra la anterior del bucket', async () => {
