@@ -303,5 +303,7 @@ implementa `listActiveCases` (RPC a `delinquency_list_active_cases`) — la inte
 el mismo commit porque TypeScript no permite dejar un puerto sin quien lo cumpla sin romper la compilación de
 cualquier PR intermedio. Pruebas: `db/__tests__/case-repository.test.ts` y `case-list-repository.test.ts`
 actualizados; `application/__tests__/decide-case.test.ts` agrega los stubs `lift`/`forgive` que el tipo de
-`CaseRepository` ya exige, sin usarlos. `npx tsc --noEmit` sin errores en todo el repo. Todavía sin capa de
-aplicación ni UI: piezas siguientes.
+`CaseRepository` ya exige, sin usarlos, y `application/__tests__/load-review.test.ts` agrega el stub
+`listActiveCases` que el tipo de `CaseListRepository` ya exige — `loadReview` todavía no lo llama, eso es de
+la pieza siguiente. `npx tsc --noEmit` sin errores en todo el repo; `npx vitest run src/features/delinquency`:
+95/95. Todavía sin capa de aplicación ni UI: piezas siguientes.
