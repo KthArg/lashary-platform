@@ -6,6 +6,7 @@ import { bookPackageAppointment } from '../../application/book-package-appointme
 import { noDelinquencyYet } from '../../application/no-delinquency'
 import { MS_PER_MINUTE } from '../../domain/appointment-window.constants'
 import { createSupabasePackageBookingRepository } from '../package-booking-repository'
+import { logBookingOverlap } from '../booking-repository'
 
 const API_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
@@ -139,7 +140,7 @@ describe.skipIf(!reachable)('US-AGE-04 tope de pendientes con un paquete — una
 
       const results = await Promise.all(
         Array.from({ length: attempts }, (_, slot) =>
-          bookPackageAppointment({ bookings: repository, delinquency: noDelinquencyYet })({
+          bookPackageAppointment({ bookings: repository, delinquency: noDelinquencyYet, reportOverlap: logBookingOverlap })({
             resourceId: STUDIO_RESOURCE_ID,
             startsAtMs: firstStartMs + slot * slotStepMs,
             packageId,

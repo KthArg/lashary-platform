@@ -314,9 +314,26 @@ export interface MyAppointmentsRepository {
   listUpcoming(nowMs: number): Promise<Result<MyAppointment[], StorageFailed>>
 }
 
-export interface DelinquencyPort {
-  hasActiveDelinquency(): Promise<boolean>
+// La morosidad confirmada que hoy bloquea a la clienta de la sesión: la cita que debe, lo que debe hoy y la
+// fecha de esa cita. La más antigua si son varias.
+export interface DelinquencyBlock {
+  readonly appointmentId: string
+  readonly pending: number
+  readonly appointmentStartsAtMs: number | null
 }
+
+export interface DelinquencyPort {
+  // null si la clienta puede agendar.
+  activeBlock(): Promise<Result<DelinquencyBlock | null, StorageFailed>>
+}
+
+// Un solape que rechazó el constraint pese al lock por recurso: no debería pasar, por eso se reporta.
+export interface BookingOverlap {
+  readonly resourceId: string
+  readonly startsAtMs: number
+}
+
+export type BookingOverlapReporter = (overlap: BookingOverlap) => void
 
 export interface DelinquentClientsPort {
   listWithActiveDelinquency(clientIds: readonly string[]): Promise<Result<ReadonlySet<string>, StorageFailed>>

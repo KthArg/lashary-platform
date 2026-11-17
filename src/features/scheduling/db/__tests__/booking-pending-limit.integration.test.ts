@@ -5,7 +5,7 @@ import { isErr, isOk } from '@/shared/result'
 import { bookAppointment } from '../../application/book-appointment'
 import { noDelinquencyYet } from '../../application/no-delinquency'
 import { MS_PER_MINUTE } from '../../domain/appointment-window.constants'
-import { createSupabaseBookingRepository } from '../booking-repository'
+import { createSupabaseBookingRepository, logBookingOverlap } from '../booking-repository'
 
 const API_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
 const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
@@ -147,7 +147,7 @@ describe.skipIf(!reachable)('US-AGE-05 tope de pendientes — una clienta reserv
 
       const results = await Promise.all(
         Array.from({ length: attempts }, (_, slot) =>
-          bookAppointment({ bookings: repository, delinquency: noDelinquencyYet })({
+          bookAppointment({ bookings: repository, delinquency: noDelinquencyYet, reportOverlap: logBookingOverlap })({
             resourceId: STUDIO_RESOURCE_ID,
             startsAtMs: firstStartMs + slot * slotStepMs,
             techniqueId,

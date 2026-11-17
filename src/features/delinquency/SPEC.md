@@ -2,13 +2,14 @@
 feature: delinquency
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-08
+actualizado: 2026-11-15
 historias:
   - id: US-MOR-01
     estado: terminada
     evidencia: "PR de cierre us/US-MOR-01 a main, con 24 piezas apiladas contra la rama de la historia (#765 a #784 y #789 a #792; las piezas 21 a 24 son correcciones de la revisión de la pila). Criterio 1 (detección de las citas cerradas con pago sin registrar): supabase/tests/database/delinquency_detect_unpaid.test.sql y payments_unpaid_charges.test.sql; el cron, en delinquency/http/__tests__/cron-handler.test.ts, application/__tests__/detect-unpaid.test.ts y db/__tests__/detection-repository.test.ts; comprobado a mano en local con el servidor real: el cron genera 3 morosidades por revisar y una segunda corrida genera 0. Criterio 2 (periodo de gracia configurable, de 1 a 90 días y 7 por defecto): delinquency_tables.test.sql, delinquency_set_grace_days.test.sql, application/__tests__/grace-days.test.ts, db/__tests__/settings-repository.test.ts, ui/review/__tests__/review-actions.test.ts y review-view.test.tsx; comprobado a mano en el navegador: guarda 14, deja el evento con el valor anterior y el nuevo y persiste al recargar. Criterio 3 (aviso previo con opción de confirmar o descartar): delinquency_decide_case.test.sql, delinquency_notify_case_detected.test.sql, application/__tests__/decide-case.test.ts, db/__tests__/case-repository.test.ts, ui/review/__tests__/review-view.test.tsx y, en notifications, ui/inbox/__tests__/notice-lines.test.ts, admin-inbox.test.tsx y db/__tests__/inbox-repository.test.ts; comprobado a mano: la administradora ve el aviso en Notificaciones y su enlace lleva a /admin/morosidades. Criterio 4 (el saldo se calcula sumando los asientos, no se guarda a mano): payments_unpaid_charges.test.sql, una cita entra si la suma de todos sus asientos es mayor que cero; la morosidad guarda el saldo que tenía al detectarla y ninguna función lo actualiza. Criterio 5 (estado en el expediente y listado de activas): delinquency_contract.test.sql, delinquency_list_active_cursor.test.sql (el cursor por fecha y clienta no se salta empates), db/__tests__/case-list-repository.test.ts, application/__tests__/load-review.test.ts (avisa cuando hay más de 50), y en clients application/__tests__/list-clients-delinquency.test.ts, ui/admin-clients/__tests__/clients-list-delinquency.test.tsx, get-client-action.test.ts y el layout.test.tsx del perfil. Pasa a US-MOR-03: qué cuenta como pago registrado (ítem 14 de «Criterios trasladados»). Decisiones del PO del 2026-11-08 en docs/process/DEPENDENCIES.md. El cron no está programado: .github/workflows/delinquency-detect.yml solo tiene workflow_dispatch y el schedule se agrega cuando US-MOR-03 esté mergeada y Kenny lo confirme."
   - id: US-MOR-02
-    estado: no_iniciada
+    estado: terminada
+    evidencia: "PR de cierre us/US-MOR-02 a main, con 12 piezas apiladas contra la rama de la historia (#802 a #812 y #856). Criterio 1 (al intentar agendar, el sistema valida la morosidad): el bloqueo vive en la base, dentro de las funciones de reserva de la clienta: supabase/tests/database/delinquency_booking_block.test.sql, scheduling_book_blocked_by_delinquency.test.sql (técnica) y scheduling_book_package_blocked_by_delinquency.test.sql (paquete); scheduling/application/__tests__/book-appointment.test.ts y book-package-appointment.test.ts, y db/__tests__/delinquency-block-repository.test.ts. Comprobado a mano en el navegador con una clienta de prueba y el servidor real: «Confirmar reserva» muestra el rechazo. Criterio 2 (mensaje claro con motivo, monto y opción de regularizar): ui/booking-confirm/__tests__/perform-booking.test.ts (el texto del PO con el monto de hoy y la fecha de la cita; sin fecha dice «de una cita anterior») y studio-time.test.ts; comprobado a mano: «No pudimos agendar tu cita porque tienes un saldo pendiente de ₡18 000 de tu cita del 13 de septiembre de 2027. Comunícate con el estudio para regularizarlo y poder agendar de nuevo.» La «opción de regularizar» es «comunícate con el estudio» hasta que exista US-MOR-03 (decisión del PO del 2026-11-08). Criterio 3 (al saldarse, la clienta recupera la posibilidad de agendar sola): payments_appointment_balances.test.sql y delinquency_booking_block.test.sql (al saldarse la cita la fila deja de bloquear sin tocar ninguna tabla de morosidad) y scheduling_book_blocked_by_delinquency.test.sql (vuelve a agendar); comprobado a mano: se asienta el pago de la cita en el ledger y la misma clienta reserva, con la morosidad todavía `active`. Hoy no hay forma de registrar un pago desde la app: lo trae US-MOR-03, que cerrará la morosidad (deuda registrada abajo). Criterio 4 (la restricción rige también cuando la administradora agenda por la clienta, y ella puede autorizar la excepción): scheduling_admin_book_appointment.test.sql (bloqueada sin autorización devuelve id nulo y registra; con motivo de al menos 10 caracteres agenda y deja el evento con quién la autorizó, la clienta, la cita y el motivo; la clienta no lo ve); solo función SQL, sin pantalla (decisión del 2026-11-11, deuda registrada abajo). Criterio 5 (todo bloqueo queda registrado): el evento scheduling.booking.blocked_by_delinquency, con las citas que bloquean y su saldo de hoy, probado en scheduling_book_blocked_by_delinquency.test.sql, scheduling_book_package_blocked_by_delinquency.test.sql y scheduling_admin_book_appointment.test.sql; comprobado a mano: cada intento de la clienta y de la administradora deja su evento. Recibido de US-AGE-05 (ítem 7 de «Criterios trasladados»): la validación dentro de scheduling_book_appointment (y de paquete) por la base, SEC-001. Recibido de US-AGE-11 (ítem 11): el indicador «Morosidad activa» en la agenda diaria, con el adaptador real de DelinquentClientsPort: scheduling/db/__tests__/delinquent-clients-repository.test.ts; comprobado a mano: en la agenda del 6 de septiembre de 2027 solo la clienta con morosidad confirmada lleva la etiqueta y la que está por revisar no. Confirmado por el PO (Kenny, 2026-11-11, comunicado por Jose Lorenzo): el mínimo de 10 caracteres del motivo, que la cita que agenda la administradora queda pending_approval y que la pantalla va como historia aparte. Decisiones del PO del 2026-11-08 y de alcance del 2026-11-11 en docs/process/DEPENDENCIES.md."
   - id: US-MOR-03
     estado: no_iniciada
   - id: US-MOR-04
@@ -29,6 +30,12 @@ deuda:
   - que: "payments_unpaid_charges agrupa todo el ledger en cada página (GROUP BY de payments_ledger_entries por clienta y cita): el corte de fecha y el saldo se aplican después de agrupar, así que ningún índice lo acota y el costo de una corrida crece con el ledger entero, no con lo nuevo (PERF-002)"
     aceptada_en: "Revisión de la pila de US-MOR-01 (PR #765 a #784), 2026-11-11, hallazgo medio no bloqueante; sin medición todavía, PERF-001 pide medir antes de optimizar"
     costo: "Dueño: Jose Lorenzo, a revisar cuando US-MOR-03 empiece a llenar el ledger. Aprox. 4 h: medir con el volumen real (EXPLAIN) y, si hace falta, un índice parcial por (appointment_id) de los cargos o limitar la ventana de cierre, con su pgTAP"
+  - que: "No hay pantalla para que la administradora agende por una clienta, ni función para agendar un paquete por ella: solo existe scheduling_admin_book_appointment (técnica suelta), que se usa llamando a la base. La excepción de la morosidad (criterio 4) está construida pero no la puede usar nadie desde el panel"
+    aceptada_en: "Decisión de alcance del 2026-11-11 de Jose Lorenzo al arrancar US-MOR-02; el PO (Kenny) aprobó el 2026-11-11 que quede como historia aparte"
+    costo: "Dueño: el PO decide la historia. Aprox. 3 a 4 días: una pantalla en el panel (elegir clienta, técnica y horario, con el diálogo de la excepción y su motivo), una función para paquetes con su pgTAP y el diseño de la pantalla, que el backlog no describe"
+  - que: "Cada intento bloqueado deja un evento en la bitácora, sin tope ni agrupación: una clienta que insiste, o un reintento automático, llena la bitácora con eventos iguales y la vuelve difícil de revisar (criterio 5)"
+    aceptada_en: "US-MOR-02, 2026-11-11: el criterio pide que todo bloqueo quede registrado; no se agrupó para no perder ninguno"
+    costo: "Dueño: Jose Lorenzo. Aprox. 2 h: agrupar por clienta y hora (un evento con un contador) o mostrar el resumen en la pantalla de revisión, y su pgTAP. Medir primero cuántos eventos hay (PERF-001)"
 defectos: []
 ---
 
@@ -38,13 +45,13 @@ Morosidad: deteccion con gracia y aviso previo (DOM-012), bloqueo, regularizacio
 
 ## Qué hace hoy
 
-Hoy: las tablas de morosidades y de configuración, las funciones que detectan, confirman o descartan y cambian la gracia, y las del contrato (sección de US-MOR-01). La pantalla de revisión y el reflejo en `clients` existen y hay una ruta de cron para correr la detección, sin programar y cada morosidad por revisar deja un aviso en la bandeja de la administradora.
+Hoy: las tablas de morosidades y de configuración, las funciones que detectan, confirman o descartan y cambian la gracia, y las del contrato (sección de US-MOR-01). La pantalla de revisión y el reflejo en `clients` existen, hay una ruta de cron para correr la detección (sin programar) y cada morosidad por revisar deja un aviso en la bandeja de la administradora. Una morosidad confirmada cuya cita todavía debe bloquea la agenda: la reserva de la clienta (técnica o paquete) la rechaza en la base, le dice cuánto debe y de qué cita, y deja el bloqueo registrado; la administradora puede agendar por ella autorizando la excepción con un motivo, y la agenda diaria marca a las clientas con morosidad activa (sección de US-MOR-02).
 
 ## Contrato público
 
-El contrato de lo que `delinquency` ofrecerá a `clients` está en [delinquency-api.md](../../../docs/contracts/delinquency-api.md): `delinquency_client_states` y `delinquency_list_active`, con los estados `pending_review`, `active` y `dismissed`. Todavía no hay implementación. El código entra por `index.ts` (ARCH-003).
+El contrato de lo que `delinquency` ofrecerá a `clients` está en [delinquency-api.md](../../../docs/contracts/delinquency-api.md): `delinquency_client_states` y `delinquency_list_active`, con los estados `pending_review`, `active` y `dismissed`, y `delinquency_booking_block`, que dice a `scheduling` si una clienta está bloqueada para agendar, con las citas que debe y su saldo de hoy. Las tres están implementadas (migraciones `20261108000004_delinquency_contract_fns.sql`, `20261108000007_delinquency_list_active_cursor.sql` y `20261110000001_delinquency_booking_block_fn.sql`). El código entra por `index.ts` (ARCH-003).
 
-Lo que `delinquency` necesita de `payments` está en [payments-api.md](../../../docs/contracts/payments-api.md): `payments_client_balance` y `payments_unpaid_charges`.
+Lo que `delinquency` necesita de `payments` está en [payments-api.md](../../../docs/contracts/payments-api.md): `payments_client_balance`, `payments_unpaid_charges` y `payments_appointment_balances` (el saldo de hoy por cita).
 
 ## US-MOR-01: detección automática de pagos pendientes
 
@@ -116,7 +123,7 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
   la gracia, asociada a la clienta; no toca las de dentro de la gracia ni las pagadas; correrla dos veces no duplica;
   una descartada no vuelve; al bajar la gracia entra la de 3 días; una cita nueva se detecta detrás de 210
   morosidades que llenan más de una página; la clienta y `anon` no la corren).
-- Todavía nadie la llama: el cron que la corre llega con la pieza que cablea la aplicación.
+- La llama el cron de detección (sección «Cron de detección»).
 
 ### Confirmar y descartar (piezas 6 y 7)
 
@@ -132,7 +139,7 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
   acción `decideCaseAction` (`ui/review/actions/`) exige sesión de administradora, valida con Zod y refresca la
   pantalla. Pruebas: `application/__tests__/decide-case.test.ts`, `db/__tests__/case-repository.test.ts` y
   `ui/review/__tests__/review-actions.test.ts`.
-- Todavía no hay pantalla que la llame: llega en una pieza siguiente.
+- La llama la pantalla de morosidades (sección siguiente).
 
 ### Funciones del contrato (pieza 8)
 
@@ -144,7 +151,7 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
   antigua, con tope de 100 y paginado por fecha.
 - Prueba: pgTAP `delinquency_contract.test.sql` (la activa gana, el saldo se suma por estado, la descartada no sale, el
   tope de ids, el orden y la paginación del listado, y la clienta y `anon` no ven nada).
-- Todavía nadie las llama: las consumen la pantalla y `clients` en las piezas siguientes.
+- Las consumen la pantalla de morosidades, `clients` y la agenda diaria de `scheduling` (US-MOR-02).
 
 ### Pantalla de morosidades (piezas 9 a 11)
 
@@ -163,7 +170,7 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - Pruebas: `application/__tests__/load-review.test.ts`, `db/__tests__/case-list-repository.test.ts` y
   `ui/review/__tests__/review-view.test.tsx` (listas, monto en colones, nombre por defecto, vacío, error y carga, y los botones
   con éxito y con fallo).
-- Todavía no refleja la morosidad en el listado ni el expediente de `clients`, ni avisa en la bandeja: piezas siguientes.
+- El reflejo en `clients` y el aviso en la bandeja están en sus secciones.
 
 ### Morosidad en `clients` (piezas 12 y 13)
 
@@ -237,4 +244,128 @@ La revisión de la pila encontró cuatro cosas medias, ninguna bloqueante. Se co
 
 ### Qué no hace todavía
 
-US-MOR-01 está terminada. El cron existe pero no está programado: ninguna fila se genera sola hasta que se agregue su `schedule`. Qué cuenta como pago registrado y el registro de pagos son de US-MOR-03; mientras no exista, toda cita cerrada con cargo figura impaga. Bloquear la agenda (US-MOR-02), regularizar (US-MOR-03), el histórico (US-MOR-04) y levantar o perdonar (US-MOR-05) no están hechos.
+US-MOR-01 está terminada. El cron existe pero no está programado: ninguna fila se genera sola hasta que se agregue su `schedule`. Qué cuenta como pago registrado y el registro de pagos son de US-MOR-03; mientras no exista, toda cita cerrada con cargo figura impaga. Regularizar (US-MOR-03), el histórico (US-MOR-04) y levantar o perdonar (US-MOR-05) no están hechos. Bloquear la agenda (US-MOR-02) está hecho y se describe en su sección.
+
+## US-MOR-02: bloqueo de agenda por morosidad
+
+Criterios del backlog:
+
+1. Al intentar agendar, el sistema valida si la clienta tiene morosidad activa.
+2. Si la tiene, se muestra un mensaje claro con el motivo, el monto y la opción de regularizar.
+3. Una vez saldada la morosidad, la clienta recupera automáticamente la posibilidad de agendar.
+4. La restricción se aplica también cuando la administradora agenda en nombre de la clienta, pero ella puede autorizar
+   la excepción en el momento.
+5. Todo bloqueo aplicado queda registrado, para poder revisar si el sistema está bloqueando clientas por error.
+
+Recibe además de US-AGE-11 (ítem 11 de «Criterios trasladados») el indicador «Morosidad activa» en la agenda diaria, y de
+US-AGE-05 (ítem 7) la validación dentro de las funciones de reserva.
+
+Reglas: SEC-001 y SEC-002 (el bloqueo vive en la base, con RLS y su test de aislamiento), DOM-011 (el registro del bloqueo en
+la misma transacción), DOM-012 (solo `active` bloquea; consecuencias automáticas aprobadas por el PO), ARCH-003/005 (otras
+features piden por funciones del contrato), INT-003 (contrato primero), INT-008 (una migración por cambio, hacia adelante).
+
+### Qué hace
+
+- **Quién está bloqueada.** `delinquency_booking_block(client_id)` (migración `20261110000001_delinquency_booking_block_fn.sql`,
+  contrato en [delinquency-api.md](../../../docs/contracts/delinquency-api.md)) devuelve las morosidades que bloquean a la
+  clienta, la más antigua primero, con el saldo **de hoy**, que lee de `payments_appointment_balances` (migración
+  `20261110000000_payments_appointment_balances_fn.sql`, contrato de `payments`), no la foto de la detección. Bloquea una
+  morosidad `active` cuya cita todavía debe; `pending_review`, `dismissed` y una `active` ya saldada no bloquean. Al saldarse la
+  cita la fila sale sola, sin tocar ninguna tabla de morosidad (criterio 3). Es `SECURITY DEFINER` porque la clienta no puede
+  leer la tabla de morosidades ni el ledger; responde solo a la propia clienta y al personal, a cualquier otra sesión vacío y
+  sin error, y `anon` no tiene `EXECUTE`. Mira como máximo las 200 morosidades activas más antiguas de la clienta. La llaman
+  las tres funciones de reserva y el adaptador de la aplicación. Pruebas: pgTAP `delinquency_booking_block.test.sql` (9) y
+  `payments_appointment_balances.test.sql` (9).
+- **La reserva de la clienta rechaza a la bloqueada.** `scheduling_book_appointment` (migración
+  `20261110000002_scheduling_book_appointment_blocks_delinquent.sql`) y `scheduling_book_package_appointment`
+  (`20261110000003_scheduling_book_package_appointment_blocks_delinquent.sql`) preguntan a `delinquency_booking_block` justo
+  después de resolver quién es la clienta, antes que el solape. Si está bloqueada, devuelven la fila con `id` nulo y dejan el
+  evento `scheduling.booking.blocked_by_delinquency` en la bitácora, en la misma transacción (criterios 1 y 5). El evento
+  tiene como entidad a la clienta y como actor a la sesión que intentó agendar, y su `payload` trae las citas que bloquean con
+  su saldo de hoy (`blockingAppointments`), el recurso, la hora pedida y el servicio (técnica o paquete). Cada intento deja su
+  evento. Lo escribe la función auxiliar `scheduling_booking_blocked_by_delinquency`, `SECURITY DEFINER` y sin `EXECUTE` para
+  nadie, así que una clienta no puede falsear eventos. Pruebas: pgTAP `scheduling_book_blocked_by_delinquency.test.sql` (10)
+  y `scheduling_book_package_blocked_by_delinquency.test.sql` (6).
+- **La administradora agenda por la clienta y autoriza la excepción** (criterio 4; agendar en nombre de una clienta es una
+  cláusula de esta historia, ADR-0007). `scheduling_admin_book_appointment(clienta, recurso, hora, técnica, primera vez,
+  precio esperado, autorizar excepción, motivo)` (migración `20261110000004_scheduling_admin_book_appointment_fn.sql`). Solo
+  la llama una administradora (otra sesión recibe `scheduling_not_authorized`, 42501); la clienta la da el parámetro y la cita
+  nace igual que la de la clienta, `pending_approval`. Con la clienta bloqueada y sin autorización devuelve la fila con `id`
+  nulo y registra el bloqueo con la administradora como actor. Con `p_authorize_exception = true` exige un motivo de al menos
+  10 caracteres sin contar espacios (`scheduling_exception_reason_required`, 22023), agenda y deja
+  `scheduling.booking.block_exception_authorized` en la misma transacción: actor la administradora, entidad la cita creada, y
+  en el `payload` la clienta, el motivo y las citas que bloqueaban con su saldo. La clienta no lo ve: la bitácora solo la lee
+  el personal. Si la clienta no estaba bloqueada, la autorización no hace nada. La validación de la franja es una copia de la
+  de la reserva de la clienta; `scheduling_slot_validation_parity.test.sql` compara las tres reservas ante las mismas franjas
+  inválidas (la deuda está en el SPEC de `scheduling`). Prueba: pgTAP `scheduling_admin_book_appointment.test.sql` (14).
+- **La aplicación explica el rechazo** (criterio 2). `bookAppointment` y `bookPackageAppointment` reservan y, solo si la base
+  rechaza como espacio no disponible, preguntan al puerto `DelinquencyPort.activeBlock()` si fue por morosidad. Si hay
+  bloqueo devuelven `SCHEDULING_CLIENT_HAS_ACTIVE_DELINQUENCY` con la cita, el monto y la fecha; si la pregunta falla o no
+  hay bloqueo, queda el rechazo original. Una reserva que sale bien o falla por otra causa no hace la pregunta. El evento de
+  solape `scheduling.appointment_overlap_rejected` lo emite el caso de uso solo cuando la base devolvió vacío y
+  `activeBlock()` dice que no hay bloqueo: un bloqueo no se cuenta como solape. El adaptador real,
+  `createSupabaseDelinquencyPort` (`scheduling/db/delinquency-block-repository.ts`), pregunta a `clients_current_profile_id`
+  quién es la clienta, a `delinquency_booking_block` si está bloqueada y lee la fecha de esa cita en `scheduling_appointments`;
+  sin perfil de clienta devuelve «sin bloqueo» sin consultar, sin fecha el bloqueo sale sin ella, y un fallo de la base es un
+  `StorageFailed`, nunca «sin bloqueo». Los ids se validan con `guid()`, no con `uuid()`, porque Postgres acepta cualquier
+  uuid. `ui/booking-confirm/services/booking-service.ts` lo usa; `noDelinquencyYet` queda solo para las pruebas. El mensaje es
+  el texto del PO: «No pudimos agendar tu cita porque tienes un saldo pendiente de ₡{monto} de tu cita del {fecha}.
+  Comunícate con el estudio para regularizarlo y poder agendar de nuevo.», con el saldo de hoy en colones y la fecha en la
+  zona del estudio (`formatStudioDate`, `shared/studio-time.ts`); sin fecha dice «de una cita anterior». Pruebas:
+  `scheduling/application/__tests__/book-appointment.test.ts` y `book-package-appointment.test.ts` (incluye que un bloqueo no
+  emite el evento de solape y un solape real sí), `scheduling/db/__tests__/delinquency-block-repository.test.ts`,
+  `ui/booking-confirm/__tests__/perform-booking.test.ts` y `shared/__tests__/studio-time.test.ts`.
+- **La agenda diaria indica la morosidad** (recibido de US-AGE-11). `DelinquentClientsPort` usa
+  `createSupabaseDelinquentClientsPort` (`scheduling/db/delinquent-clients-repository.ts`): una sola llamada por día a
+  `delinquency_client_states` con las clientas que la agenda pinta (como mucho 100); solo `active` marca «Morosidad activa»,
+  no `pending_review` (DOM-012). Si la consulta falla, la agenda sale igual, sin etiquetas y con su aviso. Prueba:
+  `scheduling/db/__tests__/delinquent-clients-repository.test.ts`.
+
+### Decisiones de diseño
+
+- **El bloqueo es de la base de datos.** La clienta llama a las funciones de reserva directo por PostgREST; un chequeo solo en
+  TypeScript se saltaría. `scheduling` no lee tablas de `delinquency` (ARCH-005): le pregunta por una función del contrato.
+- **Un bloqueo se registra sin lanzar excepción.** Una excepción revierte la transacción y se llevaría el registro (como ya
+  resolvió `scheduling_alerts` con el solape). Por eso la reserva bloqueada devuelve la fila con `id` nulo, el mismo camino del
+  solape, y deja el evento en la misma transacción (DOM-011). La aplicación distingue el bloqueo del solape preguntando a
+  `delinquency_booking_block`, de solo lectura. El bloqueo se revisa antes que el solape: si ocurren los dos gana el bloqueo, y
+  si el bloqueo se levantó entre las dos llamadas la clienta ve «el espacio no está disponible» y puede reintentar.
+- **Solo `active` bloquea** (garantía 3 del contrato). `pending_review` y `dismissed` no tienen ninguna consecuencia.
+- **Recuperar el acceso es derivado, no una acción.** La clienta está bloqueada mientras tenga una morosidad `active` cuya
+  cita todavía tenga saldo en el ledger, calculado en el momento. Cuando el saldo de la cita llega a cero el acceso vuelve
+  solo, sin tocar ninguna tabla de morosidad.
+- **La excepción de la administradora** es un parámetro explícito de la llamada: solo una administradora la puede usar,
+  exige confirmación y un motivo, y deja su propio evento. La clienta no puede autorizarse a sí misma ni ve esa autorización.
+- **No se asume una sola persona donde no haga falta.** El bloqueo es por clienta, no por persona ni por recurso, y la
+  excepción registra el id de quien la autorizó, no «la» administradora.
+
+### Decisiones del PO (DOM-012, Kenny)
+
+Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md`.
+
+- **«Saldada»** (2026-11-08): la clienta recupera el acceso cuando el saldo de la cita que originó la morosidad llega a cero
+  en el ledger, sin acción manual.
+- **Solo bloquea una morosidad confirmada** (`active`), no una por revisar ni una descartada (2026-11-08).
+- **«Opción de regularizar»** (criterio 2, 2026-11-08): el mensaje dice que se comunique con el estudio; se cambia cuando
+  exista US-MOR-03.
+- **Texto a la clienta** (2026-11-08): el de «La aplicación explica el rechazo». Kenny lo escribió en minúsculas al
+  mensajear; se usa con mayúscula inicial de oración, sin cambiar las palabras.
+- **Excepción de la administradora** (2026-11-08 y 2026-11-11): confirmación explícita y motivo obligatorio de al menos 10
+  caracteres; queda en la bitácora con quién la autorizó, la clienta y la cita, y la clienta no lo ve. La cita que agenda la
+  administradora queda `pending_approval`, igual que la de la clienta.
+- **Alcance** (2026-11-11): esta historia entrega la función de la administradora y no su pantalla, que va como historia
+  aparte.
+
+### Qué no hace
+
+- No hay pantalla para que la administradora agende por una clienta, ni función para agendar un paquete por ella: la
+  excepción existe en la base y se usa llamando a `scheduling_admin_book_appointment` (deuda registrada arriba).
+- No registra pagos ni cierra la morosidad: es de US-MOR-03. Hoy el saldo de una cita solo baja si alguien asienta el pago en
+  el ledger, y la morosidad sigue `active` con el monto de la detección (deuda registrada arriba). Por eso, mientras tanto, la
+  agenda diaria puede marcar «Morosidad activa» a una clienta que ya saldó y que sí puede agendar: el indicador mira el estado
+  y el bloqueo, además, el saldo.
+- Levantar o perdonar una morosidad a mano es de US-MOR-05.
+- Cada intento bloqueado deja su evento, sin tope ni agrupación (deuda registrada arriba).
+- La validación de franja está copiada en las tres funciones de reserva (deuda en el SPEC de `scheduling`).
+- Varias personas atendiendo a la misma hora: el PO decidió terminar bien la base de un estudio de una persona y tratarlo
+  después como historia o cambio posterior.

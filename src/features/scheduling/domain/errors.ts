@@ -41,6 +41,8 @@ export interface SpaceNotAvailable {
   readonly code: 'SCHEDULING_SPACE_NOT_AVAILABLE'
   readonly resourceId: string
   readonly message: string
+  // La reserva volvió vacía sin decir por qué: un solape que rechazó el constraint o un bloqueo por morosidad.
+  readonly withoutReason?: true
 }
 
 export interface AppointmentNotPending {
@@ -77,6 +79,10 @@ export interface ClientNotRegistered {
 
 export interface ClientHasActiveDelinquency {
   readonly code: 'SCHEDULING_CLIENT_HAS_ACTIVE_DELINQUENCY'
+  // La cita que debe, lo que debe hoy en colones y cuándo fue (null si no se pudo leer): lo que dice el mensaje.
+  readonly appointmentId: string
+  readonly pending: number
+  readonly appointmentStartsAtMs: number | null
   readonly message: string
 }
 
@@ -265,6 +271,11 @@ export const spaceNotAvailable = (resourceId: string): SpaceNotAvailable => ({
   message: `el espacio ${resourceId} ya está ocupado en ese horario`,
 })
 
+export const spaceRejectedWithoutReason = (resourceId: string): SpaceNotAvailable => ({
+  ...spaceNotAvailable(resourceId),
+  withoutReason: true,
+})
+
 export const isSpaceNotAvailable = (value: unknown): value is SpaceNotAvailable =>
   typeof value === 'object' &&
   value !== null &&
@@ -291,8 +302,15 @@ export const priceChanged = (): PriceChanged => ({
   message: 'el precio cambió desde que la clienta lo vio antes de confirmar',
 })
 
-export const clientHasActiveDelinquency = (): ClientHasActiveDelinquency => ({
+export const clientHasActiveDelinquency = (block: {
+  appointmentId: string
+  pending: number
+  appointmentStartsAtMs: number | null
+}): ClientHasActiveDelinquency => ({
   code: 'SCHEDULING_CLIENT_HAS_ACTIVE_DELINQUENCY',
+  appointmentId: block.appointmentId,
+  pending: block.pending,
+  appointmentStartsAtMs: block.appointmentStartsAtMs,
   message: 'la clienta tiene una morosidad activa y no puede reservar',
 })
 
