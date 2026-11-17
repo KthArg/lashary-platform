@@ -29,3 +29,18 @@ export interface SettingsRepository {
   graceDays(): Promise<Result<number, DelinquencyStorageFailed>>
   setGraceDays(days: number): Promise<Result<number, ChangeGraceDaysFailure>>
 }
+
+export interface ReceiptFile {
+  readonly bytes: Uint8Array
+  readonly contentType: string
+}
+
+export interface ReceiptStorage {
+  // Sube sin reemplazar: un comprobante ya subido no se cambia (el bucket no tiene UPDATE ni DELETE).
+  upload(path: string, file: ReceiptFile): Promise<Result<void, DelinquencyStorageFailed>>
+}
+
+export interface CurrentClientPort {
+  // El perfil de clienta de la sesión, o null si la sesión no es de una clienta.
+  currentClientId(): Promise<Result<string | null, DelinquencyStorageFailed>>
+}
