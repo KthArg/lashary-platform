@@ -35,6 +35,13 @@ const nextConfig = {
     remotePatterns: cmsImagePatterns(),
     dangerouslyAllowLocalIP: allowLocalCmsImages(),
   },
+  experimental: {
+    serverActions: {
+      // El comprobante de pago de US-MOR-03 llega por server action y pesa hasta 4 MB (más el resto del
+      // formulario). 4,5 MB es lo máximo que Vercel acepta por petición; el tope real lo fija la aplicación.
+      bodySizeLimit: '4.5mb',
+    },
+  },
 }
 
 module.exports = nextConfig

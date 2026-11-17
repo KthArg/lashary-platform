@@ -436,6 +436,7 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - **Validar y subir el comprobante** (DOM-008): `domain/receipt.ts` decide el tipo por los primeros bytes (JPEG, PNG, WebP o PDF; un RIFF que no es WebP no entra) y rechaza un archivo vacío o de más de 4 MB, sin mirar el nombre ni lo que declara el navegador. `application/upload-receipt.ts` valida antes de preguntar nada a la base, así que un archivo inválido no llega a Storage; pregunta quién es la clienta de la sesión (`CurrentClientPort`, por `clients_current_profile_id`) y sube a su carpeta con el tipo real por `ReceiptStorage` (`db/receipt-storage.ts`, con la sesión de la clienta y sin reemplazar). Devuelve la ruta que guarda la solicitud. Pruebas: `domain/__tests__/receipt.test.ts`, `application/__tests__/upload-receipt.test.ts` y `db/__tests__/receipt-storage.test.ts`.
 - **El dominio de la regularización y su repositorio**: `domain/regularization.ts` (estados de una solicitud, la entrada del estado de cuenta y lo que se revisa sin la base: monto entero positivo y referencia de hasta 100 caracteres). `db/regularization-repository.ts` llama a `delinquency_submit_regularization` y `delinquency_my_account`, traduce cada mensaje de la base a su motivo (`RegularizationRefused`) y valida las filas con Zod. Pruebas: `domain/__tests__/regularization.test.ts` y `db/__tests__/regularization-repository.test.ts`.
 - **Enviar la regularización y leer el estado de cuenta**: `application/submit-regularization.ts`. `submitRegularization` revisa sin la base el monto y la referencia antes de subir el comprobante, para no dejar archivos por un formulario mal llenado; después sube por `uploadReceipt` y registra la solicitud por `RegularizationRepository`. Si la base la rechaza después de subir, el archivo queda en la carpeta sin usarse (el bucket no permite borrar). `loadMyAccount` devuelve las morosidades del estado de cuenta y el total que debe en las activas. Prueba: `application/__tests__/submit-regularization.test.ts`.
+- **La acción de la clienta** (`ui/regularization/`): `submitRegularizationAction` (firma de `useActionState`) lee el formulario y llama a `regularizationService`, que arma todo con la sesión de la clienta (nunca la service-role key). `utils/perform-regularization.ts` exige sesión de clienta, valida el formulario con Zod (morosidad, monto entero positivo, referencia), rechaza un archivo vacío o de más de 4 MB antes de leerlo, y traduce cada rechazo a un mensaje para la clienta. `regularizationService.loadMyAccount` sale por `index.ts` para la pantalla de `account`; la acción la usa el formulario de esta feature. `next.config.js` sube el cuerpo de las server actions a 4,5 MB, lo máximo que acepta Vercel. Prueba: `ui/regularization/__tests__/perform-regularization.test.ts`.
 
 ### Pendiente de verificar
 
@@ -460,10 +461,11 @@ Pueden cambiar con las respuestas del PO. Una migración por pieza (INT-008).
 10. Aplicación: validar el comprobante por su contenido (DOM-008) y subirlo.
 11. Aplicación: el dominio de la regularización y su repositorio (enviar y leer el estado de cuenta).
 12. Aplicación: los casos de uso de la clienta para enviar la solicitud y leer su estado de cuenta.
-13. Pantalla: el estado de cuenta de la clienta en `/portal/cuenta`, con la acción que envía el comprobante.
-14. Aplicación: la lectura de las solicitudes por aprobar y su pantalla en el panel.
-15. Aplicación: las acciones de aprobar y rechazar.
-16. Aviso a la bandeja de la administradora cuando llega un comprobante.
-17. Cierre: evidencia y estado.
+13. La acción de la clienta que envía el comprobante y el servicio que lee su estado de cuenta.
+14. Pantalla: el estado de cuenta de la clienta en `/portal/cuenta` (feature `account`).
+15. Aplicación: la lectura de las solicitudes por aprobar y su pantalla en el panel.
+16. Aplicación: las acciones de aprobar y rechazar.
+17. Aviso a la bandeja de la administradora cuando llega un comprobante.
+18. Cierre: evidencia y estado.
 
-(Eran 16; la aplicación de la clienta se partió en dominio y repositorio por un lado y casos de uso por otro para no pasar las ~400 líneas, INT-002.)
+(Eran 16; la aplicación de la clienta se partió en dominio y repositorio, casos de uso, y la acción aparte de la pantalla, para no pasar las ~400 líneas, INT-002.)
