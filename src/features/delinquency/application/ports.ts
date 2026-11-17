@@ -9,7 +9,7 @@ import type {
   NotAClient,
   RegularizationRefused,
 } from '../domain/errors'
-import type { AccountEntry, RegularizationInput } from '../domain/regularization'
+import type { AccountEntry, PendingRegularization, RegularizationInput } from '../domain/regularization'
 
 export type DecideCaseFailure = DelinquencyStorageFailed | CaseNotFound | CaseAlreadyDecided
 
@@ -60,4 +60,14 @@ export interface RegularizationRepository {
   // lo declarado hasta el saldo de hoy y el comprobante subido en su carpeta y sin usar.
   submit(input: RegularizationInput & { readonly receiptPath: string }): Promise<Result<string, SubmitRegularizationFailure>>
   myAccount(): Promise<Result<AccountEntry[], DelinquencyStorageFailed>>
+}
+
+export interface RegularizationQueueRepository {
+  // Las solicitudes pendientes, de la más antigua a la más nueva, con lo que debe hoy cada cita. Solo staff.
+  listPending(limit: number): Promise<Result<PendingRegularization[], DelinquencyStorageFailed>>
+}
+
+export interface ReceiptLinks {
+  // Enlaces firmados de vida corta: el bucket es privado y el comprobante nunca tiene URL pública.
+  signedUrls(paths: readonly string[]): Promise<Result<Map<string, string>, DelinquencyStorageFailed>>
 }

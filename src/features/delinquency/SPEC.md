@@ -439,6 +439,7 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - **La acción de la clienta** (`ui/regularization/`): `submitRegularizationAction` (firma de `useActionState`) lee el formulario y llama a `regularizationService`, que arma todo con la sesión de la clienta (nunca la service-role key). `utils/perform-regularization.ts` exige sesión de clienta, valida el formulario con Zod (morosidad, monto entero positivo, referencia), rechaza un archivo vacío o de más de 4 MB antes de leerlo, y traduce cada rechazo a un mensaje para la clienta. `regularizationService.loadMyAccount` sale por `index.ts` para la pantalla de `account`; la acción la usa el formulario de esta feature. `next.config.js` sube el cuerpo de las server actions a 4,5 MB, lo máximo que acepta Vercel. Prueba: `ui/regularization/__tests__/perform-regularization.test.ts`.
 - **El formulario del comprobante** (`ui/regularization/components/RegularizationForm`, componente de cliente que sale por `index.ts`): monto entre 1 y lo que debe la cita, referencia opcional y archivo (el `accept` ofrece foto o PDF; el tipo real lo decide el servidor). Usa `submitRegularizationAction` con `useActionState`, anuncia el resultado (`status` o `alert`) y, si hay un comprobante en revisión, avisa que enviar otro lo reemplaza. Vive aquí, y no en `account`, porque el registro de pago con comprobante es de esta feature. Prueba: `ui/regularization/__tests__/RegularizationForm.test.tsx`.
 - **El estado de cuenta de la clienta** (feature `account`, `/portal/cuenta`): muestra el total, cada morosidad con el estado de su comprobante y `RegularizationForm`. Detalle y pruebas en el SPEC de `account`.
+- **La cola de comprobantes de la administradora** (lectura): `application/load-regularization-queue.ts` trae las solicitudes pendientes, de la más antigua a la más nueva y con tope de 50 (avisa si hay más), cada una con el nombre de la clienta (`clients_display_names`, ARCH-005), lo que debe hoy la cita y un enlace firmado de 5 minutos al comprobante. Si el enlace no se puede firmar, la solicitud se muestra igual, sin enlace. `db/regularization-queue-repository.ts` lee la tabla con la morosidad embebida y pide los saldos de una vez (`payments_appointment_balances`), con la sesión de la administradora (la RLS solo deja a staff); `receiptLinks` firma los enlaces con la política del bucket. Comprobado contra el Supabase local con una administradora: la cola, el saldo de hoy y el enlace que descarga el PDF. Pruebas: `application/__tests__/load-regularization-queue.test.ts`, `db/__tests__/regularization-queue-repository.test.ts` y `db/__tests__/receipt-storage.test.ts`.
 
 ### Pendiente de verificar
 
@@ -466,9 +467,10 @@ Pueden cambiar con las respuestas del PO. Una migración por pieza (INT-008).
 13. La acción de la clienta que envía el comprobante y el servicio que lee su estado de cuenta.
 14. El formulario del comprobante (componente de `delinquency`).
 15. Pantalla: el estado de cuenta de la clienta en `/portal/cuenta` (feature `account`).
-16. Aplicación: la lectura de las solicitudes por aprobar y su pantalla en el panel.
-17. Aplicación: las acciones de aprobar y rechazar.
-18. Aviso a la bandeja de la administradora cuando llega un comprobante.
-19. Cierre: evidencia y estado.
+16. Aplicación: la lectura de la cola de comprobantes por revisar.
+17. Pantalla: la cola de comprobantes en `/admin/morosidades`.
+18. Aplicación y pantalla: las acciones de aprobar y rechazar.
+19. Aviso a la bandeja de la administradora cuando llega un comprobante.
+20. Cierre: evidencia y estado.
 
-(Eran 16; la aplicación de la clienta se partió en dominio y repositorio, casos de uso, y la acción aparte de la pantalla, para no pasar las ~400 líneas, INT-002.)
+(Eran 16; la aplicación de la clienta se partió en dominio y repositorio, casos de uso, la acción aparte de la pantalla, y la lectura de la cola aparte de su pantalla, para no pasar las ~400 líneas, INT-002.)

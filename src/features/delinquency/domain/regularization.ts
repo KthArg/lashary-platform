@@ -60,3 +60,22 @@ export function checkRegularizationInput(input: RegularizationInput): Regulariza
 // El total del estado de cuenta: lo que debe en morosidades confirmadas, no el saldo completo del ledger (contrato).
 export const totalOwed = (entries: readonly AccountEntry[]): number =>
   entries.reduce((sum, entry) => (entry.caseState === 'active' ? sum + entry.pending : sum), 0)
+
+// Una solicitud que espera la revisión de la administradora (cola de comprobantes).
+export interface PendingRegularization {
+  readonly requestId: string
+  readonly caseId: string
+  readonly clientId: string
+  readonly declaredAmount: number
+  readonly reference: string | null
+  readonly receiptPath: string
+  readonly pendingToday: number
+  readonly submittedAt: Date
+}
+
+// Lo que ve la administradora: la solicitud con el nombre de la clienta y el enlace firmado al comprobante
+// (null si no se pudo firmar: la fila se muestra igual, sin enlace).
+export interface QueueItem extends PendingRegularization {
+  readonly clientName: string | null
+  readonly receiptUrl: string | null
+}
