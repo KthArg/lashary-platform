@@ -33,3 +33,16 @@ export const refusalMessages: Readonly<Record<RegularizationRefusal, string>> = 
   'receipt-not-found': 'No encontramos el comprobante que subiste. Intenta de nuevo.',
   'receipt-already-used': 'Ese comprobante ya se usó. Intenta de nuevo.',
 }
+
+export const regularizationFormMessages = {
+  legend: 'Enviar comprobante de pago',
+  amountLabel: 'Monto que pagaste (en colones)',
+  referenceLabel: 'Referencia del pago (opcional)',
+  receiptLabel: 'Comprobante: foto o PDF, hasta 4 MB',
+  submit: 'Enviar comprobante',
+  sending: 'Enviando…',
+  replaceHint: 'Si te equivocaste de comprobante, puedes enviar otro: reemplaza al que está en revisión.',
+} as const
+
+// Lo que el input de archivo ofrece elegir; el servidor decide el tipo real por el contenido (DOM-008).
+export const RECEIPT_ACCEPT = 'image/jpeg,image/png,image/webp,application/pdf'
