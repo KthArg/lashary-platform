@@ -2,7 +2,7 @@
 feature: auth
 dri: pendiente
 estado: terminada
-actualizado: "2026-11-03"
+actualizado: "2026-11-17"
 historias:
   - id: US-AUTH-01
     estado: terminada
@@ -18,10 +18,7 @@ deuda:
   - que: "La política clients_profiles_select_own deja a la clienta leer su fila completa, notes incluido, llamando a PostgREST directo; findClientProfile ya no las pide pero la base no lo impide"
     aceptada_en: "PR #273"
     costo: "migración de privilegios por columna o vista para la clienta, más decisión del PO sobre si notes debe ser legible por ella"
-defectos:
-  - que: "PortalLayout/ClientSidebar no es responsive: a 375px de ancho el sidebar fijo (w-64, shrink-0) deja muy poco espacio al contenido, y como el contenedor es overflow-hidden (no scroll), el contenido se recorta en vez de desbordar — títulos, formularios y listas de opciones quedan cortados a la mitad, en cualquier ruta de /portal/*"
-    donde: "src/app/portal/layout.tsx (flex h-screen overflow-hidden) y src/features/auth/ui/navigation/components/ClientSidebar/ClientSidebar.styles.ts (sin breakpoint que oculte o colapse el sidebar en móvil)"
-    issue: "#710, encontrado durante la verificación visual (INT-010) de US-PROM-02 (PR #708, 2026-11-06); no lo introduce esa historia, que no toca ninguno de los dos archivos"
+defectos: []
 ---
 
 # auth
@@ -39,6 +36,7 @@ Completadas las historias `US-AUTH-01` y `US-AUTH-02`.
 - Navegación persistente administrativa mediante `AdminSidebar` y `layout.tsx` con accesos a dashboard, citas, clientas, catálogo (`/admin/catalog`, con pestañas Técnicas y Paquetes) y pagos (`/admin/payments`, la exoneración de anticipos de US-AGE-13), y cierre de sesión desde cualquier vista (`US-AUTH-01`, CA-2). `AdminSidebar` recibe un hueco opcional `notifications` que el layout llena con la bandeja de `notifications` (US-NOT-01); `auth` no importa nada de esa feature.
 - Acceso a «Morosidades» (US-MOR-01, pieza 11): el menú administrativo suma el ítem hacia `ADMIN_PORTAL_ROUTES.delinquency` (`/admin/morosidades`), con su etiqueta `AUTH_LABELS.delinquencyNav`. La pantalla es de `delinquency`; `auth` solo pone el enlace.
 - Navegación persistente de clientas mediante `ClientSidebar` (colapsable, responsive) y `src/app/portal/layout.tsx` con accesos a citas, carrito, cuenta y cierre de sesión (`US-AUTH-02`). La página `/portal/carrito` es de `store` desde US-SHOP-01 (pieza 6/8): sus textos de relleno (`clientCartTitle`, `clientCartSubtitle`, `clientCartPlaceholder`) salieron de `auth-strings.ts`; `auth` conserva `clientCartNav` y la ruta `CLIENT_PORTAL_ROUTES.carrito`.
+- Barras laterales en el teléfono (2026-11-17, cambio sin historia; resuelve el defecto #710): `ClientSidebar` y `AdminSidebar` ya no arrancan siempre abiertas. Mientras nadie toca el botón, el ancho y los textos los deciden los breakpoints (`ui/navigation/hooks/sidebar-expansion.styles.ts`): cerradas, solo con íconos, en un teléfono, y abiertas desde `md` (768 px), como antes. Así el contenido de `/portal/*` y del panel no queda aplastado ni recortado a 375 px. Las clases deciden sin esperar a que React hidrate, así que el teléfono no ve la barra abierta un instante. Al tocar el botón manda lo que eligió la persona en cualquier pantalla. `useSidebarExpansion` lee el ancho con `useSyncExternalStore` sobre `matchMedia` para el nombre del botón («Expandir barra» o «Colapsar barra», UI-004) y para saber qué hacer al tocarlo; en el servidor asume pantalla ancha, como antes, así el HTML coincide. El subtítulo de «Mi Cuenta» ya no muestra códigos de historia a la clienta. Pruebas: `__tests__/sidebar-expansion.test.tsx`.
 - Salida del portal al sitio (2026-10-31, cambio sin historia): en `ClientSidebar` el nombre LASHARY es un enlace a la portada (`SITE_HOME_ROUTE`, `/`), y al pie, sobre "Cerrar sesión", hay un enlace "Ir al sitio" (`AUTH_LABELS.clientSiteNav`, DOM-009) con ícono de casa. Hacían falta los dos: con la barra colapsada el nombre no se pinta, y el portal no tenía otra forma de volver. "Ir al sitio" va al pie y no entre Citas, Carrito y Cuenta porque saca a la clienta del portal; con la barra colapsada conserva su nombre accesible por `aria-label` y `title`, como "Cerrar sesión" (UI-004). `auth` no conoce las rutas de `landing`, así que la portada vive en su propia constante. Pruebas: `auth-client.test.tsx` (el logo lleva a la portada; "Ir al sitio" lleva a la portada y sigue con la barra colapsada).
 - Enlaces entre los dos ingresos (2026-11-03, cambio sin historia): al pie de `/login`, sin sesión, «¿Eres parte del equipo? Acceso administrativo» (`AUTH_LABELS.staffAccessLink`) lleva a `/admin`; al pie de `/admin`, «¿Eres clienta? Ingresa con Google» (`AUTH_LABELS.clientAccessLink`) lleva a `/login` (`CLIENT_LOGIN_ROUTE`). Sin esto, una administradora sin sesión solo llegaba a su ingreso escribiendo la URL. Se descartó un botón en la landing, porque se lo muestra a todas las clientas, y una sola pantalla con ambos métodos, porque cambia lo entregado en `US-AUTH-01` para un problema de navegación. El enlace visible no reduce la seguridad: `/admin` nunca dependió de estar oculto, y el acceso lo deciden `signInStaff`, `requireAdminSession` y RLS (`SEC-001`). Pruebas: `src/app/login/page.test.tsx` y `src/app/admin/page.test.tsx`.
 - Inicio de sesión de clientas exclusivo vía Google OAuth con redirección a `/portal/citas` y captura modal obligatoria de teléfono post-login (`US-AUTH-02`), protegida en `src/app/portal/layout.tsx`.

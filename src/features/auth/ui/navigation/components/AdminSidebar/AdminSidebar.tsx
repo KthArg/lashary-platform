@@ -1,15 +1,16 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOutAction } from '../../../actions/auth-actions'
 import { AUTH_BUTTON_TEXTS, AUTH_LABELS, ADMIN_PORTAL_ROUTES } from '../../../constants/auth-strings'
+import { sidebarExpansionStyles as EXPANSION } from '../../hooks/sidebar-expansion.styles'
+import { useSidebarExpansion } from '../../hooks/useSidebarExpansion'
 import { sidebarStyles as STYLES } from './AdminSidebar.styles'
 import type { AdminSidebarProps } from './AdminSidebar.types'
 
 export function AdminSidebar({ session, notifications }: AdminSidebarProps) {
-  const [isExpanded, setIsExpanded] = useState(true)
+  const { mode, isExpanded, toggle } = useSidebarExpansion()
   const pathname = usePathname()
 
   const navItems = [
@@ -80,33 +81,32 @@ export function AdminSidebar({ session, notifications }: AdminSidebarProps) {
         title={!isExpanded ? item.label : undefined}
       >
         {item.icon}
-        {isExpanded && <span>{item.label}</span>}
+        {mode !== 'collapsed' && <span className={EXPANSION.inline[mode]}>{item.label}</span>}
       </Link>
     )
   }
 
   return (
     <aside
-      className={`${STYLES.aside} ${isExpanded ? STYLES.expandedWidth : STYLES.collapsedWidth}`}
+      className={`${STYLES.aside} ${EXPANSION.width[mode]}`}
       aria-label={AUTH_LABELS.adminNavAriaLabel}
       data-expanded={isExpanded}
     >
       <div>
         <div className={STYLES.header}>
-          {isExpanded && <span className={STYLES.brandTitle}>{AUTH_LABELS.brandName}</span>}
+          {mode !== 'collapsed' && (
+            <span className={`${STYLES.brandTitle} ${EXPANSION.inline[mode]}`}>{AUTH_LABELS.brandName}</span>
+          )}
           <button
             type="button"
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={toggle}
             className={STYLES.toggleBtn}
             aria-label={isExpanded ? AUTH_LABELS.collapseSidebar : AUTH_LABELS.expandSidebar}
             title={isExpanded ? AUTH_LABELS.collapseSidebar : AUTH_LABELS.expandSidebar}
           >
-            <svg className={STYLES.toggleIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {isExpanded ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-              )}
+            <svg className={STYLES.toggleIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path className={EXPANSION.whenExpanded[mode]} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              <path className={EXPANSION.whenCollapsed[mode]} strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
             </svg>
           </button>
         </div>
@@ -119,8 +119,8 @@ export function AdminSidebar({ session, notifications }: AdminSidebarProps) {
       </div>
 
       <div className={STYLES.footer}>
-        {isExpanded && (
-          <div className={STYLES.userInfo}>
+        {mode !== 'collapsed' && (
+          <div className={`${STYLES.userInfo} ${EXPANSION.block[mode]}`}>
             <p className={STYLES.userEmail} title={session.user.email}>
               {session.user.email}
             </p>
@@ -137,7 +137,7 @@ export function AdminSidebar({ session, notifications }: AdminSidebarProps) {
             <svg className={STYLES.signOutIcon} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            {isExpanded && <span>{AUTH_BUTTON_TEXTS.signOut}</span>}
+            {mode !== 'collapsed' && <span className={EXPANSION.inline[mode]}>{AUTH_BUTTON_TEXTS.signOut}</span>}
           </button>
         </form>
       </div>
