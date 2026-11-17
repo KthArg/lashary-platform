@@ -78,6 +78,7 @@ La clienta regulariza una morosidad `active` enviando un comprobante; la adminis
 ```sql
 public.delinquency_my_account() => TABLE (
   case_id           uuid,
+  case_state        text,         -- active o settled
   appointment_id    uuid,
   pending           bigint,       -- lo que debe esa cita hoy (payments_appointment_balances)
   since             timestamptz,  -- cuándo se detectó la morosidad
@@ -90,9 +91,9 @@ public.delinquency_my_account() => TABLE (
 )
 ```
 
-Las morosidades `active` de la clienta de la sesión, la más antigua primero, cada una con su solicitud más reciente. Responde solo por la sesión (sin parámetro de clienta): una clienta no puede preguntar por otra, y una sesión que no es clienta recibe vacío. Es `SECURITY DEFINER` porque la clienta no lee las tablas de morosidad ni el ledger, como `delinquency_booking_block`. `anon` no tiene `EXECUTE`. El total que la vista muestre es la suma de `pending`: lo que debe en morosidades confirmadas. No es el saldo completo del ledger, que incluye citas recién cerradas todavía dentro de la gracia.
+Las morosidades de la clienta de la sesión, la más antigua primero, cada una con el saldo de hoy y su solicitud más reciente (una `replaced` nunca cuenta como la más reciente): las `active` cuya cita todavía debe y las `settled` de los últimos 30 días, para que la clienta vea que su regularización se aprobó y la deuda quedó saldada. Una `active` cuya cita ya no debe nada no sale. Responde solo por la sesión (sin parámetro de clienta): una clienta no puede preguntar por otra, y una sesión que no es clienta recibe vacío. Es `SECURITY DEFINER` porque la clienta no lee las tablas de morosidad ni el ledger, como `delinquency_booking_block`. `anon` no tiene `EXECUTE`. El total que la vista muestre es la suma de `pending`: lo que debe en morosidades confirmadas. No es el saldo completo del ledger, que incluye citas recién cerradas todavía dentro de la gracia.
 
-Quien la necesita: la pantalla de estado de cuenta de la clienta (`/portal/cuenta`, feature `account`, criterios 1 y 4). Enviar la solicitud con el comprobante no es una función de este contrato: `account` usa la acción que exporta `delinquency` por su `index.ts` (ARCH-003), que valida el archivo por su contenido en el servidor (DOM-008) antes de llamar a la base.
+Quien la necesita: la pantalla de estado de cuenta de la clienta (`/portal/cuenta`, feature `account`, criterios 1 y 4). Enviar la solicitud es `delinquency_submit_regularization`, propia de `delinquency` y no de este contrato, que exige una morosidad `active` propia, lo declarado entre 1 y el saldo de hoy, y el comprobante ya subido en la carpeta de la clienta y sin usar. Enviar con el comprobante no es una función de este contrato: `account` usa la acción que exporta `delinquency` por su `index.ts` (ARCH-003), que valida el archivo por su contenido en el servidor (DOM-008) antes de llamar a la base.
 
 ### El comprobante
 
