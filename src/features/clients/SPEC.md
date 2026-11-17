@@ -2,11 +2,11 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-08
+actualizado: 2026-11-17
 historias:
   - id: US-CLI-01
     estado: en_progreso
-    falta: "la columna de morosidad existe sin dato y sin filtro: espera a US-MOR-01 (criterio diferido). La ultima visita y su filtro por rango de fechas estan hechos en las piezas 1/4 a 4/4; la definicion de ultima visita y el encabezado esperan la confirmacion del PO"
+    falta: "la columna de morosidad ya tiene dato (US-MOR-01), pero falta su filtro (Todas, Activa, Por revisar, Sin morosidad), y la ultima cita debe contar cualquier estado, futuras incluidas, con el encabezado «Ultima cita» (decision del 2026-11-17). Segundo corte en 4 piezas: 1/4 delinquency_all_client_states() (hecha en este PR), 2/4 funciones SQL de scheduling y clients, 3/4 repositorio y action, 4/4 pantalla"
   - id: US-CLI-02
     estado: terminada
     evidencia: "Pila de 5 piezas sobre main: PRs #481 (1/5, contrato scheduling-api.md), #483 (2/5, listClientAppointments), #505 (3/5, caso de uso y estado del anticipo), #506 (4/5, pestaña Citas) y #507 (5/5, paginacion y enlace desde el listado), y el PR de cierre us/US-CLI-02 a main. Criterio 1 (servicio, fecha, estado de la cita y estado de pago; las anotaciones trasladadas a US-CLI-03): deposit-status.test.ts, view-appointment-history.test.ts, history-gateways.test.ts, history-queries.test.ts, appointment-history.test.tsx. Criterio 2 (de la mas reciente a la mas antigua): client-appointments-repository.test.ts de scheduling (ordena por starts_at descendente) y appointment-history.test.tsx (la tabla respeta el orden recibido). Criterio 3 (desde el listado y desde la vista diaria): clients-list.test.tsx (listado), src/app/admin/citas/agenda/page.test.tsx (la agenda arma el enlace con clientAppointmentsPath) y DailyAgendaView.test.tsx de scheduling (la tarjeta pinta el enlace «Ver sus citas»)"
@@ -567,6 +567,9 @@ anon no lee ningún contacto (SEC-002).
   error sube a `error.tsx` y se pierde lo escrito (lección de la auditoría de US-CLI-04). Lo que
   cambia es que cada fallo deja su causa en el registro con `console.error` y el prefijo `[clients]`,
   como hace `notifications`, sin el texto de la anotación.
+
+- **2026-11-17 — Segundo corte de US-CLI-01: la «última cita» cuenta cualquier estado y el listado se filtra por morosidad, por decisión de José Loría.** La «última cita» es la más reciente que agendó la clienta en cualquier estado (pendiente, aprobada, confirmada, rechazada, cancelada, completada o ausencia), **incluidas las futuras**, porque es la última cita que agendó. Reemplaza la decisión del 2026-11-05 (solo `completed`, sin futuras). El encabezado de la columna pasa de «Última visita» a «Última cita». `scheduling_client_last_visits()` se conserva sin cambios: US-NOT-06 (inactivas) necesita la última visita real, y la nueva `scheduling_client_last_appointments()` es otra función. El filtro de morosidad ofrece Todas / Activa / Por revisar / Sin morosidad; `dismissed` no es un estado visible (DOM-012). Se aplica en la base y antes de paginar, igual que el rango de fechas, con `delinquency_all_client_states()` (contrato en `docs/contracts/delinquency-api.md`, INT-003; el dueño de `delinquency` es Jose Lorenzo). Sin filtro de morosidad, `clients_list` no llama a esa función, para que un fallo de `delinquency` no rompa el listado. Sin índice nuevo hasta medir (PERF-001).
+- **2026-11-17 — Corte del segundo corte en cuatro piezas apiladas sobre `main`, numeradas desde 1** (la pila anterior, 1/4 a 4/4, ya está en `main`). 1/4 `feat/US-CLI-01-delinquency-states-fn`: la función `delinquency_all_client_states()` con su pgTAP y el contrato (feature `delinquency`; va sola por INT-002). 2/4 `feat/US-CLI-01-last-appointment-fns`: la migración con `scheduling_client_last_appointments()` y `clients_list` rehecha con el parámetro de morosidad. 3/4 `feat/US-CLI-01-list-filters-data`: repositorio, dominio y action (`lastAppointmentAtMs` y la lectura del filtro). 4/4 `feat/US-CLI-01-delinquency-filter`: la pantalla, las capturas y la marca `terminada`.
 
 ## Listado con última visita (US-CLI-01, piezas 2/4 a 4/4)
 
