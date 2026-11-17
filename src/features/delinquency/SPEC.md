@@ -444,6 +444,8 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - **Aprobar y rechazar** (aplicación): `application/review-regularization.ts` revisa sin la base lo que se puede (monto aprobado entero positivo; motivo no vacío de hasta 500 caracteres, sin espacios sobrantes) y llama a `RegularizationReviewRepository`. `db/regularization-review-repository.ts` llama a `delinquency_approve_regularization` y `delinquency_reject_regularization` con la sesión de la administradora y traduce cada mensaje de la base a su motivo (`ReviewRefused`): solicitud inexistente, ya revisada, monto inválido o motivo vacío. Aprobar devuelve el estado en que queda la morosidad (`active` o `settled`). Pruebas: `application/__tests__/review-regularization.test.ts` y `db/__tests__/regularization-review-repository.test.ts`.
 
 - **Las acciones de aprobar y rechazar** (`ui/regularization-review/actions/`): `approveRegularizationAction` y `rejectRegularizationAction` exigen sesión de administradora, validan el formulario (`utils/perform-review.ts`: solicitud, monto entero positivo, motivo), dicen si la morosidad quedó saldada o sigue activa, traducen cada rechazo a un mensaje y recargan la pantalla. Prueba: `ui/regularization-review/__tests__/perform-review.test.ts`.
+- **Aprobar y rechazar en la cola**: cada tarjeta trae `RegularizationDecision`, con dos formularios: aprobar, con el monto que la administradora verificó en el comprobante (empieza vacío a propósito, con lo declarado y lo que debe hoy como referencia, para no aprobar el monto de la clienta sin mirar), y rechazar, con un motivo obligatorio que la clienta verá. Al recargar, la solicitud sale de la cola y su tarjeta desaparece: por eso el resultado bueno se anuncia arriba de la cola (`QueueFeedback`, que sigue montado), y un error queda en la tarjeta. Comprobado de punta a punta con el servidor local: pago parcial, rechazo con motivo y pago final que salda la morosidad. Prueba: `ui/regularization-review/__tests__/RegularizationDecision.test.tsx`.
+
 ### Pendiente de verificar
 
 - El peso promedio de un comprobante (foto de celular o PDF de banco) para fijar el límite entre 3 y 5 MB. Hasta tenerlo, el tope es 4 MB: dentro del rango de Kenny, y no 5 porque Vercel acepta como mucho 4,5 MB por petición (decisión de Jose Lorenzo, 2026-11-16).
@@ -473,8 +475,9 @@ Pueden cambiar con las respuestas del PO. Una migración por pieza (INT-008).
 16. Aplicación: la lectura de la cola de comprobantes por revisar.
 17. Pantalla: la cola de comprobantes en `/admin/morosidades`.
 18. Aplicación: aprobar y rechazar.
-19. Pantalla: las acciones de aprobar y rechazar en la cola.
-20. Aviso a la bandeja de la administradora cuando llega un comprobante.
-21. Cierre: evidencia y estado.
+19. Aplicación: las acciones de aprobar y rechazar.
+20. Pantalla: aprobar y rechazar en la cola.
+21. Aviso a la bandeja de la administradora cuando llega un comprobante.
+22. Cierre: evidencia y estado.
 
 (Eran 16; la aplicación de la clienta se partió en dominio y repositorio, casos de uso, la acción aparte de la pantalla, y la lectura de la cola aparte de su pantalla, para no pasar las ~400 líneas, INT-002.)
