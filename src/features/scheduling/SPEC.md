@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-11-13"
+actualizado: "2026-11-17"
 historias:
   - id: US-AGE-01
     estado: terminada
@@ -507,9 +507,16 @@ Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el
 
 ### Última visita de cada clienta (para US-CLI-01 de `clients`)
 
-- Pactado el 2026-11-05 en `docs/contracts/scheduling-api.md` (INT-003) e implementado en la pieza 2/4 de US-CLI-01: la función SQL `scheduling_client_last_visits()` está en `supabase/migrations/20261105000000_clients_list_last_visit.sql`, la misma migración que `clients_list` de `clients`, que es su único consumidor.
+- Pactado el 2026-11-05 en `docs/contracts/scheduling-api.md` (INT-003) e implementado en la pieza 2/4 de US-CLI-01: la función SQL `scheduling_client_last_visits()` está en `supabase/migrations/20261105000000_clients_list_last_visit.sql`, la misma migración que la versión anterior de `clients_list` de `clients`. Desde el 2026-11-17 `clients_list` ya no la usa (ver «Última cita de cada clienta»); se conserva sin cambios para US-NOT-06 (inactivas), que necesita la última visita real.
 - Devuelve `(client_id, last_visit_at)`: el `starts_at` de la cita `completed` más reciente de cada clienta. Las demás citas, y las que no tienen clienta, no cuentan. `SECURITY INVOKER`: la RLS de `scheduling_appointments` decide qué ve quien llama (SEC-001).
 - Prueba: `supabase/tests/database/scheduling_client_last_visits.test.sql` (solo `completed`, la más reciente, sin citas sin clienta, personal ve todas, clienta solo la suya, `anon` no la ejecuta, `SECURITY INVOKER`).
+
+### Última cita de cada clienta (para US-CLI-01 de `clients`)
+
+- Pactada el 2026-11-17 en `docs/contracts/scheduling-api.md` (INT-003) e implementada en la pieza 2/4 del segundo corte de US-CLI-01: la función SQL `scheduling_client_last_appointments()` está en `supabase/migrations/20261117010000_clients_list_last_appointment_delinquency.sql`, la misma migración que la nueva `clients_list` de `clients`, que es su único consumidor.
+- Devuelve `(client_id, last_appointment_at)`: el `starts_at` más alto de cada clienta en cualquier estado, incluidas las citas futuras. Las citas sin clienta no cuentan. `SECURITY INVOKER`: la RLS de `scheduling_appointments` decide qué ve quien llama (SEC-001). Reemplaza a `scheduling_client_last_visits()` en el listado, pero no la borra.
+- Falta: que el repositorio de `clients` la lea (pieza 3/4) y que la pantalla la rotule «Última cita» (pieza 4/4).
+- Prueba: `supabase/tests/database/scheduling_client_last_appointments.test.sql` (la más reciente gana y la futura cuenta, los siete estados cuentan, sin citas no hay fila, la cita sin clienta no sale, personal ve todas, clienta solo la suya, `anon` no la ejecuta, `SECURITY INVOKER`).
 
 ### Clienta de una cita (para US-CLI-03 de `clients`)
 
