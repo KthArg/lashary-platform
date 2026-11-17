@@ -7,7 +7,7 @@
 
 | Feature | DRI | Estado | terminada / en_progreso / bloqueada / en_revision / no_iniciada |
 |---|---|---|---|
-| account | pendiente | no_iniciada | 0 / 0 / 0 / 0 / 0 |
+| account | pendiente | en_progreso | 0 / 0 / 0 / 0 / 0 |
 | audit | pendiente | terminada | 0 / 0 / 0 / 0 / 0 |
 | auth | pendiente | terminada | 2 / 0 / 0 / 0 / 0 |
 | catalog | pendiente | terminada | 4 / 0 / 0 / 0 / 0 |
@@ -24,7 +24,7 @@
 
 ## Detalle por feature
 
-### account (actualizado: 2026-11-13)
+### account (actualizado: 2026-11-17)
 
 ### audit (actualizado: 2026-10-20)
 
