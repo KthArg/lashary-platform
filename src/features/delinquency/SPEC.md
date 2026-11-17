@@ -441,6 +441,7 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - **El estado de cuenta de la clienta** (feature `account`, `/portal/cuenta`): muestra el total, cada morosidad con el estado de su comprobante y `RegularizationForm`. Detalle y pruebas en el SPEC de `account`.
 - **La cola de comprobantes de la administradora** (lectura): `application/load-regularization-queue.ts` trae las solicitudes pendientes, de la más antigua a la más nueva y con tope de 50 (avisa si hay más), cada una con el nombre de la clienta (`clients_display_names`, ARCH-005), lo que debe hoy la cita y un enlace firmado de 5 minutos al comprobante. Si el enlace no se puede firmar, la solicitud se muestra igual, sin enlace. `db/regularization-queue-repository.ts` lee la tabla con la morosidad embebida y pide los saldos de una vez (`payments_appointment_balances`), con la sesión de la administradora (la RLS solo deja a staff); `receiptLinks` firma los enlaces con la política del bucket. Comprobado contra el Supabase local con una administradora: la cola, el saldo de hoy y el enlace que descarga el PDF. Pruebas: `application/__tests__/load-regularization-queue.test.ts`, `db/__tests__/regularization-queue-repository.test.ts` y `db/__tests__/receipt-storage.test.ts`.
 - **La cola en la pantalla de morosidades** (`ui/regularization-review/`): la sección «Comprobantes por revisar» va primero en `/admin/morosidades` (`ReviewView` la recibe por el hueco `queue`; `ReviewPage` la carga en paralelo con lo de US-MOR-01). Cada tarjeta muestra la clienta, lo que declara, lo que debe hoy, cuándo lo envió, la referencia y «Ver comprobante», que abre el enlace firmado en otra pestaña con un nombre que dice de quién es (UI-004); sin enlace lo dice. Arriba de la lista, el aviso del PO: verificar el comprobante y no confiar en el monto que declara la clienta. Estados: vacío, «hay más» y error con reintento (UI-003). Comprobado con el servidor local y una administradora de prueba, en escritorio y teléfono; el enlace descarga el PDF. Prueba: `ui/regularization-review/__tests__/RegularizationQueue.test.tsx`.
+- **Aprobar y rechazar** (aplicación): `application/review-regularization.ts` revisa sin la base lo que se puede (monto aprobado entero positivo; motivo no vacío de hasta 500 caracteres, sin espacios sobrantes) y llama a `RegularizationReviewRepository`. `db/regularization-review-repository.ts` llama a `delinquency_approve_regularization` y `delinquency_reject_regularization` con la sesión de la administradora y traduce cada mensaje de la base a su motivo (`ReviewRefused`): solicitud inexistente, ya revisada, monto inválido o motivo vacío. Aprobar devuelve el estado en que queda la morosidad (`active` o `settled`). Pruebas: `application/__tests__/review-regularization.test.ts` y `db/__tests__/regularization-review-repository.test.ts`.
 
 ### Pendiente de verificar
 
@@ -470,8 +471,9 @@ Pueden cambiar con las respuestas del PO. Una migración por pieza (INT-008).
 15. Pantalla: el estado de cuenta de la clienta en `/portal/cuenta` (feature `account`).
 16. Aplicación: la lectura de la cola de comprobantes por revisar.
 17. Pantalla: la cola de comprobantes en `/admin/morosidades`.
-18. Aplicación y pantalla: las acciones de aprobar y rechazar.
-19. Aviso a la bandeja de la administradora cuando llega un comprobante.
-20. Cierre: evidencia y estado.
+18. Aplicación: aprobar y rechazar.
+19. Pantalla: las acciones de aprobar y rechazar en la cola.
+20. Aviso a la bandeja de la administradora cuando llega un comprobante.
+21. Cierre: evidencia y estado.
 
 (Eran 16; la aplicación de la clienta se partió en dominio y repositorio, casos de uso, la acción aparte de la pantalla, y la lectura de la cola aparte de su pantalla, para no pasar las ~400 líneas, INT-002.)
