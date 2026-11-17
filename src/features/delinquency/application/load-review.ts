@@ -70,41 +70,41 @@ export const loadReview =
 
     const clientIds = [
       ...new Set([
-        ...pending.map((c) => c.clientId),
-        ...active.map((c) => c.clientId),
-        ...lifted.map((c) => c.clientId),
-        ...forgiven.map((c) => c.clientId),
+        ...pending.map((reviewCase) => reviewCase.clientId),
+        ...active.map((activeCase) => activeCase.clientId),
+        ...lifted.map((historyCase) => historyCase.clientId),
+        ...forgiven.map((historyCase) => historyCase.clientId),
       ]),
     ]
     const names = await deps.names.namesFor(clientIds)
     if (isErr(names)) return names
 
     const nameOf = (clientId: string): string | null => names.value.get(clientId) ?? null
-    const toHistoryItem = (c: (typeof lifted)[number]): ExceptionHistoryItem => ({
-      caseId: c.id,
-      clientId: c.clientId,
-      clientName: nameOf(c.clientId),
-      pending: c.pending,
-      exceptionReason: c.exceptionReason,
-      exceptionAmount: c.exceptionAmount,
-      decidedAt: c.decidedAt,
+    const toHistoryItem = (historyCase: (typeof lifted)[number]): ExceptionHistoryItem => ({
+      caseId: historyCase.id,
+      clientId: historyCase.clientId,
+      clientName: nameOf(historyCase.clientId),
+      pending: historyCase.pending,
+      exceptionReason: historyCase.exceptionReason,
+      exceptionAmount: historyCase.exceptionAmount,
+      decidedAt: historyCase.decidedAt,
     })
 
     return ok({
-      toReview: pending.map((c) => ({
-        caseId: c.id,
-        clientId: c.clientId,
-        clientName: nameOf(c.clientId),
-        pending: c.pending,
-        detectedAt: c.detectedAt,
+      toReview: pending.map((reviewCase) => ({
+        caseId: reviewCase.id,
+        clientId: reviewCase.clientId,
+        clientName: nameOf(reviewCase.clientId),
+        pending: reviewCase.pending,
+        detectedAt: reviewCase.detectedAt,
       })),
-      active: active.map((c) => ({
-        caseId: c.caseId,
-        clientId: c.clientId,
-        clientName: nameOf(c.clientId),
-        appointmentId: c.appointmentId,
-        pending: c.pending,
-        since: c.since,
+      active: active.map((activeCase) => ({
+        caseId: activeCase.caseId,
+        clientId: activeCase.clientId,
+        clientName: nameOf(activeCase.clientId),
+        appointmentId: activeCase.appointmentId,
+        pending: activeCase.pending,
+        since: activeCase.since,
       })),
       lifted: lifted.map(toHistoryItem),
       forgiven: forgiven.map(toHistoryItem),

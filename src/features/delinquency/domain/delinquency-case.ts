@@ -10,6 +10,9 @@ export const CASE_DECISIONS: readonly CaseDecision[] = ['confirm', 'dismiss']
 // repositorio (manual blocks, exoneraciones de anticipo).
 export const EXCEPTION_REASON_MAX_LENGTH = 500
 
+// Un colón es la unidad mínima de dinero (DOM-001, exponente 0): no se puede condonar menos que eso.
+export const FORGIVE_AMOUNT_MIN = 1
+
 // Tope del historial de excepciones (criterio 4 de US-MOR-05): cada lista (lifted, forgiven) pagina
 // con el mismo tope que las demás listas de la pantalla (PERF-002).
 export const EXCEPTION_HISTORY_LIST_LIMIT = 50

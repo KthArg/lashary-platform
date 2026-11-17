@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition, type FormEvent } from 'react'
+import { FORGIVE_AMOUNT_MIN } from '@/features/delinquency/domain/delinquency-case'
 import { liftCaseAction, forgiveCaseAction } from '@/features/delinquency/ui/review/actions/review-actions'
 import { reviewMessages as copy } from '@/features/delinquency/ui/review/constants/review-strings'
 import { FeedbackMessage, type Feedback } from '../FeedbackMessage'
@@ -117,7 +118,7 @@ export function CaseExceptionActions({ caseId, pending }: CaseExceptionActionsPr
           id={amountId}
           type="number"
           inputMode="numeric"
-          min={1}
+          min={FORGIVE_AMOUNT_MIN}
           max={pending}
           step={1}
           value={amount}

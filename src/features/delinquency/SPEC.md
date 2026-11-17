@@ -361,3 +361,12 @@ Con las 9 piezas, los 4 criterios de US-MOR-05 quedan demostrados: criterio 1 (`
 mismo pgTAP) y criterio 4 (las dos secciones de historial de la pantalla, mas el CHECK de la base que nunca
 borra la fila). Falta el cierre: verificacion final contra main (tsc, vitest, supabase test db) y la
 evidencia completa en el front-matter.
+
+### Pieza 10 — nombres descriptivos y constantes (hallazgo de revisión)
+
+`application/load-review.ts` usaba el parámetro de una letra `c` en siete callbacks de `.map`; se
+renombra a `reviewCase`/`activeCase`/`historyCase` según la lista que recorre. `ui/review/components/
+CaseExceptionActions/CaseExceptionActions.tsx` tenía `min={1}` como número mágico en el input de monto a
+condonar; se reemplaza por `FORGIVE_AMOUNT_MIN` (`domain/delinquency-case.ts`, DOM-001: un colón es la
+unidad mínima de dinero). Sin cambio de comportamiento. `npx tsc --noEmit` sin errores en todo el repo;
+`npx vitest run src/features/delinquency`: 105/105.
