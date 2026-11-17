@@ -4,22 +4,22 @@ import { readClientsListParams } from '@/features/clients'
 describe('readClientsListParams', () => {
   it('lee la pagina, el tamano, el nombre y el rango de la URL', () => {
     expect(readClientsListParams({
-      page: '2', pageSize: '50', name: '  ana  ', visitFrom: '2026-04-01', visitTo: '2026-06-30',
-    })).toEqual({ page: 2, pageSize: 50, name: 'ana', visitFrom: '2026-04-01', visitTo: '2026-06-30' })
+      page: '2', pageSize: '50', name: '  ana  ', appointmentFrom: '2026-04-01', appointmentTo: '2026-06-30',
+    })).toEqual({ page: 2, pageSize: 50, name: 'ana', appointmentFrom: '2026-04-01', appointmentTo: '2026-06-30' })
   })
 
   it('sin parametros no filtra ni elige pagina', () => {
-    expect(readClientsListParams({})).toEqual({ page: undefined, pageSize: undefined, name: '', visitFrom: '', visitTo: '' })
+    expect(readClientsListParams({})).toEqual({ page: undefined, pageSize: undefined, name: '', appointmentFrom: '', appointmentTo: '' })
   })
 
   it('una fecha que no existe no cuenta como filtro aplicado', () => {
-    expect(readClientsListParams({ visitFrom: '2026-02-30', visitTo: 'ayer' })).toMatchObject({ visitFrom: '', visitTo: '' })
+    expect(readClientsListParams({ appointmentFrom: '2026-02-30', appointmentTo: 'ayer' })).toMatchObject({ appointmentFrom: '', appointmentTo: '' })
   })
 
   it('un parametro repetido en la URL usa el primer valor, no un arreglo', () => {
     expect(readClientsListParams({
-      name: ['ana', 'bea'], visitFrom: ['2026-04-01', '2026-05-01'], page: ['3', '4'],
-    })).toMatchObject({ name: 'ana', visitFrom: '2026-04-01', page: 3 })
+      name: ['ana', 'bea'], appointmentFrom: ['2026-04-01', '2026-05-01'], page: ['3', '4'],
+    })).toMatchObject({ name: 'ana', appointmentFrom: '2026-04-01', page: 3 })
   })
 
   it('un numero que no se puede leer no elige pagina', () => {

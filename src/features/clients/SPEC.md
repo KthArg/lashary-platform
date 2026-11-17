@@ -6,7 +6,7 @@ actualizado: 2026-11-17
 historias:
   - id: US-CLI-01
     estado: en_progreso
-    falta: "la columna de morosidad ya tiene dato (US-MOR-01), pero falta su filtro (Todas, Activa, Por revisar, Sin morosidad), y la ultima cita debe contar cualquier estado, futuras incluidas, con el encabezado «Ultima cita» (decision del 2026-11-17). Segundo corte en 4 piezas: 1/4 delinquency_all_client_states() (hecha), 2/4 scheduling_client_last_appointments() y clients_list con el filtro de morosidad (hecha, solo base de datos), 3/4 repositorio, dominio y action: lastAppointmentAtMs y la lectura del filtro (hecha en este PR; la pantalla sigue con los textos de visita y no usa aun el filtro), 4/4 pantalla"
+    falta: "la columna de morosidad ya tiene dato (US-MOR-01), pero falta su filtro (Todas, Activa, Por revisar, Sin morosidad), y la ultima cita debe contar cualquier estado, futuras incluidas, con el encabezado «Ultima cita» (decision del 2026-11-17). Segundo corte en 5 piezas: 1/5 delinquency_all_client_states() (hecha), 2/5 scheduling_client_last_appointments() y clients_list con el filtro de morosidad (hecha, solo base de datos), 3/5 repositorio, dominio y action: lastAppointmentAtMs y la lectura del filtro (hecha), 4/5 la pantalla dice «Ultima cita» y la URL usa appointmentFrom y appointmentTo (hecha en este PR), 5/5 el filtro de morosidad en pantalla, sus estados y el cierre de la historia"
   - id: US-CLI-02
     estado: terminada
     evidencia: "Pila de 5 piezas sobre main: PRs #481 (1/5, contrato scheduling-api.md), #483 (2/5, listClientAppointments), #505 (3/5, caso de uso y estado del anticipo), #506 (4/5, pestaña Citas) y #507 (5/5, paginacion y enlace desde el listado), y el PR de cierre us/US-CLI-02 a main. Criterio 1 (servicio, fecha, estado de la cita y estado de pago; las anotaciones trasladadas a US-CLI-03): deposit-status.test.ts, view-appointment-history.test.ts, history-gateways.test.ts, history-queries.test.ts, appointment-history.test.tsx. Criterio 2 (de la mas reciente a la mas antigua): client-appointments-repository.test.ts de scheduling (ordena por starts_at descendente) y appointment-history.test.tsx (la tabla respeta el orden recibido). Criterio 3 (desde el listado y desde la vista diaria): clients-list.test.tsx (listado), src/app/admin/citas/agenda/page.test.tsx (la agenda arma el enlace con clientAppointmentsPath) y DailyAgendaView.test.tsx de scheduling (la tarjeta pinta el enlace «Ver sus citas»)"
@@ -60,10 +60,10 @@ de la base nunca llega a la pantalla: la action devuelve `{ ok: false, error }` 
 `CLIENTS_ERROR_MESSAGES`. La action también llama a `requireAdminSession()`.
 
 Debajo, `ClientsList` muestra las clientas en una tabla de seis columnas: nombre (celda `th scope="row"`),
-teléfono, correo, morosidad, última visita y acciones. Morosidad muestra
-`CLIENTS_TABLE_TEXTS.pendingColumnValue` ("Sin dato") en todas las filas: la columna existe, el dato no
-(criterio diferido). Última visita muestra la fecha desde la pieza 4/4 (ver «Listado con última
-visita»). `clients-list.test.tsx` exige los seis encabezados en orden, tantas celdas por fila
+teléfono, correo, morosidad, última cita y acciones. Morosidad muestra el estado de cada clienta, y
+`CLIENTS_TABLE_TEXTS.pendingColumnValue` ("Sin dato") solo si `delinquency` no se pudo leer (ver «Morosidad
+en el listado y en el perfil»). Última cita muestra la fecha de la cita más reciente en cualquier estado
+(ver «Pantalla: última cita»). `clients-list.test.tsx` exige los seis encabezados en orden, tantas celdas por fila
 como encabezados, y el texto de dato pendiente en la columna de morosidad. Las clientas las lee la
 página en el servidor con `listClientsAction()`:
 la primera página de 25, las más recientes primero y solo las columnas que muestra (PERF-002, PERF-005).
@@ -570,6 +570,7 @@ anon no lee ningún contacto (SEC-002).
 
 - **2026-11-17 — Segundo corte de US-CLI-01: la «última cita» cuenta cualquier estado y el listado se filtra por morosidad, por decisión de José Loría.** La «última cita» es la más reciente que agendó la clienta en cualquier estado (pendiente, aprobada, confirmada, rechazada, cancelada, completada o ausencia), **incluidas las futuras**, porque es la última cita que agendó. Reemplaza la decisión del 2026-11-05 (solo `completed`, sin futuras). El encabezado de la columna pasa de «Última visita» a «Última cita». `scheduling_client_last_visits()` se conserva sin cambios: US-NOT-06 (inactivas) necesita la última visita real, y la nueva `scheduling_client_last_appointments()` es otra función. El filtro de morosidad ofrece Todas / Activa / Por revisar / Sin morosidad; `dismissed` no es un estado visible (DOM-012). Se aplica en la base y antes de paginar, igual que el rango de fechas, con `delinquency_all_client_states()` (contrato en `docs/contracts/delinquency-api.md`, INT-003; el dueño de `delinquency` es Jose Lorenzo). Sin filtro de morosidad, `clients_list` no llama a esa función, para que un fallo de `delinquency` no rompa el listado. Sin índice nuevo hasta medir (PERF-001).
 - **2026-11-17 — Corte del segundo corte en cuatro piezas apiladas sobre `main`, numeradas desde 1** (la pila anterior, 1/4 a 4/4, ya está en `main`). 1/4 `feat/US-CLI-01-delinquency-states-fn`: la función `delinquency_all_client_states()` con su pgTAP y el contrato (feature `delinquency`; va sola por INT-002). 2/4 `feat/US-CLI-01-last-appointment-fns`: la migración con `scheduling_client_last_appointments()` y `clients_list` rehecha con el parámetro de morosidad. 3/4 `feat/US-CLI-01-list-filters-data`: repositorio, dominio y action (`lastAppointmentAtMs` y la lectura del filtro). 4/4 `feat/US-CLI-01-delinquency-filter`: la pantalla, las capturas y la marca `terminada`.
+- **2026-11-17 — El corte pasa de cuatro a cinco piezas: la 4/4 medía 456 líneas y INT-002 topa en ~400.** Por decisión de José Loría se parte en 4/5 `feat/US-CLI-01-appointment-rename` (la pantalla dice «Última cita» y la URL usa `appointmentFrom`/`appointmentTo`; solo renombrado, sin comportamiento nuevo) y 5/5 `feat/US-CLI-01-delinquency-filter` (el filtro de morosidad en pantalla, sus estados, las capturas y la marca `terminada`). Casi 100 de las líneas de más eran el renombrado del componente de fechas, que Git cuenta como archivo borrado más archivo nuevo. Se descartó pedir `excepcion-proceso`: partir cuesta retitular los PR de la pila con `/5`, pero deja cada pieza revisable.
 
 ## Listado con última visita (US-CLI-01, piezas 2/4 a 4/4)
 
@@ -602,6 +603,12 @@ anon no lee ningún contacto (SEC-002).
 - `domain/list/delinquency-filter.ts` lee el filtro de morosidad: `DELINQUENCY_FILTER_VALUES` (`active`, `pending_review`, `none`) y `readDelinquencyFilter`, que devuelve el valor o `null`. Un valor desconocido, vacío o que no es texto se ignora, como una página inválida (PERF-002), y `dismissed` no es un valor porque no es un estado visible (DOM-012). Se ignora en TypeScript y no se manda a la base, porque ahí un valor inválido lanza `clients_list_invalid_delinquency`: el filtro nuevo no debe tumbar el listado por un parámetro mal escrito de la URL. `listClients` lo pasa al repositorio, y `index.ts` exporta la constante y el tipo para las pruebas y para la pantalla (4/4).
 - Corte: la pantalla no cambia. Sus parámetros de URL siguen siendo `visitFrom` y `visitTo`, y el encabezado, «Sin visitas» y `ClientsVisitFilter` conservan su texto; `page.tsx` solo traduce `visitFrom`/`visitTo` a `appointmentFrom`/`appointmentTo` al llamar a la action, y `ClientsList` lee `lastAppointmentAtMs`. La razón `invalid-visit-range` de `listClientsAction` tampoco cambia. Todo eso se renombra y se completa en la 4/4, junto con el filtro de morosidad en la URL y en pantalla.
 - Pruebas: `domain/list/__tests__/appointment-range.test.ts` (el de visita, renombrado), `delinquency-filter.test.ts` (3 pruebas: los tres valores, que `dismissed` no es valor y los ignorados) y `application/__tests__/list-clients.test.ts`, con los argumentos nuevos de la función, `lastAppointmentAtMs` y 5 pruebas del filtro de morosidad (cada valor, ausente, inválido, junto con nombre y rango, y rango al revés sin consulta). Las aserciones usan `DELINQUENCY_FILTER_VALUES`. `CLIENT_LIST_FIXTURES` usa `lastAppointmentAtMs`.
+
+## Pantalla: última cita (US-CLI-01, segundo corte, pieza 4/5)
+
+- El encabezado pasa a «Última cita» (`CLIENTS_TABLE_HEADERS.lastAppointment`) y quien nunca agendó dice «Sin citas» (`CLIENTS_TABLE_TEXTS.noAppointments`). Los parámetros de URL pasan de `visitFrom`/`visitTo` a `appointmentFrom`/`appointmentTo`, y `ClientsVisitFilter` a `ClientsAppointmentFilter` (con `CLIENTS_APPOINTMENT_FILTER_TEXTS`, «Última cita desde» y «Última cita hasta»), porque el filtro ya no habla de visitas. La razón de la action pasa a `invalid-appointment-range` y el mensaje a `invertedAppointmentRange`. Un enlace viejo con `?visitFrom` deja de filtrar: la ruta es de uso interno de la administradora y no hay enlaces guardados que cuidar. `formatVisitDate` conserva su nombre: solo da formato al día.
+- Todo lo demás de la pantalla sigue igual: no hay filtro de morosidad todavía (pieza 5/5).
+- Pruebas: las de la pieza anterior con los nombres nuevos: `clients-appointment-filter.test.tsx`, `clients-list-url.test.ts`, `clients-list-params.test.ts`, `clients-list.test.tsx` y `list-clients.test.ts`.
 
 ## Anotaciones por cita (US-CLI-03, piezas 2 a 8)
 
@@ -704,4 +711,4 @@ anon no lee ningún contacto (SEC-002).
   y el perfil.
 - Pruebas: `application/__tests__/list-clients-delinquency.test.ts`, `db/__tests__/delinquency-states-gateway.test.ts`,
   `ui/admin-clients/__tests__/clients-list-delinquency.test.tsx`, `get-client-action.test.ts` y el `layout.test.tsx` del perfil.
-- Sigue sin hacer, por US-CLI-01: el filtro por morosidad. La columna de última visita es de US-CLI-01.
+- Sigue sin hacer, por US-CLI-01: el filtro por morosidad en pantalla, que es la pieza 5/5 del segundo corte.

@@ -4,7 +4,7 @@ import {
   ClientsList,
   ClientsNameFilter,
   ClientsPagination,
-  ClientsVisitFilter,
+  ClientsAppointmentFilter,
   CLIENTS_LABELS,
   listClientsAction,
   readClientsListParams,
@@ -19,15 +19,15 @@ export const metadata = {
 
 export default async function AdminClientsPage({ searchParams }: AdminClientsPageProps) {
   await requireAdminSession()
-  const { page, pageSize, name, visitFrom, visitTo } = readClientsListParams((await searchParams) ?? {})
+  const { page, pageSize, name, appointmentFrom, appointmentTo } = readClientsListParams((await searchParams) ?? {})
   const result = await listClientsAction({
     page,
     pageSize,
     name: name || undefined,
-    appointmentFrom: visitFrom || undefined,
-    appointmentTo: visitTo || undefined,
+    appointmentFrom: appointmentFrom || undefined,
+    appointmentTo: appointmentTo || undefined,
   })
-  const isInvalidRange = !result.ok && result.reason === 'invalid-visit-range'
+  const isInvalidRange = !result.ok && result.reason === 'invalid-appointment-range'
 
   return (
     <div className={STYLES.page}>
@@ -39,7 +39,7 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
         <AddClientDialog />
       </header>
       <ClientsNameFilter name={name} />
-      <ClientsVisitFilter visitFrom={visitFrom} visitTo={visitTo} />
+      <ClientsAppointmentFilter appointmentFrom={appointmentFrom} appointmentTo={appointmentTo} />
       <ClientsList
         clients={result.ok ? result.clients : []}
         delinquency={result.ok ? result.delinquency : {}}
@@ -47,7 +47,7 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
         loadError={!result.ok && !isInvalidRange ? result.error : null}
         filterError={isInvalidRange ? result.error : null}
         activeNameFilter={name || null}
-        hasVisitRangeFilter={Boolean(visitFrom || visitTo)}
+        hasAppointmentRangeFilter={Boolean(appointmentFrom || appointmentTo)}
       />
       {result.ok && result.total > 0 ? (
         <ClientsPagination page={result.page} pageSize={result.pageSize} total={result.total} />
