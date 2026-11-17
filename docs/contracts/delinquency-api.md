@@ -112,7 +112,7 @@ Como el aviso de morosidad por revisar, va por una función de `notifications` q
 ```sql
 notifications_record_regularization_submitted(
   p_request_id      uuid,
-  p_case_id         uuid,
+  p_appointment_id  uuid,
   p_client_name     text,
   p_declared_amount bigint
 ) RETURNS void
@@ -120,7 +120,7 @@ notifications_record_regularization_submitted(
 
 - **Quién la llama:** solo el trigger, al insertarse una solicitud `pending_approval`. Es `SECURITY DEFINER` y no tiene `EXECUTE` para `anon` ni `authenticated`.
 - **Un aviso por solicitud:** `p_request_id` es único; repetirlo no duplica.
-- **Qué lleva:** el nombre de la clienta (de `clients_display_names`, «Clienta» si no hay) y lo que declaró. No lleva el comprobante.
+- **Qué lleva:** el nombre de la clienta (de `clients_display_names`, «Clienta» si no hay), lo que declaró (columna propia, `declared_amount`) y la cita de la morosidad, que la bandeja exige y `notifications` no puede buscar sola (ARCH-005). No lleva el comprobante ni servicio u hora.
 - **No bloquea:** si registrar el aviso falla, la solicitud se crea igual y el fallo queda en el log.
 - La clienta no recibe aviso: ve el estado en su estado de cuenta. WhatsApp y correo quedan como deuda (Kenny, 2026-11-13).
 
