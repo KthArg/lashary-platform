@@ -1,4 +1,4 @@
-import { readVisitDate } from '../../domain/list/visit-range'
+import { readAppointmentDate } from '../../domain/list/appointment-range'
 
 type ClientsListParamName = 'page' | 'pageSize' | 'name' | 'visitFrom' | 'visitTo'
 
@@ -26,7 +26,7 @@ export function readClientsListParams(params: ClientsListSearchParams): ClientsL
     page: readNumber(firstValue(params.page)),
     pageSize: readNumber(firstValue(params.pageSize)),
     name: firstValue(params.name)?.trim() ?? '',
-    visitFrom: readVisitDate(firstValue(params.visitFrom)) ?? '',
-    visitTo: readVisitDate(firstValue(params.visitTo)) ?? '',
+    visitFrom: readAppointmentDate(firstValue(params.visitFrom)) ?? '',
+    visitTo: readAppointmentDate(firstValue(params.visitTo)) ?? '',
   }
 }
