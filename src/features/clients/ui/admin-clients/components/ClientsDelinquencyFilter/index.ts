@@ -1,0 +1,1 @@
+export { ClientsDelinquencyFilter } from './ClientsDelinquencyFilter'

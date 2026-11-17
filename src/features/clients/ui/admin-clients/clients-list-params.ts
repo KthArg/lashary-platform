@@ -1,6 +1,7 @@
 import { readAppointmentDate } from '../../domain/list/appointment-range'
+import { readDelinquencyFilter, type DelinquencyFilter } from '../../domain/list/delinquency-filter'
 
-type ClientsListParamName = 'page' | 'pageSize' | 'name' | 'appointmentFrom' | 'appointmentTo'
+type ClientsListParamName = 'page' | 'pageSize' | 'name' | 'appointmentFrom' | 'appointmentTo' | 'delinquency'
 
 export type ClientsListSearchParams = Partial<Record<ClientsListParamName, string | string[]>>
 
@@ -10,6 +11,7 @@ export interface ClientsListParams {
   name: string
   appointmentFrom: string
   appointmentTo: string
+  delinquency: DelinquencyFilter | ''
 }
 
 const firstValue = (value: string | string[] | undefined): string | undefined =>
@@ -28,5 +30,6 @@ export function readClientsListParams(params: ClientsListSearchParams): ClientsL
     name: firstValue(params.name)?.trim() ?? '',
     appointmentFrom: readAppointmentDate(firstValue(params.appointmentFrom)) ?? '',
     appointmentTo: readAppointmentDate(firstValue(params.appointmentTo)) ?? '',
+    delinquency: readDelinquencyFilter(firstValue(params.delinquency)) ?? '',
   }
 }

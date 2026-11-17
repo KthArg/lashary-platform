@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildClientsListUrl } from '@/features/clients'
+import { buildClientsListUrl, DELINQUENCY_FILTER_VALUES } from '@/features/clients'
 
 const PATH = '/admin/clients'
 
@@ -45,6 +45,17 @@ describe('buildClientsListUrl', () => {
   it('un extremo vacio o nulo del rango lo quita de la consulta', () => {
     expect(buildClientsListUrl(PATH, 'appointmentFrom=2026-04-01&appointmentTo=2026-06-30', { appointmentFrom: '', appointmentTo: null }))
       .toBe(PATH)
+  })
+
+  it('escribe el filtro de morosidad, conserva el resto y vuelve a la primera pagina', () => {
+    expect(buildClientsListUrl(PATH, 'name=ana&appointmentFrom=2026-04-01&page=2', { delinquency: DELINQUENCY_FILTER_VALUES[0], page: null }))
+      .toBe(`${PATH}?name=ana&appointmentFrom=2026-04-01&delinquency=${DELINQUENCY_FILTER_VALUES[0]}`)
+  })
+
+  it('un filtro de morosidad vacio o nulo lo quita de la consulta', () => {
+    const query = `delinquency=${DELINQUENCY_FILTER_VALUES[1]}&name=ana`
+    expect(buildClientsListUrl(PATH, query, { delinquency: '' })).toBe(`${PATH}?name=ana`)
+    expect(buildClientsListUrl(PATH, query, { delinquency: null })).toBe(`${PATH}?name=ana`)
   })
 
   it('cambiar el nombre conserva el rango', () => {

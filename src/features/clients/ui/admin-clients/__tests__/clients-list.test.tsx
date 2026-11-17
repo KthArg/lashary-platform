@@ -58,13 +58,19 @@ describe('ClientsList', () => {
   it('criterio 1: muestra la ultima cita en la fecha del estudio, y "sin citas" a quien nunca agendo', () => {
     render(<ClientsList clients={CLIENT_FIXTURES} />)
     const withAppointment = screen.getByRole('row', { name: new RegExp(CLIENT_FIXTURES[0].fullName) })
-    const withoutAppointment = screen.getByRole('row', { name: new RegExp(CLIENT_FIXTURES[1].fullName) })
+    const noAppointments = screen.getByRole('row', { name: new RegExp(CLIENT_FIXTURES[1].fullName) })
     expect(withAppointment.textContent).toContain('30 jun 2026')
-    expect(withoutAppointment.textContent).toContain(CLIENTS_TABLE_TEXTS.noAppointments)
+    expect(noAppointments.textContent).toContain(CLIENTS_TABLE_TEXTS.noAppointments)
   })
 
   it('con un filtro de fechas y sin coincidencias lo dice, en vez de decir que no hay clientas', () => {
     render(<ClientsList clients={[]} activeNameFilter="ana" hasAppointmentRangeFilter />)
+    expect(screen.getByText(CLIENTS_LABELS.clientsListEmptyForFilters)).toBeTruthy()
+    expect(screen.queryByText(CLIENTS_LABELS.clientsListEmpty)).toBeNull()
+  })
+
+  it('con el filtro de morosidad y sin coincidencias dice que ninguna clienta coincide con los filtros', () => {
+    render(<ClientsList clients={[]} hasDelinquencyFilter />)
     expect(screen.getByText(CLIENTS_LABELS.clientsListEmptyForFilters)).toBeTruthy()
     expect(screen.queryByText(CLIENTS_LABELS.clientsListEmpty)).toBeNull()
   })

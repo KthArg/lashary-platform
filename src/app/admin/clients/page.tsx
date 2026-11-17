@@ -5,6 +5,7 @@ import {
   ClientsNameFilter,
   ClientsPagination,
   ClientsAppointmentFilter,
+  ClientsDelinquencyFilter,
   CLIENTS_LABELS,
   listClientsAction,
   readClientsListParams,
@@ -19,13 +20,15 @@ export const metadata = {
 
 export default async function AdminClientsPage({ searchParams }: AdminClientsPageProps) {
   await requireAdminSession()
-  const { page, pageSize, name, appointmentFrom, appointmentTo } = readClientsListParams((await searchParams) ?? {})
+  const { page, pageSize, name, appointmentFrom, appointmentTo, delinquency: delinquencyFilter } =
+    readClientsListParams((await searchParams) ?? {})
   const result = await listClientsAction({
     page,
     pageSize,
     name: name || undefined,
     appointmentFrom: appointmentFrom || undefined,
     appointmentTo: appointmentTo || undefined,
+    delinquency: delinquencyFilter || undefined,
   })
   const isInvalidRange = !result.ok && result.reason === 'invalid-appointment-range'
 
@@ -40,6 +43,7 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
       </header>
       <ClientsNameFilter name={name} />
       <ClientsAppointmentFilter appointmentFrom={appointmentFrom} appointmentTo={appointmentTo} />
+      <ClientsDelinquencyFilter delinquency={delinquencyFilter} />
       <ClientsList
         clients={result.ok ? result.clients : []}
         delinquency={result.ok ? result.delinquency : {}}
@@ -48,6 +52,7 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
         filterError={isInvalidRange ? result.error : null}
         activeNameFilter={name || null}
         hasAppointmentRangeFilter={Boolean(appointmentFrom || appointmentTo)}
+        hasDelinquencyFilter={Boolean(delinquencyFilter)}
       />
       {result.ok && result.total > 0 ? (
         <ClientsPagination page={result.page} pageSize={result.pageSize} total={result.total} />
