@@ -354,7 +354,8 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
   en el ledger, sin acción manual.
 - **Solo bloquea una morosidad confirmada** (`active`), no una por revisar ni una descartada (2026-11-08).
 - **«Opción de regularizar»** (criterio 2, 2026-11-08): el mensaje dice que se comunique con el estudio; se cambia cuando
-  exista US-MOR-03.
+  exista US-MOR-03. Hecho en US-MOR-03 (pieza 23): el texto del PO se mantiene y la alerta suma el enlace «Regularizar mi
+  saldo» al estado de cuenta (`/portal/cuenta`).
 - **Texto a la clienta** (2026-11-08): el de «La aplicación explica el rechazo». Kenny lo escribió en minúsculas al
   mensajear; se usa con mayúscula inicial de oración, sin cambiar las palabras.
 - **Excepción de la administradora** (2026-11-08 y 2026-11-11): confirmación explícita y motivo obligatorio de al menos 10
@@ -445,6 +446,7 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 
 - **Las acciones de aprobar y rechazar** (`ui/regularization-review/actions/`): `approveRegularizationAction` y `rejectRegularizationAction` exigen sesión de administradora, validan el formulario (`utils/perform-review.ts`: solicitud, monto entero positivo, motivo), dicen si la morosidad quedó saldada o sigue activa, traducen cada rechazo a un mensaje y recargan la pantalla. Prueba: `ui/regularization-review/__tests__/perform-review.test.ts`.
 - **Aprobar y rechazar en la cola**: cada tarjeta trae `RegularizationDecision`, con dos formularios: aprobar, con el monto que la administradora verificó en el comprobante (empieza vacío a propósito, con lo declarado y lo que debe hoy como referencia, para no aprobar el monto de la clienta sin mirar), y rechazar, con un motivo obligatorio que la clienta verá. Al recargar, la solicitud sale de la cola y su tarjeta desaparece: por eso el resultado bueno se anuncia arriba de la cola (`QueueFeedback`, que sigue montado), y un error queda en la tarjeta. Comprobado de punta a punta con el servidor local: pago parcial, rechazo con motivo y pago final que salda la morosidad. Prueba: `ui/regularization-review/__tests__/RegularizationDecision.test.tsx`.
+- **Desde el rechazo de la reserva** (pieza 23, `scheduling`): cuando la reserva se rechaza por morosidad, la alerta con el texto del PO trae el enlace «Regularizar mi saldo» a `/portal/cuenta`, donde está el formulario del comprobante (criterio 1). El texto del PO no cambia: cambiarlo es decisión de Kenny. Pruebas: `scheduling/ui/booking-confirm/__tests__/perform-booking.test.ts`, `book-appointment-action.test.ts` y `BookingConfirmForm.test.tsx`.
 - **Aviso a la bandeja** (migración `20261117090000_delinquency_regularization_notice.sql`): al llegar una solicitud pendiente, el trigger `delinquency_regularizations_notify_submitted` pide el nombre a `clients_display_names` y registra el aviso en la bandeja de la administradora (detalle en el SPEC de `notifications`). Si el aviso falla, la solicitud se crea igual y el fallo queda en el log. La clienta no recibe aviso. Prueba: pgTAP `delinquency_regularization_notice.test.sql` (8).
 
 ### Pendiente de verificar
