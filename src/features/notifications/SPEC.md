@@ -2,7 +2,7 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-15
+actualizado: 2026-11-17
 historias:
   - id: US-NOT-01
     estado: terminada
@@ -14,7 +14,8 @@ historias:
     estado: terminada
     evidencia: "PR de cierre #577 (us/US-NOT-03 a main), con 23 piezas apiladas hacia la rama de la historia. Criterio 1 (envío automático 24h antes): computeReminderSendAt y discoverReminders; domain/__tests__/reminder.test.ts, application/__tests__/discover-reminders.test.ts. Criterio 2 (mensaje con fecha, hora y técnica): domain/reminder-message.ts (REMINDER_MESSAGE_TEXTS, formatStudioDateTime); domain/__tests__/reminder-message.test.ts, application/__tests__/send-due-reminders.test.ts. Criterio 3 (cancela o reprograma si la cita cambia): reconcile-reminders.ts; application/__tests__/reconcile-reminders.test.ts, incluida la corrección del líder del 2026-10-26 (libera el reclamo vencido antes de leer lo pendiente, para que la misma corrida cancele si la cita ya no es válida). Criterio 4 (reintenta y queda registrado): send-due-reminders.ts (MAX_REMINDER_ATTEMPTS), reclamo atómico FOR UPDATE SKIP LOCKED con TTL y tandas (notifications_claim_due_reminders, notifications_release_expired_claims); application/__tests__/send-due-reminders.test.ts, db/__tests__/reminder-repository.integration.test.ts (A6, contra Supabase local, incluido el reclamo doble simultáneo) y pgTAP notifications_reminders_staff_access.test.sql (13 aserciones, SEC-001/002). Decisión del líder del proyecto, comunicada el 2026-10-27: la historia pasa de en_progreso a terminada porque lo que falta —plantilla de WhatsApp aprobada por Meta, número de WhatsApp Business real, contenido del mensaje de la dueña del negocio, dominio verificado en Resend, disparo vía GitHub Actions, cuenta de staff del cron en producción— ya no es código sino configuración externa y decisiones de negocio; queda como checklist de activación para producción en la sección «Antes de producción» de este SPEC, no como deuda de la historia. A4 (rol dedicado del cron, sin ADR), B5 (reschedulePending no reinicia attempts/last_error) y B6 (recordatorio inmediato si la cita se reserva con menos de 24h) quedan registrados en `deuda` del frontmatter, con dueño (líder/PO); B8 (opt-in de WhatsApp) ya está cubierto por la fila de US-NOT-06 en docs/process/DEPENDENCIES.md."
   - id: US-NOT-04
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "pieza 1/8 (arranque, solo documentación). Pendiente: tabla y función de la frecuencia (2 y 3/8), dominio del mensaje y de cuándo toca el siguiente (4/8), registro de lo enviado (5/8), descubrimiento y envío en el cron (6/8), pantalla de la frecuencia (7/8) y cierre (8/8). Criterio 2, parte «enlace para regularizar», y criterio 4, parte «excepción manual»: propuestos como trasladados a US-MOR-03 y US-MOR-05, sin aprobación todavía (ver la sección de US-NOT-04)"
   - id: US-NOT-05
     estado: terminada
     evidencia: "PR de cierre #819 (us/US-NOT-05 a main, piezas 1 a 4) y piezas 5 a 21 fusionadas directamente a main tras el reacomodo del stack (#824 a #839; #840 quedó incluida en el squash de #839). Criterio 1 (fecha estimada con el intervalo del catálogo y la última cita completada): computeReapplicationDueDate (domain/reapplication-reminder.ts, pieza 2) y scheduling_reapplication_candidates() (migración 20261114000000, pieza 3); domain/__tests__/reapplication-reminder.test.ts, supabase/tests/database/scheduling_reapplication_candidates.test.sql. Criterio 2 (avisa cuando se acerca la fecha estimada): isReapplicationDue más el tope de 30 días vencidos isReapplicationExpired (pieza 19, hallazgo de la revisión), sendDueReapplications con reintentos hasta MAX_REMINDER_ATTEMPTS y sin gastar intento cuando es recuperable (sin contacto o sin canal configurado, piezas 10 y 19), un solo aviso por clienta cuando hay varias técnicas vencidas (pieza 19), y receiveReminderCronRequest llamando a runReapplicationReminderCycle en paralelo con el ciclo de recordatorios, aislado por su propio try/catch (pieza 18); application/__tests__/discover-reapplication-reminders.test.ts, application/__tests__/send-due-reapplications.test.ts, domain/__tests__/reapplication-message.test.ts, http/__tests__/cron-handler.test.ts, __tests__/reapplication-cycle.test.ts (pieza 20, antes sin ninguna prueba de esta capa de composición). Criterio 3 (la administradora configura los días de anticipación): tabla notifications_reapplication_settings y función notifications_set_reapplication_anticipation_days (piezas 12 y 13) con su pantalla en /admin/citas/re-aplicacion (piezas 15 a 17); buildReapplicationDiscoveryDeps aborta la corrida si falla leer la anticipación en vez de usar 7 por defecto en silencio (pieza 20, hallazgo de la revisión); ui/reapplication-settings/__tests__/*, supabase/tests/database/notifications_reapplication_settings.test.sql y notifications_set_reapplication_anticipation_days.test.sql, layout.test.tsx de /admin/citas. Criterio 4 (no se envía con morosidad activa ni con cita futura agendada): scheduling_reapplication_candidates() excluye cualquier cita futura activa (cualquier técnica, decisión del PO del 2026-11-13) y discoverDueReapplications excluye morosidad 'active' vía delinquency_client_states (DOM-012: 'pending_review' no bloquea todavía); scheduling_reapplication_candidates.test.sql, application/__tests__/discover-reapplication-reminders.test.ts. INT-010: login real como admin contra Supabase local, pantalla /admin/citas/re-aplicacion con el rango 1-30 visible y guardado funcionando (capturas en el PR de la pieza 17). Verificación final contra main: npx tsc --noEmit sin errores; npx vitest run con las mismas dos fallas preexistentes y ajenas de siempre (contaminación del seed local de catalog, .env.local apuntando a Supabase remoto); npx supabase test db, 94 archivos y 1251 pruebas, PASS. Deuda aceptada por Kenny Rodríguez el 2026-11-15 (ver 'deuda' arriba): el recordatorio de 24h y el aviso de re-aplicación pueden mandar dos mensajes de WhatsApp separados a la misma clienta en la misma corrida, al correr en paralelo sin coordinarse. Falta el disparador en producción (Vercel Cron o GitHub Actions) y la cuenta de sistema del cron en producción — checklist de activación externa, no código (mismo criterio que cerró US-NOT-03/07/08)."
@@ -757,11 +758,52 @@ producción — eso sí es checklist de activación externa, no código (mismo c
 US-NOT-03/07/08). También falta lo ya señalado para el canal compartido: plantilla de WhatsApp
 aprobada por Meta, número de WhatsApp Business real y dominio verificado en Resend.
 
+## US-NOT-04: recordatorio de pago pendiente
+
+Criterios del backlog:
+
+1. El sistema envía un recordatorio automático a los clientes con morosidad activa con la frecuencia que configure la administradora.
+2. El recordatorio incluye el monto adeudado y un enlace para regularizar.
+3. El recordatorio deja de enviarse automáticamente una vez saldada la morosidad.
+4. Un cliente cuya morosidad está bajo excepción manual no recibe recordatorios.
+
+Depende de US-NOT-03 (el canal) y de US-MOR-02, ambas `terminada`. Reglas: ARCH-003/004/005 (lee `delinquency` y
+`payments` por sus entry points y contratos, nunca sus tablas), ARCH-006 (tablas propias con prefijo `notifications_`),
+DOM-012 (solo la morosidad `active` tiene consecuencias; `pending_review` y `dismissed` no reciben recordatorio),
+DOM-005 (el ledger solo se lee), SEC-001/002 (RLS y aislamiento), PERF-002 (nada de consultas una por una),
+UI-003/004 (la pantalla de la frecuencia), INT-002/003/008/009/010 y EST-006/007.
+
+### Qué se puede demostrar hoy y qué no
+
+| Criterio | Estado | Con qué |
+|---|---|---|
+| 1 | Demostrable | Las clientas salen de `delinquency_list_active` (contrato en `docs/contracts/delinquency-api.md`, ya en `main`); la frecuencia va en una tabla propia con su pantalla; el envío usa el canal de US-NOT-03 |
+| 2, monto | Demostrable | El saldo de hoy sale del ledger por `payments_appointment_balances` / `payments_client_balance` (contrato de `payments`), no del `pending` que guardó la detección |
+| 2, enlace para regularizar | **No** | No existe un flujo de regularizar: es US-MOR-03 (`no_iniciada`). Mientras tanto el mensaje dice «comunícate con el estudio», igual que el rechazo de US-MOR-02 (decisión del PO del 2026-11-08) |
+| 3 | Demostrable | El saldo se lee en el momento del envío, no del estado del caso. Se prueba sembrando un asiento de pago en el ledger, como hicieron las pruebas de US-MOR-02 |
+| 4 | **No** | Los estados `lifted` y `forgiven` los trae US-MOR-05 (pila #859 en adelante, aún no en `main`). Como esta historia solo lee casos `active`, quedarán excluidos sin código extra, pero solo se puede probar cuando existan en `main` |
+
+### Alcance propuesto (pendiente del PO, Kenny)
+
+Esta historia cierra con los criterios 1 y 3 completos, el monto del criterio 2 y, cuando US-MOR-05 esté en `main`, la
+prueba del criterio 4. Se propone **trasladar** la parte «enlace para regularizar» del criterio 2 a US-MOR-03, que es
+quien construye la regularización; el patrón es el ítem 14 de «Criterios trasladados» de
+`docs/process/DEPENDENCIES.md`. **No está aprobado:** hasta que el PO lo confirme por escrito, la historia no se puede
+marcar `terminada` sin ese enlace, y el traslado no se registra en DEPENDENCIES como aprobado.
+
+### Decisiones propuestas, sin aprobar
+
+- **Frecuencia:** cada cuántos días se repite el recordatorio mientras haya saldo, de 1 a 30 y 7 por defecto, el mismo
+  patrón y rango que la anticipación de US-NOT-05 y la gracia de US-MOR-01. El rango y el valor por defecto son una
+  propuesta: la historia no los fija.
+- **Un solo aviso por clienta y corrida**, aunque tenga varias citas con saldo, igual que US-NOT-05 (pieza 19).
+- **Canal:** el de US-NOT-03 (primario y respaldo, ADR-0006). El envío real depende de «Antes de producción».
+
 ## Qué no hace todavía
 
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
   mano. No lo pide ningún criterio de US-NOT-03 ni de US-NOT-07.
-- US-NOT-04 y 06 reusan el canal pero no están construidas; US-NOT-05 está en curso (su sección). US-NOT-02 y
+- US-NOT-06 reusa el canal pero no está construida; US-NOT-04 está en curso (su sección); US-NOT-05 está en curso (su sección). US-NOT-02 y
   US-NOT-08 están construidas y tienen pendiente lo de su sección.
 
 ## Correcciones de la auditoría del 2026-10-23 (AUDIT.md, líder del proyecto)
