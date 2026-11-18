@@ -9,6 +9,7 @@ import { techniqueFormStyles as STYLES } from './TechniqueForm.styles'
 import { TechniqueFormField } from '../TechniqueFormField'
 import { TechniqueFormFeedback } from '../TechniqueFormFeedback'
 import { DeactivateTechniqueDialog } from '../DeactivateTechniqueDialog'
+import { ReactivateTechniqueDialog } from '../ReactivateTechniqueDialog'
 import type { TechniqueFormProps } from './TechniqueForm.types'
 
 const formMessages = catalogMessages.form
@@ -78,7 +79,11 @@ export function TechniqueForm({ technique }: TechniqueFormProps) {
 
       {editing && (
         <div className={STYLES.deactivateForm}>
-          <DeactivateTechniqueDialog techniqueId={technique.id} />
+          {technique.isActive ? (
+            <DeactivateTechniqueDialog techniqueId={technique.id} />
+          ) : (
+            <ReactivateTechniqueDialog techniqueId={technique.id} />
+          )}
         </div>
       )}
     </section>

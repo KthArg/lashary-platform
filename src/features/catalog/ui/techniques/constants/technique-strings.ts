@@ -75,6 +75,21 @@ export const catalogMessages = {
       cancel: 'Cancelar',
       close: 'Cerrar',
     },
+    reactivated: 'Técnica reactivada.',
+    reactivatedWithPackages: (packageNames: string[]) =>
+      `Técnica reactivada junto con ${packageNames.length === 1 ? 'el paquete' : 'los paquetes'}: ${packageNames.join(', ')}.`,
+    reactivate: {
+      open: 'Reactivar',
+      title: '¿Reactivar esta técnica?',
+      checking: 'Comprobando qué paquetes volverían a activarse…',
+      notFound: 'No se encontró la técnica.',
+      bodySimple: '¿Confirmás que querés reactivar esta técnica?',
+      bodyWithPackages: (packageNames: string[]) =>
+        `${packageNames.length === 1 ? 'El paquete' : 'Los paquetes'} «${packageNames.join('», «')}» ${packageNames.length === 1 ? 'volvería' : 'volverían'} a activarse junto con esta técnica. ¿Querés continuar?`,
+      confirm: 'Sí, reactivar',
+      cancel: 'Cancelar',
+      close: 'Cerrar',
+    },
     validation: {
       name: 'El nombre es obligatorio',
       family: 'Elegí una familia de servicio válida',
