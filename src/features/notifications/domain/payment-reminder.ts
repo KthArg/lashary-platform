@@ -14,3 +14,7 @@ export function isPaymentReminderDue(lastSentAt: Date | null, frequencyDays: num
   if (lastSentAt === null) return true
   return addDays(lastSentAt, frequencyDays).getTime() <= now.getTime()
 }
+
+const ISO_DATE_LENGTH = 10
+
+export const paymentReminderKey = (clientId: string, now: Date): string => `${clientId}:${now.toISOString().slice(0, ISO_DATE_LENGTH)}`
