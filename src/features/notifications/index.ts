@@ -274,3 +274,5 @@ export type { ClientRecordAftercareResult } from './ui/client-record-aftercare/s
 
 export { ReapplicationSettingsPage } from './ui/reapplication-settings/components/ReapplicationSettingsPage'
 export { REAPPLICATION_SETTINGS_PATH } from './ui/reapplication-settings/constants/reapplication-settings-strings'
+export { PaymentReminderSettingsPage } from './ui/payment-reminder-settings/components/PaymentReminderSettingsPage'
+export { PAYMENT_REMINDER_SETTINGS_PATH } from './ui/payment-reminder-settings/constants/payment-reminder-settings-strings'

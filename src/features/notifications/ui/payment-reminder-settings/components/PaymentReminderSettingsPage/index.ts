@@ -1,0 +1,1 @@
+export { PaymentReminderSettingsPage } from './PaymentReminderSettingsPage'
