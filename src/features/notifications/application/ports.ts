@@ -61,6 +61,10 @@ export interface ClientOwedAmountPort {
 
 export type PaymentReminderSentInput = { clientId: string; amountOwed: number; channel: ReminderChannelKind; sentAt: Date }
 
+export interface PaymentReminderSettingsPort {
+  frequencyDays(): Promise<Result<number, RepositoryFailure>>
+}
+
 export interface PaymentReminderLogPort {
   lastSentAt(clientIds: readonly string[]): Promise<Result<ReadonlyMap<string, Date>, RepositoryFailure>>
   recordSent(input: PaymentReminderSentInput): Promise<Result<void, RepositoryFailure>>
