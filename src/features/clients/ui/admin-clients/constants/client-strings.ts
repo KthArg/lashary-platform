@@ -100,3 +100,7 @@ export const CLIENT_PROFILE_LABELS = {
   appointmentsTab: 'Citas',
   delinquencyPrefix: 'Morosidad: ',
 } as const
+
+export const CLIENTS_CLEAR_FILTERS_TEXTS = {
+  link: 'Quitar todos los filtros',
+} as const

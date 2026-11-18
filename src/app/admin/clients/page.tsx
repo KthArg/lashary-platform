@@ -6,6 +6,7 @@ import {
   ClientsPagination,
   ClientsAppointmentFilter,
   ClientsDelinquencyFilter,
+  ClientsClearFilters,
   CLIENTS_LABELS,
   listClientsAction,
   readClientsListParams,
@@ -30,7 +31,9 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
     appointmentTo: appointmentTo || undefined,
     delinquency: delinquencyFilter || undefined,
   })
-  const isInvalidRange = !result.ok && result.reason === 'invalid-appointment-range'
+  const hasAppointmentRangeFilter = Boolean(appointmentFrom || appointmentTo)
+  const hasActiveFilters = Boolean(name || hasAppointmentRangeFilter || delinquencyFilter)
+  const isInvalidRange =!result.ok && result.reason === 'invalid-appointment-range'
 
   return (
     <div className={STYLES.page}>
@@ -44,6 +47,7 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
       <ClientsNameFilter name={name} />
       <ClientsAppointmentFilter appointmentFrom={appointmentFrom} appointmentTo={appointmentTo} />
       <ClientsDelinquencyFilter delinquency={delinquencyFilter} />
+      <ClientsClearFilters hasActiveFilters={hasActiveFilters} />
       <ClientsList
         clients={result.ok ? result.clients : []}
         delinquency={result.ok ? result.delinquency : {}}
@@ -51,7 +55,7 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
         loadError={!result.ok && !isInvalidRange ? result.error : null}
         filterError={isInvalidRange ? result.error : null}
         activeNameFilter={name || null}
-        hasAppointmentRangeFilter={Boolean(appointmentFrom || appointmentTo)}
+        hasAppointmentRangeFilter={hasAppointmentRangeFilter}
         hasDelinquencyFilter={Boolean(delinquencyFilter)}
       />
       {result.ok && result.total > 0 ? (
