@@ -2,7 +2,7 @@
 feature: catalog
 dri: pendiente
 estado: terminada
-actualizado: 2026-11-15
+actualizado: 2026-11-17
 historias:
   - id: US-AGE-08
     estado: terminada

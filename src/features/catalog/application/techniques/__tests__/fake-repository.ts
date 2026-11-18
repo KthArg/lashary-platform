@@ -1,6 +1,6 @@
 import { ok, err } from '@/shared/result'
 import type { Technique } from '@/features/catalog/domain/techniques/technique'
-import { techniqueNameConflict } from '@/features/catalog/domain/techniques/errors'
+import { techniqueNameConflict, type AffectedPackage } from '@/features/catalog/domain/techniques/errors'
 import type { TechniqueRepository } from '@/features/catalog/application/techniques/ports'
 
 export type FakeTechniqueRepository = TechniqueRepository & { readonly saveCalls: number }
@@ -11,6 +11,7 @@ export type FakeTechniqueRepository = TechniqueRepository & { readonly saveCalls
 export function createFakeTechniqueRepository(
   initial: Technique[] = [],
   actualAffectedPackageIds: Record<string, string[]> = {},
+  reactivationCandidates: Record<string, AffectedPackage[]> = {},
 ): FakeTechniqueRepository {
   const store = new Map<string, Technique>()
   for (const technique of initial) store.set(technique.id, technique)
@@ -65,6 +66,21 @@ export function createFakeTechniqueRepository(
       if (technique) store.set(id, { ...technique, isActive: false })
       saveCalls += 1
       return ok({ deactivatedPackageIds: actual })
+    },
+
+    async findReactivationCandidates(id: string) {
+      return reactivationCandidates[id] ?? []
+    },
+
+    async reactivateCascade(id: string, expectedPackageIds: string[]) {
+      const actual = (reactivationCandidates[id] ?? []).map((candidate) => candidate.id)
+      if (JSON.stringify(sorted(actual)) !== JSON.stringify(sorted(expectedPackageIds))) {
+        return err({ code: 'CATALOG_TECHNIQUE_AFFECTED_PACKAGES_RACE' } as const)
+      }
+      const technique = store.get(id)
+      if (technique) store.set(id, { ...technique, isActive: true })
+      saveCalls += 1
+      return ok({ reactivatedPackageIds: actual })
     },
   }
 }

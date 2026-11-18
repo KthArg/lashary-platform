@@ -1,6 +1,6 @@
 import type { Result } from '@/shared/result'
 import type { Technique, ServiceFamily } from '../../domain/techniques/technique'
-import type { TechniqueNameConflict } from '../../domain/techniques/errors'
+import type { AffectedPackage, TechniqueNameConflict } from '../../domain/techniques/errors'
 
 export type ListTechniquesQuery = {
   activeOnly?: boolean
@@ -25,6 +25,10 @@ export type DeactivateCascadeResult = {
   deactivatedPackageIds: string[]
 }
 
+export type ReactivateCascadeResult = {
+  reactivatedPackageIds: string[]
+}
+
 export type AffectedPackagesRace = {
   readonly code: 'CATALOG_TECHNIQUE_AFFECTED_PACKAGES_RACE'
 }
@@ -46,4 +50,11 @@ export interface TechniqueRepository {
     id: string,
     expectedPackageIds: string[],
   ): Promise<Result<DeactivateCascadeResult, AffectedPackagesRace>>
+
+  findReactivationCandidates(id: string): Promise<AffectedPackage[]>
+
+  reactivateCascade(
+    id: string,
+    expectedPackageIds: string[],
+  ): Promise<Result<ReactivateCascadeResult, AffectedPackagesRace>>
 }

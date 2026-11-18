@@ -8,6 +8,8 @@ import type { AffectedPackagesRace, TechniqueRepository } from '../../applicatio
 
 const TABLE = 'catalog_techniques'
 const DEACTIVATE_CASCADE_FN = 'catalog_deactivate_technique_cascade'
+const REACTIVATE_FN = 'catalog_reactivate_technique'
+const REACTIVATION_PREVIEW_FN = 'catalog_reactivation_preview'
 const AFFECTED_PACKAGES_CHANGED_CODE = 'catalog_affected_packages_changed'
 const COLUMNS =
   'id, name, family, price_first_time, price_retouch, duration_first_time_min, duration_retouch_min, buffer_min, reapplication_interval_days, deposit, aftercare_text, is_active'
@@ -26,6 +28,8 @@ type Row = {
   aftercare_text: string
   is_active: boolean
 }
+
+type ReactivationPreviewRow = { package_id: string; package_name: string }
 
 function rowToDomain(row: Row): Technique {
   const built = buildTechnique({
@@ -124,6 +128,30 @@ export function createSupabaseTechniqueRepository(db: SupabaseClient): Technique
       }
       const row = (Array.isArray(data) ? data[0] : data) as { deactivated_package_ids: string[] } | null
       return ok({ deactivatedPackageIds: row?.deactivated_package_ids ?? [] })
+    },
+
+    async findReactivationCandidates(id) {
+      const { data, error } = await db.rpc(REACTIVATION_PREVIEW_FN, { p_technique_id: id })
+      if (error) throw new Error(`${REACTIVATION_PREVIEW_FN}: ${error.message}`)
+      return ((data ?? []) as ReactivationPreviewRow[]).map((row) => ({
+        id: row.package_id,
+        name: row.package_name,
+      }))
+    },
+
+    async reactivateCascade(id, expectedPackageIds) {
+      const { data, error } = await db.rpc(REACTIVATE_FN, {
+        p_technique_id: id,
+        p_expected_package_ids: expectedPackageIds,
+      })
+      if (error) {
+        if (error.message === AFFECTED_PACKAGES_CHANGED_CODE) {
+          return err({ code: 'CATALOG_TECHNIQUE_AFFECTED_PACKAGES_RACE' } satisfies AffectedPackagesRace)
+        }
+        throw new Error(`${REACTIVATE_FN}: ${error.message}`)
+      }
+      const row = (Array.isArray(data) ? data[0] : data) as { reactivated_package_ids: string[] } | null
+      return ok({ reactivatedPackageIds: row?.reactivated_package_ids ?? [] })
     },
   }
 }
