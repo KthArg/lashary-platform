@@ -47,7 +47,7 @@ describe('validateReceipt', () => {
     expect(isErr(result) && result.error).toBe('receipt-type-not-allowed')
   })
 
-  it('acepta exactamente 4 MB y rechaza un byte más', () => {
+  it('acepta exactamente 1 MB y rechaza un byte más', () => {
     expect(isOk(validateReceipt(withHeader(JPEG, RECEIPT_MAX_BYTES)))).toBe(true)
     const tooLarge = validateReceipt(withHeader(JPEG, RECEIPT_MAX_BYTES + 1))
     expect(isErr(tooLarge) && tooLarge.error).toBe('receipt-too-large')

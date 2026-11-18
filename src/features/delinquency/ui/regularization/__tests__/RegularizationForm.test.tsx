@@ -1,7 +1,8 @@
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
 import { render, screen, cleanup, fireEvent } from '@testing-library/react'
 import { RegularizationForm } from '../components/RegularizationForm'
-import { RECEIPT_ACCEPT, regularizationFormMessages as COPY } from '../constants/regularization-strings'
+import { RECEIPT_MAX_BYTES } from '@/features/delinquency/domain/receipt'
+import { RECEIPT_ACCEPT, receiptProblemMessages, regularizationFormMessages as COPY } from '../constants/regularization-strings'
 import type { SubmitRegularizationResult } from '../types/regularization-results'
 
 const CASE_ID = '00000000-0000-4000-8000-0000000016d1'
@@ -28,6 +29,23 @@ describe('RegularizationForm', () => {
     expect(screen.queryByText(COPY.replaceHint)).toBeNull()
   })
 
+  it('un archivo de más de 1 MB se marca inválido al elegirlo, antes de enviar nada', () => {
+    render(<RegularizationForm caseId={CASE_ID} maxAmount={25000} hasPendingRequest={false} />)
+    const receipt = screen.getByLabelText(COPY.receiptLabel) as HTMLInputElement
+    const choose = (bytes: number) => {
+      Object.defineProperty(receipt, 'files', { configurable: true, value: [new File([new Uint8Array(bytes)], 'sinpe.jpg')] })
+      fireEvent.change(receipt)
+    }
+
+    choose(RECEIPT_MAX_BYTES + 1)
+    expect(receipt.validity.customError).toBe(true)
+    expect(receipt.validationMessage).toBe(receiptProblemMessages['receipt-too-large'])
+
+    choose(RECEIPT_MAX_BYTES)
+    expect(receipt.validity.customError).toBe(false)
+    expect(mockSubmit).not.toHaveBeenCalled()
+  })
+
   it('con un comprobante en revisión avisa que enviar otro lo reemplaza', () => {
     render(<RegularizationForm caseId={CASE_ID} maxAmount={25000} hasPendingRequest />)
 
@@ -48,11 +66,11 @@ describe('RegularizationForm', () => {
   })
 
   it('un rechazo se anuncia como alerta', async () => {
-    mockSubmit.mockResolvedValue({ ok: false, message: 'El comprobante pesa más de 4 MB.' })
+    mockSubmit.mockResolvedValue({ ok: false, message: 'El comprobante pesa más de 1 MB.' })
     render(<RegularizationForm caseId={CASE_ID} maxAmount={25000} hasPendingRequest={false} />)
 
     submit()
 
-    expect((await screen.findByRole('alert')).textContent).toContain('pesa más de 4 MB')
+    expect((await screen.findByRole('alert')).textContent).toContain('pesa más de 1 MB')
   })
 })
