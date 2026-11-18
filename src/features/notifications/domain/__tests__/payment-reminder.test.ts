@@ -4,6 +4,7 @@ import {
   PAYMENT_REMINDER_FREQUENCY_DAYS_DEFAULT,
   isPaymentReminderDue,
   isValidPaymentReminderFrequencyDays,
+  paymentReminderKey,
 } from '../payment-reminder'
 
 describe('isValidPaymentReminderFrequencyDays', () => {
@@ -50,5 +51,15 @@ describe('isPaymentReminderDue (criterio 1)', () => {
 
     expect(isPaymentReminderDue(sentYesterday, 1, NOW)).toBe(true)
     expect(isPaymentReminderDue(sentYesterday, 30, NOW)).toBe(false)
+  })
+})
+
+describe('paymentReminderKey', () => {
+  it('es la clienta y el día del envío: dos corridas del mismo día comparten clave, otro día no', () => {
+    const sameDay = paymentReminderKey('client-1', fixedDate('2026-11-17T08:00:00Z'))
+
+    expect(sameDay).toBe('client-1:2026-11-17')
+    expect(paymentReminderKey('client-1', fixedDate('2026-11-17T20:00:00Z'))).toBe(sameDay)
+    expect(paymentReminderKey('client-1', fixedDate('2026-11-24T08:00:00Z'))).not.toBe(sameDay)
   })
 })

@@ -192,6 +192,7 @@ export const MESSAGE_PURPOSES = [
   'reschedule_outcome',
   'aftercare',
   'reapplication_reminder',
+  'payment_reminder',
 ] as const
 
 export type MessagePurpose = (typeof MESSAGE_PURPOSES)[number]
