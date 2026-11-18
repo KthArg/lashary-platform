@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { isErr, isOk } from '@/shared/result'
+import { isErr, isOk, ok } from '@/shared/result'
 import {
   createTechnique,
   updateTechnique,
   findPackagesAffectedByDeactivation,
   deactivateTechniqueCascade,
+  findPackagesAffectedByReactivation,
+  reactivateTechniqueCascade,
 } from '@/features/catalog/application/techniques/commands'
 import {
   isTechniqueAffectedPackagesChanged,
@@ -217,6 +219,67 @@ describe('deactivateTechniqueCascade', () => {
     const repo = createFakeTechniqueRepository()
     const packageRepo = createFakePackageRepository()
     const result = await deactivateTechniqueCascade({ repo, packageRepo })('nope', [])
+    expect(isErr(result) && isTechniqueNotFound(result.error)).toBe(true)
+  })
+})
+
+describe('findPackagesAffectedByReactivation', () => {
+  it('lista los paquetes que se reactivarían', async () => {
+    const repo = createFakeTechniqueRepository(
+      [makeTechnique({ id: 'd1', isActive: false })],
+      {},
+      { d1: [{ id: 'p1', name: 'Combo clásicas' }] },
+    )
+    const result = await findPackagesAffectedByReactivation({ repo })('d1')
+    expect(result).toEqual(ok([{ id: 'p1', name: 'Combo clásicas' }]))
+  })
+
+  it('devuelve TechniqueNotFound si la técnica no existe', async () => {
+    const result = await findPackagesAffectedByReactivation({ repo: createFakeTechniqueRepository() })('nope')
+    expect(isErr(result) && isTechniqueNotFound(result.error)).toBe(true)
+  })
+})
+
+describe('reactivateTechniqueCascade', () => {
+  it('sin paquetes confirmados, reactiva solo la técnica', async () => {
+    const repo = createFakeTechniqueRepository([makeTechnique({ id: 'd1', isActive: false })])
+    const result = await reactivateTechniqueCascade({ repo })('d1', [])
+    expect(isOk(result)).toBe(true)
+    if (!isOk(result)) return
+    expect(result.value.technique.isActive).toBe(true)
+    expect(result.value.reactivatedPackages).toEqual([])
+  })
+
+  it('con paquetes confirmados, reactiva la técnica y esos paquetes', async () => {
+    const candidates = [{ id: 'p1', name: 'Combo clásicas' }]
+    const repo = createFakeTechniqueRepository(
+      [makeTechnique({ id: 'd1', isActive: false })],
+      {},
+      { d1: candidates },
+    )
+    const result = await reactivateTechniqueCascade({ repo })('d1', candidates)
+    expect(isOk(result)).toBe(true)
+    if (!isOk(result)) return
+    expect(result.value.technique.isActive).toBe(true)
+    expect(result.value.reactivatedPackages).toEqual(candidates)
+  })
+
+  it('si la lista de paquetes a reactivar cambió, no toca nada y devuelve la lista fresca', async () => {
+    const repo = createFakeTechniqueRepository(
+      [makeTechnique({ id: 'd1', isActive: false })],
+      {},
+      { d1: [{ id: 'p2', name: 'Combo volumen' }] },
+    )
+    const result = await reactivateTechniqueCascade({ repo })('d1', [{ id: 'p1', name: 'Combo clásicas' }])
+    expect(isErr(result) && isTechniqueAffectedPackagesChanged(result.error)).toBe(true)
+    if (isErr(result) && isTechniqueAffectedPackagesChanged(result.error)) {
+      expect(result.error.affectedPackages).toEqual([{ id: 'p2', name: 'Combo volumen' }])
+    }
+    expect((await repo.findById('d1'))?.isActive).toBe(false)
+  })
+
+  it('devuelve TechniqueNotFound si la técnica no existe', async () => {
+    const result = await reactivateTechniqueCascade({ repo: createFakeTechniqueRepository() })('nope', [])
     expect(isErr(result) && isTechniqueNotFound(result.error)).toBe(true)
   })
 })

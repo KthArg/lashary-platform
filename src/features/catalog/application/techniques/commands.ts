@@ -151,3 +151,39 @@ export const deactivateTechniqueCascade =
     if (updated === null) return err(techniqueNotFound(id))
     return ok({ technique: techniqueToView(updated), deactivatedPackages: confirmedPackages })
   }
+
+export const findPackagesAffectedByReactivation =
+  (deps: Pick<CommandDeps, 'repo'>) =>
+  async (id: string): Promise<Result<AffectedPackage[], TechniqueNotFound>> => {
+    const existing = await deps.repo.findById(id)
+    if (existing === null) return err(techniqueNotFound(id))
+    return ok(await deps.repo.findReactivationCandidates(id))
+  }
+
+export type ReactivateTechniqueCascadeOutcome = {
+  technique: TechniqueView
+  reactivatedPackages: AffectedPackage[]
+}
+
+export const reactivateTechniqueCascade =
+  (deps: Pick<CommandDeps, 'repo'>) =>
+  async (
+    id: string,
+    confirmedPackages: AffectedPackage[],
+  ): Promise<
+    Result<ReactivateTechniqueCascadeOutcome, TechniqueNotFound | TechniqueAffectedPackagesChanged>
+  > => {
+    const existing = await deps.repo.findById(id)
+    if (existing === null) return err(techniqueNotFound(id))
+
+    const confirmedIds = confirmedPackages.map((affectedPackage) => affectedPackage.id)
+    const reactivated = await deps.repo.reactivateCascade(id, confirmedIds)
+    if (isErr(reactivated)) {
+      const fresh = await deps.repo.findReactivationCandidates(id)
+      return err(techniqueAffectedPackagesChanged(id, fresh))
+    }
+
+    const updated = await deps.repo.findById(id)
+    if (updated === null) return err(techniqueNotFound(id))
+    return ok({ technique: techniqueToView(updated), reactivatedPackages: confirmedPackages })
+  }
