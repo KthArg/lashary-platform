@@ -14,6 +14,7 @@ const CITAS_TABS = [
   { label: CITAS_SECTION.tabs.confirmation, href: CITAS_ROUTES.confirmation },
   { label: CITAS_SECTION.tabs.reschedule, href: CITAS_ROUTES.reschedule },
   { label: CITAS_SECTION.tabs.reapplication, href: CITAS_ROUTES.reapplication },
+  { label: CITAS_SECTION.tabs.paymentReminder, href: CITAS_ROUTES.paymentReminder },
 ]
 
 export function CitasTabs() {
