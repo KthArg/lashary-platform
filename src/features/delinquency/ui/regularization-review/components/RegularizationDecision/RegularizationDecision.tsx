@@ -2,7 +2,7 @@
 
 import { useActionState, useId } from 'react'
 import { formatMoney, moneyFromColones } from '@/shared/money'
-import { REJECTION_REASON_MAX_LENGTH } from '@/features/delinquency/domain/regularization'
+import { REJECTION_REASON_MAX_LENGTH, REJECTION_REASON_MIN_LENGTH } from '@/features/delinquency/domain/regularization'
 import { approveRegularizationAction, rejectRegularizationAction } from '../../actions/review-actions'
 import { decisionMessages as copy, REVIEW_FIELDS as FIELDS } from '../../constants/queue-strings'
 import type { ReviewActionResult } from '@/features/delinquency/ui/regularization-review/types/review-results'
@@ -72,6 +72,7 @@ export function RegularizationDecision({ requestId, declaredAmount, pendingToday
             id={`${id}-reason`}
             name={FIELDS.reason}
             required
+            minLength={REJECTION_REASON_MIN_LENGTH}
             maxLength={REJECTION_REASON_MAX_LENGTH}
             rows={2}
             className={STYLES.textarea}
