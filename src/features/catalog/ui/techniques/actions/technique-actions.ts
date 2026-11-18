@@ -9,6 +9,8 @@ import {
   updateTechnique,
   findPackagesAffectedByDeactivation,
   deactivateTechniqueCascade,
+  findPackagesAffectedByReactivation,
+  reactivateTechniqueCascade,
   type CommandDeps,
   type DeactivateDeps,
 } from '../../../application/techniques/commands'
@@ -92,6 +94,47 @@ export async function checkTechniqueDeactivationAction(id: string): Promise<Chec
   const result = await findPackagesAffectedByDeactivation(await deactivateDeps())(id)
   if (isErr(result)) return { status: 'notFound' }
   return { status: 'ok', affectedPackages: result.value }
+}
+
+export async function checkTechniqueReactivationAction(id: string): Promise<CheckTechniqueDeactivationResult> {
+  if (!(await isStaff())) return { status: 'forbidden' }
+
+  const result = await findPackagesAffectedByReactivation(await deactivateDeps())(id)
+  if (isErr(result)) return { status: 'notFound' }
+  return { status: 'ok', affectedPackages: result.value }
+}
+
+export async function reactivateTechniqueCascadeAction(
+  _prev: TechniqueActionState,
+  formData: FormData,
+): Promise<TechniqueActionState> {
+  if (!(await isStaff())) return forbidden()
+
+  const id = String(formData.get('id') ?? '')
+  const confirmedIds = formData.getAll('packageId').map(String)
+  const confirmedNames = formData.getAll('packageName').map(String)
+  const confirmedPackages: AffectedPackage[] = confirmedIds.map((packageId, index) => ({
+    id: packageId,
+    name: confirmedNames[index] ?? '',
+  }))
+
+  const result = await reactivateTechniqueCascade(await deactivateDeps())(id, confirmedPackages)
+  if (isErr(result)) {
+    if (isTechniqueAffectedPackagesChanged(result.error)) {
+      return { status: 'invalid', problems: [catalogMessages.form.affectedPackagesChanged] }
+    }
+    return { status: 'invalid', problems: [result.error.message] }
+  }
+
+  revalidatePath(catalogRoutes.admin)
+  const reactivatedNames = result.value.reactivatedPackages.map((affectedPackage) => affectedPackage.name)
+  return {
+    status: 'ok',
+    message:
+      reactivatedNames.length > 0
+        ? catalogMessages.form.reactivatedWithPackages(reactivatedNames)
+        : catalogMessages.form.reactivated,
+  }
 }
 
 export async function deactivateTechniqueCascadeAction(
