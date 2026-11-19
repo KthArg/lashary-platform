@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(9);
+SELECT plan(10);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -73,6 +73,17 @@ SELECT set_eq(
            ('00000000-0000-0000-0000-00000000cb42'::uuid),
            ('00000000-0000-0000-0000-00000000cb44'::uuid)$$,
   'el personal ve a todas las que tienen morosidad no descartada');
+
+SELECT set_eq(
+  $$SELECT client_id, state FROM public.delinquency_all_client_states()
+     WHERE client_id::text LIKE '00000000-0000-0000-0000-00000000cb4%'$$,
+  $$SELECT client_id, state FROM public.delinquency_client_states(ARRAY[
+      '00000000-0000-0000-0000-00000000cb41',
+      '00000000-0000-0000-0000-00000000cb42',
+      '00000000-0000-0000-0000-00000000cb43',
+      '00000000-0000-0000-0000-00000000cb44',
+      '00000000-0000-0000-0000-00000000cb45']::uuid[])$$,
+  'da el mismo estado por clienta que delinquency_client_states, la que dibuja la columna');
 
 RESET ROLE;
 SELECT set_config('request.jwt.claims',
