@@ -88,6 +88,6 @@ notifications_record_delinquency_review(
 
 pgTAP `supabase/tests/database/delinquency_booking_block.test.sql` (pieza de la base de datos de US-MOR-02): una `active` con saldo bloquea con el saldo de hoy y no con la foto, una `active` ya saldada no bloquea, `pending_review` y `dismissed` no bloquean, el orden de la más antigua primero, una clienta solo pregunta por sí misma, el personal por cualquiera, y `anon` no la ejecuta.
 
-pgTAP `supabase/tests/database/delinquency_all_client_states.test.sql` (US-CLI-01, pieza 1/5): `active` gana a `pending_review` en una sola fila por clienta, `dismissed` y la clienta sin morosidad no salen, el personal ve a todas, una clienta no ve ni la suya y `anon` no la ejecuta.
+pgTAP `supabase/tests/database/delinquency_all_client_states.test.sql` (US-CLI-01, pieza 1/5): `active` gana a `pending_review` en una sola fila por clienta, da el mismo estado por clienta que `delinquency_client_states`, `dismissed` y la clienta sin morosidad no salen, el personal ve a todas, una clienta no ve ni la suya y `anon` no la ejecuta.
 
 pgTAP `supabase/tests/database/delinquency_contract.test.sql` (pieza de la base de datos): `active` gana a `pending_review`, `dismissed` no sale, el tope de ids, el orden y la paginación del listado, y que una clienta o `anon` no vean nada.
