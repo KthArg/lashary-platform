@@ -33,7 +33,7 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
   })
   const hasAppointmentRangeFilter = Boolean(appointmentFrom || appointmentTo)
   const hasActiveFilters = Boolean(name || hasAppointmentRangeFilter || delinquencyFilter)
-  const isInvalidRange =!result.ok && result.reason === 'invalid-appointment-range'
+  const isInvalidRange = !result.ok && result.reason === 'invalid-appointment-range'
 
   return (
     <div className={STYLES.page}>
