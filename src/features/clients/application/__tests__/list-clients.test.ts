@@ -3,6 +3,7 @@ import { listClientsAction } from '../../ui/admin-clients/actions/client-actions
 import { CLIENTS_ERROR_MESSAGES, CLIENTS_LIST_LIMITS, DELINQUENCY_FILTER_VALUES } from '@/features/clients'
 
 let dbResult: { data: unknown; error: unknown; count: number | null }
+let statesResult: { data: unknown; error: unknown }
 const mockRpc = vi.fn()
 const mockOrder = vi.fn()
 const mockRange = vi.fn()
@@ -17,7 +18,7 @@ vi.mock('@/shared/lib/supabase/server', () => ({
     rpc: (...args: unknown[]) => {
       mockRpc(...args)
       // La morosidad es de otra feature y se pide aparte: aquí responde que nadie debe nada.
-      return args[0] === 'delinquency_client_states' ? Promise.resolve({ data: [], error: null }) : chain
+      return args[0] === 'delinquency_client_states' ? Promise.resolve(statesResult) : chain
     },
   })),
 }))
@@ -39,6 +40,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   mockRequireAdmin.mockResolvedValue({ role: 'admin' })
   dbResult = { data: [row], error: null, count: 31 }
+  statesResult = { data: [], error: null }
 })
 
 describe('listClientsAction', () => {
@@ -171,6 +173,17 @@ describe('listClientsAction', () => {
     })
     expect(mockRpc).not.toHaveBeenCalled()
     expect(result).toMatchObject({ ok: false, reason: 'invalid-appointment-range' })
+  })
+
+  it('criterio 4: con filtro de morosidad, si la morosidad no se puede leer es un fallo de lectura y no una lista con «Sin dato»', async () => {
+    statesResult = { data: null, error: { message: 'delinquency caida' } }
+    expect(await listClientsAction({ delinquency: DELINQUENCY_FILTER_VALUES[0] }))
+      .toEqual({ ok: false, reason: 'failed', error: CLIENTS_ERROR_MESSAGES.loadFailed })
+  })
+
+  it('criterio 4: sin filtro de morosidad, una morosidad caida no tumba el listado', async () => {
+    statesResult = { data: null, error: { message: 'delinquency caida' } }
+    expect(await listClientsAction({})).toMatchObject({ ok: true, delinquencyAvailable: false })
   })
 
   it('reporta el fallo de lectura en vez de devolver una lista vacia', async () => {

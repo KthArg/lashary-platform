@@ -22,6 +22,7 @@ export function ClientsList({
   filterError = null,
   activeNameFilter = null,
   hasAppointmentRangeFilter = false,
+  hasDelinquencyFilter = false,
 }: ClientsListProps) {
   const router = useRouter()
 
@@ -40,7 +41,7 @@ export function ClientsList({
   }, [])
 
   const emptyMessage = () => {
-    if (hasAppointmentRangeFilter) return CLIENTS_LABELS.clientsListEmptyForFilters
+    if (hasAppointmentRangeFilter || hasDelinquencyFilter) return CLIENTS_LABELS.clientsListEmptyForFilters
     if (activeNameFilter) return CLIENTS_LABELS.clientsListEmptyForFilter(activeNameFilter)
     return CLIENTS_LABELS.clientsListEmpty
   }

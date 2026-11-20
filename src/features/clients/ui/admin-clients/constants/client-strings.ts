@@ -1,4 +1,5 @@
 import { CLIENT_VALIDATION_MESSAGES } from '../../../domain/client-validation-messages'
+import type { DelinquencyFilter } from '../../../domain/list/delinquency-filter'
 
 export const CLIENTS_LABELS = {
   brand: 'LASHARY', sectionTitle: 'Gestión de Clientas', sectionSubtitle: 'Alta y edición manual del registro de clientas',
@@ -31,6 +32,14 @@ export const CLIENTS_APPOINTMENT_FILTER_TEXTS = {
   toLabel: 'Última cita hasta',
   submit: 'Filtrar',
   clear: 'Quitar fechas',
+} as const
+
+export const CLIENTS_DELINQUENCY_FILTER_TEXTS = {
+  formLabel: 'Filtrar por morosidad',
+  selectLabel: 'Estado de morosidad',
+  allOption: 'Todas',
+  options: { active: 'Activa', pending_review: 'Por revisar', none: 'Sin morosidad' } satisfies Record<DelinquencyFilter, string>,
+  submit: 'Filtrar morosidad',
 } as const
 
 export const CLIENTS_FILTER_TEXTS = {
@@ -90,4 +99,8 @@ export const CLIENT_PROFILE_LABELS = {
   recordTab: 'Expediente',
   appointmentsTab: 'Citas',
   delinquencyPrefix: 'Morosidad: ',
+} as const
+
+export const CLIENTS_CLEAR_FILTERS_TEXTS = {
+  link: 'Quitar todos los filtros',
 } as const

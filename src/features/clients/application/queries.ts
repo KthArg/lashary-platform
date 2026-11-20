@@ -51,6 +51,7 @@ export const listClients =
   async (query: ListClientsQuery = {}): Promise<Result<ClientsListPage, ListClientsError>> => {
     const appointmentRange = readAppointmentRange(query?.appointmentFrom, query?.appointmentTo)
     if (isErr(appointmentRange)) return appointmentRange
+    const delinquencyFilter = readDelinquencyFilter(query?.delinquency)
     const page = readPage(query?.page)
     const pageSize = readPageSize(query?.pageSize)
     const found = await repo.listPage({
@@ -59,7 +60,7 @@ export const listClients =
       name: readName(query?.name),
       appointmentFrom: appointmentRange.value.from,
       appointmentTo: appointmentRange.value.to,
-      delinquency: readDelinquencyFilter(query?.delinquency),
+      delinquency: delinquencyFilter,
     })
     if (isErr(found)) return err('failed')
 
@@ -67,6 +68,7 @@ export const listClients =
       ? await delinquency.statesFor(found.value.clients.map((client) => client.id))
       : null
     const available = states !== null && !isErr(states)
+    if (delinquencyFilter && !available) return err('failed')
     return ok({
       ...found.value,
       page,

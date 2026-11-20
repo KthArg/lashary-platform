@@ -10,4 +10,5 @@ export interface ClientsListProps {
   filterError?: string | null
   activeNameFilter?: string | null
   hasAppointmentRangeFilter?: boolean
+  hasDelinquencyFilter?: boolean
 }
