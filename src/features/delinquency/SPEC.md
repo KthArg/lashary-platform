@@ -15,7 +15,8 @@ historias:
   - id: US-MOR-04
     estado: no_iniciada
   - id: US-MOR-05
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "Pieza 1/N: contrato en payments-api.md y delinquency-api.md (payments_record_forgiveness_entry, delinquency_lift_case, delinquency_forgive_case, delinquency_list_active_cases, con saldo vivo vía payments_appointment_balances). Falta: migraciones, dominio/aplicación, UI de /admin/morosidades y pruebas de los 4 criterios"
 flags: []
 deuda:
   - que: "La morosidad no se cierra ni actualiza su monto cuando se paga: delinquency_cases.pending es una foto del saldo al detectar y ninguna función la vuelve a leer. Una clienta que paga después de confirmada la morosidad sigue figurando activa con el monto viejo hasta que alguien la descarte a mano"
@@ -369,3 +370,52 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - La validación de franja está copiada en las tres funciones de reserva (deuda en el SPEC de `scheduling`).
 - Varias personas atendiendo a la misma hora: el PO decidió terminar bien la base de un estudio de una persona y tratarlo
   después como historia o cambio posterior.
+
+## US-MOR-05: levantar o perdonar una morosidad manualmente
+
+Criterios del backlog:
+
+1. Puedo levantar el bloqueo de un cliente sin necesidad de registrar un pago.
+2. Puedo condonar total o parcialmente una morosidad indicando el motivo.
+3. Toda excepción queda registrada en la bitácora de auditoría con fecha, monto y motivo.
+4. Una excepción no borra el historial: la morosidad original permanece visible con su estado de condonada.
+
+Depende de US-MOR-01 (`terminada`), único prerrequisito en `docs/process/DEPENDENCIES.md`. Reglas: DOM-005
+(ledger append-only), DOM-006 (errores tipados, ADR-0008), DOM-011 (bitácora en la misma transacción), ARCH-005
+(cross-feature con `payments`), INT-003 (contrato primero), SEC-001/002 (RLS + aislamiento), PERF-002, UI-003.
+
+### Decisiones de diseño (2026-11-18, Kenny — PO)
+
+Auditoría del 2026-11-18 sobre la primera versión de esta historia (hallazgos A3 y A4): el diseño original validaba
+condonar contra el `pending` guardado al detectar (una foto), no contra lo que la cita debe hoy, y cerraba el caso con
+cualquier condonación —aunque fuera parcial—, perdiendo el resto sin aviso. Kenny decidió:
+
+- **Condonar valida contra el saldo vivo de la cita** (`payments_appointment_balances`, ya existe desde US-MOR-02), no
+  contra la foto de `delinquency_cases.pending`. Corrige A3: con pagos parciales de US-MOR-03 ya no se puede condonar más
+  de lo que realmente queda.
+- **Condonar parcialmente no cierra el caso.** La morosidad sigue `active` con lo condonado hasta ahora en
+  `exception_amount` (acumulado, se puede condonar más de una vez); solo pasa a `forgiven` cuando el saldo vivo llega a
+  cero, sola o combinada con pagos de US-MOR-03. Corrige A4: ya no se pierde silenciosamente el resto del saldo, ni la
+  regla depende del índice único que la pila de US-MOR-03 iba a cambiar.
+- Consecuencia: `forgiveness_credit` deja de ser único por cita en el ledger (una cita puede condonarse más de una vez
+  mientras siga debiendo); la protección que antes se apoyaba en un índice único ya no hace falta.
+
+### Coordinación de migraciones con otras pilas abiertas (2026-11-18)
+
+Las migraciones de esta historia (`payments_record_forgiveness_entry_fn`, `delinquency_lift_and_forgive_case_fn`)
+reescriben el mismo `CHECK` de `kind`/signo de `payments_ledger_entries` y el mismo `CHECK` de estado de
+`delinquency_cases` que la pila de US-MOR-03 (#902 a #924, Jose Lorenzo/MachineJALS), con listas distintas: la que se
+aplique última borra los valores de la otra. US-MOR-03 también acota el índice único `(appointment_id, kind)` a
+`charge`/`deposit_credit`. Para no chocar: las dos migraciones de esta historia usan fecha `20261120` (posterior a las
+7 migraciones de la pila de US-MOR-03, que termina en `20261118000001`, y a la de US-AGE-08, `20261116000000`, con la
+que solo coincidía el prefijo) y el `CHECK` de `kind` queda como la unión de ambas listas
+(`charge`, `deposit_credit`, `payment`, `forgiveness_credit`), asumiendo que la pila de US-MOR-03 aplica primero por
+número de versión. Si esa pila renombra sus migraciones más adelante, este supuesto hay que revisarlo.
+
+### Pieza 1 — contrato
+
+`docs/contracts/payments-api.md` (nueva función `payments_record_forgiveness_entry`, nuevo asiento
+`forgiveness_credit`, no único por cita) y `docs/contracts/delinquency-api.md` (estados nuevos `lifted`/`forgiven`,
+funciones `delinquency_lift_case`, `delinquency_forgive_case` y `delinquency_list_active_cases` —esta última con
+saldo vivo vía `payments_appointment_balances`, no la foto—), antes de cualquier migración (INT-003). Sin código
+todavía: la implementación sigue en las piezas siguientes.
