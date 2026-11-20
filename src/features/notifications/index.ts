@@ -21,6 +21,7 @@ import { delinquencyStatesGateway } from './db/delinquency-states-gateway'
 import { reapplicationReminderRepository } from './db/reapplication-reminder-repository'
 import { reapplicationSettingsRepository } from './db/reapplication-settings-repository'
 import { paymentReminderRepository } from './db/payment-reminder-repository'
+import { paymentReminderFailureRepository } from './db/payment-reminder-failure-repository'
 import { paymentReminderSettingsRepository } from './db/payment-reminder-settings-repository'
 import { delinquentClientsGateway } from './db/delinquent-clients-gateway'
 import { clientOwedAmountGateway } from './db/client-owed-amount-gateway'
@@ -232,6 +233,7 @@ export async function runPaymentReminderCycle(): Promise<Result<SendDuePaymentRe
     }
 
     const reminderLog = await paymentReminderRepository(db)
+    const failureLog = await paymentReminderFailureRepository(db)
     const discovered = await discoverDuePaymentReminders({
       listActiveClientIds: delinquentClientsGateway(db).listActiveClientIds,
       lastSentAt: reminderLog.lastSentAt,
@@ -243,6 +245,8 @@ export async function runPaymentReminderCycle(): Promise<Result<SendDuePaymentRe
 
     const sent = await sendDuePaymentReminders({
       recordSent: reminderLog.recordSent,
+      attemptsOn: failureLog.attemptsOn,
+      recordFailure: failureLog.recordFailure,
       getContact: buildGetContact(db),
       primaryChannel: metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env)),
       backupChannel: resendEmailChannel(readResendEmailConfigFromEnv(process.env)),
