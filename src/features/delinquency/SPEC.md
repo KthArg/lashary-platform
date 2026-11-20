@@ -428,3 +428,18 @@ US-MOR-03) y `payments_record_forgiveness_entry` (`20261120000000_payments_recor
 `payments_record_close_entries`. A diferencia del diseño original, `forgiveness_credit` **no** es único por
 cita (como `payment` de US-MOR-03): condonar parcial no cierra el caso (decisión de Kenny, ver arriba), así
 que puede condonarse más de una vez hasta saldar. pgTAP `payments_record_forgiveness_entry.test.sql`.
+
+### Pieza 3 — migración en `delinquency`
+
+`delinquency_cases` admite `lifted`/`forgiven` (CHECK ampliado) con `exception_reason`/`exception_amount`,
+que nunca tocan el `pending` original (criterio 4). `delinquency_lift_case` y `delinquency_forgive_case`
+(`20261120000001_delinquency_lift_and_forgive_case_fn.sql`, `SECURITY DEFINER`, solo admin, solo sobre
+`active`) escriben `decided_at`/`decided_by` y el evento en `audit_events` con fecha, monto y motivo
+(criterio 3, DOM-011); `delinquency_forgive_case` valida y descuenta contra el **saldo vivo**
+(`payments_appointment_balances`, A3) y deja el caso `active` si queda saldo (condonación parcial, A4) o
+`forgiven` si se satura — puede llamarse más de una vez sobre el mismo caso. `delinquency_list_active_cases`
+da el detalle por caso (saldo vivo + `exception_amount`) que `delinquency_list_active` (US-MOR-01) no tiene,
+al agregar por clienta y mostrar la foto.
+
+B4 corregido: la validación de motivo vacío usa `!~ '\S'` en vez de `btrim()`, que no detectaba un motivo de
+solo salto de línea o tabulador. Sin pgTAP todavía: pieza siguiente.
