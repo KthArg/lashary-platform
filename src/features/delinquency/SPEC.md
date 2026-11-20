@@ -16,7 +16,7 @@ historias:
     estado: no_iniciada
   - id: US-MOR-05
     estado: en_progreso
-    falta: "Pieza 10/N (última pieza de contenido): CaseExceptionActions cableado en ReviewBody, con las dos secciones de historial y el exceptionAmount en las activas; B3 de la auditoría de Kenny evaluado sin navegador (ver la pieza en este SPEC), no bloquea. Falta solo el cierre: rebasar us/US-MOR-05 sobre la punta de main, resolver los 4 documentos en conflicto (STATUS.md, delinquency-api.md, payments-api.md, este SPEC), tsc y vitest por pieza ya rebasada, y abrir el PR de cierre us/US-MOR-05 a main con la tabla criterio→prueba y estado terminada"
+    falta: "Pieza 10/N (última pieza de contenido): CaseExceptionActions cableado en ReviewBody, con las dos secciones de historial y el exceptionAmount en las activas; B3 de la auditoría de Kenny evaluado sin navegador (ver la pieza en este SPEC), no bloquea. Pieza 11/11: los CHECK de estado admiten settled (US-MOR-03). Falta solo el cierre: que US-MOR-03 entre a main antes, el commit de estado terminada en us/US-MOR-05 con la tabla criterio→prueba (EST-007) y las capturas INT-010"
 flags: []
 deuda:
   - que: "La morosidad no se cierra ni actualiza su monto cuando se paga: delinquency_cases.pending es una foto del saldo al detectar y ninguna función la vuelve a leer. Una clienta que paga después de confirmada la morosidad sigue figurando activa con el monto viejo hasta que alguien la descarte a mano"
@@ -564,3 +564,24 @@ tarjeta) — no bloquea el cierre de US-MOR-05 porque no es peor que lo que ya e
 Con esta pieza, los 4 criterios de aceptación de US-MOR-05 tienen UI además de SQL y pruebas de
 integración. `npx tsc --noEmit` sin errores en todo el repo; `npx vitest run src/features/delinquency`:
 126/126.
+
+### Pieza 11 — los CHECK de estado admiten `settled` (US-MOR-03)
+
+Hallazgo N1 de la reauditoría del 2026-11-20. `20261120000001` dejó `delinquency_cases_state_check`,
+`delinquency_cases_decision_matches_state` y las dos `delinquency_cases_exception_*_by_state` sin `settled`, el estado
+que pone `approve_regularization` de US-MOR-03 cuando el saldo de la cita llega a cero. Como esa migración se aplica
+después de las de US-MOR-03 por versión, aprobar una regularización que salda la cita habría fallado con violación de
+`CHECK`. `20261120000002_delinquency_cases_settled_constraints.sql` los redefine como la unión de las dos historias, y
+`settled` puede llevar `exception_reason` y `exception_amount`: una morosidad con condonación parcial previa que la
+clienta termina de pagar conserva lo condonado (criterio 4). Es forward-only y segura sin US-MOR-03 (`settled` no
+ocurre). pgTAP: `delinquency_cases_settled_constraints.test.sql` (condonar parcial, pago, `settled` con el monto
+conservado, estado inexistente rechazado); cuando US-MOR-03 esté en `main`, el UPDATE de la prueba ya fija
+`settled_at` si la columna existe.
+
+**Orden de merge (hallazgo N2):** US-MOR-03 debe entrar a `main` antes que US-MOR-05. `supabase-migrate` corre
+`db push --include-all`: si US-MOR-05 entrara primero, las migraciones de US-MOR-03 (fecha anterior) se aplicarían
+después y reescribirían estos `CHECK` y los del ledger sin `forgiveness_credit`, `lifted` ni `forgiven`.
+
+**Sigue abierto (no es de esta pieza):** una solicitud de regularización `pending_approval` queda sin salida si su
+morosidad se levanta o se condona, porque `approve_regularization` exige `active` (N3, a resolver con US-MOR-03);
+capturas INT-010 y el commit de cierre con el estado `terminada` (EST-007).

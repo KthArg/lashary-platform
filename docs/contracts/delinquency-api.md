@@ -15,6 +15,7 @@
 | `dismissed` | La administradora la descartó. No vuelve a generarse por la misma cita. |
 | `lifted` | La administradora levantó el bloqueo sin registrar pago (US-MOR-05, criterio 1). El saldo original no se toca: solo deja de contar como morosidad activa. |
 | `forgiven` | El saldo de la cita llegó a cero por condonación (US-MOR-05, criterio 2), sola o combinada con pagos de US-MOR-03. Terminal: no se vuelve a tocar. |
+| `settled` | El saldo de la cita llegó a cero por pagos aprobados (US-MOR-03). Puede conservar `exception_amount` si antes hubo una condonación parcial. Terminal. |
 
 `lifted` y `forgiven` solo se llega a ellos desde `active` (levantar o condonar una `pending_review` no tiene sentido: esa ya tiene su propio camino, confirmar o descartar). Ninguno de los dos borra la fila ni su `pending` original (criterio 4): la morosidad queda visible con su estado, y si se condonó, el monto condonado.
 
