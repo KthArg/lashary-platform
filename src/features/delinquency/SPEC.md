@@ -16,7 +16,7 @@ historias:
     estado: no_iniciada
   - id: US-MOR-05
     estado: en_progreso
-    falta: "Pieza 1/N: contrato en payments-api.md y delinquency-api.md (payments_record_forgiveness_entry, delinquency_lift_case, delinquency_forgive_case, delinquency_list_active_cases, con saldo vivo vía payments_appointment_balances). Falta: migraciones, dominio/aplicación, UI de /admin/morosidades y pruebas de los 4 criterios"
+    falta: "Pieza 8/N: liftCaseAction/forgiveCaseAction en review-actions.ts, con el hallazgo M2 de la auditoría de Kenny corregido (mensaje de error por campo, no genérico). Falta: componente de acciones (levantar/condonar) con el hallazgo B2 corregido (checkbox que se puede desmarcar), su cableado en ReviewBody con las dos secciones de historial, verificar B3 a mano en el navegador, y el cierre de la historia (SPEC con estado terminada, tabla criterio→prueba, PR us/US-MOR-05 a main)"
 flags: []
 deuda:
   - que: "La morosidad no se cierra ni actualiza su monto cuando se paga: delinquency_cases.pending es una foto del saldo al detectar y ninguna función la vuelve a leer. Una clienta que paga después de confirmada la morosidad sigue figurando activa con el monto viejo hasta que alguien la descarte a mano"
@@ -493,3 +493,22 @@ sigue visible, con su `pending` de siempre y lo condonado), leyendo con el `list
 (sin SQL nuevo). Pruebas: `application/__tests__/load-review.test.ts` reescrito y `ui/review/__tests__/
 review-view.test.tsx` agrega los campos que el tipo ya exige (vacíos); la pantalla todavía no los muestra.
 `npx tsc --noEmit` sin errores en todo el repo; `npx vitest run src/features/delinquency`: 101/101.
+
+### Pieza 8 — acciones del servidor
+
+`ui/review/validation/lift-case-schema.ts` y `forgive-case-schema.ts` (zod, DOM-007). `ui/review/actions/
+review-actions.ts` agrega `liftCaseAction`/`forgiveCaseAction`, mismo patrón que `decideCaseAction`
+(`requireAdminSession`, traduce los errores tipados de `CaseRepository.lift`/`forgive` a `REVIEW_ERRORS`,
+`revalidatePath`). Corrige el hallazgo M2 de la auditoría de Kenny (`message.txt`): cuando el zod-parse de
+`forgiveCaseAction` falla, se inspecciona `parsed.error.issues` por campo (`caseId` → `invalidInput`,
+`amount` → `invalidForgiveAmount`, si no → `invalidReason`) en vez de devolver siempre el mismo error sin
+importar cuál campo falló; `liftCaseAction` distingue `caseId` de `reason` con el mismo mecanismo.
+`ui/review/types/review-results.ts` agrega `LiftCaseActionResult`/`ForgiveCaseActionResult` (este último
+con `exceptionAmount` para que la UI pueda mostrar lo condonado hasta ahora sin otra consulta).
+`ui/review/constants/review-strings.ts` agrega `caseNotActive`, `invalidReason`, `invalidForgiveAmount`,
+`liftFailed`, `forgiveFailed` a `REVIEW_ERRORS`. Pruebas: `ui/review/__tests__/review-actions.test.ts`
+agrega `describe('liftCaseAction')` y `describe('forgiveCaseAction')`, con un caso dedicado a M2 (monto
+inválido y motivo inválido deben devolver mensajes distintos, no el mismo). Todavía sin botones ni
+formulario en la pantalla: la acción existe pero nada la llama — piezas siguientes (componente de
+acciones y su cableado en `ReviewBody`). `npx tsc --noEmit` sin errores en todo el repo; `npx vitest run
+src/features/delinquency`: 114/114.
