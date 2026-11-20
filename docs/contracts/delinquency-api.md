@@ -18,13 +18,19 @@ Regularizar y levantar o perdonar (US-MOR-03 y US-MOR-05) agregan sus propios es
 
 ## Funciones SQL
 
-Corren con los permisos de quien llama (`SECURITY INVOKER`): la RLS de las tablas de morosidad decide qué se ve y hoy solo staff las lee. Las dos primeras corren así; la de bloqueo es la excepción y se explica en su sección. Solo `authenticated` tiene `EXECUTE`.
+Corren con los permisos de quien llama (`SECURITY INVOKER`): la RLS de las tablas de morosidad decide qué se ve y hoy solo staff las lee. Las tres primeras corren así; la de bloqueo es la excepción y se explica en su sección. Solo `authenticated` tiene `EXECUTE`.
 
 ### `public.delinquency_client_states(p_client_ids uuid[]) => TABLE (client_id uuid, state text, pending bigint, since timestamptz)`
 
 El estado de morosidad más relevante de cada clienta pedida que tenga alguna: `active` gana a `pending_review`, y `dismissed` no se devuelve. `pending` es el saldo pendiente sumado de sus citas en esa morosidad y `since` es cuándo se generó. Una clienta sin morosidad, un id que no existe o una lista vacía no devuelven fila. Se pide con los ids de la página (PERF-002), no una llamada por clienta; más de 200 ids es un error.
 
 Quien la necesita: el listado y el expediente de `clients`, que hoy dibujan la columna de morosidad sin dato.
+
+### `public.delinquency_all_client_states() => TABLE (client_id uuid, state text)`
+
+El estado de morosidad de **todas** las clientas que tienen alguna no descartada, una fila por clienta y con la misma regla que `delinquency_client_states`: `active` gana a `pending_review` y `dismissed` no se devuelve. Una clienta sin morosidad no devuelve fila. No lleva saldo ni fecha, solo lo que hace falta para filtrar por estado; no recibe ids ni tiene tope porque no es para pintar una página, sino para que quien consume filtre antes de paginar (PERF-002).
+
+Quien la necesita: `clients_list` (US-CLI-01, pieza 2/5), para el filtro de morosidad del listado de clientas: lo aplica en la base, antes de paginar. Solo la llama cuando el filtro viene; sin filtro, el listado no depende de `delinquency`.
 
 ### `public.delinquency_list_active(p_limit integer, p_after_since timestamptz, p_after_client_id uuid) => TABLE (client_id uuid, pending bigint, since timestamptz)`
 
@@ -81,5 +87,7 @@ notifications_record_delinquency_review(
 ## Pruebas
 
 pgTAP `supabase/tests/database/delinquency_booking_block.test.sql` (pieza de la base de datos de US-MOR-02): una `active` con saldo bloquea con el saldo de hoy y no con la foto, una `active` ya saldada no bloquea, `pending_review` y `dismissed` no bloquean, el orden de la más antigua primero, una clienta solo pregunta por sí misma, el personal por cualquiera, y `anon` no la ejecuta.
+
+pgTAP `supabase/tests/database/delinquency_all_client_states.test.sql` (US-CLI-01, pieza 1/5): `active` gana a `pending_review` en una sola fila por clienta, da el mismo estado por clienta que `delinquency_client_states`, `dismissed` y la clienta sin morosidad no salen, el personal ve a todas, una clienta no ve ni la suya y `anon` no la ejecuta.
 
 pgTAP `supabase/tests/database/delinquency_contract.test.sql` (pieza de la base de datos): `active` gana a `pending_review`, `dismissed` no sale, el tope de ids, el orden y la paginación del listado, y que una clienta o `anon` no vean nada.
