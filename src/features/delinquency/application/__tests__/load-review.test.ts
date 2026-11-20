@@ -17,12 +17,15 @@ const toReview: DelinquencyCase = {
   state: 'pending_review',
   detectedAt: new Date('2026-11-01T15:00:00Z'),
   decidedAt: null,
+  exceptionReason: null,
+  exceptionAmount: null,
 }
 
 function deps(overrides: Partial<CaseListRepository> = {}, names?: ClientNamesPort) {
   const cases: CaseListRepository = {
     listByState: async () => ok([toReview]),
     listActiveClients: async () => ok([{ clientId: LUCIA, pending: 9000, since: new Date('2026-10-20T15:00:00Z') }]),
+    listActiveCases: async () => ok([]),
     ...overrides,
   }
   const namesPort: ClientNamesPort = names ?? {
