@@ -232,22 +232,25 @@ export async function runPaymentReminderCycle(): Promise<Result<SendDuePaymentRe
     }
 
     const reminderLog = await paymentReminderRepository(db)
-    const due = await discoverDuePaymentReminders({
+    const discovered = await discoverDuePaymentReminders({
       listActiveClientIds: delinquentClientsGateway(db).listActiveClientIds,
       lastSentAt: reminderLog.lastSentAt,
       owedBy: clientOwedAmountGateway(db).owedBy,
       frequencyDays: frequencyDays.value,
       now: systemClock(),
     })
-    if (isErr(due)) return due
+    if (isErr(discovered)) return discovered
 
-    return await sendDuePaymentReminders({
+    const sent = await sendDuePaymentReminders({
       recordSent: reminderLog.recordSent,
       getContact: buildGetContact(db),
       primaryChannel: metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env)),
       backupChannel: resendEmailChannel(readResendEmailConfigFromEnv(process.env)),
       clock: systemClock,
-    })(due.value)
+    })(discovered.value.due)
+    if (isErr(sent)) return sent
+
+    return ok({ ...sent.value, errored: sent.value.errored + discovered.value.errored })
   } finally {
     await closeSystemClient(db)
   }
