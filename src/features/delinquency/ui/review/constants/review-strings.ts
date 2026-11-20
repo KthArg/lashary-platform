@@ -7,6 +7,11 @@ export const REVIEW_ERRORS = {
   saveFailed: 'No se pudo guardar la decisión. Inténtelo nuevamente.',
   invalidGraceDays: 'Ingrese un número entero de 1 a 90.',
   graceSaveFailed: 'No se pudo guardar el periodo de gracia. Inténtelo nuevamente.',
+  caseNotActive: 'Esa morosidad ya no está activa. Recargue la página para ver su estado.',
+  invalidReason: 'Escriba el motivo (máximo 500 caracteres).',
+  invalidForgiveAmount: 'Ingrese un monto mayor que cero y que no sea mayor al saldo pendiente de la cita.',
+  liftFailed: 'No se pudo levantar el bloqueo. Inténtelo nuevamente.',
+  forgiveFailed: 'No se pudo condonar el monto. Inténtelo nuevamente.',
 } as const
 
 export const reviewMessages = {
