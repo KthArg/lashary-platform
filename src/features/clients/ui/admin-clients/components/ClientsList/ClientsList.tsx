@@ -77,9 +77,9 @@ export function ClientsList({
                 <td className={STYLES.contactCell}>{client.phone}</td>
                 <td className={STYLES.contactCell}>{client.email}</td>
                 <td className={delinquencyAvailable ? STYLES.contactCell : STYLES.pendingCell}>{delinquencyText(client.id)}</td>
-                {client.lastVisitAtMs === null
+                {client.lastAppointmentAtMs === null
                   ? <td className={STYLES.pendingCell}>{CLIENTS_TABLE_TEXTS.neverVisited}</td>
-                  : <td className={STYLES.contactCell}>{formatVisitDate(client.lastVisitAtMs)}</td>}
+                  : <td className={STYLES.contactCell}>{formatVisitDate(client.lastAppointmentAtMs)}</td>}
                 <td className={STYLES.actionsCell}>
                   <Link href={clientRecordPath(client.id)} className={STYLES.recordLink}
                     aria-label={CLIENTS_ARIA_LABELS.openRecord(client.fullName)}>

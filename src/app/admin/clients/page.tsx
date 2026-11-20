@@ -24,8 +24,8 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
     page,
     pageSize,
     name: name || undefined,
-    visitFrom: visitFrom || undefined,
-    visitTo: visitTo || undefined,
+    appointmentFrom: visitFrom || undefined,
+    appointmentTo: visitTo || undefined,
   })
   const isInvalidRange = !result.ok && result.reason === 'invalid-visit-range'
 
