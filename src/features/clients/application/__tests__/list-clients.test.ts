@@ -131,7 +131,7 @@ describe('listClientsAction', () => {
   it('criterio 2: un rango al reves no consulta la base y lo dice', async () => {
     const result = await listClientsAction({ appointmentFrom: '2026-06-30', appointmentTo: '2026-04-01' })
     expect(mockRpc).not.toHaveBeenCalled()
-    expect(result).toEqual({ ok: false, reason: 'invalid-visit-range', error: CLIENTS_ERROR_MESSAGES.invertedVisitRange })
+    expect(result).toEqual({ ok: false, reason: 'invalid-appointment-range', error: CLIENTS_ERROR_MESSAGES.invertedAppointmentRange })
   })
 
   it('el filtro de morosidad pasa a la consulta con cada uno de sus valores', async () => {
@@ -170,7 +170,7 @@ describe('listClientsAction', () => {
       appointmentFrom: '2026-06-30', appointmentTo: '2026-04-01', delinquency: DELINQUENCY_FILTER_VALUES[1],
     })
     expect(mockRpc).not.toHaveBeenCalled()
-    expect(result).toMatchObject({ ok: false, reason: 'invalid-visit-range' })
+    expect(result).toMatchObject({ ok: false, reason: 'invalid-appointment-range' })
   })
 
   it('reporta el fallo de lectura en vez de devolver una lista vacia', async () => {

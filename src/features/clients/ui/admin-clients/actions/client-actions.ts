@@ -60,7 +60,7 @@ export async function listClientsAction(query: ListClientsQuery = {}): Promise<L
   await requireAdminSession()
   const result = await listClients(await clientRepository(), delinquencyStatesGateway(await createClient()))(query)
   if (isErr(result) && result.error === 'inverted-appointment-range') {
-    return { ok: false, reason: 'invalid-visit-range', error: CLIENTS_ERROR_MESSAGES.invertedVisitRange }
+    return { ok: false, reason: 'invalid-appointment-range', error: CLIENTS_ERROR_MESSAGES.invertedAppointmentRange }
   }
   if (isErr(result)) return { ok: false, reason: 'failed', error: CLIENTS_ERROR_MESSAGES.loadFailed }
   return { ok: true, ...result.value }

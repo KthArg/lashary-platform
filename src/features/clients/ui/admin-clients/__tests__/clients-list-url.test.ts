@@ -37,18 +37,18 @@ describe('buildClientsListUrl', () => {
       .toBe(`${PATH}?name=ana&page=2&pageSize=10`)
   })
 
-  it('escribe el rango de ultima visita y conserva el nombre', () => {
-    expect(buildClientsListUrl(PATH, 'name=ana&page=2', { visitFrom: '2026-04-01', visitTo: '2026-06-30', page: null }))
-      .toBe(`${PATH}?name=ana&visitFrom=2026-04-01&visitTo=2026-06-30`)
+  it('escribe el rango de ultima cita y conserva el nombre', () => {
+    expect(buildClientsListUrl(PATH, 'name=ana&page=2', { appointmentFrom: '2026-04-01', appointmentTo: '2026-06-30', page: null }))
+      .toBe(`${PATH}?name=ana&appointmentFrom=2026-04-01&appointmentTo=2026-06-30`)
   })
 
   it('un extremo vacio o nulo del rango lo quita de la consulta', () => {
-    expect(buildClientsListUrl(PATH, 'visitFrom=2026-04-01&visitTo=2026-06-30', { visitFrom: '', visitTo: null }))
+    expect(buildClientsListUrl(PATH, 'appointmentFrom=2026-04-01&appointmentTo=2026-06-30', { appointmentFrom: '', appointmentTo: null }))
       .toBe(PATH)
   })
 
   it('cambiar el nombre conserva el rango', () => {
-    expect(buildClientsListUrl(PATH, 'visitFrom=2026-04-01', { name: 'bea', page: null }))
-      .toBe(`${PATH}?visitFrom=2026-04-01&name=bea`)
+    expect(buildClientsListUrl(PATH, 'appointmentFrom=2026-04-01', { name: 'bea', page: null }))
+      .toBe(`${PATH}?appointmentFrom=2026-04-01&name=bea`)
   })
 })

@@ -13,7 +13,7 @@ export type ListClientsResult =
       delinquency: Record<string, ClientDelinquency>
       delinquencyAvailable: boolean
     }
-  | { ok: false; reason: 'invalid-visit-range' | 'failed'; error: string }
+  | { ok: false; reason: 'invalid-appointment-range' | 'failed'; error: string }
 
 export type GetClientResult =
   | { ok: true; client: ClientRecord; delinquencyLabel: string | null }

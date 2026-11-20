@@ -1,6 +1,6 @@
 import { readAppointmentDate } from '../../domain/list/appointment-range'
 
-type ClientsListParamName = 'page' | 'pageSize' | 'name' | 'visitFrom' | 'visitTo'
+type ClientsListParamName = 'page' | 'pageSize' | 'name' | 'appointmentFrom' | 'appointmentTo'
 
 export type ClientsListSearchParams = Partial<Record<ClientsListParamName, string | string[]>>
 
@@ -8,8 +8,8 @@ export interface ClientsListParams {
   page: number | undefined
   pageSize: number | undefined
   name: string
-  visitFrom: string
-  visitTo: string
+  appointmentFrom: string
+  appointmentTo: string
 }
 
 const firstValue = (value: string | string[] | undefined): string | undefined =>
@@ -26,7 +26,7 @@ export function readClientsListParams(params: ClientsListSearchParams): ClientsL
     page: readNumber(firstValue(params.page)),
     pageSize: readNumber(firstValue(params.pageSize)),
     name: firstValue(params.name)?.trim() ?? '',
-    visitFrom: readAppointmentDate(firstValue(params.visitFrom)) ?? '',
-    visitTo: readAppointmentDate(firstValue(params.visitTo)) ?? '',
+    appointmentFrom: readAppointmentDate(firstValue(params.appointmentFrom)) ?? '',
+    appointmentTo: readAppointmentDate(firstValue(params.appointmentTo)) ?? '',
   }
 }
