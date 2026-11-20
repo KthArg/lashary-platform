@@ -841,6 +841,8 @@ marcar `terminada` sin ese enlace, y el traslado no se registra en DEPENDENCIES 
 
 - **Un error de saldo no frena a las demás (pieza 13, auditoría M1):** `discoverDuePaymentReminders` devuelve `{ due, errored }`: si pedir el saldo de una clienta falla, lo registra con `logError`, la cuenta en `errored` y sigue con las siguientes; `runPaymentReminderCycle` suma esos errores al `errored` del resumen. Antes un solo fallo detenía el descubrimiento de todas las que venían detrás, en cada corrida.
 
+- **Fallos del recordatorio (pieza 14, auditoría M2):** tabla `notifications_payment_reminder_failures`, una fila por clienta (`attempt_day`, `attempts`, `last_error` de hasta 501 caracteres: los 500 de `sanitizeProviderError` más el «…» de truncado, `last_failed_at`), migración `20261119000003`. Es la base del tope de intentos por clienta y día y del registro del error del canal; el código que la usa llega en la pieza 15. Staff lee, escribe y borra (el cron entra como staff, SEC-003); la clienta y anon, nada. pgTAP `notifications_payment_reminder_failures.test.sql`. Con ella la pila de US-NOT-04 trae 4 migraciones: `20261119000000` a `20261119000003`.
+
 ### Decisiones propuestas, sin aprobar
 
 - **Frecuencia:** cada cuántos días se repite el recordatorio mientras haya saldo, de 1 a 30 y 7 por defecto, el mismo
