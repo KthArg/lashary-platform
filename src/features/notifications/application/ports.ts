@@ -49,6 +49,20 @@ export interface DelinquencyStatesPort {
   statesFor(clientIds: readonly string[]): Promise<Result<ReadonlyMap<string, DelinquencyState>, RepositoryFailure>>
 }
 
+export type DuePaymentReminder = { clientId: string; amountOwed: number }
+
+export interface DelinquentClientsPort {
+  listActiveClientIds(): Promise<Result<string[], RepositoryFailure>>
+}
+
+export interface ClientOwedAmountPort {
+  owedBy(clientId: string): Promise<Result<number, RepositoryFailure>>
+}
+
+export interface PaymentReminderLogPort {
+  lastSentAt(clientIds: readonly string[]): Promise<Result<ReadonlyMap<string, Date>, RepositoryFailure>>
+}
+
 export type DueReapplicationReminder = {
   clientId: string
   techniqueId: string
