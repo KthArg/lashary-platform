@@ -419,3 +419,12 @@ número de versión. Si esa pila renombra sus migraciones más adelante, este su
 funciones `delinquency_lift_case`, `delinquency_forgive_case` y `delinquency_list_active_cases` —esta última con
 saldo vivo vía `payments_appointment_balances`, no la foto—), antes de cualquier migración (INT-003). Sin código
 todavía: la implementación sigue en las piezas siguientes.
+
+### Pieza 2 — migración en `payments`
+
+Nuevo asiento `forgiveness_credit` en `payments_ledger_entries` (CHECK ampliado como la unión con lo que deja
+US-MOR-03) y `payments_record_forgiveness_entry` (`20261120000000_payments_record_forgiveness_entry_fn.sql`),
+`SECURITY INVOKER` con `EXECUTE` revocado de `authenticated` y `anon` — mismo patrón que
+`payments_record_close_entries`. A diferencia del diseño original, `forgiveness_credit` **no** es único por
+cita (como `payment` de US-MOR-03): condonar parcial no cierra el caso (decisión de Kenny, ver arriba), así
+que puede condonarse más de una vez hasta saldar. pgTAP `payments_record_forgiveness_entry.test.sql`.
