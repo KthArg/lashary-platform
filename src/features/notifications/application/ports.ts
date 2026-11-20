@@ -68,6 +68,13 @@ export interface PaymentReminderSettingsPort {
   setFrequencyDays(days: number): Promise<Result<number, ChangeFrequencyDaysFailure>>
 }
 
+export type PaymentReminderFailureInput = { clientId: string; day: string; error: string; failedAt: Date }
+
+export interface PaymentReminderFailurePort {
+  attemptsOn(clientIds: readonly string[], day: string): Promise<Result<ReadonlyMap<string, number>, RepositoryFailure>>
+  recordFailure(input: PaymentReminderFailureInput): Promise<Result<void, RepositoryFailure>>
+}
+
 export interface PaymentReminderLogPort {
   lastSentAt(clientIds: readonly string[]): Promise<Result<ReadonlyMap<string, Date>, RepositoryFailure>>
   recordSent(input: PaymentReminderSentInput): Promise<Result<void, RepositoryFailure>>

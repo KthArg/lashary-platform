@@ -5,7 +5,15 @@ import { formatMoney, moneyFromColones } from '@/shared/money'
 import { sendDuePaymentReminders, type SendDuePaymentRemindersDeps } from '../send-due-payment-reminders'
 import { channelNotConfigured, channelSendFailed } from '../../domain/errors'
 import { paymentReminderKey } from '../../domain/payment-reminder'
-import type { ChannelSendInput, ContactInfo, DuePaymentReminder, NotificationChannel, PaymentReminderSentInput } from '../ports'
+import { MAX_REMINDER_ATTEMPTS } from '../../domain/reminder'
+import type {
+  ChannelSendInput,
+  ContactInfo,
+  DuePaymentReminder,
+  NotificationChannel,
+  PaymentReminderFailureInput,
+  PaymentReminderSentInput,
+} from '../ports'
 
 const CONTACT: ContactInfo = { phone: '+50688887777', email: 'clienta@example.com' }
 const NOW_ISO = '2026-11-17T12:00:00Z'
@@ -31,15 +39,28 @@ function buildDeps(options: {
   hasContact?: boolean
   contactReadFails?: boolean
   recordFails?: boolean
+  attemptsToday?: number
+  attemptsReadFails?: boolean
+  failureRecordFails?: boolean
   primary?: ChannelOutcome
   backup?: ChannelOutcome
 } = {}) {
   const recorded: PaymentReminderSentInput[] = []
+  const failures: PaymentReminderFailureInput[] = []
   const primaryReceived: ChannelSendInput[] = []
   const deps: SendDuePaymentRemindersDeps = {
     recordSent: async (input) => {
       if (options.recordFails) return err('repository-failed' as const)
       recorded.push(input)
+      return ok(undefined)
+    },
+    attemptsOn: async (clientIds) => {
+      if (options.attemptsReadFails) return err('repository-failed' as const)
+      return ok(new Map(clientIds.map((clientId) => [clientId, options.attemptsToday ?? 0])))
+    },
+    recordFailure: async (input) => {
+      if (options.failureRecordFails) return err('repository-failed' as const)
+      failures.push(input)
       return ok(undefined)
     },
     getContact: async () => {
@@ -50,7 +71,7 @@ function buildDeps(options: {
     backupChannel: fakeChannel('email', options.backup ?? 'ok'),
     clock: fixedClock(NOW_ISO),
   }
-  return { deps, recorded, primaryReceived }
+  return { deps, recorded, failures, primaryReceived }
 }
 
 describe('sendDuePaymentReminders', () => {
@@ -59,7 +80,7 @@ describe('sendDuePaymentReminders', () => {
 
     const result = await sendDuePaymentReminders(deps)([])
 
-    expect(isOk(result) && result.value).toEqual({ sent: 0, skipped: 0, failed: 0, errored: 0 })
+    expect(isOk(result) && result.value).toEqual({ sent: 0, skipped: 0, failed: 0, exhausted: 0, errored: 0 })
     expect(recorded).toEqual([])
   })
 
@@ -98,8 +119,61 @@ describe('sendDuePaymentReminders', () => {
 
     const result = await sendDuePaymentReminders(deps)([due])
 
-    expect(isOk(result) && result.value).toEqual({ sent: 0, skipped: 0, failed: 1, errored: 0 })
+    expect(isOk(result) && result.value).toEqual({ sent: 0, skipped: 0, failed: 1, exhausted: 0, errored: 0 })
     expect(recorded).toEqual([])
+  })
+
+  it('si fallan los dos canales deja el fallo registrado con el error de cada canal', async () => {
+    const { deps, failures } = buildDeps({ primary: 'send-failed', backup: 'send-failed' })
+
+    await sendDuePaymentReminders(deps)([due])
+
+    expect(failures).toEqual([{ clientId: 'client-1', day: '2026-11-17', error: 'envío falló por whatsapp: fallo simulado; envío falló por email: fallo simulado', failedAt: NOW }])
+  })
+
+  it('el error registrado no lleva el teléfono de la clienta', async () => {
+    const { deps, failures } = buildDeps({ primary: 'send-failed', backup: 'not-configured' })
+    const leakyChannel: NotificationChannel = { kind: 'whatsapp', send: async () => err(channelSendFailed('whatsapp', 'rechazó +50688887777')) }
+
+    await sendDuePaymentReminders({ ...deps, primaryChannel: leakyChannel })([due])
+
+    expect(failures[0]?.error).not.toContain('50688887777')
+  })
+
+  it('con el tope de intentos de hoy alcanzado no vuelve a intentar y lo cuenta como agotado', async () => {
+    const { deps, recorded, failures, primaryReceived } = buildDeps({ attemptsToday: MAX_REMINDER_ATTEMPTS })
+
+    const result = await sendDuePaymentReminders(deps)([due])
+
+    expect(isOk(result) && result.value.exhausted).toBe(1)
+    expect(primaryReceived).toEqual([])
+    expect(recorded).toEqual([])
+    expect(failures).toEqual([])
+  })
+
+  it('con un intento menos que el tope todavía intenta', async () => {
+    const { deps } = buildDeps({ attemptsToday: MAX_REMINDER_ATTEMPTS - 1 })
+
+    const result = await sendDuePaymentReminders(deps)([due])
+
+    expect(isOk(result) && result.value.sent).toBe(1)
+  })
+
+  it('si no se pueden leer los intentos de hoy, devuelve el fallo y no manda nada', async () => {
+    const { deps, primaryReceived } = buildDeps({ attemptsReadFails: true })
+
+    const result = await sendDuePaymentReminders(deps)([due])
+
+    expect(isOk(result)).toBe(false)
+    expect(primaryReceived).toEqual([])
+  })
+
+  it('si falla el envío y tampoco se puede registrar el fallo, lo cuenta como error', async () => {
+    const { deps } = buildDeps({ primary: 'send-failed', backup: 'send-failed', failureRecordFails: true })
+
+    const result = await sendDuePaymentReminders(deps)([due])
+
+    expect(isOk(result) && result.value.errored).toBe(1)
   })
 
   it('con los dos canales sin configurar la omite sin registrar nada', async () => {
@@ -133,6 +207,6 @@ describe('sendDuePaymentReminders', () => {
 
     const result = await sendDuePaymentReminders(deps)([due])
 
-    expect(isOk(result) && result.value).toEqual({ sent: 0, skipped: 0, failed: 0, errored: 1 })
+    expect(isOk(result) && result.value).toEqual({ sent: 0, skipped: 0, failed: 0, exhausted: 0, errored: 1 })
   })
 })

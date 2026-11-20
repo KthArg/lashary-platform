@@ -49,7 +49,7 @@ vi.mock('../application/send-due-payment-reminders', () => ({
 const FAKE_DB = { fake: 'client' }
 const FREQUENCY_DAYS = 14
 const DUE_REMINDERS = [{ clientId: 'client-1', amountOwed: 18000 }]
-const SEND_SUMMARY = { sent: 1, skipped: 0, failed: 0, errored: 0 }
+const SEND_SUMMARY = { sent: 1, skipped: 0, failed: 0, exhausted: 0, errored: 0 }
 
 beforeEach(() => {
   vi.clearAllMocks()
