@@ -9,6 +9,7 @@ export const CITAS_SECTION = {
     confirmation: 'Confirmación',
     reschedule: 'Reagendados',
     reapplication: 'Re-aplicación',
+    paymentReminder: 'Recordatorio de pago',
   },
 } as const
 
@@ -21,4 +22,5 @@ export const CITAS_ROUTES = {
   confirmation: '/admin/citas/confirmacion',
   reschedule: '/admin/citas/reagendados',
   reapplication: '/admin/citas/re-aplicacion',
+  paymentReminder: '/admin/citas/recordatorio-pago',
 } as const
