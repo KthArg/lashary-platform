@@ -16,7 +16,7 @@ historias:
     estado: no_iniciada
   - id: US-MOR-05
     estado: en_progreso
-    falta: "Pieza 9/N: componente CaseExceptionActions (levantar/condonar), con el hallazgo B2 de la auditoría de Kenny corregido (checkbox que se puede desmarcar). Sin cablear todavía. Falta: cableado en ReviewBody con las dos secciones de historial y el exceptionAmount en las activas, verificar B3 a mano en el navegador, y el cierre de la historia (SPEC con estado terminada, tabla criterio→prueba, PR us/US-MOR-05 a main)"
+    falta: "Pieza 10/N (última pieza de contenido): CaseExceptionActions cableado en ReviewBody, con las dos secciones de historial y el exceptionAmount en las activas; B3 de la auditoría de Kenny evaluado sin navegador (ver la pieza en este SPEC), no bloquea. Falta solo el cierre: rebasar us/US-MOR-05 sobre la punta de main, resolver los 4 documentos en conflicto (STATUS.md, delinquency-api.md, payments-api.md, este SPEC), tsc y vitest por pieza ya rebasada, y abrir el PR de cierre us/US-MOR-05 a main con la tabla criterio→prueba y estado terminada"
 flags: []
 deuda:
   - que: "La morosidad no se cierra ni actualiza su monto cuando se paga: delinquency_cases.pending es una foto del saldo al detectar y ninguna función la vuelve a leer. Una clienta que paga después de confirmada la morosidad sigue figurando activa con el monto viejo hasta que alguien la descarte a mano"
@@ -527,3 +527,40 @@ condonar el saldo completo la cierra. Sin prueba propia: como `CaseDecisionButto
 se prueba en integración dentro de `review-view.test.tsx` cuando se cablee en `ReviewBody` (pieza
 siguiente) — todavía no tiene quien lo monte. `npx tsc --noEmit` sin errores en todo el repo; `npx
 vitest run src/features/delinquency`: 114/114 (sin cambios: el componente no se usa aún).
+
+### Pieza 10 — `CaseExceptionActions` en `ReviewBody` y las dos secciones de historial
+
+`ui/review/components/ReviewBody/ReviewBody.tsx`: cada fila de «Morosidades activas» monta
+`<CaseExceptionActions caseId={item.caseId} pending={item.pending} />` y, si `exceptionAmount` no es
+nulo, muestra «Ya condonado: X» (criterio 2, condonación parcial visible). De paso, la llave de esa
+lista pasa de `item.clientId` a `item.caseId`: desde la pieza 6 `ActiveItem` es por caso, no por
+clienta, y con la llave vieja dos casos activos de la misma clienta habrían colapsado en uno solo en
+React — no había prueba que lo cubriera porque `ready` en `review-view.test.tsx` solo tenía una
+clienta con un caso. Dos secciones nuevas, «Bloqueos levantados» y «Morosidades condonadas»
+(criterio 4: la morosidad original sigue visible con su `pending` de siempre, el motivo y lo
+condonado), leyendo `ReviewView.lifted`/`forgiven` que ya traía la pieza 7. `reviewMessages` crece con
+`lifted`, `forgiven`, `decidedLabel`, y en `exception`: `alreadyForgivenLabel`, `forgivenAmountLabel`.
+Pruebas nuevas en `ui/review/__tests__/review-view.test.tsx`: `describe('CaseExceptionActions')`
+(formulario presente, botones deshabilitados sin motivo, el checkbox fija y desmarca el monto —
+contraprueba de B2 ya corregido en la pieza 9 —, levantar y condonar llaman la acción con el `caseId`
+correcto, condonar parcial avisa que sigue activa y condonar completo avisa que cerró, un error se
+muestra junto al caso, y el `exceptionAmount` ya condonado se ve en la tarjeta activa) y
+`describe('historial de excepciones')` (ambas secciones listan motivo/monto/fecha, estado vacío,
+aviso de «hay más»). 126/126.
+
+**B3 de la auditoría de Kenny, evaluado sin navegador (no se montó un servidor local completo para
+esta pieza):** «el aviso de éxito probablemente no se ve, `revalidatePath` saca el caso de la lista y
+desmonta el componente» (sospecha del propio auditor, severidad Baja). Análisis: en una condonación
+*parcial* el caso sigue en `active` con el mismo `caseId`, que es la `key` de su `<li>`; React no
+desmonta ese nodo al revalidar, así que `FeedbackMessage` sigue en pantalla. En una condonación
+*completa* o al levantar, el caso sale de `active` (pasa a `forgiven`/`lifted`) y la tarjeta —con su
+aviso— se desmonta al revalidar: el mismo patrón que ya tiene `CaseDecisionButtons` desde US-MOR-01
+(`terminada`) al confirmar o descartar, donde la fila también sale de «Por revisar» y su aviso
+desaparece con ella. No es un defecto nuevo de esta historia: es el comportamiento ya aceptado del
+patrón que toda la pantalla comparte. Sigue como deuda si alguna vez se decide que el aviso de un
+cierre deba sobrevivir a la revalidación (por ejemplo, con un mensaje a nivel de página en vez de por
+tarjeta) — no bloquea el cierre de US-MOR-05 porque no es peor que lo que ya está en producción.
+
+Con esta pieza, los 4 criterios de aceptación de US-MOR-05 tienen UI además de SQL y pruebas de
+integración. `npx tsc --noEmit` sin errores en todo el repo; `npx vitest run src/features/delinquency`:
+126/126.
