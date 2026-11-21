@@ -11,7 +11,7 @@
 -- Correr con: npx supabase test db   (requiere `supabase start`)
 
 BEGIN;
-SELECT plan(35);
+SELECT plan(34);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -191,42 +191,25 @@ SELECT is(
   (SELECT state FROM public.delinquency_forgive_case('00000000-0000-0000-0000-0000000d0005', 4000, 'motivo')),
   'forgiven', 'A3: condonar exactamente el saldo vivo (4000, no los 100000 de la foto) satura y cierra');
 
--- ── N1: condona parcial, paga el resto con una regularización de US-MOR-03, queda settled ────────
--- Antes de la pieza 3, los CHECK sin rama para 'settled' hacían morir delinquency_approve_regularization.
+-- ── N1: condona parcial, paga el resto vía regularización de US-MOR-03, queda settled ───────────
 RESET ROLE;
-SELECT public.payments_record_close_entries(
-  '00000000-0000-0000-0000-00000000ca01', '00000000-0000-0000-0000-00000000b0a6', 10000, 0);
+SELECT public.payments_record_close_entries('00000000-0000-0000-0000-00000000ca01', '00000000-0000-0000-0000-00000000b0a6', 10000, 0);
 INSERT INTO public.delinquency_cases (id, client_id, appointment_id, pending, state, decided_at, decided_by)
-VALUES ('00000000-0000-0000-0000-0000000d0006', '00000000-0000-0000-0000-00000000ca01',
-   '00000000-0000-0000-0000-00000000b0a6', 10000, 'active', now(), '00000000-0000-0000-0000-0000000000a1');
-INSERT INTO storage.objects (bucket_id, name)
-VALUES ('delinquency-receipts', '00000000-0000-0000-0000-00000000ca01/n1-receipt.jpg');
+VALUES ('00000000-0000-0000-0000-0000000d0006', '00000000-0000-0000-0000-00000000ca01', '00000000-0000-0000-0000-00000000b0a6', 10000, 'active', now(), '00000000-0000-0000-0000-0000000000a1');
+INSERT INTO storage.objects (bucket_id, name) VALUES ('delinquency-receipts', '00000000-0000-0000-0000-00000000ca01/n1-receipt.jpg');
 SET LOCAL ROLE authenticated;
-SELECT public.delinquency_forgive_case(
-  '00000000-0000-0000-0000-0000000d0006', 6000, 'condonación parcial antes de saldar');
-
-SELECT set_config('request.jwt.claims',
-  '{"sub":"00000000-0000-0000-0000-0000000000a2","role":"authenticated"}', true);
-CREATE TEMP TABLE n1_request AS
-  SELECT public.delinquency_submit_regularization(
-    '00000000-0000-0000-0000-0000000d0006', 4000, 'pago del resto',
-    '00000000-0000-0000-0000-00000000ca01/n1-receipt.jpg') AS id;
-SELECT set_config('request.jwt.claims',
-  '{"sub":"00000000-0000-0000-0000-0000000000a1","role":"authenticated"}', true);
-
+SELECT public.delinquency_forgive_case('00000000-0000-0000-0000-0000000d0006', 6000, 'condonación parcial antes de saldar');
+SELECT set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a2","role":"authenticated"}', true);
+CREATE TEMP TABLE n1_request AS SELECT public.delinquency_submit_regularization('00000000-0000-0000-0000-0000000d0006', 4000, 'pago del resto', '00000000-0000-0000-0000-00000000ca01/n1-receipt.jpg') AS id;
+SELECT set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-0000000000a1","role":"authenticated"}', true);
 SELECT lives_ok(
   format('SELECT public.delinquency_approve_regularization(%L, 4000)', (SELECT id FROM n1_request)),
   'N1: aprobar el pago que salda la cita ya no viola ningún CHECK de delinquency_cases');
-
 SELECT is(
   (SELECT state || '|' || exception_amount || '|' || exception_reason FROM public.delinquency_cases
     WHERE id = '00000000-0000-0000-0000-0000000d0006'),
   'settled|6000|condonación parcial antes de saldar',
   'N1: queda settled conservando exception_amount y exception_reason de la condonación parcial');
-
-SELECT is(
-  (SELECT exception_reason FROM public.delinquency_cases WHERE id = '00000000-0000-0000-0000-0000000d0006'),
-  'condonación parcial antes de saldar', 'N1: settled conserva también el motivo de la condonación parcial');
 
 -- ── Aislamiento por rol (SEC-002) ─────────────────────────────────────────────
 RESET ROLE;

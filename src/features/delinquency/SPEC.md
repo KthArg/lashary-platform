@@ -578,13 +578,11 @@ solo salto de línea o tabulador. Sin pgTAP todavía: pieza siguiente.
 
 ### Pieza 4 — pgTAP de levantar y condonar
 
-Pruebas de la pieza anterior. `delinquency_lift_and_forgive_case.test.sql` (35 casos: levantar, condonar
-total y parcial sin cerrar el caso, acumulado de condonaciones en `exception_amount`, no borra historial,
-rechazos por estado/monto contra el saldo vivo (A3, no la foto)/motivo vacío o solo espacio en blanco
-(B4)/caso inexistente, aislamiento clienta/anon — este repo no distingue un rol "staff" de "admin", así que
-el aislamiento se prueba igual que el resto de las funciones de la feature; y N1: condona parcial, paga el
-resto con una regularización de US-MOR-03 y queda `settled` conservando `exception_amount`/`exception_reason`
-— confirmado a mano que sin la pieza 3 este caso falla con el mismo `23514` del hallazgo).
+Pruebas de la pieza anterior. `delinquency_lift_and_forgive_case.test.sql` (34 casos: levantar, condonar
+total y parcial sin cerrar el caso, acumulado en `exception_amount`, no borra historial, rechazos por
+estado/monto/motivo (A3, B4), aislamiento clienta/anon, y N1: condona parcial, paga el resto con una
+regularización de US-MOR-03 y queda `settled` conservando `exception_amount`/`exception_reason` —
+confirmado a mano que sin la pieza 3 este caso falla con el `23514` del hallazgo).
 `delinquency_list_active_cases.test.sql` (7 casos: una fila por caso, saldo vivo distinto de la foto, orden,
 cursor, aislamiento). `delinquency_lift_unblocks_booking.test.sql` (2 casos: criterio 1 demostrado contra
 `delinquency_booking_block` de US-MOR-02 — M1 de la auditoría —, no solo contra el estado en la tabla).
