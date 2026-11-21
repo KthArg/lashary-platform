@@ -2,7 +2,7 @@
 feature: delinquency
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-18
+actualizado: 2026-11-21
 historias:
   - id: US-MOR-01
     estado: terminada
@@ -16,8 +16,8 @@ historias:
   - id: US-MOR-04
     estado: no_iniciada
   - id: US-MOR-05
-    estado: en_progreso
-    falta: "Pieza 10/10 (última pieza de contenido): CaseExceptionActions cableado en ReviewBody, con las dos secciones de historial y el exceptionAmount en las activas; B3 de la auditoría de Kenny evaluado sin navegador (ver la pieza en este SPEC), no bloquea. N1 de la auditoría del 2026-11-21 (US-MOR-03 se mergeó a main el 2026-11-20, #943, antes que esta historia): el CHECK de delinquency_cases no tenía rama para 'settled', corregido en la pieza 3 con su pgTAP en la pieza 4; us/US-MOR-05 y las 10 piezas ya traen el merge de main con US-MOR-03 incorporado. N3 de la misma auditoría, abierto (no corregido): levantar o condonar un caso con una solicitud de regularización pendiente la deja huérfana (sección «N3» de este SPEC y docs/process/DEPENDENCIES.md); requiere acordar el estado final con MachineJALS, no es parte del alcance que se implementa sin esa decisión. Falta el cierre: abrir (o poner Ready for review) el PR us/US-MOR-05 a main (#935, hoy en draft) con la tabla criterio→prueba y estado terminada, una vez que las 10 piezas se revisen y mergeen"
+    estado: terminada
+    evidencia: "PR de cierre us/US-MOR-05 a main, con 11 piezas apiladas contra la rama de la historia (#926 a #935, más esta pieza 11 de cierre; la pieza 1, el contrato, fue un commit directo a us/US-MOR-05, sin PR propio). Auditoría de Kenny del 2026-11-18 y reauditorías del 2026-11-21 (hallazgos A1-A4, M1-M5, B1-B6, N1, N3), todas corregidas o registradas según corresponda. Criterio 1 (levantar el bloqueo sin registrar pago): delinquency_lift_case (SECURITY DEFINER, solo admin, solo sobre active), pgTAP delinquency_lift_and_forgive_case.test.sql (levanta a lifted, conserva historial, motivo vacío o solo espacio en blanco se rechaza — B4) y delinquency_lift_unblocks_booking.test.sql (M1: contra delinquency_booking_block de US-MOR-02, no solo el estado en la tabla); application/__tests__/lift-case.test.ts, db/__tests__/case-repository.test.ts; UI en ui/review/__tests__/review-view.test.tsx (formulario, botón deshabilitado sin motivo); comprobado a mano el 2026-11-21 contra un servidor local real y Supabase local (capturas del PR #934). Criterio 2 (condonar total o parcial con motivo): delinquency_forgive_case valida contra el saldo vivo de la cita (payments_appointment_balances, A3) en vez de la foto que guardó la detección, y condonar parcial no cierra el caso — sigue active con exception_amount acumulado hasta que el saldo vivo llega a cero (A4, decisión de Kenny del 2026-11-18); pgTAP: condonación total y parcial, acumulado, monto o motivo inválido, aislamiento clienta/anon (M1), y el caso de N1 (condonar parcial y pagar el resto con una regularización real de US-MOR-03 vía delinquency_submit_regularization/approve_regularization — corregido en la pieza 3 con su pgTAP en la pieza 4: el CHECK de delinquency_cases ahora une lifted/forgiven con settled, el estado que agrega US-MOR-03, que se mergeó a main el 2026-11-20 (#943) antes que esta historia); application/__tests__/forgive-case.test.ts, db/__tests__/case-repository.test.ts; UI: el checkbox «condonar todo lo pendiente» (B2, corregido en la pieza 9). Comprobado a mano: condonar ₡3 000 más sobre un caso con ₡4 000 ya condonados deja el saldo en ₡9 000 (de ₡12 000) y «Ya condonado» en ₡7 000, con el aviso de éxito visible (B3, confirmado en navegador el 2026-11-21, ya no es solo análisis). Criterio 3 (bitácora con fecha, monto y motivo): delinquency.case.lifted y delinquency.case.forgiven en audit_events, en la misma transacción (DOM-011); el pgTAP comprueba el contenido del payload (pending, reason, cumulativeAmount, remainingBalance, closed), no solo que la fila exista. Criterio 4 (una excepción no borra el historial): pgTAP «la fila sigue visible, no se borró»; listByState ordena decided_at descendente para lifted/forgiven (M3, corregido en la pieza 5); UI: secciones «Bloqueos levantados» y «Morosidades condonadas» en /admin/morosidades (pieza 10), con motivo y monto condonado; comprobado a mano (captura 03 del PR #934). M2 (mensajes de error que no correspondían en forgiveCaseAction/liftCaseAction) corregido en la pieza 8, con prueba por campo. Deuda registrada, no bloquea el cierre: N3 (al levantar o condonar un caso con una solicitud de regularización de US-MOR-03 pendiente, esa solicitud queda huérfana — requiere acuerdo con MachineJALS, sección «N3» de este SPEC y docs/process/DEPENDENCIES.md) y B5 (listActiveClients/ActiveClient de US-MOR-01 sin consumidor en la UI desde que loadReview pasó a listActiveCases en la pieza 6, falta dueño y plazo para decidir si se borra). Suite completa en la punta de la pila: pgTAP 117 archivos, 1540 pruebas, PASS; vitest 126/126 en src/features/delinquency. La suite completa del repo tiene fallas preexistentes y no relacionadas con esta historia, confirmadas también en origin/main limpio: pruebas de aislamiento RLS de otras features que requieren altas reales de Supabase Auth local y un desajuste de datos de seed en catalog/db/packages, ninguna tocada aquí."
 flags: []
 deuda:
   - que: "Tras un pago parcial, el listado de morosidades activas, el expediente y el listado de clientas siguen mostrando el monto de la detección (delinquency_cases.pending, una foto del saldo al detectar) y no el saldo de hoy; la cola de comprobantes y el estado de cuenta de la clienta sí muestran el saldo de hoy. Lo que la deuda original pedía, que la morosidad se cierre al pagarse, lo resolvió US-MOR-03: al aprobarse el pago que deja la cita en cero, la morosidad pasa a settled en la misma transacción"
@@ -716,19 +716,35 @@ muestra junto al caso, y el `exceptionAmount` ya condonado se ve en la tarjeta a
 `describe('historial de excepciones')` (ambas secciones listan motivo/monto/fecha, estado vacío,
 aviso de «hay más»). 126/126.
 
-**B3 de la auditoría de Kenny, evaluado sin navegador (no se montó un servidor local completo para
-esta pieza):** «el aviso de éxito probablemente no se ve, `revalidatePath` saca el caso de la lista y
-desmonta el componente» (sospecha del propio auditor, severidad Baja). Análisis: en una condonación
-*parcial* el caso sigue en `active` con el mismo `caseId`, que es la `key` de su `<li>`; React no
-desmonta ese nodo al revalidar, así que `FeedbackMessage` sigue en pantalla. En una condonación
-*completa* o al levantar, el caso sale de `active` (pasa a `forgiven`/`lifted`) y la tarjeta —con su
-aviso— se desmonta al revalidar: el mismo patrón que ya tiene `CaseDecisionButtons` desde US-MOR-01
-(`terminada`) al confirmar o descartar, donde la fila también sale de «Por revisar» y su aviso
-desaparece con ella. No es un defecto nuevo de esta historia: es el comportamiento ya aceptado del
-patrón que toda la pantalla comparte. Sigue como deuda si alguna vez se decide que el aviso de un
+**B3 de la auditoría de Kenny, verificado en navegador (2026-11-21):** «el aviso de éxito probablemente
+no se ve, `revalidatePath` saca el caso de la lista y desmonta el componente» (sospecha del propio
+auditor, severidad Baja). Confirmado contra un servidor local real (build de producción + Supabase
+local, datos de ejemplo): en una condonación *parcial* el caso sigue en `active` con el mismo
+`caseId`, que es la `key` de su `<li>`; React no desmonta ese nodo al revalidar y el aviso **sí se
+ve** (captura 04 del PR de esta pieza). En una condonación *completa* o al levantar, el caso sale de
+`active` (pasa a `forgiven`/`lifted`) y la tarjeta —con su aviso— se desmonta al revalidar (no
+reproducido en vivo, solo analizado): el mismo patrón que ya tiene `CaseDecisionButtons` desde
+US-MOR-01 (`terminada`) al confirmar o descartar, donde la fila también sale de «Por revisar» y su
+aviso desaparece con ella. No es un defecto nuevo de esta historia: es el comportamiento ya aceptado
+del patrón que toda la pantalla comparte. Sigue como deuda si alguna vez se decide que el aviso de un
 cierre deba sobrevivir a la revalidación (por ejemplo, con un mensaje a nivel de página en vez de por
 tarjeta) — no bloquea el cierre de US-MOR-05 porque no es peor que lo que ya está en producción.
 
 Con esta pieza, los 4 criterios de aceptación de US-MOR-05 tienen UI además de SQL y pruebas de
 integración. `npx tsc --noEmit` sin errores en todo el repo; `npx vitest run src/features/delinquency`:
 126/126.
+
+### Pieza 11 — Cierre: evidencia y estado
+
+Capturas INT-010 (01 a 04) tomadas contra un servidor local real (`npm run build && npm run start`,
+Supabase local con datos de ejemplo, nunca contra producción ni contra `lashary-pruebas`): la pantalla
+completa, el checkbox de condonar todo (B2), el historial de las dos secciones nuevas, y una
+condonación parcial de verdad completándose con su aviso de éxito visible (confirma B3 para el caso
+que queda `active`). Quedan subidas a la rama `capturas-pr` y enlazadas en el PR de la pieza 10 (#934)
+y en el PR de cierre de la historia (`us/US-MOR-05` → `main`).
+
+`US-MOR-05` pasa a `terminada` en el frontmatter de este SPEC, con la tabla criterio → prueba y el
+resumen de la auditoría de Kenny en la `evidencia`. N3 (solicitudes de regularización huérfanas al
+levantar o condonar) y B5 (`listActiveClients`/`ActiveClient` sin consumidor) quedan registrados como
+deuda explícita, sin bloquear el cierre: ninguno de los dos niega alguno de los 4 criterios de esta
+historia, igual que el cron sin programar quedó registrado como deuda al cerrar US-MOR-01.
