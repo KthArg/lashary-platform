@@ -37,8 +37,9 @@ const nextConfig = {
   },
   experimental: {
     serverActions: {
-      // El comprobante de pago de US-MOR-03 llega por server action y pesa hasta 4 MB (más el resto del
-      // formulario). 4,5 MB es lo máximo que Vercel acepta por petición; el tope real lo fija la aplicación.
+      // El comprobante de pago de US-MOR-03 llega por server action y su tope es 1 MB. El límite del cuerpo
+      // queda en 4,5 MB (lo máximo que Vercel acepta) para que un archivo más pesado llegue a la aplicación
+      // y la clienta reciba el mensaje del tope, no un error genérico.
       bodySizeLimit: '4.5mb',
     },
   },

@@ -68,7 +68,7 @@ La clienta regulariza una morosidad `active` enviando un comprobante; la adminis
 |---|---|
 | `pending_approval` | La clienta la envió y espera la revisión. Hay como mucho una por morosidad. |
 | `approved` | La administradora la aprobó: se asentó el pago por el monto aprobado. |
-| `rejected` | La administradora la rechazó con un motivo obligatorio. La clienta puede enviar otra. |
+| `rejected` | La administradora la rechazó con un motivo obligatorio, de 10 a 500 caracteres sin contar los espacios de los extremos (decisión de la clienta del 2026-11-18). La clienta puede enviar otra. |
 | `replaced` | La clienta envió un comprobante nuevo mientras esta estaba pendiente: la nueva la sustituye. Se conserva para el historial. |
 
 `replaced` es la lectura provisional de «la clienta puede reemplazar el comprobante» (Kenny, 2026-11-13), pendiente de que él la confirme. Si dice que solo se reenvía después de un rechazo, el estado desaparece y reenviar con una pendiente pasa a ser un error.
@@ -98,7 +98,7 @@ Quien la necesita: la pantalla de estado de cuenta de la clienta (`/portal/cuent
 ### El comprobante
 
 - Vive en un bucket privado de Supabase Storage de `delinquency` (`delinquency-receipts`), en la carpeta de la clienta (`<client_id>/<solicitud>.<ext>`). Nunca tiene URL pública: la clienta dueña y el personal lo ven por URL firmada de vida corta.
-- Imagen (JPEG, PNG o WebP) o PDF, con tope de 4 MB: dentro del rango de 3 a 5 MB que dio Kenny (2026-11-13), porque el archivo pasa por el servidor y Vercel acepta como mucho 4,5 MB por petición. Se revisa al conocer el peso promedio. El tipo se decide por los primeros bytes del archivo en el servidor, no por la extensión ni por lo que declara el navegador (DOM-008). El bucket repite el tope y la lista de tipos como segunda barrera.
+- Imagen (JPEG, PNG o WebP) o PDF, con tope de 1 MB: lo decidió la clienta (dueña del estudio) el 2026-11-18, porque un comprobante de SINPE o del banco no pasa de 1 MB (antes era 4 MB; migración `20261117100000_delinquency_receipts_1mb.sql`). El tipo se decide por los primeros bytes del archivo en el servidor, no por la extensión ni por lo que declara el navegador (DOM-008). El bucket repite el tope y la lista de tipos como segunda barrera.
 - La clienta solo puede escribir en su propia carpeta, y la función que registra la solicitud comprueba que el comprobante esté ahí. No hay UPDATE ni DELETE: reemplazar es subir uno nuevo con una solicitud nueva.
 
 ### Lo que `delinquency` pide a `payments`

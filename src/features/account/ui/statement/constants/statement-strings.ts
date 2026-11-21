@@ -4,9 +4,13 @@ export const statementMessages = {
   totalLabel: 'Total pendiente',
   empty: 'No tienes saldos pendientes con el estudio.',
   loading: 'Cargando tu estado de cuenta…',
-  // Texto de relleno hasta que el estudio entregue los datos de su cuenta (decisión del PO, 2026-11-13).
-  paymentInstructions:
-    'Para pagar, haz una transferencia o un SINPE Móvil al estudio y sube aquí el comprobante. Si no tienes los datos de la cuenta, pídelos al estudio.',
+  paymentTitle: 'Cómo pagar',
+  paymentInstructions: 'Haz un SINPE Móvil con estos datos y sube el comprobante en la deuda que pagaste.',
+  sinpeLabel: 'SINPE Móvil',
+  holderLabel: 'A nombre de',
+  questionsLead: '¿Dudas? Escríbenos por',
+  whatsappLink: 'WhatsApp',
+  questionsJoin: 'o al correo',
   verificationNote: 'El estudio revisa cada comprobante antes de darlo por pagado.',
   pendingSince: (date: string) => `Pendiente desde el ${date}`,
   owed: (amount: string) => `Debes ${amount}`,
