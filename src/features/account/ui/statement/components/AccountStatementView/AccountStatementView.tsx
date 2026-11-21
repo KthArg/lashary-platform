@@ -1,6 +1,7 @@
 import { statementMessages as COPY } from '../../constants/statement-strings'
 import { money, toAccountEntryView } from '../../utils/statement-format'
 import { AccountEntryCard } from '../AccountEntryCard'
+import { PaymentInstructions } from '../PaymentInstructions'
 import { accountStatementViewStyles as STYLES } from './AccountStatementView.styles'
 import type { AccountStatementViewProps } from './AccountStatementView.types'
 
@@ -29,7 +30,7 @@ export function AccountStatementView(props: AccountStatementViewProps) {
                 <p className={STYLES.totalLabel}>{COPY.totalLabel}</p>
                 <p className={STYLES.totalAmount}>{money(props.account.totalOwed)}</p>
               </div>
-              <p className={STYLES.note}>{COPY.paymentInstructions}</p>
+              <PaymentInstructions />
               <p className={STYLES.note}>{COPY.verificationNote}</p>
             </>
           )}

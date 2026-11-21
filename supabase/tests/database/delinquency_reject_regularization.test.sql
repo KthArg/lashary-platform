@@ -7,7 +7,7 @@
 -- Correr con: npx supabase test db   (requiere `supabase start`)
 
 BEGIN;
-SELECT plan(11);
+SELECT plan(12);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -52,6 +52,11 @@ SELECT throws_ok(
 SELECT throws_ok(
   $$SELECT public.delinquency_reject_regularization('00000000-0000-0000-0000-0000000018f1', repeat('x', 501))$$,
   '22023', 'delinquency_rejection_reason_required', 'un motivo de más de 500 caracteres se rechaza');
+
+SELECT throws_ok(
+  $$SELECT public.delinquency_reject_regularization('00000000-0000-0000-0000-0000000018f1', '   Ilegible.   ')$$,
+  '22023', 'delinquency_rejection_reason_required',
+  'un motivo de menos de 10 caracteres, sin contar los espacios de los extremos, se rechaza (decisión de la clienta, 2026-11-18)');
 
 -- ── Rechazar ───────────────────────────────────────────────────────────────────
 SELECT lives_ok(
