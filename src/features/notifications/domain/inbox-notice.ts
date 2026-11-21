@@ -1,6 +1,11 @@
 export const INBOX_LIMIT = 20
 
-export type InboxNoticeKind = 'booking_created' | 'appointment_cancelled' | 'appointment_rescheduled' | 'delinquency_review'
+export type InboxNoticeKind =
+  | 'booking_created'
+  | 'appointment_cancelled'
+  | 'appointment_rescheduled'
+  | 'delinquency_review'
+  | 'regularization_submitted'
 
 type InboxNoticeBase = {
   id: string
@@ -29,11 +34,23 @@ export type DelinquencyReviewNotice = {
   createdAt: Date
 }
 
+// Una clienta envió un comprobante para regularizar (US-MOR-03): lleva lo que declaró pagar y la cita de la morosidad.
+export type RegularizationSubmittedNotice = {
+  id: string
+  kind: 'regularization_submitted'
+  appointmentId: string
+  clientName: string
+  declared: number
+  readAt: Date | null
+  createdAt: Date
+}
+
 export type InboxNotice =
   | BookingCreatedNotice
   | AppointmentCancelledNotice
   | AppointmentRescheduledNotice
   | DelinquencyReviewNotice
+  | RegularizationSubmittedNotice
 
 export function isUnread(notice: InboxNotice): boolean {
   return notice.readAt === null
