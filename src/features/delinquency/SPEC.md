@@ -443,3 +443,15 @@ al agregar por clienta y mostrar la foto.
 
 B4 corregido: la validación de motivo vacío usa `!~ '\S'` en vez de `btrim()`, que no detectaba un motivo de
 solo salto de línea o tabulador. Sin pgTAP todavía: pieza siguiente.
+
+### Pieza 4 — pgTAP de levantar y condonar
+
+Pruebas de la pieza anterior. `delinquency_lift_and_forgive_case.test.sql` (32 casos: levantar, condonar
+total y parcial sin cerrar el caso, acumulado de condonaciones en `exception_amount`, no borra historial,
+rechazos por estado/monto contra el saldo vivo (A3, no la foto)/motivo vacío o solo espacio en blanco
+(B4)/caso inexistente, aislamiento clienta/anon — este repo no distingue un rol "staff" de "admin", así que
+el aislamiento se prueba igual que el resto de las funciones de la feature). `delinquency_list_active_cases.
+test.sql` (7 casos: una fila por caso, saldo vivo distinto de la foto, orden, cursor, aislamiento).
+`delinquency_lift_unblocks_booking.test.sql` (2 casos: criterio 1 demostrado contra `delinquency_booking_
+block` de US-MOR-02 — M1 de la auditoría —, no solo contra el estado en la tabla). Suite completa: `npx
+supabase test db`, 107 archivos, 1407 pruebas, PASS.
