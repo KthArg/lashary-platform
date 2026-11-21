@@ -28,7 +28,7 @@
 
 ### audit (actualizado: 2026-10-20)
 
-### auth (actualizado: 2026-11-03)
+### auth (actualizado: 2026-11-17)
 - US-AUTH-01 — terminada — PR #5, PR #9, PR #17, tests: admin-auth.test.tsx
 - US-AUTH-02 — terminada — PR #3, PR #18, tests: auth-client.test.tsx, rls-isolation.test.ts
 
@@ -108,7 +108,8 @@
 Ninguno.
 
 ## Defectos conocidos
-- auth: PortalLayout/ClientSidebar no es responsive: a 375px de ancho el sidebar fijo (w-64, shrink-0) deja muy poco espacio al contenido, y como el contenedor es overflow-hidden (no scroll), el contenido se recorta en vez de desbordar — títulos, formularios y listas de opciones quedan cortados a la mitad, en cualquier ruta de /portal/* — `src/app/portal/layout.tsx (flex h-screen overflow-hidden) y src/features/auth/ui/navigation/components/ClientSidebar/ClientSidebar.styles.ts (sin breakpoint que oculte o colapse el sidebar en móvil)` — #710, encontrado durante la verificación visual (INT-010) de US-PROM-02 (PR #708, 2026-11-06); no lo introduce esa historia, que no toca ninguno de los dos archivos
+
+Ninguno registrado.
 
 ## Deuda aceptada
 - auth: Test de aislamiento RLS contra instancia local de Supabase en CI — aceptada en PR #3 — costo: 2h

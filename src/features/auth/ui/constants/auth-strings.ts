@@ -22,7 +22,7 @@ export const AUTH_LABELS = {
   clientCitasNav: 'Mis Citas', clientCartNav: 'Carrito',
   clientAccountNav: 'Mi Cuenta', clientPortalTitle: 'Portal Clienta',
   clientAccountTitle: 'Mi Cuenta',
-  clientAccountSubtitle: 'Ficha de clienta, estado de cuenta e información personal (US-CLI-06 / US-MOR-03).',
+  clientAccountSubtitle: 'Tus datos de contacto y tu estado de cuenta con el estudio.',
   clientNavAriaLabel: 'Panel de clienta', clientFallbackName: 'Clienta',
   brandName: 'LASHARY',
   clientSiteNav: 'Ir al sitio',
