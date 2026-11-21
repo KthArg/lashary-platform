@@ -6,7 +6,7 @@ import type { InboxRepository } from '../application/ports'
 
 export const INBOX_TABLE = 'notifications_admin_inbox'
 export const INBOX_COLUMNS =
-  'id, kind, appointment_id, client_name, service_name, starts_at, previous_starts_at, forfeited_deposit, pending_amount, read_at, created_at'
+  'id, kind, appointment_id, client_name, service_name, starts_at, previous_starts_at, forfeited_deposit, pending_amount, declared_amount, read_at, created_at'
 const MISSING_COUNT = 'la base no devolvió el conteo'
 
 type InboxRow = {
@@ -20,6 +20,7 @@ type InboxRow = {
   previous_starts_at: string | null
   forfeited_deposit: number | null
   pending_amount: number | null
+  declared_amount: number | null
   read_at: string | null
   created_at: string
 }
@@ -27,6 +28,17 @@ type InboxRow = {
 const toNotice = (row: InboxRow): InboxNotice => {
   const readAt = row.read_at ? new Date(row.read_at) : null
   const createdAt = new Date(row.created_at)
+  if (row.kind === 'regularization_submitted') {
+    return {
+      id: row.id,
+      kind: row.kind,
+      appointmentId: row.appointment_id,
+      clientName: row.client_name,
+      declared: Number(row.declared_amount ?? 0),
+      readAt,
+      createdAt,
+    }
+  }
   if (row.kind === 'delinquency_review') {
     return {
       id: row.id,
