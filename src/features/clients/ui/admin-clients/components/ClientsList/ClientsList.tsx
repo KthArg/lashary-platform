@@ -21,7 +21,8 @@ export function ClientsList({
   loadError = null,
   filterError = null,
   activeNameFilter = null,
-  hasVisitRangeFilter = false,
+  hasAppointmentRangeFilter = false,
+  hasDelinquencyFilter = false,
 }: ClientsListProps) {
   const router = useRouter()
 
@@ -40,7 +41,7 @@ export function ClientsList({
   }, [])
 
   const emptyMessage = () => {
-    if (hasVisitRangeFilter) return CLIENTS_LABELS.clientsListEmptyForFilters
+    if (hasAppointmentRangeFilter || hasDelinquencyFilter) return CLIENTS_LABELS.clientsListEmptyForFilters
     if (activeNameFilter) return CLIENTS_LABELS.clientsListEmptyForFilter(activeNameFilter)
     return CLIENTS_LABELS.clientsListEmpty
   }
@@ -66,7 +67,7 @@ export function ClientsList({
               <th scope="col" className={STYLES.headerCell}>{CLIENTS_TABLE_HEADERS.phone}</th>
               <th scope="col" className={STYLES.headerCell}>{CLIENTS_TABLE_HEADERS.email}</th>
               <th scope="col" className={STYLES.headerCell}>{CLIENTS_TABLE_HEADERS.delinquencyStatus}</th>
-              <th scope="col" className={STYLES.headerCell}>{CLIENTS_TABLE_HEADERS.lastVisit}</th>
+              <th scope="col" className={STYLES.headerCell}>{CLIENTS_TABLE_HEADERS.lastAppointment}</th>
               <th scope="col" className={STYLES.headerCellActions}>{CLIENTS_TABLE_HEADERS.actions}</th>
             </tr>
           </thead>
@@ -77,9 +78,9 @@ export function ClientsList({
                 <td className={STYLES.contactCell}>{client.phone}</td>
                 <td className={STYLES.contactCell}>{client.email}</td>
                 <td className={delinquencyAvailable ? STYLES.contactCell : STYLES.pendingCell}>{delinquencyText(client.id)}</td>
-                {client.lastVisitAtMs === null
-                  ? <td className={STYLES.pendingCell}>{CLIENTS_TABLE_TEXTS.neverVisited}</td>
-                  : <td className={STYLES.contactCell}>{formatVisitDate(client.lastVisitAtMs)}</td>}
+                {client.lastAppointmentAtMs === null
+                  ? <td className={STYLES.pendingCell}>{CLIENTS_TABLE_TEXTS.noAppointments}</td>
+                  : <td className={STYLES.contactCell}>{formatVisitDate(client.lastAppointmentAtMs)}</td>}
                 <td className={STYLES.actionsCell}>
                   <Link href={clientRecordPath(client.id)} className={STYLES.recordLink}
                     aria-label={CLIENTS_ARIA_LABELS.openRecord(client.fullName)}>
