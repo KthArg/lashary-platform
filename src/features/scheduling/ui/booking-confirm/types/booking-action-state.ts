@@ -8,6 +8,6 @@ export type BookedView = {
 export type BookingActionState =
   | { status: 'idle' }
   | { status: 'booked'; booked: BookedView }
-  | { status: 'error'; message: string }
+  | { status: 'error'; message: string; regularizeHref?: string }
 
 export const INITIAL_BOOKING_ACTION_STATE: BookingActionState = { status: 'idle' }

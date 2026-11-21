@@ -1,3 +1,5 @@
+import { Suspense } from 'react'
+import { AccountStatement, AccountStatementLoading } from '@/features/account'
 import { getAuthSession, AUTH_LABELS } from '@/features/auth'
 
 export const metadata = { title: `${AUTH_LABELS.clientAccountTitle} | ${AUTH_LABELS.clientPortalTitle} LASHARY` }
@@ -21,6 +23,9 @@ export default async function ClientCuentaPage() {
           </p>
         )}
       </div>
+      <Suspense fallback={<AccountStatementLoading />}>
+        <AccountStatement />
+      </Suspense>
     </div>
   )
 }
