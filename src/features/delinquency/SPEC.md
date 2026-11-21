@@ -455,3 +455,21 @@ test.sql` (7 casos: una fila por caso, saldo vivo distinto de la foto, orden, cu
 `delinquency_lift_unblocks_booking.test.sql` (2 casos: criterio 1 demostrado contra `delinquency_booking_
 block` de US-MOR-02 — M1 de la auditoría —, no solo contra el estado en la tabla). Suite completa: `npx
 supabase test db`, 107 archivos, 1407 pruebas, PASS.
+
+### Pieza 5 — dominio, puertos y repositorios `db/`
+
+`domain/delinquency-case.ts` admite `lifted`/`forgiven` con `exceptionReason`/`exceptionAmount` en
+`DelinquencyCase`; `domain/active-case.ts` (`ActiveCaseItem`, por caso, con `exceptionAmount`);
+`domain/errors.ts` (`caseNotActive`, `invalidForgiveAmount`, `invalidReason`, ADR-0008).
+`application/ports.ts` agrega `lift`/`forgive` a `CaseRepository` y `listActiveCases` a
+`CaseListRepository`. `db/case-row.ts`, `db/case-repository.ts` y `db/case-list-repository.ts`
+implementan esos puertos en el mismo commit: la interfaz y su implementación no se pueden separar sin
+romper la compilación de cualquier PR intermedio (lección de la primera versión de esta historia).
+`db/case-list-repository.ts` también corrige M3: `listByState` ordena `decided_at` descendente para
+`lifted`/`forgiven` (el historial, "más recientes" primero), en vez del `detected_at` ascendente que
+necesita `pending_review` (decidir primero las que llevan más tiempo esperando).
+
+Pruebas: `db/__tests__/case-repository.test.ts` y `case-list-repository.test.ts` actualizados;
+`application/__tests__/decide-case.test.ts` y `load-review.test.ts` agregan los stubs que los tipos ya
+exigen, sin usarlos — la capa de aplicación real es la pieza siguiente. `npx tsc --noEmit` sin errores en
+todo el repo; `npx vitest run src/features/delinquency`: 96/96.
