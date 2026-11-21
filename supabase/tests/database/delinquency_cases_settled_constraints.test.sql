@@ -47,7 +47,7 @@ INSERT INTO public.payments_ledger_entries (client_id, appointment_id, kind, amo
 VALUES ('00000000-0000-0000-0000-00000000cd01', '00000000-0000-0000-0000-00000000d0a1', 'payment', -6000);
 
 SELECT lives_ok(
-  $$DO $do$
+  $test$DO $do$
     BEGIN
       IF EXISTS (
         SELECT 1 FROM information_schema.columns
@@ -60,7 +60,7 @@ SELECT lives_ok(
          WHERE id = '00000000-0000-0000-0000-0000000d0101';
       END IF;
     END
-  $do$$$,
+  $do$$test$,
   'saldar con un pago una morosidad con condonación parcial la deja settled sin violar los CHECK');
 
 SELECT is(
