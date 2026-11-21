@@ -1,4 +1,5 @@
 import { addDays } from '@/shared/date-math'
+import { MAX_REMINDER_ATTEMPTS } from './reminder'
 
 export const PAYMENT_REMINDER_FREQUENCY_DAYS_MIN = 1
 export const PAYMENT_REMINDER_FREQUENCY_DAYS_MAX = 30
@@ -17,4 +18,8 @@ export function isPaymentReminderDue(lastSentAt: Date | null, frequencyDays: num
 
 const ISO_DATE_LENGTH = 10
 
-export const paymentReminderKey = (clientId: string, now: Date): string => `${clientId}:${now.toISOString().slice(0, ISO_DATE_LENGTH)}`
+export const paymentReminderDay = (now: Date): string => now.toISOString().slice(0, ISO_DATE_LENGTH)
+
+export const paymentReminderKey = (clientId: string, now: Date): string => `${clientId}:${paymentReminderDay(now)}`
+
+export const hasReachedPaymentReminderAttemptLimit = (attemptsToday: number): boolean => attemptsToday >= MAX_REMINDER_ATTEMPTS

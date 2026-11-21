@@ -823,7 +823,7 @@ marcar `terminada` sin ese enlace, y el traslado no se registra en DEPENDENCIES 
 
 - **Último envío (pieza 5):** tabla `notifications_payment_reminders`, una fila por clienta (`last_sent_at`,
   `last_amount`, `last_channel`, `send_count`). Solo guarda un envío que el canal confirmó: un intento fallido no
-  escribe nada y la siguiente corrida lo reintenta sin esperar la frecuencia. Que el recordatorio pare al saldarse
+  escribe aquí: la siguiente corrida lo reintenta sin esperar la frecuencia, hasta el tope de intentos del día (pieza 15). Que el recordatorio pare al saldarse
   (criterio 3) no depende de esta tabla: depende del saldo del ledger. Staff lee y escribe (el cron entra como
   staff, SEC-003); la clienta y anon, nada. pgTAP `notifications_payment_reminders.test.sql`.
 
@@ -831,7 +831,7 @@ marcar `terminada` sin ese enlace, y el traslado no se registra en DEPENDENCIES 
 
 - **Registro del último envío (pieza 7):** `db/payment-reminder-repository.ts` lee la fecha del último recordatorio de cada clienta (en lotes de 100) y escribe el envío en `notifications_payment_reminders`, sumando uno a la cuenta de envíos de esa clienta. Solo se escribe un envío que un canal confirmó; el envío por el canal llega en la pieza 8.
 
-- **Envío (pieza 8):** `application/send-due-payment-reminders.ts` manda el mensaje por el canal primario y, si falla, por el correo de respaldo (ADR-0006), con el propósito nuevo `payment_reminder`. Si fallan los dos o no hay canal configurado no registra nada y la siguiente corrida lo reintenta. La clave del envío es la clienta y el día, así que una corrida repetida el mismo día no duplica el correo. WhatsApp usa `META_WHATSAPP_PAYMENT_TEMPLATE_NAME` (una variable: el monto), documentada en `.env.example`.
+- **Envío (pieza 8):** `application/send-due-payment-reminders.ts` manda el mensaje por el canal primario y, si falla, por el correo de respaldo (ADR-0006), con el propósito nuevo `payment_reminder`. Si no hay canal configurado no registra nada. Si fallan los dos, lo registra y la siguiente corrida lo reintenta hasta el tope de intentos del día (pieza 15). La clave del envío es la clienta y el día, así que una corrida repetida el mismo día no duplica el correo. WhatsApp usa `META_WHATSAPP_PAYMENT_TEMPLATE_NAME` (una variable: el monto), documentada en `.env.example`.
 
 - **Cableado (pieza 9):** `runPaymentReminderCycle` (en `index.ts`) entra con la cuenta de sistema, lee la frecuencia (`db/payment-reminder-settings-repository.ts`; si falla, aborta en vez de usar el valor por defecto), descubre y envía, y cierra la sesión. `receiveReminderCronRequest` lo corre junto a los otros dos ciclos de `/api/cron/notifications-reminders`, cada uno con su propio `try/catch`: si uno falla, los otros corren igual y la respuesta es 503; la respuesta trae `paymentReminders`. Como los tres corren en paralelo sin coordinarse, una clienta puede recibir el recordatorio de pago y otro aviso en la misma corrida (la misma deuda ya aceptada para el recordatorio de 24h y la re-aplicación).
 
@@ -841,7 +841,9 @@ marcar `terminada` sin ese enlace, y el traslado no se registra en DEPENDENCIES 
 
 - **Un error de saldo no frena a las demás (pieza 13, auditoría M1):** `discoverDuePaymentReminders` devuelve `{ due, errored }`: si pedir el saldo de una clienta falla, lo registra con `logError`, la cuenta en `errored` y sigue con las siguientes; `runPaymentReminderCycle` suma esos errores al `errored` del resumen. Antes un solo fallo detenía el descubrimiento de todas las que venían detrás, en cada corrida.
 
-- **Fallos del recordatorio (pieza 14, auditoría M2):** tabla `notifications_payment_reminder_failures`, una fila por clienta (`attempt_day`, `attempts`, `last_error` de hasta 501 caracteres: los 500 de `sanitizeProviderError` más el «…» de truncado, `last_failed_at`), migración `20261119000003`. Es la base del tope de intentos por clienta y día y del registro del error del canal; el código que la usa llega en la pieza 15. Staff lee, escribe y borra (el cron entra como staff, SEC-003); la clienta y anon, nada. pgTAP `notifications_payment_reminder_failures.test.sql`. Con ella la pila de US-NOT-04 trae 4 migraciones: `20261119000000` a `20261119000003`.
+- **Fallos del recordatorio (pieza 14, auditoría M2):** tabla `notifications_payment_reminder_failures`, una fila por clienta (`attempt_day`, `attempts`, `last_error` de hasta 501 caracteres: los 500 de `sanitizeProviderError` más el «…» de truncado, `last_failed_at`), migración `20261119000003`. Es la base del tope de intentos por clienta y día y del registro del error del canal; la usa la pieza 15. Staff lee, escribe y borra (el cron entra como staff, SEC-003); la clienta y anon, nada. pgTAP `notifications_payment_reminder_failures.test.sql`. Con ella la pila de US-NOT-04 trae 4 migraciones: `20261119000000` a `20261119000003`.
+
+- **Tope de intentos y registro del fallo (pieza 15, auditoría M2):** `application/send-due-payment-reminders.ts` lee con `attemptsOn` los intentos fallidos de hoy de cada clienta por enviar (`db/payment-reminder-failure-repository.ts`, en lotes de 100) y, si ya llegó a `MAX_REMINDER_ATTEMPTS` (5, el mismo tope de los otros ciclos), no vuelve a intentar hasta el día siguiente y la cuenta en `exhausted` del resumen. Cuando fallan los dos canales, `recordFailure` guarda el intento y el error de cada canal (`sanitizeProviderError`: sin teléfono y con tope de largo) y lo deja en el log; si el fallo no se puede guardar, cuenta `errored`. El día es el de la fecha en UTC (`paymentReminderDay`) y el conteo vuelve a uno al cambiar de día. Un envío que sale bien no borra la fila: a esa clienta no le vuelve a tocar hasta cumplirse la frecuencia, así que el conteo ya es de otro día. Si no se pueden leer los intentos de hoy, la corrida devuelve el fallo y no manda nada. Pruebas: `application/__tests__/send-due-payment-reminders.test.ts` y `db/__tests__/payment-reminder-failure-repository.test.ts`.
 
 ### Decisiones propuestas, sin aprobar
 
@@ -1090,7 +1092,7 @@ recordatorio real le llegue a una clienta; es un checklist de activación, no de
    Hay que probar con textos reales que Meta acepte la línea aplanada; si no, se pasa a mandar también el
    correo siempre (opción B de la auditoría del 2026-11-15).
 
-9. **Plantilla del recordatorio de pago (US-NOT-04).** Con un número de WhatsApp Business real hace falta otra plantilla aprobada, con 1 variable (el monto adeudado); su nombre va en `META_WHATSAPP_PAYMENT_TEMPLATE_NAME` (`.env.example`). Sin ella el recordatorio sale por correo, y sin correo no se registra ni se envía; se reintenta en la siguiente corrida. El texto del mensaje (`domain/payment-reminder-message.ts`) es provisional hasta que la dueña decida el real, igual que el de los otros avisos.
+9. **Plantilla del recordatorio de pago (US-NOT-04).** Con un número de WhatsApp Business real hace falta otra plantilla aprobada, con 1 variable (el monto adeudado); su nombre va en `META_WHATSAPP_PAYMENT_TEMPLATE_NAME` (`.env.example`). Sin ella el recordatorio sale por correo, y sin correo no se registra ni se envía; se reintenta en la siguiente corrida, hasta el tope de intentos del día. El texto del mensaje (`domain/payment-reminder-message.ts`) es provisional hasta que la dueña decida el real, igual que el de los otros avisos.
 
 ## Cierre (2026-10-27)
 
