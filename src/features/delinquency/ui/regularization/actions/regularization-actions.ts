@@ -5,7 +5,6 @@ import { ACCOUNT_PATH, REGULARIZATION_FIELDS } from '../constants/regularization
 import { regularizationService } from '../services/regularization-service'
 import type { SubmitRegularizationResult } from '../types/regularization-results'
 
-// Firma de useActionState: el estado anterior no se usa, cada envío es independiente.
 export async function submitRegularizationAction(
   _previous: SubmitRegularizationResult | null,
   formData: FormData,

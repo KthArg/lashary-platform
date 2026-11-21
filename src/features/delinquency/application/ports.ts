@@ -45,38 +45,31 @@ export interface ReceiptFile {
 }
 
 export interface ReceiptStorage {
-  // Sube sin reemplazar: un comprobante ya subido no se cambia (el bucket no tiene UPDATE ni DELETE).
   upload(path: string, file: ReceiptFile): Promise<Result<void, DelinquencyStorageFailed>>
 }
 
 export interface CurrentClientPort {
-  // El perfil de clienta de la sesión, o null si la sesión no es de una clienta.
   currentClientId(): Promise<Result<string | null, DelinquencyStorageFailed>>
 }
 
 export type SubmitRegularizationFailure = RegularizationRefused | NotAClient | DelinquencyStorageFailed
 
 export interface RegularizationRepository {
-  // Registra la solicitud de la clienta de la sesión y devuelve su id. La base exige una morosidad activa propia,
-  // lo declarado hasta el saldo de hoy y el comprobante subido en su carpeta y sin usar.
   submit(input: RegularizationInput & { readonly receiptPath: string }): Promise<Result<string, SubmitRegularizationFailure>>
   myAccount(): Promise<Result<AccountEntry[], DelinquencyStorageFailed>>
 }
 
 export interface RegularizationQueueRepository {
-  // Las solicitudes pendientes, de la más antigua a la más nueva, con lo que debe hoy cada cita. Solo staff.
   listPending(limit: number): Promise<Result<PendingRegularization[], DelinquencyStorageFailed>>
 }
 
 export interface ReceiptLinks {
-  // Enlaces firmados de vida corta: el bucket es privado y el comprobante nunca tiene URL pública.
   signedUrls(paths: readonly string[]): Promise<Result<Map<string, string>, DelinquencyStorageFailed>>
 }
 
 export type ReviewRegularizationFailure = ReviewRefused | DelinquencyStorageFailed
 
 export interface RegularizationReviewRepository {
-  // Aprueba con el monto que decidió la administradora y devuelve el estado en que queda la morosidad.
   approve(requestId: string, approvedAmount: number): Promise<Result<AccountCaseState, ReviewRegularizationFailure>>
   reject(requestId: string, reason: string): Promise<Result<void, ReviewRegularizationFailure>>
 }

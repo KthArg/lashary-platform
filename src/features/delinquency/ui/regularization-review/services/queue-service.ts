@@ -8,7 +8,6 @@ import { QUEUE_LIMIT } from '../constants/queue-strings'
 
 export type QueueViewModel = { status: 'error' } | { status: 'ready'; queue: RegularizationQueue }
 
-// Con la sesión de la administradora (la página ya la exige): la RLS y el bucket solo dejan leer a staff.
 export const regularizationQueueService = {
   async load(): Promise<QueueViewModel> {
     const db = await createClient()

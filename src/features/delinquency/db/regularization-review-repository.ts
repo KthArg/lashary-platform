@@ -9,7 +9,6 @@ import { UNEXPECTED_ROW } from './case-row'
 export const APPROVE_REGULARIZATION_FUNCTION = 'delinquency_approve_regularization'
 export const REJECT_REGULARIZATION_FUNCTION = 'delinquency_reject_regularization'
 
-// El mensaje del RAISE de las funciones de la base y el motivo que entiende la aplicación.
 export const REVIEW_REFUSALS: Readonly<Record<string, ReviewRefusal>> = {
   delinquency_regularization_not_found: 'request-not-found',
   delinquency_regularization_not_pending: 'request-not-pending',
@@ -24,8 +23,6 @@ const toFailure = (message: string) => {
   return refusal ? reviewRefused(refusal) : delinquencyStorageFailed(message)
 }
 
-// Con la sesión de la administradora: las funciones de la base exigen administradora, asientan el pago y dejan la
-// bitácora en la misma transacción (DOM-011).
 export function regularizationReviewRepository(db: SupabaseClient): RegularizationReviewRepository {
   return {
     async approve(requestId, approvedAmount) {

@@ -10,7 +10,6 @@ import { REVIEW_FIELDS } from '../constants/queue-strings'
 import { performApprove, performReject, type ReviewDeps } from '../utils/perform-review'
 import type { ReviewActionResult } from '../types/review-results'
 
-// La base vuelve a exigir administradora (SEC-001); esto solo corta antes a quien no lo es.
 async function createDeps(): Promise<ReviewDeps> {
   await requireAdminSession()
   const repository = regularizationReviewRepository(await createClient())

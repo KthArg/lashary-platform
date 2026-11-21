@@ -6,7 +6,6 @@ import type { RegularizationQueueRepository } from '../application/ports'
 import { UNEXPECTED_ROW } from './case-row'
 
 export const REGULARIZATIONS_TABLE = 'delinquency_regularizations'
-// Contrato de payments (docs/contracts/payments-api.md): el saldo de hoy de cada cita, de una vez (PERF-002).
 export const APPOINTMENT_BALANCES_FUNCTION = 'payments_appointment_balances'
 
 const QUEUE_COLUMNS = 'id, case_id, client_id, declared_amount, reference, receipt_path, created_at, delinquency_cases(appointment_id)'
@@ -24,7 +23,6 @@ const queueRowSchema = z.object({
 
 const balanceRowSchema = z.object({ appointment_id: z.string().guid(), pending: z.number().int() })
 
-// Lee con la sesión de la administradora: la RLS deja ver las solicitudes y el ledger solo a staff (SEC-001).
 export function regularizationQueueRepository(db: SupabaseClient): RegularizationQueueRepository {
   return {
     async listPending(limit) {

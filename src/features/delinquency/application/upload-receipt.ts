@@ -17,8 +17,6 @@ export type UploadReceiptDeps = {
 
 export type UploadReceiptFailure = InvalidReceipt | NotAClient | DelinquencyStorageFailed
 
-// Valida el comprobante por su contenido en el servidor (DOM-008) antes de preguntar nada a la base: un archivo
-// inválido no llega a Storage. Devuelve la ruta, que la solicitud de regularización guarda.
 export const uploadReceipt =
   ({ storage, currentClient, newId }: UploadReceiptDeps) =>
   async (bytes: Uint8Array): Promise<Result<string, UploadReceiptFailure>> => {

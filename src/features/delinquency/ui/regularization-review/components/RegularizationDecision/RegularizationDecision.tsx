@@ -5,20 +5,16 @@ import { formatMoney, moneyFromColones } from '@/shared/money'
 import { REJECTION_REASON_MAX_LENGTH, REJECTION_REASON_MIN_LENGTH } from '@/features/delinquency/domain/regularization'
 import { approveRegularizationAction, rejectRegularizationAction } from '../../actions/review-actions'
 import { decisionMessages as copy, REVIEW_FIELDS as FIELDS } from '../../constants/queue-strings'
-import type { ReviewActionResult } from '@/features/delinquency/ui/regularization-review/types/review-results'
+import type { ReviewActionResult } from '../../types/review-results'
 import { useQueueFeedback } from '../QueueFeedback'
 import { regularizationDecisionStyles as STYLES } from './RegularizationDecision.styles'
 import type { RegularizationDecisionProps } from './RegularizationDecision.types'
 
 const amount = (colones: number): string => formatMoney(moneyFromColones(colones))
 
-// El monto aprobado empieza vacío a propósito: la administradora escribe lo que ve en el comprobante, no lo que
-// declara la clienta (pedido del PO, Kenny, 2026-11-13).
 export function RegularizationDecision({ requestId, declaredAmount, pendingToday }: RegularizationDecisionProps) {
   const id = useId()
   const announce = useQueueFeedback()
-  // Un resultado bueno saca la solicitud de la cola y esta tarjeta desaparece al recargar: se anuncia arriba de la
-  // cola, que sigue montada. Un error deja la tarjeta y se muestra en ella.
   const withFeedback =
     (action: (previous: ReviewActionResult | null, formData: FormData) => Promise<ReviewActionResult>) =>
     async (previous: ReviewActionResult | null, formData: FormData) => {

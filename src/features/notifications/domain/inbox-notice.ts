@@ -34,7 +34,6 @@ export type DelinquencyReviewNotice = {
   createdAt: Date
 }
 
-// Una clienta envió un comprobante para regularizar (US-MOR-03): lleva lo que declaró pagar y la cita de la morosidad.
 export type RegularizationSubmittedNotice = {
   id: string
   kind: 'regularization_submitted'
