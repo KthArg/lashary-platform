@@ -1,4 +1,4 @@
-export const CASE_STATES = ['pending_review', 'active', 'dismissed'] as const
+export const CASE_STATES = ['pending_review', 'active', 'dismissed', 'settled'] as const
 
 export type CaseState = (typeof CASE_STATES)[number]
 
