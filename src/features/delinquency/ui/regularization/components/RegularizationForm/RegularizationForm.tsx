@@ -1,11 +1,13 @@
 'use client'
 
 import { useActionState, useId } from 'react'
+import { RECEIPT_MAX_BYTES } from '@/features/delinquency/domain/receipt'
 import { REFERENCE_MAX_LENGTH } from '@/features/delinquency/domain/regularization'
 import { submitRegularizationAction } from '../../actions/regularization-actions'
 import {
   RECEIPT_ACCEPT,
   REGULARIZATION_FIELDS as FIELDS,
+  receiptProblemMessages,
   regularizationFormMessages as COPY,
 } from '../../constants/regularization-strings'
 import { regularizationFormStyles as STYLES } from './RegularizationForm.styles'
@@ -56,6 +58,13 @@ export function RegularizationForm({ caseId, maxAmount, hasPendingRequest }: Reg
           type="file"
           accept={RECEIPT_ACCEPT}
           required
+          onChange={(event) => {
+            const file = event.currentTarget.files?.[0]
+            event.currentTarget.setCustomValidity(
+              file && file.size > RECEIPT_MAX_BYTES ? receiptProblemMessages['receipt-too-large'] : '',
+            )
+            event.currentTarget.reportValidity()
+          }}
           aria-describedby={hasPendingRequest ? `${id}-replace` : undefined}
           className={STYLES.fileInput}
         />

@@ -25,6 +25,11 @@ export function BookingConfirmForm({ fields, expectedPrice, summary, backHref }:
       {state.status === 'error' && (
         <div role="alert" className={STYLES.alertError}>
           <span>{state.message}</span>
+          {state.regularizeHref && (
+            <Link href={state.regularizeHref} className={STYLES.regularize}>
+              {copy.regularize}
+            </Link>
+          )}
         </div>
       )}
       <div className={STYLES.actions}>
