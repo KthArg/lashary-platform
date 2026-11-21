@@ -14,7 +14,7 @@ export function buildClientsListUrl(
     else params.delete('name')
   }
 
-  for (const key of ['visitFrom', 'visitTo'] as const) {
+  for (const key of ['appointmentFrom', 'appointmentTo', 'delinquency'] as const) {
     if (changes[key] === undefined) continue
     const value = changes[key]
     if (value) params.set(key, value)

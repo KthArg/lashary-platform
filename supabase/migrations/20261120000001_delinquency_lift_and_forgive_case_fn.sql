@@ -29,6 +29,19 @@
 -- detecta un motivo de solo salto de línea o tabulador. Se cambia a `!~ '\S'` (sin ningún carácter que
 -- no sea espacio en blanco) en las dos funciones y en el CHECK de la tabla.
 --
+-- N1 de la auditoría del 2026-11-21 (confirmado contra `main` ya con US-MOR-03 mergeada, #943):
+-- `delinquency_cases_state_check` y `delinquency_cases_decision_matches_state` los rehace
+-- `20261117040000_delinquency_regularizations.sql` (US-MOR-03) agregando `settled`; al aplicarse
+-- después por fecha, esta migración los pisaba sin `settled`, y aprobar una regularización que
+-- salda la cita (`delinquency_approve_regularization`, que pone `state = 'settled'`) violaba el
+-- CHECK. Van como unión con `lifted`/`forgiven`, igual que ya se hizo con el `CHECK` de `kind` de
+-- `payments_ledger_entries` (pieza 2). `exception_reason_by_state`/`exception_amount_by_state`
+-- tampoco tenían rama para `settled`: cualquier fila con ese estado violaba el CHECK sin importar
+-- el valor de `exception_reason`/`exception_amount`. `settled` se trata como `active`: conserva lo
+-- que tuviera (una condonación parcial seguida de un pago que termina de saldar la cita no pierde
+-- su `exception_amount`), sin exigirlo ni prohibirlo — `delinquency_approve_regularization` no
+-- toca esas columnas, así que lo que hubiera antes de la aprobación sigue igual después.
+--
 -- Cumplimiento: ARCH-005, DOM-005, DOM-011, DOM-012, SEC-001, SEC-002, INT-003, INT-008.
 
 ALTER TABLE public.delinquency_cases
@@ -39,12 +52,12 @@ ALTER TABLE public.delinquency_cases
 
 ALTER TABLE public.delinquency_cases
   ADD CONSTRAINT delinquency_cases_state_check
-    CHECK (state IN ('pending_review', 'active', 'dismissed', 'lifted', 'forgiven'));
+    CHECK (state IN ('pending_review', 'active', 'dismissed', 'lifted', 'forgiven', 'settled'));
 
 ALTER TABLE public.delinquency_cases
   ADD CONSTRAINT delinquency_cases_decision_matches_state CHECK (
     (state = 'pending_review' AND decided_at IS NULL AND decided_by IS NULL)
-    OR (state IN ('active', 'dismissed', 'lifted', 'forgiven') AND decided_at IS NOT NULL AND decided_by IS NOT NULL)
+    OR (state IN ('active', 'dismissed', 'lifted', 'forgiven', 'settled') AND decided_at IS NOT NULL AND decided_by IS NOT NULL)
   );
 
 ALTER TABLE public.delinquency_cases
@@ -52,18 +65,18 @@ ALTER TABLE public.delinquency_cases
   ADD COLUMN exception_amount bigint;
 
 -- Presencia por estado: pending_review/dismissed nunca llevan excepción; lifted/forgiven siempre
--- llevan motivo (forgiven además lleva monto); active puede llevar ambos (condonación parcial en
--- curso) o ninguno (todavía no se tocó).
+-- llevan motivo (forgiven además lleva monto); active y settled pueden llevar ambos (condonación
+-- parcial en curso, o ya saldada por un pago tras una condonación parcial) o ninguno.
 ALTER TABLE public.delinquency_cases
   ADD CONSTRAINT delinquency_cases_exception_reason_by_state CHECK (
     (state IN ('pending_review', 'dismissed') AND exception_reason IS NULL)
     OR (state IN ('lifted', 'forgiven') AND exception_reason IS NOT NULL)
-    OR state = 'active'
+    OR state IN ('active', 'settled')
   ),
   ADD CONSTRAINT delinquency_cases_exception_amount_by_state CHECK (
     (state IN ('pending_review', 'dismissed', 'lifted') AND exception_amount IS NULL)
     OR (state = 'forgiven' AND exception_amount IS NOT NULL)
-    OR state = 'active'
+    OR state IN ('active', 'settled')
   ),
   ADD CONSTRAINT delinquency_cases_exception_reason_format CHECK (
     exception_reason IS NULL OR (exception_reason ~ '\S' AND char_length(exception_reason) <= 500)

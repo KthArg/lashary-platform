@@ -9,5 +9,6 @@ export interface ClientsListProps {
   loadError?: string | null
   filterError?: string | null
   activeNameFilter?: string | null
-  hasVisitRangeFilter?: boolean
+  hasAppointmentRangeFilter?: boolean
+  hasDelinquencyFilter?: boolean
 }

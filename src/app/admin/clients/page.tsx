@@ -4,7 +4,9 @@ import {
   ClientsList,
   ClientsNameFilter,
   ClientsPagination,
-  ClientsVisitFilter,
+  ClientsAppointmentFilter,
+  ClientsDelinquencyFilter,
+  ClientsClearFilters,
   CLIENTS_LABELS,
   listClientsAction,
   readClientsListParams,
@@ -19,15 +21,19 @@ export const metadata = {
 
 export default async function AdminClientsPage({ searchParams }: AdminClientsPageProps) {
   await requireAdminSession()
-  const { page, pageSize, name, visitFrom, visitTo } = readClientsListParams((await searchParams) ?? {})
+  const { page, pageSize, name, appointmentFrom, appointmentTo, delinquency: delinquencyFilter } =
+    readClientsListParams((await searchParams) ?? {})
   const result = await listClientsAction({
     page,
     pageSize,
     name: name || undefined,
-    visitFrom: visitFrom || undefined,
-    visitTo: visitTo || undefined,
+    appointmentFrom: appointmentFrom || undefined,
+    appointmentTo: appointmentTo || undefined,
+    delinquency: delinquencyFilter || undefined,
   })
-  const isInvalidRange = !result.ok && result.reason === 'invalid-visit-range'
+  const hasAppointmentRangeFilter = Boolean(appointmentFrom || appointmentTo)
+  const hasActiveFilters = Boolean(name || hasAppointmentRangeFilter || delinquencyFilter)
+  const isInvalidRange = !result.ok && result.reason === 'invalid-appointment-range'
 
   return (
     <div className={STYLES.page}>
@@ -39,7 +45,9 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
         <AddClientDialog />
       </header>
       <ClientsNameFilter name={name} />
-      <ClientsVisitFilter visitFrom={visitFrom} visitTo={visitTo} />
+      <ClientsAppointmentFilter appointmentFrom={appointmentFrom} appointmentTo={appointmentTo} />
+      <ClientsDelinquencyFilter delinquency={delinquencyFilter} />
+      <ClientsClearFilters hasActiveFilters={hasActiveFilters} />
       <ClientsList
         clients={result.ok ? result.clients : []}
         delinquency={result.ok ? result.delinquency : {}}
@@ -47,7 +55,8 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
         loadError={!result.ok && !isInvalidRange ? result.error : null}
         filterError={isInvalidRange ? result.error : null}
         activeNameFilter={name || null}
-        hasVisitRangeFilter={Boolean(visitFrom || visitTo)}
+        hasAppointmentRangeFilter={hasAppointmentRangeFilter}
+        hasDelinquencyFilter={Boolean(delinquencyFilter)}
       />
       {result.ok && result.total > 0 ? (
         <ClientsPagination page={result.page} pageSize={result.pageSize} total={result.total} />

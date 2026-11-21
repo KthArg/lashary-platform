@@ -10,18 +10,18 @@ const FAILED = 'repository-failed' as const
 
 interface ClientRow { id: string; full_name: string; phone: string; email: string; notes: string | null }
 
-interface ClientListRow extends ClientRow { last_visit_at: string | null }
+interface ClientListRow extends ClientRow { last_appointment_at: string | null }
 
 const toRecord = (row: ClientRow): ClientRecord => ({
   id: row.id, fullName: row.full_name, phone: row.phone, email: row.email, notes: row.notes ?? '',
 })
 
 const toListItem = (row: ClientListRow): ClientListItem => ({
-  ...toRecord(row), lastVisitAtMs: row.last_visit_at === null ? null : Date.parse(row.last_visit_at),
+  ...toRecord(row), lastAppointmentAtMs: row.last_appointment_at === null ? null : Date.parse(row.last_appointment_at),
 })
 
-const hasReadableVisit = (item: ClientListItem): boolean =>
-  item.lastVisitAtMs === null || Number.isFinite(item.lastVisitAtMs)
+const hasReadableAppointment = (item: ClientListItem): boolean =>
+  item.lastAppointmentAtMs === null || Number.isFinite(item.lastAppointmentAtMs)
 
 const toRow = (client: ClientWriteModel): Omit<ClientRow, 'id'> => ({
   full_name: client.fullName, phone: client.phone, email: client.email, notes: client.notes,
@@ -66,13 +66,18 @@ export async function clientRepository(): Promise<ClientRepository> {
       return ok(data ? toRecord(data as ClientRow) : null)
     },
 
-    async listPage({ offset, limit, name, visitFrom, visitTo }) {
-      const filters = { p_name_pattern: toLiteralNamePattern(name), p_visit_from: visitFrom, p_visit_to: visitTo }
+    async listPage({ offset, limit, name, appointmentFrom, appointmentTo, delinquency }) {
+      const filters = {
+        p_name_pattern: toLiteralNamePattern(name),
+        p_appointment_from: appointmentFrom,
+        p_appointment_to: appointmentTo,
+        p_delinquency: delinquency,
+      }
       const { data, error, count } = await supabase.rpc(CLIENTS_LIST_FUNCTION, filters, { count: 'exact' })
         .order('created_at', { ascending: false }).order('id').range(offset, offset + limit - 1)
       if (error || !data || count === null) return err(FAILED)
       const clients = (data as ClientListRow[]).map(toListItem)
-      if (!clients.every(hasReadableVisit)) return err(FAILED)
+      if (!clients.every(hasReadableAppointment)) return err(FAILED)
       return ok({ clients, total: count })
     },
   }

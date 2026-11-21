@@ -1,0 +1,22 @@
+export const statementMessages = {
+  title: 'Estado de cuenta',
+  subtitle: 'Lo que debes al estudio por citas ya atendidas, y el estado de cada pago que enviaste.',
+  totalLabel: 'Total pendiente',
+  empty: 'No tienes saldos pendientes con el estudio.',
+  loading: 'Cargando tu estado de cuenta…',
+  paymentTitle: 'Cómo pagar',
+  paymentInstructions: 'Haz un SINPE Móvil con estos datos y sube el comprobante en la deuda que pagaste.',
+  sinpeLabel: 'SINPE Móvil',
+  holderLabel: 'A nombre de',
+  questionsLead: '¿Dudas? Escríbenos por',
+  whatsappLink: 'WhatsApp',
+  questionsJoin: 'o al correo',
+  verificationNote: 'El estudio revisa cada comprobante antes de darlo por pagado.',
+  pendingSince: (date: string) => `Pendiente desde el ${date}`,
+  owed: (amount: string) => `Debes ${amount}`,
+  settled: 'Saldada',
+  inReview: (amount: string) => `Comprobante en revisión por ${amount}`,
+  approved: (amount: string) => `Pago aprobado por ${amount}`,
+  rejected: (reason: string) => `Comprobante rechazado: ${reason}`,
+} as const
+
