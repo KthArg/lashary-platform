@@ -29,7 +29,7 @@ import type { BookedView } from '../types/booking-action-state'
 export type BookingOutcome =
   | { kind: 'booked'; booked: BookedView }
   | { kind: 'retry'; backHref: string }
-  | { kind: 'failed'; message: string }
+  | { kind: 'failed'; message: string; canRegularize?: true }
 
 export type PerformBookingDeps = {
   resourceId: string
@@ -121,6 +121,7 @@ export async function performBooking(
     return {
       kind: 'failed',
       message: bookingConfirmMessages.delinquency(formatMoney(moneyFromColones(pending)), appointmentDate),
+      canRegularize: true,
     }
   }
 

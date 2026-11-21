@@ -1,6 +1,7 @@
 import { ok, err, isErr, type Result } from '@/shared/result'
 import { CLIENTS_LIST_LIMITS } from './clients-list-limits'
-import { readVisitRange, type VisitRangeError } from '../domain/list/visit-range'
+import { readAppointmentRange, type AppointmentRangeError } from '../domain/list/appointment-range'
+import { readDelinquencyFilter } from '../domain/list/delinquency-filter'
 import type { ClientListItem, ClientRecord } from '../domain/client.types'
 import type { ClientDelinquency } from '../domain/client-delinquency'
 import type { ClientRepository, DelinquencyStatesPort, ListClientsQuery } from './ports'
@@ -15,7 +16,7 @@ export interface ClientsListPage {
   delinquencyAvailable: boolean
 }
 
-export type ListClientsError = 'failed' | VisitRangeError
+export type ListClientsError = 'failed' | AppointmentRangeError
 
 const readPage = (page: unknown): number => (Number.isInteger(page) && (page as number) > 0 ? (page as number) : 0)
 
@@ -48,16 +49,18 @@ export const getClientDelinquency =
 export const listClients =
   (repo: ClientRepository, delinquency?: DelinquencyStatesPort) =>
   async (query: ListClientsQuery = {}): Promise<Result<ClientsListPage, ListClientsError>> => {
-    const visitRange = readVisitRange(query?.visitFrom, query?.visitTo)
-    if (isErr(visitRange)) return visitRange
+    const appointmentRange = readAppointmentRange(query?.appointmentFrom, query?.appointmentTo)
+    if (isErr(appointmentRange)) return appointmentRange
+    const delinquencyFilter = readDelinquencyFilter(query?.delinquency)
     const page = readPage(query?.page)
     const pageSize = readPageSize(query?.pageSize)
     const found = await repo.listPage({
       offset: page * pageSize,
       limit: pageSize,
       name: readName(query?.name),
-      visitFrom: visitRange.value.from,
-      visitTo: visitRange.value.to,
+      appointmentFrom: appointmentRange.value.from,
+      appointmentTo: appointmentRange.value.to,
+      delinquency: delinquencyFilter,
     })
     if (isErr(found)) return err('failed')
 
@@ -65,6 +68,7 @@ export const listClients =
       ? await delinquency.statesFor(found.value.clients.map((client) => client.id))
       : null
     const available = states !== null && !isErr(states)
+    if (delinquencyFilter && !available) return err('failed')
     return ok({
       ...found.value,
       page,
