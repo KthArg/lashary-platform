@@ -8,8 +8,9 @@ import type {
   InvalidGraceDays,
   NotAClient,
   RegularizationRefused,
+  ReviewRefused,
 } from '../domain/errors'
-import type { AccountEntry, PendingRegularization, RegularizationInput } from '../domain/regularization'
+import type { AccountCaseState, AccountEntry, PendingRegularization, RegularizationInput } from '../domain/regularization'
 
 export type DecideCaseFailure = DelinquencyStorageFailed | CaseNotFound | CaseAlreadyDecided
 
@@ -70,4 +71,12 @@ export interface RegularizationQueueRepository {
 export interface ReceiptLinks {
   // Enlaces firmados de vida corta: el bucket es privado y el comprobante nunca tiene URL pública.
   signedUrls(paths: readonly string[]): Promise<Result<Map<string, string>, DelinquencyStorageFailed>>
+}
+
+export type ReviewRegularizationFailure = ReviewRefused | DelinquencyStorageFailed
+
+export interface RegularizationReviewRepository {
+  // Aprueba con el monto que decidió la administradora y devuelve el estado en que queda la morosidad.
+  approve(requestId: string, approvedAmount: number): Promise<Result<AccountCaseState, ReviewRegularizationFailure>>
+  reject(requestId: string, reason: string): Promise<Result<void, ReviewRegularizationFailure>>
 }

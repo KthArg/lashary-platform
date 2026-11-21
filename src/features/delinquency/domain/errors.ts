@@ -1,5 +1,5 @@
 import type { ReceiptProblem } from './receipt'
-import type { RegularizationRefusal } from './regularization'
+import type { RegularizationRefusal, ReviewRefusal } from './regularization'
 
 export const DELINQUENCY_ERROR_CODES = {
   storageFailed: 'DELINQUENCY_STORAGE_FAILED',
@@ -9,6 +9,7 @@ export const DELINQUENCY_ERROR_CODES = {
   invalidReceipt: 'DELINQUENCY_INVALID_RECEIPT',
   notAClient: 'DELINQUENCY_NOT_A_CLIENT',
   regularizationRefused: 'DELINQUENCY_REGULARIZATION_REFUSED',
+  reviewRefused: 'DELINQUENCY_REVIEW_REFUSED',
 } as const
 
 type DelinquencyErrorCode = (typeof DELINQUENCY_ERROR_CODES)[keyof typeof DELINQUENCY_ERROR_CODES]
@@ -108,3 +109,16 @@ export function regularizationRefused(reason: RegularizationRefusal): Regulariza
 
 export const isRegularizationRefused = (error: unknown): error is RegularizationRefused =>
   hasCode<RegularizationRefused>(error, DELINQUENCY_ERROR_CODES.regularizationRefused)
+
+export interface ReviewRefused {
+  readonly code: typeof DELINQUENCY_ERROR_CODES.reviewRefused
+  readonly message: string
+  readonly reason: ReviewRefusal
+}
+
+export function reviewRefused(reason: ReviewRefusal): ReviewRefused {
+  return { code: DELINQUENCY_ERROR_CODES.reviewRefused, message: `la revisión no se aplicó: ${reason}`, reason }
+}
+
+export const isReviewRefused = (error: unknown): error is ReviewRefused =>
+  hasCode<ReviewRefused>(error, DELINQUENCY_ERROR_CODES.reviewRefused)

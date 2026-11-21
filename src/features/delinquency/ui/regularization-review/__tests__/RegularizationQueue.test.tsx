@@ -1,9 +1,14 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup, within } from '@testing-library/react'
 import type { QueueItem } from '@/features/delinquency/domain/regularization'
 import { reviewMessages } from '../../review/constants/review-strings'
 import { RegularizationQueue } from '../components/RegularizationQueue'
 import { QUEUE_LIMIT, queueMessages as copy } from '../constants/queue-strings'
+
+vi.mock('../actions/review-actions', () => ({
+  approveRegularizationAction: vi.fn(),
+  rejectRegularizationAction: vi.fn(),
+}))
 
 afterEach(cleanup)
 
@@ -31,8 +36,9 @@ describe('RegularizationQueue', () => {
     expect(screen.getByRole('note').textContent).toBe(copy.hint)
     const card = screen.getByRole('listitem')
     expect(within(card).getByRole('heading', { name: 'Ana Pérez' })).toBeTruthy()
-    expect(within(card).getByText(/10\s?000/)).toBeTruthy()
-    expect(within(card).getByText(/25\s?000/)).toBeTruthy()
+    expect(within(card).getAllByText(/10\s?000/).length).toBeGreaterThan(0)
+    expect(within(card).getAllByText(/25\s?000/).length).toBeGreaterThan(0)
+    expect(within(card).getByRole('button', { name: 'Aprobar pago' })).toBeTruthy()
     expect(within(card).getByText('SINPE 4455')).toBeTruthy()
   })
 
