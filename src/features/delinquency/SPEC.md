@@ -473,3 +473,15 @@ Pruebas: `db/__tests__/case-repository.test.ts` y `case-list-repository.test.ts`
 `application/__tests__/decide-case.test.ts` y `load-review.test.ts` agregan los stubs que los tipos ya
 exigen, sin usarlos — la capa de aplicación real es la pieza siguiente. `npx tsc --noEmit` sin errores en
 todo el repo; `npx vitest run src/features/delinquency`: 96/96.
+
+### Pieza 6 — casos de uso y `loadReview` por caso
+
+`application/lift-case.ts` y `forgive-case.ts`, mismo patrón que `decide-case.ts`. `application/
+load-review.ts` cambia su sección `active` de agregada por clienta a por caso (`listActiveCases`), con
+`exceptionAmount` (lo condonado hasta ahora, visible mientras el caso sigue `active`) — `listActiveClients`/
+`ActiveClient` de US-MOR-01 quedan sin consumidor en la UI, registrado como deuda, no se borra el código sin
+una decisión aparte. Pruebas: `application/__tests__/lift-case.test.ts`, `forgive-case.test.ts`, `load-
+review.test.ts` reescrito (ya no usa el stub de la pieza anterior) y `ui/review/__tests__/review-view.test.
+tsx` ajustado al nuevo `ActiveItem`. `npx tsc --noEmit` sin errores en todo el repo; `npx vitest run
+src/features/delinquency`: 101/101. Todavía sin historial visible ni UI de levantar/condonar: piezas
+siguientes.
