@@ -17,7 +17,7 @@ historias:
     estado: no_iniciada
   - id: US-MOR-05
     estado: en_progreso
-    falta: "Pieza 10/10 (última pieza de contenido): CaseExceptionActions cableado en ReviewBody, con las dos secciones de historial y el exceptionAmount en las activas; B3 de la auditoría de Kenny evaluado sin navegador (ver la pieza en este SPEC), no bloquea. N1 de la auditoría del 2026-11-21 (US-MOR-03 se mergeó a main el 2026-11-20, #943, antes que esta historia): el CHECK de delinquency_cases no tenía rama para 'settled', corregido en la pieza 3 con su pgTAP en la pieza 4; us/US-MOR-05 y las 10 piezas ya traen el merge de main con US-MOR-03 incorporado. Falta solo el cierre: abrir (o poner Ready for review) el PR us/US-MOR-05 a main (#935, hoy en draft) con la tabla criterio→prueba y estado terminada, una vez que las 10 piezas se revisen y mergeen"
+    falta: "Pieza 10/10 (última pieza de contenido): CaseExceptionActions cableado en ReviewBody, con las dos secciones de historial y el exceptionAmount en las activas; B3 de la auditoría de Kenny evaluado sin navegador (ver la pieza en este SPEC), no bloquea. N1 de la auditoría del 2026-11-21 (US-MOR-03 se mergeó a main el 2026-11-20, #943, antes que esta historia): el CHECK de delinquency_cases no tenía rama para 'settled', corregido en la pieza 3 con su pgTAP en la pieza 4; us/US-MOR-05 y las 10 piezas ya traen el merge de main con US-MOR-03 incorporado. N3 de la misma auditoría, abierto (no corregido): levantar o condonar un caso con una solicitud de regularización pendiente la deja huérfana (sección «N3» de este SPEC y docs/process/DEPENDENCIES.md); requiere acordar el estado final con MachineJALS, no es parte del alcance que se implementa sin esa decisión. Falta el cierre: abrir (o poner Ready for review) el PR us/US-MOR-05 a main (#935, hoy en draft) con la tabla criterio→prueba y estado terminada, una vez que las 10 piezas se revisen y mergeen"
 flags: []
 deuda:
   - que: "Tras un pago parcial, el listado de morosidades activas, el expediente y el listado de clientas siguen mostrando el monto de la detección (delinquency_cases.pending, una foto del saldo al detectar) y no el saldo de hoy; la cola de comprobantes y el estado de cuenta de la clienta sí muestran el saldo de hoy. Lo que la deuda original pedía, que la morosidad se cierre al pagarse, lo resolvió US-MOR-03: al aprobarse el pago que deja la cita en cero, la morosidad pasa a settled en la misma transacción"
@@ -534,6 +534,42 @@ y `delinquency_cases_decision_matches_state` también los reescribe US-MOR-03 (a
 `20261117040000_delinquency_regularizations.sql`) y esta historia los pisaba sin `settled` — hallazgo N1 de la
 auditoría de Kenny, corregido en la pieza 3 (ver abajo). La lección: «unir con lo que deja la pila que entra
 primero» aplica a **todo** `CHECK` que dos historias reescriban juntas, no solo al que se identificó primero.
+
+### N3 de la auditoría de Kenny (2026-11-21) — abierto, requiere decisión con MachineJALS (autor de US-MOR-03)
+
+**Sospecha, confirmada leyendo el código:** `delinquency_lift_case` y `delinquency_forgive_case` no saben nada de
+`delinquency_regularizations` (la tabla de solicitudes de US-MOR-03), y viceversa. Si una clienta tiene una
+solicitud `pending_approval` sobre un caso `active` y la administradora levanta o condona ese caso (sin ver la
+solicitud: viven en pantallas separadas — la cola de comprobantes de MOR-03 y la lista de activas de MOR-05),
+la solicitud queda huérfana:
+
+- `delinquency_approve_regularization` exige `v_case.state = 'active'`
+  (`20261117070000_delinquency_approve_regularization_fn.sql:52`): con el caso en `lifted` o `forgiven`, aprobar
+  ya no es posible, para siempre.
+- `delinquency_reject_regularization` **no** exige el estado del caso, solo el de la solicitud
+  (`20261117080000_delinquency_reject_regularization_fn.sql`), así que rechazarla sigue funcionando — pero nada
+  se lo recuerda a la administradora: la solicitud no indica en ningún lado que su caso ya no está `active`.
+- `delinquency_my_account()` (lo que la clienta ve en su estado de cuenta) filtra por
+  `c.state = 'active' OR (c.state = 'settled' AND ...)` (`20261117060000_delinquency_submit_regularization_fn.sql:157`):
+  no conoce `lifted` ni `forgiven`. En cuanto el caso cambia a cualquiera de los dos, el caso **y** su solicitud
+  pendiente desaparecen por completo de lo que la clienta ve — sin aviso, sin explicación, sin saber qué pasó con
+  el comprobante que subió.
+
+Ninguna de las dos historias se equivocó por separado: MOR-03 no podía prever los estados que agregaría MOR-05, y
+MOR-05 no tiene por qué conocer la tabla de solicitudes de MOR-03 (ARCH-005, cada feature dueña de la suya). El
+hueco es de la frontera entre las dos. No lo corrijo unilateralmente: requiere acordar con MachineJALS (y
+probablemente con el PO, por DOM-012 — toda consecuencia automática contra una clienta necesita su visto bueno)
+cuál es el estado final correcto. Opciones sobre la mesa, sin elegir ninguna:
+
+1. `delinquency_lift_case`/`delinquency_forgive_case` rechazan si el caso tiene una solicitud `pending_approval`
+   (la administradora tendría que resolverla —aprobar o rechazar— antes de poder levantar o condonar).
+2. Levantar o condonar un caso con una solicitud pendiente la deja `rejected` automáticamente, con un motivo del
+   sistema, en la misma transacción.
+3. `delinquency_my_account()` y la cola de comprobantes aprenden `lifted`/`forgiven` como estados que sí deben
+   mostrar la solicitud (aunque ya no se pueda aprobar), para que al menos no desaparezca en silencio.
+
+Queda registrado también en `docs/process/DEPENDENCIES.md` por ser una decisión entre dos historias de distinto
+autor.
 
 ### Pieza 1 — contrato
 

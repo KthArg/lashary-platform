@@ -129,6 +129,25 @@ A diferencia de un criterio diferido, un criterio trasladado **cambia de histori
 
 **Registro de la decisión (2026-10-30), resuelto en la pieza 18 de US-AGE-04 (#647):** el code review de US-AGE-04 señaló que una cita de paquete deja `technique_name` e `is_first_time` en `NULL` (esperado, ver `20261030000001_scheduling_appointment_package_snapshot.sql`), y que el código que ya estaba en `main` antes de US-AGE-04 no lo contemplaba: la cola de aprobación (`pending-appointments-repository.ts`) ocultaba servicio y precio completos; "mis citas" (`scheduling_list_my_appointments`), la cancelación (`scheduling_quote_cancellation`/`scheduling_cancel_appointment`) y el recordatorio de WhatsApp de US-NOT-03 (`reminder-snapshots-repository.ts`, vía `toSnapshot`) esperaban texto y recibían `null` — este último hacía que el recordatorio nunca se programara para una cita de paquete. Se corrigió con el mismo criterio que ya usa `scheduling_notify_booking_created` (US-NOT-01, ítem de la tabla de arriba): `coalesce(technique_name, package_name)` en SQL (`20261030000004_scheduling_package_display_name_fixes.sql`) y en TS (`técnica ?? paquete`) en los cuatro puntos de lectura, más un rótulo nuevo "Paquete" en `APPOINTMENT_DISPLAY_CHOICE` para cuando `isFirstTime` es `null` (ni primera vez ni retoque). El historial de `clients` (`history-gateways.ts`) no necesitó cambios: ya leía `techniqueName` sin asumir que viniera de una técnica. **Reauditoría (2026-10-31), A1 residual:** la agenda diaria de US-AGE-11 y la pantalla de reagendar de US-AGE-10 — las dos ya en `main` cuando se escribió el párrafo anterior, no cuatro sitios — tampoco lo contemplaban (`daily-agenda-repository.ts` mostraba "sin servicio"; `scheduling_quote_reschedule` y el payload de `scheduling_reschedule_appointment` devolvían `NULL`). Cerrado en la pieza 18 con el mismo criterio (`20261101000002_scheduling_reschedule_quote_and_audit_use_service_name.sql` y el repositorio de la agenda). **Ya no está pendiente:** el nombre del servicio (técnica o paquete, sin distinguir el origen) se muestra en todos esos sitios y lo cubren pgTAP y vitest. Lo que sigue pendiente es el cierre de cita de US-AGE-12 (fila de arriba), que lee `technique_name` sin `package_name`.
 
+## Preguntas abiertas entre historias (pendientes de decisión)
+
+A diferencia de un criterio diferido o trasladado, lo siguiente no es un reparto de alcance: es un hueco que
+apareció **después** de que ambas historias ya construyeron su parte, porque ninguna de las dos sabía de la otra
+cuando se escribió. Se deja registrado para que quien tenga la decisión (el PO, o los autores de ambas pilas de
+acuerdo entre sí) lo resuelva; ninguna historia se marca `terminada` dando por buena una respuesta que nadie
+aprobó.
+
+1. **US-MOR-05 ↔ US-MOR-03 — hallazgo N3 de la auditoría de Kenny (2026-11-21), abierto.** `delinquency_lift_case`/
+   `delinquency_forgive_case` (US-MOR-05) no conocen `delinquency_regularizations` (US-MOR-03) y viceversa. Si una
+   clienta tiene una solicitud `pending_approval` sobre un caso `active` y la administradora levanta o condona ese
+   caso desde la pantalla de MOR-05 (sin ver la cola de comprobantes de MOR-03, son pantallas separadas), la
+   solicitud queda huérfana: no se puede aprobar (`delinquency_approve_regularization` exige `state = 'active'`),
+   y tanto el caso como la solicitud desaparecen del estado de cuenta de la clienta (`delinquency_my_account` solo
+   conoce `active`/`settled`, no `lifted`/`forgiven`) sin ningún aviso. Detalle completo, con las líneas exactas y
+   las opciones sobre la mesa (sin elegir ninguna), en `src/features/delinquency/SPEC.md`, sección «N3». Requiere
+   acordar con MachineJALS (autor de US-MOR-03) y, por DOM-012, el visto bueno del PO si la solución agrega una
+   consecuencia automática nueva contra la clienta.
+
 ## Activación del cron de recordatorios (propuesta, 2026-10-31)
 
 La ruta `/api/cron/notifications-reminders` corre el ciclo de recordatorios de US-NOT-03 y, desde US-AGE-10, vence los reagendados sin decisión (primer paso del ciclo). Hoy nadie la llama: no hay `vercel.json` ni workflow de GitHub Actions. Mientras no corra, un reagendado sin decisión se queda en `pending_approval` y ocupa el horario aprobado guardado y el pedido hasta que la administradora lo decida a mano, y no sale ningún recordatorio.
