@@ -2,11 +2,13 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { err, ok } from '@/shared/result'
 import { delinquencyStorageFailed } from '../domain/errors'
-import type { CurrentClientPort, ReceiptStorage } from '../application/ports'
+import type { CurrentClientPort, ReceiptLinks, ReceiptStorage } from '../application/ports'
 import { UNEXPECTED_ROW } from './case-row'
 
 export const RECEIPTS_BUCKET = 'delinquency-receipts'
 export const CURRENT_PROFILE_FUNCTION = 'clients_current_profile_id'
+// Vida de un enlace firmado al comprobante: lo justo para abrirlo desde la cola de revisión.
+export const RECEIPT_LINK_SECONDS = 300
 
 // guid() y no uuid(): Postgres acepta cualquier uuid, y un id válido no debe frenar la subida.
 const profileIdSchema = z.string().guid().nullable()
@@ -34,6 +36,22 @@ export function currentClient(db: SupabaseClient): CurrentClientPort {
       const parsed = profileIdSchema.safeParse(data)
       if (!parsed.success) return err(delinquencyStorageFailed(UNEXPECTED_ROW))
       return ok(parsed.data)
+    },
+  }
+}
+
+// Enlaces firmados con la sesión de quien pide: la política del bucket deja leer solo a la dueña y al personal.
+export function receiptLinks(db: SupabaseClient): ReceiptLinks {
+  return {
+    async signedUrls(paths) {
+      if (paths.length === 0) return ok(new Map<string, string>())
+      const { data, error } = await db.storage.from(RECEIPTS_BUCKET).createSignedUrls([...paths], RECEIPT_LINK_SECONDS)
+      if (error) return err(delinquencyStorageFailed(error.message))
+      const links = new Map<string, string>()
+      for (const item of data ?? []) {
+        if (item.path && item.signedUrl && !item.error) links.set(item.path, item.signedUrl)
+      }
+      return ok(links)
     },
   }
 }
