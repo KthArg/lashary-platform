@@ -58,6 +58,7 @@ describe('RegularizationDecision', () => {
 
     const reason = screen.getByLabelText(copy.reasonLabel)
     expect(reason.hasAttribute('required')).toBe(true)
+    expect([reason.getAttribute('minlength'), reason.getAttribute('maxlength')]).toEqual(['10', '500'])
     fireEvent.change(reason, { target: { value: 'El comprobante no se lee' } })
     fireEvent.submit(screen.getByRole('button', { name: copy.reject }).closest('form')!)
 
