@@ -35,7 +35,7 @@ const activeLucia = {
 
 function deps(overrides: Partial<CaseListRepository> = {}, names?: ClientNamesPort) {
   const cases: CaseListRepository = {
-    listByState: async () => ok([toReview]),
+    listByState: async (state) => (state === 'pending_review' ? ok([toReview]) : ok([])),
     listActiveClients: async () => ok([]),
     listActiveCases: async () => ok([activeLucia]),
     ...overrides,
@@ -104,7 +104,16 @@ describe('loadReview', () => {
       deps({ listByState: async () => ok([]), listActiveCases: async () => ok([]) }),
     )()
 
-    expect(isOk(result) && result.value).toEqual({ toReview: [], active: [], moreToReview: false, moreActive: false })
+    expect(isOk(result) && result.value).toEqual({
+      toReview: [],
+      active: [],
+      lifted: [],
+      forgiven: [],
+      moreToReview: false,
+      moreActive: false,
+      moreLifted: false,
+      moreForgiven: false,
+    })
   })
 
   it('pide una fila más que el tope y, si llega, avisa que hay más y muestra solo el tope', async () => {

@@ -485,3 +485,11 @@ review.test.ts` reescrito (ya no usa el stub de la pieza anterior) y `ui/review/
 tsx` ajustado al nuevo `ActiveItem`. `npx tsc --noEmit` sin errores en todo el repo; `npx vitest run
 src/features/delinquency`: 101/101. Todavía sin historial visible ni UI de levantar/condonar: piezas
 siguientes.
+
+### Pieza 7 — historial en `loadReview`
+
+`application/load-review.ts` agrega `lifted`/`forgiven` a `ReviewView` (criterio 4: la morosidad original
+sigue visible, con su `pending` de siempre y lo condonado), leyendo con el `listByState` que ya existe
+(sin SQL nuevo). Pruebas: `application/__tests__/load-review.test.ts` reescrito y `ui/review/__tests__/
+review-view.test.tsx` agrega los campos que el tipo ya exige (vacíos); la pantalla todavía no los muestra.
+`npx tsc --noEmit` sin errores en todo el repo; `npx vitest run src/features/delinquency`: 101/101.
