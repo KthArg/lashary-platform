@@ -73,7 +73,7 @@ describe('performSubmitRegularization', () => {
     })
   })
 
-  it('un comprobante de más de 4 MB se rechaza sin leerlo', async () => {
+  it('un comprobante de más de 1 MB se rechaza sin leerlo', async () => {
     const { deps, submitted } = createDeps()
     const big = upload(PDF, RECEIPT_MAX_BYTES + 1)
     const result = await performSubmitRegularization(fields(big), deps)

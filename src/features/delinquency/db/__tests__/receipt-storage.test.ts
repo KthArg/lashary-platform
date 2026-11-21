@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isErr, isOk } from '@/shared/result'
-import { CURRENT_PROFILE_FUNCTION, currentClient, RECEIPTS_BUCKET, receiptStorage } from '../receipt-storage'
+import { CURRENT_PROFILE_FUNCTION, currentClient, RECEIPT_LINK_SECONDS, RECEIPTS_BUCKET, receiptLinks, receiptStorage } from '../receipt-storage'
 
 type FakeError = { message: string } | null
 
@@ -72,6 +72,46 @@ describe('currentClient.currentClientId', () => {
     const { db } = createFakeDb({ rpcError: { message: 'caída' } })
     const result = await currentClient(db).currentClientId()
 
+    expect(isErr(result) && result.error.code).toBe('DELINQUENCY_STORAGE_FAILED')
+  })
+})
+
+describe('receiptLinks.signedUrls', () => {
+  function createLinksDb(response: { data: unknown; error: { message: string } | null }) {
+    const calls: unknown[][] = []
+    const db = {
+      storage: {
+        from: (bucket: string) => ({
+          createSignedUrls: async (paths: string[], seconds: number) => (calls.push([bucket, paths, seconds]), response),
+        }),
+      },
+    } as unknown as SupabaseClient
+    return { db, calls }
+  }
+
+  it('firma los comprobantes del bucket privado con vida corta y omite los que no se pudieron firmar', async () => {
+    const { db, calls } = createLinksDb({
+      data: [
+        { path: 'a/1.pdf', signedUrl: 'https://firmado/1', error: null },
+        { path: 'a/2.pdf', signedUrl: null, error: 'Object not found' },
+      ],
+      error: null,
+    })
+    const result = await receiptLinks(db).signedUrls(['a/1.pdf', 'a/2.pdf'])
+
+    expect(calls).toEqual([[RECEIPTS_BUCKET, ['a/1.pdf', 'a/2.pdf'], RECEIPT_LINK_SECONDS]])
+    expect(isOk(result) && [...result.value]).toEqual([['a/1.pdf', 'https://firmado/1']])
+  })
+
+  it('sin rutas no llama a Storage', async () => {
+    const { db, calls } = createLinksDb({ data: [], error: null })
+    expect(isOk(await receiptLinks(db).signedUrls([]))).toBe(true)
+    expect(calls).toEqual([])
+  })
+
+  it('un error de Storage es un fallo de almacenamiento', async () => {
+    const { db } = createLinksDb({ data: null, error: { message: 'caída' } })
+    const result = await receiptLinks(db).signedUrls(['a/1.pdf'])
     expect(isErr(result) && result.error.code).toBe('DELINQUENCY_STORAGE_FAILED')
   })
 })

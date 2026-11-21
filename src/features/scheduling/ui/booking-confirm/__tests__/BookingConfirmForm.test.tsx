@@ -70,5 +70,16 @@ describe('BookingConfirmForm — US-AGE-05', () => {
     expect((await screen.findByRole('alert')).textContent).toContain(bookingConfirmMessages.storageFailed)
     expect(screen.getByRole('button', { name: bookingConfirmMessages.confirm })).toBeTruthy()
     expect(screen.getByRole('link', { name: bookingConfirmMessages.changeSlot }).getAttribute('href')).toBe(BACK_HREF)
+    expect(screen.queryByRole('link', { name: bookingConfirmMessages.regularize })).toBeNull()
+  })
+
+  it('un rechazo por morosidad ofrece regularizar desde el estado de cuenta (US-MOR-03, criterio 1)', async () => {
+    mockAction.mockResolvedValue({ status: 'error', message: 'Tienes un saldo pendiente.', regularizeHref: '/portal/cuenta' })
+    render(<BookingConfirmForm {...props} />)
+    submit()
+
+    const alert = await screen.findByRole('alert')
+    expect(alert.textContent).toContain('Tienes un saldo pendiente.')
+    expect(screen.getByRole('link', { name: bookingConfirmMessages.regularize }).getAttribute('href')).toBe('/portal/cuenta')
   })
 })
