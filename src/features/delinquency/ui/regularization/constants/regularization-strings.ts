@@ -21,7 +21,7 @@ export const regularizationMessages = {
 
 export const receiptProblemMessages: Readonly<Record<ReceiptProblem, string>> = {
   'receipt-empty': 'El archivo está vacío.',
-  'receipt-too-large': 'El comprobante pesa más de 4 MB. Prueba con una foto más liviana o un PDF.',
+  'receipt-too-large': 'El comprobante pesa más de 1 MB. Envía una captura de pantalla del SINPE o el PDF del banco.',
   'receipt-type-not-allowed': 'El comprobante tiene que ser una foto (JPG, PNG o WebP) o un PDF.',
 }
 
@@ -38,7 +38,7 @@ export const regularizationFormMessages = {
   legend: 'Enviar comprobante de pago',
   amountLabel: 'Monto que pagaste (en colones)',
   referenceLabel: 'Referencia del pago (opcional)',
-  receiptLabel: 'Comprobante: foto o PDF, hasta 4 MB',
+  receiptLabel: 'Comprobante: foto o PDF, hasta 1 MB',
   submit: 'Enviar comprobante',
   sending: 'Enviando…',
   replaceHint: 'Si te equivocaste de comprobante, puedes enviar otro: reemplaza al que está en revisión.',

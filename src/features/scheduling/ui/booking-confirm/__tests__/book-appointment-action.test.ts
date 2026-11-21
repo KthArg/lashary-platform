@@ -38,6 +38,11 @@ describe('bookAppointmentAction', () => {
   it.each([
     ['una reserva hecha devuelve su detalle', { kind: 'booked', booked } as const, { status: 'booked', booked }],
     ['un fallo devuelve el mensaje', { kind: 'failed', message: 'No pudimos.' } as const, { status: 'error', message: 'No pudimos.' }],
+    [
+      'un rechazo por morosidad lleva al estado de cuenta para regularizar (US-MOR-03)',
+      { kind: 'failed', message: 'Debes.', canRegularize: true } as const,
+      { status: 'error', message: 'Debes.', regularizeHref: '/portal/cuenta' },
+    ],
   ])('%s, sin redirigir', async (_name, result, expectedState) => {
     outcome = result
     expect(await bookAppointmentAction(INITIAL_BOOKING_ACTION_STATE, formData({}))).toEqual(expectedState)
