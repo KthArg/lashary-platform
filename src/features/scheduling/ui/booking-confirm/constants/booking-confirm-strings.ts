@@ -33,6 +33,7 @@ export const bookingConfirmMessages = {
     `No pudimos agendar tu cita porque tienes un saldo pendiente de ${amount} de ${
       appointmentDate ? `tu cita del ${appointmentDate}` : 'una cita anterior'
     }. Comunícate con el estudio para regularizarlo y poder agendar de nuevo.`,
+  regularize: 'Regularizar mi saldo',
   tooManyPending: 'Ya tenés citas pendientes de aprobación. Esperá a que la administradora las revise para reservar otra.',
   storageFailed: 'No pudimos guardar tu reserva. Intentá de nuevo.',
   pendingApproval: 'Tu reserva quedó pendiente de aprobación de la administradora.',

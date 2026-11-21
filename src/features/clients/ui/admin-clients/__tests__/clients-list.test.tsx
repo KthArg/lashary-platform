@@ -39,7 +39,7 @@ describe('ClientsList', () => {
     const headers = screen.getAllByRole('columnheader').map((header) => header.textContent)
     expect(headers).toEqual([
       CLIENTS_TABLE_HEADERS.fullName, CLIENTS_TABLE_HEADERS.phone, CLIENTS_TABLE_HEADERS.email,
-      CLIENTS_TABLE_HEADERS.delinquencyStatus, CLIENTS_TABLE_HEADERS.lastVisit, CLIENTS_TABLE_HEADERS.actions,
+      CLIENTS_TABLE_HEADERS.delinquencyStatus, CLIENTS_TABLE_HEADERS.lastAppointment, CLIENTS_TABLE_HEADERS.actions,
     ])
     expect(screen.getAllByRole('row')).toHaveLength(CLIENT_FIXTURES.length + 1)
     for (const client of CLIENT_FIXTURES) {
@@ -55,23 +55,29 @@ describe('ClientsList', () => {
     expect(screen.getAllByText(CLIENTS_TABLE_TEXTS.pendingColumnValue)).toHaveLength(CLIENT_FIXTURES.length)
   })
 
-  it('criterio 1: muestra la ultima visita en la fecha del estudio, y "sin visitas" a quien nunca vino', () => {
+  it('criterio 1: muestra la ultima cita en la fecha del estudio, y "sin citas" a quien nunca agendo', () => {
     render(<ClientsList clients={CLIENT_FIXTURES} />)
-    const visited = screen.getByRole('row', { name: new RegExp(CLIENT_FIXTURES[0].fullName) })
-    const neverVisited = screen.getByRole('row', { name: new RegExp(CLIENT_FIXTURES[1].fullName) })
-    expect(visited.textContent).toContain('30 jun 2026')
-    expect(neverVisited.textContent).toContain(CLIENTS_TABLE_TEXTS.neverVisited)
+    const withAppointment = screen.getByRole('row', { name: new RegExp(CLIENT_FIXTURES[0].fullName) })
+    const noAppointments = screen.getByRole('row', { name: new RegExp(CLIENT_FIXTURES[1].fullName) })
+    expect(withAppointment.textContent).toContain('30 jun 2026')
+    expect(noAppointments.textContent).toContain(CLIENTS_TABLE_TEXTS.noAppointments)
   })
 
   it('con un filtro de fechas y sin coincidencias lo dice, en vez de decir que no hay clientas', () => {
-    render(<ClientsList clients={[]} activeNameFilter="ana" hasVisitRangeFilter />)
+    render(<ClientsList clients={[]} activeNameFilter="ana" hasAppointmentRangeFilter />)
+    expect(screen.getByText(CLIENTS_LABELS.clientsListEmptyForFilters)).toBeTruthy()
+    expect(screen.queryByText(CLIENTS_LABELS.clientsListEmpty)).toBeNull()
+  })
+
+  it('con el filtro de morosidad y sin coincidencias dice que ninguna clienta coincide con los filtros', () => {
+    render(<ClientsList clients={[]} hasDelinquencyFilter />)
     expect(screen.getByText(CLIENTS_LABELS.clientsListEmptyForFilters)).toBeTruthy()
     expect(screen.queryByText(CLIENTS_LABELS.clientsListEmpty)).toBeNull()
   })
 
   it('un rango de fechas al reves se avisa sin ofrecer Reintentar, porque reintentar no lo arregla', () => {
-    render(<ClientsList clients={[]} filterError={CLIENTS_ERROR_MESSAGES.invertedVisitRange} />)
-    expect(screen.getByRole('alert').textContent).toContain(CLIENTS_ERROR_MESSAGES.invertedVisitRange)
+    render(<ClientsList clients={[]} filterError={CLIENTS_ERROR_MESSAGES.invertedAppointmentRange} />)
+    expect(screen.getByRole('alert').textContent).toContain(CLIENTS_ERROR_MESSAGES.invertedAppointmentRange)
     expect(screen.queryByRole('button', { name: CLIENTS_BUTTON_TEXTS.retry })).toBeNull()
     expect(screen.queryByText(CLIENTS_LABELS.clientsListEmpty)).toBeNull()
   })

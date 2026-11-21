@@ -2,7 +2,7 @@
 feature: payments
 dri: pendiente
 estado: terminada
-actualizado: 2026-10-31
+actualizado: 2026-11-16
 historias:
   - id: US-AGE-13
     estado: terminada
@@ -47,6 +47,10 @@ Saldo por cita para `delinquency` (US-MOR-02, pieza 3): [payments-api.md](../../
 Ledger (US-AGE-12, pieza 1; migración `20261031000000_payments_ledger_entries.sql`): tabla `payments_ledger_entries` con `client_id` (FK a `clients_profiles`, `RESTRICT`), `appointment_id` (sin FK por ARCH-005), `kind` (`charge` o `deposit_credit`), `amount` (el CHECK fija el signo: cargo positivo, crédito negativo) y `created_by` (lo sella un trigger desde `auth.uid()`). Un índice único por (`appointment_id`, `kind`) impide cobrar o acreditar dos veces la misma cita. RLS: `SELECT` e `INSERT` solo para staff, `INSERT` solo en las columnas de dominio; sin políticas de `UPDATE` ni `DELETE` y con esos privilegios revocados (DOM-005). Funciones SQL para `scheduling` (ARCH-005): `payments_record_close_entries(cliente, cita, cargo, anticipo)` inserta el cargo y el crédito del anticipo y devuelve lo que queda por pagar de la cita; `payments_client_balance(cliente)` devuelve la suma de los asientos. Pruebas: pgTAP `payments_ledger_entries.test.sql` y `__tests__/ledger-rls-isolation.test.ts` (SEC-002, anon y una clienta con token real). Todavía no hay quien las llame: las usa el cierre de cita de `scheduling` en la siguiente pieza.
 
 Ledger solo al cerrar (US-AGE-12, pieza 12; migración `20261102000001_payments_ledger_write_only_through_close.sql`): corrige lo anterior. Staff conserva `SELECT`, pero ya no tiene `INSERT` directo (se quita la política y el permiso de columnas) ni `EXECUTE` sobre `payments_record_close_entries`: el ledger lo escribe solo `scheduling_close_appointment` (`SECURITY DEFINER`) al cerrar la cita. Prueba: pgTAP `payments_ledger_write_only_through_close.test.sql`.
+
+Pagos en el ledger (US-MOR-03; migración `20261117020000_payments_ledger_payment_kind.sql`): el asiento `payment`, con monto negativo y siempre de una cita, y varios por cita (pagos parciales, decisión del PO del 2026-11-13). El índice único `(appointment_id, kind)` queda solo para `charge` y `deposit_credit`, así que cerrar dos veces sigue sin duplicar el cargo, y un índice simple por cita cubre las sumas que incluyen los pagos. No cambia permisos: nadie con sesión escribe el ledger. Prueba: pgTAP `payments_ledger_payment_kind.test.sql` (9 pruebas).
+
+Registrar un pago (US-MOR-03; migración `20261117030000_payments_record_payment_fn.sql`): `payments_record_payment(clienta, cita, monto)` escribe el asiento `payment` por el monto en negativo y devuelve su id. El monto va de 1 hasta el saldo actual de la cita (más es `payments_payment_exceeds_balance`; cero o negativo, `payments_payment_amount_invalid`), la cita tiene que ser de esa clienta (`payments_payment_wrong_client`), y toma un lock por cita antes de leer el saldo. Sin `EXECUTE` para nadie con sesión: la llama la aprobación de `delinquency`, como `payments_record_close_entries` la llama el cierre. Prueba: pgTAP `payments_record_payment.test.sql` (13 pruebas).
 
 ## Qué no hace todavía
 
