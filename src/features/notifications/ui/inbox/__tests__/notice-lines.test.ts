@@ -7,6 +7,7 @@ import type {
   AppointmentRescheduledNotice,
   BookingCreatedNotice,
   DelinquencyReviewNotice,
+  RegularizationSubmittedNotice,
 } from '@/features/notifications/domain/inbox-notice'
 import { DELINQUENCY_ADMIN_PATH } from '@/features/delinquency'
 import { DELINQUENCY_REVIEW_PATH, INBOX_TEXTS } from '../constants/inbox-strings'
@@ -39,7 +40,25 @@ const delinquency: DelinquencyReviewNotice = {
   createdAt: fixedDate('2026-11-08T18:00:00Z'),
 }
 
+const submitted: RegularizationSubmittedNotice = {
+  id: 'aviso-10',
+  kind: 'regularization_submitted',
+  appointmentId: 'cita-1',
+  clientName: 'Ana Pérez',
+  declared: 10000,
+  readAt: null,
+  createdAt: fixedDate('2026-11-16T18:00:00Z'),
+}
+
 describe('noticeLines', () => {
+  it('un comprobante enviado dice quién, cuánto declara y lleva a la pantalla para revisarlo (US-MOR-03)', () => {
+    expect(noticeLines(submitted)).toEqual({
+      title: INBOX_TEXTS.regularizationSubmitted('Ana Pérez'),
+      details: [INBOX_TEXTS.declares(formatMoney(moneyFromColones(10000)))],
+      action: { label: INBOX_TEXTS.reviewReceipts, href: DELINQUENCY_REVIEW_PATH },
+    })
+  })
+
   it('una morosidad por revisar dice quién, cuánto debe y lleva a la pantalla para decidir (US-MOR-01, criterio 3)', () => {
     expect(noticeLines(delinquency)).toEqual({
       title: INBOX_TEXTS.delinquencyReview('Ana Pérez'),

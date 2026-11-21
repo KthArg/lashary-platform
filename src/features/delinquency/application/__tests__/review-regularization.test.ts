@@ -49,13 +49,13 @@ describe('approveRegularization', () => {
 describe('rejectRegularization', () => {
   it('rechaza con el motivo sin espacios sobrantes', async () => {
     const { repository, calls } = createRepository()
-    const result = await rejectRegularization(repository)({ requestId: 'solicitud-1', reason: '  No se lee  ' })
+    const result = await rejectRegularization(repository)({ requestId: 'solicitud-1', reason: '  No se lee el monto  ' })
 
     expect(isOk(result)).toBe(true)
-    expect(calls).toEqual([['reject', 'solicitud-1', 'No se lee']])
+    expect(calls).toEqual([['reject', 'solicitud-1', 'No se lee el monto']])
   })
 
-  it.each([[''], ['   '], ['x'.repeat(REJECTION_REASON_MAX_LENGTH + 1)]])('un motivo vacío o demasiado largo no llega a la base', async (reason) => {
+  it.each([[''], ['   '], ['  Ilegible.  '], ['x'.repeat(REJECTION_REASON_MAX_LENGTH + 1)]])('un motivo vacío, de menos de 10 caracteres o demasiado largo no llega a la base', async (reason) => {
     const { repository, calls } = createRepository()
     const result = await rejectRegularization(repository)({ requestId: 'solicitud-1', reason })
 
