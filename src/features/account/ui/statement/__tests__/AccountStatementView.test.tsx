@@ -3,6 +3,7 @@ import { render, screen, cleanup, within } from '@testing-library/react'
 import type { AccountEntry, MyAccount } from '@/features/delinquency'
 import { AccountStatementView } from '../components/AccountStatementView'
 import { statementMessages as COPY } from '../constants/statement-strings'
+import { STUDIO_PAYMENT } from '../constants/studio-payment'
 
 vi.mock('@/features/delinquency', () => ({
   RegularizationForm: (props: { caseId: string; maxAmount: number; hasPendingRequest: boolean }) => (
@@ -33,6 +34,18 @@ describe('AccountStatementView', () => {
     expect(screen.getByText(COPY.paymentInstructions)).toBeTruthy()
     expect(screen.getByText(COPY.pendingSince('7 de noviembre de 2026'))).toBeTruthy()
     expect(screen.getByTestId('formulario').dataset).toMatchObject({ case: '00000000-0000-4000-8000-0000000016d1', max: '25000', pending: 'false' })
+  })
+
+  it('cómo pagar muestra el SINPE Móvil del estudio, a nombre de quién, y el WhatsApp y el correo para dudas', () => {
+    render(<AccountStatementView account={account([entry({})], 25000)} />)
+
+    const box = screen.getByRole('region', { name: COPY.paymentTitle })
+    expect(within(box).getByText(STUDIO_PAYMENT.sinpeNumber)).toBeTruthy()
+    expect(within(box).getByText(STUDIO_PAYMENT.holder)).toBeTruthy()
+    expect(within(box).getByRole('link', { name: COPY.whatsappLink }).getAttribute('href')).toBe('https://wa.me/50661284259')
+    expect(within(box).getByRole('link', { name: STUDIO_PAYMENT.email }).getAttribute('href')).toBe(
+      'mailto:lasharybeautystudio@gmail.com',
+    )
   })
 
   it('sin deudas lo dice, sin total ni formulario', () => {
@@ -72,6 +85,7 @@ describe('AccountStatementView', () => {
     expect(screen.getByText(COPY.empty)).toBeTruthy()
     expect(screen.queryByText(COPY.totalLabel)).toBeNull()
     expect(screen.queryByText(COPY.paymentInstructions)).toBeNull()
+    expect(screen.queryByText(STUDIO_PAYMENT.sinpeNumber)).toBeNull()
     const card = screen.getByRole('listitem')
     expect(within(card).getAllByText(COPY.settled)).toHaveLength(1)
     expect(within(card).getByText(/Pago aprobado por ₡15\s?000/)).toBeTruthy()
