@@ -18,6 +18,7 @@ import type {
 const PAYMENT_PURPOSE: MessagePurpose = 'payment_reminder'
 
 export type SendDuePaymentRemindersDeps = {
+  regularizeUrl: string
   recordSent: PaymentReminderLogPort['recordSent']
   attemptsOn: PaymentReminderFailurePort['attemptsOn']
   recordFailure: PaymentReminderFailurePort['recordFailure']
@@ -39,7 +40,7 @@ const sendOne = async (deps: SendDuePaymentRemindersDeps, due: DuePaymentReminde
   }
   if (contact.value === null) return 'skipped'
 
-  const messageInput = { amountOwed: due.amountOwed }
+  const messageInput = { amountOwed: due.amountOwed, regularizeUrl: deps.regularizeUrl }
   const message = buildPaymentReminderMessage(messageInput)
   const templateVariables = buildPaymentReminderTemplateVariables(messageInput)
   const messageId = paymentReminderKey(due.clientId, now)

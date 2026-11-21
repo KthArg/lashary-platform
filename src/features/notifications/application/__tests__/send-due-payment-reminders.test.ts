@@ -19,6 +19,8 @@ const CONTACT: ContactInfo = { phone: '+50688887777', email: 'clienta@example.co
 const NOW_ISO = '2026-11-17T12:00:00Z'
 const NOW = fixedDate(NOW_ISO)
 
+const REGULARIZE_URL = 'https://lashary.example/portal/cuenta'
+
 const due: DuePaymentReminder = { clientId: 'client-1', amountOwed: 18000 }
 
 type ChannelOutcome = 'ok' | 'send-failed' | 'not-configured'
@@ -49,6 +51,7 @@ function buildDeps(options: {
   const failures: PaymentReminderFailureInput[] = []
   const primaryReceived: ChannelSendInput[] = []
   const deps: SendDuePaymentRemindersDeps = {
+    regularizeUrl: REGULARIZE_URL,
     recordSent: async (input) => {
       if (options.recordFails) return err('repository-failed' as const)
       recorded.push(input)
@@ -92,7 +95,8 @@ describe('sendDuePaymentReminders', () => {
     expect(isOk(result) && result.value.sent).toBe(1)
     expect(primaryReceived[0]?.purpose).toBe('payment_reminder')
     expect(primaryReceived[0]?.message).toContain(formatMoney(moneyFromColones(18000)))
-    expect(primaryReceived[0]?.templateVariables).toEqual([formatMoney(moneyFromColones(18000))])
+    expect(primaryReceived[0]?.message).toContain(REGULARIZE_URL)
+    expect(primaryReceived[0]?.templateVariables).toEqual([formatMoney(moneyFromColones(18000)), REGULARIZE_URL])
     expect(primaryReceived[0]?.messageId).toBe(paymentReminderKey('client-1', NOW))
     expect(recorded).toEqual([{ clientId: 'client-1', amountOwed: 18000, channel: 'whatsapp', sentAt: NOW }])
   })
