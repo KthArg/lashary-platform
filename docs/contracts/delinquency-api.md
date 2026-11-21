@@ -13,8 +13,14 @@
 | `pending_review` | Detectada tras el periodo de gracia. La administradora recibió el aviso previo y todavía no decide: **no tiene ninguna consecuencia** sobre la clienta (DOM-012). |
 | `active` | La administradora la confirmó. Es la única que cuenta como «morosidad activa». |
 | `dismissed` | La administradora la descartó. No vuelve a generarse por la misma cita. |
+| `lifted` | La administradora levantó el bloqueo sin registrar pago (US-MOR-05, criterio 1). El saldo original no se toca: solo deja de contar como morosidad activa. |
+| `forgiven` | El saldo de la cita llegó a cero por condonación (US-MOR-05, criterio 2), sola o combinada con pagos de US-MOR-03. Terminal: no se vuelve a tocar. |
 
-Regularizar y levantar o perdonar (US-MOR-03 y US-MOR-05) agregan sus propios estados y se versionan aquí cuando esas historias los necesiten.
+`lifted` y `forgiven` solo se llega a ellos desde `active` (levantar o condonar una `pending_review` no tiene sentido: esa ya tiene su propio camino, confirmar o descartar). Ninguno de los dos borra la fila ni su `pending` original (criterio 4): la morosidad queda visible con su estado, y si se condonó, el monto condonado.
+
+**Condonar parcialmente no cierra el caso.** Mientras la cita siga con saldo vivo (`payments_appointment_balances`) después de condonar, la morosidad sigue `active` — puede condonarse otra vez, o saldarse con un pago de US-MOR-03 — y `exception_amount` guarda lo condonado hasta ahora (acumulado, no una foto de una sola vez). Solo pasa a `forgiven` cuando ese saldo llega a cero. Decisión de Kenny (PO), 2026-11-18.
+
+Regularizar (US-MOR-03) agrega sus propios estados y se versiona aquí cuando esa historia los necesite.
 
 ## Funciones SQL
 
@@ -36,7 +42,27 @@ Quien la necesita: `clients_list` (US-CLI-01, pieza 2/5), para el filtro de moro
 
 Las morosidades `active`, de la más reciente a la más antigua y, a igual fecha, por clienta. Se pagina por cursor `(since, client_id)`: `p_after_since` y `p_after_client_id` son los de la última fila de la página anterior, y la siguiente empieza justo después de ella. Las morosidades de una misma corrida de detección comparten `since`, así que un cursor solo por fecha se saltaría a las que empatan. `p_after_client_id` es opcional; sin él, entran todas las que empatan con `p_after_since`. `p_limit` va de 1 a 100.
 
-Quien la necesita: el listado de morosidades activas del panel (criterio 5).
+Quien la necesita: el listado de morosidades activas del panel (criterio 5). Agrega por clienta (`sum(pending)`), no por caso: para actuar sobre una morosidad puntual (US-MOR-05) hace falta el detalle por caso de la función siguiente.
+
+### `public.delinquency_list_active_cases(p_limit integer, p_after_since timestamptz, p_after_case_id uuid) => TABLE (case_id uuid, client_id uuid, appointment_id uuid, pending bigint, exception_amount bigint, since timestamptz)`
+
+Las morosidades `active`, una fila por caso (no agregadas por clienta), de la más reciente a la más antigua y, a igual fecha, por `case_id`. Mismo patrón de cursor que `delinquency_list_active`, por el par `(since, case_id)`. `p_limit` va de 1 a 100.
+
+`pending` es el **saldo vivo** de la cita (`payments_appointment_balances`, ARCH-005), no la foto que guardó la detección — distinto de `delinquency_client_states`/`delinquency_list_active`, que siguen devolviendo la foto. `exception_amount` es lo condonado hasta ahora (`null` si nunca se condonó nada); juntos le bastan a la pantalla para mostrar "debe hoy" y para acotar cuánto puede condonarse.
+
+Quien la necesita: `/admin/morosidades` (US-MOR-05), para levantar o condonar un caso puntual — `delinquency_lift_case` y `delinquency_forgive_case` actúan sobre un `case_id`, no sobre el agregado de la clienta.
+
+### `public.delinquency_lift_case(p_case_id uuid, p_reason text) => delinquency_cases`
+
+Levanta el bloqueo de una morosidad `active` sin tocar el ledger (criterio 1 de US-MOR-05): la deja `lifted`, con `exception_amount` en `null` aunque ya se hubiera condonado parte antes (el saldo restante simplemente se deja de perseguir, sin registrarlo como condonado). Exige `p_reason` no vacío (no solo espacios o salto de línea). Una morosidad que no está `active` es un error (`delinquency_case_not_active`); una inexistente, `delinquency_case_not_found`. Deja el evento `delinquency.case.lifted` en `audit_events` en la misma transacción, con fecha, el saldo que tenía al momento y el motivo (DOM-011).
+
+Quien la necesita: la pantalla de morosidades activas.
+
+### `public.delinquency_forgive_case(p_case_id uuid, p_amount bigint, p_reason text) => delinquency_cases`
+
+Condona parte o todo el **saldo vivo** de una morosidad `active` (criterio 2 de US-MOR-05). `p_amount` debe ser mayor que cero y no mayor que `payments_appointment_balances` de la cita en ese momento (no el `pending` guardado); fuera de ese rango es `delinquency_invalid_forgive_amount`. Exige `p_reason` no vacío. Escribe el asiento llamando a `payments_record_forgiveness_entry` (`payments-api.md`, ARCH-005) y, en la misma transacción, actualiza `exception_amount` (acumulado) y deja el evento `delinquency.case.forgiven` en `audit_events` con fecha, el monto de esta condonación, el acumulado y el motivo (DOM-011). Si el saldo vivo llega a cero tras el asiento, el caso pasa a `forgiven` (terminal); si queda saldo, sigue `active` y puede condonarse de nuevo o saldarse con un pago de US-MOR-03. Puede llamarse más de una vez sobre el mismo caso mientras siga `active`.
+
+Quien la necesita: la pantalla de morosidades activas.
 
 ## Bloqueo de la agenda (US-MOR-02)
 
@@ -79,10 +105,11 @@ notifications_record_delinquency_review(
 ## Garantías
 
 1. **La forma de la fila es contrato:** un cambio de columnas, de firma o de estados se versiona aquí antes del cambio (INT-003).
-2. **Solo lectura:** ninguna función de este contrato cambia una morosidad ni escribe en otra feature. Confirmar y descartar son acciones propias de `delinquency`.
-3. **`pending_review` no bloquea:** quien consuma el contrato para decidir algo (US-MOR-02) solo puede tratar `active` como morosidad (DOM-012).
+2. **Las funciones de lectura no cambian una morosidad.** Confirmar, descartar, levantar y condonar son las únicas que escriben, todas de `delinquency`, todas `SECURITY DEFINER` y solo para admin.
+3. **`pending_review` no bloquea:** quien consuma el contrato para decidir algo (US-MOR-02) solo puede tratar `active` como morosidad (DOM-012). `lifted` y `forgiven` tampoco bloquean: una vez ahí, `delinquency_booking_block` ya no las cuenta (su `WHERE` filtra por `state = 'active'`).
 4. **El bloqueo es de la base, no de la pantalla:** `delinquency_booking_block` lo consultan las funciones de reserva dentro de la misma transacción, así que una llamada directa a PostgREST no se lo salta (SEC-001).
 5. **Sin datos de contacto:** salen ids, un monto y una fecha; el nombre se pide a `clients`.
+6. **Ninguna excepción borra historial:** `delinquency_lift_case` y `delinquency_forgive_case` nunca hacen `DELETE`; la fila sigue ahí con su estado (criterio 4 de US-MOR-05).
 
 ## Pruebas
 
@@ -91,3 +118,7 @@ pgTAP `supabase/tests/database/delinquency_booking_block.test.sql` (pieza de la 
 pgTAP `supabase/tests/database/delinquency_all_client_states.test.sql` (US-CLI-01, pieza 1/5): `active` gana a `pending_review` en una sola fila por clienta, da el mismo estado por clienta que `delinquency_client_states`, `dismissed` y la clienta sin morosidad no salen, el personal ve a todas, una clienta no ve ni la suya y `anon` no la ejecuta.
 
 pgTAP `supabase/tests/database/delinquency_contract.test.sql` (pieza de la base de datos): `active` gana a `pending_review`, `dismissed` no sale, el tope de ids, el orden y la paginación del listado, y que una clienta o `anon` no vean nada.
+
+pgTAP `supabase/tests/database/delinquency_lift_and_forgive_case.test.sql`: levantar y condonar (total y parcial) una `active`; condonar parcial deja el caso `active` con `exception_amount` acumulado y sigue bloqueando si queda saldo; una segunda condonación sobre el mismo caso satisface el saldo y lo deja `forgiven`; levantar o condonar algo que no está `active`, un caso inexistente, un monto fuera de 1..saldo vivo o un motivo vacío/solo espacios se rechazan; la fila sigue visible después; aislamiento por rol (clienta, `anon`, staff sin admin) en ninguna de las dos funciones.
+
+pgTAP `supabase/tests/database/delinquency_lift_unblocks_booking.test.sql`: tras `delinquency_lift_case`, `delinquency_booking_block` deja de listar esa morosidad (criterio 1 demostrado contra US-MOR-02, no solo contra el estado en la tabla).
