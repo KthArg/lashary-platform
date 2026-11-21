@@ -2,7 +2,7 @@
 feature: notifications
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-15
+actualizado: 2026-11-17
 historias:
   - id: US-NOT-01
     estado: terminada
@@ -1005,6 +1005,8 @@ ella (US-NOT-04, 05, 06, 07, 08 y US-CLI-06, docs/process/DEPENDENCIES.md). La e
 `excepcion-proceso` que llevaba el PR de cierre se quitó: no hay criterio diferido que la
 justifique (EST-007), los cuatro criterios de aceptación quedan demostrados con prueba (evidencia
 en el frontmatter de esta historia).
+
+- Aviso de comprobante enviado (US-MOR-03; migración `20261117090000_delinquency_regularization_notice.sql`): el tipo `regularization_submitted` en `notifications_admin_inbox`, con lo que declaró la clienta en `declared_amount` y la cita de la morosidad, sin servicio ni hora. Lo registra `notifications_record_regularization_submitted` (sin `EXECUTE` para nadie con sesión), que llama el trigger de `delinquency` al llegar una solicitud; uno por solicitud. En la bandeja dice «{clienta} envió un comprobante de pago», «Declara ₡X; verifique el comprobante» y lleva a «Revisar comprobantes» (`/admin/morosidades`). Pruebas: pgTAP `delinquency_regularization_notice.test.sql`, `db/__tests__/inbox-repository.test.ts` y `ui/inbox/__tests__/notice-lines.test.ts`.
 
 ## Contrato público (`index.ts`, ARCH-003)
 

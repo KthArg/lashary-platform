@@ -1,4 +1,5 @@
 import { CLIENT_VALIDATION_MESSAGES } from '../../../domain/client-validation-messages'
+import type { DelinquencyFilter } from '../../../domain/list/delinquency-filter'
 
 export const CLIENTS_LABELS = {
   brand: 'LASHARY', sectionTitle: 'Gestión de Clientas', sectionSubtitle: 'Alta y edición manual del registro de clientas',
@@ -14,23 +15,31 @@ export const CLIENTS_LABELS = {
 
 export const CLIENTS_TABLE_HEADERS = {
   fullName: 'Nombre', phone: 'Teléfono', email: 'Correo',
-  delinquencyStatus: 'Morosidad', lastVisit: 'Última visita', actions: 'Acciones',
+  delinquencyStatus: 'Morosidad', lastAppointment: 'Última cita', actions: 'Acciones',
 } as const
 
 export const CLIENTS_TABLE_TEXTS = {
   pendingColumnValue: 'Sin dato',
-  neverVisited: 'Sin visitas',
+  noAppointments: 'Sin citas',
   noDelinquency: 'Sin morosidad',
   delinquencyActive: (amount: string) => `Activa · ${amount}`,
   delinquencyToReview: 'Por revisar',
 } as const
 
-export const CLIENTS_VISIT_FILTER_TEXTS = {
-  formLabel: 'Filtrar por última visita',
-  fromLabel: 'Última visita desde',
-  toLabel: 'Última visita hasta',
+export const CLIENTS_APPOINTMENT_FILTER_TEXTS = {
+  formLabel: 'Filtrar por última cita',
+  fromLabel: 'Última cita desde',
+  toLabel: 'Última cita hasta',
   submit: 'Filtrar',
   clear: 'Quitar fechas',
+} as const
+
+export const CLIENTS_DELINQUENCY_FILTER_TEXTS = {
+  formLabel: 'Filtrar por morosidad',
+  selectLabel: 'Estado de morosidad',
+  allOption: 'Todas',
+  options: { active: 'Activa', pending_review: 'Por revisar', none: 'Sin morosidad' } satisfies Record<DelinquencyFilter, string>,
+  submit: 'Filtrar morosidad',
 } as const
 
 export const CLIENTS_FILTER_TEXTS = {
@@ -64,7 +73,7 @@ export const CLIENTS_ERROR_MESSAGES = {
   saveFailed: 'No se pudo guardar la clienta. Intenta de nuevo.',
   phoneTaken: 'Ya hay una clienta registrada con este teléfono.',
   loadFailed: 'No se pudieron cargar las clientas.',
-  invertedVisitRange: 'La fecha «desde» no puede ser posterior a la fecha «hasta».',
+  invertedAppointmentRange: 'La fecha «desde» no puede ser posterior a la fecha «hasta».',
   loadClientFailed: 'No se pudieron cargar los datos de la clienta.',
   clientNotFound: 'Esta clienta ya no existe o no tienes acceso a ella.',
 } as const
@@ -90,4 +99,8 @@ export const CLIENT_PROFILE_LABELS = {
   recordTab: 'Expediente',
   appointmentsTab: 'Citas',
   delinquencyPrefix: 'Morosidad: ',
+} as const
+
+export const CLIENTS_CLEAR_FILTERS_TEXTS = {
+  link: 'Quitar todos los filtros',
 } as const
