@@ -6,25 +6,35 @@ import {
   buildPaymentReminderTemplateVariables,
 } from '../payment-reminder-message'
 
+const REGULARIZE_URL = 'https://lashary.example/portal/cuenta'
+
 describe('buildPaymentReminderMessage', () => {
   it('incluye el monto adeudado (criterio 2)', () => {
-    const message = buildPaymentReminderMessage({ amountOwed: 18000 })
+    const message = buildPaymentReminderMessage({ amountOwed: 18000, regularizeUrl: REGULARIZE_URL })
 
     expect(message).toContain(formatMoney(moneyFromColones(18000)))
     expect(message).toContain(PAYMENT_REMINDER_MESSAGE_TEXTS.amountLabel)
   })
 
-  it('pide comunicarse con el estudio mientras no exista el enlace para regularizar (US-MOR-03)', () => {
-    expect(buildPaymentReminderMessage({ amountOwed: 18000 })).toContain(PAYMENT_REMINDER_MESSAGE_TEXTS.callToAction)
+  it('lleva el enlace para regularizar el saldo (criterio 2)', () => {
+    const message = buildPaymentReminderMessage({ amountOwed: 18000, regularizeUrl: REGULARIZE_URL })
+
+    expect(message).toContain(PAYMENT_REMINDER_MESSAGE_TEXTS.regularizeLine(REGULARIZE_URL))
+    expect(message).toContain(REGULARIZE_URL)
   })
 
   it('un monto distinto da un mensaje distinto', () => {
-    expect(buildPaymentReminderMessage({ amountOwed: 5000 })).not.toBe(buildPaymentReminderMessage({ amountOwed: 18000 }))
+    expect(buildPaymentReminderMessage({ amountOwed: 5000, regularizeUrl: REGULARIZE_URL })).not.toBe(
+      buildPaymentReminderMessage({ amountOwed: 18000, regularizeUrl: REGULARIZE_URL }),
+    )
   })
 })
 
 describe('buildPaymentReminderTemplateVariables', () => {
-  it('da el monto como única variable, para una plantilla de WhatsApp aprobada por Meta', () => {
-    expect(buildPaymentReminderTemplateVariables({ amountOwed: 18000 })).toEqual([formatMoney(moneyFromColones(18000))])
+  it('da el monto y el enlace como variables, en ese orden, para una plantilla de WhatsApp aprobada por Meta', () => {
+    expect(buildPaymentReminderTemplateVariables({ amountOwed: 18000, regularizeUrl: REGULARIZE_URL })).toEqual([
+      formatMoney(moneyFromColones(18000)),
+      REGULARIZE_URL,
+    ])
   })
 })
