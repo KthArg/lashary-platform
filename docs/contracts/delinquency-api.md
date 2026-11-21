@@ -68,7 +68,7 @@ La clienta regulariza una morosidad `active` enviando un comprobante; la adminis
 |---|---|
 | `pending_approval` | La clienta la envió y espera la revisión. Hay como mucho una por morosidad. |
 | `approved` | La administradora la aprobó: se asentó el pago por el monto aprobado. |
-| `rejected` | La administradora la rechazó con un motivo obligatorio. La clienta puede enviar otra. |
+| `rejected` | La administradora la rechazó con un motivo obligatorio, de 10 a 500 caracteres sin contar los espacios de los extremos (decisión de la clienta del 2026-11-18). La clienta puede enviar otra. |
 | `replaced` | La clienta envió un comprobante nuevo mientras esta estaba pendiente: la nueva la sustituye. Se conserva para el historial. |
 
 `replaced` es la lectura provisional de «la clienta puede reemplazar el comprobante» (Kenny, 2026-11-13), pendiente de que él la confirme. Si dice que solo se reenvía después de un rechazo, el estado desaparece y reenviar con una pendiente pasa a ser un error.
