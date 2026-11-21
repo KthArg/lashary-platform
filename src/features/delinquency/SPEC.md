@@ -528,6 +528,13 @@ que solo coincidía el prefijo) y el `CHECK` de `kind` queda como la unión de a
 (`charge`, `deposit_credit`, `payment`, `forgiveness_credit`), asumiendo que la pila de US-MOR-03 aplica primero por
 número de versión. Si esa pila renombra sus migraciones más adelante, este supuesto hay que revisarlo.
 
+**Seguimiento (2026-11-21):** US-MOR-03 se mergeó a `main` el 2026-11-20 (#943) antes que esta historia, confirmando
+el supuesto de arriba. Pero el `CHECK` de `kind` no era el único que había que unir: `delinquency_cases_state_check`
+y `delinquency_cases_decision_matches_state` también los reescribe US-MOR-03 (agregando `settled`, migración
+`20261117040000_delinquency_regularizations.sql`) y esta historia los pisaba sin `settled` — hallazgo N1 de la
+auditoría de Kenny, corregido en la pieza 3 (ver abajo). La lección: «unir con lo que deja la pila que entra
+primero» aplica a **todo** `CHECK` que dos historias reescriban juntas, no solo al que se identificó primero.
+
 ### Pieza 1 — contrato
 
 `docs/contracts/payments-api.md` (nueva función `payments_record_forgiveness_entry`, nuevo asiento
@@ -556,6 +563,15 @@ que nunca tocan el `pending` original (criterio 4). `delinquency_lift_case` y `d
 `forgiven` si se satura — puede llamarse más de una vez sobre el mismo caso. `delinquency_list_active_cases`
 da el detalle por caso (saldo vivo + `exception_amount`) que `delinquency_list_active` (US-MOR-01) no tiene,
 al agregar por clienta y mostrar la foto.
+
+**N1 de la auditoría del 2026-11-21 (confirmado contra `main` ya con US-MOR-03 mergeada):** los 4 `CHECK` que
+reescribe esta migración (`delinquency_cases_state_check`, `delinquency_cases_decision_matches_state`,
+`delinquency_cases_exception_reason_by_state`, `delinquency_cases_exception_amount_by_state`) van ahora
+como unión con `settled`, el estado que agregó US-MOR-03. `settled` se trata igual que `active` en los dos
+últimos: no exige ni prohíbe `exception_reason`/`exception_amount`, así que una condonación parcial seguida
+de un pago que termina de saldar la cita (`delinquency_approve_regularization`, que no toca esas columnas)
+no pierde lo ya condonado. Sin este cambio, cualquier aprobación que dejara una cita en cero violaba el
+`CHECK` de estado y la de excepción por estado, sin importar el monto.
 
 B4 corregido: la validación de motivo vacío usa `!~ '\S'` en vez de `btrim()`, que no detectaba un motivo de
 solo salto de línea o tabulador. Sin pgTAP todavía: pieza siguiente.
