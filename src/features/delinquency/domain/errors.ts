@@ -1,8 +1,15 @@
+import type { ReceiptProblem } from './receipt'
+import type { RegularizationRefusal, ReviewRefusal } from './regularization'
+
 export const DELINQUENCY_ERROR_CODES = {
   storageFailed: 'DELINQUENCY_STORAGE_FAILED',
   caseNotFound: 'DELINQUENCY_CASE_NOT_FOUND',
   caseAlreadyDecided: 'DELINQUENCY_CASE_ALREADY_DECIDED',
   invalidGraceDays: 'DELINQUENCY_INVALID_GRACE_DAYS',
+  invalidReceipt: 'DELINQUENCY_INVALID_RECEIPT',
+  notAClient: 'DELINQUENCY_NOT_A_CLIENT',
+  regularizationRefused: 'DELINQUENCY_REGULARIZATION_REFUSED',
+  reviewRefused: 'DELINQUENCY_REVIEW_REFUSED',
 } as const
 
 type DelinquencyErrorCode = (typeof DELINQUENCY_ERROR_CODES)[keyof typeof DELINQUENCY_ERROR_CODES]
@@ -64,3 +71,54 @@ export function invalidGraceDays(): InvalidGraceDays {
 
 export const isInvalidGraceDays = (error: unknown): error is InvalidGraceDays =>
   hasCode<InvalidGraceDays>(error, DELINQUENCY_ERROR_CODES.invalidGraceDays)
+
+export interface InvalidReceipt {
+  readonly code: typeof DELINQUENCY_ERROR_CODES.invalidReceipt
+  readonly message: string
+  readonly problem: ReceiptProblem
+}
+
+export function invalidReceipt(problem: ReceiptProblem): InvalidReceipt {
+  return { code: DELINQUENCY_ERROR_CODES.invalidReceipt, message: `el comprobante no es válido: ${problem}`, problem }
+}
+
+export const isInvalidReceipt = (error: unknown): error is InvalidReceipt =>
+  hasCode<InvalidReceipt>(error, DELINQUENCY_ERROR_CODES.invalidReceipt)
+
+export interface NotAClient {
+  readonly code: typeof DELINQUENCY_ERROR_CODES.notAClient
+  readonly message: string
+}
+
+export function notAClient(): NotAClient {
+  return { code: DELINQUENCY_ERROR_CODES.notAClient, message: 'la sesión no es de una clienta' }
+}
+
+export const isNotAClient = (error: unknown): error is NotAClient =>
+  hasCode<NotAClient>(error, DELINQUENCY_ERROR_CODES.notAClient)
+
+export interface RegularizationRefused {
+  readonly code: typeof DELINQUENCY_ERROR_CODES.regularizationRefused
+  readonly message: string
+  readonly reason: RegularizationRefusal
+}
+
+export function regularizationRefused(reason: RegularizationRefusal): RegularizationRefused {
+  return { code: DELINQUENCY_ERROR_CODES.regularizationRefused, message: `la regularización no se aceptó: ${reason}`, reason }
+}
+
+export const isRegularizationRefused = (error: unknown): error is RegularizationRefused =>
+  hasCode<RegularizationRefused>(error, DELINQUENCY_ERROR_CODES.regularizationRefused)
+
+export interface ReviewRefused {
+  readonly code: typeof DELINQUENCY_ERROR_CODES.reviewRefused
+  readonly message: string
+  readonly reason: ReviewRefusal
+}
+
+export function reviewRefused(reason: ReviewRefusal): ReviewRefused {
+  return { code: DELINQUENCY_ERROR_CODES.reviewRefused, message: `la revisión no se aplicó: ${reason}`, reason }
+}
+
+export const isReviewRefused = (error: unknown): error is ReviewRefused =>
+  hasCode<ReviewRefused>(error, DELINQUENCY_ERROR_CODES.reviewRefused)
