@@ -68,7 +68,7 @@ La clienta regulariza una morosidad `active` enviando un comprobante; la adminis
 |---|---|
 | `pending_approval` | La clienta la envió y espera la revisión. Hay como mucho una por morosidad. |
 | `approved` | La administradora la aprobó: se asentó el pago por el monto aprobado. |
-| `rejected` | La administradora la rechazó con un motivo obligatorio. La clienta puede enviar otra. |
+| `rejected` | La administradora la rechazó con un motivo obligatorio, de 10 a 500 caracteres sin contar los espacios de los extremos (decisión de la clienta del 2026-11-18). La clienta puede enviar otra. |
 | `replaced` | La clienta envió un comprobante nuevo mientras esta estaba pendiente: la nueva la sustituye. Se conserva para el historial. |
 
 `replaced` es la lectura provisional de «la clienta puede reemplazar el comprobante» (Kenny, 2026-11-13), pendiente de que él la confirme. Si dice que solo se reenvía después de un rechazo, el estado desaparece y reenviar con una pendiente pasa a ser un error.
@@ -78,6 +78,7 @@ La clienta regulariza una morosidad `active` enviando un comprobante; la adminis
 ```sql
 public.delinquency_my_account() => TABLE (
   case_id           uuid,
+  case_state        text,         -- active o settled
   appointment_id    uuid,
   pending           bigint,       -- lo que debe esa cita hoy (payments_appointment_balances)
   since             timestamptz,  -- cuándo se detectó la morosidad
@@ -90,14 +91,14 @@ public.delinquency_my_account() => TABLE (
 )
 ```
 
-Las morosidades `active` de la clienta de la sesión, la más antigua primero, cada una con su solicitud más reciente. Responde solo por la sesión (sin parámetro de clienta): una clienta no puede preguntar por otra, y una sesión que no es clienta recibe vacío. Es `SECURITY DEFINER` porque la clienta no lee las tablas de morosidad ni el ledger, como `delinquency_booking_block`. `anon` no tiene `EXECUTE`. El total que la vista muestre es la suma de `pending`: lo que debe en morosidades confirmadas. No es el saldo completo del ledger, que incluye citas recién cerradas todavía dentro de la gracia.
+Las morosidades de la clienta de la sesión, la más antigua primero, cada una con el saldo de hoy y su solicitud más reciente (una `replaced` nunca cuenta como la más reciente): las `active` cuya cita todavía debe y las `settled` de los últimos 30 días, para que la clienta vea que su regularización se aprobó y la deuda quedó saldada. Una `active` cuya cita ya no debe nada no sale. Responde solo por la sesión (sin parámetro de clienta): una clienta no puede preguntar por otra, y una sesión que no es clienta recibe vacío. Es `SECURITY DEFINER` porque la clienta no lee las tablas de morosidad ni el ledger, como `delinquency_booking_block`. `anon` no tiene `EXECUTE`. El total que la vista muestre es la suma de `pending`: lo que debe en morosidades confirmadas. No es el saldo completo del ledger, que incluye citas recién cerradas todavía dentro de la gracia.
 
-Quien la necesita: la pantalla de estado de cuenta de la clienta (`/portal/cuenta`, feature `account`, criterios 1 y 4). Enviar la solicitud con el comprobante no es una función de este contrato: `account` usa la acción que exporta `delinquency` por su `index.ts` (ARCH-003), que valida el archivo por su contenido en el servidor (DOM-008) antes de llamar a la base.
+Quien la necesita: la pantalla de estado de cuenta de la clienta (`/portal/cuenta`, feature `account`, criterios 1 y 4). Enviar la solicitud es `delinquency_submit_regularization`, propia de `delinquency` y no de este contrato, que exige una morosidad `active` propia, lo declarado entre 1 y el saldo de hoy, y el comprobante ya subido en la carpeta de la clienta y sin usar. Enviar con el comprobante no es una función de este contrato: `account` usa la acción que exporta `delinquency` por su `index.ts` (ARCH-003), que valida el archivo por su contenido en el servidor (DOM-008) antes de llamar a la base.
 
 ### El comprobante
 
 - Vive en un bucket privado de Supabase Storage de `delinquency` (`delinquency-receipts`), en la carpeta de la clienta (`<client_id>/<solicitud>.<ext>`). Nunca tiene URL pública: la clienta dueña y el personal lo ven por URL firmada de vida corta.
-- Imagen (JPEG, PNG o WebP) o PDF, con tope de 4 MB: dentro del rango de 3 a 5 MB que dio Kenny (2026-11-13), porque el archivo pasa por el servidor y Vercel acepta como mucho 4,5 MB por petición. Se revisa al conocer el peso promedio. El tipo se decide por los primeros bytes del archivo en el servidor, no por la extensión ni por lo que declara el navegador (DOM-008). El bucket repite el tope y la lista de tipos como segunda barrera.
+- Imagen (JPEG, PNG o WebP) o PDF, con tope de 1 MB: lo decidió la clienta (dueña del estudio) el 2026-11-18, porque un comprobante de SINPE o del banco no pasa de 1 MB (antes era 4 MB; migración `20261117100000_delinquency_receipts_1mb.sql`). El tipo se decide por los primeros bytes del archivo en el servidor, no por la extensión ni por lo que declara el navegador (DOM-008). El bucket repite el tope y la lista de tipos como segunda barrera.
 - La clienta solo puede escribir en su propia carpeta, y la función que registra la solicitud comprueba que el comprobante esté ahí. No hay UPDATE ni DELETE: reemplazar es subir uno nuevo con una solicitud nueva.
 
 ### Lo que `delinquency` pide a `payments`
@@ -111,7 +112,7 @@ Como el aviso de morosidad por revisar, va por una función de `notifications` q
 ```sql
 notifications_record_regularization_submitted(
   p_request_id      uuid,
-  p_case_id         uuid,
+  p_appointment_id  uuid,
   p_client_name     text,
   p_declared_amount bigint
 ) RETURNS void
@@ -119,7 +120,7 @@ notifications_record_regularization_submitted(
 
 - **Quién la llama:** solo el trigger, al insertarse una solicitud `pending_approval`. Es `SECURITY DEFINER` y no tiene `EXECUTE` para `anon` ni `authenticated`.
 - **Un aviso por solicitud:** `p_request_id` es único; repetirlo no duplica.
-- **Qué lleva:** el nombre de la clienta (de `clients_display_names`, «Clienta» si no hay) y lo que declaró. No lleva el comprobante.
+- **Qué lleva:** el nombre de la clienta (de `clients_display_names`, «Clienta» si no hay), lo que declaró (columna propia, `declared_amount`) y la cita de la morosidad, que la bandeja exige y `notifications` no puede buscar sola (ARCH-005). No lleva el comprobante ni servicio u hora.
 - **No bloquea:** si registrar el aviso falla, la solicitud se crea igual y el fallo queda en el log.
 - La clienta no recibe aviso: ve el estado en su estado de cuenta. WhatsApp y correo quedan como deuda (Kenny, 2026-11-13).
 

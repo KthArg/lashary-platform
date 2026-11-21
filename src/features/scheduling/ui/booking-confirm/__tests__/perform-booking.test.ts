@@ -160,7 +160,7 @@ describe('performBooking — US-AGE-05', () => {
     expect(await performBooking(fields, deps)).toEqual({ kind: 'failed', message })
   })
 
-  it('morosidad activa: dice cuánto debe y de qué cita, con el texto del PO', async () => {
+  it('morosidad activa: dice cuánto debe y de qué cita, con el texto del PO, y ofrece regularizar (US-MOR-03)', async () => {
     const error = clientHasActiveDelinquency({
       appointmentId: 'cita-con-deuda',
       pending: 25000,
@@ -173,6 +173,7 @@ describe('performBooking — US-AGE-05', () => {
     expect(outcome).toEqual({
       kind: 'failed',
       message: bookingConfirmMessages.delinquency(formatMoney(moneyFromColones(25000)), '5 de noviembre de 2026'),
+      canRegularize: true,
     })
     expect(outcome.kind === 'failed' && outcome.message).toContain('Comunícate con el estudio para regularizarlo')
   })
@@ -184,6 +185,7 @@ describe('performBooking — US-AGE-05', () => {
     const outcome = await performBooking({ servicio: packageOptionKey('p1'), fecha: '2027-03-01', espacio: '600' }, deps)
 
     expect(outcome.kind === 'failed' && outcome.message).toContain('de una cita anterior')
+    expect(outcome.kind === 'failed' && outcome.canRegularize).toBe(true)
   })
 
   it('quien no es clienta no reserva', async () => {
