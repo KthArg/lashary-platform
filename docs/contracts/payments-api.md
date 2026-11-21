@@ -8,7 +8,7 @@
 
 ## Funciones SQL
 
-Las tres corren con los permisos de quien llama (`SECURITY INVOKER`): la RLS del ledger decide qué se ve, así que el contrato no agrega ningún permiso. Hoy solo staff lee el ledger; una clienta o `anon` no ven ningún asiento. Solo `authenticated` tiene `EXECUTE`.
+Las tres de lectura corren con los permisos de quien llama (`SECURITY INVOKER`): la RLS del ledger decide qué se ve, así que el contrato no agrega ningún permiso. Hoy solo staff lee el ledger; una clienta o `anon` no ven ningún asiento. Solo `authenticated` tiene `EXECUTE`.
 
 ### `public.payments_client_balance(p_client_id uuid) => bigint`
 
@@ -34,15 +34,35 @@ A diferencia de `payments_unpaid_charges`, no mira la fecha de cierre ni la grac
 
 Quien la necesita: `delinquency`, para decidir si una morosidad confirmada sigue bloqueando la agenda (criterio 3 de US-MOR-02: al saldarse, la clienta recupera el acceso sola). Cuando US-MOR-03 registre pagos como asientos del ledger, el saldo de la cita baja y esta función lo refleja sin cambiar su forma.
 
+## Registro de pago (US-MOR-03)
+
+Un pago es un asiento nuevo del ledger, nunca un cambio a uno existente (DOM-005): `kind = 'payment'`, con monto **negativo** (baja el saldo de la cita). El sistema no mueve dinero: el asiento solo registra un pago que la administradora verificó con el comprobante.
+
+- **Varios pagos por cita.** Los pagos parciales y pequeños están permitidos (decisión del PO, 2026-11-13), así que una cita puede tener varios asientos `payment`. El índice único `(appointment_id, kind)` se acota a `charge` y `deposit_credit`, los únicos que no se repiten: cerrar dos veces sigue sin duplicar el cargo.
+- **Un pago siempre es de una cita.** A diferencia de otros asientos futuros, `payment` exige `appointment_id`.
+
+### `public.payments_record_payment(p_client_id uuid, p_appointment_id uuid, p_amount bigint) => uuid`
+
+Escribe el asiento `payment` por `-p_amount` y devuelve su id. `created_by` lo fija la base desde la sesión, como en todo asiento.
+
+- `p_amount` va de 1 hasta el saldo actual de la cita (`payments_appointment_balances`): 0, negativo o nulo es `payments_payment_amount_invalid`, y más que el saldo es `payments_payment_exceeds_balance` (SQLSTATE `22023` en los dos). Una cita sin saldo no admite pagos. Así un pago nunca deja la cita con saldo a favor.
+- La cita tiene que tener asientos de `p_client_id`: si no, `payments_payment_wrong_client` (`22023`).
+- La función toma un lock por cita, así que dos aprobaciones simultáneas de la misma cita no pasan juntas el tope del saldo.
+- **Nadie con sesión la ejecuta directo:** no tiene `EXECUTE` para `anon` ni `authenticated`. Es `SECURITY INVOKER`, como `payments_record_close_entries`: la llama solo la función de aprobación de `delinquency`, que es `SECURITY DEFINER`, exige administradora y deja la bitácora en la misma transacción (DOM-011), así que corre con los permisos de esa función. Es el mismo cierre que tiene hoy el ledger tras el hallazgo M3: nadie escribe asientos sueltos.
+
+Quien la necesita: la aprobación de una regularización (criterio 3 de US-MOR-03).
+
 ## Garantías
 
 1. **La forma de la fila es contrato:** un cambio de columnas o de firma se versiona aquí antes del cambio (INT-003).
-2. **Solo lectura:** ninguna función de este contrato escribe en el ledger. Los asientos los escribe `scheduling_close_appointment` al cerrar la cita y, más adelante, el registro de pago de US-MOR-03.
+2. **Las funciones de lectura no escriben:** los asientos los escriben solo `scheduling_close_appointment` al cerrar la cita (cargo y anticipo) y `payments_record_payment` al aprobar un pago, las dos sin `EXECUTE` directo para nadie con sesión.
 3. **La RLS es la frontera de acceso (SEC-001):** las funciones no la saltan. Si `payments` cambia sus políticas, el contrato cambia con ellas.
 4. **El saldo por cita sale del ledger, nunca de una columna** (DOM-005): `payments_appointment_balances` suma los asientos en el momento de preguntar.
 5. **Sin datos de contacto ni de la cita:** salen ids, un monto y una fecha; el nombre de la clienta se pide a `clients` y la cita a `scheduling`.
 
 ## Pruebas
+
+pgTAP `supabase/tests/database/payments_record_payment.test.sql` (US-MOR-03): un pago baja el saldo de la cita, dos pagos parciales de la misma cita conviven, el tope del saldo (pagarlo exacto sí, uno más no, y una cita saldada no admite pagos), monto inválido, cita de otra clienta o sin asientos, y que ni la administradora pueda llamarla directo. `payments_ledger_payment_kind.test.sql`: el cargo y el anticipo siguen sin poder duplicarse por cita.
 
 pgTAP `supabase/tests/database/payments_appointment_balances.test.sql` (pieza de la base de datos de US-MOR-02): una cita con cargo y anticipo menor devuelve su saldo, una saldada devuelve cero, una sin asientos no devuelve fila, el tope de ids, y que una clienta o `anon` no vean nada.
 

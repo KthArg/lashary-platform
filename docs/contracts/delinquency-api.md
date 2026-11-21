@@ -13,8 +13,9 @@
 | `pending_review` | Detectada tras el periodo de gracia. La administradora recibió el aviso previo y todavía no decide: **no tiene ninguna consecuencia** sobre la clienta (DOM-012). |
 | `active` | La administradora la confirmó. Es la única que cuenta como «morosidad activa». |
 | `dismissed` | La administradora la descartó. No vuelve a generarse por la misma cita. |
+| `settled` | Saldada (US-MOR-03): la administradora aprobó una regularización y la cita quedó sin saldo. Como `dismissed`, no tiene consecuencias y ninguna función de este contrato la devuelve. |
 
-Regularizar y levantar o perdonar (US-MOR-03 y US-MOR-05) agregan sus propios estados y se versionan aquí cuando esas historias los necesiten.
+`settled` lo pone solo la aprobación de una regularización, en la misma transacción que asienta el pago, y solo cuando la cita queda en cero; un pago parcial deja la morosidad `active`. Una `active` cuya cita se saldó por otro camino deja de bloquear igual (el bloqueo mira el saldo, US-MOR-02), aunque siga `active`. Levantar o perdonar (US-MOR-05) agrega su estado cuando se construya.
 
 ## Funciones SQL
 
@@ -57,6 +58,72 @@ Recuperar el acceso es derivado, no una acción: cuando el saldo de la cita lleg
 
 Quien la necesita: las funciones de reserva de `scheduling` (criterios 1 y 3 de US-MOR-02), la excepción de la administradora (criterio 4). La agenda diaria (ítem 11 de «Criterios trasladados») no usa esta función: pide a muchas clientas a la vez por `delinquency_client_states`, que ya existe.
 
+## Regularización (US-MOR-03)
+
+La clienta regulariza una morosidad `active` enviando un comprobante; la administradora lo revisa y aprueba o rechaza. La solicitud es de `delinquency` (cuelga de una morosidad) y vive en sus tablas, que nadie más consulta (ARCH-005).
+
+### Estados de una solicitud
+
+| Estado | Significado |
+|---|---|
+| `pending_approval` | La clienta la envió y espera la revisión. Hay como mucho una por morosidad. |
+| `approved` | La administradora la aprobó: se asentó el pago por el monto aprobado. |
+| `rejected` | La administradora la rechazó con un motivo obligatorio, de 10 a 500 caracteres sin contar los espacios de los extremos (decisión de la clienta del 2026-11-18). La clienta puede enviar otra. |
+| `replaced` | La clienta envió un comprobante nuevo mientras esta estaba pendiente: la nueva la sustituye. Se conserva para el historial. |
+
+`replaced` es la lectura provisional de «la clienta puede reemplazar el comprobante» (Kenny, 2026-11-13), pendiente de que él la confirme. Si dice que solo se reenvía después de un rechazo, el estado desaparece y reenviar con una pendiente pasa a ser un error.
+
+### Lo que usa la vista de estado de cuenta (`account`)
+
+```sql
+public.delinquency_my_account() => TABLE (
+  case_id           uuid,
+  case_state        text,         -- active o settled
+  appointment_id    uuid,
+  pending           bigint,       -- lo que debe esa cita hoy (payments_appointment_balances)
+  since             timestamptz,  -- cuándo se detectó la morosidad
+  request_id        uuid,         -- la solicitud más reciente de esa morosidad, o NULL
+  request_state     text,         -- su estado, o NULL si nunca envió una
+  declared_amount   bigint,       -- lo que la clienta dijo haber pagado en esa solicitud
+  approved_amount   bigint,       -- lo que aprobó la administradora (solo si approved)
+  rejection_reason  text,         -- solo si rejected
+  reviewed_at       timestamptz
+)
+```
+
+Las morosidades de la clienta de la sesión, la más antigua primero, cada una con el saldo de hoy y su solicitud más reciente (una `replaced` nunca cuenta como la más reciente): las `active` cuya cita todavía debe y las `settled` de los últimos 30 días, para que la clienta vea que su regularización se aprobó y la deuda quedó saldada. Una `active` cuya cita ya no debe nada no sale. Responde solo por la sesión (sin parámetro de clienta): una clienta no puede preguntar por otra, y una sesión que no es clienta recibe vacío. Es `SECURITY DEFINER` porque la clienta no lee las tablas de morosidad ni el ledger, como `delinquency_booking_block`. `anon` no tiene `EXECUTE`. El total que la vista muestre es la suma de `pending`: lo que debe en morosidades confirmadas. No es el saldo completo del ledger, que incluye citas recién cerradas todavía dentro de la gracia.
+
+Quien la necesita: la pantalla de estado de cuenta de la clienta (`/portal/cuenta`, feature `account`, criterios 1 y 4). Enviar la solicitud es `delinquency_submit_regularization`, propia de `delinquency` y no de este contrato, que exige una morosidad `active` propia, lo declarado entre 1 y el saldo de hoy, y el comprobante ya subido en la carpeta de la clienta y sin usar. Enviar con el comprobante no es una función de este contrato: `account` usa la acción que exporta `delinquency` por su `index.ts` (ARCH-003), que valida el archivo por su contenido en el servidor (DOM-008) antes de llamar a la base.
+
+### El comprobante
+
+- Vive en un bucket privado de Supabase Storage de `delinquency` (`delinquency-receipts`), en la carpeta de la clienta (`<client_id>/<solicitud>.<ext>`). Nunca tiene URL pública: la clienta dueña y el personal lo ven por URL firmada de vida corta.
+- Imagen (JPEG, PNG o WebP) o PDF, con tope de 1 MB: lo decidió la clienta (dueña del estudio) el 2026-11-18, porque un comprobante de SINPE o del banco no pasa de 1 MB (antes era 4 MB; migración `20261117100000_delinquency_receipts_1mb.sql`). El tipo se decide por los primeros bytes del archivo en el servidor, no por la extensión ni por lo que declara el navegador (DOM-008). El bucket repite el tope y la lista de tipos como segunda barrera.
+- La clienta solo puede escribir en su propia carpeta, y la función que registra la solicitud comprueba que el comprobante esté ahí. No hay UPDATE ni DELETE: reemplazar es subir uno nuevo con una solicitud nueva.
+
+### Lo que `delinquency` pide a `payments`
+
+Aprobar llama a `payments_record_payment` ([payments-api.md](payments-api.md)) con el monto que aprobó la administradora, que puede ser distinto del declarado. Pago y estado de la solicitud van en la misma transacción, con el evento en la bitácora (DOM-011); si la cita queda en cero, la morosidad pasa a `settled`.
+
+### Aviso a la bandeja cuando llega un comprobante
+
+Como el aviso de morosidad por revisar, va por una función de `notifications` que llama un trigger de la tabla de solicitudes, en la misma transacción:
+
+```sql
+notifications_record_regularization_submitted(
+  p_request_id      uuid,
+  p_appointment_id  uuid,
+  p_client_name     text,
+  p_declared_amount bigint
+) RETURNS void
+```
+
+- **Quién la llama:** solo el trigger, al insertarse una solicitud `pending_approval`. Es `SECURITY DEFINER` y no tiene `EXECUTE` para `anon` ni `authenticated`.
+- **Un aviso por solicitud:** `p_request_id` es único; repetirlo no duplica.
+- **Qué lleva:** el nombre de la clienta (de `clients_display_names`, «Clienta» si no hay), lo que declaró (columna propia, `declared_amount`) y la cita de la morosidad, que la bandeja exige y `notifications` no puede buscar sola (ARCH-005). No lleva el comprobante ni servicio u hora.
+- **No bloquea:** si registrar el aviso falla, la solicitud se crea igual y el fallo queda en el log.
+- La clienta no recibe aviso: ve el estado en su estado de cuenta. WhatsApp y correo quedan como deuda (Kenny, 2026-11-13).
+
 ## Aviso a la bandeja de la administradora (criterio 3 de US-MOR-01)
 
 `delinquency` le avisa a `notifications` cuándo hay una morosidad por revisar. Va por una función SQL de `notifications` que llama un trigger de `delinquency_cases`, en la misma transacción que la detección, igual que `notifications_record_booking` de `scheduling`:
@@ -79,12 +146,15 @@ notifications_record_delinquency_review(
 ## Garantías
 
 1. **La forma de la fila es contrato:** un cambio de columnas, de firma o de estados se versiona aquí antes del cambio (INT-003).
-2. **Solo lectura:** ninguna función de este contrato cambia una morosidad ni escribe en otra feature. Confirmar y descartar son acciones propias de `delinquency`.
+2. **Solo lectura:** ninguna función de este contrato cambia una morosidad ni escribe en otra feature. Confirmar, descartar, regularizar, aprobar y rechazar son acciones propias de `delinquency`; la única escritura en otra feature es el asiento de pago, por la función de `payments`.
 3. **`pending_review` no bloquea:** quien consuma el contrato para decidir algo (US-MOR-02) solo puede tratar `active` como morosidad (DOM-012).
 4. **El bloqueo es de la base, no de la pantalla:** `delinquency_booking_block` lo consultan las funciones de reserva dentro de la misma transacción, así que una llamada directa a PostgREST no se lo salta (SEC-001).
 5. **Sin datos de contacto:** salen ids, un monto y una fecha; el nombre se pide a `clients`.
+6. **Solo se regulariza una morosidad `active`** (Kenny, 2026-11-13): una por revisar, descartada o saldada no admite solicitudes.
 
 ## Pruebas
+
+pgTAP de la regularización (por escribir con cada función): `delinquency_my_account` responde solo por la clienta de la sesión, con el saldo de hoy y su solicitud más reciente; una solicitud solo sobre una `active` propia y con el comprobante en su carpeta; aprobar asienta el pago y salda la morosidad solo si la cita queda en cero; rechazar exige motivo; el aviso a la bandeja sale una vez por solicitud; y el bucket no deja leer ni escribir en la carpeta de otra clienta.
 
 pgTAP `supabase/tests/database/delinquency_booking_block.test.sql` (pieza de la base de datos de US-MOR-02): una `active` con saldo bloquea con el saldo de hoy y no con la foto, una `active` ya saldada no bloquea, `pending_review` y `dismissed` no bloquean, el orden de la más antigua primero, una clienta solo pregunta por sí misma, el personal por cualquiera, y `anon` no la ejecuta.
 
