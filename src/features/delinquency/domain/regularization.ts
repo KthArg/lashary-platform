@@ -79,3 +79,22 @@ export interface QueueItem extends PendingRegularization {
   readonly clientName: string | null
   readonly receiptUrl: string | null
 }
+
+// La base repite los dos límites del motivo del rechazo. El mínimo lo decidió la clienta (dueña del estudio) el
+// 2026-11-18: la clienta lee el motivo, así que tiene que decirle algo.
+export const REJECTION_REASON_MIN_LENGTH = 10
+export const REJECTION_REASON_MAX_LENGTH = 500
+
+export type ReviewRefusal =
+  | 'request-not-found'
+  | 'request-not-pending'
+  | 'approved-amount-invalid'
+  | 'rejection-reason-required'
+
+// Lo aprobado puede ser distinto de lo declarado (Kenny, 2026-11-13); que no pase lo que debe hoy lo dice la base.
+export const isValidApprovedAmount = (amount: number): boolean => Number.isSafeInteger(amount) && amount > 0
+
+export function normalizeRejectionReason(reason: string): string | null {
+  const trimmed = reason.trim()
+  return trimmed.length < REJECTION_REASON_MIN_LENGTH || trimmed.length > REJECTION_REASON_MAX_LENGTH ? null : trimmed
+}

@@ -39,5 +39,11 @@ export function noticeLines(notice: InboxNotice): NoticeLines {
         details: [INBOX_TEXTS.owes(formatMoney(moneyFromColones(notice.pending)))],
         action: { label: INBOX_TEXTS.reviewDelinquencies, href: DELINQUENCY_REVIEW_PATH },
       }
+    case 'regularization_submitted':
+      return {
+        title: INBOX_TEXTS.regularizationSubmitted(notice.clientName),
+        details: [INBOX_TEXTS.declares(formatMoney(moneyFromColones(notice.declared)))],
+        action: { label: INBOX_TEXTS.reviewReceipts, href: DELINQUENCY_REVIEW_PATH },
+      }
   }
 }

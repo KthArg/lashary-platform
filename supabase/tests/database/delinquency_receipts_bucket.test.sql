@@ -1,5 +1,5 @@
 -- delinquency_receipts_bucket.test.sql
--- US-MOR-03 · delinquency — el bucket de comprobantes es privado, acepta imagen o PDF de hasta 4 MB, cada
+-- US-MOR-03 · delinquency — el bucket de comprobantes es privado, acepta imagen o PDF de hasta 1 MB, cada
 -- clienta escribe y lee solo en su carpeta (SEC-002: otra clienta con sesión válida no ve ni escribe en la
 -- suya), el personal lee todas, y nadie cambia ni borra un comprobante (sin políticas de UPDATE ni DELETE). Todo se deshace con ROLLBACK y no se
 -- usa la service-role key (SEC-003).
@@ -27,7 +27,7 @@ SELECT is((SELECT public FROM storage.buckets WHERE id = 'delinquency-receipts')
   false, 'el bucket de comprobantes es privado: ningún comprobante tiene URL pública');
 
 SELECT is((SELECT file_size_limit FROM storage.buckets WHERE id = 'delinquency-receipts'),
-  4194304::bigint, 'el bucket acepta comprobantes de hasta 4 MB');
+  1048576::bigint, 'el bucket acepta comprobantes de hasta 1 MB (decisión de la clienta del 2026-11-18)');
 
 SELECT is((SELECT allowed_mime_types FROM storage.buckets WHERE id = 'delinquency-receipts'),
   ARRAY['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
