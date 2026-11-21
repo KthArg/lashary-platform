@@ -578,7 +578,7 @@ solo salto de línea o tabulador. Sin pgTAP todavía: pieza siguiente.
 
 ### Pieza 4 — pgTAP de levantar y condonar
 
-Pruebas de la pieza anterior. `delinquency_lift_and_forgive_case.test.sql` (32 casos: levantar, condonar
+Pruebas de la pieza anterior. `delinquency_lift_and_forgive_case.test.sql` (37 casos: levantar, condonar
 total y parcial sin cerrar el caso, acumulado de condonaciones en `exception_amount`, no borra historial,
 rechazos por estado/monto contra el saldo vivo (A3, no la foto)/motivo vacío o solo espacio en blanco
 (B4)/caso inexistente, aislamiento clienta/anon — este repo no distingue un rol "staff" de "admin", así que
@@ -586,4 +586,14 @@ el aislamiento se prueba igual que el resto de las funciones de la feature). `de
 test.sql` (7 casos: una fila por caso, saldo vivo distinto de la foto, orden, cursor, aislamiento).
 `delinquency_lift_unblocks_booking.test.sql` (2 casos: criterio 1 demostrado contra `delinquency_booking_
 block` de US-MOR-02 — M1 de la auditoría —, no solo contra el estado en la tabla). Suite completa: `npx
-supabase test db`, 107 archivos, 1407 pruebas, PASS.
+supabase test db`, 117 archivos, 1543 pruebas, PASS.
+
+**pgTAP de N1 (auditoría del 2026-11-21), agregado a `delinquency_lift_and_forgive_case.test.sql`:** condona
+6000 de un cargo de 10000 (queda `active` con `exception_amount = 6000`), envía y aprueba una
+regularización de US-MOR-03 por los 4000 restantes (`delinquency_submit_regularization` +
+`delinquency_approve_regularization`), y comprueba con `lives_ok` que aprobar ya no viola ningún `CHECK`
+(antes de la pieza 3, moría con `23514` en `delinquency_cases_exception_amount_by_state` apenas intentaba
+dejar la fila en `settled`) y con `is()` que la morosidad queda `settled` conservando el `exception_amount`
+y el `exception_reason` de la condonación parcial. Confirmado manualmente que esta prueba detecta la
+regresión: revertir a mano el `CHECK` sin `settled` en la base local hace que `lives_ok` falle con el mismo
+error `23514` del hallazgo, y que el estado se quede en `active` en vez de `settled`.
