@@ -16,7 +16,7 @@ historias:
     estado: no_iniciada
   - id: US-MOR-05
     estado: en_progreso
-    falta: "Pieza 8/N: liftCaseAction/forgiveCaseAction en review-actions.ts, con el hallazgo M2 de la auditoría de Kenny corregido (mensaje de error por campo, no genérico). Falta: componente de acciones (levantar/condonar) con el hallazgo B2 corregido (checkbox que se puede desmarcar), su cableado en ReviewBody con las dos secciones de historial, verificar B3 a mano en el navegador, y el cierre de la historia (SPEC con estado terminada, tabla criterio→prueba, PR us/US-MOR-05 a main)"
+    falta: "Pieza 9/N: componente CaseExceptionActions (levantar/condonar), con el hallazgo B2 de la auditoría de Kenny corregido (checkbox que se puede desmarcar). Sin cablear todavía. Falta: cableado en ReviewBody con las dos secciones de historial y el exceptionAmount en las activas, verificar B3 a mano en el navegador, y el cierre de la historia (SPEC con estado terminada, tabla criterio→prueba, PR us/US-MOR-05 a main)"
 flags: []
 deuda:
   - que: "La morosidad no se cierra ni actualiza su monto cuando se paga: delinquency_cases.pending es una foto del saldo al detectar y ninguna función la vuelve a leer. Una clienta que paga después de confirmada la morosidad sigue figurando activa con el monto viejo hasta que alguien la descarte a mano"
@@ -512,3 +512,18 @@ inválido y motivo inválido deben devolver mensajes distintos, no el mismo). To
 formulario en la pantalla: la acción existe pero nada la llama — piezas siguientes (componente de
 acciones y su cableado en `ReviewBody`). `npx tsc --noEmit` sin errores en todo el repo; `npx vitest run
 src/features/delinquency`: 114/114.
+
+### Pieza 9 — componente `CaseExceptionActions`
+
+`ui/review/components/CaseExceptionActions/` (`.tsx`, `.styles.ts` con `STYLES`, `.types.ts`, `index.ts`,
+mismo patrón que `CaseDecisionButtons`/`GraceDaysForm`): un motivo, un monto con un checkbox para
+condonar todo lo pendiente, y los botones de condonar/levantar, con `FeedbackMessage` para el resultado.
+Corrige el hallazgo B2 de la auditoría de Kenny: el checkbox «Condonar todo lo pendiente» antes solo
+fijaba el monto al pendiente y nunca lo podía desmarcar; ahora alterna entre el pendiente y vacío
+(`forgivesFullBalance = amount === String(pending)`, togglea con ese mismo valor). Usa `FORGIVE_AMOUNT_MIN`
+y `EXCEPTION_REASON_MAX_LENGTH` del dominio, nunca un número a mano. El texto de ayuda explica la
+decisión de Kenny del 2026-11-18 (A4): condonar menos del saldo deja la morosidad activa con el resto;
+condonar el saldo completo la cierra. Sin prueba propia: como `CaseDecisionButtons` y `GraceDaysForm`,
+se prueba en integración dentro de `review-view.test.tsx` cuando se cablee en `ReviewBody` (pieza
+siguiente) — todavía no tiene quien lo monte. `npx tsc --noEmit` sin errores en todo el repo; `npx
+vitest run src/features/delinquency`: 114/114 (sin cambios: el componente no se usa aún).
