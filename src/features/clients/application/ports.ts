@@ -1,15 +1,19 @@
 import type { Result } from '@/shared/result'
 import type { ClientListItem, ClientRecord } from '../domain/client.types'
 import type { ClientDelinquency } from '../domain/client-delinquency'
+import type { DelinquencyFilter } from '../domain/list/delinquency-filter'
 
-export interface ListClientsQuery { page?: number; pageSize?: number; name?: string; visitFrom?: string; visitTo?: string }
+export interface ListClientsQuery {
+  page?: number; pageSize?: number; name?: string; appointmentFrom?: string; appointmentTo?: string; delinquency?: string
+}
 
 export interface ClientWriteModel { fullName: string; phone: string; email: string; notes: string | null }
 
 export interface ClientPhoneEntry { id: string; phone: string }
 
 export interface ClientsPageRequest {
-  offset: number; limit: number; name: string | null; visitFrom: string | null; visitTo: string | null
+  offset: number; limit: number; name: string | null
+  appointmentFrom: string | null; appointmentTo: string | null; delinquency: DelinquencyFilter | null
 }
 
 export interface ClientsPage { clients: ClientListItem[]; total: number }
