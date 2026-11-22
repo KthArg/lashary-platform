@@ -20,7 +20,7 @@ historias:
     evidencia: "PR de cierre #819 (us/US-NOT-05 a main, piezas 1 a 4) y piezas 5 a 21 fusionadas directamente a main tras el reacomodo del stack (#824 a #839; #840 quedó incluida en el squash de #839). Criterio 1 (fecha estimada con el intervalo del catálogo y la última cita completada): computeReapplicationDueDate (domain/reapplication-reminder.ts, pieza 2) y scheduling_reapplication_candidates() (migración 20261114000000, pieza 3); domain/__tests__/reapplication-reminder.test.ts, supabase/tests/database/scheduling_reapplication_candidates.test.sql. Criterio 2 (avisa cuando se acerca la fecha estimada): isReapplicationDue más el tope de 30 días vencidos isReapplicationExpired (pieza 19, hallazgo de la revisión), sendDueReapplications con reintentos hasta MAX_REMINDER_ATTEMPTS y sin gastar intento cuando es recuperable (sin contacto o sin canal configurado, piezas 10 y 19), un solo aviso por clienta cuando hay varias técnicas vencidas (pieza 19), y receiveReminderCronRequest llamando a runReapplicationReminderCycle en paralelo con el ciclo de recordatorios, aislado por su propio try/catch (pieza 18); application/__tests__/discover-reapplication-reminders.test.ts, application/__tests__/send-due-reapplications.test.ts, domain/__tests__/reapplication-message.test.ts, http/__tests__/cron-handler.test.ts, __tests__/reapplication-cycle.test.ts (pieza 20, antes sin ninguna prueba de esta capa de composición). Criterio 3 (la administradora configura los días de anticipación): tabla notifications_reapplication_settings y función notifications_set_reapplication_anticipation_days (piezas 12 y 13) con su pantalla en /admin/citas/re-aplicacion (piezas 15 a 17); buildReapplicationDiscoveryDeps aborta la corrida si falla leer la anticipación en vez de usar 7 por defecto en silencio (pieza 20, hallazgo de la revisión); ui/reapplication-settings/__tests__/*, supabase/tests/database/notifications_reapplication_settings.test.sql y notifications_set_reapplication_anticipation_days.test.sql, layout.test.tsx de /admin/citas. Criterio 4 (no se envía con morosidad activa ni con cita futura agendada): scheduling_reapplication_candidates() excluye cualquier cita futura activa (cualquier técnica, decisión del PO del 2026-11-13) y discoverDueReapplications excluye morosidad 'active' vía delinquency_client_states (DOM-012: 'pending_review' no bloquea todavía); scheduling_reapplication_candidates.test.sql, application/__tests__/discover-reapplication-reminders.test.ts. INT-010: login real como admin contra Supabase local, pantalla /admin/citas/re-aplicacion con el rango 1-30 visible y guardado funcionando (capturas en el PR de la pieza 17). Verificación final contra main: npx tsc --noEmit sin errores; npx vitest run con las mismas dos fallas preexistentes y ajenas de siempre (contaminación del seed local de catalog, .env.local apuntando a Supabase remoto); npx supabase test db, 94 archivos y 1251 pruebas, PASS. Deuda aceptada por Kenny Rodríguez el 2026-11-15 (ver 'deuda' arriba): el recordatorio de 24h y el aviso de re-aplicación pueden mandar dos mensajes de WhatsApp separados a la misma clienta en la misma corrida, al correr en paralelo sin coordinarse. Falta el disparador en producción (Vercel Cron o GitHub Actions) y la cuenta de sistema del cron en producción — checklist de activación externa, no código (mismo criterio que cerró US-NOT-03/07/08)."
   - id: US-NOT-06
     estado: en_progreso
-    falta: "casi toda: solo existe el arranque en docs (2026-11-22) sobre `main`, con las decisiones del PO de ese día (sección US-NOT-06); pendientes el texto del mensaje (lo decide la dueña del estudio), la plantilla de WhatsApp y el tope de envíos"
+    falta: "casi toda: existen el arranque y los contratos en docs (2026-11-22) sobre `main`, con las decisiones del PO de ese día (sección US-NOT-06); pendientes el texto del mensaje (lo decide la dueña del estudio), la plantilla de WhatsApp y el tope de envíos"
   - id: US-NOT-07
     estado: terminada
     evidencia: "PR de cierre #671 (us/US-NOT-07 a main), con 2 piezas apiladas: #672 (bitácora de intentos) y #702 (error del proveedor acotado). Criterio 1 (WhatsApp como canal por defecto): lo entregó US-NOT-03; application/__tests__/send-due-reminders.test.ts, «envía por el canal primario (WhatsApp) cuando funciona». Criterio 2 (envíos y fallos registrados): notifications_reminder_attempts (migraciones 20261104000000 y 20261104000001) y recordAttempt de sendDueReminders; application/__tests__/send-due-reminders.test.ts (bloque «bitácora de intentos», con envío por WhatsApp, fallo rescatado por correo, dos fallos, canal sin configurar, sin contacto, bitácora caída sin perder el envío y error sin teléfono), domain/__tests__/reminder-attempt.test.ts y provider-error.test.ts, db/__tests__/reminder-repository.integration.test.ts (contra Supabase local) y pgTAP notifications_reminder_attempts.test.sql (16 aserciones, SEC-001/002). Criterio 3 (medio alternativo si falla el canal por defecto): lo entregó US-NOT-03; send-due-reminders.test.ts, «cae al respaldo (email) si el canal primario falla (ADR-0006)» y «conserva el fallo de WhatsApp cuando el correo lo rescata». Sin pantalla: ningún criterio la pide. El respaldo por correo no envía a clientas reales mientras no se cumpla la sección «Antes de producción» (dominio verificado en Resend, número y plantilla de WhatsApp, disparo del ciclo); es la misma deuda de US-NOT-03, cuyo visto bueno escrito del PO sigue pendiente."
@@ -796,21 +796,39 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - El texto del mensaje fijo: lo propone la pieza del dominio y lo revisa el PO.
 - El tope de envíos: cuántas clientas por envío masivo y cada cuánto se le puede volver a escribir a la misma (propuesta: 50 por envío y no antes de 30 días), por la cuota de Resend.
 
+### Contratos
+
+Lo que pide a otras features (pactado el 2026-11-22, INT-003):
+
+- **`scheduling`:** `scheduling_client_last_visits()`, que ya existe, para la última visita completada, y `scheduling_client_next_appointments()`, nueva, para dejar fuera a quien tiene una cita próxima en pie (`docs/contracts/scheduling-api.md`).
+- **`clients`:** `clients_all_display_names()`, nueva, para el nombre de todas las clientas, incluidas las que nunca vinieron (`docs/contracts/clients-api.md`). El contacto para enviar sale de `getClientContactForReminders`, como en los demás recordatorios.
+
+Lo que guarda y expone `notifications` (sus tablas y funciones son internas: solo las usan sus repositorios):
+
+- **`notifications_inactive_reminders`:** una fila por recordatorio puesto en cola. Guarda la clienta, quién lo puso en cola y cuándo, y su estado: `pending`, `sent` (con la fecha y el canal) o `failed` (con el último error). Lleva los intentos como los demás mensajes del ciclo. Es el registro del criterio 3. Solo el personal la lee y nadie con sesión la escribe directo.
+- **`notifications_inactive_subscriptions`:** una fila por clienta, con un token aleatorio propio (`gen_random_uuid()`, que va en el enlace de baja) y `opted_out_at`, nulo si está suscrita. La fila nace la primera vez que se le pone un recordatorio en cola. Solo el personal la lee.
+- **`notifications_inactive_clients(p_since timestamptz)`:** las clientas sin visita completada desde `p_since` y sin cita próxima, incluidas las que nunca vinieron. Por cada una trae el nombre, la última visita, si se dio de baja y su último recordatorio. Solo personal; PostgREST pagina y cuenta (PERF-002).
+- **Poner en cola:** una función `SECURITY DEFINER`, solo para la administradora, recibe uno o varios ids de clienta y crea una fila por cada una que no se haya dado de baja. Lo hace en una sola llamada (PERF-005), y deja el evento en la bitácora.
+- **Darse de baja y volver a suscribirse por token:** dos funciones `SECURITY DEFINER` que puede ejecutar `anon`, porque la clienta llega desde el mensaje sin iniciar sesión. Reciben solo el token, que no revela quién es la clienta (SEC-004), y responden igual ante un token que no existe. Son idempotentes.
+- **Superficie pública (`index.ts`):** la pantalla de la administradora y la página pública de baja, cada una con su ruta en `src/app`.
+
 ### Piezas previstas
 
 Pueden cambiar con las respuestas del PO. Una migración por pieza (INT-008).
 
-1. Arranque en docs (esta sección).
-2. Contratos: lo que `scheduling` y `clients` le dan a esta historia, y lo que expone `notifications`.
-3. Base: tabla del registro de envíos y tabla de bajas, con RLS y prueba de aislamiento.
-4. Base: la función que lista las inactivas, paginada y con el último recordatorio.
-5. Base: dar de baja y volver a suscribirse por token, para la página pública.
-6. Dominio: el rango, el mensaje y quién puede recibirlo.
-7. Repositorios y casos de uso: listar, poner en cola (individual y masivo) y enviar en el ciclo.
-8. Canal: el tipo de mensaje nuevo en WhatsApp y en el correo, con el enlace de baja.
-9. Pantalla del panel: filtro de rango, lista, selección y enviar, con sus estados (UI-003).
-10. Página pública de baja y de volver a suscribirse.
-11. Cierre.
+1. Arranque en docs.
+2. Contratos (esta sección y los de `scheduling` y `clients`).
+3. Base de `scheduling`: `scheduling_client_next_appointments()`.
+4. Base de `clients`: `clients_all_display_names()`.
+5. Base: `notifications_inactive_reminders` y `notifications_inactive_subscriptions`, con RLS y prueba de aislamiento.
+6. Base: `notifications_inactive_clients`, paginada.
+7. Base: poner en cola, darse de baja y volver a suscribirse.
+8. Dominio: el rango, el mensaje y quién puede recibirlo.
+9. Repositorios y casos de uso: listar, poner en cola y enviar en el ciclo.
+10. Canal: el tipo de mensaje nuevo en el correo, con el enlace de baja.
+11. Pantalla del panel: filtro de rango, lista, selección y enviar, con sus estados (UI-003).
+12. Página pública de baja y de volver a suscribirse.
+13. Cierre.
 
 ## Qué no hace todavía
 

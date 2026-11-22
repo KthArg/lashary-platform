@@ -69,7 +69,7 @@ La última visita de cada clienta: una fila por clienta que tiene al menos una c
 - Corre con los permisos de quien llama (`SECURITY INVOKER`) y es `STABLE`: la RLS de `scheduling_appointments` decide qué se ve. El personal ve la de todas (`scheduling_appointments_select_staff`), una clienta solo la suya (`scheduling_appointments_select_own`) y `anon` no puede ejecutarla. No agrega ningún permiso.
 - Agrupa todas las citas completadas del estudio en cada llamada. A la escala de un estudio no se mide un problema, así que no lleva índice nuevo (PERF-001); `idx_scheduling_appointments_client (client_id, starts_at)` ya cubre la clienta y la fecha.
 
-Consumidor: ninguno todavía. La usó `clients_list` de `clients` hasta el 2026-11-17, cuando la «última cita» pasó a contar cualquier estado y `clients_list` cambió a `scheduling_client_last_appointments`. Se conserva sin cambios porque US-NOT-06 (clientas inactivas) necesita la última visita real, la `completed`.
+Consumidor: la función de clientas inactivas de `notifications` (US-NOT-06), que la une con `LEFT JOIN` y deja como inactiva a la clienta sin visita dentro del rango, incluida la que no tiene fila. La usó `clients_list` de `clients` hasta el 2026-11-17, cuando la «última cita» pasó a contar cualquier estado y `clients_list` cambió a `scheduling_client_last_appointments`.
 
 ### `public.scheduling_client_last_appointments() => TABLE (client_id uuid, last_appointment_at timestamptz)`
 
@@ -86,6 +86,21 @@ La última cita de cada clienta, en cualquier estado: una fila por clienta que t
 - Agrupa todas las citas del estudio en cada llamada. A la escala de un estudio no se mide un problema, así que no lleva índice nuevo (PERF-001); `idx_scheduling_appointments_client (client_id, starts_at)` ya cubre la clienta y la fecha.
 
 Consumidor: la función `clients_list` de `clients` (US-CLI-01), que une los perfiles con esta función, filtra por nombre, por rango de fechas de la última cita y por morosidad, y deja que PostgREST pagine y cuente. Las dos se crean en la misma migración, primero esta.
+
+### `public.scheduling_client_next_appointments() => TABLE (client_id uuid, next_appointment_at timestamptz)`
+
+La próxima cita de cada clienta: una fila por clienta que tiene al menos una cita futura que sigue en pie, con el `starts_at` de la más cercana. Nace de US-NOT-06: una clienta con una cita agendada no está inactiva, aunque su última visita sea vieja.
+
+- **Solo cuenta lo que sigue en pie:** `pending_approval`, `approved` y `confirmed`, los mismos estados que ocupan la agenda. Una cita rechazada, cancelada, completada o en ausencia no la cuenta.
+- **Futura es `starts_at > now()`**, el reloj de la base al momento de la llamada.
+- **Una clienta sin citas futuras no tiene fila.** Quien la usa la une con `LEFT JOIN` y lee la ausencia como «sin cita próxima».
+- **Las citas sin clienta no salen:** las que crea el personal tienen `client_id` nulo.
+- `client_id` es el `id` de `clients_profiles`; `next_appointment_at` es un instante (DOM-003).
+- **No recibe parámetros.** Quien la consume decide qué hacer con la fecha.
+- Corre con los permisos de quien llama (`SECURITY INVOKER`) y es `STABLE`: la RLS de `scheduling_appointments` decide qué se ve, como en `scheduling_client_last_visits`. El personal ve todas, una clienta solo la suya y `anon` no puede ejecutarla. No agrega ningún permiso.
+- Lee solo las citas futuras; `idx_scheduling_appointments_client (client_id, starts_at)` cubre la clienta y la fecha, y no lleva índice nuevo (PERF-001).
+
+Consumidor: la función de clientas inactivas de `notifications` (US-NOT-06), que deja fuera a toda clienta con fila aquí. Estado: pactada el 2026-11-22; la crea la pieza 3 de US-NOT-06.
 
 ### `public.scheduling_appointment_client(p_appointment_id uuid) => uuid`
 
@@ -124,6 +139,8 @@ Consumidor: el trigger de `clients_appointment_notes` de `clients` (US-CLI-03), 
 `scheduling_client_last_visits` lleva su pgTAP en `supabase/tests/database/scheduling_client_last_visits.test.sql`: cuenta solo `completed`, toma la más reciente, deja fuera las citas sin clienta, el personal ve todas, una clienta solo la suya y `anon` no la ejecuta.
 
 `scheduling_client_last_appointments` lleva su pgTAP en `supabase/tests/database/scheduling_client_last_appointments.test.sql` (pieza 2/5 del segundo corte de US-CLI-01): la más reciente gana y la futura cuenta, cada uno de los siete estados cuenta, una clienta sin citas no tiene fila, la cita sin clienta no sale, una clienta solo ve la suya, `anon` no la ejecuta y corre con los permisos de quien llama.
+
+`scheduling_client_next_appointments` llevará su pgTAP en `supabase/tests/database/scheduling_client_next_appointments.test.sql` (pieza 3 de US-NOT-06): toma la más cercana, solo cuentan los tres estados en pie, una cita pasada no cuenta, la cita sin clienta no sale, una clienta solo ve la suya, `anon` no la ejecuta y corre con los permisos de quien llama.
 
 `scheduling_appointment_client` lleva su pgTAP en `supabase/tests/database/scheduling_appointment_client.test.sql` (pieza 2/7 de US-CLI-03): devuelve la clienta de una cita propia, `NULL` para una cita inexistente, para una cita sin clienta y para un `id` nulo; el personal ve la clienta de cualquier cita, una clienta recibe `NULL` con la cita de otra, y `anon` no la ejecuta.
 
