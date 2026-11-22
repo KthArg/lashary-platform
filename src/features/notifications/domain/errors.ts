@@ -9,6 +9,7 @@ export const NOTIFICATIONS_ERROR_CODES = {
   invalidAnticipationDays: 'NOTIFICATIONS_INVALID_ANTICIPATION_DAYS',
   inactiveQueueEmpty: 'NOTIFICATIONS_INACTIVE_QUEUE_EMPTY',
   inactiveQueueTooMany: 'NOTIFICATIONS_INACTIVE_QUEUE_TOO_MANY',
+  inactiveQueueNotAllowed: 'NOTIFICATIONS_INACTIVE_QUEUE_NOT_ALLOWED',
 } as const
 
 type NotificationsErrorCode = (typeof NOTIFICATIONS_ERROR_CODES)[keyof typeof NOTIFICATIONS_ERROR_CODES]
@@ -159,3 +160,15 @@ export function inactiveQueueTooMany(max: number): InactiveQueueTooMany {
 
 export const isInactiveQueueTooMany = (error: unknown): error is InactiveQueueTooMany =>
   hasCode<InactiveQueueTooMany>(error, NOTIFICATIONS_ERROR_CODES.inactiveQueueTooMany)
+
+export interface InactiveQueueNotAllowed {
+  readonly code: typeof NOTIFICATIONS_ERROR_CODES.inactiveQueueNotAllowed
+  readonly message: string
+}
+
+export function inactiveQueueNotAllowed(): InactiveQueueNotAllowed {
+  return { code: NOTIFICATIONS_ERROR_CODES.inactiveQueueNotAllowed, message: 'solo la administradora envía recordatorios' }
+}
+
+export const isInactiveQueueNotAllowed = (error: unknown): error is InactiveQueueNotAllowed =>
+  hasCode<InactiveQueueNotAllowed>(error, NOTIFICATIONS_ERROR_CODES.inactiveQueueNotAllowed)
