@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { inactiveClientsMessages as copy } from '../../constants/inactive-clients-strings'
 import { inactiveClientsUrl } from '../../utils/inactive-clients-url'
 import { InactiveRangeFilter } from '../InactiveRangeFilter'
-import { InactiveClientsTable } from '../InactiveClientsTable'
+import { InactiveRemindersForm } from '../InactiveRemindersForm'
 import { InactiveClientsPagination } from '../InactiveClientsPagination'
 import { inactiveClientsViewStyles as STYLES } from './InactiveClientsView.styles'
 import type { InactiveClientsViewProps } from './InactiveClientsView.types'
@@ -36,7 +36,7 @@ export function InactiveClientsView({ screen }: InactiveClientsViewProps) {
       ) : (
         <section className={STYLES.section}>
           <p className={STYLES.total}>{copy.total(screen.view.total)}</p>
-          <InactiveClientsTable clients={screen.view.clients} />
+          <InactiveRemindersForm clients={screen.view.clients} />
           <InactiveClientsPagination
             rangeDays={rangeDays}
             page={screen.view.page}
