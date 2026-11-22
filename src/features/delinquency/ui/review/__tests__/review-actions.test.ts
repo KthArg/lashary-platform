@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { decideCaseAction, setGraceDaysAction } from '@/features/delinquency/ui/review/actions/review-actions'
+import {
+  decideCaseAction,
+  forgiveCaseAction,
+  liftCaseAction,
+  setGraceDaysAction,
+} from '@/features/delinquency/ui/review/actions/review-actions'
 import { DELINQUENCY_ADMIN_PATH, REVIEW_ERRORS } from '@/features/delinquency/ui/review/constants/review-strings'
 
 const CASE_ID = '7b0e5f8e-3c1a-4c55-9c1e-2f4a6b8d0e11'
@@ -125,5 +130,135 @@ describe('setGraceDaysAction', () => {
     const result = await setGraceDaysAction({ graceDays: 30 })
 
     expect(result).toEqual({ ok: false, error: REVIEW_ERRORS.graceSaveFailed })
+  })
+})
+
+describe('liftCaseAction', () => {
+  it('levanta el bloqueo, exige sesión de administradora y refresca la pantalla', async () => {
+    rpcResponse = { data: { ...row, state: 'lifted', exception_amount: null }, error: null }
+
+    const result = await liftCaseAction({ caseId: CASE_ID, reason: 'la clienta ya pagó en efectivo' })
+
+    expect(result).toEqual({ ok: true, state: 'lifted' })
+    expect(mockRequireAdmin).toHaveBeenCalledOnce()
+    expect(rpcCalls).toEqual([
+      ['delinquency_lift_case', { p_case_id: CASE_ID, p_reason: 'la clienta ya pagó en efectivo' }],
+    ])
+    expect(mockRevalidate).toHaveBeenCalledWith(DELINQUENCY_ADMIN_PATH)
+  })
+
+  it('rechaza un identificador que no es un uuid sin tocar la base', async () => {
+    const result = await liftCaseAction({ caseId: 'no-es-un-uuid', reason: 'motivo' })
+
+    expect(result).toEqual({ ok: false, error: REVIEW_ERRORS.invalidInput })
+    expect(rpcCalls).toHaveLength(0)
+  })
+
+  it('rechaza un motivo vacío sin tocar la base', async () => {
+    const result = await liftCaseAction({ caseId: CASE_ID, reason: '   ' })
+
+    expect(result).toEqual({ ok: false, error: REVIEW_ERRORS.invalidReason })
+    expect(rpcCalls).toHaveLength(0)
+  })
+
+  it('avisa si la morosidad no existe o ya no está activa, y no refresca', async () => {
+    rpcResponse = { data: null, error: { message: 'x', code: 'P0002' } }
+    const missing = await liftCaseAction({ caseId: CASE_ID, reason: 'motivo' })
+
+    rpcResponse = { data: null, error: { message: 'x', code: '55001' } }
+    const notActive = await liftCaseAction({ caseId: CASE_ID, reason: 'motivo' })
+
+    expect(missing).toEqual({ ok: false, error: REVIEW_ERRORS.notFound })
+    expect(notActive).toEqual({ ok: false, error: REVIEW_ERRORS.caseNotActive })
+    expect(mockRevalidate).not.toHaveBeenCalled()
+  })
+
+  it('un fallo de la base se dice sin mostrar el texto interno', async () => {
+    rpcResponse = { data: null, error: { message: 'connection reset by peer', code: '08006' } }
+
+    const result = await liftCaseAction({ caseId: CASE_ID, reason: 'motivo' })
+
+    expect(result).toEqual({ ok: false, error: REVIEW_ERRORS.liftFailed })
+  })
+})
+
+describe('forgiveCaseAction', () => {
+  it('condona el monto, exige sesión de administradora y refresca la pantalla', async () => {
+    rpcResponse = { data: { ...row, state: 'active', exception_amount: 4000 }, error: null }
+
+    const result = await forgiveCaseAction({ caseId: CASE_ID, amount: 4000, reason: 'condonación parcial aprobada' })
+
+    expect(result).toEqual({ ok: true, state: 'active', exceptionAmount: 4000 })
+    expect(mockRequireAdmin).toHaveBeenCalledOnce()
+    expect(rpcCalls).toEqual([
+      [
+        'delinquency_forgive_case',
+        { p_case_id: CASE_ID, p_amount: 4000, p_reason: 'condonación parcial aprobada' },
+      ],
+    ])
+    expect(mockRevalidate).toHaveBeenCalledWith(DELINQUENCY_ADMIN_PATH)
+  })
+
+  it('cierra la morosidad como condonada cuando el saldo vivo llega a cero', async () => {
+    rpcResponse = { data: { ...row, state: 'forgiven', exception_amount: 20000 }, error: null }
+
+    const result = await forgiveCaseAction({ caseId: CASE_ID, amount: 20000, reason: 'condonación total' })
+
+    expect(result).toEqual({ ok: true, state: 'forgiven', exceptionAmount: 20000 })
+  })
+
+  it('rechaza un identificador que no es un uuid sin tocar la base', async () => {
+    const result = await forgiveCaseAction({ caseId: 'no-es-un-uuid', amount: 1000, reason: 'motivo' })
+
+    expect(result).toEqual({ ok: false, error: REVIEW_ERRORS.invalidInput })
+    expect(rpcCalls).toHaveLength(0)
+  })
+
+  it('rechaza un monto inválido y lo distingue de un motivo inválido (M2)', async () => {
+    const negative = await forgiveCaseAction({ caseId: CASE_ID, amount: -1, reason: 'motivo' })
+    const zero = await forgiveCaseAction({ caseId: CASE_ID, amount: 0, reason: 'motivo' })
+    const decimal = await forgiveCaseAction({ caseId: CASE_ID, amount: 10.5, reason: 'motivo' })
+
+    expect(negative).toEqual({ ok: false, error: REVIEW_ERRORS.invalidForgiveAmount })
+    expect(zero).toEqual({ ok: false, error: REVIEW_ERRORS.invalidForgiveAmount })
+    expect(decimal).toEqual({ ok: false, error: REVIEW_ERRORS.invalidForgiveAmount })
+    expect(rpcCalls).toHaveLength(0)
+  })
+
+  it('rechaza un motivo vacío y lo distingue de un monto inválido (M2)', async () => {
+    const result = await forgiveCaseAction({ caseId: CASE_ID, amount: 4000, reason: '   ' })
+
+    expect(result).toEqual({ ok: false, error: REVIEW_ERRORS.invalidReason })
+    expect(rpcCalls).toHaveLength(0)
+  })
+
+  it('si el monto y el motivo son inválidos a la vez, avisa primero del monto', async () => {
+    const result = await forgiveCaseAction({ caseId: CASE_ID, amount: 0, reason: '' })
+
+    expect(result).toEqual({ ok: false, error: REVIEW_ERRORS.invalidForgiveAmount })
+  })
+
+  it('avisa si la morosidad no existe, ya no está activa, o la base rechaza el monto', async () => {
+    rpcResponse = { data: null, error: { message: 'x', code: 'P0002' } }
+    const missing = await forgiveCaseAction({ caseId: CASE_ID, amount: 4000, reason: 'motivo' })
+
+    rpcResponse = { data: null, error: { message: 'x', code: '55001' } }
+    const notActive = await forgiveCaseAction({ caseId: CASE_ID, amount: 4000, reason: 'motivo' })
+
+    rpcResponse = { data: null, error: { message: 'delinquency_invalid_forgive_amount', code: '22023' } }
+    const invalidAmount = await forgiveCaseAction({ caseId: CASE_ID, amount: 999999, reason: 'motivo' })
+
+    expect(missing).toEqual({ ok: false, error: REVIEW_ERRORS.notFound })
+    expect(notActive).toEqual({ ok: false, error: REVIEW_ERRORS.caseNotActive })
+    expect(invalidAmount).toEqual({ ok: false, error: REVIEW_ERRORS.invalidForgiveAmount })
+    expect(mockRevalidate).not.toHaveBeenCalled()
+  })
+
+  it('un fallo de la base se dice sin mostrar el texto interno', async () => {
+    rpcResponse = { data: null, error: { message: 'connection reset by peer', code: '08006' } }
+
+    const result = await forgiveCaseAction({ caseId: CASE_ID, amount: 4000, reason: 'motivo' })
+
+    expect(result).toEqual({ ok: false, error: REVIEW_ERRORS.forgiveFailed })
   })
 })

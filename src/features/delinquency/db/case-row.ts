@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import { CASE_STATES, type DelinquencyCase } from '../domain/delinquency-case'
 
-export const CASE_COLUMNS = 'id, client_id, appointment_id, pending, state, detected_at, decided_at'
+export const CASE_COLUMNS =
+  'id, client_id, appointment_id, pending, state, detected_at, decided_at, exception_reason, exception_amount'
 
 export const UNEXPECTED_ROW = 'la base devolvió una fila con una forma inesperada'
 
@@ -13,6 +14,8 @@ export const caseRowSchema = z.object({
   state: z.enum(CASE_STATES),
   detected_at: z.string(),
   decided_at: z.string().nullable(),
+  exception_reason: z.string().nullable().default(null),
+  exception_amount: z.number().int().positive().nullable().default(null),
 })
 
 export type CaseRow = z.infer<typeof caseRowSchema>
@@ -25,4 +28,6 @@ export const toCase = (row: CaseRow): DelinquencyCase => ({
   state: row.state,
   detectedAt: new Date(row.detected_at),
   decidedAt: row.decided_at ? new Date(row.decided_at) : null,
+  exceptionReason: row.exception_reason,
+  exceptionAmount: row.exception_amount,
 })

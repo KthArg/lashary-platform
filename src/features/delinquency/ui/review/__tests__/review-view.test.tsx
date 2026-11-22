@@ -2,17 +2,22 @@ import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
 import { render, screen, cleanup, fireEvent, waitFor, within } from '@testing-library/react'
 import { formatMoney, moneyFromColones } from '@/shared/money'
 import type { ReviewViewModel } from '@/features/delinquency/ui/review/services/review-service'
-import { reviewMessages } from '@/features/delinquency/ui/review/constants/review-strings'
+import { REVIEW_ERRORS, reviewMessages } from '@/features/delinquency/ui/review/constants/review-strings'
 import { ACTIVE_LIST_LIMIT, REVIEW_LIST_LIMIT } from '@/features/delinquency/domain/active-client'
+import { EXCEPTION_HISTORY_LIST_LIMIT } from '@/features/delinquency/domain/delinquency-case'
 import { ReviewView } from '@/features/delinquency/ui/review/components/ReviewView'
 import { ReviewLoading } from '@/features/delinquency/ui/review/components/ReviewLoading'
 import { ReviewError } from '@/features/delinquency/ui/review/components/ReviewError'
 
 const decideCaseAction = vi.fn()
 const setGraceDaysAction = vi.fn()
+const liftCaseAction = vi.fn()
+const forgiveCaseAction = vi.fn()
 vi.mock('@/features/delinquency/ui/review/actions/review-actions', () => ({
   decideCaseAction: (...args: unknown[]) => decideCaseAction(...args),
   setGraceDaysAction: (...args: unknown[]) => setGraceDaysAction(...args),
+  liftCaseAction: (...args: unknown[]) => liftCaseAction(...args),
+  forgiveCaseAction: (...args: unknown[]) => forgiveCaseAction(...args),
 }))
 
 // El formato de colones usa un espacio de no separación; testing-library normaliza los espacios del texto del DOM.
@@ -28,15 +33,31 @@ const ready: ReviewViewModel = {
       { caseId: CASE_ID, clientId: 'c1', clientName: 'Ana Pérez', pending: 20000, detectedAt: new Date('2026-11-01T18:00:00Z') },
       { caseId: 'caso-2', clientId: 'c2', clientName: null, pending: 7500, detectedAt: new Date('2026-11-02T18:00:00Z') },
     ],
-    active: [{ clientId: 'c3', clientName: 'Lucía Mora', pending: 9000, since: new Date('2026-10-20T18:00:00Z') }],
+    active: [
+      {
+        caseId: 'caso-activo-1',
+        clientId: 'c3',
+        clientName: 'Lucía Mora',
+        appointmentId: 'cita-1',
+        pending: 9000,
+        exceptionAmount: null,
+        since: new Date('2026-10-20T18:00:00Z'),
+      },
+    ],
+    lifted: [],
+    forgiven: [],
     moreToReview: false,
     moreActive: false,
+    moreLifted: false,
+    moreForgiven: false,
   },
 }
 
 beforeEach(() => {
   decideCaseAction.mockReset()
   setGraceDaysAction.mockReset()
+  liftCaseAction.mockReset()
+  forgiveCaseAction.mockReset()
 })
 afterEach(cleanup)
 
@@ -89,7 +110,15 @@ describe('ReviewView', () => {
   })
 
   it('sin morosidades dice que no hay ninguna en cada sección', () => {
-    render(<ReviewView model={{ status: 'ready', graceDays: 7, view: { toReview: [], active: [], moreToReview: false, moreActive: false } }} />)
+    render(
+      <ReviewView
+        model={{
+          status: 'ready',
+          graceDays: 7,
+          view: { toReview: [], active: [], lifted: [], forgiven: [], moreToReview: false, moreActive: false, moreLifted: false, moreForgiven: false },
+        }}
+      />,
+    )
 
     expect(screen.getByText(reviewMessages.toReview.empty)).toBeTruthy()
     expect(screen.getByText(reviewMessages.active.empty)).toBeTruthy()
@@ -132,6 +161,160 @@ describe('CaseDecisionButtons', () => {
     fireEvent.click(screen.getAllByRole('button', { name: reviewMessages.confirm })[0])
 
     await waitFor(() => expect(screen.getByText('No se pudo guardar la decisión. Inténtelo nuevamente.')).toBeTruthy())
+  })
+})
+
+describe('CaseExceptionActions', () => {
+  it('cada morosidad activa tiene su formulario para levantar o condonar', () => {
+    render(<ReviewView model={ready} />)
+
+    expect(screen.getByLabelText(reviewMessages.exception.reasonLabel)).toBeTruthy()
+    expect(screen.getByLabelText(reviewMessages.exception.amountLabel)).toBeTruthy()
+    expect(screen.getByRole('button', { name: reviewMessages.exception.liftButton })).toBeTruthy()
+    expect(screen.getByRole('button', { name: reviewMessages.exception.forgiveButton })).toBeTruthy()
+  })
+
+  it('los botones de levantar y condonar están deshabilitados hasta escribir el motivo', () => {
+    render(<ReviewView model={ready} />)
+
+    expect((screen.getByRole('button', { name: reviewMessages.exception.liftButton }) as HTMLButtonElement).disabled).toBe(true)
+    expect((screen.getByRole('button', { name: reviewMessages.exception.forgiveButton }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('el checkbox de condonar todo fija el monto al saldo pendiente y se puede desmarcar (corrige B2)', () => {
+    render(<ReviewView model={ready} />)
+
+    const checkbox = screen.getByRole('checkbox') as HTMLInputElement
+    const amountInput = screen.getByLabelText(reviewMessages.exception.amountLabel) as HTMLInputElement
+
+    fireEvent.click(checkbox)
+    expect(amountInput.value).toBe('9000')
+
+    fireEvent.click(checkbox)
+    expect(amountInput.value).toBe('')
+  })
+
+  it('levantar manda el motivo de esa morosidad y avisa que el bloqueo quedó levantado', async () => {
+    liftCaseAction.mockResolvedValue({ ok: true, state: 'lifted' })
+    render(<ReviewView model={ready} />)
+
+    fireEvent.change(screen.getByLabelText(reviewMessages.exception.reasonLabel), {
+      target: { value: 'la clienta pagó en efectivo' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: reviewMessages.exception.liftButton }))
+
+    await waitFor(() => expect(screen.getByText(reviewMessages.exception.liftedNotice)).toBeTruthy())
+    expect(liftCaseAction).toHaveBeenCalledWith({ caseId: 'caso-activo-1', reason: 'la clienta pagó en efectivo' })
+  })
+
+  it('condonar manda el monto y el motivo, y avisa que la morosidad sigue activa si fue parcial', async () => {
+    forgiveCaseAction.mockResolvedValue({ ok: true, state: 'active', exceptionAmount: 4000 })
+    render(<ReviewView model={ready} />)
+
+    fireEvent.change(screen.getByLabelText(reviewMessages.exception.reasonLabel), {
+      target: { value: 'condonación parcial aprobada' },
+    })
+    fireEvent.change(screen.getByLabelText(reviewMessages.exception.amountLabel), { target: { value: '4000' } })
+    fireEvent.click(screen.getByRole('button', { name: reviewMessages.exception.forgiveButton }))
+
+    await waitFor(() => expect(screen.getByText(reviewMessages.exception.partialForgiveNotice)).toBeTruthy())
+    expect(forgiveCaseAction).toHaveBeenCalledWith({
+      caseId: 'caso-activo-1',
+      amount: 4000,
+      reason: 'condonación parcial aprobada',
+    })
+  })
+
+  it('avisa que quedó condonada por completo cuando el monto cubre todo el saldo vivo', async () => {
+    forgiveCaseAction.mockResolvedValue({ ok: true, state: 'forgiven', exceptionAmount: 9000 })
+    render(<ReviewView model={ready} />)
+
+    fireEvent.change(screen.getByLabelText(reviewMessages.exception.reasonLabel), { target: { value: 'motivo' } })
+    fireEvent.change(screen.getByLabelText(reviewMessages.exception.amountLabel), { target: { value: '9000' } })
+    fireEvent.click(screen.getByRole('button', { name: reviewMessages.exception.forgiveButton }))
+
+    await waitFor(() => expect(screen.getByText(reviewMessages.exception.forgivenNotice)).toBeTruthy())
+  })
+
+  it('si la acción falla, muestra el motivo junto a esa morosidad', async () => {
+    forgiveCaseAction.mockResolvedValue({ ok: false, error: REVIEW_ERRORS.caseNotActive })
+    render(<ReviewView model={ready} />)
+
+    fireEvent.change(screen.getByLabelText(reviewMessages.exception.reasonLabel), { target: { value: 'motivo' } })
+    fireEvent.change(screen.getByLabelText(reviewMessages.exception.amountLabel), { target: { value: '9000' } })
+    fireEvent.click(screen.getByRole('button', { name: reviewMessages.exception.forgiveButton }))
+
+    await waitFor(() => expect(screen.getByText(REVIEW_ERRORS.caseNotActive)).toBeTruthy())
+  })
+
+  it('una morosidad activa con una condonación parcial en curso muestra lo ya condonado', () => {
+    const withPartial: ReviewViewModel = {
+      ...ready,
+      view: { ...ready.view, active: [{ ...ready.view.active[0], exceptionAmount: 3000 }] },
+    }
+    render(<ReviewView model={withPartial} />)
+
+    expect(screen.getByText(reviewMessages.exception.alreadyForgivenLabel)).toBeTruthy()
+    expect(screen.getByText(money(3000))).toBeTruthy()
+  })
+})
+
+describe('historial de excepciones', () => {
+  const LIFTED_ITEM = {
+    caseId: 'caso-lifted-1',
+    clientId: 'c4',
+    clientName: 'Marta Soto',
+    pending: 5000,
+    exceptionReason: 'la clienta pagó en efectivo',
+    exceptionAmount: null,
+    decidedAt: new Date('2026-11-05T18:00:00Z'),
+  }
+  const FORGIVEN_ITEM = {
+    caseId: 'caso-forgiven-1',
+    clientId: 'c5',
+    clientName: 'Rocío Vindas',
+    pending: 12000,
+    exceptionReason: 'condonación total aprobada',
+    exceptionAmount: 12000,
+    decidedAt: new Date('2026-11-06T18:00:00Z'),
+  }
+  const withHistory: ReviewViewModel = {
+    ...ready,
+    view: { ...ready.view, lifted: [LIFTED_ITEM], forgiven: [FORGIVEN_ITEM] },
+  }
+
+  it('lista los bloqueos levantados con su motivo', () => {
+    render(<ReviewView model={withHistory} />)
+
+    expect(screen.getByRole('heading', { level: 2, name: reviewMessages.lifted.title })).toBeTruthy()
+    expect(screen.getByText('Marta Soto')).toBeTruthy()
+    expect(screen.getByText('la clienta pagó en efectivo')).toBeTruthy()
+  })
+
+  it('lista las morosidades condonadas con el monto condonado', () => {
+    render(<ReviewView model={withHistory} />)
+
+    expect(screen.getByRole('heading', { level: 2, name: reviewMessages.forgiven.title })).toBeTruthy()
+    expect(screen.getByText('Rocío Vindas')).toBeTruthy()
+    expect(screen.getAllByText(money(12000)).length).toBeGreaterThan(0)
+  })
+
+  it('sin historial dice que no hay nada en cada sección', () => {
+    render(<ReviewView model={ready} />)
+
+    expect(screen.getByText(reviewMessages.lifted.empty)).toBeTruthy()
+    expect(screen.getByText(reviewMessages.forgiven.empty)).toBeTruthy()
+  })
+
+  it('si hay más historial del que se muestra, lo avisa', () => {
+    render(
+      <ReviewView
+        model={{ ...withHistory, view: { ...withHistory.view, moreLifted: true, moreForgiven: true } }}
+      />,
+    )
+
+    expect(screen.getByText(reviewMessages.lifted.more(EXCEPTION_HISTORY_LIST_LIMIT))).toBeTruthy()
+    expect(screen.getByText(reviewMessages.forgiven.more(EXCEPTION_HISTORY_LIST_LIMIT))).toBeTruthy()
   })
 })
 
