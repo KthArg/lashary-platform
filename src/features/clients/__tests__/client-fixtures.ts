@@ -6,6 +6,6 @@ export const CLIENT_FIXTURES: readonly ClientRecord[] = [
 ]
 
 export const CLIENT_LIST_FIXTURES: readonly ClientListItem[] = [
-  { ...CLIENT_FIXTURES[0], lastVisitAtMs: Date.parse('2026-07-01T05:30:00Z') },
-  { ...CLIENT_FIXTURES[1], lastVisitAtMs: null },
+  { ...CLIENT_FIXTURES[0], lastAppointmentAtMs: Date.parse('2026-07-01T05:30:00Z') },
+  { ...CLIENT_FIXTURES[1], lastAppointmentAtMs: null },
 ]

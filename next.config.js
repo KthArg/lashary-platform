@@ -35,6 +35,14 @@ const nextConfig = {
     remotePatterns: cmsImagePatterns(),
     dangerouslyAllowLocalIP: allowLocalCmsImages(),
   },
+  experimental: {
+    serverActions: {
+      // Aplica a todas las server actions. 3 MB cubre las imágenes de productos de store (2 MB) y deja
+      // llegar un comprobante de US-MOR-03 de algo más de 1 MB, para que la clienta reciba el mensaje del
+      // tope y no un error genérico (el campo ya lo avisa en el navegador antes de enviar).
+      bodySizeLimit: '3mb',
+    },
+  },
 }
 
 module.exports = nextConfig

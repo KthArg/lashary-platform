@@ -92,6 +92,26 @@ describe('inboxRepository', () => {
     expect(INBOX_COLUMNS).toContain('pending_amount')
   })
 
+  it('convierte el aviso de un comprobante enviado: lleva lo que declaró la clienta, sin servicio ni hora (US-MOR-03)', async () => {
+    const submitted = {
+      ...row, id: 'aviso-5', kind: 'regularization_submitted', service_name: null, starts_at: null, declared_amount: 10000,
+    }
+    const { db } = createFakeDb({ data: [submitted], error: null })
+
+    const result = await inboxRepository(db).listRecent({ offset: 0, limit: INBOX_LIMIT })
+
+    expect(isOk(result) && result.value.notices[0]).toEqual({
+      id: 'aviso-5',
+      kind: 'regularization_submitted',
+      appointmentId: 'cita-1',
+      clientName: 'Ana Pérez',
+      declared: 10000,
+      readAt: null,
+      createdAt: new Date('2026-10-29T18:00:00Z'),
+    })
+    expect(INBOX_COLUMNS).toContain('declared_amount')
+  })
+
   it('con más de 20 avisos devuelve 20 y avisa que hay más; la página siguiente empieza en el 21', async () => {
     const twentyOneRows = Array.from({ length: INBOX_LIMIT + 1 }, (_, index) => ({ ...row, id: `aviso-${index + 1}` }))
     const firstPage = createFakeDb({ data: twentyOneRows, error: null })
