@@ -100,7 +100,7 @@ La próxima cita de cada clienta: una fila por clienta que tiene al menos una ci
 - Corre con los permisos de quien llama (`SECURITY INVOKER`) y es `STABLE`: la RLS de `scheduling_appointments` decide qué se ve, como en `scheduling_client_last_visits`. El personal ve todas, una clienta solo la suya y `anon` no puede ejecutarla. No agrega ningún permiso.
 - Lee solo las citas futuras; `idx_scheduling_appointments_client (client_id, starts_at)` cubre la clienta y la fecha, y no lleva índice nuevo (PERF-001).
 
-Consumidor: la función de clientas inactivas de `notifications` (US-NOT-06), que deja fuera a toda clienta con fila aquí. Estado: pactada el 2026-11-22; la crea la pieza 3 de US-NOT-06.
+Consumidor: la función de clientas inactivas de `notifications` (US-NOT-06), que deja fuera a toda clienta con fila aquí. Estado: implementada en `20261122000000_scheduling_client_next_appointments_fn.sql` (pieza 3 de US-NOT-06).
 
 ### `public.scheduling_appointment_client(p_appointment_id uuid) => uuid`
 
@@ -140,7 +140,7 @@ Consumidor: el trigger de `clients_appointment_notes` de `clients` (US-CLI-03), 
 
 `scheduling_client_last_appointments` lleva su pgTAP en `supabase/tests/database/scheduling_client_last_appointments.test.sql` (pieza 2/5 del segundo corte de US-CLI-01): la más reciente gana y la futura cuenta, cada uno de los siete estados cuenta, una clienta sin citas no tiene fila, la cita sin clienta no sale, una clienta solo ve la suya, `anon` no la ejecuta y corre con los permisos de quien llama.
 
-`scheduling_client_next_appointments` llevará su pgTAP en `supabase/tests/database/scheduling_client_next_appointments.test.sql` (pieza 3 de US-NOT-06): toma la más cercana, solo cuentan los tres estados en pie, una cita pasada no cuenta, la cita sin clienta no sale, una clienta solo ve la suya, `anon` no la ejecuta y corre con los permisos de quien llama.
+`scheduling_client_next_appointments` lleva su pgTAP en `supabase/tests/database/scheduling_client_next_appointments.test.sql` (pieza 3 de US-NOT-06): toma la más cercana, solo cuentan los tres estados en pie, una cita pasada no cuenta, la cita sin clienta no sale, una clienta solo ve la suya, `anon` no la ejecuta y corre con los permisos de quien llama.
 
 `scheduling_appointment_client` lleva su pgTAP en `supabase/tests/database/scheduling_appointment_client.test.sql` (pieza 2/7 de US-CLI-03): devuelve la clienta de una cita propia, `NULL` para una cita inexistente, para una cita sin clienta y para un `id` nulo; el personal ve la clienta de cualquier cita, una clienta recibe `NULL` con la cita de otra, y `anon` no la ejecuta.
 
