@@ -26,6 +26,19 @@ export type InactiveClient = {
   lastReminder: InactiveClientLastReminder | null
 }
 
+export type InactiveReminderDelivery = {
+  id: string
+  clientId: string
+  clientName: string
+  unsubscribeToken: string
+  attempts: number
+}
+
+export type InactiveQueueLimits = {
+  maxClients: number
+  minDaysBetween: number
+}
+
 export type InactiveQueueOutcome = {
   queued: number
   alreadyQueued: number
