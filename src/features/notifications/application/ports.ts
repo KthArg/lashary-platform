@@ -195,6 +195,7 @@ export const MESSAGE_PURPOSES = [
   'reschedule_outcome',
   'aftercare',
   'reapplication_reminder',
+  'inactive_reminder',
 ] as const
 
 export type MessagePurpose = (typeof MESSAGE_PURPOSES)[number]
@@ -205,6 +206,7 @@ export type ChannelSendInput = {
   contact: ContactInfo
   message: string
   templateVariables: string[]
+  unsubscribeUrl?: string
 }
 
 export interface NotificationChannel {

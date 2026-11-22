@@ -6,6 +6,7 @@ import { sendDueReminders, type SendDueRemindersDeps } from './send-due-reminder
 import { sendClientNotices, type SendClientNoticesDeps } from './send-client-notices'
 import type { SendConfirmationRequestsSummary } from './send-confirmation-requests'
 import type { SendAftercareMessagesSummary } from './send-aftercare-messages'
+import type { SendInactiveRemindersSummary } from './send-inactive-reminders'
 import type { DroppedNoticesRepository, RepositoryFailure, SchedulingMaintenancePort } from './ports'
 
 export type RunReminderCycleDeps = DiscoverRemindersDeps &
@@ -16,6 +17,7 @@ export type RunReminderCycleDeps = DiscoverRemindersDeps &
     expireUndecidedReschedules: SchedulingMaintenancePort['expireUndecidedReschedules']
     sendConfirmationRequests: () => Promise<Result<SendConfirmationRequestsSummary, RepositoryFailure>>
     sendAftercareMessages: () => Promise<Result<SendAftercareMessagesSummary, RepositoryFailure>>
+    sendInactiveReminders: () => Promise<Result<SendInactiveRemindersSummary, RepositoryFailure>>
   }
 
 export type RunReminderCycleSummary = {
@@ -42,6 +44,12 @@ export type RunReminderCycleSummary = {
   aftercareErrored: number
   aftercareUnconfigured: number
   aftercareFailed: number
+  inactiveSent: number
+  inactiveRetried: number
+  inactiveExhausted: number
+  inactiveErrored: number
+  inactiveUnconfigured: number
+  inactiveFailed: number
   droppedResolved: number
   droppedOpen: number
   droppedFailed: number
@@ -61,6 +69,14 @@ const NO_CONFIRMATIONS_SENT: SendConfirmationRequestsSummary = {
   errored: 0,
   unconfigured: 0,
   cancelled: 0,
+}
+
+const NO_INACTIVE_SENT: SendInactiveRemindersSummary = {
+  sent: 0,
+  retried: 0,
+  exhausted: 0,
+  errored: 0,
+  unconfigured: 0,
 }
 
 const NO_AFTERCARE_SENT: SendAftercareMessagesSummary = {
@@ -85,6 +101,9 @@ export const runReminderCycle =
 
     const aftercare = await deps.sendAftercareMessages()
     const aftercareSummary = isErr(aftercare) ? NO_AFTERCARE_SENT : aftercare.value
+
+    const inactive = await deps.sendInactiveReminders()
+    const inactiveSummary = isErr(inactive) ? NO_INACTIVE_SENT : inactive.value
 
     const confirmations = await deps.sendConfirmationRequests()
     const confirmationSummary = isErr(confirmations) ? NO_CONFIRMATIONS_SENT : confirmations.value
@@ -122,6 +141,12 @@ export const runReminderCycle =
       aftercareErrored: aftercareSummary.errored,
       aftercareUnconfigured: aftercareSummary.unconfigured,
       aftercareFailed: isErr(aftercare) ? 1 : 0,
+      inactiveSent: inactiveSummary.sent,
+      inactiveRetried: inactiveSummary.retried,
+      inactiveExhausted: inactiveSummary.exhausted,
+      inactiveErrored: inactiveSummary.errored,
+      inactiveUnconfigured: inactiveSummary.unconfigured,
+      inactiveFailed: isErr(inactive) ? 1 : 0,
       droppedResolved: isErr(dropped) ? 0 : dropped.value.resolved,
       droppedOpen: isErr(dropped) ? 0 : dropped.value.open,
       droppedFailed: isErr(dropped) ? 1 : 0,
