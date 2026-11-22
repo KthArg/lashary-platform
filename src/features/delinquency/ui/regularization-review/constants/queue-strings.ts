@@ -2,7 +2,6 @@ import type { ReviewRefusal } from '@/features/delinquency/domain/regularization
 
 export const queueMessages = {
   title: 'Comprobantes por revisar',
-  // Pedido del PO (Kenny, 2026-11-13): verificar el comprobante y no confiar en el monto de la clienta.
   hint: 'Pagos que las clientas reportaron con su comprobante. Verifique el comprobante antes de aprobar: no confíe en el monto que declara la clienta.',
   empty: 'No hay comprobantes por revisar.',
   more: (shown: number) => `Hay más comprobantes por revisar. Se muestran los ${shown} más antiguos.`,
@@ -17,7 +16,6 @@ export const queueMessages = {
   retry: 'Reintentar',
 } as const
 
-// La cola muestra hasta 50, como las otras listas de la pantalla (PERF-002).
 export const QUEUE_LIMIT = 50
 
 export const REVIEW_FIELDS = { requestId: 'requestId', approvedAmount: 'approvedAmount', reason: 'reason' } as const

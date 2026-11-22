@@ -3,8 +3,6 @@ import { reviewRefused } from '../domain/errors'
 import { isValidApprovedAmount, normalizeRejectionReason, type AccountCaseState } from '../domain/regularization'
 import type { RegularizationReviewRepository, ReviewRegularizationFailure } from './ports'
 
-// Lo que se puede revisar sin la base se rechaza aquí; la base lo vuelve a exigir, junto con que la solicitud siga
-// pendiente y que lo aprobado no pase lo que debe hoy la cita.
 export const approveRegularization =
   (repository: RegularizationReviewRepository) =>
   async (input: { requestId: string; approvedAmount: number }): Promise<Result<AccountCaseState, ReviewRegularizationFailure>> => {

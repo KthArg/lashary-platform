@@ -7,7 +7,7 @@
 -- Correr con: npx supabase test db   (requiere `supabase start`)
 
 BEGIN;
-SELECT plan(12);
+SELECT plan(13);
 
 INSERT INTO auth.users (id, email)
 VALUES
@@ -101,6 +101,14 @@ SELECT lives_ok(
 SELECT throws_ok(
   $$SELECT public.delinquency_reject_regularization('00000000-0000-0000-0000-0000000018f1', 'No soy admin')$$,
   '42501', 'delinquency_not_admin', 'la clienta no rechaza solicitudes');
+
+-- ── La tabla repite el mínimo (auditoría del 2026-11-18, B3) ──────────────────────
+RESET ROLE;
+SELECT throws_ok(
+  $$UPDATE public.delinquency_regularizations
+       SET state = 'rejected', rejection_reason = 'Ilegible.', reviewed_by = '00000000-0000-0000-0000-0000000018a1', reviewed_at = now()
+     WHERE id = '00000000-0000-0000-0000-0000000018f2'$$,
+  '23514', NULL, 'ni escribiendo la tabla directo entra un rechazo con menos de 10 caracteres de motivo');
 
 SELECT * FROM finish();
 ROLLBACK;

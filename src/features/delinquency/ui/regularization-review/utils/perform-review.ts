@@ -12,7 +12,6 @@ export type ReviewDeps = {
 }
 
 const requestIdSchema = z.string().guid()
-// El formulario manda texto: el monto llega como cadena y se exige entero (los colones no tienen decimales).
 const amountSchema = z.string().regex(/^\d+$/).transform(Number).pipe(z.number().int().positive().max(Number.MAX_SAFE_INTEGER))
 
 const messageFor = (error: ReviewRegularizationFailure): string =>

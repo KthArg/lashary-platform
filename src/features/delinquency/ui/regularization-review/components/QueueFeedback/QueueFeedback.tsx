@@ -7,8 +7,6 @@ type Announce = (message: string) => void
 
 const QueueFeedbackContext = createContext<Announce>(() => {})
 
-// Al aprobar o rechazar, la pantalla se recarga y la solicitud sale de la cola: su tarjeta desaparece con el
-// mensaje. Este componente envuelve la cola, sigue montado después de recargar y muestra el último resultado.
 export function QueueFeedback({ children }: { children: ReactNode }) {
   const [message, setMessage] = useState<string | null>(null)
   const announce = useCallback<Announce>((text) => setMessage(text), [])

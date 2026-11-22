@@ -7,7 +7,6 @@ import { currentClient, receiptStorage } from '@/features/delinquency/db/receipt
 import { performLoadMyAccount, performSubmitRegularization, type RegularizationDeps } from '../utils/perform-regularization'
 import type { LoadMyAccountResult, SubmitRegularizationResult } from '../types/regularization-results'
 
-// Todo con la sesión de la clienta: la base y el bucket deciden qué puede hacer (SEC-001); nunca la service-role key.
 async function createDeps(): Promise<RegularizationDeps> {
   const db = await createClient()
   const requests = regularizationRepository(db)
