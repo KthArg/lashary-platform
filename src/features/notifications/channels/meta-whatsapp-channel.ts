@@ -46,6 +46,7 @@ const templateFor = (config: MetaWhatsAppConfig, purpose: MessagePurpose): strin
     reschedule_outcome: config.rescheduleOutcomeTemplateName,
     aftercare: config.aftercareTemplateName,
     reapplication_reminder: config.reapplicationTemplateName,
+    inactive_reminder: null,
   }
   return templates[purpose]
 }

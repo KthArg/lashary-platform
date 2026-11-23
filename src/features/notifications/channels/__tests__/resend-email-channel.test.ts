@@ -5,6 +5,7 @@ import { REMINDER_MESSAGE_TEXTS } from '../../domain/reminder-message'
 import { CLIENT_NOTICE_MESSAGE_TEXTS } from '../../domain/client-notice-message'
 import { AFTERCARE_MESSAGE_TEXTS } from '../../domain/aftercare-message-text'
 import { REAPPLICATION_MESSAGE_TEXTS } from '../../domain/reapplication-message'
+import { INACTIVE_REMINDER_MESSAGE_TEXTS } from '../../domain/inactive-reminder-message'
 import { readResendEmailConfigFromEnv, resendEmailChannel } from '../resend-email-channel'
 
 afterEach(() => {
@@ -99,6 +100,34 @@ describe('resendEmailChannel', () => {
     const [, init] = fetchMock.mock.calls[0]
     expect(JSON.parse(init.body).subject).toBe(REAPPLICATION_MESSAGE_TEXTS.emailSubject)
     expect(init.headers['Idempotency-Key']).toBe('notifications-reapplication_reminder-reap-1')
+  })
+
+  it('un recordatorio a inactiva va con su asunto y con el enlace de baja en List-Unsubscribe (US-NOT-06, criterio 4)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await resendEmailChannel({ apiKey: 'key', fromAddress: 'avisos@lashary.example' }).send({
+      messageId: 'inact-1', purpose: 'inactive_reminder', contact: { phone: '+50688887777', email: 'clienta@example.com' },
+      message: 'te extrañamos', templateVariables: [], unsubscribeUrl: 'https://lashary.example/recordatorios/baja/abc',
+    })
+
+    const [, init] = fetchMock.mock.calls[0]
+    const body = JSON.parse(init.body)
+    expect(body.subject).toBe(INACTIVE_REMINDER_MESSAGE_TEXTS.emailSubject)
+    expect(body.headers).toEqual({ 'List-Unsubscribe': '<https://lashary.example/recordatorios/baja/abc>' })
+    expect(init.headers['Idempotency-Key']).toBe('notifications-inactive_reminder-inact-1')
+  })
+
+  it('un mensaje sin enlace de baja no agrega encabezados al correo', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true })
+    vi.stubGlobal('fetch', fetchMock)
+
+    await resendEmailChannel({ apiKey: 'key', fromAddress: 'avisos@lashary.example' }).send({
+      messageId: 'reap-1', purpose: 'reapplication_reminder', contact: { phone: '+50688887777', email: 'clienta@example.com' },
+      message: 'ya se acerca', templateVariables: [],
+    })
+
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).headers).toBeUndefined()
   })
 
   it('una confirmación va con su propio asunto y su propia clave de idempotencia (US-NOT-08)', async () => {
