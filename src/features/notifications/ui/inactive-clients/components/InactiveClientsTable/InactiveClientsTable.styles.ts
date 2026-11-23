@@ -4,4 +4,6 @@ export const inactiveClientsTableStyles = {
   caption: 'sr-only',
   name: 'font-medium text-brand-dark',
   optedOut: 'badge badge-ghost badge-sm ml-2',
+  checkbox: 'checkbox checkbox-sm',
+  sendOne: 'btn btn-outline btn-xs',
 }
