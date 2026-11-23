@@ -2,7 +2,7 @@
 feature: clients
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-17
+actualizado: 2026-11-22
 historias:
   - id: US-CLI-01
     estado: terminada
@@ -706,6 +706,13 @@ anon no lee ningún contacto (SEC-002).
 - No hay código TypeScript nuevo en `clients`: el contrato es SQL. Las tablas del expediente (`clients_record_versions` y las demás) no se tocan ni se comparten.
 - La llave foránea `scheduling_appointments.client_id → clients_profiles(id)` (`ON DELETE RESTRICT`) queda registrada en el anexo del ADR-0009. Cambiar `clients_profiles.id` exige coordinar con `scheduling`.
 - Esto no reabre US-CLI-04 ni cambia su estado.
+
+## Nombres de todas las clientas, para notifications (US-NOT-06)
+
+- La lista de clientas inactivas de `notifications` incluye a las que nunca vinieron, que no salen en ninguna función de `scheduling`. Para no leer `clients_profiles` directo (ARCH-005), `clients` expone `clients_all_display_names()`: el `id` y el nombre de todas las clientas que la sesión puede ver, con la misma forma de fila que `clients_display_names` y sin datos de contacto (contrato en `docs/contracts/clients-api.md`).
+- Migración `20261122000001_clients_all_display_names_fn.sql` (pieza 4 de US-NOT-06). `SECURITY INVOKER` y `STABLE`: el personal ve todas, incluidas las clientas sin cuenta, y una clienta solo la suya; `anon` no la ejecuta. No pagina ni filtra.
+- Prueba: `supabase/tests/database/clients_all_display_names.test.sql` (6: la administradora ve todas incluida la sin cuenta, una fila por perfil, clienta solo la suya, `anon` no la ejecuta, `SECURITY INVOKER`, solo id y nombre).
+- No hay código TypeScript nuevo en `clients`.
 
 ## Morosidad en el listado y en el perfil (US-MOR-01, piezas 12 y 13)
 

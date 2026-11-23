@@ -32,7 +32,7 @@ El nombre de todas las clientas que la sesión puede ver, sin pedir ids. Nace de
 - No pagina ni filtra: quien la consume la une con lo suyo, filtra y deja que PostgREST pagine y cuente, como hace `clients_list`.
 - No lleva datos de contacto (garantía 2). Para enviar, `notifications` pide el contacto de cada clienta por `getClientContactForReminders`, como los demás recordatorios.
 
-Quien la necesita: la función de clientas inactivas de `notifications` (US-NOT-06). Estado: pactada el 2026-11-22; la crea la pieza 4 de US-NOT-06.
+Quien la necesita: la función de clientas inactivas de `notifications` (US-NOT-06). Estado: implementada en `20261122000001_clients_all_display_names_fn.sql` (pieza 4 de US-NOT-06).
 
 ## Garantías
 
@@ -42,4 +42,4 @@ Quien la necesita: la función de clientas inactivas de `notifications` (US-NOT-
 
 ## Pruebas
 
-pgTAP `supabase/tests/database/clients_contract.test.sql`: la clienta recibe su perfil y solo su nombre, una sesión sin perfil o una administradora sin perfil propio reciben nulo, la administradora ve los nombres de todas, y un anónimo no ejecuta ninguna. `clients_all_display_names` llevará su pgTAP en `supabase/tests/database/clients_all_display_names.test.sql` (pieza 4 de US-NOT-06): la administradora ve todas, incluida una clienta sin cuenta; una clienta solo la suya; `anon` no la ejecuta.
+pgTAP `supabase/tests/database/clients_contract.test.sql`: la clienta recibe su perfil y solo su nombre, una sesión sin perfil o una administradora sin perfil propio reciben nulo, la administradora ve los nombres de todas, y un anónimo no ejecuta ninguna. `clients_all_display_names` lleva su pgTAP en `supabase/tests/database/clients_all_display_names.test.sql` (pieza 4 de US-NOT-06): la administradora ve todas, incluida una clienta sin cuenta; una clienta solo la suya; `anon` no la ejecuta.
