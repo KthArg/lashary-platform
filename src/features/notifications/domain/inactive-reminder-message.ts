@@ -31,7 +31,9 @@ export function buildInactiveReminderMessage(input: InactiveReminderMessageInput
   ].join('\n')
 }
 
+export const isUnsubscribeToken = (value: string): boolean => UUID.test(value)
+
 export function buildInactiveUnsubscribeUrl(siteUrl: string | undefined, token: string): string | null {
-  if (!UUID.test(token)) return null
+  if (!isUnsubscribeToken(token)) return null
   return buildAppointmentsUrl(siteUrl, `${INACTIVE_UNSUBSCRIBE_PATH}/${token}`)
 }

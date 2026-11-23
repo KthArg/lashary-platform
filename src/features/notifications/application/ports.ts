@@ -189,6 +189,11 @@ export interface InactiveClientsRepository {
   queue(clientIds: string[], limits: InactiveQueueLimits): Promise<Result<InactiveQueueOutcome, InactiveQueueFailure>>
 }
 
+export interface InactiveSubscriptionRepository {
+  unsubscribe(token: string): Promise<Result<void, RepositoryFailure>>
+  resubscribe(token: string): Promise<Result<void, RepositoryFailure>>
+}
+
 export const MESSAGE_PURPOSES = [
   'reminder',
   'appointment_confirmation',
