@@ -1,0 +1,1 @@
+export { PaymentReminderSettingsView } from './PaymentReminderSettingsView'
