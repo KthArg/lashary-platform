@@ -120,7 +120,7 @@ describe('runPaymentReminderCycle', () => {
 
     const result = await runPaymentReminderCycle()
 
-    expect(isErr(result)).toBe(true)
+    expect(isErr(result) && result.error).toBe('site-url-not-configured')
     expect(mockDiscover).not.toHaveBeenCalled()
     expect(mockSend).not.toHaveBeenCalled()
     expect(mockCloseSystemClient).toHaveBeenCalledTimes(1)

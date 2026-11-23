@@ -6,6 +6,7 @@ import { sendDuePaymentReminders, type SendDuePaymentRemindersDeps } from '../se
 import { channelNotConfigured, channelSendFailed } from '../../domain/errors'
 import { paymentReminderKey } from '../../domain/payment-reminder'
 import { MAX_REMINDER_ATTEMPTS } from '../../domain/reminder'
+import { MAX_PROVIDER_ERROR_LENGTH } from '../../domain/provider-error'
 import type {
   ChannelSendInput,
   ContactInfo,
@@ -133,6 +134,15 @@ describe('sendDuePaymentReminders', () => {
     await sendDuePaymentReminders(deps)([due])
 
     expect(failures).toEqual([{ clientId: 'client-1', day: '2026-11-17', error: 'envío falló por whatsapp: fallo simulado; envío falló por email: fallo simulado', failedAt: NOW }])
+  })
+
+  it('con los dos canales fallando con errores largos, el fallo guardado cabe en el límite de la tabla', async () => {
+    const { deps, failures } = buildDeps()
+    const longFailure = (kind: 'whatsapp' | 'email'): NotificationChannel => ({ kind, send: async () => err(channelSendFailed(kind, 'x'.repeat(MAX_PROVIDER_ERROR_LENGTH * 2))) })
+
+    await sendDuePaymentReminders({ ...deps, primaryChannel: longFailure('whatsapp'), backupChannel: longFailure('email') })([due])
+
+    expect(failures[0]?.error.length).toBeLessThanOrEqual(MAX_PROVIDER_ERROR_LENGTH + 1)
   })
 
   it('el error registrado no lleva el teléfono de la clienta', async () => {

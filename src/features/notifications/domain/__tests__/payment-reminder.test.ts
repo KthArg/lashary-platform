@@ -62,4 +62,9 @@ describe('paymentReminderKey', () => {
     expect(paymentReminderKey('client-1', fixedDate('2026-11-17T20:00:00Z'))).toBe(sameDay)
     expect(paymentReminderKey('client-1', fixedDate('2026-11-24T08:00:00Z'))).not.toBe(sameDay)
   })
+
+  it('el día es el del estudio, no el de UTC: a las 18:00 de Costa Rica la clave no cambia', () => {
+    expect(paymentReminderKey('client-1', fixedDate('2026-11-18T00:30:00Z'))).toBe('client-1:2026-11-17')
+    expect(paymentReminderKey('client-1', fixedDate('2026-11-18T06:30:00Z'))).toBe('client-1:2026-11-18')
+  })
 })
