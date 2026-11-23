@@ -5,7 +5,7 @@ import type { ConfirmationRequest } from '../domain/confirmation-request'
 import type { InboxNotice } from '../domain/inbox-notice'
 import type { ClientNotice, ClientNoticeDelivery } from '../domain/client-notice'
 import type { AdminAftercare, AftercareMessage, ClientAftercare } from '../domain/aftercare-message'
-import type { AftercareStorageFailed, ChannelNotConfigured, ChannelSendFailed, ClientNoticesStorageFailed, InboxStorageFailed, InvalidAnticipationDays } from '../domain/errors'
+import type { AftercareStorageFailed, ChannelNotConfigured, ChannelSendFailed, ClientNoticesStorageFailed, InboxStorageFailed, InvalidAnticipationDays, InvalidPaymentReminderFrequencyDays } from '../domain/errors'
 
 export type RepositoryFailure = 'repository-failed'
 
@@ -61,8 +61,11 @@ export interface ClientOwedAmountPort {
 
 export type PaymentReminderSentInput = { clientId: string; amountOwed: number; channel: ReminderChannelKind; sentAt: Date }
 
+export type ChangeFrequencyDaysFailure = RepositoryFailure | InvalidPaymentReminderFrequencyDays
+
 export interface PaymentReminderSettingsPort {
   frequencyDays(): Promise<Result<number, RepositoryFailure>>
+  setFrequencyDays(days: number): Promise<Result<number, ChangeFrequencyDaysFailure>>
 }
 
 export interface PaymentReminderLogPort {
