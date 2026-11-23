@@ -58,6 +58,24 @@ export type ReceiptAlreadyUsed = {
   message: string
 }
 
+export type NotAdmin = {
+  kind: 'NotAdmin'
+  code: 'STORE_NO_ES_ADMINISTRADORA'
+  message: string
+}
+
+export type OrderNotFound = {
+  kind: 'OrderNotFound'
+  code: 'STORE_PEDIDO_NO_ENCONTRADO'
+  message: string
+}
+
+export type OrderNotPending = {
+  kind: 'OrderNotPending'
+  code: 'STORE_PEDIDO_NO_PENDIENTE'
+  message: string
+}
+
 export type StoreStorageFailed = {
   kind: 'StoreStorageFailed'
   code: 'STORE_FALLO_DE_ALMACENAMIENTO'
@@ -117,6 +135,30 @@ export function createReceiptAlreadyUsed(): ReceiptAlreadyUsed {
     kind: 'ReceiptAlreadyUsed',
     code: 'STORE_COMPROBANTE_YA_USADO',
     message: 'este comprobante ya se usó en otro pedido',
+  }
+}
+
+export function createNotAdmin(): NotAdmin {
+  return {
+    kind: 'NotAdmin',
+    code: 'STORE_NO_ES_ADMINISTRADORA',
+    message: 'solo la administradora puede revisar un pedido',
+  }
+}
+
+export function createOrderNotFound(): OrderNotFound {
+  return {
+    kind: 'OrderNotFound',
+    code: 'STORE_PEDIDO_NO_ENCONTRADO',
+    message: 'el pedido no existe',
+  }
+}
+
+export function createOrderNotPending(): OrderNotPending {
+  return {
+    kind: 'OrderNotPending',
+    code: 'STORE_PEDIDO_NO_PENDIENTE',
+    message: 'el pedido ya fue revisado',
   }
 }
 
