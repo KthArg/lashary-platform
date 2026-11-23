@@ -6,8 +6,7 @@ const mockCreateSystemClient = vi.fn()
 const mockCloseSystemClient = vi.fn()
 const mockFrequencyDays = vi.fn()
 const mockReminderLog = vi.fn()
-const mockListActiveClientIds = vi.fn()
-const mockOwedBy = vi.fn()
+const mockListOwedByClient = vi.fn()
 const mockDiscover = vi.fn()
 const mockSend = vi.fn()
 
@@ -22,11 +21,8 @@ vi.mock('../db/payment-reminder-settings-repository', () => ({
 vi.mock('../db/payment-reminder-repository', () => ({
   paymentReminderRepository: (...args: unknown[]) => mockReminderLog(...args),
 }))
-vi.mock('../db/delinquent-clients-gateway', () => ({
-  delinquentClientsGateway: () => ({ listActiveClientIds: () => mockListActiveClientIds() }),
-}))
-vi.mock('../db/client-owed-amount-gateway', () => ({
-  clientOwedAmountGateway: () => ({ owedBy: (...args: unknown[]) => mockOwedBy(...args) }),
+vi.mock('../db/active-debts-gateway', () => ({
+  activeDebtsGateway: () => ({ listOwedByClient: () => mockListOwedByClient() }),
 }))
 vi.mock('@/features/auth', () => ({ CLIENT_PORTAL_ROUTES: { cuenta: '/portal/cuenta' } }))
 vi.mock('@/features/scheduling', () => ({ SCHEDULING_MY_APPOINTMENTS_PATH: '/portal/citas/mis-citas' }))
@@ -62,7 +58,7 @@ beforeEach(() => {
   mockCreateSystemClient.mockResolvedValue(ok(FAKE_DB))
   mockFrequencyDays.mockResolvedValue(ok(FREQUENCY_DAYS))
   mockReminderLog.mockResolvedValue({ lastSentAt: vi.fn(), recordSent: vi.fn() })
-  mockDiscover.mockResolvedValue(ok({ due: DUE_REMINDERS, errored: 0 }))
+  mockDiscover.mockResolvedValue(ok(DUE_REMINDERS))
   mockSend.mockResolvedValue(ok(SEND_SUMMARY))
 })
 
@@ -124,14 +120,6 @@ describe('runPaymentReminderCycle', () => {
     expect(mockDiscover).not.toHaveBeenCalled()
     expect(mockSend).not.toHaveBeenCalled()
     expect(mockCloseSystemClient).toHaveBeenCalledTimes(1)
-  })
-
-  it('suma los errores del descubrimiento a los del envío', async () => {
-    mockDiscover.mockResolvedValue(ok({ due: DUE_REMINDERS, errored: 2 }))
-
-    const result = await runPaymentReminderCycle()
-
-    expect(isOk(result) && result.value).toEqual({ ...SEND_SUMMARY, errored: 2 })
   })
 
   it('si descubrir falla, no manda nada y cierra la sesión igual', async () => {

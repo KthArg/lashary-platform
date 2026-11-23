@@ -51,16 +51,8 @@ export interface DelinquencyStatesPort {
 
 export type DuePaymentReminder = { clientId: string; amountOwed: number }
 
-export interface DelinquentClientsPort {
-  listActiveClientIds(): Promise<Result<string[], RepositoryFailure>>
-}
-
 export interface ActiveDebtsPort {
   listOwedByClient(): Promise<Result<ReadonlyMap<string, number>, RepositoryFailure>>
-}
-
-export interface ClientOwedAmountPort {
-  owedBy(clientId: string): Promise<Result<number, RepositoryFailure>>
 }
 
 export type PaymentReminderSentInput = { clientId: string; amountOwed: number; channel: ReminderChannelKind; sentAt: Date }

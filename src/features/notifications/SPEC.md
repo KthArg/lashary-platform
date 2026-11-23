@@ -59,15 +59,18 @@ deuda:
   - que: "runNotificationsReminderCycle y runReapplicationReminderCycle corren en paralelo desde el mismo receiveReminderCronRequest (pieza 18/21), cada uno con su propio cliente de sistema y sin coordinarse entre sí. Si una clienta cae en la ventana de los dos ciclos en la misma corrida (recordatorio de 24h de una cita y aviso de re-aplicación de una técnica), recibe dos mensajes de WhatsApp separados en vez de uno combinado: más costo de mensajería (si Meta cobra por conversación) y una experiencia peor, aunque cada ciclo sigue siendo idempotente por su propia clave de ciclo (sin duplicado dentro del mismo tipo de aviso)"
     aceptada_en: "Aceptado por Kenny Rodríguez el 2026-11-15 (docs/process/DEPENDENCIES.md)"
     costo: "3h: una cola compartida por clienta entre los dos ciclos (o combinar los dos mensajes en uno solo cuando coinciden en la misma corrida), con su prueba de integración"
-  - que: "US-NOT-04: el saldo de hoy se pide con una llamada por clienta a la que ya le toca el recordatorio (clientOwedAmountGateway.owedBy, que llama a delinquency_booking_block), no por lote; con muchas morosas el ciclo hace tantas llamadas como recordatorios pendientes"
-    aceptada_en: "Elegida por Bayron el 2026-11-17 entre tres opciones, en la conversación de trabajo de US-NOT-04; sin visto bueno del PO todavía"
-    costo: "2h: pasar a una sola llamada por lote a payments_appointment_balances ahora que delinquency_list_active_cases de US-MOR-05 ya está en main, con sus pruebas"
   - que: "US-NOT-04: runPaymentReminderCycle corre en paralelo con los ciclos de recordatorios y de re-aplicación, sin coordinarse; una clienta con morosidad activa puede recibir el recordatorio de pago y otro aviso por WhatsApp en la misma corrida"
     aceptada_en: "Pendiente: Kenny Rodríguez aceptó esta deuda el 2026-11-15 para dos ciclos; no consta para el tercero"
     costo: "3h: la misma cola compartida por clienta entre los ciclos cubriría los tres"
   - que: "US-NOT-04: el rango de 1 a 30 días y el 7 por defecto de la frecuencia del recordatorio los propuso el equipo de desarrollo, copiando los de la anticipación de US-NOT-05; el PO no los confirmó"
     aceptada_en: "Pendiente del PO (Kenny)"
     costo: "0.5h: confirmarlos por escrito en docs/process/DEPENDENCIES.md, o cambiar el rango en la migración nueva, el dominio y los textos"
+  - que: "US-NOT-04: no hay regla de darse por vencido: con los dos canales caídos el recordatorio hace hasta MAX_REMINDER_ATTEMPTS (5) intentos por día, todos los días, mientras la clienta deba y le toque"
+    aceptada_en: "Pendiente del PO (Kenny)"
+    costo: "1.5h: un tope total de días o intentos, o dejar de intentar tras N días de fallos seguidos, con su prueba"
+  - que: "US-NOT-04: el aislamiento de las tres tablas nuevas se prueba con pgTAP (staff, clienta y anon) pero no con vitest y tokens reales, como rls-isolation.test.ts de las otras tablas"
+    aceptada_en: "Pendiente del PO (Kenny)"
+    costo: "1h: agregar las tres tablas a rls-isolation.test.ts"
 defectos: []
 ---
 
@@ -786,11 +789,11 @@ UI-003/004 (la pantalla de la frecuencia), INT-002/003/008/009/010 y EST-006/007
 
 | Criterio | Estado | Con qué |
 |---|---|---|
-| 1 | Demostrable | Las clientas salen de `delinquency_list_active` (contrato en `docs/contracts/delinquency-api.md`, ya en `main`); la frecuencia va en una tabla propia con su pantalla; el envío usa el canal de US-NOT-03 |
+| 1 | Demostrable | Las clientas y lo que deben salen de `delinquency_list_active_cases` (contrato en `docs/contracts/delinquency-api.md`, ya en `main`); la frecuencia va en una tabla propia con su pantalla; el envío usa el canal de US-NOT-03 |
 | 2, monto | Demostrable | El saldo de hoy sale del ledger por `payments_appointment_balances` / `payments_client_balance` (contrato de `payments`), no del `pending` que guardó la detección |
 | 2, enlace para regularizar | Demostrable | `CLIENT_PORTAL_ROUTES.cuenta` (`/portal/cuenta`) ya está en `main`; lo que la clienta encuentra ahí, el estado de cuenta y el comprobante, lo construyó US-MOR-03 (ya en `main`, #943 a #945) |
 | 3 | Demostrable | El saldo se lee en el momento del envío, no del estado del caso. Se prueba sembrando un asiento de pago en el ledger, como hicieron las pruebas de US-MOR-02 |
-| 4 | Demostrable | `delinquency_list_active` y `delinquency_booking_block` solo devuelven casos `active`; US-MOR-05 (ya en `main`) agrega `lifted` y `forgiven`, que quedan fuera sin código extra |
+| 4 | Demostrable | `delinquency_list_active_cases` solo devuelve casos `active`; US-MOR-05 (ya en `main`) agrega `lifted` y `forgiven`, que quedan fuera sin código extra |
 
 ### Alcance
 
@@ -800,11 +803,11 @@ Esta historia cierra con los cuatro criterios demostrados. US-MOR-03 y US-MOR-05
 
 | Criterio | Estado | Prueba que lo demuestra |
 |---|---|---|
-| 1: recordatorio automático a morosidad activa, con la frecuencia que configura la administradora | Demostrado | `domain/__tests__/payment-reminder.test.ts` (cuándo toca y el rango), `application/__tests__/discover-due-payment-reminders.test.ts` (no repite antes de la frecuencia, repite al cumplirse, 1 día contra 7), `application/__tests__/send-due-payment-reminders.test.ts` (canal primario y respaldo, reintento si no salió), `db/__tests__/delinquent-clients-gateway.test.ts` (solo activas, todas las páginas), `db/__tests__/payment-reminder-repository.test.ts` (último envío y cuenta), `__tests__/payment-reminder-cycle.test.ts` y `http/__tests__/cron-handler.test.ts` (el cron lo corre sin tumbar a los otros ciclos), `application/__tests__/payment-reminder-settings.test.ts`, `db/__tests__/payment-reminder-settings-repository.test.ts` y `ui/payment-reminder-settings/__tests__/` (la administradora lo configura), y pgTAP `notifications_payment_reminder_settings.test.sql`, `notifications_set_payment_reminder_frequency_days.test.sql` y `notifications_payment_reminders.test.sql`. Probado a mano en el navegador contra Supabase local (2026-11-18): carga con 7, guarda 14 y deja el evento |
-| 2: incluye el monto adeudado | Demostrado | `domain/__tests__/payment-reminder-message.test.ts`, `application/__tests__/send-due-payment-reminders.test.ts` y `db/__tests__/client-owed-amount-gateway.test.ts` (saldo de hoy, no el de la detección) |
+| 1: recordatorio automático a morosidad activa, con la frecuencia que configura la administradora | Demostrado | `domain/__tests__/payment-reminder.test.ts` (cuándo toca y el rango), `application/__tests__/discover-due-payment-reminders.test.ts` (no repite antes de la frecuencia, repite al cumplirse, 1 día contra 7), `application/__tests__/send-due-payment-reminders.test.ts` (canal primario y respaldo, reintento si no salió), `db/__tests__/active-debts-gateway.test.ts` (todas las páginas, suma por clienta), `db/__tests__/payment-reminder-repository.test.ts` (último envío y cuenta), `__tests__/payment-reminder-cycle.test.ts` y `http/__tests__/cron-handler.test.ts` (el cron lo corre sin tumbar a los otros ciclos), `application/__tests__/payment-reminder-settings.test.ts`, `db/__tests__/payment-reminder-settings-repository.test.ts` y `ui/payment-reminder-settings/__tests__/` (la administradora lo configura), y pgTAP `notifications_payment_reminder_settings.test.sql`, `notifications_set_payment_reminder_frequency_days.test.sql` y `notifications_payment_reminders.test.sql`. Probado a mano en el navegador contra Supabase local (2026-11-18): carga con 7, guarda 14 y deja el evento |
+| 2: incluye el monto adeudado | Demostrado | `domain/__tests__/payment-reminder-message.test.ts`, `application/__tests__/send-due-payment-reminders.test.ts` y `db/__tests__/active-debts-gateway.test.ts` (saldo vivo de hoy, no el de la detección) |
 | 2: …y un enlace para regularizar | Demostrado | `domain/__tests__/payment-reminder-message.test.ts` y `application/__tests__/send-due-payment-reminders.test.ts` (el mensaje y la variable de la plantilla llevan la URL) y `__tests__/payment-reminder-cycle.test.ts` (arma `NEXT_PUBLIC_SITE_URL` más `/portal/cuenta`; sin URL válida no manda nada) |
-| 3: deja de enviarse al saldarse | Demostrado | `application/__tests__/discover-due-payment-reminders.test.ts` (saldo cero) y `db/__tests__/client-owed-amount-gateway.test.ts` (sin filas) |
-| 4: la excepción manual no recibe recordatorios | Demostrado | pgTAP `notifications_payment_reminder_exceptions.test.sql`: una morosidad levantada o condonada no aparece en `delinquency_list_active` ni tiene saldo en `delinquency_booking_block`; una condonación parcial deja el caso activo y el recordatorio pide el saldo de hoy |
+| 3: deja de enviarse al saldarse | Demostrado | `db/__tests__/active-debts-gateway.test.ts` (un caso sin saldo no cuenta y una clienta sin saldo no aparece) |
+| 4: la excepción manual no recibe recordatorios | Demostrado | pgTAP `notifications_payment_reminder_exceptions.test.sql`: una morosidad levantada o condonada no aparece en `delinquency_list_active_cases`; una condonación parcial deja el caso activo y el recordatorio pide el saldo de hoy |
 
 ### Lo construido
 
@@ -823,7 +826,7 @@ Esta historia cierra con los cuatro criterios demostrados. US-MOR-03 y US-MOR-05
   (criterio 3) no depende de esta tabla: depende del saldo del ledger. Staff lee y escribe (el cron entra como
   staff, SEC-003); la clienta y anon, nada. pgTAP `notifications_payment_reminders.test.sql`.
 
-- **Descubrimiento (pieza 6):** `application/discover-due-payment-reminders.ts` toma las clientas con morosidad `active` (`delinquency_list_active`, paginada de a 100 por `db/delinquent-clients-gateway.ts`), descarta a quien todavía no le toca por la frecuencia y, solo a las que le tocan, pide el saldo de hoy con `delinquency_booking_block` (`db/client-owed-amount-gateway.ts`): sin filas la morosidad ya se saldó y no se envía (criterio 3). Es una llamada por clienta a la que ya le toca, no por todas; `delinquency_list_active_cases` de US-MOR-05, ya en `main`, permite pasar a una sola llamada por lote a `payments_appointment_balances`.
+- **Descubrimiento (pieza 6, rehecho en la 20):** `application/discover-due-payment-reminders.ts` toma de una sola vez lo que debe cada clienta con morosidad `active` (`delinquency_list_active_cases`, paginada de a 100 por `db/active-debts-gateway.ts`, que suma el saldo vivo de sus casos y deja fuera los que ya no tienen saldo: criterio 3), pide el último envío de todas en una consulta y descarta a quien todavía no le toca por la frecuencia. Desde la pieza 20 no hace una llamada por clienta: antes pedía el saldo con `delinquency_booking_block` a cada una a la que le tocaba.
 
 - **Registro del último envío (pieza 7):** `db/payment-reminder-repository.ts` lee la fecha del último recordatorio de cada clienta (en lotes de 100) y escribe el envío en `notifications_payment_reminders`, sumando uno a la cuenta de envíos de esa clienta. Solo se escribe un envío que un canal confirmó; el envío por el canal llega en la pieza 8.
 
@@ -843,11 +846,13 @@ Esta historia cierra con los cuatro criterios demostrados. US-MOR-03 y US-MOR-05
 
 - **Enlace para regularizar (pieza 16, criterio 2):** el mensaje lleva «Regulariza tu saldo desde tu estado de cuenta» y la URL de `/portal/cuenta`, que `runPaymentReminderCycle` arma con `NEXT_PUBLIC_SITE_URL` y `CLIENT_PORTAL_ROUTES.cuenta` de `auth`, igual que los enlaces a «Mis citas». La plantilla de WhatsApp pasa a dos variables: el monto y la URL. Sin una URL absoluta válida el ciclo no manda nada, lo deja en el log y devuelve `site-url-not-configured`, como los avisos de confirmación y de indicaciones dejan en el log la falta de la URL. La ruta ya está en `main`; el estado de cuenta y el formulario del comprobante son de US-MOR-03.
 
-- **Prueba de la excepción manual (pieza 17, criterio 4):** pgTAP `notifications_payment_reminder_exceptions.test.sql`, con los estados que trae US-MOR-05: una morosidad levantada (`delinquency_lift_case`) o condonada del todo (`delinquency_forgive_case`) no aparece en `delinquency_list_active`, de donde sale la lista del recordatorio, ni tiene saldo en `delinquency_booking_block`, de donde sale el monto; una condonación parcial deja el caso `active` y el recordatorio pide el saldo de hoy, no el original; sin excepción sigue pidiendo todo. No hay código nuevo: el código ya leía solo casos `active`. US-MOR-05 probaba que `booking_block` excluye esos estados, pero no `delinquency_list_active`.
+- **Prueba de la excepción manual (pieza 17, criterio 4):** pgTAP `notifications_payment_reminder_exceptions.test.sql`, con los estados que trae US-MOR-05: una morosidad levantada (`delinquency_lift_case`) o condonada del todo (`delinquency_forgive_case`) no aparece en `delinquency_list_active_cases`, de donde salen la lista y el monto del recordatorio; una condonación parcial deja el caso `active` y el recordatorio pide el saldo de hoy, no el original; sin excepción sigue pidiendo todo. No hay código nuevo: el código ya leía solo casos `active`. US-MOR-05 probaba que `booking_block` excluye esos estados, pero no la lista por caso que lee esta historia.
 
 - **Correcciones de la revisión de Kenny (pieza 18):** el error que se guarda cuando fallan los dos canales se satura después de unirlos (`sanitizeProviderError` sobre el texto completo), porque dos errores saneados de 501 caracteres cada uno rompían el `CHECK` de `last_error`, el intento no se contaba y el tope nunca se alcanzaba; el día del tope y de la clave del envío pasa a ser el del estudio (`studioDateOf`) y no el de UTC, que cambiaba a las 18:00 de Costa Rica; la falta de `NEXT_PUBLIC_SITE_URL` devuelve `site-url-not-configured` en vez de un fallo de repositorio, y `buildAppointmentsUrl` pasa a `buildSiteUrl` porque ya no sirve solo para «Mis citas»; `.env.example` pide la plantilla de WhatsApp con 2 variables, no 1. Pruebas: `application/__tests__/send-due-payment-reminders.test.ts` (dos errores largos), `domain/__tests__/payment-reminder.test.ts` (la clave no cambia a las 18:00 del estudio), `__tests__/payment-reminder-cycle.test.ts` y `domain/__tests__/site-url.test.ts`.
 
 - **Pasarela del saldo por lote (pieza 19):** `db/active-debts-gateway.ts` lee `delinquency_list_active_cases` (el saldo vivo por caso de US-MOR-05, paginada de a 100) y suma por clienta lo que debe cada una, sin contar los casos que ya no tienen saldo; el puerto es `ActiveDebtsPort`. Todavía no la usa el descubrimiento: la pieza 20 lo cambia y quita las dos pasarelas que reemplaza. Pruebas: `db/__tests__/active-debts-gateway.test.ts`.
+
+- **Saldo en una sola llamada (pieza 20, deuda pagada):** el descubrimiento usa `db/active-debts-gateway.ts` y se quitan `db/delinquent-clients-gateway.ts` y `db/client-owed-amount-gateway.ts`, que reemplaza. Desaparece la llamada por clienta y también el conteo `errored` del descubrimiento (la pieza 13): ya no hay una llamada que falle por clienta. El pgTAP del criterio 4 prueba ahora esa misma función, `delinquency_list_active_cases`, y el contrato de `delinquency` anota que la lee esta historia.
 
 ### Decisiones propuestas, sin aprobar
 
