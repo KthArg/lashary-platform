@@ -3,6 +3,7 @@ import { ok, err, isErr, type Result } from '@/shared/result'
 import { systemClock } from '@/shared/clock'
 import { logError } from '@/shared/logger'
 import { createSystemClient, closeSystemClient, readSystemClientConfigFromEnv, type SystemClientFailure } from '@/shared/lib/supabase/system'
+import { CLIENT_PORTAL_ROUTES } from '@/features/auth'
 import {
   listSchedulingAppointmentsForReminders,
   getSchedulingAppointmentForReminder,
@@ -20,10 +21,16 @@ import { droppedNoticesRepository } from './db/dropped-notices-repository'
 import { delinquencyStatesGateway } from './db/delinquency-states-gateway'
 import { reapplicationReminderRepository } from './db/reapplication-reminder-repository'
 import { reapplicationSettingsRepository } from './db/reapplication-settings-repository'
+import { paymentReminderRepository } from './db/payment-reminder-repository'
+import { paymentReminderFailureRepository } from './db/payment-reminder-failure-repository'
+import { paymentReminderSettingsRepository } from './db/payment-reminder-settings-repository'
+import { activeDebtsGateway } from './db/active-debts-gateway'
 import { runReminderCycle, type RunReminderCycleSummary } from './application/run-reminder-cycle'
 import { discoverDueReapplications, type DiscoverDueReapplicationsDeps } from './application/discover-reapplication-reminders'
 import { sendDueReapplications, type SendDueReapplicationsSummary } from './application/send-due-reapplications'
-import { buildAppointmentsUrl } from './domain/appointments-url'
+import { discoverDuePaymentReminders } from './application/discover-due-payment-reminders'
+import { sendDuePaymentReminders, type SendDuePaymentRemindersSummary } from './application/send-due-payment-reminders'
+import { buildSiteUrl } from './domain/site-url'
 import { sendAftercareMessages, type SendAftercareMessagesSummary } from './application/send-aftercare-messages'
 import { sendConfirmationRequests, type SendConfirmationRequestsSummary } from './application/send-confirmation-requests'
 import type {
@@ -40,7 +47,7 @@ const CATALOG_TECHNIQUES_PAGE_SIZE = 100
 
 const REPOSITORY_FAILURE: RepositoryFailure = 'repository-failed'
 
-export type NotificationsCycleError = 'system-client-not-configured' | SystemClientFailure | RepositoryFailure
+export type NotificationsCycleError = 'system-client-not-configured' | 'site-url-not-configured' | SystemClientFailure | RepositoryFailure
 
 function buildGetContact(db: SupabaseClient) {
   return async (clientId: string): Promise<Result<ContactInfo | null, RepositoryFailure>> => {
@@ -82,7 +89,7 @@ export async function runNotificationsReminderCycle(): Promise<
     const primaryChannel = metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env))
     const backupChannel = resendEmailChannel(readResendEmailConfigFromEnv(process.env))
 
-    const appointmentsUrl = buildAppointmentsUrl(process.env.NEXT_PUBLIC_SITE_URL, SCHEDULING_MY_APPOINTMENTS_PATH)
+    const appointmentsUrl = buildSiteUrl(process.env.NEXT_PUBLIC_SITE_URL, SCHEDULING_MY_APPOINTMENTS_PATH)
     const sendConfirmations = appointmentsUrl
       ? sendConfirmationRequests({
           requests: confirmationRequestRepository(db),
@@ -210,6 +217,53 @@ export async function runReapplicationReminderCycle(): Promise<
   }
 }
 
+export async function runPaymentReminderCycle(): Promise<Result<SendDuePaymentRemindersSummary, NotificationsCycleError>> {
+  const systemConfig = readSystemClientConfigFromEnv(process.env)
+  if (systemConfig === null) return err('system-client-not-configured')
+
+  const clientResult = await createSystemClient(systemConfig)
+  if (isErr(clientResult)) return clientResult
+  const db = clientResult.value
+
+  try {
+    const frequencyDays = await paymentReminderSettingsRepository(db).frequencyDays()
+    if (isErr(frequencyDays)) {
+      logError('notifications', 'no se pudo leer la frecuencia del recordatorio de pago, se aborta la corrida', frequencyDays.error)
+      return err(REPOSITORY_FAILURE)
+    }
+
+    const regularizeUrl = buildSiteUrl(process.env.NEXT_PUBLIC_SITE_URL, CLIENT_PORTAL_ROUTES.cuenta)
+    if (regularizeUrl === null) {
+      logError('notifications', 'NEXT_PUBLIC_SITE_URL no es una URL absoluta: no se mandan recordatorios de pago sin enlace para regularizar')
+      return err('site-url-not-configured')
+    }
+
+    const reminderLog = await paymentReminderRepository(db)
+    const failureLog = await paymentReminderFailureRepository(db)
+    const discovered = await discoverDuePaymentReminders({
+      listOwedByClient: activeDebtsGateway(db).listOwedByClient,
+      lastSentAt: reminderLog.lastSentAt,
+      frequencyDays: frequencyDays.value,
+      now: systemClock(),
+    })
+    if (isErr(discovered)) return discovered
+
+    const sent = await sendDuePaymentReminders({
+      regularizeUrl,
+      recordSent: reminderLog.recordSent,
+      attemptsOn: failureLog.attemptsOn,
+      recordFailure: failureLog.recordFailure,
+      getContact: buildGetContact(db),
+      primaryChannel: metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env)),
+      backupChannel: resendEmailChannel(readResendEmailConfigFromEnv(process.env)),
+      clock: systemClock,
+    })(discovered.value)
+    return sent
+  } finally {
+    await closeSystemClient(db)
+  }
+}
+
 export type { RunReminderCycleSummary } from './application/run-reminder-cycle'
 export { receiveReminderCronRequest } from './http/cron-handler'
 export { loadAdminInbox } from './ui/inbox/services/inbox-service'
@@ -231,3 +285,5 @@ export type { ClientRecordAftercareResult } from './ui/client-record-aftercare/s
 
 export { ReapplicationSettingsPage } from './ui/reapplication-settings/components/ReapplicationSettingsPage'
 export { REAPPLICATION_SETTINGS_PATH } from './ui/reapplication-settings/constants/reapplication-settings-strings'
+export { PaymentReminderSettingsPage } from './ui/payment-reminder-settings/components/PaymentReminderSettingsPage'
+export { PAYMENT_REMINDER_SETTINGS_PATH } from './ui/payment-reminder-settings/constants/payment-reminder-settings-strings'

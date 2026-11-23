@@ -5,7 +5,7 @@ import type { ConfirmationRequest } from '../domain/confirmation-request'
 import type { InboxNotice } from '../domain/inbox-notice'
 import type { ClientNotice, ClientNoticeDelivery } from '../domain/client-notice'
 import type { AdminAftercare, AftercareMessage, ClientAftercare } from '../domain/aftercare-message'
-import type { AftercareStorageFailed, ChannelNotConfigured, ChannelSendFailed, ClientNoticesStorageFailed, InboxStorageFailed, InvalidAnticipationDays } from '../domain/errors'
+import type { AftercareStorageFailed, ChannelNotConfigured, ChannelSendFailed, ClientNoticesStorageFailed, InboxStorageFailed, InvalidAnticipationDays, InvalidPaymentReminderFrequencyDays } from '../domain/errors'
 
 export type RepositoryFailure = 'repository-failed'
 
@@ -47,6 +47,33 @@ export type DelinquencyState = 'active' | 'pending_review'
 
 export interface DelinquencyStatesPort {
   statesFor(clientIds: readonly string[]): Promise<Result<ReadonlyMap<string, DelinquencyState>, RepositoryFailure>>
+}
+
+export type DuePaymentReminder = { clientId: string; amountOwed: number }
+
+export interface ActiveDebtsPort {
+  listOwedByClient(): Promise<Result<ReadonlyMap<string, number>, RepositoryFailure>>
+}
+
+export type PaymentReminderSentInput = { clientId: string; amountOwed: number; channel: ReminderChannelKind; sentAt: Date }
+
+export type ChangeFrequencyDaysFailure = RepositoryFailure | InvalidPaymentReminderFrequencyDays
+
+export interface PaymentReminderSettingsPort {
+  frequencyDays(): Promise<Result<number, RepositoryFailure>>
+  setFrequencyDays(days: number): Promise<Result<number, ChangeFrequencyDaysFailure>>
+}
+
+export type PaymentReminderFailureInput = { clientId: string; day: string; error: string; failedAt: Date }
+
+export interface PaymentReminderFailurePort {
+  attemptsOn(clientIds: readonly string[], day: string): Promise<Result<ReadonlyMap<string, number>, RepositoryFailure>>
+  recordFailure(input: PaymentReminderFailureInput): Promise<Result<void, RepositoryFailure>>
+}
+
+export interface PaymentReminderLogPort {
+  lastSentAt(clientIds: readonly string[]): Promise<Result<ReadonlyMap<string, Date>, RepositoryFailure>>
+  recordSent(input: PaymentReminderSentInput): Promise<Result<void, RepositoryFailure>>
 }
 
 export type DueReapplicationReminder = {
@@ -175,6 +202,7 @@ export const MESSAGE_PURPOSES = [
   'reschedule_outcome',
   'aftercare',
   'reapplication_reminder',
+  'payment_reminder',
 ] as const
 
 export type MessagePurpose = (typeof MESSAGE_PURPOSES)[number]
