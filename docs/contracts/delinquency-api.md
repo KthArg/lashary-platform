@@ -51,7 +51,7 @@ Las morosidades `active`, una fila por caso (no agregadas por clienta), de la m�
 
 `pending` es el **saldo vivo** de la cita (`payments_appointment_balances`, ARCH-005), no la foto que guardó la detección — distinto de `delinquency_client_states`/`delinquency_list_active`, que siguen devolviendo la foto. `exception_amount` es lo condonado hasta ahora (`null` si nunca se condonó nada); juntos le bastan a la pantalla para mostrar "debe hoy" y para acotar cuánto puede condonarse.
 
-Quien la necesita: `/admin/morosidades` (US-MOR-05), para levantar o condonar un caso puntual — `delinquency_lift_case` y `delinquency_forgive_case` actúan sobre un `case_id`, no sobre el agregado de la clienta.
+Quien la necesita: `/admin/morosidades` (US-MOR-05), para levantar o condonar un caso puntual — `delinquency_lift_case` y `delinquency_forgive_case` actúan sobre un `case_id`, no sobre el agregado de la clienta. También la lee el recordatorio de pago (US-NOT-04), que suma el saldo vivo por clienta sin una llamada por cada una.
 
 ### `public.delinquency_lift_case(p_case_id uuid, p_reason text) => delinquency_cases`
 

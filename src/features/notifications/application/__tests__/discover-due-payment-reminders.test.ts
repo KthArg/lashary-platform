@@ -8,28 +8,27 @@ const LUCIA = 'lucia-id'
 const NOW = fixedDate('2026-11-17T12:00:00Z')
 
 type BuildOptions = {
-  activeClientIds?: string[]
-  lastSent?: Record<string, Date>
   owed?: Record<string, number>
+  lastSent?: Record<string, Date>
   frequencyDays?: number
-  failAt?: 'active' | 'lastSent'
-  failOwedFor?: string[]
+  failAt?: 'owed' | 'lastSent'
 }
 
 function buildDeps(options: BuildOptions = {}) {
-  const owedCalls: string[] = []
+  const calls = { listOwedByClient: 0, lastSentAt: [] as string[][] }
   const deps: DiscoverDuePaymentRemindersDeps = {
-    listActiveClientIds: async () => (options.failAt === 'active' ? err('repository-failed' as const) : ok(options.activeClientIds ?? [ANA])),
-    lastSentAt: async () =>
-      options.failAt === 'lastSent' ? err('repository-failed' as const) : ok(new Map(Object.entries(options.lastSent ?? {}))),
-    owedBy: async (clientId) => {
-      owedCalls.push(clientId)
-      return options.failOwedFor?.includes(clientId) ? err('repository-failed' as const) : ok(options.owed?.[clientId] ?? 18000)
+    listOwedByClient: async () => {
+      calls.listOwedByClient += 1
+      return options.failAt === 'owed' ? err('repository-failed' as const) : ok(new Map(Object.entries(options.owed ?? { [ANA]: 18000 })))
+    },
+    lastSentAt: async (clientIds) => {
+      calls.lastSentAt.push([...clientIds])
+      return options.failAt === 'lastSent' ? err('repository-failed' as const) : ok(new Map(Object.entries(options.lastSent ?? {})))
     },
     frequencyDays: options.frequencyDays ?? 7,
     now: NOW,
   }
-  return { deps, owedCalls }
+  return { deps, calls }
 }
 
 describe('discoverDuePaymentReminders', () => {
@@ -38,25 +37,24 @@ describe('discoverDuePaymentReminders', () => {
 
     const result = await discoverDuePaymentReminders(deps)
 
-    expect(isOk(result) && result.value.due).toEqual([{ clientId: ANA, amountOwed: 18000 }])
+    expect(isOk(result) && result.value).toEqual([{ clientId: ANA, amountOwed: 18000 }])
   })
 
-  it('sin clientas con morosidad activa no hay nada que enviar y no se consulta nada más', async () => {
-    const { deps, owedCalls } = buildDeps({ activeClientIds: [] })
+  it('sin clientas con saldo no hay nada que enviar y no se consulta el último envío', async () => {
+    const { deps, calls } = buildDeps({ owed: {} })
 
     const result = await discoverDuePaymentReminders(deps)
 
-    expect(isOk(result) && result.value.due).toEqual([])
-    expect(owedCalls).toEqual([])
+    expect(isOk(result) && result.value).toEqual([])
+    expect(calls.lastSentAt).toEqual([])
   })
 
   it('no repite el recordatorio antes de cumplirse la frecuencia configurada (criterio 1)', async () => {
-    const { deps, owedCalls } = buildDeps({ lastSent: { [ANA]: fixedDate('2026-11-14T12:00:00Z') }, frequencyDays: 7 })
+    const { deps } = buildDeps({ lastSent: { [ANA]: fixedDate('2026-11-14T12:00:00Z') }, frequencyDays: 7 })
 
     const result = await discoverDuePaymentReminders(deps)
 
-    expect(isOk(result) && result.value.due).toEqual([])
-    expect(owedCalls).toEqual([])
+    expect(isOk(result) && result.value).toEqual([])
   })
 
   it('lo repite al cumplirse la frecuencia', async () => {
@@ -64,7 +62,7 @@ describe('discoverDuePaymentReminders', () => {
 
     const result = await discoverDuePaymentReminders(deps)
 
-    expect(isOk(result) && result.value.due).toEqual([{ clientId: ANA, amountOwed: 18000 }])
+    expect(isOk(result) && result.value).toEqual([{ clientId: ANA, amountOwed: 18000 }])
   })
 
   it('la frecuencia configurada manda: con 1 día toca al día siguiente', async () => {
@@ -72,47 +70,30 @@ describe('discoverDuePaymentReminders', () => {
 
     const result = await discoverDuePaymentReminders(deps)
 
-    expect(isOk(result) && result.value.due).toHaveLength(1)
+    expect(isOk(result) && result.value).toHaveLength(1)
   })
 
-  it('una morosidad ya saldada, con saldo cero, no recibe recordatorio (criterio 3)', async () => {
-    const { deps } = buildDeps({ owed: { [ANA]: 0 } })
-
-    const result = await discoverDuePaymentReminders(deps)
-
-    expect(isOk(result) && result.value.due).toEqual([])
-  })
-
-  it('mezcla: solo recibe quien le toca y todavía debe', async () => {
-    const { deps, owedCalls } = buildDeps({
-      activeClientIds: [ANA, LUCIA],
+  it('mezcla: solo recibe quien le toca por la frecuencia', async () => {
+    const { deps } = buildDeps({
+      owed: { [ANA]: 18000, [LUCIA]: 5000 },
       lastSent: { [ANA]: fixedDate('2026-11-16T12:00:00Z') },
-      owed: { [LUCIA]: 5000 },
     })
 
     const result = await discoverDuePaymentReminders(deps)
 
-    expect(isOk(result) && result.value.due).toEqual([{ clientId: LUCIA, amountOwed: 5000 }])
-    expect(owedCalls).toEqual([LUCIA])
+    expect(isOk(result) && result.value).toEqual([{ clientId: LUCIA, amountOwed: 5000 }])
   })
 
-  it('el fallo al pedir el saldo de una clienta no frena a las que siguen y se cuenta como error', async () => {
-    const { deps } = buildDeps({ activeClientIds: [ANA, LUCIA], failOwedFor: [ANA], owed: { [LUCIA]: 5000 } })
+  it('pide los saldos de todas de una vez y el último envío de todas en una sola consulta, sin llamadas por clienta', async () => {
+    const { deps, calls } = buildDeps({ owed: { [ANA]: 18000, [LUCIA]: 5000 } })
 
-    const result = await discoverDuePaymentReminders(deps)
+    await discoverDuePaymentReminders(deps)
 
-    expect(isOk(result) && result.value).toEqual({ due: [{ clientId: LUCIA, amountOwed: 5000 }], errored: 1 })
+    expect(calls.listOwedByClient).toBe(1)
+    expect(calls.lastSentAt).toEqual([[ANA, LUCIA]])
   })
 
-  it('sin ningún error, el conteo de errores es cero', async () => {
-    const { deps } = buildDeps()
-
-    const result = await discoverDuePaymentReminders(deps)
-
-    expect(isOk(result) && result.value.errored).toBe(0)
-  })
-
-  it.each(['active', 'lastSent'] as const)('si falla la lectura de %s, devuelve el fallo y no un envío a medias', async (failAt) => {
+  it.each(['owed', 'lastSent'] as const)('si falla la lectura de %s, devuelve el fallo y no un envío a medias', async (failAt) => {
     const { deps } = buildDeps({ failAt })
 
     const result = await discoverDuePaymentReminders(deps)

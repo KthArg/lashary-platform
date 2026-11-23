@@ -53,8 +53,8 @@ SELECT is(
   'active', 'una condonación parcial deja el caso activo');
 
 SELECT is(
-  (SELECT array_agg(client_id ORDER BY client_id)
-     FROM public.delinquency_list_active(100, NULL, NULL)
+  (SELECT array_agg(DISTINCT client_id ORDER BY client_id)
+     FROM public.delinquency_list_active_cases(100, NULL, NULL)
     WHERE client_id IN (
       '00000000-0000-0000-0000-00000000ca61', '00000000-0000-0000-0000-00000000ca62',
       '00000000-0000-0000-0000-00000000ca63', '00000000-0000-0000-0000-00000000ca64')),
@@ -62,19 +62,23 @@ SELECT is(
   'criterio 4: de donde sale la lista del recordatorio, levantada y condonada no aparecen y la parcial y la activa sí');
 
 SELECT is(
-  (SELECT count(*)::int FROM public.delinquency_booking_block('00000000-0000-0000-0000-00000000ca61')),
-  0, 'criterio 4: de donde sale el monto, una morosidad levantada no tiene nada pendiente');
+  (SELECT count(*)::int FROM public.delinquency_list_active_cases(100, NULL, NULL)
+    WHERE client_id = '00000000-0000-0000-0000-00000000ca61'),
+  0, 'criterio 4: una morosidad levantada no tiene ningún caso activo con saldo');
 
 SELECT is(
-  (SELECT count(*)::int FROM public.delinquency_booking_block('00000000-0000-0000-0000-00000000ca62')),
-  0, 'criterio 4: de donde sale el monto, una morosidad condonada no tiene nada pendiente');
+  (SELECT count(*)::int FROM public.delinquency_list_active_cases(100, NULL, NULL)
+    WHERE client_id = '00000000-0000-0000-0000-00000000ca62'),
+  0, 'criterio 4: una morosidad condonada del todo no tiene ningún caso activo con saldo');
 
 SELECT is(
-  (SELECT sum(pending)::bigint FROM public.delinquency_booking_block('00000000-0000-0000-0000-00000000ca63')),
+  (SELECT sum(pending)::bigint FROM public.delinquency_list_active_cases(100, NULL, NULL)
+    WHERE client_id = '00000000-0000-0000-0000-00000000ca63'),
   8000::bigint, 'con una condonación parcial el recordatorio pide el saldo de hoy, no el original');
 
 SELECT is(
-  (SELECT sum(pending)::bigint FROM public.delinquency_booking_block('00000000-0000-0000-0000-00000000ca64')),
+  (SELECT sum(pending)::bigint FROM public.delinquency_list_active_cases(100, NULL, NULL)
+    WHERE client_id = '00000000-0000-0000-0000-00000000ca64'),
   6000::bigint, 'sin excepción, el recordatorio sigue pidiendo todo el saldo');
 
 SELECT * FROM finish();

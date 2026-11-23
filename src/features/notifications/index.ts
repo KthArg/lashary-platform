@@ -24,8 +24,7 @@ import { reapplicationSettingsRepository } from './db/reapplication-settings-rep
 import { paymentReminderRepository } from './db/payment-reminder-repository'
 import { paymentReminderFailureRepository } from './db/payment-reminder-failure-repository'
 import { paymentReminderSettingsRepository } from './db/payment-reminder-settings-repository'
-import { delinquentClientsGateway } from './db/delinquent-clients-gateway'
-import { clientOwedAmountGateway } from './db/client-owed-amount-gateway'
+import { activeDebtsGateway } from './db/active-debts-gateway'
 import { runReminderCycle, type RunReminderCycleSummary } from './application/run-reminder-cycle'
 import { discoverDueReapplications, type DiscoverDueReapplicationsDeps } from './application/discover-reapplication-reminders'
 import { sendDueReapplications, type SendDueReapplicationsSummary } from './application/send-due-reapplications'
@@ -242,9 +241,8 @@ export async function runPaymentReminderCycle(): Promise<Result<SendDuePaymentRe
     const reminderLog = await paymentReminderRepository(db)
     const failureLog = await paymentReminderFailureRepository(db)
     const discovered = await discoverDuePaymentReminders({
-      listActiveClientIds: delinquentClientsGateway(db).listActiveClientIds,
+      listOwedByClient: activeDebtsGateway(db).listOwedByClient,
       lastSentAt: reminderLog.lastSentAt,
-      owedBy: clientOwedAmountGateway(db).owedBy,
       frequencyDays: frequencyDays.value,
       now: systemClock(),
     })
@@ -259,10 +257,8 @@ export async function runPaymentReminderCycle(): Promise<Result<SendDuePaymentRe
       primaryChannel: metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env)),
       backupChannel: resendEmailChannel(readResendEmailConfigFromEnv(process.env)),
       clock: systemClock,
-    })(discovered.value.due)
-    if (isErr(sent)) return sent
-
-    return ok({ ...sent.value, errored: sent.value.errored + discovered.value.errored })
+    })(discovered.value)
+    return sent
   } finally {
     await closeSystemClient(db)
   }
