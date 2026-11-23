@@ -2,7 +2,7 @@
 feature: store
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-21
+actualizado: 2026-11-23
 historias:
   - id: US-PROD-02
     estado: terminada
@@ -14,7 +14,9 @@ historias:
     estado: terminada
     evidencia: "PR de la pieza 8/8 (cierra la historia) y las piezas #306, #308, #310, #323, #324, #339 y #340; tests: add-to-cart-from-detail.test.tsx y cart-contents.test.tsx (criterio 1: agregar desde el detalle, sumar, restar y quitar), cart-contents.test.tsx (criterio 2: cantidad, total y subtotal cambian antes de que responda el servidor), cart-repository-db.test.ts (criterio 3: el carrito persiste entre conexiones de la misma clienta), cart-page.test.tsx, cart-actions.test.ts, cart-use-cases.test.ts, cart.test.ts, cart-items-rls.test.ts y store_cart_items_active_product.test.sql (SEC-002)"
   - id: US-SHOP-02
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "Todavia no existe ninguna pieza de codigo: falta la migracion de store_orders/store_order_items y sus funciones (checkout, aprobar, rechazar), el dominio, los casos de uso, la pantalla de checkout de la clienta y la pantalla de aprobacion de pedidos de la administradora."
+    evidencia: "Arranca 2026-11-23 en us/US-SHOP-02. Decisiones de alcance (Erick Duran, 2026-11-23, registradas en docs/process/DEPENDENCIES.md): unico metodo de pago es SINPE Movil con comprobante (mismo numero y patron de US-MOR-03), sin boton de pago real; la administradora aprueba o rechaza el pedido desde el panel, no hay cobro automatico; la entrega es a eleccion de la clienta entre retiro en el estudio o envio a domicilio (direccion obligatoria solo si elige envio); las existencias se descuentan al enviar el pedido (reserva inmediata) y se devuelven si la administradora lo rechaza; un rechazo exige motivo de al menos 10 caracteres, visible a la clienta, igual que US-MOR-03. Sin ledger de payments: el pedido no es deuda de una cita, es una venta de una sola vez que se aprueba o se rechaza completa, asi que no reutiliza payments_ledger_entries ni payments_record_payment."
 flags: []
 deuda:
   - que: "Prueba de aislamiento RLS (SEC-002) de las politicas store_products_*_admin (supabase/migrations/20260912000000_store_products.sql): src/features/store/__tests__/products-admin-rls.test.ts se omite con describe.skipIf cuando no hay Supabase local, y CI no lo levanta, asi que no demuestra que anon y una clienta sin rol de staff no puedan INSERT, UPDATE ni DELETE"
