@@ -59,7 +59,7 @@ beforeEach(() => {
   mockCreateSystemClient.mockResolvedValue(ok(FAKE_DB))
   mockFrequencyDays.mockResolvedValue(ok(FREQUENCY_DAYS))
   mockReminderLog.mockResolvedValue({ lastSentAt: vi.fn(), recordSent: vi.fn() })
-  mockDiscover.mockResolvedValue(ok(DUE_REMINDERS))
+  mockDiscover.mockResolvedValue(ok({ due: DUE_REMINDERS, errored: 0 }))
   mockSend.mockResolvedValue(ok(SEND_SUMMARY))
 })
 
@@ -104,6 +104,14 @@ describe('runPaymentReminderCycle', () => {
     expect(mockDiscover).toHaveBeenCalledWith(expect.objectContaining({ frequencyDays: FREQUENCY_DAYS }))
     expect(mockSend).toHaveBeenCalledWith(expect.anything(), DUE_REMINDERS)
     expect(mockCloseSystemClient).toHaveBeenCalledTimes(1)
+  })
+
+  it('suma los errores del descubrimiento a los del envío', async () => {
+    mockDiscover.mockResolvedValue(ok({ due: DUE_REMINDERS, errored: 2 }))
+
+    const result = await runPaymentReminderCycle()
+
+    expect(isOk(result) && result.value).toEqual({ ...SEND_SUMMARY, errored: 2 })
   })
 
   it('si descubrir falla, no manda nada y cierra la sesión igual', async () => {

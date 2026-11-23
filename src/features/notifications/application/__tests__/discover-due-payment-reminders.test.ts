@@ -12,7 +12,8 @@ type BuildOptions = {
   lastSent?: Record<string, Date>
   owed?: Record<string, number>
   frequencyDays?: number
-  failAt?: 'active' | 'lastSent' | 'owed'
+  failAt?: 'active' | 'lastSent'
+  failOwedFor?: string[]
 }
 
 function buildDeps(options: BuildOptions = {}) {
@@ -23,7 +24,7 @@ function buildDeps(options: BuildOptions = {}) {
       options.failAt === 'lastSent' ? err('repository-failed' as const) : ok(new Map(Object.entries(options.lastSent ?? {}))),
     owedBy: async (clientId) => {
       owedCalls.push(clientId)
-      return options.failAt === 'owed' ? err('repository-failed' as const) : ok(options.owed?.[clientId] ?? 18000)
+      return options.failOwedFor?.includes(clientId) ? err('repository-failed' as const) : ok(options.owed?.[clientId] ?? 18000)
     },
     frequencyDays: options.frequencyDays ?? 7,
     now: NOW,
@@ -37,7 +38,7 @@ describe('discoverDuePaymentReminders', () => {
 
     const result = await discoverDuePaymentReminders(deps)
 
-    expect(isOk(result) && result.value).toEqual([{ clientId: ANA, amountOwed: 18000 }])
+    expect(isOk(result) && result.value.due).toEqual([{ clientId: ANA, amountOwed: 18000 }])
   })
 
   it('sin clientas con morosidad activa no hay nada que enviar y no se consulta nada más', async () => {
@@ -45,7 +46,7 @@ describe('discoverDuePaymentReminders', () => {
 
     const result = await discoverDuePaymentReminders(deps)
 
-    expect(isOk(result) && result.value).toEqual([])
+    expect(isOk(result) && result.value.due).toEqual([])
     expect(owedCalls).toEqual([])
   })
 
@@ -54,7 +55,7 @@ describe('discoverDuePaymentReminders', () => {
 
     const result = await discoverDuePaymentReminders(deps)
 
-    expect(isOk(result) && result.value).toEqual([])
+    expect(isOk(result) && result.value.due).toEqual([])
     expect(owedCalls).toEqual([])
   })
 
@@ -63,7 +64,7 @@ describe('discoverDuePaymentReminders', () => {
 
     const result = await discoverDuePaymentReminders(deps)
 
-    expect(isOk(result) && result.value).toEqual([{ clientId: ANA, amountOwed: 18000 }])
+    expect(isOk(result) && result.value.due).toEqual([{ clientId: ANA, amountOwed: 18000 }])
   })
 
   it('la frecuencia configurada manda: con 1 día toca al día siguiente', async () => {
@@ -71,7 +72,7 @@ describe('discoverDuePaymentReminders', () => {
 
     const result = await discoverDuePaymentReminders(deps)
 
-    expect(isOk(result) && result.value).toHaveLength(1)
+    expect(isOk(result) && result.value.due).toHaveLength(1)
   })
 
   it('una morosidad ya saldada, con saldo cero, no recibe recordatorio (criterio 3)', async () => {
@@ -79,7 +80,7 @@ describe('discoverDuePaymentReminders', () => {
 
     const result = await discoverDuePaymentReminders(deps)
 
-    expect(isOk(result) && result.value).toEqual([])
+    expect(isOk(result) && result.value.due).toEqual([])
   })
 
   it('mezcla: solo recibe quien le toca y todavía debe', async () => {
@@ -91,11 +92,27 @@ describe('discoverDuePaymentReminders', () => {
 
     const result = await discoverDuePaymentReminders(deps)
 
-    expect(isOk(result) && result.value).toEqual([{ clientId: LUCIA, amountOwed: 5000 }])
+    expect(isOk(result) && result.value.due).toEqual([{ clientId: LUCIA, amountOwed: 5000 }])
     expect(owedCalls).toEqual([LUCIA])
   })
 
-  it.each(['active', 'lastSent', 'owed'] as const)('si falla la lectura de %s, devuelve el fallo y no un envío a medias', async (failAt) => {
+  it('el fallo al pedir el saldo de una clienta no frena a las que siguen y se cuenta como error', async () => {
+    const { deps } = buildDeps({ activeClientIds: [ANA, LUCIA], failOwedFor: [ANA], owed: { [LUCIA]: 5000 } })
+
+    const result = await discoverDuePaymentReminders(deps)
+
+    expect(isOk(result) && result.value).toEqual({ due: [{ clientId: LUCIA, amountOwed: 5000 }], errored: 1 })
+  })
+
+  it('sin ningún error, el conteo de errores es cero', async () => {
+    const { deps } = buildDeps()
+
+    const result = await discoverDuePaymentReminders(deps)
+
+    expect(isOk(result) && result.value.errored).toBe(0)
+  })
+
+  it.each(['active', 'lastSent'] as const)('si falla la lectura de %s, devuelve el fallo y no un envío a medias', async (failAt) => {
     const { deps } = buildDeps({ failAt })
 
     const result = await discoverDuePaymentReminders(deps)

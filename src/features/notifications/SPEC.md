@@ -839,6 +839,8 @@ marcar `terminada` sin ese enlace, y el traslado no se registra en DEPENDENCIES 
 
 - **Pantalla (pieza 11):** `/admin/citas/recordatorio-pago`, pestaña «Recordatorio de pago» en Citas. Un campo numérico de 1 a 30 y «Guardar»; la lógica del formulario vive en `hooks/use-frequency-days-form.ts` y el componente solo dibuja. Estados: carga (`loading.tsx`), error de carga con «Reintentar» (`role=alert`) y aviso de guardado en región viva (`role=status`). Reusa `FeedbackMessage` de la pantalla de re-aplicación. Como esa pantalla, anida su `<main>` dentro del `<main>` del panel y a 375 px el menú lateral deja poco ancho al contenido: ambos ya existen en el panel y no se tocan aquí.
 
+- **Un error de saldo no frena a las demás (pieza 13, auditoría M1):** `discoverDuePaymentReminders` devuelve `{ due, errored }`: si pedir el saldo de una clienta falla, lo registra con `logError`, la cuenta en `errored` y sigue con las siguientes; `runPaymentReminderCycle` suma esos errores al `errored` del resumen. Antes un solo fallo detenía el descubrimiento de todas las que venían detrás, en cada corrida.
+
 ### Decisiones propuestas, sin aprobar
 
 - **Frecuencia:** cada cuántos días se repite el recordatorio mientras haya saldo, de 1 a 30 y 7 por defecto, el mismo
@@ -851,7 +853,7 @@ marcar `terminada` sin ese enlace, y el traslado no se registra en DEPENDENCIES 
 
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
   mano. No lo pide ningún criterio de US-NOT-03 ni de US-NOT-07.
-- US-NOT-06 reusa el canal pero no está construida; US-NOT-04 está en curso (su sección); US-NOT-05 está en curso (su sección). US-NOT-02 y
+- US-NOT-06 reusa el canal pero no está construida; US-NOT-04 está en curso (su sección); US-NOT-05 ya está terminada (su sección). US-NOT-02 y
   US-NOT-08 están construidas y tienen pendiente lo de su sección.
 
 ## Correcciones de la auditoría del 2026-10-23 (AUDIT.md, líder del proyecto)
