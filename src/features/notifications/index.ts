@@ -252,3 +252,6 @@ export type { ClientRecordAftercareResult } from './ui/client-record-aftercare/s
 
 export { ReapplicationSettingsPage } from './ui/reapplication-settings/components/ReapplicationSettingsPage'
 export { REAPPLICATION_SETTINGS_PATH } from './ui/reapplication-settings/constants/reapplication-settings-strings'
+
+export { InactiveClientsPage } from './ui/inactive-clients/components/InactiveClientsPage'
+export { INACTIVE_CLIENTS_PATH, inactiveClientsMessages } from './ui/inactive-clients/constants/inactive-clients-strings'
