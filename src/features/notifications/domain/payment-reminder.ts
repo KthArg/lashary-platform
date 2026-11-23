@@ -1,4 +1,5 @@
 import { addDays } from '@/shared/date-math'
+import { studioDateOf } from '@/shared/studio-time'
 import { MAX_REMINDER_ATTEMPTS } from './reminder'
 
 export const PAYMENT_REMINDER_FREQUENCY_DAYS_MIN = 1
@@ -16,9 +17,7 @@ export function isPaymentReminderDue(lastSentAt: Date | null, frequencyDays: num
   return addDays(lastSentAt, frequencyDays).getTime() <= now.getTime()
 }
 
-const ISO_DATE_LENGTH = 10
-
-export const paymentReminderDay = (now: Date): string => now.toISOString().slice(0, ISO_DATE_LENGTH)
+export const paymentReminderDay = (now: Date): string => studioDateOf(now)
 
 export const paymentReminderKey = (clientId: string, now: Date): string => `${clientId}:${paymentReminderDay(now)}`
 

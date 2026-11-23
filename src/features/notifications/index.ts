@@ -31,7 +31,7 @@ import { discoverDueReapplications, type DiscoverDueReapplicationsDeps } from '.
 import { sendDueReapplications, type SendDueReapplicationsSummary } from './application/send-due-reapplications'
 import { discoverDuePaymentReminders } from './application/discover-due-payment-reminders'
 import { sendDuePaymentReminders, type SendDuePaymentRemindersSummary } from './application/send-due-payment-reminders'
-import { buildAppointmentsUrl } from './domain/appointments-url'
+import { buildSiteUrl } from './domain/site-url'
 import { sendAftercareMessages, type SendAftercareMessagesSummary } from './application/send-aftercare-messages'
 import { sendConfirmationRequests, type SendConfirmationRequestsSummary } from './application/send-confirmation-requests'
 import type {
@@ -48,7 +48,7 @@ const CATALOG_TECHNIQUES_PAGE_SIZE = 100
 
 const REPOSITORY_FAILURE: RepositoryFailure = 'repository-failed'
 
-export type NotificationsCycleError = 'system-client-not-configured' | SystemClientFailure | RepositoryFailure
+export type NotificationsCycleError = 'system-client-not-configured' | 'site-url-not-configured' | SystemClientFailure | RepositoryFailure
 
 function buildGetContact(db: SupabaseClient) {
   return async (clientId: string): Promise<Result<ContactInfo | null, RepositoryFailure>> => {
@@ -90,7 +90,7 @@ export async function runNotificationsReminderCycle(): Promise<
     const primaryChannel = metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env))
     const backupChannel = resendEmailChannel(readResendEmailConfigFromEnv(process.env))
 
-    const appointmentsUrl = buildAppointmentsUrl(process.env.NEXT_PUBLIC_SITE_URL, SCHEDULING_MY_APPOINTMENTS_PATH)
+    const appointmentsUrl = buildSiteUrl(process.env.NEXT_PUBLIC_SITE_URL, SCHEDULING_MY_APPOINTMENTS_PATH)
     const sendConfirmations = appointmentsUrl
       ? sendConfirmationRequests({
           requests: confirmationRequestRepository(db),
@@ -233,10 +233,10 @@ export async function runPaymentReminderCycle(): Promise<Result<SendDuePaymentRe
       return err(REPOSITORY_FAILURE)
     }
 
-    const regularizeUrl = buildAppointmentsUrl(process.env.NEXT_PUBLIC_SITE_URL, CLIENT_PORTAL_ROUTES.cuenta)
+    const regularizeUrl = buildSiteUrl(process.env.NEXT_PUBLIC_SITE_URL, CLIENT_PORTAL_ROUTES.cuenta)
     if (regularizeUrl === null) {
       logError('notifications', 'NEXT_PUBLIC_SITE_URL no es una URL absoluta: no se mandan recordatorios de pago sin enlace para regularizar')
-      return err(REPOSITORY_FAILURE)
+      return err('site-url-not-configured')
     }
 
     const reminderLog = await paymentReminderRepository(db)

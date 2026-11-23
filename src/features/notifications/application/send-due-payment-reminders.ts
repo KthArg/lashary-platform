@@ -61,7 +61,7 @@ const sendOne = async (deps: SendDuePaymentRemindersDeps, due: DuePaymentReminde
 
   if (sendErrors.length === 0) return 'skipped'
 
-  const failure = sendErrors.join('; ')
+  const failure = sanitizeProviderError(sendErrors.join('; '))
   logError('notifications', `falló el recordatorio de pago de ${due.clientId}: ${failure}`)
   const recordedFailure = await deps.recordFailure({ clientId: due.clientId, day: paymentReminderDay(now), error: failure, failedAt: now })
   if (isErr(recordedFailure)) {
