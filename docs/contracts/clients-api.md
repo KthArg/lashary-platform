@@ -32,7 +32,7 @@ El nombre de todas las clientas que la sesión puede ver, sin pedir ids. Nace de
 - No pagina ni filtra: quien la consume la une con lo suyo, filtra y deja que PostgREST pagine y cuente, como hace `clients_list`.
 - No lleva datos de contacto (garantía 2). Para enviar, `notifications` pide el contacto de cada clienta por `getClientContactForReminders`, como los demás recordatorios.
 
-Quien la necesita: la función de clientas inactivas de `notifications` (US-NOT-06). Estado: implementada en `20261122000001_clients_all_display_names_fn.sql` (pieza 4 de US-NOT-06).
+Quien la necesita: la lista de clientas inactivas de `notifications` (US-NOT-06), y su función de poner en cola, que la usa para dejar fuera los ids que no son de una clienta. Estado: implementada en `20261122000001_clients_all_display_names_fn.sql` (pieza 4 de US-NOT-06).
 
 ## Garantías
 
