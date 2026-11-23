@@ -255,3 +255,5 @@ export { REAPPLICATION_SETTINGS_PATH } from './ui/reapplication-settings/constan
 
 export { InactiveClientsPage } from './ui/inactive-clients/components/InactiveClientsPage'
 export { INACTIVE_CLIENTS_PATH, inactiveClientsMessages } from './ui/inactive-clients/constants/inactive-clients-strings'
+
+export { UnsubscribePage } from './ui/unsubscribe/components/UnsubscribePage'
