@@ -847,6 +847,8 @@ Esta historia cierra con los cuatro criterios demostrados. US-MOR-03 y US-MOR-05
 
 - **Correcciones de la revisión de Kenny (pieza 18):** el error que se guarda cuando fallan los dos canales se satura después de unirlos (`sanitizeProviderError` sobre el texto completo), porque dos errores saneados de 501 caracteres cada uno rompían el `CHECK` de `last_error`, el intento no se contaba y el tope nunca se alcanzaba; el día del tope y de la clave del envío pasa a ser el del estudio (`studioDateOf`) y no el de UTC, que cambiaba a las 18:00 de Costa Rica; la falta de `NEXT_PUBLIC_SITE_URL` devuelve `site-url-not-configured` en vez de un fallo de repositorio, y `buildAppointmentsUrl` pasa a `buildSiteUrl` porque ya no sirve solo para «Mis citas»; `.env.example` pide la plantilla de WhatsApp con 2 variables, no 1. Pruebas: `application/__tests__/send-due-payment-reminders.test.ts` (dos errores largos), `domain/__tests__/payment-reminder.test.ts` (la clave no cambia a las 18:00 del estudio), `__tests__/payment-reminder-cycle.test.ts` y `domain/__tests__/site-url.test.ts`.
 
+- **Pasarela del saldo por lote (pieza 19):** `db/active-debts-gateway.ts` lee `delinquency_list_active_cases` (el saldo vivo por caso de US-MOR-05, paginada de a 100) y suma por clienta lo que debe cada una, sin contar los casos que ya no tienen saldo; el puerto es `ActiveDebtsPort`. Todavía no la usa el descubrimiento: la pieza 20 lo cambia y quita las dos pasarelas que reemplaza. Pruebas: `db/__tests__/active-debts-gateway.test.ts`.
+
 ### Decisiones propuestas, sin aprobar
 
 - **Frecuencia:** cada cuántos días se repite el recordatorio mientras haya saldo, de 1 a 30 y 7 por defecto, el mismo
