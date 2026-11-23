@@ -7,6 +7,8 @@ export const NOTIFICATIONS_ERROR_CODES = {
   clientNoticesStorageFailed: 'NOTIFICATIONS_CLIENT_NOTICES_STORAGE_FAILED',
   aftercareStorageFailed: 'NOTIFICATIONS_AFTERCARE_STORAGE_FAILED',
   invalidAnticipationDays: 'NOTIFICATIONS_INVALID_ANTICIPATION_DAYS',
+  inactiveQueueEmpty: 'NOTIFICATIONS_INACTIVE_QUEUE_EMPTY',
+  inactiveQueueTooMany: 'NOTIFICATIONS_INACTIVE_QUEUE_TOO_MANY',
 } as const
 
 type NotificationsErrorCode = (typeof NOTIFICATIONS_ERROR_CODES)[keyof typeof NOTIFICATIONS_ERROR_CODES]
@@ -132,3 +134,28 @@ export function invalidAnticipationDays(): InvalidAnticipationDays {
 
 export const isInvalidAnticipationDays = (error: unknown): error is InvalidAnticipationDays =>
   hasCode<InvalidAnticipationDays>(error, NOTIFICATIONS_ERROR_CODES.invalidAnticipationDays)
+
+export interface InactiveQueueEmpty {
+  readonly code: typeof NOTIFICATIONS_ERROR_CODES.inactiveQueueEmpty
+  readonly message: string
+}
+
+export function inactiveQueueEmpty(): InactiveQueueEmpty {
+  return { code: NOTIFICATIONS_ERROR_CODES.inactiveQueueEmpty, message: 'no se eligió ninguna clienta para el recordatorio' }
+}
+
+export const isInactiveQueueEmpty = (error: unknown): error is InactiveQueueEmpty =>
+  hasCode<InactiveQueueEmpty>(error, NOTIFICATIONS_ERROR_CODES.inactiveQueueEmpty)
+
+export interface InactiveQueueTooMany {
+  readonly code: typeof NOTIFICATIONS_ERROR_CODES.inactiveQueueTooMany
+  readonly message: string
+  readonly max: number
+}
+
+export function inactiveQueueTooMany(max: number): InactiveQueueTooMany {
+  return { code: NOTIFICATIONS_ERROR_CODES.inactiveQueueTooMany, message: `un envío lleva como mucho ${max} clientas`, max }
+}
+
+export const isInactiveQueueTooMany = (error: unknown): error is InactiveQueueTooMany =>
+  hasCode<InactiveQueueTooMany>(error, NOTIFICATIONS_ERROR_CODES.inactiveQueueTooMany)
