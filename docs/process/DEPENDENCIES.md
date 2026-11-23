@@ -73,7 +73,7 @@ El backlog se mantiene en sus 51 historias; estas capacidades se construyen **de
 | US-NOT-08 confirmación asistencia | US-NOT-03, US-AGE-05, US-AGE-13 | **construye la transición a `confirmed`**, que hasta esta historia nada hacía; el criterio 6 reusa el canal de US-NOT-03 (ver registro del 2026-11-05) |
 | US-NOT-04 recordatorio pago | US-NOT-03, US-MOR-02 | |
 | US-NOT-05 re-aplicación | US-NOT-03, US-AGE-08, US-AGE-12, US-MOR-01 | **en curso** (2026-11-13); el criterio de morosidad activa (hueco no registrado hasta ahora en esta fila) se resuelve con `delinquency_client_states` (docs/contracts/delinquency-api.md, US-MOR-01, ya `terminada`), tratando solo `active` como morosidad (DOM-012) |
-| US-NOT-06 inactivos | US-CLI-01, US-NOT-03 | **en curso** (2026-11-22, Jose Lorenzo); incluye opción de baja; decisiones del PO del 2026-11-22 abajo |
+| US-NOT-06 inactivos | US-CLI-01, US-NOT-03 | **terminada** (2026-11-22, PR de cierre `us/US-NOT-06`, 17 piezas); incluye opción de baja; decisiones del PO del 2026-11-22 abajo; quedan provisionales el tope de envíos y el texto del mensaje |
 | US-PROD-02 grid productos | — | incluye su parte de administración de productos (ADR-0007) |
 | US-PROD-03 detalle producto | US-PROD-02 | stock indicado según control de US-SHOP-02 |
 | US-SHOP-01 carrito | US-PROD-03, US-AUTH-02 | |
