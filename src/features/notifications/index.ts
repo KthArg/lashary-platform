@@ -3,6 +3,7 @@ import { ok, err, isErr, type Result } from '@/shared/result'
 import { systemClock } from '@/shared/clock'
 import { logError } from '@/shared/logger'
 import { createSystemClient, closeSystemClient, readSystemClientConfigFromEnv, type SystemClientFailure } from '@/shared/lib/supabase/system'
+import { CLIENT_PORTAL_ROUTES } from '@/features/auth'
 import {
   listSchedulingAppointmentsForReminders,
   getSchedulingAppointmentForReminder,
@@ -232,6 +233,12 @@ export async function runPaymentReminderCycle(): Promise<Result<SendDuePaymentRe
       return err(REPOSITORY_FAILURE)
     }
 
+    const regularizeUrl = buildAppointmentsUrl(process.env.NEXT_PUBLIC_SITE_URL, CLIENT_PORTAL_ROUTES.cuenta)
+    if (regularizeUrl === null) {
+      logError('notifications', 'NEXT_PUBLIC_SITE_URL no es una URL absoluta: no se mandan recordatorios de pago sin enlace para regularizar')
+      return err(REPOSITORY_FAILURE)
+    }
+
     const reminderLog = await paymentReminderRepository(db)
     const failureLog = await paymentReminderFailureRepository(db)
     const discovered = await discoverDuePaymentReminders({
@@ -244,6 +251,7 @@ export async function runPaymentReminderCycle(): Promise<Result<SendDuePaymentRe
     if (isErr(discovered)) return discovered
 
     const sent = await sendDuePaymentReminders({
+      regularizeUrl,
       recordSent: reminderLog.recordSent,
       attemptsOn: failureLog.attemptsOn,
       recordFailure: failureLog.recordFailure,

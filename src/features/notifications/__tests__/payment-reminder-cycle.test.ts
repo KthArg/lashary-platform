@@ -28,6 +28,7 @@ vi.mock('../db/delinquent-clients-gateway', () => ({
 vi.mock('../db/client-owed-amount-gateway', () => ({
   clientOwedAmountGateway: () => ({ owedBy: (...args: unknown[]) => mockOwedBy(...args) }),
 }))
+vi.mock('@/features/auth', () => ({ CLIENT_PORTAL_ROUTES: { cuenta: '/portal/cuenta' } }))
 vi.mock('@/features/scheduling', () => ({ SCHEDULING_MY_APPOINTMENTS_PATH: '/portal/citas/mis-citas' }))
 vi.mock('@/features/catalog', () => ({}))
 vi.mock('@/features/clients', () => ({ getClientContactForReminders: vi.fn() }))
@@ -48,11 +49,13 @@ vi.mock('../application/send-due-payment-reminders', () => ({
 
 const FAKE_DB = { fake: 'client' }
 const FREQUENCY_DAYS = 14
+const SITE_URL = 'https://lashary.example'
 const DUE_REMINDERS = [{ clientId: 'client-1', amountOwed: 18000 }]
 const SEND_SUMMARY = { sent: 1, skipped: 0, failed: 0, exhausted: 0, errored: 0 }
 
 beforeEach(() => {
   vi.clearAllMocks()
+  vi.stubEnv('NEXT_PUBLIC_SITE_URL', SITE_URL)
   vi.stubEnv('NOTIFICATIONS_CRON_EMAIL', 'cron@lashary.example')
   vi.stubEnv('NOTIFICATIONS_CRON_PASSWORD', 'placeholder-clave-de-prueba')
   vi.spyOn(console, 'error').mockImplementation(() => undefined)
@@ -103,6 +106,23 @@ describe('runPaymentReminderCycle', () => {
     expect(isOk(result) && result.value).toEqual(SEND_SUMMARY)
     expect(mockDiscover).toHaveBeenCalledWith(expect.objectContaining({ frequencyDays: FREQUENCY_DAYS }))
     expect(mockSend).toHaveBeenCalledWith(expect.anything(), DUE_REMINDERS)
+    expect(mockCloseSystemClient).toHaveBeenCalledTimes(1)
+  })
+
+  it('manda con el enlace al estado de cuenta de la clienta para regularizar (criterio 2)', async () => {
+    await runPaymentReminderCycle()
+
+    expect(mockSend).toHaveBeenCalledWith(expect.objectContaining({ regularizeUrl: `${SITE_URL}/portal/cuenta` }), DUE_REMINDERS)
+  })
+
+  it('sin una URL del sitio válida no manda nada, porque el recordatorio no llevaría enlace', async () => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', '')
+
+    const result = await runPaymentReminderCycle()
+
+    expect(isErr(result)).toBe(true)
+    expect(mockDiscover).not.toHaveBeenCalled()
+    expect(mockSend).not.toHaveBeenCalled()
     expect(mockCloseSystemClient).toHaveBeenCalledTimes(1)
   })
 
