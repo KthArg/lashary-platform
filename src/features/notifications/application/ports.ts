@@ -55,6 +55,10 @@ export interface DelinquentClientsPort {
   listActiveClientIds(): Promise<Result<string[], RepositoryFailure>>
 }
 
+export interface ActiveDebtsPort {
+  listOwedByClient(): Promise<Result<ReadonlyMap<string, number>, RepositoryFailure>>
+}
+
 export interface ClientOwedAmountPort {
   owedBy(clientId: string): Promise<Result<number, RepositoryFailure>>
 }
