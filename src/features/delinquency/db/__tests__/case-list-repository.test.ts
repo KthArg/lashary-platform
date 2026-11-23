@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isErr, isOk } from '@/shared/result'
 import { isDelinquencyStorageFailed } from '../../domain/errors'
-import { caseListRepository, CASES_TABLE, LIST_ACTIVE_FUNCTION } from '../case-list-repository'
+import { caseListRepository, CASES_TABLE, LIST_ACTIVE_CASES_FUNCTION, LIST_ACTIVE_FUNCTION } from '../case-list-repository'
 import { CASE_COLUMNS } from '../case-row'
 import { clientNames, CLIENT_NAMES_FUNCTION } from '../client-names'
 
@@ -50,6 +50,21 @@ describe('caseListRepository.listByState', () => {
     expect(isOk(result) && result.value[0].detectedAt).toEqual(new Date('2026-11-01T15:00:00Z'))
   })
 
+  it('para el historial (lifted, forgiven) ordena por decided_at descendente, no por detected_at', async () => {
+    const { db, calls } = createFakeDb({ data: [row], error: null })
+
+    await caseListRepository(db).listByState('forgiven', 50)
+
+    expect(calls).toEqual([
+      ['from', CASES_TABLE],
+      ['select', CASE_COLUMNS],
+      ['eq', 'state', 'forgiven'],
+      ['order', 'decided_at', { ascending: false }],
+      ['order', 'id', { ascending: false }],
+      ['limit', 50],
+    ])
+  })
+
   it('un error de la base o una fila con forma inesperada es un fallo de almacenamiento', async () => {
     const failed = await caseListRepository(createFakeDb({ data: null, error: { message: 'boom' } }).db).listByState(
       'active',
@@ -77,6 +92,35 @@ describe('caseListRepository.listActiveClients', () => {
     expect(calls).toEqual([['rpc', LIST_ACTIVE_FUNCTION, { p_limit: 50, p_after_since: null, p_after_client_id: null }]])
     expect(isOk(result) && result.value).toEqual([
       { clientId: ANA, pending: 9000, since: new Date('2026-10-20T15:00:00Z') },
+    ])
+  })
+})
+
+describe('caseListRepository.listActiveCases', () => {
+  it('pide el listado por caso con el tope y convierte las fechas', async () => {
+    const CITA = '2d7e2a1f-6b5c-4f1f-9e63-1e7b4f7a0b32'
+    const CASO = '7b0e5f8e-3c1a-4c55-9c1e-2f4a6b8d0e11'
+    const { db, calls } = createFakeDb({
+      data: [
+        {
+          case_id: CASO,
+          client_id: ANA,
+          appointment_id: CITA,
+          pending: 9000,
+          exception_amount: null,
+          since: '2026-10-20T15:00:00+00:00',
+        },
+      ],
+      error: null,
+    })
+
+    const result = await caseListRepository(db).listActiveCases(50)
+
+    expect(calls).toEqual([
+      ['rpc', LIST_ACTIVE_CASES_FUNCTION, { p_limit: 50, p_after_since: null, p_after_case_id: null }],
+    ])
+    expect(isOk(result) && result.value).toEqual([
+      { caseId: CASO, clientId: ANA, appointmentId: CITA, pending: 9000, exceptionAmount: null, since: new Date('2026-10-20T15:00:00Z') },
     ])
   })
 })

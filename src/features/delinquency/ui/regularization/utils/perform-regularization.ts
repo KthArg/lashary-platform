@@ -14,7 +14,6 @@ export type RegularizationDeps = {
   loadMyAccount: () => Promise<Result<MyAccount, DelinquencyStorageFailed>>
 }
 
-// El formulario manda texto: el monto llega como cadena y se exige entero positivo (los colones no tienen decimales).
 const formSchema = z.object({
   caseId: z.string().guid(),
   declaredAmount: z.string().regex(/^\d+$/).transform(Number).pipe(z.number().int().positive().max(Number.MAX_SAFE_INTEGER)),
@@ -52,7 +51,6 @@ export async function performSubmitRegularization(
   if (!isReceiptUpload(fields.receipt) || fields.receipt.size === 0) {
     return { ok: false, message: regularizationMessages.missingReceipt }
   }
-  // El tamaño se revisa antes de leer el archivo; el contenido lo valida el caso de uso (DOM-008).
   if (fields.receipt.size > RECEIPT_MAX_BYTES) return { ok: false, message: receiptProblemMessages['receipt-too-large'] }
 
   const receipt = new Uint8Array(await fields.receipt.arrayBuffer())

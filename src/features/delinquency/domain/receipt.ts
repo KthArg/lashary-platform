@@ -1,9 +1,5 @@
 import { ok, err, type Result } from '@/shared/result'
 
-// Comprobante de pago: imagen o PDF de hasta 1 MB, lo que decidió la clienta (dueña del estudio) el 2026-11-18,
-// porque un comprobante de SINPE o del banco no pasa de 1 MB.
-// El tipo se decide por los primeros bytes del archivo, nunca por la extensión ni por lo que declara el navegador
-// (DOM-008). El bucket repite el tope y los tipos como segunda barrera.
 export const RECEIPT_MAX_BYTES = 1024 * 1024
 
 export type ReceiptFormat = {
@@ -43,6 +39,5 @@ export function validateReceipt(bytes: Uint8Array): Result<ReceiptFormat, Receip
   return format ? ok(format) : err('receipt-type-not-allowed')
 }
 
-// La carpeta es la de la clienta: el bucket solo la deja escribir ahí y la base comprueba que el comprobante esté ahí.
 export const receiptPath = (clientId: string, fileId: string, format: ReceiptFormat): string =>
   `${clientId}/${fileId}.${format.extension}`

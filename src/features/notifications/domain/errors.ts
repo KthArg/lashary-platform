@@ -1,3 +1,5 @@
+import { PAYMENT_REMINDER_FREQUENCY_DAYS_MAX, PAYMENT_REMINDER_FREQUENCY_DAYS_MIN } from './payment-reminder'
+
 export const NOTIFICATIONS_ERROR_CODES = {
   invalidReminder: 'NOTIFICATIONS_REMINDER_INVALID',
   channelNotConfigured: 'NOTIFICATIONS_CHANNEL_NOT_CONFIGURED',
@@ -10,6 +12,7 @@ export const NOTIFICATIONS_ERROR_CODES = {
   inactiveQueueEmpty: 'NOTIFICATIONS_INACTIVE_QUEUE_EMPTY',
   inactiveQueueTooMany: 'NOTIFICATIONS_INACTIVE_QUEUE_TOO_MANY',
   inactiveQueueNotAllowed: 'NOTIFICATIONS_INACTIVE_QUEUE_NOT_ALLOWED',
+  invalidPaymentReminderFrequencyDays: 'NOTIFICATIONS_INVALID_PAYMENT_REMINDER_FREQUENCY_DAYS',
 } as const
 
 type NotificationsErrorCode = (typeof NOTIFICATIONS_ERROR_CODES)[keyof typeof NOTIFICATIONS_ERROR_CODES]
@@ -172,3 +175,17 @@ export function inactiveQueueNotAllowed(): InactiveQueueNotAllowed {
 
 export const isInactiveQueueNotAllowed = (error: unknown): error is InactiveQueueNotAllowed =>
   hasCode<InactiveQueueNotAllowed>(error, NOTIFICATIONS_ERROR_CODES.inactiveQueueNotAllowed)
+export interface InvalidPaymentReminderFrequencyDays {
+  readonly code: typeof NOTIFICATIONS_ERROR_CODES.invalidPaymentReminderFrequencyDays
+  readonly message: string
+}
+
+export function invalidPaymentReminderFrequencyDays(): InvalidPaymentReminderFrequencyDays {
+  return {
+    code: NOTIFICATIONS_ERROR_CODES.invalidPaymentReminderFrequencyDays,
+    message: `la frecuencia del recordatorio de pago debe ser un entero de ${PAYMENT_REMINDER_FREQUENCY_DAYS_MIN} a ${PAYMENT_REMINDER_FREQUENCY_DAYS_MAX} días`,
+  }
+}
+
+export const isInvalidPaymentReminderFrequencyDays = (error: unknown): error is InvalidPaymentReminderFrequencyDays =>
+  hasCode<InvalidPaymentReminderFrequencyDays>(error, NOTIFICATIONS_ERROR_CODES.invalidPaymentReminderFrequencyDays)

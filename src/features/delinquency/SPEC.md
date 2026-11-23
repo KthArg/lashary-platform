@@ -2,7 +2,7 @@
 feature: delinquency
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-18
+actualizado: 2026-11-21
 historias:
   - id: US-MOR-01
     estado: terminada
@@ -16,7 +16,8 @@ historias:
   - id: US-MOR-04
     estado: no_iniciada
   - id: US-MOR-05
-    estado: no_iniciada
+    estado: terminada
+    evidencia: "PR de cierre us/US-MOR-05 a main, con 11 piezas apiladas contra la rama de la historia (#926 a #935, más esta pieza 11 de cierre; la pieza 1, el contrato, fue un commit directo a us/US-MOR-05, sin PR propio). Auditoría de Kenny del 2026-11-18 y reauditorías del 2026-11-21 (hallazgos A1-A4, M1-M5, B1-B6, N1, N3), todas corregidas o registradas según corresponda. Criterio 1 (levantar el bloqueo sin registrar pago): delinquency_lift_case (SECURITY DEFINER, solo admin, solo sobre active), pgTAP delinquency_lift_and_forgive_case.test.sql (levanta a lifted, conserva historial, motivo vacío o solo espacio en blanco se rechaza — B4) y delinquency_lift_unblocks_booking.test.sql (M1: contra delinquency_booking_block de US-MOR-02, no solo el estado en la tabla); application/__tests__/lift-case.test.ts, db/__tests__/case-repository.test.ts; UI en ui/review/__tests__/review-view.test.tsx (formulario, botón deshabilitado sin motivo); comprobado a mano el 2026-11-21 contra un servidor local real y Supabase local (capturas del PR #934). Criterio 2 (condonar total o parcial con motivo): delinquency_forgive_case valida contra el saldo vivo de la cita (payments_appointment_balances, A3) en vez de la foto que guardó la detección, y condonar parcial no cierra el caso — sigue active con exception_amount acumulado hasta que el saldo vivo llega a cero (A4, decisión de Kenny del 2026-11-18); pgTAP: condonación total y parcial, acumulado, monto o motivo inválido, aislamiento clienta/anon (M1), y el caso de N1 (condonar parcial y pagar el resto con una regularización real de US-MOR-03 vía delinquency_submit_regularization/approve_regularization — corregido en la pieza 3 con su pgTAP en la pieza 4: el CHECK de delinquency_cases ahora une lifted/forgiven con settled, el estado que agrega US-MOR-03, que se mergeó a main el 2026-11-20 (#943) antes que esta historia); application/__tests__/forgive-case.test.ts, db/__tests__/case-repository.test.ts; UI: el checkbox «condonar todo lo pendiente» (B2, corregido en la pieza 9). Comprobado a mano: condonar ₡3 000 más sobre un caso con ₡4 000 ya condonados deja el saldo en ₡9 000 (de ₡12 000) y «Ya condonado» en ₡7 000, con el aviso de éxito visible (B3, confirmado en navegador el 2026-11-21, ya no es solo análisis). Criterio 3 (bitácora con fecha, monto y motivo): delinquency.case.lifted y delinquency.case.forgiven en audit_events, en la misma transacción (DOM-011); el pgTAP comprueba el contenido del payload (pending, reason, cumulativeAmount, remainingBalance, closed), no solo que la fila exista. Criterio 4 (una excepción no borra el historial): pgTAP «la fila sigue visible, no se borró»; listByState ordena decided_at descendente para lifted/forgiven (M3, corregido en la pieza 5); UI: secciones «Bloqueos levantados» y «Morosidades condonadas» en /admin/morosidades (pieza 10), con motivo y monto condonado; comprobado a mano (captura 03 del PR #934). M2 (mensajes de error que no correspondían en forgiveCaseAction/liftCaseAction) corregido en la pieza 8, con prueba por campo. Deuda registrada, no bloquea el cierre: N3 (al levantar o condonar un caso con una solicitud de regularización de US-MOR-03 pendiente, esa solicitud queda huérfana — requiere acuerdo con MachineJALS, sección «N3» de este SPEC y docs/process/DEPENDENCIES.md) y B5 (listActiveClients/ActiveClient de US-MOR-01 sin consumidor en la UI desde que loadReview pasó a listActiveCases en la pieza 6, falta dueño y plazo para decidir si se borra). Suite completa en la punta de la pila: pgTAP 117 archivos, 1540 pruebas, PASS; vitest 126/126 en src/features/delinquency. La suite completa del repo tiene fallas preexistentes y no relacionadas con esta historia, confirmadas también en origin/main limpio: pruebas de aislamiento RLS de otras features que requieren altas reales de Supabase Auth local y un desajuste de datos de seed en catalog/db/packages, ninguna tocada aquí."
 flags: []
 deuda:
   - que: "Tras un pago parcial, el listado de morosidades activas, el expediente y el listado de clientas siguen mostrando el monto de la detección (delinquency_cases.pending, una foto del saldo al detectar) y no el saldo de hoy; la cola de comprobantes y el estado de cuenta de la clienta sí muestran el saldo de hoy. Lo que la deuda original pedía, que la morosidad se cierre al pagarse, lo resolvió US-MOR-03: al aprobarse el pago que deja la cita en cero, la morosidad pasa a settled en la misma transacción"
@@ -24,10 +25,10 @@ deuda:
     costo: "Dueño: Jose Lorenzo. Aprox. 3 h: que delinquency_list_active y delinquency_client_states sumen el saldo de hoy de cada cita (payments_appointment_balances) en lugar de pending, con su pgTAP de un pago parcial"
   - que: "Un aviso a la bandeja por cada morosidad detectada, sin resumen por corrida: la primera corrida sobre un ledger con muchas citas impagas puede poner decenas de avisos de golpe (la bandeja pagina de 20 en 20)"
     aceptada_en: "Revisión de la pila de US-MOR-01 (PR #765 a #784), 2026-11-11, hallazgo medio no bloqueante; el riesgo ya estaba anotado en la sección «Aviso en la bandeja»"
-    costo: "Dueño: Jose Lorenzo (delinquency) con notifications. Aprox. 3 h: un aviso resumen por corrida («N morosidades por revisar») en lugar del trigger por fila, o un tope de avisos por corrida, y sus pgTAP. Conviene hacerlo antes de programar el cron"
+    costo: "Dueño: Jose Lorenzo (delinquency) con notifications. Aprox. 3 h: un aviso resumen por corrida («N morosidades por revisar») en lugar del trigger por fila, o un tope de avisos por corrida, y sus pgTAP. Decidido por el PO el 2026-11-21: se hace antes de programar el cron"
   - que: "El cron de detección usa la misma cuenta de sistema que el cron de recordatorios (NOTIFICATIONS_CRON_EMAIL y NOTIFICATIONS_CRON_PASSWORD): una sola credencial con permisos de staff para dos tareas, y rotarla o revocarla para una afecta a la otra"
     aceptada_en: "Revisión de la pila de US-MOR-01 (PR #765 a #784), 2026-11-11, hallazgo medio no bloqueante; la reutilización de la cuenta existente está anotada en CI_SECRETS.md"
-    costo: "Dueño: Jose Lorenzo con Kenneth (secretos de CI). Aprox. 4 h: una cuenta de sistema por cron, o un rol de base con solo EXECUTE de las funciones del cron, más su alta en CI_SECRETS.md y en el entorno. Antes de programar el schedule"
+    costo: "Dueño: Jose Lorenzo con Kenneth (secretos de CI). Aprox. 4 h: una cuenta de sistema por cron, o un rol de base con solo EXECUTE de las funciones del cron, más su alta en CI_SECRETS.md y en el entorno. Antes de programar el schedule (decidido por el PO el 2026-11-21)"
   - que: "payments_unpaid_charges agrupa todo el ledger en cada página (GROUP BY de payments_ledger_entries por clienta y cita): el corte de fecha y el saldo se aplican después de agrupar, así que ningún índice lo acota y el costo de una corrida crece con el ledger entero, no con lo nuevo (PERF-002)"
     aceptada_en: "Revisión de la pila de US-MOR-01 (PR #765 a #784), 2026-11-11, hallazgo medio no bloqueante; sin medición todavía, PERF-001 pide medir antes de optimizar"
     costo: "Dueño: Jose Lorenzo, a revisar cuando US-MOR-03 empiece a llenar el ledger. Aprox. 4 h: medir con el volumen real (EXPLAIN) y, si hace falta, un índice parcial por (appointment_id) de los cargos o limitar la ventana de cierre, con su pgTAP"
@@ -429,15 +430,15 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - **Estado `settled` y solicitudes** (migración `20261117040000_delinquency_regularizations.sql`): `delinquency_cases` admite `settled` con su `settled_at` y conserva la decisión de cuando se confirmó. `delinquency_regularizations` guarda la morosidad, la clienta, lo declarado, la referencia opcional y la ruta del comprobante; cada estado exige sus campos (aprobada: monto y asiento de pago; rechazada: motivo no vacío; pendiente y reemplazada: nada de la revisión) y hay como mucho una pendiente por morosidad. Solo staff lee; nadie con sesión escribe: enviar, aprobar y rechazar son funciones `SECURITY DEFINER`. `CASE_STATES` del dominio incluye `settled`. Pruebas: pgTAP `delinquency_regularizations.test.sql` (16: los estados, una pendiente por morosidad, el contrato no devuelve una saldada, y que ni la clienta dueña ni otra clienta lean la tabla) y `db/__tests__/case-row.test.ts`.
 - **Bucket de comprobantes** (migración `20261117050000_delinquency_receipts_bucket.sql`): `delinquency-receipts`, privado, imagen (JPEG, PNG, WebP) o PDF; nació con tope de 4 MB y desde la pieza 24 (migración `20261117100000_delinquency_receipts_1mb.sql`) es de 1 MB. Cada clienta escribe y lee solo en su carpeta (`<client_id>/...`, por `clients_current_profile_id`) y el personal lee todas; sin políticas de UPDATE ni DELETE. El bucket es la segunda barrera: el tipo real lo decide la aplicación por los primeros bytes (DOM-008), porque una clienta con sesión puede subir directo a Storage. Prueba: pgTAP `delinquency_receipts_bucket.test.sql` (12: privado, tope y tipos, su carpeta sí y la ajena no, otra clienta no ve el comprobante, el personal ve todos, y sin políticas de cambio ni borrado).
 - **La clienta envía y consulta** (migración `20261117060000_delinquency_submit_regularization_fn.sql`): `delinquency_submit_regularization(morosidad, declarado, referencia, comprobante)` responde solo por la clienta de la sesión (otra sesión, `delinquency_not_a_client`). Exige una morosidad `active` propia (ajena, inexistente o en otro estado es la misma respuesta, `delinquency_case_not_regularizable`, para no revelar si existe) cuya cita todavía deba, lo declarado entre 1 y el saldo de hoy, y el comprobante subido en su carpeta y sin usar en otra solicitud. Si había una pendiente, queda `replaced`. Deja `delinquency.regularization.submitted` en la bitácora, con un lock por morosidad. `delinquency_my_account()` devuelve las morosidades `active` que todavía deben y las `settled` de los últimos 30 días, con el saldo de hoy y la solicitud más reciente. Prueba: pgTAP `delinquency_submit_regularization.test.sql` (20).
-- **La administradora aprueba** (migración `20261117070000_delinquency_approve_regularization_fn.sql`): `delinquency_approve_regularization(solicitud, monto aprobado)` exige administradora, una solicitud pendiente y su morosidad `active`, y un monto de 1 hasta el saldo de hoy, que puede ser distinto del declarado. En una transacción asienta el pago por `payments_record_payment`, marca la solicitud aprobada con el monto, el asiento y quién la revisó, y si la cita queda en cero pasa la morosidad a `settled`; con eso la cita deja de bloquear la agenda. Un pago parcial deja la morosidad `active`. Deja `delinquency.regularization.approved` con lo declarado, lo aprobado y el saldo antes y después, y devuelve el estado de la morosidad. Prueba: pgTAP `delinquency_approve_regularization.test.sql` (15).
-- **La administradora rechaza** (migración `20261117080000_delinquency_reject_regularization_fn.sql`): `delinquency_reject_regularization(solicitud, motivo)` exige administradora, una solicitud pendiente y un motivo de 10 a 500 caracteres, sin contar los espacios de los extremos (el mínimo, desde la pieza 25: migración `20261117110000_delinquency_rejection_reason_min.sql`). No toca el ledger ni la morosidad, que sigue `active` y bloqueando; la clienta ve el motivo en su estado de cuenta y puede enviar otra solicitud. Deja `delinquency.regularization.rejected` con el motivo. Prueba: pgTAP `delinquency_reject_regularization.test.sql` (11).
+- **La administradora aprueba** (migración `20261117070000_delinquency_approve_regularization_fn.sql`): `delinquency_approve_regularization(solicitud, monto aprobado)` exige administradora, una solicitud pendiente y su morosidad `active`, y un monto de 1 hasta el saldo de hoy, que puede ser distinto del declarado. En una transacción asienta el pago por `payments_record_payment`, marca la solicitud aprobada con el monto, el asiento y quién la revisó, y si la cita queda en cero pasa la morosidad a `settled`; con eso la cita deja de bloquear la agenda. Un pago parcial deja la morosidad `active`. Desde `20261121000000_delinquency_regularization_audit_fixes.sql` bloquea la fila de la morosidad (`FOR UPDATE`), como levantarla o condonarla en US-MOR-05, para que una aprobación y una excepción de la misma morosidad no se crucen, y decide si queda saldada con el saldo leído después de asentar el pago (auditoría de Kenny del 2026-11-18, B4). Deja `delinquency.regularization.approved` con lo declarado, lo aprobado y el saldo antes y después, y devuelve el estado de la morosidad. Prueba: pgTAP `delinquency_approve_regularization.test.sql` (15).
+- **La administradora rechaza** (migración `20261117080000_delinquency_reject_regularization_fn.sql`): `delinquency_reject_regularization(solicitud, motivo)` exige administradora, una solicitud pendiente y un motivo de 10 a 500 caracteres, sin contar los espacios de los extremos (el mínimo, desde la pieza 25: migración `20261117110000_delinquency_rejection_reason_min.sql`). Desde `20261121000000_delinquency_regularization_audit_fixes.sql` el `CHECK` por estado de la tabla exige el mismo mínimo, para que tampoco entre escribiendo la tabla directo (auditoría de Kenny del 2026-11-18, B3). No toca el ledger ni la morosidad, que sigue `active` y bloqueando; la clienta ve el motivo en su estado de cuenta y puede enviar otra solicitud. Deja `delinquency.regularization.rejected` con el motivo. Prueba: pgTAP `delinquency_reject_regularization.test.sql` (13).
 
 ### Aplicación
 
 - **Validar y subir el comprobante** (DOM-008): `domain/receipt.ts` decide el tipo por los primeros bytes (JPEG, PNG, WebP o PDF; un RIFF que no es WebP no entra) y rechaza un archivo vacío o de más de 1 MB, sin mirar el nombre ni lo que declara el navegador. `application/upload-receipt.ts` valida antes de preguntar nada a la base, así que un archivo inválido no llega a Storage; pregunta quién es la clienta de la sesión (`CurrentClientPort`, por `clients_current_profile_id`) y sube a su carpeta con el tipo real por `ReceiptStorage` (`db/receipt-storage.ts`, con la sesión de la clienta y sin reemplazar). Devuelve la ruta que guarda la solicitud. Pruebas: `domain/__tests__/receipt.test.ts`, `application/__tests__/upload-receipt.test.ts` y `db/__tests__/receipt-storage.test.ts`.
 - **El dominio de la regularización y su repositorio**: `domain/regularization.ts` (estados de una solicitud, la entrada del estado de cuenta y lo que se revisa sin la base: monto entero positivo y referencia de hasta 100 caracteres). `db/regularization-repository.ts` llama a `delinquency_submit_regularization` y `delinquency_my_account`, traduce cada mensaje de la base a su motivo (`RegularizationRefused`) y valida las filas con Zod. Pruebas: `domain/__tests__/regularization.test.ts` y `db/__tests__/regularization-repository.test.ts`.
 - **Enviar la regularización y leer el estado de cuenta**: `application/submit-regularization.ts`. `submitRegularization` revisa sin la base el monto y la referencia antes de subir el comprobante, para no dejar archivos por un formulario mal llenado; después sube por `uploadReceipt` y registra la solicitud por `RegularizationRepository`. Si la base la rechaza después de subir, el archivo queda en la carpeta sin usarse (el bucket no permite borrar). `loadMyAccount` devuelve las morosidades del estado de cuenta y el total que debe en las activas. Prueba: `application/__tests__/submit-regularization.test.ts`.
-- **La acción de la clienta** (`ui/regularization/`): `submitRegularizationAction` (firma de `useActionState`) lee el formulario y llama a `regularizationService`, que arma todo con la sesión de la clienta (nunca la service-role key). `utils/perform-regularization.ts` exige sesión de clienta, valida el formulario con Zod (morosidad, monto entero positivo, referencia), rechaza un archivo vacío o de más de 1 MB antes de leerlo, y traduce cada rechazo a un mensaje para la clienta. `regularizationService.loadMyAccount` sale por `index.ts` para la pantalla de `account`; la acción la usa el formulario de esta feature. `next.config.js` deja el cuerpo de las server actions en 4,5 MB, lo máximo que acepta Vercel, para que un archivo de más de 1 MB llegue a la aplicación y la clienta reciba el mensaje del tope y no un error genérico. Prueba: `ui/regularization/__tests__/perform-regularization.test.ts`.
+- **La acción de la clienta** (`ui/regularization/`): `submitRegularizationAction` (firma de `useActionState`) lee el formulario y llama a `regularizationService`, que arma todo con la sesión de la clienta (nunca la service-role key). `utils/perform-regularization.ts` exige sesión de clienta, valida el formulario con Zod (morosidad, monto entero positivo, referencia), rechaza un archivo vacío o de más de 1 MB antes de leerlo, y traduce cada rechazo a un mensaje para la clienta. `regularizationService.loadMyAccount` sale por `index.ts` para la pantalla de `account`; la acción la usa el formulario de esta feature. `next.config.js` deja el cuerpo de las server actions en 3 MB: un archivo de algo más de 1 MB llega a la aplicación y la clienta recibe el mensaje del tope y no un error genérico; el campo ya lo avisa en el navegador antes de enviar, así que el límite del servidor solo cuenta si eso se salta. El valor aplica a todas las server actions, así que se eligió el más bajo que sirve también a `store`, cuyas imágenes llegan a 2 MB: antes era 4,5 MB, lo máximo que acepta Vercel (auditoría del 2026-11-18, M5). Prueba: `ui/regularization/__tests__/perform-regularization.test.ts`.
 - **El formulario del comprobante** (`ui/regularization/components/RegularizationForm`, componente de cliente que sale por `index.ts`): monto entre 1 y lo que debe la cita, referencia opcional y archivo (el `accept` ofrece foto o PDF; el tipo real lo decide el servidor). Al elegir un archivo de más de 1 MB, el campo se marca inválido en el navegador con el mismo mensaje del servidor, y el formulario no se envía. Usa `submitRegularizationAction` con `useActionState`, anuncia el resultado (`status` o `alert`) y, si hay un comprobante en revisión, avisa que enviar otro lo reemplaza. Vive aquí, y no en `account`, porque el registro de pago con comprobante es de esta feature. Prueba: `ui/regularization/__tests__/RegularizationForm.test.tsx`.
 - **El estado de cuenta de la clienta** (feature `account`, `/portal/cuenta`): muestra el total, cada morosidad con el estado de su comprobante y `RegularizationForm`. Detalle y pruebas en el SPEC de `account`.
 - **La cola de comprobantes de la administradora** (lectura): `application/load-regularization-queue.ts` trae las solicitudes pendientes, de la más antigua a la más nueva y con tope de 50 (avisa si hay más), cada una con el nombre de la clienta (`clients_display_names`, ARCH-005), lo que debe hoy la cita y un enlace firmado de 5 minutos al comprobante. Si el enlace no se puede firmar, la solicitud se muestra igual, sin enlace. `db/regularization-queue-repository.ts` lee la tabla con la morosidad embebida y pide los saldos de una vez (`payments_appointment_balances`), con la sesión de la administradora (la RLS solo deja a staff); `receiptLinks` firma los enlaces con la política del bucket. Comprobado contra el Supabase local con una administradora: la cola, el saldo de hoy y el enlace que descarga el PDF. Pruebas: `application/__tests__/load-regularization-queue.test.ts`, `db/__tests__/regularization-queue-repository.test.ts` y `db/__tests__/receipt-storage.test.ts`.
@@ -448,6 +449,7 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 - **Aprobar y rechazar en la cola**: cada tarjeta trae `RegularizationDecision`, con dos formularios: aprobar, con el monto que la administradora verificó en el comprobante (empieza vacío a propósito, con lo declarado y lo que debe hoy como referencia, para no aprobar el monto de la clienta sin mirar), y rechazar, con un motivo obligatorio que la clienta verá. Al recargar, la solicitud sale de la cola y su tarjeta desaparece: por eso el resultado bueno se anuncia arriba de la cola (`QueueFeedback`, que sigue montado), y un error queda en la tarjeta. Comprobado de punta a punta con el servidor local: pago parcial, rechazo con motivo y pago final que salda la morosidad. Prueba: `ui/regularization-review/__tests__/RegularizationDecision.test.tsx`.
 - **Desde el rechazo de la reserva** (pieza 23, `scheduling`): cuando la reserva se rechaza por morosidad, la alerta con el texto del PO trae el enlace «Regularizar mi saldo» a `/portal/cuenta`, donde está el formulario del comprobante (criterio 1). El texto del PO no cambia: cambiarlo es decisión de Kenny. Pruebas: `scheduling/ui/booking-confirm/__tests__/perform-booking.test.ts`, `book-appointment-action.test.ts` y `BookingConfirmForm.test.tsx`.
 - **Aviso a la bandeja** (migración `20261117090000_delinquency_regularization_notice.sql`): al llegar una solicitud pendiente, el trigger `delinquency_regularizations_notify_submitted` pide el nombre a `clients_display_names` y registra el aviso en la bandeja de la administradora (detalle en el SPEC de `notifications`). Si el aviso falla, la solicitud se crea igual y el fallo queda en el log. La clienta no recibe aviso. Prueba: pgTAP `delinquency_regularization_notice.test.sql` (8).
+- **Detalles de implementación** (antes en comentarios del código; auditoría del 2026-11-18, M2): la cola pide una solicitud más que el tope de 50, y si llega, avisa que hay más. El comprobante se sube con `upsert: false`, porque uno ya subido no se reemplaza (el bucket tampoco tiene UPDATE ni DELETE). La región del aviso de la cola (`QueueFeedback`) existe siempre, aunque esté vacía, para que el lector de pantalla anuncie el resultado cuando llega; envuelve la cola y sigue montada al recargar, cuando la tarjeta revisada ya desapareció. Los montos llegan del formulario como texto y se exigen enteros, porque los colones no tienen decimales. Los ids se validan con `guid()` y no con `uuid()`, por la misma razón que en US-MOR-01: Postgres acepta cualquier uuid. Dentro de la feature los imports son relativos hasta dos niveles y con el alias `@/` desde tres, como exige `.oxlintrc.json` (`no-restricted-imports`; M3).
 
 ### Pendiente de verificar
 
@@ -485,3 +487,265 @@ Pueden cambiar con las respuestas del PO. Una migración por pieza (INT-008).
 26. Cierre: evidencia y estado.
 
 (Eran 16; la aplicación de la clienta se partió en dominio y repositorio, casos de uso, la acción aparte de la pantalla, y la lectura de la cola aparte de su pantalla, para no pasar las ~400 líneas, INT-002.)
+
+## US-MOR-05: levantar o perdonar una morosidad manualmente
+
+Criterios del backlog:
+
+1. Puedo levantar el bloqueo de un cliente sin necesidad de registrar un pago.
+2. Puedo condonar total o parcialmente una morosidad indicando el motivo.
+3. Toda excepción queda registrada en la bitácora de auditoría con fecha, monto y motivo.
+4. Una excepción no borra el historial: la morosidad original permanece visible con su estado de condonada.
+
+Depende de US-MOR-01 (`terminada`), único prerrequisito en `docs/process/DEPENDENCIES.md`. Reglas: DOM-005
+(ledger append-only), DOM-006 (errores tipados, ADR-0008), DOM-011 (bitácora en la misma transacción), ARCH-005
+(cross-feature con `payments`), INT-003 (contrato primero), SEC-001/002 (RLS + aislamiento), PERF-002, UI-003.
+
+### Decisiones de diseño (2026-11-18, Kenny — PO)
+
+Auditoría del 2026-11-18 sobre la primera versión de esta historia (hallazgos A3 y A4): el diseño original validaba
+condonar contra el `pending` guardado al detectar (una foto), no contra lo que la cita debe hoy, y cerraba el caso con
+cualquier condonación —aunque fuera parcial—, perdiendo el resto sin aviso. Kenny decidió:
+
+- **Condonar valida contra el saldo vivo de la cita** (`payments_appointment_balances`, ya existe desde US-MOR-02), no
+  contra la foto de `delinquency_cases.pending`. Corrige A3: con pagos parciales de US-MOR-03 ya no se puede condonar más
+  de lo que realmente queda.
+- **Condonar parcialmente no cierra el caso.** La morosidad sigue `active` con lo condonado hasta ahora en
+  `exception_amount` (acumulado, se puede condonar más de una vez); solo pasa a `forgiven` cuando el saldo vivo llega a
+  cero, sola o combinada con pagos de US-MOR-03. Corrige A4: ya no se pierde silenciosamente el resto del saldo, ni la
+  regla depende del índice único que la pila de US-MOR-03 iba a cambiar.
+- Consecuencia: `forgiveness_credit` deja de ser único por cita en el ledger (una cita puede condonarse más de una vez
+  mientras siga debiendo); la protección que antes se apoyaba en un índice único ya no hace falta.
+
+### Coordinación de migraciones con otras pilas abiertas (2026-11-18)
+
+Las migraciones de esta historia (`payments_record_forgiveness_entry_fn`, `delinquency_lift_and_forgive_case_fn`)
+reescriben el mismo `CHECK` de `kind`/signo de `payments_ledger_entries` y el mismo `CHECK` de estado de
+`delinquency_cases` que la pila de US-MOR-03 (#902 a #924, Jose Lorenzo/MachineJALS), con listas distintas: la que se
+aplique última borra los valores de la otra. US-MOR-03 también acota el índice único `(appointment_id, kind)` a
+`charge`/`deposit_credit`. Para no chocar: las dos migraciones de esta historia usan fecha `20261120` (posterior a las
+7 migraciones de la pila de US-MOR-03, que termina en `20261118000001`, y a la de US-AGE-08, `20261116000000`, con la
+que solo coincidía el prefijo) y el `CHECK` de `kind` queda como la unión de ambas listas
+(`charge`, `deposit_credit`, `payment`, `forgiveness_credit`), asumiendo que la pila de US-MOR-03 aplica primero por
+número de versión. Si esa pila renombra sus migraciones más adelante, este supuesto hay que revisarlo.
+
+**Seguimiento (2026-11-21):** US-MOR-03 se mergeó a `main` el 2026-11-20 (#943) antes que esta historia, confirmando
+el supuesto de arriba. Pero el `CHECK` de `kind` no era el único que había que unir: `delinquency_cases_state_check`
+y `delinquency_cases_decision_matches_state` también los reescribe US-MOR-03 (agregando `settled`, migración
+`20261117040000_delinquency_regularizations.sql`) y esta historia los pisaba sin `settled` — hallazgo N1 de la
+auditoría de Kenny, corregido en la pieza 3 (ver abajo). La lección: «unir con lo que deja la pila que entra
+primero» aplica a **todo** `CHECK` que dos historias reescriban juntas, no solo al que se identificó primero.
+
+### N3 de la auditoría de Kenny (2026-11-21) — abierto, requiere decisión con MachineJALS (autor de US-MOR-03)
+
+**Sospecha, confirmada leyendo el código:** `delinquency_lift_case` y `delinquency_forgive_case` no saben nada de
+`delinquency_regularizations` (la tabla de solicitudes de US-MOR-03), y viceversa. Si una clienta tiene una
+solicitud `pending_approval` sobre un caso `active` y la administradora levanta o condona ese caso (sin ver la
+solicitud: viven en pantallas separadas — la cola de comprobantes de MOR-03 y la lista de activas de MOR-05),
+la solicitud queda huérfana:
+
+- `delinquency_approve_regularization` exige `v_case.state = 'active'`
+  (`20261117070000_delinquency_approve_regularization_fn.sql:52`): con el caso en `lifted` o `forgiven`, aprobar
+  ya no es posible, para siempre.
+- `delinquency_reject_regularization` **no** exige el estado del caso, solo el de la solicitud
+  (`20261117080000_delinquency_reject_regularization_fn.sql`), así que rechazarla sigue funcionando — pero nada
+  se lo recuerda a la administradora: la solicitud no indica en ningún lado que su caso ya no está `active`.
+- `delinquency_my_account()` (lo que la clienta ve en su estado de cuenta) filtra por
+  `c.state = 'active' OR (c.state = 'settled' AND ...)` (`20261117060000_delinquency_submit_regularization_fn.sql:157`):
+  no conoce `lifted` ni `forgiven`. En cuanto el caso cambia a cualquiera de los dos, el caso **y** su solicitud
+  pendiente desaparecen por completo de lo que la clienta ve — sin aviso, sin explicación, sin saber qué pasó con
+  el comprobante que subió.
+
+Ninguna de las dos historias se equivocó por separado: MOR-03 no podía prever los estados que agregaría MOR-05, y
+MOR-05 no tiene por qué conocer la tabla de solicitudes de MOR-03 (ARCH-005, cada feature dueña de la suya). El
+hueco es de la frontera entre las dos. No lo corrijo unilateralmente: requiere acordar con MachineJALS (y
+probablemente con el PO, por DOM-012 — toda consecuencia automática contra una clienta necesita su visto bueno)
+cuál es el estado final correcto. Opciones sobre la mesa, sin elegir ninguna:
+
+1. `delinquency_lift_case`/`delinquency_forgive_case` rechazan si el caso tiene una solicitud `pending_approval`
+   (la administradora tendría que resolverla —aprobar o rechazar— antes de poder levantar o condonar).
+2. Levantar o condonar un caso con una solicitud pendiente la deja `rejected` automáticamente, con un motivo del
+   sistema, en la misma transacción.
+3. `delinquency_my_account()` y la cola de comprobantes aprenden `lifted`/`forgiven` como estados que sí deben
+   mostrar la solicitud (aunque ya no se pueda aprobar), para que al menos no desaparezca en silencio.
+
+Queda registrado también en `docs/process/DEPENDENCIES.md` por ser una decisión entre dos historias de distinto
+autor.
+
+### Pieza 1 — contrato
+
+`docs/contracts/payments-api.md` (nueva función `payments_record_forgiveness_entry`, nuevo asiento
+`forgiveness_credit`, no único por cita) y `docs/contracts/delinquency-api.md` (estados nuevos `lifted`/`forgiven`,
+funciones `delinquency_lift_case`, `delinquency_forgive_case` y `delinquency_list_active_cases` —esta última con
+saldo vivo vía `payments_appointment_balances`, no la foto—), antes de cualquier migración (INT-003). Sin código
+todavía: la implementación sigue en las piezas siguientes.
+
+### Pieza 2 — migración en `payments`
+
+Nuevo asiento `forgiveness_credit` en `payments_ledger_entries` (CHECK ampliado como la unión con lo que deja
+US-MOR-03) y `payments_record_forgiveness_entry` (`20261120000000_payments_record_forgiveness_entry_fn.sql`),
+`SECURITY INVOKER` con `EXECUTE` revocado de `authenticated` y `anon` — mismo patrón que
+`payments_record_close_entries`. A diferencia del diseño original, `forgiveness_credit` **no** es único por
+cita (como `payment` de US-MOR-03): condonar parcial no cierra el caso (decisión de Kenny, ver arriba), así
+que puede condonarse más de una vez hasta saldar. pgTAP `payments_record_forgiveness_entry.test.sql`.
+
+### Pieza 3 — migración en `delinquency`
+
+`delinquency_cases` admite `lifted`/`forgiven` (CHECK ampliado) con `exception_reason`/`exception_amount`,
+que nunca tocan el `pending` original (criterio 4). `delinquency_lift_case` y `delinquency_forgive_case`
+(`20261120000001_delinquency_lift_and_forgive_case_fn.sql`, `SECURITY DEFINER`, solo admin, solo sobre
+`active`) escriben `decided_at`/`decided_by` y el evento en `audit_events` con fecha, monto y motivo
+(criterio 3, DOM-011); `delinquency_forgive_case` valida y descuenta contra el **saldo vivo**
+(`payments_appointment_balances`, A3) y deja el caso `active` si queda saldo (condonación parcial, A4) o
+`forgiven` si se satura — puede llamarse más de una vez sobre el mismo caso. `delinquency_list_active_cases`
+da el detalle por caso (saldo vivo + `exception_amount`) que `delinquency_list_active` (US-MOR-01) no tiene,
+al agregar por clienta y mostrar la foto.
+
+**N1 de la auditoría del 2026-11-21 (confirmado contra `main` ya con US-MOR-03 mergeada):** los 4 `CHECK` que
+reescribe esta migración (`delinquency_cases_state_check`, `delinquency_cases_decision_matches_state`,
+`delinquency_cases_exception_reason_by_state`, `delinquency_cases_exception_amount_by_state`) van ahora
+como unión con `settled`, el estado que agregó US-MOR-03. `settled` se trata igual que `active` en los dos
+últimos: no exige ni prohíbe `exception_reason`/`exception_amount`, así que una condonación parcial seguida
+de un pago que termina de saldar la cita (`delinquency_approve_regularization`, que no toca esas columnas)
+no pierde lo ya condonado. Sin este cambio, cualquier aprobación que dejara una cita en cero violaba el
+`CHECK` de estado y la de excepción por estado, sin importar el monto.
+
+B4 corregido: la validación de motivo vacío usa `!~ '\S'` en vez de `btrim()`, que no detectaba un motivo de
+solo salto de línea o tabulador. Sin pgTAP todavía: pieza siguiente.
+
+### Pieza 4 — pgTAP de levantar y condonar
+
+Pruebas de la pieza anterior. `delinquency_lift_and_forgive_case.test.sql` (34 casos: levantar, condonar
+total y parcial sin cerrar el caso, acumulado en `exception_amount`, no borra historial, rechazos por
+estado/monto/motivo (A3, B4), aislamiento clienta/anon, y N1: condona parcial, paga el resto con una
+regularización de US-MOR-03 y queda `settled` conservando `exception_amount`/`exception_reason` —
+confirmado a mano que sin la pieza 3 este caso falla con el `23514` del hallazgo).
+`delinquency_list_active_cases.test.sql` (7 casos: una fila por caso, saldo vivo distinto de la foto, orden,
+cursor, aislamiento). `delinquency_lift_unblocks_booking.test.sql` (2 casos: criterio 1 demostrado contra
+`delinquency_booking_block` de US-MOR-02 — M1 de la auditoría —, no solo contra el estado en la tabla).
+Suite completa: `npx supabase test db`, 117 archivos, 1540 pruebas, PASS.
+
+### Pieza 5 — dominio, puertos y repositorios `db/`
+
+`domain/delinquency-case.ts` admite `lifted`/`forgiven` con `exceptionReason`/`exceptionAmount` en
+`DelinquencyCase`; `domain/active-case.ts` (`ActiveCaseItem`, por caso, con `exceptionAmount`);
+`domain/errors.ts` (`caseNotActive`, `invalidForgiveAmount`, `invalidReason`, ADR-0008).
+`application/ports.ts` agrega `lift`/`forgive` a `CaseRepository` y `listActiveCases` a
+`CaseListRepository`. `db/case-row.ts`, `db/case-repository.ts` y `db/case-list-repository.ts`
+implementan esos puertos en el mismo commit: la interfaz y su implementación no se pueden separar sin
+romper la compilación de cualquier PR intermedio (lección de la primera versión de esta historia).
+`db/case-list-repository.ts` también corrige M3: `listByState` ordena `decided_at` descendente para
+`lifted`/`forgiven` (el historial, "más recientes" primero), en vez del `detected_at` ascendente que
+necesita `pending_review` (decidir primero las que llevan más tiempo esperando).
+
+Pruebas: `db/__tests__/case-repository.test.ts` y `case-list-repository.test.ts` actualizados;
+`application/__tests__/decide-case.test.ts` y `load-review.test.ts` agregan los stubs que los tipos ya
+exigen, sin usarlos — la capa de aplicación real es la pieza siguiente. `npx tsc --noEmit` sin errores en
+todo el repo; `npx vitest run src/features/delinquency`: 96/96.
+
+### Pieza 6 — casos de uso y `loadReview` por caso
+
+`application/lift-case.ts` y `forgive-case.ts`, mismo patrón que `decide-case.ts`. `application/
+load-review.ts` cambia su sección `active` de agregada por clienta a por caso (`listActiveCases`), con
+`exceptionAmount` (lo condonado hasta ahora, visible mientras el caso sigue `active`) — `listActiveClients`/
+`ActiveClient` de US-MOR-01 quedan sin consumidor en la UI, registrado como deuda, no se borra el código sin
+una decisión aparte. Pruebas: `application/__tests__/lift-case.test.ts`, `forgive-case.test.ts`, `load-
+review.test.ts` reescrito (ya no usa el stub de la pieza anterior) y `ui/review/__tests__/review-view.test.
+tsx` ajustado al nuevo `ActiveItem`. `npx tsc --noEmit` sin errores en todo el repo; `npx vitest run
+src/features/delinquency`: 101/101. Todavía sin historial visible ni UI de levantar/condonar: piezas
+siguientes.
+
+### Pieza 7 — historial en `loadReview`
+
+`application/load-review.ts` agrega `lifted`/`forgiven` a `ReviewView` (criterio 4: la morosidad original
+sigue visible, con su `pending` de siempre y lo condonado), leyendo con el `listByState` que ya existe
+(sin SQL nuevo). Pruebas: `application/__tests__/load-review.test.ts` reescrito y `ui/review/__tests__/
+review-view.test.tsx` agrega los campos que el tipo ya exige (vacíos); la pantalla todavía no los muestra.
+`npx tsc --noEmit` sin errores en todo el repo; `npx vitest run src/features/delinquency`: 101/101.
+
+### Pieza 8 — acciones del servidor
+
+`ui/review/validation/lift-case-schema.ts` y `forgive-case-schema.ts` (zod, DOM-007). `ui/review/actions/
+review-actions.ts` agrega `liftCaseAction`/`forgiveCaseAction`, mismo patrón que `decideCaseAction`
+(`requireAdminSession`, traduce los errores tipados de `CaseRepository.lift`/`forgive` a `REVIEW_ERRORS`,
+`revalidatePath`). Corrige el hallazgo M2 de la auditoría de Kenny (`message.txt`): cuando el zod-parse de
+`forgiveCaseAction` falla, se inspecciona `parsed.error.issues` por campo (`caseId` → `invalidInput`,
+`amount` → `invalidForgiveAmount`, si no → `invalidReason`) en vez de devolver siempre el mismo error sin
+importar cuál campo falló; `liftCaseAction` distingue `caseId` de `reason` con el mismo mecanismo.
+`ui/review/types/review-results.ts` agrega `LiftCaseActionResult`/`ForgiveCaseActionResult` (este último
+con `exceptionAmount` para que la UI pueda mostrar lo condonado hasta ahora sin otra consulta).
+`ui/review/constants/review-strings.ts` agrega `caseNotActive`, `invalidReason`, `invalidForgiveAmount`,
+`liftFailed`, `forgiveFailed` a `REVIEW_ERRORS`. Pruebas: `ui/review/__tests__/review-actions.test.ts`
+agrega `describe('liftCaseAction')` y `describe('forgiveCaseAction')`, con un caso dedicado a M2 (monto
+inválido y motivo inválido deben devolver mensajes distintos, no el mismo). Todavía sin botones ni
+formulario en la pantalla: la acción existe pero nada la llama — piezas siguientes (componente de
+acciones y su cableado en `ReviewBody`). `npx tsc --noEmit` sin errores en todo el repo; `npx vitest run
+src/features/delinquency`: 114/114.
+
+### Pieza 9 — componente `CaseExceptionActions`
+
+`ui/review/components/CaseExceptionActions/` (`.tsx`, `.styles.ts` con `STYLES`, `.types.ts`, `index.ts`,
+mismo patrón que `CaseDecisionButtons`/`GraceDaysForm`): un motivo, un monto con un checkbox para
+condonar todo lo pendiente, y los botones de condonar/levantar, con `FeedbackMessage` para el resultado.
+Corrige el hallazgo B2 de la auditoría de Kenny: el checkbox «Condonar todo lo pendiente» antes solo
+fijaba el monto al pendiente y nunca lo podía desmarcar; ahora alterna entre el pendiente y vacío
+(`forgivesFullBalance = amount === String(pending)`, togglea con ese mismo valor). Usa `FORGIVE_AMOUNT_MIN`
+y `EXCEPTION_REASON_MAX_LENGTH` del dominio, nunca un número a mano. El texto de ayuda explica la
+decisión de Kenny del 2026-11-18 (A4): condonar menos del saldo deja la morosidad activa con el resto;
+condonar el saldo completo la cierra. Sin prueba propia: como `CaseDecisionButtons` y `GraceDaysForm`,
+se prueba en integración dentro de `review-view.test.tsx` cuando se cablee en `ReviewBody` (pieza
+siguiente) — todavía no tiene quien lo monte. `npx tsc --noEmit` sin errores en todo el repo; `npx
+vitest run src/features/delinquency`: 114/114 (sin cambios: el componente no se usa aún).
+
+### Pieza 10 — `CaseExceptionActions` en `ReviewBody` y las dos secciones de historial
+
+`ui/review/components/ReviewBody/ReviewBody.tsx`: cada fila de «Morosidades activas» monta
+`<CaseExceptionActions caseId={item.caseId} pending={item.pending} />` y, si `exceptionAmount` no es
+nulo, muestra «Ya condonado: X» (criterio 2, condonación parcial visible). De paso, la llave de esa
+lista pasa de `item.clientId` a `item.caseId`: desde la pieza 6 `ActiveItem` es por caso, no por
+clienta, y con la llave vieja dos casos activos de la misma clienta habrían colapsado en uno solo en
+React — no había prueba que lo cubriera porque `ready` en `review-view.test.tsx` solo tenía una
+clienta con un caso. Dos secciones nuevas, «Bloqueos levantados» y «Morosidades condonadas»
+(criterio 4: la morosidad original sigue visible con su `pending` de siempre, el motivo y lo
+condonado), leyendo `ReviewView.lifted`/`forgiven` que ya traía la pieza 7. `reviewMessages` crece con
+`lifted`, `forgiven`, `decidedLabel`, y en `exception`: `alreadyForgivenLabel`, `forgivenAmountLabel`.
+Pruebas nuevas en `ui/review/__tests__/review-view.test.tsx`: `describe('CaseExceptionActions')`
+(formulario presente, botones deshabilitados sin motivo, el checkbox fija y desmarca el monto —
+contraprueba de B2 ya corregido en la pieza 9 —, levantar y condonar llaman la acción con el `caseId`
+correcto, condonar parcial avisa que sigue activa y condonar completo avisa que cerró, un error se
+muestra junto al caso, y el `exceptionAmount` ya condonado se ve en la tarjeta activa) y
+`describe('historial de excepciones')` (ambas secciones listan motivo/monto/fecha, estado vacío,
+aviso de «hay más»). 126/126.
+
+**B3 de la auditoría de Kenny, verificado en navegador (2026-11-21):** «el aviso de éxito probablemente
+no se ve, `revalidatePath` saca el caso de la lista y desmonta el componente» (sospecha del propio
+auditor, severidad Baja). Confirmado contra un servidor local real (build de producción + Supabase
+local, datos de ejemplo): en una condonación *parcial* el caso sigue en `active` con el mismo
+`caseId`, que es la `key` de su `<li>`; React no desmonta ese nodo al revalidar y el aviso **sí se
+ve** (captura 04 del PR de esta pieza). En una condonación *completa* o al levantar, el caso sale de
+`active` (pasa a `forgiven`/`lifted`) y la tarjeta —con su aviso— se desmonta al revalidar (no
+reproducido en vivo, solo analizado): el mismo patrón que ya tiene `CaseDecisionButtons` desde
+US-MOR-01 (`terminada`) al confirmar o descartar, donde la fila también sale de «Por revisar» y su
+aviso desaparece con ella. No es un defecto nuevo de esta historia: es el comportamiento ya aceptado
+del patrón que toda la pantalla comparte. Sigue como deuda si alguna vez se decide que el aviso de un
+cierre deba sobrevivir a la revalidación (por ejemplo, con un mensaje a nivel de página en vez de por
+tarjeta) — no bloquea el cierre de US-MOR-05 porque no es peor que lo que ya está en producción.
+
+Con esta pieza, los 4 criterios de aceptación de US-MOR-05 tienen UI además de SQL y pruebas de
+integración. `npx tsc --noEmit` sin errores en todo el repo; `npx vitest run src/features/delinquency`:
+126/126.
+
+### Pieza 11 — Cierre: evidencia y estado
+
+Capturas INT-010 (01 a 04) tomadas contra un servidor local real (`npm run build && npm run start`,
+Supabase local con datos de ejemplo, nunca contra producción ni contra `lashary-pruebas`): la pantalla
+completa, el checkbox de condonar todo (B2), el historial de las dos secciones nuevas, y una
+condonación parcial de verdad completándose con su aviso de éxito visible (confirma B3 para el caso
+que queda `active`). Quedan subidas a la rama `capturas-pr` y enlazadas en el PR de la pieza 10 (#934)
+y en el PR de cierre de la historia (`us/US-MOR-05` → `main`).
+
+`US-MOR-05` pasa a `terminada` en el frontmatter de este SPEC, con la tabla criterio → prueba y el
+resumen de la auditoría de Kenny en la `evidencia`. N3 (solicitudes de regularización huérfanas al
+levantar o condonar) y B5 (`listActiveClients`/`ActiveClient` sin consumidor) quedan registrados como
+deuda explícita, sin bloquear el cierre: ninguno de los dos niega alguno de los 4 criterios de esta
+historia, igual que el cron sin programar quedó registrado como deuda al cerrar US-MOR-01.

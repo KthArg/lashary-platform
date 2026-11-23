@@ -16,7 +16,6 @@ export const MY_ACCOUNT_FUNCTION = 'delinquency_my_account'
 
 const NOT_A_CLIENT_MESSAGE = 'delinquency_not_a_client'
 
-// El mensaje del RAISE de la función de la base y el motivo que entiende la aplicación.
 export const SUBMIT_REFUSALS: Readonly<Record<string, RegularizationRefusal>> = {
   delinquency_case_not_regularizable: 'case-not-regularizable',
   delinquency_case_already_paid: 'case-already-paid',
@@ -26,7 +25,6 @@ export const SUBMIT_REFUSALS: Readonly<Record<string, RegularizationRefusal>> = 
   delinquency_receipt_already_used: 'receipt-already-used',
 }
 
-// guid() y no uuid(): Postgres acepta cualquier uuid y una respuesta válida no debe romper la pantalla.
 const requestIdSchema = z.string().guid()
 
 const accountRowSchema = z.object({

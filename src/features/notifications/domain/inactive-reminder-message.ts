@@ -1,4 +1,4 @@
-import { buildAppointmentsUrl } from './appointments-url'
+import { buildSiteUrl } from './site-url'
 
 export const INACTIVE_REMINDER_MESSAGE_TEXTS = {
   greeting: 'Hola',
@@ -35,5 +35,5 @@ export const isUnsubscribeToken = (value: string): boolean => UUID.test(value)
 
 export function buildInactiveUnsubscribeUrl(siteUrl: string | undefined, token: string): string | null {
   if (!isUnsubscribeToken(token)) return null
-  return buildAppointmentsUrl(siteUrl, `${INACTIVE_UNSUBSCRIBE_PATH}/${token}`)
+  return buildSiteUrl(siteUrl, `${INACTIVE_UNSUBSCRIBE_PATH}/${token}`)
 }

@@ -1,8 +1,15 @@
 import { describe, it, expect } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { isErr, isOk } from '@/shared/result'
-import { isCaseAlreadyDecided, isCaseNotFound, isDelinquencyStorageFailed } from '../../domain/errors'
-import { caseRepository, DECIDE_CASE_FUNCTION } from '../case-repository'
+import {
+  isCaseAlreadyDecided,
+  isCaseNotActive,
+  isCaseNotFound,
+  isDelinquencyStorageFailed,
+  isInvalidForgiveAmount,
+  isInvalidReason,
+} from '../../domain/errors'
+import { caseRepository, DECIDE_CASE_FUNCTION, FORGIVE_CASE_FUNCTION, LIFT_CASE_FUNCTION } from '../case-repository'
 
 const CASE_ID = '7b0e5f8e-3c1a-4c55-9c1e-2f4a6b8d0e11'
 
@@ -70,5 +77,61 @@ describe('caseRepository.decide', () => {
 
     expect(isErr(result)).toBe(true)
     if (isErr(result)) expect(result.error.message).not.toContain('borrada')
+  })
+})
+
+describe('caseRepository.lift', () => {
+  it('llama a la función de la base con el caso y el motivo, y devuelve el caso levantado', async () => {
+    const liftedRow = { ...row, state: 'lifted', exception_reason: 'error de registro' }
+    const { db, calls } = createFakeDb({ data: liftedRow, error: null })
+
+    const result = await caseRepository(db).lift(CASE_ID, 'error de registro')
+
+    expect(calls).toEqual([[LIFT_CASE_FUNCTION, { p_case_id: CASE_ID, p_reason: 'error de registro' }]])
+    expect(isOk(result) && result.value.state).toBe('lifted')
+    expect(isOk(result) && result.value.exceptionReason).toBe('error de registro')
+  })
+
+  it('traduce los códigos de la base: no existe, no está active y motivo inválido', async () => {
+    const notFound = await caseRepository(
+      createFakeDb({ data: null, error: { message: 'x', code: 'P0002' } }).db,
+    ).lift(CASE_ID, 'motivo')
+    const notActive = await caseRepository(
+      createFakeDb({ data: null, error: { message: 'x', code: '55001' } }).db,
+    ).lift(CASE_ID, 'motivo')
+    const badReason = await caseRepository(
+      createFakeDb({ data: null, error: { message: 'x', code: '22004' } }).db,
+    ).lift(CASE_ID, '')
+
+    expect(isErr(notFound) && isCaseNotFound(notFound.error)).toBe(true)
+    expect(isErr(notActive) && isCaseNotActive(notActive.error)).toBe(true)
+    expect(isErr(badReason) && isInvalidReason(badReason.error)).toBe(true)
+  })
+})
+
+describe('caseRepository.forgive', () => {
+  it('llama a la función de la base con el caso, el monto y el motivo, y devuelve el caso condonado', async () => {
+    const forgivenRow = { ...row, state: 'forgiven', exception_reason: 'buena clienta', exception_amount: 4000 }
+    const { db, calls } = createFakeDb({ data: forgivenRow, error: null })
+
+    const result = await caseRepository(db).forgive(CASE_ID, 4000, 'buena clienta')
+
+    expect(calls).toEqual([
+      [FORGIVE_CASE_FUNCTION, { p_case_id: CASE_ID, p_amount: 4000, p_reason: 'buena clienta' }],
+    ])
+    expect(isOk(result) && result.value.state).toBe('forgiven')
+    expect(isOk(result) && result.value.exceptionAmount).toBe(4000)
+  })
+
+  it('traduce los códigos de la base, incluido el monto fuera de rango', async () => {
+    const notActive = await caseRepository(
+      createFakeDb({ data: null, error: { message: 'x', code: '55001' } }).db,
+    ).forgive(CASE_ID, 100, 'motivo')
+    const badAmount = await caseRepository(
+      createFakeDb({ data: null, error: { message: 'x', code: '22023' } }).db,
+    ).forgive(CASE_ID, 999999, 'motivo')
+
+    expect(isErr(notActive) && isCaseNotActive(notActive.error)).toBe(true)
+    expect(isErr(badAmount) && isInvalidForgiveAmount(badAmount.error)).toBe(true)
   })
 })

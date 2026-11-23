@@ -1,4 +1,4 @@
-import { reviewMessages as copy } from '@/features/delinquency/ui/review/constants/review-strings'
+import { reviewMessages as copy } from '../../constants/review-strings'
 import { ReviewBody } from '../ReviewBody'
 import { reviewViewStyles as STYLES } from './ReviewView.styles'
 import type { ReviewViewProps } from './ReviewView.types'

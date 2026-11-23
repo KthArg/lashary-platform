@@ -15,12 +15,18 @@ const confirmed: DelinquencyCase = {
   state: 'active',
   detectedAt: new Date('2026-11-01T15:00:00Z'),
   decidedAt: new Date('2026-11-06T15:00:00Z'),
+  exceptionReason: null,
+  exceptionAmount: null,
+}
+
+const liftAndForgiveNotUsed = async (): Promise<never> => {
+  throw new Error('decideCase no usa lift ni forgive')
 }
 
 describe('decideCase', () => {
   it('le pasa al repositorio la morosidad y la decisión tal cual y devuelve lo que decidió', async () => {
     const decide = vi.fn(async () => ok(confirmed))
-    const repository: CaseRepository = { decide }
+    const repository: CaseRepository = { decide, lift: liftAndForgiveNotUsed, forgive: liftAndForgiveNotUsed }
 
     const result = await decideCase(repository)({ caseId: CASE_ID, decision: 'confirm' })
 
@@ -29,7 +35,11 @@ describe('decideCase', () => {
   })
 
   it('devuelve el error del repositorio sin esconderlo, por ejemplo una morosidad ya decidida', async () => {
-    const repository: CaseRepository = { decide: async () => err(caseAlreadyDecided(CASE_ID)) }
+    const repository: CaseRepository = {
+      decide: async () => err(caseAlreadyDecided(CASE_ID)),
+      lift: liftAndForgiveNotUsed,
+      forgive: liftAndForgiveNotUsed,
+    }
 
     const result = await decideCase(repository)({ caseId: CASE_ID, decision: 'dismiss' })
 

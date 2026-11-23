@@ -44,5 +44,4 @@ export const regularizationFormMessages = {
   replaceHint: 'Si te equivocaste de comprobante, puedes enviar otro: reemplaza al que está en revisión.',
 } as const
 
-// Lo que el input de archivo ofrece elegir; el servidor decide el tipo real por el contenido (DOM-008).
 export const RECEIPT_ACCEPT = 'image/jpeg,image/png,image/webp,application/pdf'

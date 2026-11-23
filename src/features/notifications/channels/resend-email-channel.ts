@@ -6,6 +6,7 @@ import { CLIENT_NOTICE_MESSAGE_TEXTS } from '../domain/client-notice-message'
 import { AFTERCARE_MESSAGE_TEXTS } from '../domain/aftercare-message-text'
 import { REAPPLICATION_MESSAGE_TEXTS } from '../domain/reapplication-message'
 import { INACTIVE_REMINDER_MESSAGE_TEXTS } from '../domain/inactive-reminder-message'
+import { PAYMENT_REMINDER_MESSAGE_TEXTS } from '../domain/payment-reminder-message'
 import type { MessagePurpose, NotificationChannel } from '../application/ports'
 import { CHANNEL_SEND_TIMEOUT_MS } from './send-timeout'
 
@@ -18,6 +19,7 @@ const SUBJECTS: Record<MessagePurpose, string> = {
   aftercare: AFTERCARE_MESSAGE_TEXTS.emailSubject,
   reapplication_reminder: REAPPLICATION_MESSAGE_TEXTS.emailSubject,
   inactive_reminder: INACTIVE_REMINDER_MESSAGE_TEXTS.emailSubject,
+  payment_reminder: PAYMENT_REMINDER_MESSAGE_TEXTS.emailSubject,
 }
 
 export function readResendEmailConfigFromEnv(env: Record<string, string | undefined>): ResendEmailConfig | null {

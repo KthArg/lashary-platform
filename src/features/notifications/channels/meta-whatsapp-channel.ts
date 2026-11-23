@@ -11,6 +11,7 @@ export type MetaWhatsAppConfig = {
   rescheduleOutcomeTemplateName: string | null
   aftercareTemplateName: string | null
   reapplicationTemplateName: string | null
+  paymentTemplateName: string | null
   templateLanguage: string
   graphApiVersion: string
 }
@@ -30,6 +31,7 @@ export function readMetaWhatsAppConfigFromEnv(env: Record<string, string | undef
     rescheduleOutcomeTemplateName: env.META_WHATSAPP_RESCHEDULE_OUTCOME_TEMPLATE_NAME ?? null,
     aftercareTemplateName: env.META_WHATSAPP_AFTERCARE_TEMPLATE_NAME ?? null,
     reapplicationTemplateName: env.META_WHATSAPP_REAPPLICATION_TEMPLATE_NAME ?? null,
+    paymentTemplateName: env.META_WHATSAPP_PAYMENT_TEMPLATE_NAME ?? null,
     templateLanguage: env.META_WHATSAPP_TEMPLATE_LANGUAGE ?? DEFAULT_TEMPLATE_LANGUAGE,
     graphApiVersion: env.META_WHATSAPP_GRAPH_API_VERSION ?? DEFAULT_GRAPH_API_VERSION,
   }
@@ -47,6 +49,7 @@ const templateFor = (config: MetaWhatsAppConfig, purpose: MessagePurpose): strin
     aftercare: config.aftercareTemplateName,
     reapplication_reminder: config.reapplicationTemplateName,
     inactive_reminder: null,
+    payment_reminder: config.paymentTemplateName,
   }
   return templates[purpose]
 }

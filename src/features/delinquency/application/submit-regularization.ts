@@ -17,9 +17,6 @@ export type SubmitRegularizationDeps = {
 
 export type SubmitRegularizationInput = RegularizationInput & { readonly receipt: Uint8Array }
 
-// Lo que se puede revisar sin la base se revisa antes de subir el comprobante, para no dejar archivos por un
-// formulario mal llenado. Si la base rechaza la solicitud después de subirlo, el archivo queda en la carpeta de
-// la clienta sin usarse: el bucket no permite borrar.
 export const submitRegularization =
   ({ upload, requests }: SubmitRegularizationDeps) =>
   async (input: SubmitRegularizationInput): Promise<Result<string, SubmitRegularizationFailure | UploadReceiptFailure>> => {

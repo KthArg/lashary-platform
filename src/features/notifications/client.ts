@@ -2,3 +2,5 @@ export { reapplicationSettingsMessages } from './ui/reapplication-settings/const
 export { ReapplicationSettingsLoading } from './ui/reapplication-settings/components/ReapplicationSettingsLoading'
 export { inactiveClientsMessages } from './ui/inactive-clients/constants/inactive-clients-strings'
 export { InactiveClientsLoading } from './ui/inactive-clients/components/InactiveClientsLoading'
+export { paymentReminderSettingsMessages } from './ui/payment-reminder-settings/constants/payment-reminder-settings-strings'
+export { PaymentReminderSettingsLoading } from './ui/payment-reminder-settings/components/PaymentReminderSettingsLoading'

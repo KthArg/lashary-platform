@@ -2,7 +2,7 @@
 feature: store
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-10-24
+actualizado: 2026-11-21
 historias:
   - id: US-PROD-02
     estado: terminada
@@ -23,9 +23,9 @@ deuda:
   - que: "Prueba de aislamiento (SEC-002) del bucket store-product-images: src/features/store/__tests__/product-images-storage-rls.test.ts se omite sin Supabase local y CI no lo levanta, asi que no demuestra que anon y una clienta no puedan subir, listar ni borrar"
     aceptada_en: "PR de la pieza US-PROD-03 1/8"
     costo: "el mismo arnes de la deuda anterior; con el arnes, 0h extra"
-  - que: "Las server actions de Next aceptan 1 MB por defecto y next.config.js no lo cambia: una imagen de entre ~1 MB y 2 MB pasa validateProductImage pero Next corta la peticion antes con un error generico; el formulario dice 'hasta 1 MB'"
+  - que: "El formulario de la imagen del producto dice 'hasta 1 MB', pero validateProductImage y el bucket aceptan hasta 2 MB. La otra mitad de esta deuda (Next cortaba con un error generico las imagenes de mas de 1 MB) la resolvio US-MOR-03 el 2026-11-21: next.config.js deja el cuerpo de las server actions en 3 MB para todas las acciones"
     aceptada_en: "PR de la pieza US-PROD-03 8/8"
-    costo: "1 linea en next.config.js (experimental.serverActions.bodySizeLimit '3mb') y cambiar el texto del campo; decision pendiente de investigar"
+    costo: "cambiar el texto del campo a 'hasta 2 MB'; 15 min"
 defectos: []
 ---
 
