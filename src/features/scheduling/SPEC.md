@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-11-17"
+actualizado: 2026-11-22
 historias:
   - id: US-AGE-01
     estado: terminada
@@ -510,6 +510,12 @@ Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el
 - Pactado el 2026-11-05 en `docs/contracts/scheduling-api.md` (INT-003) e implementado en la pieza 2/4 de US-CLI-01: la función SQL `scheduling_client_last_visits()` está en `supabase/migrations/20261105000000_clients_list_last_visit.sql`, la misma migración que la versión anterior de `clients_list` de `clients`. Desde el 2026-11-17 `clients_list` ya no la usa (ver «Última cita de cada clienta»); se conserva sin cambios para US-NOT-06 (inactivas), que necesita la última visita real.
 - Devuelve `(client_id, last_visit_at)`: el `starts_at` de la cita `completed` más reciente de cada clienta. Las demás citas, y las que no tienen clienta, no cuentan. `SECURITY INVOKER`: la RLS de `scheduling_appointments` decide qué ve quien llama (SEC-001).
 - Prueba: `supabase/tests/database/scheduling_client_last_visits.test.sql` (solo `completed`, la más reciente, sin citas sin clienta, personal ve todas, clienta solo la suya, `anon` no la ejecuta, `SECURITY INVOKER`).
+
+### Próxima cita de cada clienta (para US-NOT-06 de `notifications`)
+
+- Pactado el 2026-11-22 en `docs/contracts/scheduling-api.md` (INT-003) e implementado en la pieza 3 de US-NOT-06: `scheduling_client_next_appointments()` en `supabase/migrations/20261122000000_scheduling_client_next_appointments_fn.sql`. La lista de clientas inactivas la usa para dejar fuera a quien ya tiene una cita agendada. `scheduling_client_last_visits()` pasa a tener a esa misma lista como consumidora.
+- Devuelve `(client_id, next_appointment_at)`: el `starts_at` de la cita futura más cercana de cada clienta entre las que siguen en pie (`pending_approval`, `approved`, `confirmed`). Una cita pasada, rechazada, cancelada o en ausencia no cuenta, ni la que no tiene clienta. `SECURITY INVOKER` y `STABLE`: la RLS de `scheduling_appointments` decide qué ve quien llama (SEC-001).
+- Prueba: `supabase/tests/database/scheduling_client_next_appointments.test.sql` (8: la más cercana en pie, la pasada y la cancelada no cuentan, rechazada y ausencia tampoco, sin citas sin clienta, una fila por clienta, clienta solo la suya, `anon` no la ejecuta, `SECURITY INVOKER` y `STABLE`).
 
 ### Última cita de cada clienta (para US-CLI-01 de `clients`)
 
