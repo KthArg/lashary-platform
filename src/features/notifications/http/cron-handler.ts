@@ -1,7 +1,12 @@
 import { isErr, type Result } from '@/shared/result'
 import { isAuthorizedCronRequest } from '@/shared/lib/cron-auth'
 import { logError } from '@/shared/logger'
-import { runNotificationsReminderCycle, runReapplicationReminderCycle, type NotificationsCycleError } from '../index'
+import {
+  runNotificationsReminderCycle,
+  runReapplicationReminderCycle,
+  runPaymentReminderCycle,
+  type NotificationsCycleError,
+} from '../index'
 
 type CycleReport = { ok: boolean; body: unknown }
 
@@ -24,11 +29,15 @@ export async function receiveReminderCronRequest(request: Request): Promise<Resp
     return Response.json({ error: 'no autorizado' }, { status: 401 })
   }
 
-  const [reminders, reapplications] = await Promise.all([
+  const [reminders, reapplications, paymentReminders] = await Promise.all([
     runCycle('recordatorios', runNotificationsReminderCycle),
     runCycle('re-aplicación', runReapplicationReminderCycle),
+    runCycle('recordatorio de pago', runPaymentReminderCycle),
   ])
 
-  const status = reminders.ok && reapplications.ok ? 200 : 503
-  return Response.json({ reminders: reminders.body, reapplications: reapplications.body }, { status })
+  const status = reminders.ok && reapplications.ok && paymentReminders.ok ? 200 : 503
+  return Response.json(
+    { reminders: reminders.body, reapplications: reapplications.body, paymentReminders: paymentReminders.body },
+    { status },
+  )
 }

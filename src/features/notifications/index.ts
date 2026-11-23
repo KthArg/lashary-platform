@@ -20,9 +20,15 @@ import { droppedNoticesRepository } from './db/dropped-notices-repository'
 import { delinquencyStatesGateway } from './db/delinquency-states-gateway'
 import { reapplicationReminderRepository } from './db/reapplication-reminder-repository'
 import { reapplicationSettingsRepository } from './db/reapplication-settings-repository'
+import { paymentReminderRepository } from './db/payment-reminder-repository'
+import { paymentReminderSettingsRepository } from './db/payment-reminder-settings-repository'
+import { delinquentClientsGateway } from './db/delinquent-clients-gateway'
+import { clientOwedAmountGateway } from './db/client-owed-amount-gateway'
 import { runReminderCycle, type RunReminderCycleSummary } from './application/run-reminder-cycle'
 import { discoverDueReapplications, type DiscoverDueReapplicationsDeps } from './application/discover-reapplication-reminders'
 import { sendDueReapplications, type SendDueReapplicationsSummary } from './application/send-due-reapplications'
+import { discoverDuePaymentReminders } from './application/discover-due-payment-reminders'
+import { sendDuePaymentReminders, type SendDuePaymentRemindersSummary } from './application/send-due-payment-reminders'
 import { buildAppointmentsUrl } from './domain/appointments-url'
 import { sendAftercareMessages, type SendAftercareMessagesSummary } from './application/send-aftercare-messages'
 import { sendConfirmationRequests, type SendConfirmationRequestsSummary } from './application/send-confirmation-requests'
@@ -200,6 +206,43 @@ export async function runReapplicationReminderCycle(): Promise<
       listRecords: repo.listRecords,
       recordSent: repo.recordSent,
       recordFailed: repo.recordFailed,
+      getContact: buildGetContact(db),
+      primaryChannel: metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env)),
+      backupChannel: resendEmailChannel(readResendEmailConfigFromEnv(process.env)),
+      clock: systemClock,
+    })(due.value)
+  } finally {
+    await closeSystemClient(db)
+  }
+}
+
+export async function runPaymentReminderCycle(): Promise<Result<SendDuePaymentRemindersSummary, NotificationsCycleError>> {
+  const systemConfig = readSystemClientConfigFromEnv(process.env)
+  if (systemConfig === null) return err('system-client-not-configured')
+
+  const clientResult = await createSystemClient(systemConfig)
+  if (isErr(clientResult)) return clientResult
+  const db = clientResult.value
+
+  try {
+    const frequencyDays = await paymentReminderSettingsRepository(db).frequencyDays()
+    if (isErr(frequencyDays)) {
+      logError('notifications', 'no se pudo leer la frecuencia del recordatorio de pago, se aborta la corrida', frequencyDays.error)
+      return err(REPOSITORY_FAILURE)
+    }
+
+    const reminderLog = await paymentReminderRepository(db)
+    const due = await discoverDuePaymentReminders({
+      listActiveClientIds: delinquentClientsGateway(db).listActiveClientIds,
+      lastSentAt: reminderLog.lastSentAt,
+      owedBy: clientOwedAmountGateway(db).owedBy,
+      frequencyDays: frequencyDays.value,
+      now: systemClock(),
+    })
+    if (isErr(due)) return due
+
+    return await sendDuePaymentReminders({
+      recordSent: reminderLog.recordSent,
       getContact: buildGetContact(db),
       primaryChannel: metaWhatsAppChannel(readMetaWhatsAppConfigFromEnv(process.env)),
       backupChannel: resendEmailChannel(readResendEmailConfigFromEnv(process.env)),
