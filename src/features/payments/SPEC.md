@@ -2,7 +2,7 @@
 feature: payments
 dri: pendiente
 estado: terminada
-actualizado: 2026-11-16
+actualizado: 2026-11-24
 historias:
   - id: US-AGE-13
     estado: terminada
@@ -54,7 +54,7 @@ Registrar un pago (US-MOR-03; migración `20261117030000_payments_record_payment
 
 ## Export CSV del ledger (US-MOR-04, piezas 14 a 16)
 
-Sin migraciones. La administradora descargará los asientos de `payments_ledger_entries` de un rango de fechas desde `/admin/payments`. Se construye en tres piezas: la 14 es el dominio, la 15 la lectura y la 16 la ruta y el formulario. Decisiones de José Loría del 2026-11-23, ajustables.
+Sin migraciones. La administradora descarga los asientos de `payments_ledger_entries` de un rango de fechas desde `/admin/payments`. Se construye en tres piezas: la 14 es el dominio, la 15 la lectura y la 16 la ruta y el formulario. Decisiones de José Loría del 2026-11-23, ajustables.
 
 Pieza 14, dominio (sin base ni pantalla):
 
@@ -71,6 +71,13 @@ Pieza 15, lectura (sin migraciones):
 - **Caso de uso** (`application/export-ledger.ts`): valida el rango, lee y arma el CSV con el nombre `ledger-AAAA-MM-DD-a-AAAA-MM-DD.csv`. Un rango inválido no llega a la base.
 
 Pruebas: `db/__tests__/ledger-export-repository.test.ts` (páginas, orden, nombres de a 200, el tope y el tope exacto, fallos de base y de nombres, tipo desconocido) y `application/__tests__/export-ledger.test.ts` (CSV y nombre del archivo, rango inválido sin leer, errores de la lectura).
+
+Pieza 16, ruta y formulario:
+
+- **Ruta** `GET /api/admin/ledger-export?desde=…&hasta=…` (`http/ledger-export-handler.ts`): sin sesión responde 401 y a quien no es staff 403, sin tocar la base. Con éxito entrega el CSV como descarga (`text/csv; charset=utf-8`, `Content-Disposition: attachment`). Ante un rango inválido, demasiados asientos o un fallo, redirige (303) a `/admin/payments?exportError=range|tooLarge|unavailable`; el detalle interno del fallo va al log y nunca a la respuesta.
+- **Formulario** (`ui/admin-ledger-export/`): un `<form method="get">` con dos fechas obligatorias, debajo de la exoneración de anticipos en `/admin/payments`. GET y no server action porque es una lectura que devuelve un archivo. La página lee `exportError` y el formulario muestra el aviso con `role="alert"`; un motivo desconocido en la URL se ignora.
+
+Pruebas: `http/__tests__/ledger-export-handler.test.ts` (401 y 403 sin leer, descarga con su nombre, rango inválido sin leer, demasiados asientos, fallo y excepción sin filtrar el mensaje) y `ui/admin-ledger-export/__tests__/LedgerExportForm.test.tsx` (formulario GET con sus fechas, título y botón, cada aviso, motivos de la URL).
 
 ## Qué no hace todavía
 
