@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useId } from 'react'
+import { CartEmpty } from '@/features/store/ui/cart/components/CartEmpty'
 import { RECEIPT_MAX_BYTES } from '@/features/store/domain/receipt'
 import { checkoutAction } from '../../actions/checkout-actions'
 import {
@@ -12,9 +13,21 @@ import {
 import { checkoutFormStyles as STYLES } from './CheckoutForm.styles'
 import type { CheckoutFormProps } from './CheckoutForm.types'
 
-export function CheckoutForm({ totalLabel }: CheckoutFormProps) {
+export function CheckoutForm({ totalLabel, isCartEmpty }: CheckoutFormProps) {
   const id = useId()
   const [result, send, sending] = useActionState(checkoutAction, null)
+
+  if (isCartEmpty && !result?.ok) {
+    return <CartEmpty />
+  }
+
+  if (result?.ok) {
+    return (
+      <div role="status" className={STYLES.alertOk}>
+        <span>{result.message}</span>
+      </div>
+    )
+  }
 
   return (
     <form action={send} className={STYLES.form}>
@@ -60,8 +73,8 @@ export function CheckoutForm({ totalLabel }: CheckoutFormProps) {
           {sending ? COPY.sending : COPY.submit}
         </button>
       </fieldset>
-      {result && (
-        <div role={result.ok ? 'status' : 'alert'} className={result.ok ? STYLES.alertOk : STYLES.alertError}>
+      {result && !result.ok && (
+        <div role="alert" className={STYLES.alertError}>
           <span>{result.message}</span>
         </div>
       )}
