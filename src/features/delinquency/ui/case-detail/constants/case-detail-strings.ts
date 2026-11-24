@@ -1,4 +1,5 @@
 import type { RequestState } from '@/features/delinquency/domain/regularization'
+import { TIMELINE_ACTIONS } from '@/features/delinquency/domain/case-detail'
 import { CASE_STATE_LABELS } from '../../constants/case-state-labels'
 
 export const caseDetailMessages = {
@@ -30,6 +31,26 @@ export const caseDetailMessages = {
     rejectionReason: 'Motivo del rechazo',
     reviewedAt: 'Fecha de revisión',
     reference: 'Referencia',
+  },
+  timeline: {
+    title: 'Bitácora de cambios',
+    empty: 'Esta morosidad todavía no tiene cambios registrados.',
+    unavailable: 'No se pudo leer la bitácora de cambios. El resto del detalle sí se muestra.',
+    actorLabel: 'Quién: ',
+    actors: {
+      client: 'La clienta',
+      administration: 'La administración',
+    },
+    actions: {
+      [TIMELINE_ACTIONS.caseConfirmed]: 'Morosidad confirmada',
+      [TIMELINE_ACTIONS.caseDismissed]: 'Morosidad descartada',
+      [TIMELINE_ACTIONS.caseLifted]: 'Bloqueo levantado',
+      [TIMELINE_ACTIONS.caseForgiven]: 'Deuda condonada',
+      [TIMELINE_ACTIONS.requestSubmitted]: 'Comprobante enviado',
+      [TIMELINE_ACTIONS.requestApproved]: 'Comprobante aprobado',
+      [TIMELINE_ACTIONS.requestRejected]: 'Comprobante rechazado',
+    } as const,
+    unknownAction: 'Cambio registrado',
   },
   clientFallback: 'Clienta sin nombre',
   appointmentMissing: 'Cita no disponible',
