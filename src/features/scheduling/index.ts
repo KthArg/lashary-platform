@@ -1,3 +1,5 @@
+import { getAppointmentSummaries as getAppointmentSummariesUseCase } from './application/get-appointment-summaries'
+import { appointmentSummariesRepository } from './db/appointment-summaries-repository'
 import { listClientAppointments as listClientAppointmentsUseCase } from './application/list-client-appointments'
 import { clientAppointmentsRepository } from './db/client-appointments-repository'
 import type { ListClientAppointmentsQuery } from './application/client-appointments-ports'
@@ -49,3 +51,10 @@ export type { AppointmentReminderSnapshot, ReminderSnapshotsWindow } from './app
 
 export { listReapplicationCandidates as listSchedulingReapplicationCandidates } from './reapplication-api'
 export type { ReapplicationCandidate } from './application/ports'
+
+export type { AppointmentSummary } from './application/appointment-summaries-ports'
+export { APPOINTMENT_SUMMARIES_MAX_IDS } from './application/get-appointment-summaries'
+
+export async function getAppointmentSummaries(appointmentIds: readonly string[]) {
+  return getAppointmentSummariesUseCase(await appointmentSummariesRepository())(appointmentIds)
+}

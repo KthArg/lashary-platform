@@ -1,0 +1,45 @@
+import { CASE_STATE_LABELS } from '../../constants/case-state-labels'
+
+export const HISTORY_PATH = '/admin/morosidades/historial'
+
+export const historyDetailPath = (caseId: string): string => `${HISTORY_PATH}/${caseId}`
+
+export const historyMessages = {
+  title: 'Historial de morosidades',
+  subtitle: 'Todas las morosidades, de la más reciente a la más antigua, sin importar cómo terminaron.',
+  loading: 'Cargando el historial…',
+  loadError: 'No se pudo cargar el historial de morosidades.',
+  retry: 'Reintentar',
+  error: {
+    title: 'No se pudo cargar el historial',
+    body: 'Hubo un problema al leer los datos. Inténtelo nuevamente.',
+  },
+  states: CASE_STATE_LABELS,
+  filters: { all: 'Todas', ...CASE_STATE_LABELS },
+  filter: { formLabel: 'Filtrar el historial', selectLabel: 'Estado', submit: 'Filtrar' },
+  headers: {
+    client: 'Clienta',
+    amount: 'Monto',
+    appointment: 'Cita asociada',
+    origin: 'Fecha de origen',
+    state: 'Estado',
+    actions: 'Detalle',
+  },
+  clientFallback: 'Clienta sin nombre',
+  appointmentMissing: 'Cita no disponible',
+  appointmentsUnavailable: 'No se pudieron leer las citas asociadas. El resto del historial sí se muestra.',
+  detailLink: 'Ver detalle',
+  detailLinkLabel: (clientName: string) => `Ver detalle de ${clientName}`,
+  emptyAll: 'Todavía no hay morosidades.',
+  emptyFiltered: 'Ninguna morosidad coincide con el filtro.',
+  emptyPage: 'Esta página no tiene morosidades.',
+  firstPage: 'Ir a la primera página',
+  pagination: {
+    navLabel: 'Paginación del historial',
+    status: (page: number, totalPages: number) => `Página ${page} de ${totalPages}`,
+    total: (total: number) => `${total} ${total === 1 ? 'morosidad' : 'morosidades'}`,
+    sizeLabel: 'Por página',
+    previous: 'Anterior',
+    next: 'Siguiente',
+  },
+} as const

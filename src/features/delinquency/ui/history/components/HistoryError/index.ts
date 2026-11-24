@@ -1,0 +1,1 @@
+export { HistoryError } from './HistoryError'

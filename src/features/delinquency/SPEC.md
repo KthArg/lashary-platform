@@ -1,8 +1,8 @@
 ---
 feature: delinquency
 dri: pendiente
-estado: en_progreso
-actualizado: 2026-11-21
+estado: terminada
+actualizado: 2026-11-24
 historias:
   - id: US-MOR-01
     estado: terminada
@@ -14,7 +14,8 @@ historias:
     estado: terminada
     evidencia: "PR de cierre us/US-MOR-03 a main, con 26 piezas apiladas contra la rama de la historia (#900 a #924, más esta pieza 26 de cierre). Criterio 1 (iniciar el flujo desde el recordatorio o el estado de cuenta): el estado de cuenta /portal/cuenta trae «Cómo pagar» con los datos reales del estudio y el formulario del comprobante (account/ui/statement/__tests__/AccountStatementView.test.tsx y delinquency/ui/regularization/__tests__/RegularizationForm.test.tsx), y el rechazo de la reserva por morosidad lleva a él con «Regularizar mi saldo» (scheduling/ui/booking-confirm/__tests__/perform-booking.test.ts, book-appointment-action.test.ts y BookingConfirmForm.test.tsx); «desde el recordatorio» es la ruta estable /portal/cuenta a la que enlazará US-NOT-04, que depende de esta historia. Criterio 2 (al subir el comprobante, la regularización queda pendiente de aprobación): pgTAP delinquency_submit_regularization.test.sql, delinquency_regularizations.test.sql, delinquency_receipts_bucket.test.sql (tope de 1 MB) y delinquency_regularization_notice.test.sql (el aviso a la bandeja); domain/__tests__/receipt.test.ts y regularization.test.ts, application/__tests__/upload-receipt.test.ts y submit-regularization.test.ts, db/__tests__/regularization-repository.test.ts, receipt-storage.test.ts y case-row.test.ts, ui/regularization/__tests__/perform-regularization.test.ts, y en notifications db/__tests__/inbox-repository.test.ts y ui/inbox/__tests__/notice-lines.test.ts. Criterio 3 (aprobado, la morosidad queda saldada y se libera la restricción): pgTAP delinquency_approve_regularization.test.sql, payments_ledger_payment_kind.test.sql y payments_record_payment.test.sql; application/__tests__/load-regularization-queue.test.ts y review-regularization.test.ts, db/__tests__/regularization-queue-repository.test.ts y regularization-review-repository.test.ts, ui/regularization-review/__tests__/RegularizationQueue.test.tsx, RegularizationDecision.test.tsx y perform-review.test.ts; comprobado de punta a punta en el navegador con el servidor local el 2026-11-18: pago parcial, rechazo con motivo, pago completo aprobado, morosidad settled y la misma reserva de la clienta pasa (capturas en los PR de las piezas 20 y 23). Criterio 4 (la clienta ve en todo momento el estado de su regularización): delinquency_my_account en delinquency_submit_regularization.test.sql, delinquency_reject_regularization.test.sql (motivo de 10 a 500 caracteres) y AccountStatementView.test.tsx (en revisión, aprobado, rechazado con el motivo y saldada). Aislamiento (SEC-002): delinquency_receipts_bucket.test.sql (otra clienta no lee ni escribe en la carpeta ajena) y delinquency_regularizations.test.sql (ninguna clienta lee la tabla). Decisiones del PO del 2026-11-13 y de la clienta (dueña del estudio) del 2026-11-18 en docs/process/DEPENDENCIES.md. Suite sobre la punta de la pila con la base local recién reseteada: pgTAP 111 archivos y 1465 pruebas en verde; vitest 2952 pruebas en verde (la suite de integración booking-pending-limit-package chocó con otra en paralelo y pasa 3 de 3 sola, como en US-MOR-02)."
   - id: US-MOR-04
-    estado: no_iniciada
+    estado: terminada
+    evidencia: "17 piezas apiladas sobre main, una por PR (#1001, #1002 y #1004 a #1018; la 17 es la última con código y cierra la historia). Sin migraciones. Criterio 1 (filtrar por por confirmar, activa, pendiente de aprobación, saldada y condonada, más descartada, levantada y todas): delinquency/ui/history/__tests__/history-filter.test.tsx, history-pagination.test.tsx y history-url.test.ts, domain/__tests__/case-history.test.ts, db/__tests__/case-history-repository.test.ts (anti-join de «activa» y página fuera de rango) y application/__tests__/list-case-history.test.ts; comprobado contra Supabase local con una morosidad de ejemplo por estado: cada filtro trae la suya y «Activa» excluye la que tiene comprobante pendiente. Criterio 2 (clienta, monto, cita asociada y fecha de origen): ui/history/__tests__/history-view.test.tsx, http/__tests__/appointment-summaries.test.ts y, en scheduling, application/__tests__/get-appointment-summaries.test.ts y db/__tests__/appointment-summaries-repository.test.ts. Criterio 3 (detalle completo y su bitácora): ui/case-detail/__tests__/case-detail-view.test.tsx, case-detail-requests.test.tsx, case-timeline.test.tsx y case-detail-service.test.ts, application/__tests__/load-case-detail.test.ts, db/__tests__/case-detail-repository.test.ts, domain/__tests__/case-detail.test.ts, http/__tests__/audit-timeline.test.ts y, en audit, list-entity-events.test.ts, audit-event-reader.test.ts y entity-events-query.test.ts. Export tabular del ledger (infraestructura de DEPENDENCIES.md): en payments, domain/__tests__/ledger-export-range.test.ts y ledger-csv.test.ts, db/__tests__/ledger-export-repository.test.ts, application/__tests__/export-ledger.test.ts, http/__tests__/ledger-export-handler.test.ts y ui/admin-ledger-export/__tests__/LedgerExportForm.test.tsx; comprobado en local: el CSV se descarga desde /admin/payments con los asientos del rango y un rango invertido vuelve al formulario con el aviso. Capturas de INT-010 en #1007 a #1009 (listado), #1014 (detalle), #1017 (export) y #1018 (historial y detalle con los estilos del listado de clientas)."
   - id: US-MOR-05
     estado: terminada
     evidencia: "PR de cierre us/US-MOR-05 a main, con 11 piezas apiladas contra la rama de la historia (#926 a #935, más esta pieza 11 de cierre; la pieza 1, el contrato, fue un commit directo a us/US-MOR-05, sin PR propio). Auditoría de Kenny del 2026-11-18 y reauditorías del 2026-11-21 (hallazgos A1-A4, M1-M5, B1-B6, N1, N3), todas corregidas o registradas según corresponda. Criterio 1 (levantar el bloqueo sin registrar pago): delinquency_lift_case (SECURITY DEFINER, solo admin, solo sobre active), pgTAP delinquency_lift_and_forgive_case.test.sql (levanta a lifted, conserva historial, motivo vacío o solo espacio en blanco se rechaza — B4) y delinquency_lift_unblocks_booking.test.sql (M1: contra delinquency_booking_block de US-MOR-02, no solo el estado en la tabla); application/__tests__/lift-case.test.ts, db/__tests__/case-repository.test.ts; UI en ui/review/__tests__/review-view.test.tsx (formulario, botón deshabilitado sin motivo); comprobado a mano el 2026-11-21 contra un servidor local real y Supabase local (capturas del PR #934). Criterio 2 (condonar total o parcial con motivo): delinquency_forgive_case valida contra el saldo vivo de la cita (payments_appointment_balances, A3) en vez de la foto que guardó la detección, y condonar parcial no cierra el caso — sigue active con exception_amount acumulado hasta que el saldo vivo llega a cero (A4, decisión de Kenny del 2026-11-18); pgTAP: condonación total y parcial, acumulado, monto o motivo inválido, aislamiento clienta/anon (M1), y el caso de N1 (condonar parcial y pagar el resto con una regularización real de US-MOR-03 vía delinquency_submit_regularization/approve_regularization — corregido en la pieza 3 con su pgTAP en la pieza 4: el CHECK de delinquency_cases ahora une lifted/forgiven con settled, el estado que agrega US-MOR-03, que se mergeó a main el 2026-11-20 (#943) antes que esta historia); application/__tests__/forgive-case.test.ts, db/__tests__/case-repository.test.ts; UI: el checkbox «condonar todo lo pendiente» (B2, corregido en la pieza 9). Comprobado a mano: condonar ₡3 000 más sobre un caso con ₡4 000 ya condonados deja el saldo en ₡9 000 (de ₡12 000) y «Ya condonado» en ₡7 000, con el aviso de éxito visible (B3, confirmado en navegador el 2026-11-21, ya no es solo análisis). Criterio 3 (bitácora con fecha, monto y motivo): delinquency.case.lifted y delinquency.case.forgiven en audit_events, en la misma transacción (DOM-011); el pgTAP comprueba el contenido del payload (pending, reason, cumulativeAmount, remainingBalance, closed), no solo que la fila exista. Criterio 4 (una excepción no borra el historial): pgTAP «la fila sigue visible, no se borró»; listByState ordena decided_at descendente para lifted/forgiven (M3, corregido en la pieza 5); UI: secciones «Bloqueos levantados» y «Morosidades condonadas» en /admin/morosidades (pieza 10), con motivo y monto condonado; comprobado a mano (captura 03 del PR #934). M2 (mensajes de error que no correspondían en forgiveCaseAction/liftCaseAction) corregido en la pieza 8, con prueba por campo. Deuda registrada, no bloquea el cierre: N3 (al levantar o condonar un caso con una solicitud de regularización de US-MOR-03 pendiente, esa solicitud queda huérfana — requiere acuerdo con MachineJALS, sección «N3» de este SPEC y docs/process/DEPENDENCIES.md) y B5 (listActiveClients/ActiveClient de US-MOR-01 sin consumidor en la UI desde que loadReview pasó a listActiveCases en la pieza 6, falta dueño y plazo para decidir si se borra). Suite completa en la punta de la pila: pgTAP 117 archivos, 1540 pruebas, PASS; vitest 126/126 en src/features/delinquency. La suite completa del repo tiene fallas preexistentes y no relacionadas con esta historia, confirmadas también en origin/main limpio: pruebas de aislamiento RLS de otras features que requieren altas reales de Supabase Auth local y un desajuste de datos de seed en catalog/db/packages, ninguna tocada aquí."
@@ -749,3 +750,199 @@ resumen de la auditoría de Kenny en la `evidencia`. N3 (solicitudes de regulari
 levantar o condonar) y B5 (`listActiveClients`/`ActiveClient` sin consumidor) quedan registrados como
 deuda explícita, sin bloquear el cierre: ninguno de los dos niega alguno de los 4 criterios de esta
 historia, igual que el cron sin programar quedó registrado como deuda al cerrar US-MOR-01.
+
+
+## US-MOR-04: listado histórico de morosidades
+
+Criterios del backlog:
+
+1. El listado permite filtrar por estado: por confirmar, activa, pendiente de aprobación, saldada y condonada.
+2. Cada registro muestra cliente, monto, cita asociada y fecha de origen.
+3. Puedo abrir el detalle completo de una morosidad y su bitácora de cambios.
+
+Además carga la infraestructura «export tabular del ledger» (ADR-0007, `docs/process/DEPENDENCIES.md`).
+
+Depende de US-MOR-01, US-MOR-03 y US-MOR-05, las tres `terminada`: de ellas vienen el estado `settled`, la solicitud
+`pending_approval` de `delinquency_regularizations`, y los estados `lifted` y `forgiven`. Reglas: ARCH-003, ARCH-004,
+ARCH-005, INT-003, INT-002, INT-009, INT-010, DOM-003, DOM-005, DOM-009, SEC-001, SEC-002, SEC-006, PERF-002, UI-003,
+UI-004.
+
+### Decisiones de José Loría (2026-11-23)
+
+1. **Monto.** En el listado, el monto de origen (`delinquency_cases.pending`, la foto al detectar). En el detalle,
+   además, el saldo de hoy (`payments_appointment_balances`, DOM-005) y lo condonado (`exception_amount`).
+2. **Filtros.** Los cinco del backlog más *descartada* (`dismissed`), *levantada* (`lifted`) y «Todas», para que el
+   histórico no esconda ninguna morosidad. Amplía el alcance del backlog: decisión de José, pendiente de avisar al PO
+   (Kenny).
+3. **Fecha de origen.** `detected_at`. La fecha y el servicio de la cita van en «Cita asociada».
+4. **Export del ledger.** Entra al final de la pila, en las piezas 14 a 16 (decisión del dueño del repo del 2026-11-23: la pila pasa de 14 a 16 piezas por tamaño, INT-002).
+5. **Rutas.** `/admin/morosidades/historial` (listado, una pestaña más de Morosidades) y
+   `/admin/morosidades/historial/[id]` (detalle).
+6. **Un solo estado por morosidad.** «Activa» es `active` sin comprobante pendiente; «Pendiente de aprobación» es
+   `active` con una solicitud `pending_approval` en `delinquency_regularizations`.
+7. **Sin migraciones.** `delinquency` lee sus propias tablas (`delinquency_cases`, `delinquency_regularizations`; la
+   RLS de staff y los índices `(state, detected_at DESC)` y `(state, created_at)` ya existen); el nombre sale de
+   `clients_display_names`; el saldo, de `payments_appointment_balances`; la cita, del caso de uso nuevo
+   `getAppointmentSummaries` de `scheduling`; la bitácora, del caso de uso nuevo `listEntityEvents` de `audit`. Cada
+   feature lee solo su propia tabla y expone un caso de uso público (ARCH-005: segundo use-case público); la RLS
+   existente sigue filtrando (SEC-001). Descartado: tres funciones SQL nuevas, una por feature, porque duplicaban lo
+   que ya permiten la RLS y los índices.
+
+### Qué muestra
+
+**Cada fila del listado:** Clienta (nombre), Monto (de origen), Cita asociada (fecha en hora del estudio y servicio),
+Fecha de origen (`detected_at`), Estado (uno de los siete) y el enlace «Ver detalle». Paginación en el servidor con
+tamaños 10, 25 y 50 y 25 por defecto, como el listado de clientas (`clients/application/clients-list-limits.ts`).
+Orden de la más reciente a la más antigua por `detected_at`, con desempate por `id`.
+
+**El detalle:** lo de la fila, más el saldo de hoy, `decided_at`, y el motivo y el monto de la excepción si la hay;
+sus solicitudes de regularización (declarado, aprobado, estado y motivo de rechazo); y la bitácora: los eventos con
+`entity_type = 'delinquency_case'` y la morosidad como `entity_id` (confirmed, dismissed, lifted, forgiven) más los de
+`entity_type = 'delinquency_regularization'` de sus solicitudes (submitted, approved, rejected), en orden cronológico
+y en hora del estudio (DOM-003). Los adaptadores a `audit` y `scheduling` van en `http/` de `delinquency`.
+
+### Contratos nuevos (INT-003)
+
+- `listEntityEvents` en `audit`: ver `src/features/audit/SPEC.md`, «Contrato público».
+- `getAppointmentSummaries` en `scheduling`: ver `docs/contracts/scheduling-api.md`.
+
+### Dominio y repositorio del listado (pieza 4)
+
+Sin pantalla ni migraciones.
+
+- `domain/case-history.ts`: filtros, tamaños de página (10, 25 y 50; 25 por defecto), normalización de la consulta, estado mostrado (`active` con solicitud pendiente se muestra `pending_approval`) y los tipos de la fila, la página y el ítem. Pruebas: `domain/__tests__/case-history.test.ts`.
+- `db/case-history-repository.ts` y su puerto `CaseHistoryRepository`: una lectura de `delinquency_cases` con total exacto, orden `detected_at` e `id` descendentes y rango; la solicitud pendiente va embebida de `delinquency_regularizations`. Un error de base, una fila inválida o un total ausente es `DelinquencyStorageFailed`. Pruebas: `db/__tests__/case-history-repository.test.ts`.
+
+Pendiente de comprobar contra Supabase local en la pieza 8 (cuando el filtro llegue a la pantalla): el filtro «Activa» usa el anti-join de PostgREST (embebido `!left` filtrado por `pending_approval` más `.is` nulo) y las pruebas unitarias solo comprueban que se pide así. También, qué responde PostgREST con una página más allá del total.
+
+### Caso de uso del listado y adaptador de citas (pieza 5)
+
+Sin pantalla ni migraciones; el cableado a la página (el servicio que arma las dependencias) queda para la pieza 6.
+
+- `application/list-case-history.ts`: normaliza la consulta, pide la página al repositorio y compone nombres y citas, una llamada de cada una con los ids sin repetir. Pruebas: `application/__tests__/list-case-history.test.ts`.
+- `http/appointment-summaries.ts` y su puerto `AppointmentSummariesPort`: adaptador a `getAppointmentSummaries` de `scheduling` por su `index.ts`; traduce su error a `DelinquencyStorageFailed`. Pruebas: `http/__tests__/appointment-summaries.test.ts`.
+
+Fallos: si falla la lectura de la tabla o la de los nombres, el caso de uso devuelve el error (como `loadReview`). Si fallan las citas, la página sale con `appointment: null` y `appointmentsUnavailable: true`. Una página vacía no pide nombres ni citas.
+
+### Pestañas, servicio y URL del listado (pieza 6)
+
+Sin migraciones. La pila pasó de 9 a 12 piezas (decisión del dueño del repo, 2026-11-23): la pantalla del listado no cabía en las ~400 líneas de INT-002 y se reparte en las piezas 6, 7 y 8.
+
+- `app/admin/morosidades/layout.tsx`, `morosidades-tabs.tsx`, `morosidades-section.strings.ts` y `morosidades.styles.ts`: pestañas «Revisión» e «Historial» (la de Historial queda activa también en `/historial/<id>`); el layout exige sesión de administradora. Pruebas: `app/admin/morosidades/layout.test.tsx`.
+- `ui/history/services/history-service.ts`: arma `listCaseHistory` con el repositorio, los nombres y las citas, y devuelve `error` o `ready` (lectura de página en un módulo de servidor normal, no en una server action).
+- `ui/history/utils/history-url.ts`: lee `filter`, `page` y `pageSize` de la URL y arma la URL de una consulta sin repetir los valores por defecto. `page` cuenta desde 0, como en el listado de clientas. Pruebas: `ui/history/__tests__/history-url.test.ts`.
+- `ui/history/constants/history-strings.ts`: la ruta del historial; los textos de cada componente entran con su pieza.
+
+La ruta `historial/` y la pantalla llegan en la pieza 7: hasta entonces la pestaña «Historial» apunta a una ruta que todavía no existe.
+
+### Tabla y estados del listado (pieza 7)
+
+Sin migraciones. La ruta `/admin/morosidades/historial` ya existe y muestra la tabla; el filtro y la paginación llegan en la pieza 8.
+
+- `app/admin/morosidades/historial/`: `page.tsx` monta `HistoryPage`; `loading.tsx` y `error.tsx` montan `HistoryLoading` y `HistoryError` (exportados por `client.ts`).
+- `ui/history/components/`: `HistoryPage` exige sesión de administradora, lee la URL con `history-url.ts` y pide la página al servicio; `HistoryView` elige entre error, vacío o tabla y pone el aviso de citas no disponibles; `HistoryTable` dibuja Clienta, Monto, Cita asociada, Fecha de origen, Estado y el enlace «Ver detalle» (hacia `/admin/morosidades/historial/<id>`, que llega en la pieza 11); `HistoryLoading` y `HistoryError`.
+- Pruebas: `ui/history/__tests__/history-view.test.tsx` (la tabla y sus columnas, el estado en español de los siete, el monto, la cita con y sin servicio, sin cita, sin nombre, el aviso de citas, vacío sin filtro y con filtro, error con «Reintentar», carga y el error de la ruta).
+
+Decisiones: el monto es el de origen (decisión 1); las fechas salen en hora del estudio (DOM-003); el enlace lleva `aria-label` con el nombre de la clienta para distinguir los «Ver detalle». «Clienta sin nombre» se repite en `history-strings.ts` en vez de tomarse de `ui/review`: dos áreas de `ui/` no se prestan archivos.
+
+### Filtro y paginación del listado (pieza 8)
+
+Sin migraciones. Completa la pantalla del listado.
+
+- `ui/history/components/`: `HistoryFilter` (formulario GET con el selector de los ocho filtros y el botón «Filtrar»; no envía `page`, así que cambiar el filtro vuelve a la primera página, y el tamaño de página viaja oculto) y `HistoryPagination` (estado de página y total, enlaces Anterior y Siguiente que conservan filtro y tamaño, y el selector de tamaño 10, 25 y 50, otro formulario GET que conserva el filtro). `HistoryView` los monta; la paginación solo aparece si hay morosidades.
+- Pruebas: `ui/history/__tests__/history-filter.test.tsx` (3), `history-pagination.test.tsx` (6) y, en `history-view.test.tsx`, el montaje del filtro y la paginación.
+
+Criterios: el 1 (filtrar por estado) lo demuestran `history-filter.test.tsx` (los ocho filtros, el seleccionado y el formulario GET sin `page`) y `history-pagination.test.tsx` (los enlaces conservan el filtro); el 2 (cliente, monto, cita y fecha de origen) lo demuestra `history-view.test.tsx` de la pieza 7.
+
+Comprobado contra Supabase local (2026-11-23), con la sesión de una administradora de prueba y siete morosidades de ejemplo, una por estado: «Activa» devuelve solo la activa sin comprobante pendiente (el anti-join funciona) y «Pendiente de aprobación» solo la que lo tiene. Una página más allá del total hacía que PostgREST respondiera `416` (`PGRST103`) y la pantalla quedaba en «Reintentar» sin salida. Ahora el repositorio, ante ese código, vuelve a contar con `head: true` y devuelve una página vacía con el total, y la vista dice «Esta página no tiene morosidades» con un enlace a la primera página. Pruebas: `case-history-repository.test.ts` (la página más allá del total) y `history-view.test.tsx`. El total de la paginación va en singular con una sola morosidad (`history-pagination.test.tsx`). Capturas de INT-010 en el PR de esta pieza.
+
+### Dominio y repositorio del detalle (pieza 9)
+
+Sin pantalla ni migraciones. La pila pasó de 12 a 14 piezas (decisión del dueño del repo, 2026-11-23): los datos del detalle no cabían en las ~400 líneas de INT-002 y se reparten en las piezas 9 y 10.
+
+- `domain/case-detail.ts`: los tipos del detalle (la morosidad con su monto de origen y su saldo de hoy, la cita, las solicitudes de la más reciente a la más antigua y la bitácora), las acciones y los tipos de entidad que se esperan en la bitácora, y las funciones puras `isCaseId`, `hasPendingRequest`, `latestRequestIds` (las 50 solicitudes más recientes, el tope de `audit`) y `sortTimeline` (fecha e id ascendentes). Un evento con una acción desconocida se conserva. Pruebas: `domain/__tests__/case-detail.test.ts`.
+- `db/case-detail-repository.ts` y su puerto `CaseDetailRepository`: una lectura de `delinquency_cases` por id con las solicitudes embebidas (sin `receipt_path`: el comprobante es dato sensible y no entra en esta historia) y el saldo de hoy de la cita con `payments_appointment_balances` (sin fila, 0). Sin fila es `CaseNotFound`; un error de base o una fila inválida, `DelinquencyStorageFailed`. Pruebas: `db/__tests__/case-detail-repository.test.ts`.
+
+Prepara el criterio 3 (abrir el detalle y su bitácora). El adaptador de la bitácora y el caso de uso llegan en la pieza 10 (abajo); la pantalla, en las piezas 11 a 13.
+
+### Adaptador de la bitácora y caso de uso del detalle (pieza 10)
+
+Sin pantalla ni migraciones; el cableado a la página (el servicio que arma las dependencias) llega con la pantalla, en la pieza 11.
+
+- `http/audit-timeline.ts` y su puerto `AuditTimelinePort`: adaptador a `listEntityEvents` de `audit` por su `index.ts`; pide los eventos de la morosidad y, si hay solicitudes, los de las 50 más recientes; junta, ordena por fecha e id y traduce cualquier error a `DelinquencyStorageFailed`. Pruebas: `http/__tests__/audit-timeline.test.ts`.
+- `application/load-case-detail.ts`: un id que no es uuid es `CaseNotFound` sin consultar; con la morosidad pide en paralelo el nombre, la cita y la bitácora. Si falla la lectura de la morosidad o la del nombre, devuelve el error (como `listCaseHistory`); si falla la cita, `appointment: null` y `appointmentUnavailable`; si falla la bitácora, lista vacía y `timelineUnavailable`: el detalle no se cae por otra feature. Pruebas: `application/__tests__/load-case-detail.test.ts`.
+
+Prepara el criterio 3 (abrir el detalle y su bitácora); se cierra con la pantalla, en las piezas 11 a 13.
+
+### Pantalla del detalle: datos (pieza 11)
+
+Sin migraciones. La ruta `/admin/morosidades/historial/[id]` ya existe y muestra los datos de la morosidad; las solicitudes de regularización y los estados de carga y error de la ruta llegan en la pieza 12 y la bitácora en la 13. Mientras tanto el detalle usa el `loading.tsx` y el `error.tsx` de `historial/`, que Next aplica a la subcarpeta. El enlace «Ver detalle» del listado ya tiene adónde ir.
+
+- `app/admin/morosidades/historial/[id]/`: `page.tsx` monta `CaseDetailPage`.
+- `ui/case-detail/`: `case-detail-service.ts` arma `loadCaseDetail` con el repositorio, los nombres, las citas y la bitácora y devuelve `ready`, `not_found` o `error` (módulo de servidor normal, no una server action); `CaseDetailPage` exige sesión de administradora y lee el id de la ruta; `CaseDetailView` dibuja el enlace «Volver al historial», el encabezado con la clienta y el estado, y una lista de datos con monto de origen, saldo de hoy, cita, fecha de origen, fecha de decisión y de saldada si las hay, y motivo y monto condonado si hay excepción.
+- Compartido en la raíz de `ui/`: `constants/case-state-labels.ts` (las etiquetas de los siete estados, que el listado ya usaba) y `utils/appointment-text.ts` (la cita como fecha y servicio).
+- Pruebas: `ui/case-detail/__tests__/case-detail-view.test.tsx` (datos y montos, excepción presente y ausente, sin nombre o sin cita, aviso de cita, enlace de vuelta, no encontrada y error con «Reintentar») y `case-detail-service.test.ts` (ready, not_found y error).
+
+Decisiones: un id que no es uuid es «no encontrada», igual que uno inexistente (`loadCaseDetail` ya lo resuelve sin consultar). El modelo `error` lleva el id para que «Reintentar» vuelva al mismo detalle. El estado va en una insignia con un texto solo para lectores de pantalla («Estado: »).
+
+Prepara el criterio 3 (abrir el detalle y su bitácora); se cierra con la bitácora, en la pieza 13. Capturas de INT-010 en la pieza 13.
+
+### Pantalla del detalle: solicitudes, carga y error (pieza 12)
+
+Sin migraciones. El detalle gana la sección «Solicitudes de regularización» y sus propios estados de carga y error; la bitácora llega en la pieza 13.
+
+- `ui/case-detail/components/CaseRequests/`: una lista, de la más reciente a la más antigua (el orden ya lo trae el repositorio), con la fecha de envío en hora del estudio (DOM-003), el estado de la solicitud (pendiente de aprobación, aprobada, rechazada o reemplazada), el monto declarado con `formatMoney` y, si los hay, el monto aprobado, el motivo del rechazo, la fecha de revisión y la referencia. Sin solicitudes dice «Esta morosidad no tiene solicitudes de regularización.» El comprobante no se muestra ni se enlaza (SEC-006): el modelo ni siquiera lo trae.
+- `CaseDetailLoading` y `CaseDetailError` (re-exportados por `client.ts`), usados por `[id]/loading.tsx` y `[id]/error.tsx`: el detalle deja de heredar los de `historial/` y la pantalla de error vuelve a intentar con `reset`.
+- Pruebas: `ui/case-detail/__tests__/case-detail-requests.test.tsx` (varias solicitudes con orden, estados, montos, motivo y fechas; la pendiente sin datos de revisión; vacía; ningún enlace ni imagen; carga y error de la ruta).
+
+Decisión: las etiquetas de los cuatro estados de la solicitud viven en `case-detail-strings.ts`; las pantallas de US-MOR-03 las nombran con frases propias de su flujo y no hay un conjunto compartible.
+
+Prepara el criterio 3 (abrir el detalle y su bitácora); se cierra con la bitácora, en la pieza 13. Capturas de INT-010 en la pieza 13.
+
+### Pantalla del detalle: bitácora (pieza 13)
+
+Sin migraciones. El detalle gana la sección «Bitácora de cambios», debajo de las solicitudes.
+
+- `ui/case-detail/components/CaseTimeline/`: una lista ordenada (`<ol>`) en el orden que ya trae el caso de uso (cronológico), con la fecha y hora de cada evento en hora del estudio (DOM-003), un texto en español por acción (confirmada, descartada, levantada, condonada; comprobante enviado, aprobado, rechazado) y quién la hizo: «La clienta» para el envío del comprobante y «La administración» para las demás. Una acción desconocida dice «Cambio registrado» y muestra la acción tal cual. Sin eventos dice «Esta morosidad todavía no tiene cambios registrados.»; si `timelineUnavailable`, un aviso con `role="status"` y sin lista. El `payload` no se muestra (SEC-006): el modelo ni lo trae.
+- Pruebas: `ui/case-detail/__tests__/case-timeline.test.tsx` (cada acción con su autor, orden, fecha y hora, acción desconocida, vacía y no disponible) y una en `case-detail-view.test.tsx` (la sección va debajo de las solicitudes).
+
+Criterio 3 (abrir el detalle completo y su bitácora): queda demostrado por `case-detail-view.test.tsx` (los datos y la bitácora montada), `case-detail-requests.test.tsx` (las solicitudes), `case-timeline.test.tsx` (la bitácora) y `application/__tests__/load-case-detail.test.ts` (el caso de uso: la bitácora, su fallo y el id inexistente). Las capturas de INT-010 están en el PR de esta pieza.
+
+### Export del ledger (piezas 14 a 16)
+
+El export vive en `payments` (su SPEC lo detalla): dominio en la 14, lectura en la 15 y, en la 16, la ruta `GET /api/admin/ledger-export` y el formulario «Exportar asientos del ledger» en `/admin/payments`.
+
+### Ajustes visuales y cierre (pieza 17)
+
+Pedidos por el dueño del repo el 2026-11-24 al probar la pila en local: el historial y el detalle se ven como el listado de clientas.
+
+- La cantidad por página cambia al elegirla, sin botón «Aplicar»: `ui/history/components/HistoryPageSize/` es un componente cliente que navega con `router.push` a la página 1 conservando el filtro, igual que `ClientsPagination`.
+- Botones, selects, avisos y cajas usan las mismas clases que clientas (cuadrados, «Filtrar» en negro); la tabla ocupa todo el ancho y «Ver detalle» es un icono de ojo con `aria-label` y `title` (`ui/history/constants/history-icons.ts`).
+- **Deuda (UI-001):** la regla pide botones de DaisyUI o del catálogo propio, y clientas usa clases de Tailwind escritas a mano. Se copiaron para que coincidan; extraerlas a un botón compartido queda pendiente, en un PR propio que toque las dos features.
+- Pruebas: `history-pagination.test.tsx` (navega al cambiar la cantidad, sin botón «Aplicar») y `history-view.test.tsx` (el icono del detalle con su nombre accesible).
+
+La pieza 17 cierra la historia: estado `terminada` con su evidencia y la infraestructura «export tabular del ledger» hecha en `docs/process/DEPENDENCIES.md`.
+
+### Piezas previstas
+
+| Pieza | Contenido |
+|---|---|
+| 1 | Contrato y plan |
+| 2 | `audit`: lectura por entidad (`listEntityEvents`) |
+| 3 | `scheduling`: resúmenes de cita (`getAppointmentSummaries`) |
+| 4 | Dominio y repositorio del listado |
+| 5 | Caso de uso del listado y adaptador de citas |
+| 6 | Pestañas, ruta, servicio y URL del listado |
+| 7 | Tabla y estados del listado |
+| 8 | Filtro y paginación |
+| 9 | Dominio, puertos y repositorio del detalle |
+| 10 | Adaptador de la bitácora y caso de uso del detalle |
+| 11 | Pantalla del detalle: datos |
+| 12 | Pantalla del detalle: solicitudes de regularización y estados de carga y error |
+| 13 | Pantalla del detalle: bitácora y cierre del criterio 3 |
+| 14 | Dominio del export CSV del ledger en `payments` (rango, CSV y errores) |
+| 15 | Lectura del export: repositorio paginado, nombres y caso de uso |
+| 16 | Ruta y formulario de descarga del CSV |
+| 17 | Ajustes visuales del historial y del detalle (como el listado de clientas) y cierre de la historia (esta) |
+
+Las secciones de historial de US-MOR-05 en `/admin/morosidades` (levantadas y condonadas) se quedan como están.
