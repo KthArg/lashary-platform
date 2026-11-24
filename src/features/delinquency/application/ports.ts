@@ -1,6 +1,7 @@
 import type { Result } from '@/shared/result'
 import type { ActiveCaseItem } from '../domain/active-case'
 import type { ActiveClient } from '../domain/active-client'
+import type { CaseDetailRecord } from '../domain/case-detail'
 import type { HistoryAppointment, HistoryQuery, HistoryRowsPage } from '../domain/case-history'
 import type { CaseDecision, CaseState, DelinquencyCase } from '../domain/delinquency-case'
 import type {
@@ -44,6 +45,10 @@ export interface ClientNamesPort {
 
 export interface CaseHistoryRepository {
   list(query: HistoryQuery): Promise<Result<HistoryRowsPage, DelinquencyStorageFailed>>
+}
+
+export interface CaseDetailRepository {
+  find(caseId: string): Promise<Result<CaseDetailRecord, CaseNotFound | DelinquencyStorageFailed>>
 }
 
 export interface AppointmentSummariesPort {
