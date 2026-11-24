@@ -456,19 +456,6 @@ Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md
 
 Nada. Las cuatro preguntas abiertas se resolvieron el 2026-11-18 con la clienta (dueña del estudio): el tope de 1 MB, reemplazar el comprobante como está, el motivo del rechazo de al menos 10 caracteres y los datos de pago reales (`docs/process/DEPENDENCIES.md`).
 
-### Pantalla del detalle: datos (pieza 11)
-
-Sin migraciones. La ruta `/admin/morosidades/historial/[id]` ya existe y muestra los datos de la morosidad; las solicitudes de regularización y los estados de carga y error de la ruta llegan en la pieza 12 y la bitácora en la 13. Mientras tanto el detalle usa el `loading.tsx` y el `error.tsx` de `historial/`, que Next aplica a la subcarpeta. El enlace «Ver detalle» del listado ya tiene adónde ir.
-
-- `app/admin/morosidades/historial/[id]/`: `page.tsx` monta `CaseDetailPage`.
-- `ui/case-detail/`: `case-detail-service.ts` arma `loadCaseDetail` con el repositorio, los nombres, las citas y la bitácora y devuelve `ready`, `not_found` o `error` (módulo de servidor normal, no una server action); `CaseDetailPage` exige sesión de administradora y lee el id de la ruta; `CaseDetailView` dibuja el enlace «Volver al historial», el encabezado con la clienta y el estado, y una lista de datos con monto de origen, saldo de hoy, cita, fecha de origen, fecha de decisión y de saldada si las hay, y motivo y monto condonado si hay excepción.
-- Compartido en la raíz de `ui/`: `constants/case-state-labels.ts` (las etiquetas de los siete estados, que el listado ya usaba) y `utils/appointment-text.ts` (la cita como fecha y servicio).
-- Pruebas: `ui/case-detail/__tests__/case-detail-view.test.tsx` (datos y montos, excepción presente y ausente, sin nombre o sin cita, aviso de cita, enlace de vuelta, no encontrada y error con «Reintentar») y `case-detail-service.test.ts` (ready, not_found y error).
-
-Decisiones: un id que no es uuid es «no encontrada», igual que uno inexistente (`loadCaseDetail` ya lo resuelve sin consultar). El modelo `error` lleva el id para que «Reintentar» vuelva al mismo detalle. El estado va en una insignia con un texto solo para lectores de pantalla («Estado: »).
-
-Prepara el criterio 3 (abrir el detalle y su bitácora); se cierra con la bitácora, en la pieza 13. Capturas de INT-010 en la pieza 13.
-
 ### Piezas previstas
 
 Pueden cambiar con las respuestas del PO. Una migración por pieza (INT-008).
@@ -886,6 +873,19 @@ Sin pantalla ni migraciones; el cableado a la página (el servicio que arma las 
 - `application/load-case-detail.ts`: un id que no es uuid es `CaseNotFound` sin consultar; con la morosidad pide en paralelo el nombre, la cita y la bitácora. Si falla la lectura de la morosidad o la del nombre, devuelve el error (como `listCaseHistory`); si falla la cita, `appointment: null` y `appointmentUnavailable`; si falla la bitácora, lista vacía y `timelineUnavailable`: el detalle no se cae por otra feature. Pruebas: `application/__tests__/load-case-detail.test.ts`.
 
 Prepara el criterio 3 (abrir el detalle y su bitácora); se cierra con la pantalla, en las piezas 11 a 13.
+
+### Pantalla del detalle: datos (pieza 11)
+
+Sin migraciones. La ruta `/admin/morosidades/historial/[id]` ya existe y muestra los datos de la morosidad; las solicitudes de regularización y los estados de carga y error de la ruta llegan en la pieza 12 y la bitácora en la 13. Mientras tanto el detalle usa el `loading.tsx` y el `error.tsx` de `historial/`, que Next aplica a la subcarpeta. El enlace «Ver detalle» del listado ya tiene adónde ir.
+
+- `app/admin/morosidades/historial/[id]/`: `page.tsx` monta `CaseDetailPage`.
+- `ui/case-detail/`: `case-detail-service.ts` arma `loadCaseDetail` con el repositorio, los nombres, las citas y la bitácora y devuelve `ready`, `not_found` o `error` (módulo de servidor normal, no una server action); `CaseDetailPage` exige sesión de administradora y lee el id de la ruta; `CaseDetailView` dibuja el enlace «Volver al historial», el encabezado con la clienta y el estado, y una lista de datos con monto de origen, saldo de hoy, cita, fecha de origen, fecha de decisión y de saldada si las hay, y motivo y monto condonado si hay excepción.
+- Compartido en la raíz de `ui/`: `constants/case-state-labels.ts` (las etiquetas de los siete estados, que el listado ya usaba) y `utils/appointment-text.ts` (la cita como fecha y servicio).
+- Pruebas: `ui/case-detail/__tests__/case-detail-view.test.tsx` (datos y montos, excepción presente y ausente, sin nombre o sin cita, aviso de cita, enlace de vuelta, no encontrada y error con «Reintentar») y `case-detail-service.test.ts` (ready, not_found y error).
+
+Decisiones: un id que no es uuid es «no encontrada», igual que uno inexistente (`loadCaseDetail` ya lo resuelve sin consultar). El modelo `error` lleva el id para que «Reintentar» vuelva al mismo detalle. El estado va en una insignia con un texto solo para lectores de pantalla («Estado: »).
+
+Prepara el criterio 3 (abrir el detalle y su bitácora); se cierra con la bitácora, en la pieza 13. Capturas de INT-010 en la pieza 13.
 
 ### Piezas previstas
 
