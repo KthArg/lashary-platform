@@ -308,15 +308,17 @@ Decisiones:
   `application/__tests__/send-client-notices.test.ts` y `run-reminder-cycle.test.ts` (el orden y que un fallo no corta).
 - Tiempo del ciclo: el TTL del reclamo (`CLAIM_TTL_MINUTES`, 10), la tanda (`CLAIM_BATCH_SIZE`, 2) y la duración
   de la ruta (`maxDuration` igual a `CYCLE_MAX_DURATION_SECONDS`, 300) van atados en `db/claim-limits.ts`, y los
-  repositorios que reclaman mensajes (recordatorios, avisos a la clienta, confirmaciones e indicaciones de cuidado)
-  importan de ahí la misma tanda y el mismo TTL. El ciclo corre un envío en serie por cada tipo de `MESSAGE_PURPOSES`
-  (`application/ports.ts`): `MESSAGE_KINDS_SENT_PER_CYCLE` sale de su largo, hoy 5 (incluye `reapplication_reminder`: su lote no usa
-  `CLAIM_BATCH_SIZE`, pero se cuenta para reservarle tiempo dentro de los mismos 300 s), y la tanda se calcula con uno más de
-  margen. Cada mensaje puede gastar dos canales a `CHANNEL_SEND_TIMEOUT_MS` (10 s): con 5 tipos y tanda 2 el peor caso es
-  2 × 5 × 20 s = 200 s y sobran 100 s para vencer, reintentar, descubrir y reconciliar. Agregar un tipo a
-  `MESSAGE_PURPOSES` recalcula la tanda sola. Corrección M1 de la auditoría del 2026-11-15. Prueba:
-  `db/__tests__/claim-limits.test.ts`, que lee el `maxDuration` de la ruta y comprueba el peor caso con todos los tipos
-  y su margen.
+  repositorios que reclaman mensajes (recordatorios, avisos a la clienta, confirmaciones, indicaciones de cuidado y
+  recordatorios a inactivas) importan de ahí la misma tanda y el mismo TTL. El ciclo de recordatorios corre un envío en
+  serie por cada tipo de `PURPOSES_SENT_IN_SERIES`: `MESSAGE_KINDS_SENT_PER_CYCLE` sale de su largo, hoy 5, y la tanda se
+  calcula con uno más de margen. Cada mensaje puede gastar dos canales a `CHANNEL_SEND_TIMEOUT_MS` (10 s): con 5 tipos y
+  tanda 2 el peor caso es 2 × 5 × 20 s = 200 s y sobran 100 s para vencer, reintentar, descubrir y reconciliar.
+  `reapplication_reminder` y `payment_reminder` van en `PURPOSES_SENT_IN_OWN_CYCLE`: no usan `CLAIM_BATCH_SIZE` y sus
+  ciclos corren en paralelo con el de recordatorios (`http/cron-handler.ts`), así que no gastan sus 300 s. Corrección M1
+  de la auditoría del 2026-11-15; al cerrar US-NOT-06 (2026-11-24) se dejó de contar todo `MESSAGE_PURPOSES`, porque con
+  US-NOT-04 y US-NOT-06 juntas la tanda bajaba a 1. Un tipo nuevo en `MESSAGE_PURPOSES` tiene que entrar en una de las
+  dos listas. Prueba: `db/__tests__/claim-limits.test.ts`, que lee el `maxDuration` de la ruta, comprueba el peor caso
+  con su margen, que la tanda sea de al menos 2 y que cada tipo esté en una sola lista.
 - Las filas se validan con Zod; una forma inesperada es un error que no guarda el texto de Postgres. Los fallos
   del envío de avisos se registran con `logError` (`shared/logger.ts`).
 
@@ -977,7 +979,7 @@ Lo que guarda y expone `notifications` (sus tablas y funciones son internas: sol
   - Sin el correo configurado, o sin `NEXT_PUBLIC_SITE_URL` para armar los enlaces, el recordatorio vuelve a la cola sin gastar intentos.
   - Nunca sale sin enlace de baja (criterio 4).
   - Tipo de mensaje `inactive_reminder`: el correo lleva su asunto y el enlace de baja también en el encabezado `List-Unsubscribe`, para que el programa de correo ofrezca darse de baja. WhatsApp no tiene plantilla para este tipo y no se usa.
-  - Agregar el tipo achica solo el lote del reclamo (`claim-limits.ts`), para que el ciclo siga cabiendo en su duración máxima.
+  - El tipo se manda en serie dentro del ciclo de recordatorios y cuenta en `PURPOSES_SENT_IN_SERIES` (`claim-limits.ts`), para que el ciclo siga cabiendo en su duración máxima. Al traer `main` con US-NOT-04, contar todos los tipos dejaba la tanda en 1; en el cierre se cuentan solo los que van en serie y la tanda sigue en 2 (ver «Tiempo del ciclo» en US-NOT-02).
   - El resumen de la corrida suma `inactiveSent`, `inactiveRetried`, `inactiveExhausted`, `inactiveErrored`, `inactiveUnconfigured` e `inactiveFailed`. Un fallo al reclamar se cuenta y no corta el ciclo.
   - Pruebas: `application/__tests__/send-inactive-reminders.test.ts`, `run-reminder-cycle.test.ts` (el paso, su orden y su fallo) y `channels/__tests__/resend-email-channel.test.ts` (asunto y encabezado).
 - **Pieza 13, los componentes de la pantalla** (`ui/inactive-clients/`): los textos (`constants/inactive-clients-strings.ts`, DOM-009), la lectura de la URL (`?rango=` y `?pagina=`, con 90 días y la primera página si faltan o son raros) y su armado, la etiqueta del último recordatorio («Ninguno», «En cola desde el…», «Enviado el…», «No se pudo enviar (…)»), el filtro de rango (formulario GET que funciona sin JavaScript), la tabla (con `caption` y `th scope`, UI-004) y la paginación, que conserva el rango y solo enlaza páginas que existen. Componentes DaisyUI con los tokens del tema (UI-001, UI-002). Prueba: `ui/inactive-clients/__tests__/inactive-clients-utils.test.ts`.

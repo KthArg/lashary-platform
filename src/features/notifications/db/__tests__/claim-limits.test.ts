@@ -8,6 +8,8 @@ import {
   CLAIM_TTL_MINUTES,
   CYCLE_MAX_DURATION_SECONDS,
   MESSAGE_KINDS_SENT_PER_CYCLE,
+  PURPOSES_SENT_IN_OWN_CYCLE,
+  PURPOSES_SENT_IN_SERIES,
 } from '../claim-limits'
 
 const CRON_ROUTE = join(process.cwd(), 'src/app/api/cron/notifications-reminders/route.ts')
@@ -26,8 +28,18 @@ describe('límites del reclamo', () => {
     expect(worstCaseMs + MIN_MARGIN_FOR_OTHER_STEPS_MS).toBeLessThanOrEqual(CYCLE_MAX_DURATION_SECONDS * 1000)
   })
 
-  it('cuenta un envío en serie por cada tipo de mensaje que mandan los canales', () => {
-    expect(MESSAGE_KINDS_SENT_PER_CYCLE).toBe(MESSAGE_PURPOSES.length)
+  it('cuenta un envío en serie por cada tipo de mensaje que se reclama en el ciclo de recordatorios', () => {
+    expect(MESSAGE_KINDS_SENT_PER_CYCLE).toBe(PURPOSES_SENT_IN_SERIES.length)
+  })
+
+  it('cada tipo de mensaje está en una sola lista: en serie en el ciclo de recordatorios o en su propio ciclo en paralelo', () => {
+    const classified = [...PURPOSES_SENT_IN_SERIES, ...PURPOSES_SENT_IN_OWN_CYCLE]
+    expect(new Set(classified).size).toBe(classified.length)
+    expect([...classified].sort()).toEqual([...MESSAGE_PURPOSES].sort())
+  })
+
+  it('el lote reclama más de un mensaje por tipo en cada corrida', () => {
+    expect(CLAIM_BATCH_SIZE).toBeGreaterThanOrEqual(2)
   })
 
   it('un reclamo no vence antes de que termine el peor ciclo', () => {
