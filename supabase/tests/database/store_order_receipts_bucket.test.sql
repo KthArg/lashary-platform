@@ -79,8 +79,14 @@ SELECT lives_ok(
 SELECT set_config('request.jwt.claims',
   '{"sub":"00000000-0000-0000-0000-000000021a01","role":"authenticated"}', true);
 
-SELECT is((SELECT count(*)::int FROM storage.objects WHERE bucket_id = 'store-order-receipts'),
-  2, 'la administradora ve los comprobantes de todas');
+-- Contado por carpeta, no por bucket entero: otras pruebas (como la integración de
+-- store_checkout contra Supabase local) dejan comprobantes reales en el mismo bucket que no se
+-- pueden borrar por SQL directo (Storage lo impide), y un conteo sin filtrar los contaría también.
+SELECT is(
+  (SELECT count(*)::int FROM storage.objects
+    WHERE bucket_id = 'store-order-receipts'
+      AND (storage.foldername(name))[1] IN ('00000000-0000-0000-0000-000000021c02', '00000000-0000-0000-0000-000000021c03')),
+  2, 'la administradora ve los comprobantes de las dos clientas de esta prueba');
 
 -- Storage impide el DELETE directo en SQL; lo que decide si su API deja borrar o reemplazar son las
 -- políticas de UPDATE y DELETE, y este bucket no tiene ninguna.

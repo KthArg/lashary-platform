@@ -124,11 +124,17 @@ SELECT set_config('request.jwt.claims',
   '{"sub":"00000000-0000-0000-0000-000000020a01","role":"authenticated"}', true);
 SET LOCAL ROLE authenticated;
 
-SELECT is((SELECT count(*)::int FROM public.store_orders), 2,
-  'el personal ve los pedidos de todas las clientas');
+-- Contado por clienta, no por tabla entera: otras pruebas (como la integración de store_checkout
+-- contra Supabase local) dejan pedidos reales comiteados que un conteo sin filtrar también contaría.
+SELECT is(
+  (SELECT count(*)::int FROM public.store_orders
+    WHERE client_id IN ('00000000-0000-0000-0000-000000020c02', '00000000-0000-0000-0000-000000020c03')),
+  2, 'el personal ve los pedidos de las dos clientas de esta prueba');
 
-SELECT is((SELECT count(*)::int FROM public.store_order_items), 1,
-  'el personal ve las líneas de todos los pedidos');
+SELECT is(
+  (SELECT count(*)::int FROM public.store_order_items WHERE order_id IN (
+    '00000000-0000-0000-0000-000000020e01', '00000000-0000-0000-0000-000000020e02')),
+  1, 'el personal ve las líneas de los pedidos de esta prueba');
 
 SELECT throws_ok(
   $$UPDATE public.store_orders SET total_crc = 1 WHERE id = '00000000-0000-0000-0000-000000020e01'$$,
