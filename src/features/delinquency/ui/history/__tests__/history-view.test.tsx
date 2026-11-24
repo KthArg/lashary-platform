@@ -91,6 +91,19 @@ describe('HistoryView: la tabla', () => {
   })
 })
 
+describe('HistoryView: filtro y paginación', () => {
+  it('monta el filtro siempre y la paginación solo cuando hay morosidades', () => {
+    renderView(ready())
+    expect(screen.getByRole('form', { name: historyMessages.filter.formLabel })).toBeTruthy()
+    expect(screen.getByRole('navigation', { name: historyMessages.pagination.navLabel })).toBeTruthy()
+    cleanup()
+
+    renderView(ready({ items: [], total: 0 }))
+    expect(screen.getByRole('form', { name: historyMessages.filter.formLabel })).toBeTruthy()
+    expect(screen.queryByRole('navigation', { name: historyMessages.pagination.navLabel })).toBeNull()
+  })
+})
+
 describe('HistoryView: vacío, carga y error', () => {
   it('sin morosidades dice que no hay, con otro texto si hay un filtro puesto', () => {
     renderView(ready({ items: [], total: 0 }))
@@ -101,6 +114,16 @@ describe('HistoryView: vacío, carga y error', () => {
     renderView(ready({ items: [], total: 0 }), { ...defaultQuery, filter: 'forgiven' })
     expect(screen.getByText(historyMessages.emptyFiltered)).toBeTruthy()
     expect(screen.queryByText(historyMessages.emptyAll)).toBeNull()
+  })
+
+  it('una página más allá del total no dice que no hay morosidades y lleva a la primera página', () => {
+    renderView(ready({ items: [], total: 7 }), { ...defaultQuery, filter: 'active', page: 5 })
+
+    expect(screen.getByText(historyMessages.emptyPage, { exact: false })).toBeTruthy()
+    expect(screen.queryByText(historyMessages.emptyAll)).toBeNull()
+    expect(screen.getByRole('link', { name: historyMessages.firstPage }).getAttribute('href')).toBe(
+      `${HISTORY_PATH}?filter=active`,
+    )
   })
 
   it('si falla la lectura muestra la alerta con Reintentar hacia la misma consulta y sin tabla', () => {
