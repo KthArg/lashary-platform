@@ -14,3 +14,4 @@ export { regularizationService } from './ui/regularization/services/regularizati
 export type { MyAccount } from './application/submit-regularization'
 export type { AccountEntry, AccountCaseState, RegularizationRequest, RequestState } from './domain/regularization'
 export { RegularizationForm } from './ui/regularization/components/RegularizationForm'
+export { HistoryPage } from './ui/history/components/HistoryPage'
