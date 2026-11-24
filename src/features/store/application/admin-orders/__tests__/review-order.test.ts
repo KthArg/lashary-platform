@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { err, isErr, isOk, ok } from '@/shared/result'
 import { createOrderNotPending } from '../../../domain/order-errors'
-import { approveOrder, loadPendingOrders, rejectOrder } from '../review-order'
+import { approveOrder, loadOrderHistoryPage, loadPendingOrders, rejectOrder } from '../review-order'
 import type { OrderQueueItem, OrderReviewRepository } from '../ports'
 
 function createRepo(overrides: Partial<OrderReviewRepository> = {}) {
@@ -12,6 +12,9 @@ function createRepo(overrides: Partial<OrderReviewRepository> = {}) {
   const repo: OrderReviewRepository = {
     async listPending() {
       return ok([])
+    },
+    async listHistory(page, pageSize) {
+      return ok({ items: [], page, pageSize, total: 0 })
     },
     async approve(orderId) {
       calls.approved.push(orderId)
@@ -44,6 +47,15 @@ describe('loadPendingOrders', () => {
     const { repo } = createRepo({ listPending: async () => ok([ITEM]) })
     const result = await loadPendingOrders(repo)(50)
     expect(isOk(result) && result.value).toEqual([ITEM])
+  })
+})
+
+describe('loadOrderHistoryPage', () => {
+  it('devuelve la página del historial que entrega el repositorio', async () => {
+    const page = { items: [{ ...ITEM, state: 'approved' as const, rejectionReason: null, reviewedAt: new Date() }], page: 0, pageSize: 20, total: 1 }
+    const { repo } = createRepo({ listHistory: async () => ok(page) })
+    const result = await loadOrderHistoryPage(repo)(0, 20)
+    expect(isOk(result) && result.value).toEqual(page)
   })
 })
 

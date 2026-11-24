@@ -4,7 +4,7 @@ import { Client as PgClient } from 'pg'
 import { isErr, isOk } from '@/shared/result'
 import { checkout } from '../../application/checkout/checkout'
 import { uploadReceipt } from '../../application/checkout/upload-receipt'
-import { approveOrder, loadPendingOrders, rejectOrder } from '../../application/admin-orders/review-order'
+import { approveOrder, loadOrderHistoryPage, loadPendingOrders, rejectOrder } from '../../application/admin-orders/review-order'
 import { loadMyLatestOrder } from '../../application/my-orders/load-my-latest-order'
 import { checkoutRepository } from '../checkout-repository'
 import { currentClient, receiptLinks, receiptStorage } from '../receipt-storage'
@@ -281,5 +281,26 @@ describe.skipIf(!reachable)('US-SHOP-02 checkout y revisión contra Supabase loc
   it('una clienta no aprueba pedidos', async () => {
     const result = await approveOrder(orderReviewRepository(ana.client))('00000000-0000-0000-0000-000000000000')
     expect(isErr(result) && result.error.code).toBe('STORE_NO_ES_ADMINISTRADORA')
+  })
+
+  it('el historial pagina todos los pedidos, más recientes primero, sin que el más viejo quede fuera (US-SHOP-02, 19/19)', async () => {
+    const pageSize = 3
+    const firstPage = await loadOrderHistoryPage(orderReviewRepository(staff.client))(0, pageSize)
+    expect(isOk(firstPage)).toBe(true)
+    if (!isOk(firstPage)) return
+    expect(firstPage.value).toMatchObject({ page: 0, pageSize, total: 5 })
+    expect(firstPage.value.items).toHaveLength(pageSize)
+    const firstPageDates = firstPage.value.items.map((item) => item.createdAt.getTime())
+    expect(firstPageDates).toEqual([...firstPageDates].sort((a, b) => b - a))
+
+    const secondPage = await loadOrderHistoryPage(orderReviewRepository(staff.client))(1, pageSize)
+    expect(isOk(secondPage)).toBe(true)
+    if (!isOk(secondPage)) return
+    expect(secondPage.value).toMatchObject({ page: 1, pageSize, total: 5 })
+    expect(secondPage.value.items).toHaveLength(2)
+    const oldestOrderIsReachable = secondPage.value.items.some(
+      (item) => item.totalColones === 3000 && item.state === 'approved',
+    )
+    expect(oldestOrderIsReachable).toBe(true)
   })
 })

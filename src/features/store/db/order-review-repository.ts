@@ -1,15 +1,15 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { moneyFromColones } from '@/shared/money'
-import { err, ok } from '@/shared/result'
-import { DELIVERY_METHODS } from '../domain/order'
+import { err, isErr, ok } from '@/shared/result'
+import { DELIVERY_METHODS, ORDER_STATES } from '../domain/order'
 import {
   createNotAdmin,
   createOrderNotFound,
   createOrderNotPending,
   createStoreStorageFailed,
 } from '../domain/order-errors'
-import type { OrderQueueItem, OrderReviewRepository, ReviewOrderFailure } from '../application/admin-orders/ports'
+import type { OrderHistoryItem, OrderQueueItem, OrderReviewRepository, ReviewOrderFailure } from '../application/admin-orders/ports'
 
 export const ORDERS_TABLE = 'store_orders'
 export const APPROVE_FUNCTION = 'store_approve_order'
@@ -41,7 +41,43 @@ const queueRowSchema = z.object({
   ),
 })
 
+const HISTORY_COLUMNS = `${QUEUE_COLUMNS}, state, rejection_reason, reviewed_at`
+
+const historyRowSchema = queueRowSchema.extend({
+  state: z.enum(ORDER_STATES),
+  rejection_reason: z.string().nullable(),
+  reviewed_at: z.string().nullable(),
+})
+
 const nameRowSchema = z.object({ client_id: z.string().uuid(), full_name: z.string() })
+
+async function namesByClientId(db: SupabaseClient, clientIds: readonly string[]) {
+  const names = await db.rpc(CLIENT_NAMES_FUNCTION, { p_client_ids: clientIds })
+  if (names.error) return err(createStoreStorageFailed(names.error.message))
+  const parsedNames = z.array(nameRowSchema).safeParse(names.data ?? [])
+  if (!parsedNames.success) return err(createStoreStorageFailed(UNEXPECTED_ROW))
+  return ok(new Map(parsedNames.data.map((row) => [row.client_id, row.full_name])))
+}
+
+function toQueueItem(row: z.infer<typeof queueRowSchema>, clientName: string | null): OrderQueueItem {
+  return {
+    id: row.id,
+    clientId: row.client_id,
+    clientName,
+    contactPhone: row.contact_phone,
+    deliveryMethod: row.delivery_method,
+    deliveryAddress: row.delivery_address,
+    totalColones: Number(row.total_crc),
+    receiptPath: row.receipt_path,
+    createdAt: new Date(row.created_at),
+    lines: row.store_order_items.map((item) => ({
+      productId: item.product_id,
+      productName: item.product_name,
+      unitPrice: moneyFromColones(item.unit_price_crc),
+      quantity: item.quantity,
+    })),
+  }
+}
 
 const REVIEW_REFUSALS: Readonly<Record<string, () => ReviewOrderFailure>> = {
   store_not_admin: createNotAdmin,
@@ -70,30 +106,37 @@ export function orderReviewRepository(db: SupabaseClient): OrderReviewRepository
       if (rows.data.length === 0) return ok([])
 
       const clientIds = [...new Set(rows.data.map((row) => row.client_id))]
-      const names = await db.rpc(CLIENT_NAMES_FUNCTION, { p_client_ids: clientIds })
-      if (names.error) return err(createStoreStorageFailed(names.error.message))
-      const parsedNames = z.array(nameRowSchema).safeParse(names.data ?? [])
-      if (!parsedNames.success) return err(createStoreStorageFailed(UNEXPECTED_ROW))
-      const nameOf = new Map(parsedNames.data.map((row) => [row.client_id, row.full_name]))
+      const names = await namesByClientId(db, clientIds)
+      if (isErr(names)) return names
 
-      const items: OrderQueueItem[] = rows.data.map((row) => ({
-        id: row.id,
-        clientId: row.client_id,
-        clientName: nameOf.get(row.client_id) ?? null,
-        contactPhone: row.contact_phone,
-        deliveryMethod: row.delivery_method,
-        deliveryAddress: row.delivery_address,
-        totalColones: Number(row.total_crc),
-        receiptPath: row.receipt_path,
-        createdAt: new Date(row.created_at),
-        lines: row.store_order_items.map((item) => ({
-          productId: item.product_id,
-          productName: item.product_name,
-          unitPrice: moneyFromColones(item.unit_price_crc),
-          quantity: item.quantity,
-        })),
+      return ok(rows.data.map((row) => toQueueItem(row, names.value.get(row.client_id) ?? null)))
+    },
+
+    async listHistory(page, pageSize) {
+      const from = page * pageSize
+      const to = from + pageSize - 1
+      const { data, error, count } = await db
+        .from(ORDERS_TABLE)
+        .select(HISTORY_COLUMNS, { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, to)
+      if (error) return err(createStoreStorageFailed(error.message))
+      const rows = z.array(historyRowSchema).safeParse(data ?? [])
+      if (!rows.success) return err(createStoreStorageFailed(UNEXPECTED_ROW))
+      if (rows.data.length === 0) return ok({ items: [], page, pageSize, total: count ?? 0 })
+
+      const clientIds = [...new Set(rows.data.map((row) => row.client_id))]
+      const names = await namesByClientId(db, clientIds)
+      if (isErr(names)) return names
+
+      const items: OrderHistoryItem[] = rows.data.map((row) => ({
+        ...toQueueItem(row, names.value.get(row.client_id) ?? null),
+        state: row.state,
+        rejectionReason: row.rejection_reason,
+        reviewedAt: row.reviewed_at ? new Date(row.reviewed_at) : null,
       }))
-      return ok(items)
+      return ok({ items, page, pageSize, total: count ?? 0 })
     },
 
     async approve(orderId) {

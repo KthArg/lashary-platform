@@ -1,12 +1,17 @@
 import { isErr, type Result } from '@/shared/result'
 import { validateRejectionReason } from '../../domain/order'
-import type { InvalidRejectionReason } from '../../domain/order-errors'
-import type { OrderQueueItem, OrderReviewRepository, ReviewOrderFailure } from './ports'
+import type { InvalidRejectionReason, StoreStorageFailed } from '../../domain/order-errors'
+import type { OrderHistoryPage, OrderQueueItem, OrderReviewRepository, ReviewOrderFailure } from './ports'
 
 export const loadPendingOrders =
   (repo: OrderReviewRepository) =>
   (limit: number): Promise<Result<OrderQueueItem[], ReviewOrderFailure>> =>
     repo.listPending(limit)
+
+export const loadOrderHistoryPage =
+  (repo: OrderReviewRepository) =>
+  (page: number, pageSize: number): Promise<Result<OrderHistoryPage, StoreStorageFailed>> =>
+    repo.listHistory(page, pageSize)
 
 export const approveOrder =
   (repo: OrderReviewRepository) =>
