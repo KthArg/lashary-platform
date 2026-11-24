@@ -64,6 +64,14 @@ Pieza 14, dominio (sin base ni pantalla):
 
 Pruebas: `domain/__tests__/ledger-export-range.test.ts` (conversión a UTC, un día, el máximo de días y uno más, cada motivo de rechazo) y `domain/__tests__/ledger-csv.test.ts` (BOM y encabezado, hora del estudio, signos, tipos, escape, inyección de fórmulas).
 
+Pieza 15, lectura (sin migraciones):
+
+- **Repositorio** (`db/ledger-export-repository.ts`): lee `payments_ledger_entries` con la sesión de la administradora (RLS, SEC-001; sin service-role, SEC-003) en el rango `[startsAt, endsBefore)`, ordenado por fecha e id y en páginas de 1000 (PERF-002). Si pasa de 20 000 asientos devuelve `LedgerExportTooLarge` en vez de un export cortado. Valida cada fila con zod.
+- **Nombres** (`db/ledger-client-names.ts`): pide los nombres a `clients_display_names(uuid[])`, la función de contrato de `clients` (ARCH-005), de a 200 ids y sin repetir clientas. Si una clienta no tiene nombre visible se escribe su id.
+- **Caso de uso** (`application/export-ledger.ts`): valida el rango, lee y arma el CSV con el nombre `ledger-AAAA-MM-DD-a-AAAA-MM-DD.csv`. Un rango inválido no llega a la base.
+
+Pruebas: `db/__tests__/ledger-export-repository.test.ts` (páginas, orden, nombres de a 200, el tope y el tope exacto, fallos de base y de nombres, tipo desconocido) y `application/__tests__/export-ledger.test.ts` (CSV y nombre del archivo, rango inválido sin leer, errores de la lectura).
+
 ## Qué no hace todavía
 
 El contrato de conservación de exoneraciones al archivar clientas está documentado en `docs/adr/ADR-0009-client-archival-and-exemptions.md`, aceptado por el equipo, según el acuerdo comunicado por Bayron el 2026-10-05. Mantiene la FK específica a `clients_profiles` y requiere una migración nueva de `ON DELETE CASCADE` a `RESTRICT`. La migración `20261005000000_payments_exemption_history.sql` implementa esa protección. `payments_exemption_history.test.sql` demuestra en PostgreSQL local el bloqueo del borrado directo e indirecto, la conservación de perfiles y exoneraciones activas e históricas y la integridad de la FK. Su integración y aplicación en producción siguen pendientes. El archivado y la revisión de exoneraciones al reactivar clientas aún no están implementados.
