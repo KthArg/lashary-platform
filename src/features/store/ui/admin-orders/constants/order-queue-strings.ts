@@ -11,7 +11,6 @@ export const orderQueueMessages = {
   clientFallback: 'Clienta',
   totalLabel: 'Total',
   contactLabel: 'Contacto',
-  deliveryLabel: 'Entrega',
   submittedLabel: 'Enviado',
   linesLabel: 'Productos',
   openReceipt: 'Ver comprobante',

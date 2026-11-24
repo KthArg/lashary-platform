@@ -42,5 +42,7 @@ describe('protección de /admin/catalog', () => {
     expect(packages.getAttribute('href')).toBe('/admin/catalog/packages')
     expect(techniques.getAttribute('aria-current')).toBe('page')
     expect(packages.getAttribute('aria-current')).toBeNull()
+    const orders = screen.getByRole('tab', { name: 'Pedidos' })
+    expect(orders.getAttribute('href')).toBe('/admin/catalog/orders')
   })
 })

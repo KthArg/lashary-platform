@@ -40,3 +40,6 @@ export { CART_PAGE_STRINGS } from './ui/cart/constants/cart-page-strings';
 
 export { CheckoutPage } from './ui/checkout/components/CheckoutPage';
 export { checkoutMessages } from './ui/checkout/constants/checkout-strings';
+
+export { OrdersPage } from './ui/admin-orders/components/OrdersPage';
+export { orderQueueMessages } from './ui/admin-orders/constants/order-queue-strings';
