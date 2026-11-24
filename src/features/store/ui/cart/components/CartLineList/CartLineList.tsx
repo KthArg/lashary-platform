@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { CHECKOUT_PATH } from '../../../checkout/constants/checkout-strings'
 import { CART_PAGE_STRINGS } from '../../constants/cart-page-strings'
 import type { CartViewProps } from '../../types/cart-page-view'
 import { cartPageStyles as STYLES } from '../CartPage/CartPage.styles'
@@ -53,6 +54,9 @@ export function CartLineList({ view }: CartViewProps) {
         <dt>{CART_PAGE_STRINGS.subtotal}</dt>
         <dd className={STYLES.subtotalAmount}>{view.subtotalLabel}</dd>
       </dl>
+      <Link href={CHECKOUT_PATH} className={STYLES.checkoutLink}>
+        {CART_PAGE_STRINGS.goToCheckout}
+      </Link>
     </div>
   )
 }
