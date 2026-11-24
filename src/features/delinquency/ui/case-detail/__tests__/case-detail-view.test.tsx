@@ -109,3 +109,17 @@ describe('CaseDetailView: no encontrada y error', () => {
     )
   })
 })
+
+describe('CaseDetailView: la bitácora', () => {
+  it('monta la bitácora debajo de las solicitudes con los eventos del detalle', () => {
+    renderDetail({
+      timeline: [
+        { id: 'e1', action: 'delinquency.case.confirmed', actorId: 'admin-1', createdAt: DETECTED_AT, entityType: 'delinquency_case' },
+      ],
+    })
+
+    const headings = screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent)
+    expect(headings).toEqual([caseDetailMessages.requests.title, caseDetailMessages.timeline.title])
+    expect(screen.getByText(caseDetailMessages.timeline.actions['delinquency.case.confirmed'])).toBeTruthy()
+  })
+})

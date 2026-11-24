@@ -5,6 +5,7 @@ import type { CaseDetail } from '@/features/delinquency/domain/case-detail'
 import { HISTORY_PATH, historyDetailPath } from '../../../history/constants/history-strings'
 import { appointmentText } from '../../../utils/appointment-text'
 import { CaseRequests } from '../CaseRequests'
+import { CaseTimeline } from '../CaseTimeline'
 import { caseDetailMessages as copy } from '../../constants/case-detail-strings'
 import { caseDetailViewStyles as STYLES } from './CaseDetailView.styles'
 import type { CaseDetailViewProps } from './CaseDetailView.types'
@@ -83,6 +84,7 @@ export function CaseDetailView({ model }: CaseDetailViewProps) {
         ))}
       </dl>
       <CaseRequests requests={detail.requests} />
+      <CaseTimeline events={detail.timeline} unavailable={detail.timelineUnavailable} />
     </div>
   )
 }
