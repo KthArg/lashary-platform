@@ -1,0 +1,1 @@
+export { InactiveClientsView } from './InactiveClientsView'

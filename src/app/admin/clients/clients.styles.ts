@@ -3,4 +3,6 @@ export const adminClientsStyles = {
   header: 'flex flex-wrap items-end justify-between gap-4 border-b border-brand-border pb-4',
   title: 'font-serif text-2xl md:text-3xl font-bold text-brand-dark',
   subtitle: 'text-sm text-brand-muted mt-1',
+  headerActions: 'flex flex-wrap items-center gap-2',
+  secondaryAction: 'btn btn-outline btn-sm',
 }

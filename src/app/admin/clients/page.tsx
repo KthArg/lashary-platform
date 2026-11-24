@@ -11,6 +11,8 @@ import {
   listClientsAction,
   readClientsListParams,
 } from '@/features/clients'
+import Link from 'next/link'
+import { INACTIVE_CLIENTS_PATH, inactiveClientsMessages } from '@/features/notifications'
 import { adminClientsStyles as STYLES } from './clients.styles'
 import type { AdminClientsPageProps } from './clients.types'
 
@@ -42,7 +44,12 @@ export default async function AdminClientsPage({ searchParams }: AdminClientsPag
           <h1 className={STYLES.title}>{CLIENTS_LABELS.sectionTitle}</h1>
           <p className={STYLES.subtitle}>{CLIENTS_LABELS.sectionSubtitle}</p>
         </div>
-        <AddClientDialog />
+        <div className={STYLES.headerActions}>
+          <Link href={INACTIVE_CLIENTS_PATH} className={STYLES.secondaryAction}>
+            {inactiveClientsMessages.openLink}
+          </Link>
+          <AddClientDialog />
+        </div>
       </header>
       <ClientsNameFilter name={name} />
       <ClientsAppointmentFilter appointmentFrom={appointmentFrom} appointmentTo={appointmentTo} />

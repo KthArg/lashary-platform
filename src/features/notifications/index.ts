@@ -16,6 +16,7 @@ import { listTechniquesForReapplication } from '@/features/catalog'
 import { confirmationRequestRepository } from './db/confirmation-request-repository'
 import { reminderRepository } from './db/reminder-repository'
 import { aftercareDeliveryRepository } from './db/aftercare-delivery-repository'
+import { inactiveReminderDeliveryRepository } from './db/inactive-reminder-delivery-repository'
 import { clientNoticeDeliveryRepository } from './db/client-notice-delivery-repository'
 import { droppedNoticesRepository } from './db/dropped-notices-repository'
 import { delinquencyStatesGateway } from './db/delinquency-states-gateway'
@@ -32,6 +33,8 @@ import { discoverDuePaymentReminders } from './application/discover-due-payment-
 import { sendDuePaymentReminders, type SendDuePaymentRemindersSummary } from './application/send-due-payment-reminders'
 import { buildSiteUrl } from './domain/site-url'
 import { sendAftercareMessages, type SendAftercareMessagesSummary } from './application/send-aftercare-messages'
+import { sendInactiveReminders, type SendInactiveRemindersSummary } from './application/send-inactive-reminders'
+import { buildInactiveUnsubscribeUrl } from './domain/inactive-reminder-message'
 import { sendConfirmationRequests, type SendConfirmationRequestsSummary } from './application/send-confirmation-requests'
 import type {
   AppointmentSnapshot,
@@ -118,6 +121,22 @@ export async function runNotificationsReminderCycle(): Promise<
           return err(REPOSITORY_FAILURE)
         }
 
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+    const bookingUrl = buildSiteUrl(siteUrl, CLIENT_PORTAL_ROUTES.citas)
+    const sendInactive = bookingUrl
+      ? sendInactiveReminders({
+          deliveries: inactiveReminderDeliveryRepository(db),
+          getContact,
+          channel: backupChannel,
+          bookingUrl,
+          unsubscribeUrlFor: (token) => buildInactiveUnsubscribeUrl(siteUrl, token),
+          clock: systemClock,
+        })
+      : async (): Promise<Result<SendInactiveRemindersSummary, RepositoryFailure>> => {
+          logError('notifications', 'NEXT_PUBLIC_SITE_URL no es una URL absoluta: no se mandan recordatorios a inactivas sin enlace')
+          return err(REPOSITORY_FAILURE)
+        }
+
     return await runReminderCycle({
       expireUndecidedReschedules,
       listUpcoming,
@@ -142,6 +161,7 @@ export async function runNotificationsReminderCycle(): Promise<
       backupChannel,
       sendConfirmationRequests: sendConfirmations,
       sendAftercareMessages: sendAftercare,
+      sendInactiveReminders: sendInactive,
     })()
   } finally {
     await closeSystemClient(db)
@@ -285,5 +305,11 @@ export type { ClientRecordAftercareResult } from './ui/client-record-aftercare/s
 
 export { ReapplicationSettingsPage } from './ui/reapplication-settings/components/ReapplicationSettingsPage'
 export { REAPPLICATION_SETTINGS_PATH } from './ui/reapplication-settings/constants/reapplication-settings-strings'
+
+export { InactiveClientsPage } from './ui/inactive-clients/components/InactiveClientsPage'
+export { INACTIVE_CLIENTS_PATH, inactiveClientsMessages } from './ui/inactive-clients/constants/inactive-clients-strings'
+
+export { UnsubscribePage } from './ui/unsubscribe/components/UnsubscribePage'
+
 export { PaymentReminderSettingsPage } from './ui/payment-reminder-settings/components/PaymentReminderSettingsPage'
 export { PAYMENT_REMINDER_SETTINGS_PATH } from './ui/payment-reminder-settings/constants/payment-reminder-settings-strings'

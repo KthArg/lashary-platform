@@ -20,7 +20,8 @@ historias:
     estado: terminada
     evidencia: "PR de cierre #819 (us/US-NOT-05 a main, piezas 1 a 4) y piezas 5 a 21 fusionadas directamente a main tras el reacomodo del stack (#824 a #839; #840 quedó incluida en el squash de #839). Criterio 1 (fecha estimada con el intervalo del catálogo y la última cita completada): computeReapplicationDueDate (domain/reapplication-reminder.ts, pieza 2) y scheduling_reapplication_candidates() (migración 20261114000000, pieza 3); domain/__tests__/reapplication-reminder.test.ts, supabase/tests/database/scheduling_reapplication_candidates.test.sql. Criterio 2 (avisa cuando se acerca la fecha estimada): isReapplicationDue más el tope de 30 días vencidos isReapplicationExpired (pieza 19, hallazgo de la revisión), sendDueReapplications con reintentos hasta MAX_REMINDER_ATTEMPTS y sin gastar intento cuando es recuperable (sin contacto o sin canal configurado, piezas 10 y 19), un solo aviso por clienta cuando hay varias técnicas vencidas (pieza 19), y receiveReminderCronRequest llamando a runReapplicationReminderCycle en paralelo con el ciclo de recordatorios, aislado por su propio try/catch (pieza 18); application/__tests__/discover-reapplication-reminders.test.ts, application/__tests__/send-due-reapplications.test.ts, domain/__tests__/reapplication-message.test.ts, http/__tests__/cron-handler.test.ts, __tests__/reapplication-cycle.test.ts (pieza 20, antes sin ninguna prueba de esta capa de composición). Criterio 3 (la administradora configura los días de anticipación): tabla notifications_reapplication_settings y función notifications_set_reapplication_anticipation_days (piezas 12 y 13) con su pantalla en /admin/citas/re-aplicacion (piezas 15 a 17); buildReapplicationDiscoveryDeps aborta la corrida si falla leer la anticipación en vez de usar 7 por defecto en silencio (pieza 20, hallazgo de la revisión); ui/reapplication-settings/__tests__/*, supabase/tests/database/notifications_reapplication_settings.test.sql y notifications_set_reapplication_anticipation_days.test.sql, layout.test.tsx de /admin/citas. Criterio 4 (no se envía con morosidad activa ni con cita futura agendada): scheduling_reapplication_candidates() excluye cualquier cita futura activa (cualquier técnica, decisión del PO del 2026-11-13) y discoverDueReapplications excluye morosidad 'active' vía delinquency_client_states (DOM-012: 'pending_review' no bloquea todavía); scheduling_reapplication_candidates.test.sql, application/__tests__/discover-reapplication-reminders.test.ts. INT-010: login real como admin contra Supabase local, pantalla /admin/citas/re-aplicacion con el rango 1-30 visible y guardado funcionando (capturas en el PR de la pieza 17). Verificación final contra main: npx tsc --noEmit sin errores; npx vitest run con las mismas dos fallas preexistentes y ajenas de siempre (contaminación del seed local de catalog, .env.local apuntando a Supabase remoto); npx supabase test db, 94 archivos y 1251 pruebas, PASS. Deuda aceptada por Kenny Rodríguez el 2026-11-15 (ver 'deuda' arriba): el recordatorio de 24h y el aviso de re-aplicación pueden mandar dos mensajes de WhatsApp separados a la misma clienta en la misma corrida, al correr en paralelo sin coordinarse. Falta el disparador en producción (Vercel Cron o GitHub Actions) y la cuenta de sistema del cron en producción — checklist de activación externa, no código (mismo criterio que cerró US-NOT-03/07/08)."
   - id: US-NOT-06
-    estado: no_iniciada
+    estado: terminada
+    evidencia: "PR de cierre us/US-NOT-06 a main, con 17 piezas apiladas contra la rama de la historia. Criterio 1 (identificar clientas sin citas en un rango configurable): pgTAP notifications_inactive_clients.test.sql (9: sin visita completada desde la fecha de corte y sin cita próxima en pie, incluidas las que nunca vinieron; el rango cambia la lista; solo personal), scheduling_client_next_appointments.test.sql (8) y clients_all_display_names.test.sql (6); domain/__tests__/inactive-reminder.test.ts (rango de 30, 60, 90 o 180 días, 90 por defecto, fecha de corte con el reloj inyectado), application/__tests__/inactive-clients.test.ts, db/__tests__/inactive-clients-repository.test.ts y ui/inactive-clients/__tests__/InactiveClientsView.test.tsx e inactive-clients-utils.test.ts (filtro, lista, vacío, error y paginación). Criterio 2 (correo masivo o individual desde el panel): pgTAP notifications_inactive_queue_and_optout.test.sql (22: una o varias en una sola llamada, tope por envío, solo administradora, bitácora); ui/inactive-clients/__tests__/perform-queue.test.ts e InactiveRemindersForm.test.tsx (casilla y «Enviar» por fila, «Enviar a las marcadas», aviso del resultado); application/__tests__/send-inactive-reminders.test.ts, run-reminder-cycle.test.ts y channels/__tests__/resend-email-channel.test.ts (sale por correo en el ciclo de notificaciones). Comprobado en el navegador con la base local (2026-11-22): dos marcadas y una individual quedaron en cola, con su evento en la bitácora. Criterio 3 (registro de quién recibió y cuándo): pgTAP notifications_inactive_tables.test.sql (17: enviado exige la fecha y el canal) y notifications_claim_inactive_reminders.test.sql (10); db/__tests__/inactive-reminder-delivery-repository.test.ts y send-inactive-reminders.test.ts (marca la fecha y el canal al salir); la pantalla muestra «Enviado el…» por clienta (InactiveClientsView.test.tsx). Criterio 4 (opción de baja respetada en envíos posteriores): domain/__tests__/inactive-reminder-message.test.ts (el mensaje siempre lleva el enlace de baja), resend-email-channel.test.ts (también en List-Unsubscribe) y send-inactive-reminders.test.ts (sin enlace no sale); pgTAP notifications_inactive_queue_and_optout.test.sql (la baja la ejecuta anon con el token, es idempotente, poner en cola deja fuera a quien se dio de baja, volver a suscribirse) y notifications_claim_inactive_reminders.test.sql (un recordatorio en cola de quien se dio de baja después no sale); ui/unsubscribe/__tests__/perform-subscription.test.ts y UnsubscribePage.test.tsx (preguntar antes de dar de baja, enlace roto). Comprobado en el navegador con un token real. Aislamiento (SEC-002): notifications_inactive_tables.test.sql (ninguna clienta ve el registro ni las suscripciones, ni las suyas) y notifications_inactive_clients.test.sql (una clienta recibe la lista vacía)."
   - id: US-NOT-07
     estado: terminada
     evidencia: "PR de cierre #671 (us/US-NOT-07 a main), con 2 piezas apiladas: #672 (bitácora de intentos) y #702 (error del proveedor acotado). Criterio 1 (WhatsApp como canal por defecto): lo entregó US-NOT-03; application/__tests__/send-due-reminders.test.ts, «envía por el canal primario (WhatsApp) cuando funciona». Criterio 2 (envíos y fallos registrados): notifications_reminder_attempts (migraciones 20261104000000 y 20261104000001) y recordAttempt de sendDueReminders; application/__tests__/send-due-reminders.test.ts (bloque «bitácora de intentos», con envío por WhatsApp, fallo rescatado por correo, dos fallos, canal sin configurar, sin contacto, bitácora caída sin perder el envío y error sin teléfono), domain/__tests__/reminder-attempt.test.ts y provider-error.test.ts, db/__tests__/reminder-repository.integration.test.ts (contra Supabase local) y pgTAP notifications_reminder_attempts.test.sql (16 aserciones, SEC-001/002). Criterio 3 (medio alternativo si falla el canal por defecto): lo entregó US-NOT-03; send-due-reminders.test.ts, «cae al respaldo (email) si el canal primario falla (ADR-0006)» y «conserva el fallo de WhatsApp cuando el correo lo rescata». Sin pantalla: ningún criterio la pide. El respaldo por correo no envía a clientas reales mientras no se cumpla la sección «Antes de producción» (dominio verificado en Resend, número y plantilla de WhatsApp, disparo del ciclo); es la misma deuda de US-NOT-03, cuyo visto bueno escrito del PO sigue pendiente."
@@ -59,6 +60,15 @@ deuda:
   - que: "runNotificationsReminderCycle y runReapplicationReminderCycle corren en paralelo desde el mismo receiveReminderCronRequest (pieza 18/21), cada uno con su propio cliente de sistema y sin coordinarse entre sí. Si una clienta cae en la ventana de los dos ciclos en la misma corrida (recordatorio de 24h de una cita y aviso de re-aplicación de una técnica), recibe dos mensajes de WhatsApp separados en vez de uno combinado: más costo de mensajería (si Meta cobra por conversación) y una experiencia peor, aunque cada ciclo sigue siendo idempotente por su propia clave de ciclo (sin duplicado dentro del mismo tipo de aviso)"
     aceptada_en: "Aceptado por Kenny Rodríguez el 2026-11-15 (docs/process/DEPENDENCIES.md)"
     costo: "3h: una cola compartida por clienta entre los dos ciclos (o combinar los dos mensajes en uno solo cuando coinciden en la misma corrida), con su prueba de integración"
+  - que: "US-NOT-06: el tope por envío masivo (50 clientas) y los días mínimos entre recordatorios a la misma clienta (30) son provisionales; el PO todavía no fijó los números (cuota de Resend)"
+    aceptada_en: "Cierre de US-NOT-06, 2026-11-22; preguntado al PO (Kenny) ese día"
+    costo: "Dueño: el PO decide, Jose Lorenzo lo cambia. 10 min: INACTIVE_REMINDER_MAX_CLIENTS_PER_SEND e INACTIVE_REMINDER_MIN_DAYS_BETWEEN en domain/inactive-reminder.ts; la base los recibe como parámetro, sin migración"
+  - que: "US-NOT-06: el texto del mensaje fijo (asunto «Te extrañamos en LASHARY» y cuerpo con el primer nombre, el enlace para agendar y el de baja) es una propuesta que el PO todavía no revisó"
+    aceptada_en: "Cierre de US-NOT-06, 2026-11-22"
+    costo: "Dueño: el PO revisa, Jose Lorenzo lo cambia. 15 min: INACTIVE_REMINDER_MESSAGE_TEXTS en domain/inactive-reminder-message.ts y su prueba"
+  - que: "US-NOT-06: el recordatorio sale en el ciclo de notificaciones, que todavía no corre solo en producción, y por Resend con el dominio de prueba (solo le llega a la cuenta dueña de la llave). Es el mismo pendiente de activación de los demás mensajes (sección «Antes de producción»)"
+    aceptada_en: "Cierre de US-NOT-06, 2026-11-22"
+    costo: "Dueño: KthArg (secretos e infraestructura). El disparador del cron y el dominio verificado en Resend, compartidos con US-NOT-03/05/07/08 y US-CLI-06; sin código propio de esta historia"
   - que: "US-NOT-04: runPaymentReminderCycle corre en paralelo con los ciclos de recordatorios y de re-aplicación, sin coordinarse; una clienta con morosidad activa puede recibir el recordatorio de pago y otro aviso por WhatsApp en la misma corrida"
     aceptada_en: "Aceptada por el PO el 2026-11-23, respuesta recibida por Bayron (Kenny Rodríguez ya la había aceptado el 2026-11-15 para dos ciclos)"
     costo: "3h: la misma cola compartida por clienta entre los ciclos cubriría los tres"
@@ -298,15 +308,17 @@ Decisiones:
   `application/__tests__/send-client-notices.test.ts` y `run-reminder-cycle.test.ts` (el orden y que un fallo no corta).
 - Tiempo del ciclo: el TTL del reclamo (`CLAIM_TTL_MINUTES`, 10), la tanda (`CLAIM_BATCH_SIZE`, 2) y la duración
   de la ruta (`maxDuration` igual a `CYCLE_MAX_DURATION_SECONDS`, 300) van atados en `db/claim-limits.ts`, y los
-  repositorios que reclaman mensajes (recordatorios, avisos a la clienta, confirmaciones e indicaciones de cuidado)
-  importan de ahí la misma tanda y el mismo TTL. El ciclo corre un envío en serie por cada tipo de `MESSAGE_PURPOSES`
-  (`application/ports.ts`): `MESSAGE_KINDS_SENT_PER_CYCLE` sale de su largo, hoy 5 (incluye `reapplication_reminder`: su lote no usa
-  `CLAIM_BATCH_SIZE`, pero se cuenta para reservarle tiempo dentro de los mismos 300 s), y la tanda se calcula con uno más de
-  margen. Cada mensaje puede gastar dos canales a `CHANNEL_SEND_TIMEOUT_MS` (10 s): con 5 tipos y tanda 2 el peor caso es
-  2 × 5 × 20 s = 200 s y sobran 100 s para vencer, reintentar, descubrir y reconciliar. Agregar un tipo a
-  `MESSAGE_PURPOSES` recalcula la tanda sola. Corrección M1 de la auditoría del 2026-11-15. Prueba:
-  `db/__tests__/claim-limits.test.ts`, que lee el `maxDuration` de la ruta y comprueba el peor caso con todos los tipos
-  y su margen.
+  repositorios que reclaman mensajes (recordatorios, avisos a la clienta, confirmaciones, indicaciones de cuidado y
+  recordatorios a inactivas) importan de ahí la misma tanda y el mismo TTL. El ciclo de recordatorios corre un envío en
+  serie por cada tipo de `PURPOSES_SENT_IN_SERIES`: `MESSAGE_KINDS_SENT_PER_CYCLE` sale de su largo, hoy 5, y la tanda se
+  calcula con uno más de margen. Cada mensaje puede gastar dos canales a `CHANNEL_SEND_TIMEOUT_MS` (10 s): con 5 tipos y
+  tanda 2 el peor caso es 2 × 5 × 20 s = 200 s y sobran 100 s para vencer, reintentar, descubrir y reconciliar.
+  `reapplication_reminder` y `payment_reminder` van en `PURPOSES_SENT_IN_OWN_CYCLE`: no usan `CLAIM_BATCH_SIZE` y sus
+  ciclos corren en paralelo con el de recordatorios (`http/cron-handler.ts`), así que no gastan sus 300 s. Corrección M1
+  de la auditoría del 2026-11-15; al cerrar US-NOT-06 (2026-11-24) se dejó de contar todo `MESSAGE_PURPOSES`, porque con
+  US-NOT-04 y US-NOT-06 juntas la tanda bajaba a 1. Un tipo nuevo en `MESSAGE_PURPOSES` tiene que entrar en una de las
+  dos listas. Prueba: `db/__tests__/claim-limits.test.ts`, que lee el `maxDuration` de la ruta, comprueba el peor caso
+  con su margen, que la tanda sea de al menos 2 y que cada tipo esté en una sola lista.
 - Las filas se validan con Zod; una forma inesperada es un error que no guarda el texto de Postgres. Los fallos
   del envío de avisos se registran con `logError` (`shared/logger.ts`).
 
@@ -859,12 +871,174 @@ Esta historia cierra con los cuatro criterios demostrados. US-MOR-03 y US-MOR-05
 - **Un solo aviso por clienta y corrida**, aunque tenga varias citas con saldo, igual que US-NOT-05 (pieza 19).
 - **Canal:** el de US-NOT-03 (primario y respaldo, ADR-0006). El envío real depende de «Antes de producción».
 
+## US-NOT-06: recordatorios a clientas inactivas
+
+Criterios del backlog:
+
+1. Puedo identificar clientes sin citas en un rango de tiempo configurable.
+2. Puedo enviar un correo masivo o individual desde el panel administrativo.
+3. El sistema registra qué clientes recibieron el correo y en qué fecha.
+4. El recordatorio incluye una opción de baja y se respeta en envíos posteriores.
+
+Depende de US-CLI-01 (listado de clientas, `terminada`), que dejó `scheduling_client_last_visits()` para esta historia, y de US-NOT-03 (el canal, `terminada`).
+
+Reglas: ARCH-005 e INT-003 (la última visita y las citas futuras se leen por el contrato de `scheduling`, los contactos por el de `clients`), DOM-003 y DOM-004 (el rango se calcula en UTC con el reloj inyectado), DOM-009, DOM-012 (dejar fuera a quien se dio de baja es una consecuencia automática que pide el criterio 4), SEC-001 y SEC-002 (bajas y registro con RLS y su prueba de aislamiento), SEC-004 (el enlace de baja lleva un token, no un dato de la clienta), SEC-005 (solo la administradora envía), SEC-007 (la ruta pública de baja), PERF-002 (la lista se pagina en la base), PERF-005 (el envío masivo no consulta clienta por clienta), UI-003, INT-008 e INT-010.
+
+### Diseño propuesto
+
+- **Dueña: `notifications`.** Guarda el registro de envíos y las bajas, y manda por el canal de US-NOT-03. Lee de `scheduling` la última visita completada y las citas futuras, y de `clients` el nombre y los contactos, solo por sus contratos.
+- **Inactiva:** una clienta sin visita completada dentro del rango y sin citas futuras pendientes, aprobadas o confirmadas. Entran también las que nunca vinieron. Quien se dio de baja aparece en la lista marcada así, y no se le envía.
+- **El rango** lo elige la administradora en el filtro de la pantalla: 30, 60, 90 o 180 días, con 90 por defecto. No se guarda como ajuste.
+- **Enviar:** a una clienta desde su fila o a las que marque en la lista (masivo). El envío deja una fila por clienta en el registro, en cola, y el ciclo de notificaciones la manda con sus reintentos, como los demás mensajes. Al salir queda la fecha de envío y el canal (criterio 3). La lista muestra el último recordatorio de cada clienta.
+- **Canal: solo correo**, por el canal de Resend de US-NOT-03. No sale por WhatsApp: no se pide plantilla a Meta.
+- **El mensaje es fijo:** el mismo texto para todas, con el nombre de la clienta, un enlace para agendar y el de baja. La administradora no lo edita; el texto vive en las constantes de la feature (DOM-009).
+- **Baja:** el mensaje trae un enlace a una página pública con un token propio de la clienta. Ahí confirma la baja y puede volver a suscribirse. La baja es solo de estos recordatorios: los de citas y los avisos siguen llegando.
+
+### Decisiones del PO (Kenny, 2026-11-22)
+
+Comunicadas por Jose Lorenzo; el registro está en `docs/process/DEPENDENCIES.md`.
+
+1. **Inactiva** es la definición de arriba, **incluidas las clientas que nunca vinieron**.
+2. **El rango por defecto es 90 días**, como lo prefiere la clienta (dueña del estudio). Primero se había dicho 180.
+3. **El mensaje es fijo:** la administradora no lo escribe ni lo edita.
+4. **La baja es solo de estos recordatorios, y la clienta puede volver a suscribirse.**
+5. **Solo por correo.** Se había dicho que también por WhatsApp, pero se decidió no hacerlo: no se pide plantilla a Meta.
+
+### Pendiente de verificar
+
+- El PO todavía no revisó el texto del mensaje fijo ni fijó el tope de envíos (50 por envío y 30 días entre recordatorios, provisionales). Los dos quedan como deuda en el front-matter, con su costo.
+
+### Contratos
+
+Lo que pide a otras features (pactado el 2026-11-22, INT-003):
+
+- **`scheduling`:** `scheduling_client_last_visits()`, que ya existe, para la última visita completada, y `scheduling_client_next_appointments()`, nueva, para dejar fuera a quien tiene una cita próxima en pie (`docs/contracts/scheduling-api.md`).
+- **`clients`:** `clients_all_display_names()`, nueva, para el nombre de todas las clientas, incluidas las que nunca vinieron (`docs/contracts/clients-api.md`). El contacto para enviar sale de `getClientContactForReminders`, como en los demás recordatorios.
+
+Lo que guarda y expone `notifications` (sus tablas y funciones son internas: solo las usan sus repositorios):
+
+- **`notifications_inactive_reminders`:** una fila por recordatorio puesto en cola. Guarda la clienta, quién lo puso en cola y cuándo, y su estado: `pending`, `sent` (con la fecha y el canal) o `failed` (con el último error). Lleva los intentos como los demás mensajes del ciclo. Es el registro del criterio 3. Solo el personal la lee y nadie con sesión la escribe directo.
+- **`notifications_inactive_subscriptions`:** una fila por clienta, con un token aleatorio propio (`gen_random_uuid()`, que va en el enlace de baja) y `opted_out_at`, nulo si está suscrita. La fila nace la primera vez que se le pone un recordatorio en cola. Solo el personal la lee.
+- **`notifications_inactive_clients(p_since timestamptz)`:** las clientas sin visita completada desde `p_since` y sin cita próxima, incluidas las que nunca vinieron. Por cada una trae el nombre, la última visita, si se dio de baja y su último recordatorio. Solo personal; PostgREST pagina y cuenta (PERF-002).
+- **Poner en cola:** una función `SECURITY DEFINER`, solo para la administradora, recibe uno o varios ids de clienta y crea una fila por cada una que no se haya dado de baja. Lo hace en una sola llamada (PERF-005), y deja el evento en la bitácora.
+- **Darse de baja y volver a suscribirse por token:** dos funciones `SECURITY DEFINER` que puede ejecutar `anon`, porque la clienta llega desde el mensaje sin iniciar sesión. Reciben solo el token, que no revela quién es la clienta (SEC-004), y responden igual ante un token que no existe. Son idempotentes.
+- **Superficie pública (`index.ts`):** la pantalla de la administradora y la página pública de baja, cada una con su ruta en `src/app`.
+
+### Lo que ya hay (piezas)
+
+- **Piezas 3 y 4, los contratos implementados:** `scheduling_client_next_appointments()` (`20261122000000`) y `clients_all_display_names()` (`20261122000001`), cada una con su pgTAP; detalle en los SPEC de `scheduling` y `clients`.
+- **Pieza 5, las tablas** (`20261122000002_notifications_inactive_reminders.sql`):
+  - `notifications_inactive_reminders` nace `pending` y sin intentos. `sent` exige la fecha y el canal (criterio 3). Como mucho hay un recordatorio en cola (`pending` o `claimed`) por clienta, por un índice único parcial. El error del proveedor va acotado a 501 caracteres, como en la bitácora de intentos.
+  - `notifications_inactive_subscriptions` tiene una fila por clienta, con un token aleatorio único (`gen_random_uuid()`), y `opted_out_at` nulo mientras está suscrita.
+  - RLS: solo el personal lee las dos tablas. Nadie con sesión inserta en ninguna ni escribe la suscripción: eso lo hacen las funciones `SECURITY DEFINER` de la pieza 7. El personal solo actualiza el resultado del envío, con columnas acotadas, porque el ciclo corre con la cuenta de sistema del cron.
+  - Prueba: pgTAP `notifications_inactive_tables.test.sql` (17), con la forma, los estados, una sola fila en cola, el token, que la administradora no escribe directo y el aislamiento: una clienta no ve ninguna fila, ni las suyas, y `anon` no lee (SEC-002).
+- **Pieza 6, la lista de inactivas** (`20261122000003_notifications_inactive_clients_fn.sql`, criterio 1):
+  - `notifications_inactive_clients(fecha de corte)` devuelve las clientas sin visita completada desde la fecha de corte y sin cita próxima en pie, incluidas las que nunca vinieron. Con cada una trae el nombre, la última visita, si se dio de baja y su último recordatorio (estado, cuándo se puso en cola y cuándo salió).
+  - Junta los contratos de `clients` y `scheduling`, sin leer sus tablas (ARCH-005).
+  - La fecha de corte la calcula la aplicación con el reloj inyectado (DOM-004): hoy menos el rango que elige la administradora.
+  - `SECURITY INVOKER`, y vacía para quien no es personal. Una clienta ve su propia fila en `clients` y `scheduling`, así que la función filtra además por `auth_is_staff()`. `STRICT`: sin fecha de corte no devuelve nada.
+  - No pagina ni ordena: PostgREST pagina y cuenta (PERF-002).
+  - Prueba: pgTAP `notifications_inactive_clients.test.sql` (9), con quién entra y quién no (la reciente y la de cita próxima quedan fuera), nombre y última visita, la baja, el último recordatorio, el rango configurable, que una clienta recibe la lista vacía y que `anon` no la ejecuta.
+- **Pieza 7, poner en cola, darse de baja y volver a suscribirse** (`20261122000004_notifications_inactive_queue_and_optout_fns.sql`, criterios 2 y 4):
+  - `notifications_queue_inactive_reminders(clientas, tope por envío, días mínimos entre recordatorios)` es solo para la administradora y sirve igual para una clienta que para varias, en una sola llamada (PERF-005).
+  - Rechaza entera una lista vacía o con más clientas que el tope. Deja fuera, contándolas, a quien se dio de baja, a quien ya está en cola, a quien recibió un recordatorio hace menos de los días mínimos y a los ids que no son de una clienta.
+  - Crea la suscripción con su token la primera vez y deja `notifications.inactive_reminders.queued` en la bitácora.
+  - El tope y los días mínimos los pasa la aplicación, porque el PO todavía no fijó los números.
+  - `notifications_unsubscribe_inactive(token)` y `notifications_resubscribe_inactive(token)` las ejecuta `anon`, porque la clienta llega desde el correo. Reciben solo el token, no devuelven nada (un token que no existe responde igual) y son idempotentes.
+  - La baja no deja evento en `audit_events`, que exige un actor con sesión: el registro es la fecha de la suscripción. Un recordatorio que ya estaba en cola al darse de baja no sale, porque el reclamo del envío lo salta (pieza del envío).
+  - Prueba: pgTAP `notifications_inactive_queue_and_optout.test.sql` (22): individual y masivo, ids repetidos, cada motivo para dejar fuera, el tope, la bitácora, que una clienta y `anon` no ponen en cola, la baja sin sesión e idempotente, el token desconocido, volver a suscribirse y que vuelve a recibir.
+- **Pieza 8, el dominio:**
+  - `domain/inactive-reminder.ts` define el rango (30, 60, 90 o 180 días, con 90 por defecto) y `readInactiveRangeDays`, que lee el valor de la URL y vuelve a 90 si no es uno de la lista.
+  - `inactiveSince(now, rango)` calcula la fecha de corte con el reloj que recibe (DOM-004).
+  - `canQueueInactiveReminder` dice si una clienta puede recibir: suscrita y sin un recordatorio en cola.
+  - `validateInactiveQueueRequest` quita repetidos y vacíos, y devuelve errores tipados por lista vacía o por pasar el tope (`InactiveQueueEmpty`, `InactiveQueueTooMany`, DOM-006).
+  - Los topes son provisionales hasta que decida el PO: `INACTIVE_REMINDER_MAX_CLIENTS_PER_SEND` = 50 y `INACTIVE_REMINDER_MIN_DAYS_BETWEEN` = 30.
+  - `domain/inactive-reminder-message.ts` arma el mensaje fijo con el primer nombre de la clienta, el enlace para agendar y el de baja, y lo cubre `buildInactiveReminderMessage`.
+  - `buildInactiveUnsubscribeUrl` une el sitio con `/recordatorios/baja/<token>` y solo acepta un token con forma de uuid, para que un valor raro no arme otra ruta.
+  - Pruebas: `domain/__tests__/inactive-reminder.test.ts` e `inactive-reminder-message.test.ts`.
+  - Texto propuesto, para que lo revise el PO: asunto «Te extrañamos en LASHARY»; cuerpo «Hola Ana, hace un tiempo que no te vemos en LASHARY y nos encantaría consentirte de nuevo. / Agenda tu próxima cita cuando quieras: <enlace> / Si ya no quieres recibir estos recordatorios, date de baja aquí: <enlace>».
+- **Pieza 9, el reclamo y el repositorio de entrega:**
+  - `notifications_claim_inactive_reminders` (`20261122000005`) reclama en lote, con `FOR UPDATE SKIP LOCKED`, como el de las indicaciones de cuidado, y vuelve a reclamar un reclamo vencido.
+  - Antes de reclamar, deja `failed` («la clienta se dio de baja antes del envío») el recordatorio en cola de quien se dio de baja después de ponerse en cola (criterio 4).
+  - Devuelve el nombre de la clienta (por el contrato de `clients`) y su token, para armar el mensaje sin otra consulta por clienta. Prueba: pgTAP `notifications_claim_inactive_reminders.test.sql` (10).
+  - `db/inactive-reminder-delivery-repository.ts` reclama y marca el resultado (enviado con fecha y canal, reintento, agotado, liberar), siempre sobre una fila `claimed`.
+  - Las filas se validan con Zod; un uuid se valida con `guid()`, por la misma razón que en US-MOR-01. Una fila ilegible es un fallo, no una lista vacía.
+  - Pruebas: `db/__tests__/inactive-reminder-delivery-repository.test.ts`.
+- **Pieza 10, el repositorio de la lista y de poner en cola:**
+  - `db/inactive-clients-repository.ts` lista con la fecha de corte, contada y paginada en la base: primero las de visita más vieja, con las que nunca vinieron adelante. También pone en cola con los topes y traduce cada `RAISE` a su error tipado (`InactiveQueueNotAllowed`, `InactiveQueueEmpty`, `InactiveQueueTooMany`, DOM-006).
+  - Las filas se validan con Zod, y una fila ilegible es un fallo, no una lista vacía.
+  - Prueba: `db/__tests__/inactive-clients-repository.test.ts`.
+- **Pieza 11, los casos de uso de la administradora** (`application/inactive-clients.ts`):
+  - `loadInactiveClients({ rangeDays, page })` calcula la fecha de corte con el reloj inyectado y pide la página (20 por página). Una página inválida vuelve a la primera, y un fallo de la base se devuelve tal cual, no como una lista vacía.
+  - `queueInactiveReminders(clientIds)` valida la lista en el dominio, sin repetidos, vacía o pasada del tope, y sin llamar a la base, y pone en cola con los topes del estudio.
+  - Una página fuera de rango escrita a mano en la URL se ve como un error de lectura con «Reintentar»: la pantalla solo enlaza páginas que existen.
+  - Prueba: `application/__tests__/inactive-clients.test.ts`.
+- **Pieza 12, el envío en el ciclo y el correo** (`application/send-inactive-reminders.ts`):
+  - En cada corrida del ciclo de notificaciones, después de las indicaciones de cuidado, se reclaman los recordatorios en cola y se manda el mensaje fijo **solo por correo** (Resend, decisión del 2026-11-22).
+  - Al salir se marca la fecha y el canal (criterio 3). Si falla, se reintenta en la siguiente corrida, hasta el mismo tope de intentos que los demás mensajes, y después queda fallido. Sin contacto registrado se gasta un intento con el motivo.
+  - Sin el correo configurado, o sin `NEXT_PUBLIC_SITE_URL` para armar los enlaces, el recordatorio vuelve a la cola sin gastar intentos.
+  - Nunca sale sin enlace de baja (criterio 4).
+  - Tipo de mensaje `inactive_reminder`: el correo lleva su asunto y el enlace de baja también en el encabezado `List-Unsubscribe`, para que el programa de correo ofrezca darse de baja. WhatsApp no tiene plantilla para este tipo y no se usa.
+  - El tipo se manda en serie dentro del ciclo de recordatorios y cuenta en `PURPOSES_SENT_IN_SERIES` (`claim-limits.ts`), para que el ciclo siga cabiendo en su duración máxima. Al traer `main` con US-NOT-04, contar todos los tipos dejaba la tanda en 1; en el cierre se cuentan solo los que van en serie y la tanda sigue en 2 (ver «Tiempo del ciclo» en US-NOT-02).
+  - El resumen de la corrida suma `inactiveSent`, `inactiveRetried`, `inactiveExhausted`, `inactiveErrored`, `inactiveUnconfigured` e `inactiveFailed`. Un fallo al reclamar se cuenta y no corta el ciclo.
+  - Pruebas: `application/__tests__/send-inactive-reminders.test.ts`, `run-reminder-cycle.test.ts` (el paso, su orden y su fallo) y `channels/__tests__/resend-email-channel.test.ts` (asunto y encabezado).
+- **Pieza 13, los componentes de la pantalla** (`ui/inactive-clients/`): los textos (`constants/inactive-clients-strings.ts`, DOM-009), la lectura de la URL (`?rango=` y `?pagina=`, con 90 días y la primera página si faltan o son raros) y su armado, la etiqueta del último recordatorio («Ninguno», «En cola desde el…», «Enviado el…», «No se pudo enviar (…)»), el filtro de rango (formulario GET que funciona sin JavaScript), la tabla (con `caption` y `th scope`, UI-004) y la paginación, que conserva el rango y solo enlaza páginas que existen. Componentes DaisyUI con los tokens del tema (UI-001, UI-002). Prueba: `ui/inactive-clients/__tests__/inactive-clients-utils.test.ts`.
+- **Pieza 14, la pantalla de lectura** (`ui/inactive-clients/`, ruta `/admin/clients/inactivas`, criterios 1 y 3):
+  - Se llega desde «Ver clientas inactivas», en el encabezado de Clientas.
+  - Arriba va el filtro de rango de la pieza 13 (90 días por defecto).
+  - Debajo, el total y la tabla con la clienta, la última visita («Nunca vino» si no tiene) y el último recordatorio: «Ninguno», «En cola desde el…», «Enviado el…» o «No se pudo enviar (…)». La marca «Se dio de baja» va junto al nombre.
+  - La paginación conserva el rango y solo enlaza páginas que existen.
+  - Estados (UI-003): carga (`loading.tsx` con `role="status"`), vacío (sugiere ver las de 30 días) y error (`role="alert"` con «Reintentar» al mismo rango y página, más `error.tsx` para lo inesperado).
+  - Componentes de DaisyUI con los tokens del tema (UI-001, UI-002), textos en `constants/inactive-clients-strings.ts` (DOM-009), tabla con `caption` y `th scope` (UI-004). El servicio exige sesión de administradora.
+  - Pruebas: `ui/inactive-clients/__tests__/InactiveClientsView.test.tsx` (lista, vacío, error y paginación). Las capturas del PR no incluyen el teléfono, porque la barra lateral del panel todavía ocupa media pantalla ahí (#710, lo arregla #877).
+- **Pieza 15, enviar desde la pantalla** (criterio 2):
+  - La tabla pasa a ser un formulario. Cada fila tiene una casilla «Elegir a…» y un botón «Enviar» (envío individual), y abajo está «Enviar a las marcadas» (envío masivo).
+  - La que se dio de baja o ya tiene un recordatorio en cola no se puede elegir ni enviar (criterio 4). Mientras se envía, todo queda deshabilitado.
+  - El resultado se anuncia en una región `role="status"`: cuántos quedaron en cola y por qué faltan los demás (ya tenía uno en cola, se dio de baja, recibió uno hace menos de 30 días o ya no está registrada).
+  - Los errores tienen su mensaje: no marcó ninguna, pasa el tope, no es administradora, la base falló o la selección no es válida.
+  - `utils/perform-queue.ts` lee el formulario, sin la base: el botón de una fila manda solo a esa clienta aunque haya otras marcadas, y valida los ids con Zod. La acción `queueInactiveRemindersAction` exige sesión de administradora y recarga la lista al salir bien.
+  - Comprobado en el navegador con la base local: dos marcadas y una individual quedaron en cola, con su evento en la bitácora.
+  - Pruebas: `ui/inactive-clients/__tests__/perform-queue.test.ts` e `InactiveRemindersForm.test.tsx`.
+- **Pieza 16, la página pública de baja** (`ui/unsubscribe/`, ruta `/recordatorios/baja/<token>` en el sitio público, criterio 4):
+  - La clienta llega desde el enlace del correo, sin iniciar sesión.
+  - Abrir el enlace no da de baja: la página pregunta y la baja se hace al apretar «Darme de baja». Así un programa que revisa enlaces, o una vista previa del correo, no da de baja a nadie.
+  - Hecha la baja, ofrece «Volver a suscribirme» (decisión del PO), y después de volver a suscribirse ofrece darse de baja otra vez.
+  - Un enlace con un token que no tiene forma de uuid muestra «Este enlace no es válido» (`role="alert"`), sin formulario y sin llamar a la base.
+  - Un token con forma válida que no existe responde igual que uno real, para no revelar qué tokens existen.
+  - Un fallo de la base se anuncia para reintentar. El resultado se anuncia en una región `role="status"`.
+  - `utils/perform-subscription.ts` valida el token y la intención antes de llamar a `db/inactive-subscription-repository.ts`, que llama a las funciones de la pieza 7 con la sesión que haya: `anon` las puede ejecutar.
+  - La página no se indexa (`robots: noindex`) y usa los tokens del sitio público (márgenes, tipografía y el enlace subrayado de la acción secundaria, UI-002).
+  - Comprobado en el navegador con la base local: con un token real, darse de baja y volver a suscribirse dejaron la suscripción como debe quedar.
+  - Pruebas: `db/__tests__/inactive-subscription-repository.test.ts`, `ui/unsubscribe/__tests__/perform-subscription.test.ts` y `UnsubscribePage.test.tsx`.
+
+### Piezas previstas
+
+Pueden cambiar con las respuestas del PO. Una migración por pieza (INT-008).
+
+1. Arranque en docs.
+2. Contratos (esta sección y los de `scheduling` y `clients`).
+3. Base de `scheduling`: `scheduling_client_next_appointments()`.
+4. Base de `clients`: `clients_all_display_names()`.
+5. Base: `notifications_inactive_reminders` y `notifications_inactive_subscriptions`, con RLS y prueba de aislamiento.
+6. Base: `notifications_inactive_clients`, paginada.
+7. Base: poner en cola, darse de baja y volver a suscribirse.
+8. Dominio: el rango, el mensaje y quién puede recibirlo.
+9. El reclamo del ciclo y el repositorio de entrega.
+10. El repositorio de la lista y de poner en cola.
+11. Casos de uso de la administradora: listar y poner en cola.
+12. Envío en el ciclo y canal: el tipo de mensaje nuevo en el correo, con el enlace de baja.
+13. Componentes de la pantalla: filtro de rango, tabla y paginación.
+14. Pantalla del panel, lectura: la vista, la ruta y sus estados (UI-003).
+15. Pantalla del panel, envío: selección, enviar a una o a varias y el aviso del resultado.
+16. Página pública de baja y de volver a suscribirse.
+17. Cierre.
+
 ## Qué no hace todavía
 
 - Avisar a la clienta por WhatsApp o correo cuando se aprueba o se rechaza su comprobante no es de esta historia: el PO lo dejó aparte el 2026-11-23 (el SPEC de `delinquency` lo había anotado con US-NOT-04 como dueña).
 - No hay UI: ninguna pantalla muestra el registro de envíos ni deja cambiar el canal o reintentar a
   mano. No lo pide ningún criterio de US-NOT-03 ni de US-NOT-07.
-- US-NOT-06 reusa el canal pero no está construida; US-NOT-04 y US-NOT-05 ya están terminadas (su sección). US-NOT-02 y
+- US-NOT-04, US-NOT-05 y US-NOT-06 ya están terminadas (su sección). US-NOT-02 y
   US-NOT-08 están construidas y tienen pendiente lo de su sección.
 
 ## Correcciones de la auditoría del 2026-10-23 (AUDIT.md, líder del proyecto)

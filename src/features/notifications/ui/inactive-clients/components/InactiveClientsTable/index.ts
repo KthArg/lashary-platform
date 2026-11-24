@@ -1,0 +1,1 @@
+export { InactiveClientsTable } from './InactiveClientsTable'
