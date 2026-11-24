@@ -2,7 +2,7 @@
 feature: delinquency
 dri: pendiente
 estado: en_progreso
-actualizado: 2026-11-21
+actualizado: 2026-11-23
 historias:
   - id: US-MOR-01
     estado: terminada
@@ -14,7 +14,8 @@ historias:
     estado: terminada
     evidencia: "PR de cierre us/US-MOR-03 a main, con 26 piezas apiladas contra la rama de la historia (#900 a #924, más esta pieza 26 de cierre). Criterio 1 (iniciar el flujo desde el recordatorio o el estado de cuenta): el estado de cuenta /portal/cuenta trae «Cómo pagar» con los datos reales del estudio y el formulario del comprobante (account/ui/statement/__tests__/AccountStatementView.test.tsx y delinquency/ui/regularization/__tests__/RegularizationForm.test.tsx), y el rechazo de la reserva por morosidad lleva a él con «Regularizar mi saldo» (scheduling/ui/booking-confirm/__tests__/perform-booking.test.ts, book-appointment-action.test.ts y BookingConfirmForm.test.tsx); «desde el recordatorio» es la ruta estable /portal/cuenta a la que enlazará US-NOT-04, que depende de esta historia. Criterio 2 (al subir el comprobante, la regularización queda pendiente de aprobación): pgTAP delinquency_submit_regularization.test.sql, delinquency_regularizations.test.sql, delinquency_receipts_bucket.test.sql (tope de 1 MB) y delinquency_regularization_notice.test.sql (el aviso a la bandeja); domain/__tests__/receipt.test.ts y regularization.test.ts, application/__tests__/upload-receipt.test.ts y submit-regularization.test.ts, db/__tests__/regularization-repository.test.ts, receipt-storage.test.ts y case-row.test.ts, ui/regularization/__tests__/perform-regularization.test.ts, y en notifications db/__tests__/inbox-repository.test.ts y ui/inbox/__tests__/notice-lines.test.ts. Criterio 3 (aprobado, la morosidad queda saldada y se libera la restricción): pgTAP delinquency_approve_regularization.test.sql, payments_ledger_payment_kind.test.sql y payments_record_payment.test.sql; application/__tests__/load-regularization-queue.test.ts y review-regularization.test.ts, db/__tests__/regularization-queue-repository.test.ts y regularization-review-repository.test.ts, ui/regularization-review/__tests__/RegularizationQueue.test.tsx, RegularizationDecision.test.tsx y perform-review.test.ts; comprobado de punta a punta en el navegador con el servidor local el 2026-11-18: pago parcial, rechazo con motivo, pago completo aprobado, morosidad settled y la misma reserva de la clienta pasa (capturas en los PR de las piezas 20 y 23). Criterio 4 (la clienta ve en todo momento el estado de su regularización): delinquency_my_account en delinquency_submit_regularization.test.sql, delinquency_reject_regularization.test.sql (motivo de 10 a 500 caracteres) y AccountStatementView.test.tsx (en revisión, aprobado, rechazado con el motivo y saldada). Aislamiento (SEC-002): delinquency_receipts_bucket.test.sql (otra clienta no lee ni escribe en la carpeta ajena) y delinquency_regularizations.test.sql (ninguna clienta lee la tabla). Decisiones del PO del 2026-11-13 y de la clienta (dueña del estudio) del 2026-11-18 en docs/process/DEPENDENCIES.md. Suite sobre la punta de la pila con la base local recién reseteada: pgTAP 111 archivos y 1465 pruebas en verde; vitest 2952 pruebas en verde (la suite de integración booking-pending-limit-package chocó con otra en paralelo y pasa 3 de 3 sola, como en US-MOR-02)."
   - id: US-MOR-04
-    estado: no_iniciada
+    estado: en_progreso
+    falta: "Pieza 1/8: contrato y plan. Falta: lectura de la bitácora en audit (2), resúmenes de cita en scheduling (3), datos y pantalla del listado (4 y 5), datos y pantalla del detalle (6 y 7) y export del ledger (8)"
   - id: US-MOR-05
     estado: terminada
     evidencia: "PR de cierre us/US-MOR-05 a main, con 11 piezas apiladas contra la rama de la historia (#926 a #935, más esta pieza 11 de cierre; la pieza 1, el contrato, fue un commit directo a us/US-MOR-05, sin PR propio). Auditoría de Kenny del 2026-11-18 y reauditorías del 2026-11-21 (hallazgos A1-A4, M1-M5, B1-B6, N1, N3), todas corregidas o registradas según corresponda. Criterio 1 (levantar el bloqueo sin registrar pago): delinquency_lift_case (SECURITY DEFINER, solo admin, solo sobre active), pgTAP delinquency_lift_and_forgive_case.test.sql (levanta a lifted, conserva historial, motivo vacío o solo espacio en blanco se rechaza — B4) y delinquency_lift_unblocks_booking.test.sql (M1: contra delinquency_booking_block de US-MOR-02, no solo el estado en la tabla); application/__tests__/lift-case.test.ts, db/__tests__/case-repository.test.ts; UI en ui/review/__tests__/review-view.test.tsx (formulario, botón deshabilitado sin motivo); comprobado a mano el 2026-11-21 contra un servidor local real y Supabase local (capturas del PR #934). Criterio 2 (condonar total o parcial con motivo): delinquency_forgive_case valida contra el saldo vivo de la cita (payments_appointment_balances, A3) en vez de la foto que guardó la detección, y condonar parcial no cierra el caso — sigue active con exception_amount acumulado hasta que el saldo vivo llega a cero (A4, decisión de Kenny del 2026-11-18); pgTAP: condonación total y parcial, acumulado, monto o motivo inválido, aislamiento clienta/anon (M1), y el caso de N1 (condonar parcial y pagar el resto con una regularización real de US-MOR-03 vía delinquency_submit_regularization/approve_regularization — corregido en la pieza 3 con su pgTAP en la pieza 4: el CHECK de delinquency_cases ahora une lifted/forgiven con settled, el estado que agrega US-MOR-03, que se mergeó a main el 2026-11-20 (#943) antes que esta historia); application/__tests__/forgive-case.test.ts, db/__tests__/case-repository.test.ts; UI: el checkbox «condonar todo lo pendiente» (B2, corregido en la pieza 9). Comprobado a mano: condonar ₡3 000 más sobre un caso con ₡4 000 ya condonados deja el saldo en ₡9 000 (de ₡12 000) y «Ya condonado» en ₡7 000, con el aviso de éxito visible (B3, confirmado en navegador el 2026-11-21, ya no es solo análisis). Criterio 3 (bitácora con fecha, monto y motivo): delinquency.case.lifted y delinquency.case.forgiven en audit_events, en la misma transacción (DOM-011); el pgTAP comprueba el contenido del payload (pending, reason, cumulativeAmount, remainingBalance, closed), no solo que la fila exista. Criterio 4 (una excepción no borra el historial): pgTAP «la fila sigue visible, no se borró»; listByState ordena decided_at descendente para lifted/forgiven (M3, corregido en la pieza 5); UI: secciones «Bloqueos levantados» y «Morosidades condonadas» en /admin/morosidades (pieza 10), con motivo y monto condonado; comprobado a mano (captura 03 del PR #934). M2 (mensajes de error que no correspondían en forgiveCaseAction/liftCaseAction) corregido en la pieza 8, con prueba por campo. Deuda registrada, no bloquea el cierre: N3 (al levantar o condonar un caso con una solicitud de regularización de US-MOR-03 pendiente, esa solicitud queda huérfana — requiere acuerdo con MachineJALS, sección «N3» de este SPEC y docs/process/DEPENDENCIES.md) y B5 (listActiveClients/ActiveClient de US-MOR-01 sin consumidor en la UI desde que loadReview pasó a listActiveCases en la pieza 6, falta dueño y plazo para decidir si se borra). Suite completa en la punta de la pila: pgTAP 117 archivos, 1540 pruebas, PASS; vitest 126/126 en src/features/delinquency. La suite completa del repo tiene fallas preexistentes y no relacionadas con esta historia, confirmadas también en origin/main limpio: pruebas de aislamiento RLS de otras features que requieren altas reales de Supabase Auth local y un desajuste de datos de seed en catalog/db/packages, ninguna tocada aquí."
@@ -749,3 +750,73 @@ resumen de la auditoría de Kenny en la `evidencia`. N3 (solicitudes de regulari
 levantar o condonar) y B5 (`listActiveClients`/`ActiveClient` sin consumidor) quedan registrados como
 deuda explícita, sin bloquear el cierre: ninguno de los dos niega alguno de los 4 criterios de esta
 historia, igual que el cron sin programar quedó registrado como deuda al cerrar US-MOR-01.
+
+
+## US-MOR-04: listado histórico de morosidades
+
+Criterios del backlog:
+
+1. El listado permite filtrar por estado: por confirmar, activa, pendiente de aprobación, saldada y condonada.
+2. Cada registro muestra cliente, monto, cita asociada y fecha de origen.
+3. Puedo abrir el detalle completo de una morosidad y su bitácora de cambios.
+
+Además carga la infraestructura «export tabular del ledger» (ADR-0007, `docs/process/DEPENDENCIES.md`).
+
+Depende de US-MOR-01, US-MOR-03 y US-MOR-05, las tres `terminada`: de ellas vienen el estado `settled`, la solicitud
+`pending_approval` de `delinquency_regularizations`, y los estados `lifted` y `forgiven`. Reglas: ARCH-003, ARCH-004,
+ARCH-005, INT-003, INT-002, INT-009, INT-010, DOM-003, DOM-005, DOM-009, SEC-001, SEC-002, SEC-006, PERF-002, UI-003,
+UI-004.
+
+### Decisiones de José Loría (2026-11-23)
+
+1. **Monto.** En el listado, el monto de origen (`delinquency_cases.pending`, la foto al detectar). En el detalle,
+   además, el saldo de hoy (`payments_appointment_balances`, DOM-005) y lo condonado (`exception_amount`).
+2. **Filtros.** Los cinco del backlog más *descartada* (`dismissed`), *levantada* (`lifted`) y «Todas», para que el
+   histórico no esconda ninguna morosidad. Amplía el alcance del backlog: decisión de José, pendiente de avisar al PO
+   (Kenny).
+3. **Fecha de origen.** `detected_at`. La fecha y el servicio de la cita van en «Cita asociada».
+4. **Export del ledger.** Entra como pieza 8.
+5. **Rutas.** `/admin/morosidades/historial` (listado, una pestaña más de Morosidades) y
+   `/admin/morosidades/historial/[id]` (detalle).
+6. **Un solo estado por morosidad.** «Activa» es `active` sin comprobante pendiente; «Pendiente de aprobación» es
+   `active` con una solicitud `pending_approval` en `delinquency_regularizations`.
+7. **Sin migraciones.** `delinquency` lee sus propias tablas (`delinquency_cases`, `delinquency_regularizations`; la
+   RLS de staff y los índices `(state, detected_at DESC)` y `(state, created_at)` ya existen); el nombre sale de
+   `clients_display_names`; el saldo, de `payments_appointment_balances`; la cita, del caso de uso nuevo
+   `getAppointmentSummaries` de `scheduling`; la bitácora, del caso de uso nuevo `listEntityEvents` de `audit`. Cada
+   feature lee solo su propia tabla y expone un caso de uso público (ARCH-005: segundo use-case público); la RLS
+   existente sigue filtrando (SEC-001). Descartado: tres funciones SQL nuevas, una por feature, porque duplicaban lo
+   que ya permiten la RLS y los índices.
+
+### Qué muestra
+
+**Cada fila del listado:** Clienta (nombre), Monto (de origen), Cita asociada (fecha en hora del estudio y servicio),
+Fecha de origen (`detected_at`), Estado (uno de los siete) y el enlace «Ver detalle». Paginación en el servidor con
+tamaños 10, 25 y 50 y 25 por defecto, como el listado de clientas (`clients/application/clients-list-limits.ts`).
+Orden de la más reciente a la más antigua por `detected_at`, con desempate por `id`.
+
+**El detalle:** lo de la fila, más el saldo de hoy, `decided_at`, y el motivo y el monto de la excepción si la hay;
+sus solicitudes de regularización (declarado, aprobado, estado y motivo de rechazo); y la bitácora: los eventos con
+`entity_type = 'delinquency_case'` y la morosidad como `entity_id` (confirmed, dismissed, lifted, forgiven) más los de
+`entity_type = 'delinquency_regularization'` de sus solicitudes (submitted, approved, rejected), en orden cronológico
+y en hora del estudio (DOM-003). Los adaptadores a `audit` y `scheduling` van en `http/` de `delinquency`.
+
+### Contratos nuevos (INT-003)
+
+- `listEntityEvents` en `audit`: ver `src/features/audit/SPEC.md`, «Contrato público».
+- `getAppointmentSummaries` en `scheduling`: ver `docs/contracts/scheduling-api.md`.
+
+### Piezas previstas
+
+| Pieza | Contenido |
+|---|---|
+| 1 | Contrato y plan (esta) |
+| 2 | `audit`: lectura por entidad (`listEntityEvents`) |
+| 3 | `scheduling`: resúmenes de cita (`getAppointmentSummaries`) |
+| 4 | Datos del listado |
+| 5 | Pantalla del listado |
+| 6 | Datos del detalle |
+| 7 | Pantalla del detalle y cierre de la historia |
+| 8 | Export CSV del ledger desde `payments` |
+
+Las secciones de historial de US-MOR-05 en `/admin/morosidades` (levantadas y condonadas) se quedan como están.

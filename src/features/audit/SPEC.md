@@ -41,10 +41,26 @@ La bitácora solo admite INSERT de staff por RLS, y hay acciones de una clienta 
 
 ## Fuera de alcance por ahora
 
-Sin capacidad de listar/consultar eventos (solo `insert`): se agrega cuando una historia futura (p.ej. US-CLI-04, que audita accesos al expediente) lo exija — no antes.
+Sin capacidad de listar todos los eventos ni de filtrar por actor, acción o fecha. La lectura por entidad (`listEntityEvents`) llega con US-MOR-04 (pieza 2); lo demás se agrega cuando una historia lo exija — no antes.
 
 ## Contrato público (`index.ts`, ARCH-003)
 
 - `record(input: RecordAuditEventInput): Promise<Result<AuditEventView, AuditEventValidationError>>` — registra un evento. `input`: `{ actorId, action, entityType, entityId, payload? }`.
 - Tipos: `RecordAuditEventInput`, `AuditEventView`, `AuditEventPayload`.
 - Error: `AuditEventValidationError` (actor, acción, tipo o recurso vacíos) y su guarda `isAuditEventValidationError`.
+- `listEntityEvents(query: ListEntityEventsQuery): Promise<Result<AuditEventView[], AuditQueryInvalid | AuditStorageFailed>>` — pactado en la pieza 1/8 de US-MOR-04, se implementa en la pieza 2/8. Consumidor: US-MOR-04, detalle de la morosidad en `delinquency`.
+
+```ts
+type ListEntityEventsQuery = {
+  entityType: string
+  entityIds: readonly string[]
+  limit?: number
+}
+```
+
+  - Lee con el cliente de Supabase de servidor y la sesión de quien llama, nunca con la service-role key (SEC-003). La RLS `audit_events_select_staff` deja leer solo a staff: a una clienta o a `anon` les devuelve una lista vacía, no un error.
+  - Devuelve los eventos de ese `entityType` cuyo `entity_id` está en `entityIds`, del más antiguo al más reciente (`created_at` y, si empatan, `id`). Usa el índice existente `idx_audit_events_entity (entity_type, entity_id)`.
+  - `entityIds` vacío devuelve `ok([])` sin consultar. `entityType` vacío o más de 50 ids es `AuditQueryInvalid` (código `AUDIT_QUERY_INVALID`), sin consultar.
+  - `limit` vale 100 si no viene y no pasa de 200 (PERF-002); quien necesite saber si hay más pide uno extra.
+  - Un fallo de la base devuelve `AuditStorageFailed` (código `AUDIT_STORAGE_FAILED`), no lanza.
+  - Ambos errores son `interface` con `code` literal, con su fábrica y su guarda `isAuditQueryInvalid` / `isAuditStorageFailed` (ADR-0008, sin `class`).
