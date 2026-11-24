@@ -925,8 +925,8 @@ Criterio 3 (abrir el detalle completo y su bitácora): queda demostrado por `cas
 | 11 | Pantalla del detalle: datos |
 | 12 | Pantalla del detalle: solicitudes de regularización y estados de carga y error |
 | 13 | Pantalla del detalle: bitácora y cierre del criterio 3 |
-| 14 | Dominio del export CSV del ledger en `payments` (rango, CSV y errores) (esta) |
-| 15 | Lectura del export: repositorio paginado, nombres y caso de uso |
+| 14 | Dominio del export CSV del ledger en `payments` (rango, CSV y errores) |
+| 15 | Lectura del export: repositorio paginado, nombres y caso de uso (esta) |
 | 16 | Ruta, formulario de descarga y cierre de la historia |
 
 Las secciones de historial de US-MOR-05 en `/admin/morosidades` (levantadas y condonadas) se quedan como están.
