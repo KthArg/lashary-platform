@@ -91,6 +91,19 @@ describe('HistoryView: la tabla', () => {
   })
 })
 
+describe('HistoryView: filtro y paginación', () => {
+  it('monta el filtro siempre y la paginación solo cuando hay morosidades', () => {
+    renderView(ready())
+    expect(screen.getByRole('form', { name: historyMessages.filter.formLabel })).toBeTruthy()
+    expect(screen.getByRole('navigation', { name: historyMessages.pagination.navLabel })).toBeTruthy()
+    cleanup()
+
+    renderView(ready({ items: [], total: 0 }))
+    expect(screen.getByRole('form', { name: historyMessages.filter.formLabel })).toBeTruthy()
+    expect(screen.queryByRole('navigation', { name: historyMessages.pagination.navLabel })).toBeNull()
+  })
+})
+
 describe('HistoryView: vacío, carga y error', () => {
   it('sin morosidades dice que no hay, con otro texto si hay un filtro puesto', () => {
     renderView(ready({ items: [], total: 0 }))

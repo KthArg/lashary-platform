@@ -25,6 +25,8 @@ export const historyMessages = {
     body: 'Hubo un problema al leer los datos. Inténtelo nuevamente.',
   },
   states: STATE_LABELS,
+  filters: { all: 'Todas', ...STATE_LABELS },
+  filter: { formLabel: 'Filtrar el historial', selectLabel: 'Estado', submit: 'Filtrar' },
   headers: {
     client: 'Clienta',
     amount: 'Monto',
@@ -40,4 +42,13 @@ export const historyMessages = {
   detailLinkLabel: (clientName: string) => `Ver detalle de ${clientName}`,
   emptyAll: 'Todavía no hay morosidades.',
   emptyFiltered: 'Ninguna morosidad coincide con el filtro.',
+  pagination: {
+    navLabel: 'Paginación del historial',
+    status: (page: number, totalPages: number) => `Página ${page} de ${totalPages}`,
+    total: (total: number) => `${total} morosidades`,
+    sizeLabel: 'Por página',
+    sizeApply: 'Aplicar',
+    previous: 'Anterior',
+    next: 'Siguiente',
+  },
 } as const
