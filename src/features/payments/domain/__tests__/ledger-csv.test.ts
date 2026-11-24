@@ -3,6 +3,7 @@ import {
   buildLedgerCsv,
   CSV_BOM,
   CSV_HEADER,
+  CSV_SEPARATOR,
   csvTextCell,
   LEDGER_KIND_LABELS,
   LEDGER_KINDS,
@@ -19,11 +20,12 @@ const entry = (overrides: Partial<LedgerExportEntry> = {}): LedgerExportEntry =>
 })
 
 describe('buildLedgerCsv', () => {
-  it('empieza con el BOM y el encabezado en español, y termina con salto de línea', () => {
+  it('empieza con el BOM y el encabezado en español separado por punto y coma, y termina con salto de línea', () => {
     const csv = buildLedgerCsv([])
 
-    expect(csv).toBe(`${CSV_BOM}${CSV_HEADER.join(',')}\r\n`)
-    expect(CSV_HEADER.join(',')).toBe('Fecha,Clienta,Cita,Tipo,Monto')
+    expect(csv).toBe(`${CSV_BOM}${CSV_HEADER.join(CSV_SEPARATOR)}\r\n`)
+    expect(CSV_HEADER.join(CSV_SEPARATOR)).toBe('Fecha;Clienta;Cita;Tipo;Monto')
+    expect(CSV_SEPARATOR).toBe(';')
   })
 
   it('escribe la fecha en hora del estudio y el monto como entero con signo', () => {
@@ -31,8 +33,8 @@ describe('buildLedgerCsv', () => {
 
     const rows = csv.trimEnd().split('\r\n').slice(1)
     expect(rows).toEqual([
-      '2026-11-20 14:35,Ana Solís,cita-1,Cargo,25000',
-      '2026-11-20 14:35,Ana Solís,cita-1,Pago,-10000',
+      '2026-11-20 14:35;Ana Solís;cita-1;Cargo;25000',
+      '2026-11-20 14:35;Ana Solís;cita-1;Pago;-10000',
     ])
   })
 
@@ -40,14 +42,15 @@ describe('buildLedgerCsv', () => {
     const rows = LEDGER_KINDS.map((kind) => buildLedgerCsv([entry({ kind, appointmentId: null })]))
 
     LEDGER_KINDS.forEach((kind, index) => {
-      expect(rows[index]).toContain(`,,${LEDGER_KIND_LABELS[kind]},`)
+      expect(rows[index]).toContain(`;;${LEDGER_KIND_LABELS[kind]};`)
     })
     expect(Object.values(LEDGER_KIND_LABELS)).toEqual(['Cargo', 'Anticipo', 'Pago', 'Condonación'])
   })
 })
 
 describe('csvTextCell', () => {
-  it('encierra entre comillas lo que lleva coma, comilla o salto de línea y duplica las comillas', () => {
+  it('encierra entre comillas lo que lleva punto y coma, coma, comilla o salto de línea y duplica las comillas', () => {
+    expect(csvTextCell('Solís; Ana')).toBe('"Solís; Ana"')
     expect(csvTextCell('Solís, Ana')).toBe('"Solís, Ana"')
     expect(csvTextCell('la "reina"')).toBe('"la ""reina"""')
     expect(csvTextCell('a\nb')).toBe('"a\nb"')

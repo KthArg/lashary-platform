@@ -12,6 +12,7 @@ export interface LedgerExportEntry {
 }
 
 export const CSV_BOM = '﻿'
+export const CSV_SEPARATOR = ';'
 export const CSV_LINE_BREAK = '\r\n'
 export const CSV_HEADER = ['Fecha', 'Clienta', 'Cita', 'Tipo', 'Monto']
 
@@ -23,7 +24,7 @@ export const LEDGER_KIND_LABELS: Record<LedgerKind, string> = {
 }
 
 const FORMULA_START = /^[=+\-@\t\r]/
-const NEEDS_QUOTES = /[",\r\n]/
+const NEEDS_QUOTES = /[";,\r\n]/
 
 export function csvTextCell(value: string): string {
   const neutralized = FORMULA_START.test(value) ? `'${value}` : value
@@ -40,7 +41,7 @@ export function buildLedgerCsv(entries: readonly LedgerExportEntry[]): string {
       csvTextCell(entry.appointmentId ?? ''),
       csvTextCell(LEDGER_KIND_LABELS[entry.kind]),
       String(entry.amount),
-    ].join(','),
+    ].join(CSV_SEPARATOR),
   )
-  return CSV_BOM + [CSV_HEADER.join(','), ...rows].join(CSV_LINE_BREAK) + CSV_LINE_BREAK
+  return CSV_BOM + [CSV_HEADER.join(CSV_SEPARATOR), ...rows].join(CSV_LINE_BREAK) + CSV_LINE_BREAK
 }
