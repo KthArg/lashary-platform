@@ -68,9 +68,9 @@ type AppointmentSummary = {
 - `serviceName` es `technique_name` y, si es nulo, `package_name`, lo congelado al reservar (DOM-002); nulo si no hay ninguno.
 - `startsAtMs` es el instante de inicio en milisegundos UTC (DOM-003).
 - Un id que no existe no devuelve fila; el orden no está garantizado, así que quien llama arma un mapa por `id`.
-- Una lista vacía devuelve `ok([])` sin consultar. Más de 100 ids es `TooManyAppointmentIds`, sin consultar (el nombre exacto del error se ajusta a la convención de `src/features/scheduling/domain/errors.ts` en la pieza 3).
+- Una lista vacía devuelve `ok([])` sin consultar. Más de 100 ids es `TooManyAppointmentIds`, sin consultar (`SCHEDULING_TOO_MANY_APPOINTMENT_IDS`).
 
-Pactado en la pieza 1/8 de US-MOR-04; se implementa en la pieza 3/8.
+Pactado en la pieza 1/8 de US-MOR-04 e implementado en la pieza 3/8.
 
 Consumidor: **US-MOR-04**, listado y detalle de morosidades.
 

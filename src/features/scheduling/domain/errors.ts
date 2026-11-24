@@ -225,6 +225,7 @@ export type SchedulingError =
   | PriceChanged
   | AppointmentNotConfirmable
   | InvalidConfirmationDeadline
+  | TooManyAppointmentIds
 
 export const techniqueNotSelectable = (
   techniqueId: string,
@@ -441,3 +442,20 @@ export const appointmentNotChargeable = (appointmentId: string): AppointmentNotC
   appointmentId,
   message: `la cita ${appointmentId} no tiene clienta o precio registrado, así que no se puede generar su cargo`,
 })
+
+export interface TooManyAppointmentIds {
+  readonly code: 'SCHEDULING_TOO_MANY_APPOINTMENT_IDS'
+  readonly max: number
+  readonly message: string
+}
+
+export const tooManyAppointmentIds = (max: number): TooManyAppointmentIds => ({
+  code: 'SCHEDULING_TOO_MANY_APPOINTMENT_IDS',
+  max,
+  message: `se pidieron más de ${max} citas en una sola consulta`,
+})
+
+export const isTooManyAppointmentIds = (value: unknown): value is TooManyAppointmentIds =>
+  typeof value === 'object' &&
+  value !== null &&
+  (value as { code?: unknown }).code === 'SCHEDULING_TOO_MANY_APPOINTMENT_IDS'

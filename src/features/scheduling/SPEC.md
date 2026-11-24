@@ -2,7 +2,7 @@
 feature: scheduling
 dri: pendiente
 estado: en_progreso
-actualizado: "2026-11-17"
+actualizado: "2026-11-23"
 historias:
   - id: US-AGE-01
     estado: terminada
@@ -469,7 +469,7 @@ Traslado aprobado por el PO (líder del proyecto), comunicado por Erick Duran el
 - `clientCalendarMessages` — textos del calendario de la clienta: en `index.ts` para el título de `src/app/portal/citas/calendario/page.tsx` y en `client.ts` para su `error.tsx`.
 - `ApprovalQueue`, `listPendingAppointmentsAction` y `APPROVAL_QUEUE_LABELS` — componen `/admin/citas`. Consumidor: `src/app/admin/citas/page.tsx`. No están en `client.ts`.
 - `listClientAppointments`, sus tipos (`ClientAppointmentView`, `ClientAppointmentsPage`, `ClientAppointmentStatus`, `ListClientAppointmentsQuery`) y `CLIENT_APPOINTMENTS_DEFAULT_PAGE_SIZE` / `CLIENT_APPOINTMENTS_MAX_PAGE_SIZE` — las citas de una clienta por páginas. Contrato en `docs/contracts/scheduling-api.md` (INT-003), pedido por `clients` para US-CLI-02. Consumidor: `src/features/clients/http/history/history-gateways.ts` (US-CLI-02).
-- `getAppointmentSummaries` (US-MOR-04, pieza 3/8, ARCH-005): resumen de citas por id (`id`, `startsAtMs`, `serviceName`) para `delinquency`. Pactado en `docs/contracts/scheduling-api.md`; se implementa en la pieza 3/8.
+- `getAppointmentSummaries` (US-MOR-04, pieza 3/8, ARCH-005): resumen de citas por id (`id`, `startsAtMs`, `serviceName`) para `delinquency`. Pactado en `docs/contracts/scheduling-api.md` e implementado: `application/get-appointment-summaries.ts` (lista vacía y más de `APPOINTMENT_SUMMARIES_MAX_IDS` = 100 ids no consultan; el segundo caso es `TooManyAppointmentIds`) y `db/appointment-summaries-repository.ts` (valida la fila con zod; cliente de servidor con la sesión de quien llama, nunca la llave de servicio). Pruebas: `application/__tests__/get-appointment-summaries.test.ts` y `db/__tests__/appointment-summaries-repository.test.ts`.
 - `listSchedulingAppointmentsForReminders` y `getSchedulingAppointmentForReminder` (US-NOT-03, ARCH-005): lectura pública sobre `scheduling_appointments` (`appointmentId`, `clientId`, `startsAt`, `techniqueName` de citas `approved`/`confirmed`) para que `notifications` nunca consulte la tabla directo. `db/reminder-snapshots-repository.ts` acepta un `SupabaseClient` inyectado para que el cron de `notifications` (sin cookies) pase su propia sesión. Sin comentarios en el código (igual que el resto de la feature): el porqué de cada decisión vive aquí. Consumidor: `notifications/index.ts`. (Hallazgo B2 de la auditoría del 2026-10-23: `index.ts` seguía teniendo un comentario de dos líneas con esta misma explicación, resto de antes de la pasada de "sin comentarios" de la pieza 10 — se quitó; esta entrada del SPEC ya lo cubre.) Prueba de integración contra Supabase local (A6 de la auditoría, 2026-10-24): `db/__tests__/reminder-snapshots-repository.integration.test.ts` — `listActiveStartingWithin` trae solo citas `approved`/`confirmed` dentro de la ventana (nunca `cancelled` ni fuera de rango), `getActiveById` trae la cita activa o `null`, y anon no lee ninguna cita por esta vía (SEC-002).
 - Trigger `scheduling_appointments_notify_booking_created` (US-NOT-01): al insertar una cita con
   clienta en `pending_approval` llama a `notifications_record_booking`, en la misma transacción, con
