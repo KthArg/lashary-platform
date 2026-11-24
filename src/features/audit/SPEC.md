@@ -2,7 +2,7 @@
 feature: audit
 dri: pendiente
 estado: terminada
-actualizado: 2026-10-20
+actualizado: 2026-11-23
 historias:
   []
 flags: []
@@ -24,11 +24,13 @@ Pruebas: `supabase/tests/database/audit_staff_access.test.sql` (pgTAP, control p
 
 Capa `domain/`: entidad `AuditEvent` como `interface` de campos `readonly`, con marca `unique symbol` no exportada que solo pone `buildAuditEvent` (→ `Result`; un literal con la misma forma no pasa como `AuditEvent`), y `auditEventToView` como función pura, invariantes DOM-007 (actor, acción, tipo y recurso no vacíos); `payload` opcional, por defecto `{}`. Error `AuditEventValidationError`: `interface` con `code` literal (`AUDIT_ERROR_CODES.invalidEvent`), fábrica `auditEventValidationError` y guarda `isAuditEventValidationError`, sin extender `DomainError` (DOM-006, ADR-0008). Reloj inyectado (`Clock` de `shared/clock.ts`, DOM-004) — `createdAt` llega desde afuera, la entidad no llama `new Date()`. Pruebas con fixtures fijas de `shared/testing/fixed-clock.ts` (única forma de fijar una fecha en tests sin violar DOM-004, que `check-domain-purity.sh` escanea literalmente).
 
-Capa `application/`: puerto `AuditEventRepository` (`insert` únicamente — nadie necesita consultar la bitácora desde código todavía) y el use-case `record(deps)(input)` (`record.ts`), que arma el `AuditEvent`, lo persiste y devuelve su vista. Pruebas con repositorio en memoria, también como función fábrica (`__tests__/record.test.ts`).
+Capa `application/`: puerto `AuditEventRepository` (`insert` únicamente) y el use-case `record(deps)(input)` (`record.ts`), que arma el `AuditEvent`, lo persiste y devuelve su vista. Pruebas con repositorio en memoria, también como función fábrica (`__tests__/record.test.ts`).
+
+Lectura (US-MOR-04, pieza 2/8), con puerto y capas aparte para no tocar la escritura: `domain/entity-events-query.ts` (`ENTITY_EVENTS_LIMITS`: 50 recursos, 100 de límite por defecto, 200 de tope; `normalizeEntityEventsQuery` recorta el tipo y devuelve el primer problema como `AuditQueryInvalid`); `AuditQueryInvalid` y `AuditStorageFailed` en `domain/errors.ts` (`interface` con `code` literal, fábrica y guarda, sin `class`); puerto `AuditEventReader.listByEntities(consulta normalizada)` y use-case `listEntityEvents(deps)(query)`; `db/audit-event-reader.ts` con `createSupabaseAuditEventReader(db)` (valida las filas con zod y mapea a `AuditEventView`) y `auditEventReader()` con el cliente de servidor. Un `limit` no entero o menor que 1 usa el valor por defecto, igual que `pageSize` en `listClientAppointments`; un `entityType` vacío es inválido aun con `entityIds` vacío. Pruebas en `domain/__tests__/entity-events-query.test.ts`, `application/__tests__/list-entity-events.test.ts` (lector en memoria) y `db/__tests__/audit-event-reader.test.ts` (cliente simulado).
 
 Capa `db/`: `createSupabaseAuditEventRepository(db)`, función fábrica que devuelve un `AuditEventRepository` (`auditEventRepository()` la cablea con el cliente de servidor; `toRow` mapea dominio → fila; sin `rowToDomain` porque el puerto no lee). Prueba unitaria del mapeo (`toRow`) y de integración (`insert()` denegado por RLS con token anónimo — no hay forma de ejercer el camino de éxito desde JS sin una sesión de staff real, igual que `catalog`; el camino de éxito lo prueba `audit_staff_access.test.sql`, pgTAP).
 
-`index.ts` (ARCH-003): un solo verbo — `record(input)` — cablea el repositorio de servidor, `randomUUID()` y `systemClock`. Quien llama no conoce nada de la persistencia interna. Exporta también `RecordAuditEventInput`, `AuditEventView`, `AuditEventPayload`, el tipo `AuditEventValidationError` y la guarda `isAuditEventValidationError`.
+`index.ts` (ARCH-003): dos verbos — `record(input)` y `listEntityEvents(query)` — cablean el repositorio o el lector de servidor, `randomUUID()` y `systemClock`. Quien llama no conoce nada de la persistencia interna. Exporta también `RecordAuditEventInput`, `ListEntityEventsQuery`, `AuditEventView`, `AuditEventPayload`, los tipos de error y sus guardas.
 
 ## Decisiones que conviene conocer
 
@@ -41,14 +43,14 @@ La bitácora solo admite INSERT de staff por RLS, y hay acciones de una clienta 
 
 ## Fuera de alcance por ahora
 
-Sin capacidad de listar todos los eventos ni de filtrar por actor, acción o fecha. La lectura por entidad (`listEntityEvents`) llega con US-MOR-04 (pieza 2); lo demás se agrega cuando una historia lo exija — no antes.
+Sin capacidad de listar todos los eventos ni de filtrar por actor, acción o fecha. La lectura por entidad (`listEntityEvents`) ya existe (US-MOR-04, pieza 2); lo demás se agrega cuando una historia lo exija — no antes.
 
 ## Contrato público (`index.ts`, ARCH-003)
 
 - `record(input: RecordAuditEventInput): Promise<Result<AuditEventView, AuditEventValidationError>>` — registra un evento. `input`: `{ actorId, action, entityType, entityId, payload? }`.
 - Tipos: `RecordAuditEventInput`, `AuditEventView`, `AuditEventPayload`.
 - Error: `AuditEventValidationError` (actor, acción, tipo o recurso vacíos) y su guarda `isAuditEventValidationError`.
-- `listEntityEvents(query: ListEntityEventsQuery): Promise<Result<AuditEventView[], AuditQueryInvalid | AuditStorageFailed>>` — pactado en la pieza 1/8 de US-MOR-04, se implementa en la pieza 2/8. Consumidor: US-MOR-04, detalle de la morosidad en `delinquency`.
+- `listEntityEvents(query: ListEntityEventsQuery): Promise<Result<AuditEventView[], AuditQueryInvalid | AuditStorageFailed>>` — pactado en la pieza 1/8 de US-MOR-04 e implementado en la pieza 2/8. Consumidor: US-MOR-04, detalle de la morosidad en `delinquency`.
 
 ```ts
 type ListEntityEventsQuery = {
@@ -61,6 +63,6 @@ type ListEntityEventsQuery = {
   - Lee con el cliente de Supabase de servidor y la sesión de quien llama, nunca con la service-role key (SEC-003). La RLS `audit_events_select_staff` deja leer solo a staff: a una clienta o a `anon` les devuelve una lista vacía, no un error.
   - Devuelve los eventos de ese `entityType` cuyo `entity_id` está en `entityIds`, del más antiguo al más reciente (`created_at` y, si empatan, `id`). Usa el índice existente `idx_audit_events_entity (entity_type, entity_id)`.
   - `entityIds` vacío devuelve `ok([])` sin consultar. `entityType` vacío o más de 50 ids es `AuditQueryInvalid` (código `AUDIT_QUERY_INVALID`), sin consultar.
-  - `limit` vale 100 si no viene y no pasa de 200 (PERF-002); quien necesite saber si hay más pide uno extra.
+  - `limit` vale 100 si no viene o si no es entero o es menor que 1, y no pasa de 200 (PERF-002); quien necesite saber si hay más pide uno extra.
   - Un fallo de la base devuelve `AuditStorageFailed` (código `AUDIT_STORAGE_FAILED`), no lanza.
   - Ambos errores son `interface` con `code` literal, con su fábrica y su guarda `isAuditQueryInvalid` / `isAuditStorageFailed` (ADR-0008, sin `class`).
