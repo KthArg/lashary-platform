@@ -39,7 +39,6 @@ export const historyMessages = {
     status: (page: number, totalPages: number) => `Página ${page} de ${totalPages}`,
     total: (total: number) => `${total} ${total === 1 ? 'morosidad' : 'morosidades'}`,
     sizeLabel: 'Por página',
-    sizeApply: 'Aplicar',
     previous: 'Anterior',
     next: 'Siguiente',
   },

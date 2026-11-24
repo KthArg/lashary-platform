@@ -1,5 +1,8 @@
-import { describe, it, expect, afterEach } from 'vitest'
-import { render, screen, cleanup, within } from '@testing-library/react'
+import { describe, it, expect, afterEach, vi } from 'vitest'
+import { render, screen, cleanup, within, fireEvent } from '@testing-library/react'
+
+const mockPush = vi.fn()
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: mockPush }) }))
 import {
   HISTORY_DEFAULT_PAGE_SIZE,
   HISTORY_PAGE_SIZES,
@@ -8,7 +11,10 @@ import {
 import { HISTORY_PATH, historyMessages } from '@/features/delinquency/ui/history/constants/history-strings'
 import { HistoryPagination } from '@/features/delinquency/ui/history/components/HistoryPagination'
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  mockPush.mockClear()
+})
 
 const query = (overrides: Partial<HistoryQuery> = {}): HistoryQuery => ({
   filter: 'all',
@@ -61,12 +67,23 @@ describe('HistoryPagination', () => {
     expect(screen.getByRole('link', { name: historyMessages.pagination.previous })).toBeTruthy()
   })
 
-  it('ofrece solo los tamaños permitidos, con el actual marcado, y conserva el filtro', () => {
+  it('ofrece solo los tamaños permitidos, con el actual marcado, y no tiene botón Aplicar', () => {
     render(<HistoryPagination query={query({ filter: 'dismissed' })} total={80} />)
 
     const select = within(pagination()).getByLabelText(historyMessages.pagination.sizeLabel) as HTMLSelectElement
     expect([...select.options].map((option) => Number(option.value))).toEqual([...HISTORY_PAGE_SIZES])
     expect(select.value).toBe(String(HISTORY_DEFAULT_PAGE_SIZE))
-    expect((pagination().querySelector('[name="filter"]') as HTMLInputElement).value).toBe('dismissed')
+    expect(within(pagination()).queryByRole('button')).toBeNull()
+  })
+
+  it('al elegir otra cantidad navega enseguida a la primera página conservando el filtro', () => {
+    const pageSize = HISTORY_PAGE_SIZES[0]
+    render(<HistoryPagination query={query({ filter: 'dismissed', page: 2 })} total={80} />)
+
+    fireEvent.change(within(pagination()).getByLabelText(historyMessages.pagination.sizeLabel), {
+      target: { value: String(pageSize) },
+    })
+
+    expect(mockPush).toHaveBeenCalledWith(`${HISTORY_PATH}?filter=dismissed&pageSize=${pageSize}`)
   })
 })

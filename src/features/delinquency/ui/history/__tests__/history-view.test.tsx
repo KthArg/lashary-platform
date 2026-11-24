@@ -1,5 +1,6 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup, within } from '@testing-library/react'
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }))
 import { formatMoney, moneyFromColones } from '@/shared/money'
 import { formatStudioDate, formatStudioDateTime } from '@/shared/studio-time'
 import { HISTORY_DEFAULT_PAGE_SIZE } from '@/features/delinquency/domain/case-history'
@@ -58,12 +59,13 @@ describe('HistoryView: la tabla', () => {
     expect(within(row).getByText(historyMessages.states.settled)).toBeTruthy()
   })
 
-  it('el enlace Ver detalle lleva al detalle de esa morosidad y nombra a la clienta', () => {
+  it('el icono Ver detalle lleva al detalle de esa morosidad y nombra a la clienta', () => {
     renderView(ready())
 
     const link = screen.getByRole('link', { name: historyMessages.detailLinkLabel('Ana Pérez') })
     expect(link.getAttribute('href')).toBe(historyDetailPath('caso-1'))
-    expect(link.textContent).toBe(historyMessages.detailLink)
+    expect(link.getAttribute('title')).toBe(historyMessages.detailLink)
+    expect(link.querySelector('svg')?.getAttribute('aria-hidden')).toBe('true')
   })
 
   it('sin nombre, sin cita o sin servicio muestra los textos por defecto o solo la fecha', () => {
