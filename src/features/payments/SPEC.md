@@ -52,6 +52,18 @@ Pagos en el ledger (US-MOR-03; migración `20261117020000_payments_ledger_paymen
 
 Registrar un pago (US-MOR-03; migración `20261117030000_payments_record_payment_fn.sql`): `payments_record_payment(clienta, cita, monto)` escribe el asiento `payment` por el monto en negativo y devuelve su id. El monto va de 1 hasta el saldo actual de la cita (más es `payments_payment_exceeds_balance`; cero o negativo, `payments_payment_amount_invalid`), la cita tiene que ser de esa clienta (`payments_payment_wrong_client`), y toma un lock por cita antes de leer el saldo. Sin `EXECUTE` para nadie con sesión: la llama la aprobación de `delinquency`, como `payments_record_close_entries` la llama el cierre. Prueba: pgTAP `payments_record_payment.test.sql` (13 pruebas).
 
+## Export CSV del ledger (US-MOR-04, piezas 14 a 16)
+
+Sin migraciones. La administradora descargará los asientos de `payments_ledger_entries` de un rango de fechas desde `/admin/payments`. Se construye en tres piezas: la 14 es el dominio, la 15 la lectura y la 16 la ruta y el formulario. Decisiones de José Loría del 2026-11-23, ajustables.
+
+Pieza 14, dominio (sin base ni pantalla):
+
+- **Rango** (`domain/ledger-export-range.ts`): `desde` y `hasta` obligatorios, fechas `AAAA-MM-DD` en hora del estudio e inclusivas, `desde` no posterior a `hasta`, máximo 366 días. Se convierten a instantes UTC (DOM-003) y los errores son tipados (`InvalidLedgerRange`, con su motivo). Los nombres de los parámetros de la URL (`desde`, `hasta`) viven aquí para que la ruta y el formulario compartan la constante.
+- **CSV** (`domain/ledger-csv.ts`): UTF-8 con BOM para que Excel lea las tildes, coma, saltos CRLF, encabezado `Fecha,Clienta,Cita,Tipo,Monto`, fecha y hora del estudio, tipo en español (Cargo, Anticipo, Pago, Condonación) y monto entero en colones con signo, sin símbolo ni miles, para poder sumarlo. Escapa comillas y comas (RFC 4180) y neutraliza fórmulas: un texto que empieza con `=`, `+`, `-`, `@`, tabulador o retorno lleva un `'` delante; el monto es numérico y no se toca.
+- **Errores** (`domain/errors.ts`): además del rango, `LedgerExportTooLarge` («demasiados asientos, acote el rango») y `PaymentsStorageFailed`, que usará la lectura de la pieza 15.
+
+Pruebas: `domain/__tests__/ledger-export-range.test.ts` (conversión a UTC, un día, el máximo de días y uno más, cada motivo de rechazo) y `domain/__tests__/ledger-csv.test.ts` (BOM y encabezado, hora del estudio, signos, tipos, escape, inyección de fórmulas).
+
 ## Qué no hace todavía
 
 El contrato de conservación de exoneraciones al archivar clientas está documentado en `docs/adr/ADR-0009-client-archival-and-exemptions.md`, aceptado por el equipo, según el acuerdo comunicado por Bayron el 2026-10-05. Mantiene la FK específica a `clients_profiles` y requiere una migración nueva de `ON DELETE CASCADE` a `RESTRICT`. La migración `20261005000000_payments_exemption_history.sql` implementa esa protección. `payments_exemption_history.test.sql` demuestra en PostgreSQL local el bloqueo del borrado directo e indirecto, la conservación de perfiles y exoneraciones activas e históricas y la integridad de la FK. Su integración y aplicación en producción siguen pendientes. El archivado y la revisión de exoneraciones al reactivar clientas aún no están implementados.

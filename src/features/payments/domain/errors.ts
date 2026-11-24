@@ -1,6 +1,9 @@
 export const PAYMENTS_ERROR_CODES = {
   invalidExemption: 'PAYMENTS_DEPOSIT_EXEMPTION_INVALID',
   clientAlreadyExempt: 'PAYMENTS_CLIENT_ALREADY_EXEMPT',
+  invalidLedgerRange: 'PAYMENTS_LEDGER_RANGE_INVALID',
+  ledgerExportTooLarge: 'PAYMENTS_LEDGER_EXPORT_TOO_LARGE',
+  storageFailed: 'PAYMENTS_STORAGE_FAILED',
 } as const
 
 type PaymentsErrorCode = (typeof PAYMENTS_ERROR_CODES)[keyof typeof PAYMENTS_ERROR_CODES]
@@ -47,3 +50,39 @@ export function clientAlreadyExempt(clientId: string): ClientAlreadyExempt {
 
 export const isClientAlreadyExempt = (error: unknown): error is ClientAlreadyExempt =>
   hasCode<ClientAlreadyExempt>(error, PAYMENTS_ERROR_CODES.clientAlreadyExempt)
+
+export interface InvalidLedgerRange {
+  readonly code: typeof PAYMENTS_ERROR_CODES.invalidLedgerRange
+  readonly message: string
+}
+
+export const invalidLedgerRange = (message: string): InvalidLedgerRange => ({
+  code: PAYMENTS_ERROR_CODES.invalidLedgerRange,
+  message,
+})
+
+export const isInvalidLedgerRange = (error: unknown): error is InvalidLedgerRange =>
+  hasCode<InvalidLedgerRange>(error, PAYMENTS_ERROR_CODES.invalidLedgerRange)
+
+export interface LedgerExportTooLarge {
+  readonly code: typeof PAYMENTS_ERROR_CODES.ledgerExportTooLarge
+  readonly message: string
+}
+
+export const ledgerExportTooLarge = (maxEntries: number): LedgerExportTooLarge => ({
+  code: PAYMENTS_ERROR_CODES.ledgerExportTooLarge,
+  message: `demasiados asientos (más de ${maxEntries}), acote el rango`,
+})
+
+export const isLedgerExportTooLarge = (error: unknown): error is LedgerExportTooLarge =>
+  hasCode<LedgerExportTooLarge>(error, PAYMENTS_ERROR_CODES.ledgerExportTooLarge)
+
+export interface PaymentsStorageFailed {
+  readonly code: typeof PAYMENTS_ERROR_CODES.storageFailed
+  readonly message: string
+}
+
+export const paymentsStorageFailed = (message: string): PaymentsStorageFailed => ({
+  code: PAYMENTS_ERROR_CODES.storageFailed,
+  message,
+})
