@@ -65,7 +65,7 @@ describe('receiveLedgerExportRequest', () => {
     expect(response.status).toBe(200)
     expect(response.headers.get('Content-Type')).toBe(LEDGER_EXPORT_CONTENT_TYPE)
     expect(response.headers.get('Content-Disposition')).toBe('attachment; filename="ledger-2026-11-01-a-2026-11-30.csv"')
-    expect(await response.text()).toContain('Fecha,Clienta,Cita,Tipo,Monto')
+    expect(await response.text()).toContain('Fecha;Clienta;Cita;Tipo;Monto')
   })
 
   it('vuelve al formulario cuando hay demasiados asientos', async () => {
