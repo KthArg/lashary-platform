@@ -1,18 +1,8 @@
-import type { DisplayedState } from '@/features/delinquency/domain/case-history'
+import { CASE_STATE_LABELS } from '../../constants/case-state-labels'
 
 export const HISTORY_PATH = '/admin/morosidades/historial'
 
 export const historyDetailPath = (caseId: string): string => `${HISTORY_PATH}/${caseId}`
-
-const STATE_LABELS = {
-  pending_review: 'Por confirmar',
-  active: 'Activa',
-  pending_approval: 'Pendiente de aprobación',
-  settled: 'Saldada',
-  forgiven: 'Condonada',
-  dismissed: 'Descartada',
-  lifted: 'Levantada',
-} as const satisfies Record<DisplayedState, string>
 
 export const historyMessages = {
   title: 'Historial de morosidades',
@@ -24,8 +14,8 @@ export const historyMessages = {
     title: 'No se pudo cargar el historial',
     body: 'Hubo un problema al leer los datos. Inténtelo nuevamente.',
   },
-  states: STATE_LABELS,
-  filters: { all: 'Todas', ...STATE_LABELS },
+  states: CASE_STATE_LABELS,
+  filters: { all: 'Todas', ...CASE_STATE_LABELS },
   filter: { formLabel: 'Filtrar el historial', selectLabel: 'Estado', submit: 'Filtrar' },
   headers: {
     client: 'Clienta',
