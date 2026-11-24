@@ -54,6 +54,26 @@ type ClientAppointmentsPage = {
 
 Consumidor: **US-CLI-02**, la pestaña "Citas" de la ficha de la clienta en `/admin/clients/<id>/citas`.
 
+### `getAppointmentSummaries(appointmentIds) => Promise<Result<AppointmentSummary[], StorageFailed | TooManyAppointmentIds>>`
+
+```ts
+type AppointmentSummary = {
+  id: string
+  startsAtMs: number
+  serviceName: string | null
+}
+```
+
+- Lee con el cliente de Supabase de servidor y la sesión de quien llama; la RLS de `scheduling_appointments` decide qué filas ve (la administradora, todas). Nunca usa la llave de servicio (SEC-003).
+- `serviceName` es `technique_name` y, si es nulo, `package_name`, lo congelado al reservar (DOM-002); nulo si no hay ninguno.
+- `startsAtMs` es el instante de inicio en milisegundos UTC (DOM-003).
+- Un id que no existe no devuelve fila; el orden no está garantizado, así que quien llama arma un mapa por `id`.
+- Una lista vacía devuelve `ok([])` sin consultar. Más de 100 ids es `TooManyAppointmentIds`, sin consultar (`SCHEDULING_TOO_MANY_APPOINTMENT_IDS`).
+
+Pactado en la pieza 1/8 de US-MOR-04 e implementado en la pieza 3/8.
+
+Consumidor: **US-MOR-04**, listado y detalle de morosidades.
+
 ## Funciones SQL
 
 ### `public.scheduling_client_last_visits() => TABLE (client_id uuid, last_visit_at timestamptz)`
