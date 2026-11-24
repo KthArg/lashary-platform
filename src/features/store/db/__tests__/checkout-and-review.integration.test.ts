@@ -5,8 +5,10 @@ import { isErr, isOk } from '@/shared/result'
 import { checkout } from '../../application/checkout/checkout'
 import { uploadReceipt } from '../../application/checkout/upload-receipt'
 import { approveOrder, loadPendingOrders, rejectOrder } from '../../application/admin-orders/review-order'
+import { loadMyLatestOrder } from '../../application/my-orders/load-my-latest-order'
 import { checkoutRepository } from '../checkout-repository'
 import { currentClient, receiptLinks, receiptStorage } from '../receipt-storage'
+import { myOrdersRepository } from '../my-orders-repository'
 import { orderReviewRepository } from '../order-review-repository'
 
 const API_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
@@ -73,6 +75,7 @@ describe.skipIf(!reachable)('US-SHOP-02 checkout y revisión contra Supabase loc
   let admin: PgClient
   let staff: SignedUpUser
   let ana: SignedUpUser
+  let bea: SignedUpUser
   let anaClientId = ''
   let productId = ''
 
@@ -82,6 +85,7 @@ describe.skipIf(!reachable)('US-SHOP-02 checkout y revisión contra Supabase loc
 
     staff = await signUp('shop02-staff')
     ana = await signUp('shop02-ana')
+    bea = await signUp('shop02-bea')
     await admin.query(`UPDATE public.auth_user_roles SET role = 'admin' WHERE user_id = $1`, [staff.userId])
 
     const anaProfile = await admin.query(
@@ -89,6 +93,11 @@ describe.skipIf(!reachable)('US-SHOP-02 checkout y revisión contra Supabase loc
       [ana.userId, `${ana.userId}@lashary.test`],
     )
     anaClientId = anaProfile.rows[0].id
+
+    await admin.query(
+      `INSERT INTO public.clients_profiles (user_id, full_name, email, phone) VALUES ($1, 'Bea Soto', $2, '88880002')`,
+      [bea.userId, `${bea.userId}@lashary.test`],
+    )
 
     const product = await admin.query(
       `INSERT INTO public.store_products (slug, nombre, descripcion, url_imagen, precio_crc, activo, existencias)
@@ -111,7 +120,7 @@ describe.skipIf(!reachable)('US-SHOP-02 checkout y revisión contra Supabase loc
     if (anaClientId) await admin.query('DELETE FROM public.store_orders WHERE client_id = $1', [anaClientId])
     if (ana) await admin.query('DELETE FROM public.store_cart_items WHERE user_id = $1', [ana.userId])
     if (productId) await admin.query('DELETE FROM public.store_products WHERE id = $1', [productId])
-    const userIds = [staff, ana].flatMap((user) => (user ? [user.userId] : []))
+    const userIds = [staff, ana, bea].flatMap((user) => (user ? [user.userId] : []))
     if (userIds.length > 0) {
       // audit_events.actor_id referencia a auth.users sin cascada: store_checkout/approve/reject dejan
       // su evento por cada acción de esta prueba, y hay que borrarlo antes de poder borrar las cuentas.
@@ -224,6 +233,49 @@ describe.skipIf(!reachable)('US-SHOP-02 checkout y revisión contra Supabase loc
 
     const stockAfter = await admin.query(`SELECT existencias FROM public.store_products WHERE id = $1`, [productId])
     expect(stockAfter.rows[0].existencias).toBe(stockBefore.rows[0].existencias + 1)
+  })
+
+  it('la clienta ve el estado de su pedido más reciente, sea pendiente, aprobado o rechazado con motivo; otra clienta sin pedidos no ve nada (A1, SEC-002)', async () => {
+    await admin.query(
+      `INSERT INTO public.store_cart_items (user_id, product_id, cantidad) VALUES ($1, $2, 1)
+         ON CONFLICT (user_id, product_id) DO UPDATE SET cantidad = 1`,
+      [ana.userId, productId],
+    )
+    const pendingCheckout = await checkoutFor(ana.client)({ contactPhone: '88880001', receipt: PDF })
+    expect(isOk(pendingCheckout)).toBe(true)
+    const pendingOrderId = isOk(pendingCheckout) ? pendingCheckout.value : ''
+
+    const pendingNotice = await loadMyLatestOrder(myOrdersRepository(ana.client))()
+    expect(isOk(pendingNotice) && pendingNotice.value?.id).toBe(pendingOrderId)
+    expect(isOk(pendingNotice) && pendingNotice.value?.state).toBe('pending_approval')
+    expect(isOk(pendingNotice) && pendingNotice.value?.rejectionReason).toBeNull()
+
+    const approved = await approveOrder(orderReviewRepository(staff.client))(pendingOrderId)
+    expect(isOk(approved)).toBe(true)
+
+    const approvedNotice = await loadMyLatestOrder(myOrdersRepository(ana.client))()
+    expect(isOk(approvedNotice) && approvedNotice.value?.id).toBe(pendingOrderId)
+    expect(isOk(approvedNotice) && approvedNotice.value?.state).toBe('approved')
+
+    await admin.query(
+      `INSERT INTO public.store_cart_items (user_id, product_id, cantidad) VALUES ($1, $2, 1)
+         ON CONFLICT (user_id, product_id) DO UPDATE SET cantidad = 1`,
+      [ana.userId, productId],
+    )
+    const secondCheckout = await checkoutFor(ana.client)({ contactPhone: '88880001', receipt: PDF })
+    expect(isOk(secondCheckout)).toBe(true)
+    const rejectedOrderId = isOk(secondCheckout) ? secondCheckout.value : ''
+    const rejectionReason = 'El comprobante no corresponde al monto, motivo largo'
+    const rejected = await rejectOrder(orderReviewRepository(staff.client))(rejectedOrderId, rejectionReason)
+    expect(isOk(rejected)).toBe(true)
+
+    const rejectedNotice = await loadMyLatestOrder(myOrdersRepository(ana.client))()
+    expect(isOk(rejectedNotice) && rejectedNotice.value?.id).toBe(rejectedOrderId)
+    expect(isOk(rejectedNotice) && rejectedNotice.value?.state).toBe('rejected')
+    expect(isOk(rejectedNotice) && rejectedNotice.value?.rejectionReason).toBe(rejectionReason)
+
+    const noOne = await loadMyLatestOrder(myOrdersRepository(bea.client))()
+    expect(isOk(noOne) && noOne.value).toBeNull()
   })
 
   it('una clienta no aprueba pedidos', async () => {

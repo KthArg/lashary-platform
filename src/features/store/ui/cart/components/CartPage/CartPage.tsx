@@ -1,3 +1,4 @@
+import { MyOrderNotice } from '@/features/store/ui/my-orders/components/MyOrderNotice'
 import { CartContents } from '../CartContents'
 import { CART_PAGE_STRINGS } from '../../constants/cart-page-strings'
 import { getCartLineViews } from './CartPage.data'
@@ -8,6 +9,7 @@ export async function CartPage() {
 
   return (
     <div className={STYLES.page}>
+      <MyOrderNotice />
       <header className={STYLES.header}>
         <h1 className={STYLES.title}>{CART_PAGE_STRINGS.title}</h1>
         <p className={STYLES.subtitle}>{CART_PAGE_STRINGS.subtitle}</p>

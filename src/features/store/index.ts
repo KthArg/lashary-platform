@@ -38,6 +38,8 @@ export type { AdminProduct } from './domain/product';
 export { CartPage } from './ui/cart/components/CartPage';
 export { CART_PAGE_STRINGS } from './ui/cart/constants/cart-page-strings';
 
+export { MyOrderNotice } from './ui/my-orders/components/MyOrderNotice';
+
 export { CheckoutPage } from './ui/checkout/components/CheckoutPage';
 export { checkoutMessages } from './ui/checkout/constants/checkout-strings';
 
