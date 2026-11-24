@@ -36,7 +36,14 @@ export function HistoryView({ model, query }: HistoryViewProps) {
       {header}
       <HistoryFilter filter={query.filter} pageSize={query.pageSize} />
       {appointmentsUnavailable ? <p role="status" className={STYLES.notice}>{copy.appointmentsUnavailable}</p> : null}
-      {items.length === 0 ? (
+      {items.length === 0 && total > 0 ? (
+        <p className={STYLES.empty}>
+          {copy.emptyPage}{' '}
+          <Link href={buildHistoryUrl({ ...query, page: 0 })} className={STYLES.firstPage}>
+            {copy.firstPage}
+          </Link>
+        </p>
+      ) : items.length === 0 ? (
         <p className={STYLES.empty}>{query.filter === 'all' ? copy.emptyAll : copy.emptyFiltered}</p>
       ) : (
         <HistoryTable items={items} />

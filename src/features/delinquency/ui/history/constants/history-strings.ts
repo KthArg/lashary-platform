@@ -42,10 +42,12 @@ export const historyMessages = {
   detailLinkLabel: (clientName: string) => `Ver detalle de ${clientName}`,
   emptyAll: 'Todavía no hay morosidades.',
   emptyFiltered: 'Ninguna morosidad coincide con el filtro.',
+  emptyPage: 'Esta página no tiene morosidades.',
+  firstPage: 'Ir a la primera página',
   pagination: {
     navLabel: 'Paginación del historial',
     status: (page: number, totalPages: number) => `Página ${page} de ${totalPages}`,
-    total: (total: number) => `${total} morosidades`,
+    total: (total: number) => `${total} ${total === 1 ? 'morosidad' : 'morosidades'}`,
     sizeLabel: 'Por página',
     sizeApply: 'Aplicar',
     previous: 'Anterior',

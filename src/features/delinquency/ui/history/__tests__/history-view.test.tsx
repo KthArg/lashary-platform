@@ -116,6 +116,16 @@ describe('HistoryView: vacío, carga y error', () => {
     expect(screen.queryByText(historyMessages.emptyAll)).toBeNull()
   })
 
+  it('una página más allá del total no dice que no hay morosidades y lleva a la primera página', () => {
+    renderView(ready({ items: [], total: 7 }), { ...defaultQuery, filter: 'active', page: 5 })
+
+    expect(screen.getByText(historyMessages.emptyPage, { exact: false })).toBeTruthy()
+    expect(screen.queryByText(historyMessages.emptyAll)).toBeNull()
+    expect(screen.getByRole('link', { name: historyMessages.firstPage }).getAttribute('href')).toBe(
+      `${HISTORY_PATH}?filter=active`,
+    )
+  })
+
   it('si falla la lectura muestra la alerta con Reintentar hacia la misma consulta y sin tabla', () => {
     renderView({ status: 'error' }, { filter: 'settled', page: 1, pageSize: HISTORY_DEFAULT_PAGE_SIZE })
 

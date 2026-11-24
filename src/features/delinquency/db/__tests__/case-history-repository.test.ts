@@ -4,13 +4,21 @@ import { isErr, isOk } from '@/shared/result'
 import { HISTORY_DEFAULT_PAGE_SIZE, HISTORY_FILTERS, type HistoryFilter } from '../../domain/case-history'
 import { CASES_TABLE } from '../case-list-repository'
 import { REGULARIZATIONS_TABLE } from '../regularization-queue-repository'
-import { caseHistoryRepository, HISTORY_COLUMNS, PENDING_REQUEST_STATE } from '../case-history-repository'
+import {
+  caseHistoryRepository,
+  HISTORY_COLUMNS,
+  PENDING_REQUEST_STATE,
+  RANGE_NOT_SATISFIABLE,
+} from '../case-history-repository'
 
-type Response = { data: unknown; error: { message: string } | null; count: number | null }
+type Response = { data: unknown; error: { message: string; code?: string } | null; count: number | null }
 
-function createFakeDb(response: Response) {
+function createFakeDb(...responses: Response[]) {
   const calls: unknown[][] = []
-  const query: Record<string, unknown> = { then: (resolve: (value: Response) => unknown) => resolve(response) }
+  let answered = 0
+  const query: Record<string, unknown> = {
+    then: (resolve: (value: Response) => unknown) => resolve(responses[Math.min(answered++, responses.length - 1)]),
+  }
   for (const method of ['select', 'eq', 'is', 'order', 'range']) {
     query[method] = (...args: unknown[]) => (calls.push([method, ...args]), query)
   }
@@ -112,6 +120,19 @@ describe('caseHistoryRepository.list', () => {
     const result = await caseHistoryRepository(db).list(FIRST_PAGE)
 
     expect(isErr(result) && result.error.code).toBe('DELINQUENCY_STORAGE_FAILED')
+  })
+
+  it('una página más allá del total devuelve una página vacía con el total, no un error', async () => {
+    const beyondTotal = { data: null, error: { message: 'rango', code: RANGE_NOT_SATISFIABLE }, count: null }
+    const { db, calls } = createFakeDb(beyondTotal, { data: null, error: null, count: 7 })
+    const result = await caseHistoryRepository(db).list({ ...FIRST_PAGE, page: 10 })
+
+    expect(isOk(result) && result.value).toEqual({ rows: [], total: 7 })
+    expect(calls).toContainEqual([
+      'select',
+      `${HISTORY_COLUMNS}, ${REGULARIZATIONS_TABLE}(id)`,
+      { count: 'exact', head: true },
+    ])
   })
 
   it('una fila con forma inesperada o sin total es un fallo, no un listado inventado', async () => {

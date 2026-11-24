@@ -28,6 +28,11 @@ describe('HistoryPagination', () => {
     expect(pagination().textContent).toContain(historyMessages.pagination.total(80))
   })
 
+  it('el total va en singular cuando hay una sola morosidad', () => {
+    expect(historyMessages.pagination.total(1)).toBe('1 morosidad')
+    expect(historyMessages.pagination.total(2)).toBe('2 morosidades')
+  })
+
   it('en la primera página no hay enlace Anterior y Siguiente lleva a la segunda', () => {
     render(<HistoryPagination query={query()} total={80} />)
 

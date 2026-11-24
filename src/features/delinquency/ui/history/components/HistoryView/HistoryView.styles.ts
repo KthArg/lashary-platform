@@ -7,4 +7,5 @@ export const historyViewStyles = {
   notice: 'rounded-box border border-warning/50 bg-warning/10 p-3 text-sm',
   alertError: 'alert alert-error flex flex-wrap items-center gap-3',
   retry: 'btn btn-outline btn-sm',
+  firstPage: 'link link-hover font-medium',
 }
