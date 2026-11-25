@@ -1,0 +1,22 @@
+export const ordersHistoryStyles = {
+  section: 'flex flex-col gap-3',
+  sectionTitle: 'font-serif text-xl text-brand-dark',
+  alertError: 'alert alert-error text-sm',
+  retry: 'link ml-2',
+  empty: 'text-sm text-brand-muted',
+  list: 'flex flex-col gap-4',
+  card: 'rounded-xl border border-brand-border bg-brand-surface p-4 shadow-sm',
+  cardHeader: 'flex items-center justify-between gap-2',
+  cardTitle: 'font-semibold text-brand-dark',
+  meta: 'mt-2 grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-sm text-brand-dark',
+  term: 'text-brand-muted',
+  lines: 'mt-1 text-sm text-brand-dark',
+  rejectionReason: 'mt-2 text-sm text-brand-dark',
+  receiptLink: 'link mt-2 inline-block text-sm',
+  receiptUnavailable: 'mt-2 text-sm text-brand-muted',
+  badge: {
+    pending_approval: 'rounded-full bg-brand-gold/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-gold',
+    approved: 'rounded-full bg-green-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-green-800',
+    rejected: 'rounded-full bg-red-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-red-800',
+  },
+}

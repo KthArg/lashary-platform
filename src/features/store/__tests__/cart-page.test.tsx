@@ -20,6 +20,9 @@ vi.mock('@/features/auth', () => ({
 vi.mock('@/features/store/db/cart-repository', () => ({
   cartRepository: vi.fn(async () => mocks.repo),
 }))
+vi.mock('@/features/store/ui/my-orders/components/MyOrderNotice', () => ({
+  MyOrderNotice: () => null,
+}))
 
 import CartRoute, { metadata } from '@/app/portal/carrito/page'
 import Loading from '@/app/portal/carrito/loading'

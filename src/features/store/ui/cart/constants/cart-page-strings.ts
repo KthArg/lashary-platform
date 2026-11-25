@@ -15,6 +15,7 @@ export const CART_PAGE_STRINGS = {
   increaseLabel: (productName: string) => `Sumar una unidad de ${productName}`,
   removeLabel: (productName: string) => `Quitar ${productName} del carrito`,
   subtotal: 'Subtotal',
+  goToCheckout: 'Finalizar compra',
   loading: 'Cargando tu carrito…',
   errorTitle: 'No pudimos cargar tu carrito',
   errorBody: 'Revisa tu conexión e inténtalo de nuevo.',
