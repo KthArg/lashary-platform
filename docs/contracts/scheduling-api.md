@@ -1,6 +1,6 @@
 # Contrato — API pública de citas
 
-> **Autoridad:** qué expone la feature `scheduling` a las demás features y bajo qué garantías. Es un contrato **de demanda**: nace de lo que necesita `clients` para el historial de citas de una clienta (US-CLI-02). Se versiona aquí antes de cualquier cambio de forma (INT-003). **Lectores:** features `clients` y `notifications`. **Estado:** `listClientAppointments` implementado en la pieza 2 de US-CLI-02 (`application/list-client-appointments.ts` y `db/client-appointments-repository.ts`); `scheduling_client_last_visits` implementado en la pieza 2/4 de US-CLI-01 (`supabase/migrations/20261105000000_clients_list_last_visit.sql`); `scheduling_appointment_client` pactado en la pieza 1/7 de US-CLI-03 e implementado en la pieza 2/7 (`supabase/migrations/20261107010000_scheduling_appointment_client_fn.sql`). `scheduling_close_appointment` con la nota de cuidados pactada en la pieza 1/8 de US-CLI-06; `scheduling_client_last_appointments` implementado en la pieza 2/4 del segundo corte de US-CLI-01 (`supabase/migrations/20261117010000_clients_list_last_appointment_delinquency.sql`). **Actualizado:** 2026-11-17.
+> **Autoridad:** qué expone la feature `scheduling` a las demás features y bajo qué garantías. Es un contrato **de demanda**: nace de lo que necesita `clients` para el historial de citas de una clienta (US-CLI-02). Se versiona aquí antes de cualquier cambio de forma (INT-003). **Lectores:** features `clients`, `notifications` y `loyalty`. **Estado:** `listClientAppointments` implementado en la pieza 2 de US-CLI-02 (`application/list-client-appointments.ts` y `db/client-appointments-repository.ts`); `scheduling_client_last_visits` implementado en la pieza 2/4 de US-CLI-01 (`supabase/migrations/20261105000000_clients_list_last_visit.sql`); `scheduling_appointment_client` pactado en la pieza 1/7 de US-CLI-03 e implementado en la pieza 2/7 (`supabase/migrations/20261107010000_scheduling_appointment_client_fn.sql`). `scheduling_close_appointment` con la nota de cuidados pactada en la pieza 1/8 de US-CLI-06; `scheduling_client_last_appointments` implementado en la pieza 2/4 del segundo corte de US-CLI-01 (`supabase/migrations/20261117010000_clients_list_last_appointment_delinquency.sql`). `scheduling_close_appointment` con la confirmación del beneficio de fidelidad pactada en la pieza 1 de US-LAND-06, sin implementar todavía. **Actualizado:** 2026-11-24.
 
 ## Qué es
 
@@ -237,6 +237,46 @@ notifications_record_aftercare(
 - **Si `notifications` falla, la cita igual se cierra.** La función de cierre atrapa el error en su propio bloque (`RAISE WARNING`), devuelve `aftercare_recorded = false` y deja `scheduling.aftercare.failed` en `audit_events` con el `id` de la cita: el cierre y su cargo importan más que el mensaje, como en la confirmación de US-NOT-08.
 
 Prueba: pgTAP `supabase/tests/database/scheduling_close_appointment_aftercare.test.sql` (pieza 4/8 de US-CLI-06): cerrar completada registra las indicaciones con la técnica aplicada o el paquete, la nota viaja, `no_show` con nota se rechaza sin cerrar, una falla de `notifications` no tumba el cierre y deja el evento, y la llamada de tres parámetros sigue funcionando.
+
+## Fidelidad al cerrar (US-LAND-06)
+
+Pactado en la pieza 1 de US-LAND-06. Al cerrar una cita como completada, `scheduling` le avisa a `loyalty` que hubo una visita y le dice si la administradora confirmó el beneficio que correspondía (criterios 4 a 6). Va por una función SQL de `loyalty` que llama la función de cierre en la misma transacción, como `notifications_record_aftercare` de US-CLI-06. `loyalty` no lee la tabla de citas (ARCH-005). Las reglas del programa están en [loyalty-api.md](loyalty-api.md#reglas-del-programa).
+
+### La función de cierre recibe la confirmación
+
+```sql
+scheduling_close_appointment(
+  p_appointment_id         uuid,
+  p_outcome                text,
+  p_delivered_technique_id uuid    DEFAULT NULL,
+  p_aftercare_note         text    DEFAULT NULL,
+  p_apply_loyalty_benefit  boolean DEFAULT false
+) RETURNS TABLE (
+  appointment_id     uuid,
+  outcome            text,
+  charge_amount      bigint,
+  deposit_credit     bigint,
+  loyalty_credit     bigint,
+  amount_due         bigint,
+  forfeited_deposit  bigint,
+  aftercare_recorded boolean
+)
+```
+
+- **Cambia la firma**, como en US-CLI-06: agrega `p_apply_loyalty_benefit` al final, con `DEFAULT false`, y la columna `loyalty_credit` al resultado. La migración borra la función de cuatro parámetros y crea esta, con los mismos permisos. Una llamada con los cuatro parámetros de antes sigue funcionando y no aplica ningún beneficio (expand, INT-008).
+- Con `p_outcome = 'completed'`, después de asentar el cargo y el anticipo, llama a `loyalty_record_visit(appointment_id, client_id, charge, p_apply_loyalty_benefit)`. `charge` es el mismo cargo que se acaba de asentar: el precio congelado o el de la técnica prestada.
+- `loyalty_credit` es el monto que devolvió `loyalty`, en positivo (0 si no se aplicó nada), y `amount_due` ya lo descuenta: cargo, menos anticipo, menos beneficio.
+- Con `no_show` no llama a `loyalty`: una ausencia no es visita. `p_apply_loyalty_benefit = true` con `no_show` es `scheduling_close_loyalty_not_allowed`, antes de cerrar nada.
+- **Si `loyalty` falla, el cierre falla entero.** A diferencia de las indicaciones de cuidado, el error no se atrapa: sin la visita contada o sin el descuento, el cobro y el criterio 6 quedarían mal. El mensaje de `loyalty` (`loyalty_benefit_not_available`, por ejemplo) sube tal cual para que el diálogo lo explique.
+- El evento `scheduling.appointment.completed` de `audit_events` agrega `loyaltyCredit` al payload.
+
+### Las citas ya completadas
+
+La misma migración cuenta el historial (regla 10 de [loyalty-api.md](loyalty-api.md#reglas-del-programa)): recorre las citas `completed` con clienta, en orden de `closed_at` y, a igual fecha, por `id`, y llama a `loyalty_record_visit` con `p_apply_benefit = false` por cada una. Los beneficios que alcancen quedan pendientes. `scheduling` lee solo su propia tabla.
+
+### Lo que muestra el cierre
+
+La sección «Citas pasadas sin cerrar» de la agenda diaria pide `quoteLoyaltyBenefits` de `loyalty` ([loyalty-api.md](loyalty-api.md)) con las clientas de toda la lista, en una sola llamada (PERF-005). En la cita de una clienta con beneficio, el diálogo de cierre muestra cuál corresponde y una casilla para aplicarlo (criterio 5): sin marcarla, el cierre no aplica nada y el beneficio queda pendiente.
 
 ## Eventos de dominio
 

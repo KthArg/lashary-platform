@@ -62,10 +62,26 @@ Escribe el asiento `payment` por `-p_amount` y devuelve su id. `created_by` lo f
 
 Quien la necesita: la aprobación de una regularización (criterio 3 de US-MOR-03).
 
+## Descuento de fidelidad (US-LAND-06)
+
+Un beneficio de fidelidad aplicado es un asiento nuevo del ledger que baja el saldo de la cita, nunca un cambio a su cargo (DOM-005): `kind = 'loyalty_credit'`, con monto **negativo**. Pactado en la pieza 1 de US-LAND-06; las reglas del beneficio están en [loyalty-api.md](loyalty-api.md#reglas-del-programa).
+
+- **Uno por cita.** Una cita recibe a lo sumo un beneficio: el índice único `(appointment_id, kind)` se extiende a `loyalty_credit`, junto a `charge` y `deposit_credit`.
+- **Siempre de una cita.** Como `payment`, exige `appointment_id`.
+
+### `public.payments_record_loyalty_credit(p_client_id uuid, p_appointment_id uuid, p_amount bigint) => bigint`
+
+Escribe el asiento `loyalty_credit` por `-p_amount` contra la clienta y la cita, y devuelve el saldo resultante de la cita (`payments_appointment_balances` tras el asiento).
+
+- `p_amount` va de 1 hasta el cargo de la cita (su asiento `charge`): 0, negativo o nulo es `payments_loyalty_amount_invalid`, y más que el cargo es `payments_loyalty_exceeds_charge` (SQLSTATE `22023` en los dos). Una cita sin asiento `charge` de `p_client_id` es `payments_loyalty_wrong_client` (`22023`). El tope es el cargo y no el saldo: el anticipo ya acreditado no achica el beneficio, así que la cita puede quedar con saldo a favor.
+- **Nadie con sesión la ejecuta directo:** `EXECUTE` revocado de `anon` y `authenticated`, como `payments_record_close_entries`. Es `SECURITY INVOKER`: la llama `loyalty_record_visit` dentro de `scheduling_close_appointment` (`SECURITY DEFINER`), que corre como su dueña.
+
+Quien la necesita: `loyalty_record_visit` (criterio 5 de US-LAND-06).
+
 ## Garantías
 
 1. **La forma de la fila es contrato:** un cambio de columnas o de firma se versiona aquí antes del cambio (INT-003).
-2. **Las funciones de lectura no escriben:** los asientos los escribe `scheduling_close_appointment` al cerrar la cita (cargo y anticipo), `payments_record_payment` al aprobar un pago (US-MOR-03) y, desde US-MOR-05, `payments_record_forgiveness_entry` al condonar — las tres sin `EXECUTE` para quien tiene sesión, solo para funciones `SECURITY DEFINER` de su propia feature.
+2. **Las funciones de lectura no escriben:** los asientos los escribe `scheduling_close_appointment` al cerrar la cita (cargo y anticipo), `payments_record_payment` al aprobar un pago (US-MOR-03), desde US-MOR-05, `payments_record_forgiveness_entry` al condonar y, desde US-LAND-06, `payments_record_loyalty_credit` al aplicar un beneficio de fidelidad — las cuatro sin `EXECUTE` para quien tiene sesión, solo para funciones `SECURITY DEFINER` de su propia feature.
 3. **La RLS es la frontera de acceso (SEC-001):** las funciones no la saltan. Si `payments` cambia sus políticas, el contrato cambia con ellas.
 4. **El saldo por cita sale del ledger, nunca de una columna** (DOM-005): `payments_appointment_balances` suma los asientos en el momento de preguntar.
 5. **Sin datos de contacto ni de la cita:** salen ids, un monto y una fecha; el nombre de la clienta se pide a `clients` y la cita a `scheduling`.
