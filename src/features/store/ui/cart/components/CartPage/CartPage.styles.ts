@@ -21,4 +21,5 @@ export const cartPageStyles = {
   feedback: 'text-sm text-brand-muted',
   subtotal: 'mt-4 flex items-center justify-between border-t border-brand-border pt-4 text-brand-dark',
   subtotalAmount: 'text-lg font-bold',
+  checkoutLink: 'btn btn-primary btn-sm mt-4 w-full sm:w-auto sm:self-end',
 } as const

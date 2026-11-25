@@ -1,0 +1,1 @@
+export { OrdersHistoryPagination } from './OrdersHistoryPagination'

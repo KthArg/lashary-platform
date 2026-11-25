@@ -116,6 +116,22 @@ describe('US-SHOP-01: cambiar el carrito desde la página', () => {
     expect(screen.getByText(CART_PAGE_STRINGS.emptyTitle)).toBeDefined()
   })
 
+  it('US-SHOP-02: con líneas en el carrito hay un enlace para finalizar la compra', () => {
+    render(<CartContents lines={[serum]} />)
+
+    expect(screen.getByRole('link', { name: CART_PAGE_STRINGS.goToCheckout }).getAttribute('href')).toBe(
+      '/portal/carrito/finalizar',
+    )
+  })
+
+  it('US-SHOP-02: con el carrito vacío no hay enlace para finalizar la compra', async () => {
+    pendingAction()
+    render(<CartContents lines={[serum]} />)
+    await click(CART_PAGE_STRINGS.removeLabel(serum.name))
+
+    expect(screen.queryByRole('link', { name: CART_PAGE_STRINGS.goToCheckout })).toBeNull()
+  })
+
   it('si el servidor rechaza el cambio, vuelve a la cantidad anterior y avisa', async () => {
     pendingAction()
     render(<CartContents lines={[serum]} />)
