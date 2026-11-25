@@ -2,7 +2,7 @@
 feature: payments
 dri: pendiente
 estado: terminada
-actualizado: 2026-11-16
+actualizado: 2026-11-24
 historias:
   - id: US-AGE-13
     estado: terminada
@@ -51,6 +51,33 @@ Ledger solo al cerrar (US-AGE-12, pieza 12; migración `20261102000001_payments_
 Pagos en el ledger (US-MOR-03; migración `20261117020000_payments_ledger_payment_kind.sql`): el asiento `payment`, con monto negativo y siempre de una cita, y varios por cita (pagos parciales, decisión del PO del 2026-11-13). El índice único `(appointment_id, kind)` queda solo para `charge` y `deposit_credit`, así que cerrar dos veces sigue sin duplicar el cargo, y un índice simple por cita cubre las sumas que incluyen los pagos. No cambia permisos: nadie con sesión escribe el ledger. Prueba: pgTAP `payments_ledger_payment_kind.test.sql` (9 pruebas).
 
 Registrar un pago (US-MOR-03; migración `20261117030000_payments_record_payment_fn.sql`): `payments_record_payment(clienta, cita, monto)` escribe el asiento `payment` por el monto en negativo y devuelve su id. El monto va de 1 hasta el saldo actual de la cita (más es `payments_payment_exceeds_balance`; cero o negativo, `payments_payment_amount_invalid`), la cita tiene que ser de esa clienta (`payments_payment_wrong_client`), y toma un lock por cita antes de leer el saldo. Sin `EXECUTE` para nadie con sesión: la llama la aprobación de `delinquency`, como `payments_record_close_entries` la llama el cierre. Prueba: pgTAP `payments_record_payment.test.sql` (13 pruebas).
+
+## Export CSV del ledger (US-MOR-04, piezas 14 a 16)
+
+Sin migraciones. La administradora descarga los asientos de `payments_ledger_entries` de un rango de fechas desde `/admin/payments`. Se construye en tres piezas: la 14 es el dominio, la 15 la lectura y la 16 la ruta y el formulario. Decisiones de José Loría del 2026-11-23, ajustables.
+
+Pieza 14, dominio (sin base ni pantalla):
+
+- **Rango** (`domain/ledger-export-range.ts`): `desde` y `hasta` obligatorios, fechas `AAAA-MM-DD` en hora del estudio e inclusivas, `desde` no posterior a `hasta`, máximo 366 días. Se convierten a instantes UTC (DOM-003) y los errores son tipados (`InvalidLedgerRange`, con su motivo). Los nombres de los parámetros de la URL (`desde`, `hasta`) viven aquí para que la ruta y el formulario compartan la constante.
+- **CSV** (`domain/ledger-csv.ts`): UTF-8 con BOM para que Excel lea las tildes, punto y coma como separador (el Excel en español de Costa Rica usa `;` como separador de listas; con coma metía cada fila en una sola columna, visto al probar en local el 2026-11-24), saltos CRLF, encabezado `Fecha;Clienta;Cita;Tipo;Monto`, fecha y hora del estudio, tipo en español (Cargo, Anticipo, Pago, Condonación) y monto entero en colones con signo, sin símbolo ni miles, para poder sumarlo. Encierra entre comillas lo que lleva punto y coma, coma, comilla o salto de línea, duplicando las comillas (RFC 4180) y neutraliza fórmulas: un texto que empieza con `=`, `+`, `-`, `@`, tabulador o retorno lleva un `'` delante; el monto es numérico y no se toca.
+- **Errores** (`domain/errors.ts`): además del rango, `LedgerExportTooLarge` («demasiados asientos, acote el rango») y `PaymentsStorageFailed`, que usará la lectura de la pieza 15.
+
+Pruebas: `domain/__tests__/ledger-export-range.test.ts` (conversión a UTC, un día, el máximo de días y uno más, cada motivo de rechazo) y `domain/__tests__/ledger-csv.test.ts` (BOM y encabezado, hora del estudio, signos, tipos, escape, inyección de fórmulas).
+
+Pieza 15, lectura (sin migraciones):
+
+- **Repositorio** (`db/ledger-export-repository.ts`): lee `payments_ledger_entries` con la sesión de la administradora (RLS, SEC-001; sin service-role, SEC-003) en el rango `[startsAt, endsBefore)`, ordenado por fecha e id y en páginas de 1000 (PERF-002). Si pasa de 20 000 asientos devuelve `LedgerExportTooLarge` en vez de un export cortado. Valida cada fila con zod.
+- **Nombres** (`db/ledger-client-names.ts`): pide los nombres a `clients_display_names(uuid[])`, la función de contrato de `clients` (ARCH-005), de a 200 ids y sin repetir clientas. Si una clienta no tiene nombre visible se escribe su id.
+- **Caso de uso** (`application/export-ledger.ts`): valida el rango, lee y arma el CSV con el nombre `ledger-AAAA-MM-DD-a-AAAA-MM-DD.csv`. Un rango inválido no llega a la base.
+
+Pruebas: `db/__tests__/ledger-export-repository.test.ts` (páginas, orden, nombres de a 200, el tope y el tope exacto, fallos de base y de nombres, tipo desconocido) y `application/__tests__/export-ledger.test.ts` (CSV y nombre del archivo, rango inválido sin leer, errores de la lectura).
+
+Pieza 16, ruta y formulario:
+
+- **Ruta** `GET /api/admin/ledger-export?desde=…&hasta=…` (`http/ledger-export-handler.ts`): sin sesión responde 401 y a quien no es staff 403, sin tocar la base. Con éxito entrega el CSV como descarga (`text/csv; charset=utf-8`, `Content-Disposition: attachment`). Ante un rango inválido, demasiados asientos o un fallo, redirige (303) a `/admin/payments?exportError=range|tooLarge|unavailable`; el detalle interno del fallo va al log y nunca a la respuesta.
+- **Formulario** (`ui/admin-ledger-export/`): un `<form method="get">` con dos fechas obligatorias, debajo de la exoneración de anticipos en `/admin/payments`. GET y no server action porque es una lectura que devuelve un archivo. La página lee `exportError` y el formulario muestra el aviso con `role="alert"`; un motivo desconocido en la URL se ignora.
+
+Pruebas: `http/__tests__/ledger-export-handler.test.ts` (401 y 403 sin leer, descarga con su nombre, rango inválido sin leer, demasiados asientos, fallo y excepción sin filtrar el mensaje) y `ui/admin-ledger-export/__tests__/LedgerExportForm.test.tsx` (formulario GET con sus fechas, título y botón, cada aviso, motivos de la URL).
 
 ## Qué no hace todavía
 

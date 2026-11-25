@@ -5,7 +5,8 @@ import type { ConfirmationRequest } from '../domain/confirmation-request'
 import type { InboxNotice } from '../domain/inbox-notice'
 import type { ClientNotice, ClientNoticeDelivery } from '../domain/client-notice'
 import type { AdminAftercare, AftercareMessage, ClientAftercare } from '../domain/aftercare-message'
-import type { AftercareStorageFailed, ChannelNotConfigured, ChannelSendFailed, ClientNoticesStorageFailed, InboxStorageFailed, InvalidAnticipationDays, InvalidPaymentReminderFrequencyDays } from '../domain/errors'
+import type { AftercareStorageFailed, ChannelNotConfigured, ChannelSendFailed, ClientNoticesStorageFailed, InactiveQueueEmpty, InactiveQueueNotAllowed, InactiveQueueTooMany, InboxStorageFailed, InvalidAnticipationDays, InvalidPaymentReminderFrequencyDays } from '../domain/errors'
+import type { InactiveClient, InactiveQueueLimits, InactiveQueueOutcome, InactiveReminderDelivery } from '../domain/inactive-reminder'
 
 export type RepositoryFailure = 'repository-failed'
 
@@ -196,12 +197,37 @@ export interface AftercareDeliveryRepository {
   markExhausted(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
 }
 
+export interface InactiveReminderDeliveryRepository {
+  claimDue(now: Date): Promise<Result<InactiveReminderDelivery[], RepositoryFailure>>
+  releaseToPending(id: string): Promise<Result<void, RepositoryFailure>>
+  markSent(id: string, channel: ReminderChannelKind, sentAt: Date): Promise<Result<void, RepositoryFailure>>
+  markRetry(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
+  markExhausted(id: string, attempts: number, error: string): Promise<Result<void, RepositoryFailure>>
+}
+
+export type InactiveClientsQuery = { since: Date; offset: number; limit: number }
+
+export type InactiveClientsPage = { clients: InactiveClient[]; total: number }
+
+export type InactiveQueueFailure = RepositoryFailure | InactiveQueueNotAllowed | InactiveQueueEmpty | InactiveQueueTooMany
+
+export interface InactiveClientsRepository {
+  listPage(query: InactiveClientsQuery): Promise<Result<InactiveClientsPage, RepositoryFailure>>
+  queue(clientIds: string[], limits: InactiveQueueLimits): Promise<Result<InactiveQueueOutcome, InactiveQueueFailure>>
+}
+
+export interface InactiveSubscriptionRepository {
+  unsubscribe(token: string): Promise<Result<void, RepositoryFailure>>
+  resubscribe(token: string): Promise<Result<void, RepositoryFailure>>
+}
+
 export const MESSAGE_PURPOSES = [
   'reminder',
   'appointment_confirmation',
   'reschedule_outcome',
   'aftercare',
   'reapplication_reminder',
+  'inactive_reminder',
   'payment_reminder',
 ] as const
 
@@ -213,6 +239,7 @@ export type ChannelSendInput = {
   contact: ContactInfo
   message: string
   templateVariables: string[]
+  unsubscribeUrl?: string
 }
 
 export interface NotificationChannel {

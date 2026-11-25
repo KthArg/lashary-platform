@@ -1,0 +1,1 @@
+export { CaseDetailView } from './CaseDetailView'
